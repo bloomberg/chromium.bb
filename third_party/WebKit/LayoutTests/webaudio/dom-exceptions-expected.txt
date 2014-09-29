@@ -117,6 +117,16 @@ PASS panner.channelCountMode = 'max' threw exception NotSupportedError: Failed t
 PASS panner.channelCountMode = 'explicit' did not throw exception.
 PASS panner.channelCountMode = 'clamped-max' did not throw exception.
 PASS panner.channelCountMode = 'junk' did not throw exception.
+PASS script = context.createScriptProcessor(256, 3) did not throw exception.
+PASS script.channelCount is 3
+PASS script.channelCountMode is "explicit"
+PASS script.channelCount = 3 did not throw exception.
+PASS script.channelCount = 1 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': channelCount cannot be changed from 3 to 1.
+PASS script.channelCount = 7 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': channelCount cannot be changed from 3 to 7.
+PASS script.channelCountMode = 'explicit' did not throw exception.
+PASS script.channelCountMode = 'max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': channelCountMode cannot be changed from 'explicit' to 'max'.
+PASS script.channelCountMode = 'clamped-max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': channelCountMode cannot be changed from 'explicit' to 'clamped-max'.
+PASS script.channelCountMode = 'junk' did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

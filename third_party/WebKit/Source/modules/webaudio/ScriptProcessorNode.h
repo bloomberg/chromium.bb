@@ -63,6 +63,9 @@ public:
 
     size_t bufferSize() const { return m_bufferSize; }
 
+    virtual void setChannelCount(unsigned long, ExceptionState&) OVERRIDE;
+    virtual void setChannelCountMode(const String&, ExceptionState&) OVERRIDE;
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
 
     void trace(Visitor*);
