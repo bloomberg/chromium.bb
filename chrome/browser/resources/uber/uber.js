@@ -368,6 +368,7 @@ cr.define('uber', function() {
 
     var selectedFrame = getSelectedIframe().querySelector('iframe');
     uber.invokeMethodOnWindow(selectedFrame.contentWindow, 'frameSelected');
+    selectedFrame.contentWindow.focus();
 
     if (historyOption != HISTORY_STATE_OPTION.NONE)
       changePathTo({}, path, historyOption);
