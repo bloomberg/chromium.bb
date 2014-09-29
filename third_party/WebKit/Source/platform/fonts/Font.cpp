@@ -696,14 +696,9 @@ float Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& run
     TextBlobPtr textBlob;
     float advance = 0;
     if (RuntimeEnabledFeatures::textBlobEnabled()) {
-        // Using text blob causes a small difference in how gradients and
-        // patterns are rendered.
-        // FIXME: Fix this, most likely in Skia.
-        if (!context->strokeGradient() && !context->strokePattern() && !context->fillGradient() && !context->fillPattern()) {
-            FloatRect blobBounds = runInfo.bounds;
-            blobBounds.moveBy(-point);
-            textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, advance, context->couldUseLCDRenderedText());
-        }
+        FloatRect blobBounds = runInfo.bounds;
+        blobBounds.moveBy(-point);
+        textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, advance, context->couldUseLCDRenderedText());
     }
 
     if (textBlob) {

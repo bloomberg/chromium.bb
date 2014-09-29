@@ -171,13 +171,6 @@ TextPainter::Style TextPainter::selectionPaintingStyle(RenderObject& renderer, b
     return selectionStyle;
 }
 
-static bool graphicsContextAllowsTextBlobs(GraphicsContext* context)
-{
-    // Text blobs affect the shader coordinate space.
-    // FIXME: Fix this, most likely in Skia.
-    return !context->strokeGradient() && !context->strokePattern() && !context->fillGradient() && !context->fillPattern();
-}
-
 template <TextPainter::PaintInternalStep step>
 void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to, TextBlobPtr* cachedTextBlob)
 {
@@ -193,7 +186,7 @@ void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from,
 
     TextBlobPtr localTextBlob;
     TextBlobPtr& textBlob = cachedTextBlob ? *cachedTextBlob : localTextBlob;
-    bool canUseTextBlobs = RuntimeEnabledFeatures::textBlobEnabled() && graphicsContextAllowsTextBlobs(m_graphicsContext);
+    bool canUseTextBlobs = RuntimeEnabledFeatures::textBlobEnabled();
 
     if (canUseTextBlobs && !textBlob)
         textBlob = m_font.buildTextBlob(textRunPaintInfo, m_textOrigin, m_graphicsContext->couldUseLCDRenderedText());
