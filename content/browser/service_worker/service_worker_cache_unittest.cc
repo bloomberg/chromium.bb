@@ -139,7 +139,7 @@ class ServiceWorkerCacheTest : public testing::Test {
 
     cache_->Put(CopyFetchRequest(request),
                 CopyFetchResponse(response),
-                base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
+                base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
                            base::Unretained(this),
                            base::Unretained(loop.get())));
     // TODO(jkarlin): These functions should use base::RunLoop().RunUntilIdle()
@@ -270,17 +270,28 @@ class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
 
 TEST_P(ServiceWorkerCacheTestP, PutNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(callback_response_);
+  EXPECT_STREQ(no_body_response_.url.spec().c_str(),
+               callback_response_->url.spec().c_str());
+  EXPECT_FALSE(callback_response_data_);
 }
 
 TEST_P(ServiceWorkerCacheTestP, PutBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(callback_response_);
+  EXPECT_STREQ(body_response_.url.spec().c_str(),
+               callback_response_->url.spec().c_str());
+  EXPECT_TRUE(callback_response_data_);
+  std::string response_body;
+  CopyBody(callback_response_data_.get(), &response_body);
+  EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
 }
 
 TEST_F(ServiceWorkerCacheTest, PutBodyDropBlobRef) {
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_),
               CopyFetchResponse(body_response_),
-              base::Bind(&ServiceWorkerCacheTestP::ErrorTypeCallback,
+              base::Bind(&ServiceWorkerCacheTestP::ResponseAndErrorCallback,
                          base::Unretained(this),
                          base::Unretained(loop.get())));
   // The handle should be held by the cache now so the deref here should be

@@ -166,7 +166,7 @@ struct PutContext {
   PutContext(scoped_ptr<ServiceWorkerFetchRequest> request,
              scoped_ptr<ServiceWorkerResponse> response,
              scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-             const ServiceWorkerCache::ErrorCallback& callback,
+             const ServiceWorkerCache::ResponseCallback& callback,
              net::URLRequestContext* request_context)
       : request(request.Pass()),
         response(response.Pass()),
@@ -183,13 +183,16 @@ struct PutContext {
   scoped_ptr<ServiceWorkerFetchRequest> request;
   scoped_ptr<ServiceWorkerResponse> response;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
-  ServiceWorkerCache::ErrorCallback callback;
+  ServiceWorkerCache::ResponseCallback callback;
 
   net::URLRequestContext* request_context;
 
   // This isn't a scoped_ptr because the disk_cache needs an Entry** as input to
   // CreateEntry.
   disk_cache::Entry* cache_entry;
+
+  // The BlobDataHandle for the output ServiceWorkerResponse.
+  scoped_ptr<storage::BlobDataHandle> out_blob_data_handle;
 
   DISALLOW_COPY_AND_ASSIGN(PutContext);
 };
@@ -252,7 +255,9 @@ void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
 
 void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv) {
   if (rv != net::OK) {
-    put_context->callback.Run(ServiceWorkerCache::ErrorTypeExists);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeExists,
+                              scoped_ptr<ServiceWorkerResponse>(),
+                              scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -285,7 +290,9 @@ void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv) {
 
   scoped_ptr<std::string> serialized(new std::string());
   if (!headers.SerializeToString(serialized.get())) {
-    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                              scoped_ptr<ServiceWorkerResponse>(),
+                              scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -314,7 +321,9 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                         int rv) {
   if (rv != expected_bytes) {
     put_context->cache_entry->Doom();
-    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                              scoped_ptr<ServiceWorkerResponse>(),
+                              scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -322,7 +331,9 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   // from the blob into the cache entry.
 
   if (put_context->response->blob_uuid.empty()) {
-    put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK,
+                              put_context->response.Pass(),
+                              scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -351,11 +362,15 @@ void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
                             bool success) {
   if (!success) {
     put_context->cache_entry->Doom();
-    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage);
+    put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                              scoped_ptr<ServiceWorkerResponse>(),
+                              scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
-  put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK);
+  put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK,
+                            put_context->response.Pass(),
+                            put_context->out_blob_data_handle.Pass());
 }
 
 void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
@@ -712,17 +727,22 @@ base::WeakPtr<ServiceWorkerCache> ServiceWorkerCache::AsWeakPtr() {
 
 void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
                              scoped_ptr<ServiceWorkerResponse> response,
-                             const ErrorCallback& callback) {
+                             const ResponseCallback& callback) {
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+
   if (!response->blob_uuid.empty()) {
     if (!blob_storage_context_) {
-      callback.Run(ErrorTypeStorage);
+      callback.Run(ErrorTypeStorage,
+                   scoped_ptr<ServiceWorkerResponse>(),
+                   scoped_ptr<storage::BlobDataHandle>());
       return;
     }
     blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response->blob_uuid);
     if (!blob_data_handle) {
-      callback.Run(ErrorTypeStorage);
+      callback.Run(ErrorTypeStorage,
+                   scoped_ptr<ServiceWorkerResponse>(),
+                   scoped_ptr<storage::BlobDataHandle>());
       return;
     }
   }
@@ -865,9 +885,11 @@ void ServiceWorkerCache::PutImpl(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-    const ErrorCallback& callback) {
+    const ResponseCallback& callback) {
   if (!backend_) {
-    callback.Run(ErrorTypeStorage);
+    callback.Run(ErrorTypeStorage,
+                 scoped_ptr<ServiceWorkerResponse>(),
+                 scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -876,6 +898,13 @@ void ServiceWorkerCache::PutImpl(
                                                     blob_data_handle.Pass(),
                                                     callback,
                                                     request_context_));
+
+  if (put_context->blob_data_handle) {
+    // Grab another handle to the blob for the callback response.
+    put_context->out_blob_data_handle =
+        blob_storage_context_->GetBlobDataFromUUID(
+            put_context->response->blob_uuid);
+  }
 
   disk_cache::Entry** entry_ptr = &put_context->cache_entry;
   ServiceWorkerFetchRequest* request_ptr = put_context->request.get();

@@ -70,7 +70,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   // ErrorTypeOK on success. The callback will always be called.
   void Put(scoped_ptr<ServiceWorkerFetchRequest> request,
            scoped_ptr<ServiceWorkerResponse> response,
-           const ErrorCallback& callback);
+           const ResponseCallback& callback);
 
   // Returns ErrorNotFound if not found. Otherwise deletes and returns
   // ErrorTypeOK. The callback will always be called.
@@ -108,7 +108,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   void PutImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                scoped_ptr<ServiceWorkerResponse> response,
                scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-               const ErrorCallback& callback);
+               const ResponseCallback& callback);
 
   // Static callbacks for the Keys function.
   static void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context,
