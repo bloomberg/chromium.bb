@@ -104,6 +104,10 @@
   <emphasis>Note: <xsl:apply-templates /></emphasis>
 </xsl:template>
 
+<xsl:template match="programlisting//sp">
+  <xsl:text> </xsl:text>
+</xsl:template>
+
 <xsl:template match="programlisting">
   <programlisting><xsl:apply-templates /></programlisting>
 </xsl:template>
