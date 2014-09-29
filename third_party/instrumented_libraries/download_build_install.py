@@ -121,13 +121,16 @@ def nss_make_and_copy(parsed_arguments, environment, install_prefix):
   make_args.append('CC="%s %s"' % (environment['CC'], environment['CFLAGS']))
   make_args.append('CXX="%s %s"' %
                    (environment['CXX'], environment['CXXFLAGS']))
-  # We need to override ZDEFS_FLAGS at least to prevent -Wl,-z,defs.
-  # Might as well use this to pass the linker flags, since ZDEF_FLAGS is always
+  # We need to override ZDEFS_FLAG at least to prevent -Wl,-z,defs.
+  # Might as well use this to pass the linker flags, since ZDEF_FLAG is always
   # added during linking on Linux.
   make_args.append('ZDEFS_FLAG="-Wl,-z,nodefs %s"' % environment['LDFLAGS'])
   make_args.append('NSPR_INCLUDE_DIR=/usr/include/nspr')
   make_args.append('NSPR_LIB_DIR=%s/lib' % install_prefix)
   make_args.append('NSS_ENABLE_ECC=1')
+  # Make sure we don't override the default flags.
+  for variable in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
+    del environment[variable]
   with ScopedChangeDirectory('nss') as cd_nss:
     # -j is not supported
     shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
