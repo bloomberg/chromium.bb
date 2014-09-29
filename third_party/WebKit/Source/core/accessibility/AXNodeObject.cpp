@@ -33,6 +33,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLDListElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
@@ -228,6 +229,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return ParagraphRole;
     if (isHTMLLabelElement(*node()))
         return LabelRole;
+    if (isHTMLDListElement(*node()))
+        return DescriptionListRole;
     if (node()->isElementNode() && node()->hasTagName(figcaptionTag))
         return FigcaptionRole;
     if (node()->isElementNode() && node()->hasTagName(figureTag))
