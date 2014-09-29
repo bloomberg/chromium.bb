@@ -891,10 +891,6 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& requested_bounds) {
   unsigned value_mask = 0;
 
   if (size_changed) {
-    // X11 will send an XError at our process if have a 0 sized window.
-    DCHECK_GT(bounds.width(), 0);
-    DCHECK_GT(bounds.height(), 0);
-
     if (bounds.width() < min_size_.width() ||
         bounds.height() < min_size_.height() ||
         (!max_size_.IsEmpty() &&
@@ -902,6 +898,11 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& requested_bounds) {
           bounds.height() > max_size_.height()))) {
       // Update the minimum and maximum sizes in case they have changed.
       UpdateMinAndMaxSize();
+
+      gfx::Size size = bounds.size();
+      size.SetToMin(max_size_);
+      size.SetToMax(min_size_);
+      bounds.set_size(size);
     }
 
     changes.width = bounds.width();
@@ -1231,7 +1232,11 @@ gfx::Size DesktopWindowTreeHostX11::AdjustSize(
                        requested_size.height() - 1);
     }
   }
-  return requested_size;
+
+  // Do not request a 0x0 window size. It causes an XError.
+  gfx::Size size = requested_size;
+  size.SetToMax(gfx::Size(1,1));
+  return size;
 }
 
 void DesktopWindowTreeHostX11::OnWMStateUpdated() {
