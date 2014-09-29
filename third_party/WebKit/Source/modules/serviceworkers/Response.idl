@@ -16,6 +16,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque" };
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     RaisesException=Constructor,
+    ActiveDOMObject,
     GarbageCollected,
 ] interface Response {
     // FIXME: Implement redirect().
