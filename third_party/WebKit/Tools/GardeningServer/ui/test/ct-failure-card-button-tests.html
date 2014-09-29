@@ -76,6 +76,17 @@ describe('ct-failure-card-buttons', function() {
       });
     });
 
+    it('file bug link should have the right URL', function(done) {
+      card.shadowRoot.getElementById('link-bug').dispatchEvent(new CustomEvent('tap'));
+      setTimeout(function() {
+        var dialog = card.shadowRoot.getElementById('bugDialog');
+        assert.isTrue(dialog.opened);
+        var fileBugLink = card.shadowRoot.getElementById('fileBugLink');
+        assert.equal(fileBugLink.href, 'https://code.google.com/p/chromium/issues/entry?status=Available&labels=Pri-2,gardening-blink&summary=Build%20failure&comment=Build%20is%20broken:%0aautobot%20unknown%0Ahttp%3A%2F%2Ftest-results.appspot.com%2Fdashboards%2Fflakiness_dashboard.html%23tests%3Dunknown%26testType%3Dautobot%0A%0ARevision%20range%3A%0Ablink%20158544%20%3A%20158545%0A%0AFailing%20builders%3A%0AsomeBuilder%3A%20undefined%2Fbuilders%2FsomeBuilder%0A');
+        done();
+      });
+    });
+
     it('remove bug link should work', function(done) {
       group.setBug(123);
       card.shadowRoot.getElementById('link-bug').dispatchEvent(new CustomEvent('tap'));

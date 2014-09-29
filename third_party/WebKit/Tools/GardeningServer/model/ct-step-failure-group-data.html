@@ -42,4 +42,33 @@ CTStepFailureGroupData.prototype.failedOnce = function() {
   }
   return true;
 };
+
+CTStepFailureGroupData.prototype.fileBugMessage = function() {
+  var message = '';
+  this.failures.forEach(function(failure) {
+    message += failure.step;
+    if (failure.testName) {
+      message += ' ' + failure.testName + '\n';
+      message += failure.flakinessDashboardURL(this.tree);
+    }
+    message += '\n';
+  });
+  message += '\nRevision range:\n';
+  this.commitList.repositories.forEach(function(repository) {
+    message += repository.name + ' ' + repository.range + '\n';
+  });
+  message += '\nFailing builders:\n';
+  this.builderList.builders.forEach(function(builder) {
+    message += builder.builder + ': ' + builder.buildUrl + '\n';
+  });
+
+  return message;
+};
+
+CTStepFailureGroupData.prototype.fileBugLink = function() {
+  var fileBugUrl = 'https://code.google.com/p/chromium/issues/entry?' +
+      'status=Available&labels=Pri-2,gardening-blink&' +
+      'summary=Build%20failure&comment=Build%20is%20broken:%0a';
+  return fileBugUrl + encodeURIComponent(this.fileBugMessage());
+};
 </script>
