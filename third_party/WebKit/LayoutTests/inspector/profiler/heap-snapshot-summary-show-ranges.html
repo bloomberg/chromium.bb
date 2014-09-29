@@ -1,7 +1,7 @@
 <html>
 <head>
-  <script src="../../http/tests/inspector/inspector-test.js"></script>
-  <script src="heap-snapshot-test.js"></script>
+    <script src="../../http/tests/inspector/inspector-test.js"></script>
+    <script src="heap-snapshot-test.js"></script>
 <script>
 
 function test()
@@ -18,6 +18,18 @@ function test()
         function testShowAll(next)
         {
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            var row;
+
+            function dumpAndPopulate(step, from, to, callback)
+            {
+                InspectorTest.addResult("");
+                InspectorTest.addResult(step);
+                InspectorTest.addResult("Retrieved ranges: " + JSON.stringify(row._retrievedChildrenRanges));
+                for (var i = 0; i < row.children.length; ++i)
+                    InspectorTest.addResult("[" + i + "] " + row.children[i]._element.textContent.replace(/[^\w\d]/mg, " "));
+                if (callback)
+                    row._populateChildren(from, to, callback);
+            }
 
             function step1()
             {
@@ -26,86 +38,44 @@ function test()
 
             function step2()
             {
-                var row = InspectorTest.findRow("A");
-                InspectorTest.assertEquals(true, !!row, "\"A\" row");
+                row = InspectorTest.findRow("A");
+                InspectorTest.addResult("Row found: " + !!row);
                 InspectorTest.expandRow(row, step3);
             }
 
-            function checkShowMoreButton(showMoreButton, expectedStartPosition, expectedEndPosition)
+            function step3()
             {
-                InspectorTest.assertEquals(true , showMoreButton instanceof WebInspector.ShowMoreDataGridNode, "Show more button node not found");
-                InspectorTest.assertEquals(expectedStartPosition , showMoreButton._startPosition, "Incorrect start position");
-                InspectorTest.assertEquals(expectedEndPosition , showMoreButton._endPosition, "Incorrect end position");
+                dumpAndPopulate("Step 3", 30, 40, step4);
             }
 
-            function step3(row)
+            function step4()
             {
-                // _positionRanges: [0, 10)
-                var count = row.data["count"];
-                InspectorTest.assertEquals(instanceCount.toString(), count);
-
-                var defaultChunkSize = row._dataGrid.defaultPopulateCount();
-                InspectorTest.assertEquals(10, defaultChunkSize);
-
-
-                var showMoreButton = row.children[defaultChunkSize];
-                checkShowMoreButton(showMoreButton, defaultChunkSize, instanceCount);
-
-                row._populateChildren(30, 40, step4.bind(this, row));
+                dumpAndPopulate("Step 4", 20, 25, step5);
             }
 
-            function step4(row)
+            function step5()
             {
-                // _positionRanges: [0, 10) [30, 40)
-                checkShowMoreButton(row.children[10], 10, 30);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (40 - 30)], 40, instanceCount);
-
-                row._populateChildren(20, 25, step5.bind(this, row));
+                dumpAndPopulate("Step 5", 28, 35, step6);
             }
 
-            function step5(row)
+            function step6()
             {
-                // _positionRanges: [0, 10) [20, 25) [30, 40)
-                checkShowMoreButton(row.children[10], 10, 20);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (25 - 20)], 25, 30);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (25 - 20) + 1 + (40 - 30)], 40, instanceCount);
-
-                row._populateChildren(28, 35, step6.bind(this, row));
+                dumpAndPopulate("Step 6", 18, 26, step7);
             }
 
-            function step6(row)
+            function step7()
             {
-                // _positionRanges: [0, 10) [20, 25) [28, 40)
-                checkShowMoreButton(row.children[10], 10, 20);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (25 - 20)], 25, 28);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (25 - 20) + 1 + (40 - 28)], 40, instanceCount);
-
-                row._populateChildren(18, 26, step7.bind(this, row));
+                dumpAndPopulate("Step 7", 15, 45, step8);
             }
 
-            function step7(row)
+            function step8()
             {
-                // _positionRanges: [0, 10) [18, 26) [28, 40)
-                checkShowMoreButton(row.children[10], 10, 18);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (26 - 18)], 26, 28);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (26 - 18) + 1 + (40 - 28)], 40, instanceCount);
-
-                row._populateChildren(15, 45, step8.bind(this, row));
+                dumpAndPopulate("Step 8", 10, 15, step9);
             }
 
-            function step8(row)
+            function step9()
             {
-                // _positionRanges: [0, 10) [15, 45)
-                checkShowMoreButton(row.children[10], 10, 15);
-                checkShowMoreButton(row.children[(10 - 0) + 1 + (45 - 15)], 45, instanceCount);
-
-                row._populateChildren(10, 15, step9.bind(this, row));
-            }
-
-            function step9(row)
-            {
-                // _positionRanges: [0, 45)
-                checkShowMoreButton(row.children[45], 45, instanceCount);
+                dumpAndPopulate("Step 9");
                 setTimeout(next, 0);
             }
         }
