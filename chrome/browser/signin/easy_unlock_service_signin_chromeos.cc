@@ -139,6 +139,15 @@ void EasyUnlockServiceSignin::ClearRemoteDevices() {
   NOTREACHED();
 }
 
+void EasyUnlockServiceSignin::SetHardlocked(bool value) {
+  // TODO(tbarzic): Make this work.
+  SetScreenlockHardlockedState(value);
+}
+
+bool EasyUnlockServiceSignin::IsHardlocked() const {
+  return false;
+}
+
 void EasyUnlockServiceSignin::RunTurnOffFlow() {
   NOTREACHED();
 }

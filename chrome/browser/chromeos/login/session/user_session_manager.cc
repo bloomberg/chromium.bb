@@ -813,6 +813,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCRLSetFetcher(user);
   }
 
+  if (user && user->GetType() == user_manager::USER_TYPE_REGULAR &&
+      EasyUnlockService::Get(profile))
+    EasyUnlockService::Get(profile)->SetHardlocked(false);
+
   UpdateEasyUnlockKeys(profile);
   user_context_.ClearSecrets();
 

@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_source.h"
@@ -213,6 +214,9 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
       user_manager::UserManager::Get()->SwitchActiveUser(
           user_context.GetUserID());
     }
+    EasyUnlockService* easy_unlock = EasyUnlockService::GetForUser(*user);
+    if (easy_unlock)
+      easy_unlock->SetHardlocked(false);
   } else {
     NOTREACHED() << "Logged in user not found.";
   }

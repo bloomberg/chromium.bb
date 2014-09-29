@@ -37,6 +37,8 @@
 #include "net/base/net_errors.h"
 #include "ui/events/event_handler.h"
 
+class EasyUnlockService;
+
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -458,6 +460,11 @@ class SigninScreenHandler
 
   // Returns OobeUI object of NULL.
   OobeUI* GetOobeUI() const;
+
+  // Gets the easy unlock service associated with the user. Can return NULL if
+  // user cannot be found, or there is not associated service.
+  EasyUnlockService* GetEasyUnlockServiceForUser(
+      const std::string& username) const;
 
   // Current UI state of the signin screen.
   UIState ui_state_;

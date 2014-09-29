@@ -19,6 +19,10 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace user_manager {
+class User;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -43,6 +47,10 @@ class EasyUnlockService : public KeyedService {
   // Gets EasyUnlockService instance.
   static EasyUnlockService* Get(Profile* profile);
 
+  // Gets EasyUnlockService instance associated with a user if the user is
+  // logged in and his profile is initialized.
+  static EasyUnlockService* GetForUser(const user_manager::User& user);
+
   // Registers Easy Unlock profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -64,6 +72,12 @@ class EasyUnlockService : public KeyedService {
   virtual const base::ListValue* GetRemoteDevices() const = 0;
   virtual void SetRemoteDevices(const base::ListValue& devices) = 0;
   virtual void ClearRemoteDevices() = 0;
+
+  // Hardlocks the service for the associated user.
+  virtual void SetHardlocked(bool value) = 0;
+
+  // Whether the Easy Unlock service is hardlocked for the associated user.
+  virtual bool IsHardlocked() const = 0;
 
   // Runs the flow for turning Easy unlock off.
   virtual void RunTurnOffFlow() = 0;
@@ -155,6 +169,9 @@ class EasyUnlockService : public KeyedService {
 
   // Resets the screenlock state set by this service.
   void ResetScreenlockState();
+
+  // Updates |screenlock_state_handler_|'s hardlocked state.
+  void SetScreenlockHardlockedState(bool value);
 
  private:
   // A class to detect whether a bluetooth adapter is present.

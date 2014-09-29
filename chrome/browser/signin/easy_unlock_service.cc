@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_manager/user.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "extensions/browser/event_router.h"
@@ -31,6 +32,7 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #endif
@@ -50,6 +52,19 @@ extensions::ComponentLoader* GetComponentLoader(
 // static
 EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
   return EasyUnlockServiceFactory::GetForProfile(profile);
+}
+
+// static
+EasyUnlockService* EasyUnlockService::GetForUser(
+    const user_manager::User& user) {
+#if defined(OS_CHROMEOS)
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
+  if (!profile)
+    return NULL;
+  return EasyUnlockService::Get(profile);
+#else
+  return NULL;
+#endif
 }
 
 class EasyUnlockService::BluetoothDetector
@@ -197,6 +212,7 @@ EasyUnlockScreenlockStateHandler*
   if (!screenlock_state_handler_) {
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
         GetUserEmail(),
+        IsHardlocked(),
         GetType() == TYPE_REGULAR ? profile_->GetPrefs() : NULL,
         ScreenlockBridge::Get()));
   }
@@ -374,6 +390,13 @@ void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {
 void EasyUnlockService::ResetScreenlockState() {
   screenlock_state_handler_.reset();
   auth_attempt_.reset();
+}
+
+void EasyUnlockService::SetScreenlockHardlockedState(bool value) {
+  if (screenlock_state_handler_)
+    screenlock_state_handler_->SetHardlocked(value);
+  if (value)
+    auth_attempt_.reset();
 }
 
 void EasyUnlockService::Initialize() {

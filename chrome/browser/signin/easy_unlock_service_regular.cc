@@ -32,6 +32,9 @@ const char kKeyPermitAccess[] = "permitAccess";
 // Key name of the remote device list in kEasyUnlockPairing.
 const char kKeyDevices[] = "devices";
 
+// Key name of the hardlocked flag in kEasyUnlockPairing.
+const char kKeyHardlocked[] = "hardlocked";
+
 // Key name of the phone public key in a device dictionary.
 const char kKeyPhoneId[] = "permitRecord.id";
 
@@ -108,6 +111,23 @@ void EasyUnlockServiceRegular::ClearRemoteDevices() {
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
   pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
+}
+
+void EasyUnlockServiceRegular::SetHardlocked(bool value) {
+  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  pairing_update->SetBooleanWithoutPathExpansion(kKeyHardlocked, value);
+
+  SetScreenlockHardlockedState(value);
+}
+
+bool EasyUnlockServiceRegular::IsHardlocked() const {
+  const base::DictionaryValue* pairing_dict =
+      profile()->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
+  bool hardlocked = false;
+  return pairing_dict &&
+         pairing_dict->GetBoolean(kKeyHardlocked, &hardlocked) &&
+         hardlocked;
 }
 
 void EasyUnlockServiceRegular::RunTurnOffFlow() {

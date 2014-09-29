@@ -65,6 +65,8 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   virtual const base::ListValue* GetRemoteDevices() const OVERRIDE;
   virtual void SetRemoteDevices(const base::ListValue& devices) OVERRIDE;
   virtual void ClearRemoteDevices() OVERRIDE;
+  virtual void SetHardlocked(bool value) OVERRIDE;
+  virtual bool IsHardlocked() const OVERRIDE;
   virtual void RunTurnOffFlow() OVERRIDE;
   virtual void ResetTurnOffFlow() OVERRIDE;
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const OVERRIDE;
