@@ -318,19 +318,9 @@ void TestRenderViewHost::SendNavigateWithParameters(
       file_path_for_history_item, std::vector<GURL>());
 }
 
-void TestRenderViewHost::SendBeforeUnloadACK(bool proceed) {
-  // TODO(creis): Move this whole method to TestRenderFrameHost.
-  base::TimeTicks now = base::TimeTicks::Now();
-  main_render_frame_host_->OnBeforeUnloadACK(proceed, now, now);
-}
-
 void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {
   contents_mime_type_ = mime_type;
   main_render_frame_host_->set_contents_mime_type(mime_type);
-}
-
-void TestRenderViewHost::SimulateSwapOutACK() {
-  OnSwappedOut(false);
 }
 
 void TestRenderViewHost::SimulateWasHidden() {

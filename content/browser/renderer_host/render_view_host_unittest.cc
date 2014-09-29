@@ -99,11 +99,11 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
       url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage();
-  // Needed so that navigations are not suspended on the RVH.
-  test_rvh()->SendBeforeUnloadACK(true);
+  // Needed so that navigations are not suspended on the RFH.
+  main_test_rfh()->SendBeforeUnloadACK(true);
   contents()->Stop();
   controller().Reload(false);
-  EXPECT_FALSE(test_rvh()->IsWaitingForUnloadACK());
+  EXPECT_FALSE(main_test_rfh()->IsWaitingForUnloadACK());
 }
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.

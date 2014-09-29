@@ -89,9 +89,7 @@ class RenderFrameProxyHost
   RenderViewHostImpl* GetRenderViewHost();
 
   void TakeFrameHostOwnership(
-      scoped_ptr<RenderFrameHostImpl> render_frame_host) {
-    render_frame_host_ = render_frame_host.Pass();
-  }
+      scoped_ptr<RenderFrameHostImpl> render_frame_host);
   scoped_ptr<RenderFrameHostImpl> PassFrameHostOwnership();
 
   // IPC::Sender

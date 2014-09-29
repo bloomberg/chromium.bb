@@ -54,13 +54,20 @@ class RenderFrameHostTester {
   // RenderFrameHost is owned by the parent RenderFrameHost.
   virtual RenderFrameHost* AppendChild(const std::string& frame_name) = 0;
 
-  // Calls OnMsgNavigate on the RenderViewHost with the given information,
-  // including a custom PageTransition.  Sets the rest of the
+  // Calls OnDidCommitProvisionalLoad on the RenderFrameHost with the given
+  // information, including a custom PageTransition.  Sets the rest of the
   // parameters in the message to the "typical" values. This is a helper
   // function for simulating the most common types of loads.
   virtual void SendNavigateWithTransition(int page_id,
                                           const GURL& url,
                                           ui::PageTransition transition) = 0;
+
+  // Calls OnBeforeUnloadACK on this RenderFrameHost with the given parameter.
+  virtual void SendBeforeUnloadACK(bool proceed) = 0;
+
+  // Simulates the SwapOut_ACK that fires if you commit a cross-site
+  // navigation without making any network requests.
+  virtual void SimulateSwapOutACK() = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.
@@ -113,17 +120,9 @@ class RenderViewHostTester {
   virtual void SendNavigateWithTransition(int page_id, const GURL& url,
                                           ui::PageTransition transition) = 0;
 
-  // Calls OnBeforeUnloadACK on the main RenderFrameHost with the given
-  // parameter.
-  virtual void SendBeforeUnloadACK(bool proceed) = 0;
-
   // If set, future loads will have |mime_type| set as the mime type.
   // If not set, the mime type will default to "text/html".
   virtual void SetContentsMimeType(const std::string& mime_type) = 0;
-
-  // Simulates the SwapOut_ACK that fires if you commit a cross-site
-  // navigation without making any network requests.
-  virtual void SimulateSwapOutACK() = 0;
 
   // Makes the WasHidden/WasShown calls to the RenderWidget that
   // tell it it has been hidden or restored from having been hidden.

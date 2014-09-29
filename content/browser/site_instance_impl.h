@@ -45,28 +45,27 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // navigating to the URL.
   bool HasWrongProcessForURL(const GURL& url);
 
-  // Increase the number of active views in this SiteInstance. This is
-  // increased when a view is created, or a currently swapped out view
+  // Increase the number of active frames in this SiteInstance. This is
+  // increased when a frame is created, or a currently swapped out frame
   // is swapped in.
-  void increment_active_view_count() { active_view_count_++; }
+  void increment_active_frame_count() { active_frame_count_++; }
 
-  // Decrease the number of active views in this SiteInstance. This is
-  // decreased when a view is destroyed, or a currently active view is
+  // Decrease the number of active frames in this SiteInstance. This is
+  // decreased when a frame is destroyed, or a currently active frame is
   // swapped out.
-  void decrement_active_view_count() { active_view_count_--; }
+  void decrement_active_frame_count() { active_frame_count_--; }
 
-  // Get the number of active views which belong to this
-  // SiteInstance. If there is no active view left in this
-  // SiteInstance, all view in this SiteInstance can be safely
-  // discarded to save memory.
-  size_t active_view_count() { return active_view_count_; }
+  // Get the number of active frames which belong to this SiteInstance.  If
+  // there are no active frames left, all frames in this SiteInstance can be
+  // safely discarded.
+  size_t active_frame_count() { return active_frame_count_; }
 
   // Increase the number of active WebContentses using this SiteInstance. Note
-  // that, unlike active_view_count, this does not count pending RVHs.
+  // that, unlike active_frame_count, this does not count pending RFHs.
   void IncrementRelatedActiveContentsCount();
 
   // Decrease the number of active WebContentses using this SiteInstance. Note
-  // that, unlike active_view_count, this does not count pending RVHs.
+  // that, unlike active_frame_count, this does not count pending RFHs.
   void DecrementRelatedActiveContentsCount();
 
   // Sets the global factory used to create new RenderProcessHosts.  It may be
@@ -113,8 +112,8 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // A unique ID for this SiteInstance.
   int32 id_;
 
-  // The number of active views under this SiteInstance.
-  size_t active_view_count_;
+  // The number of active frames in this SiteInstance.
+  size_t active_frame_count_;
 
   // BrowsingInstance to which this SiteInstance belongs.
   scoped_refptr<BrowsingInstance> browsing_instance_;

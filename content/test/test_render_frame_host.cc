@@ -70,6 +70,15 @@ void TestRenderFrameHost::SendNavigateWithTransition(
   SendNavigateWithTransitionAndResponseCode(page_id, url, transition, 200);
 }
 
+void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  OnBeforeUnloadACK(proceed, now, now);
+}
+
+void TestRenderFrameHost::SimulateSwapOutACK() {
+  OnSwappedOut();
+}
+
 void TestRenderFrameHost::SendNavigate(int page_id, const GURL& url) {
   SendNavigateWithTransition(page_id, url, ui::PAGE_TRANSITION_LINK);
 }

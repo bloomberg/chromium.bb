@@ -283,15 +283,14 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   // If the tab becomes unresponsive during {before}unload while doing a
   // cross-site navigation, proceed with the navigation.  (This assumes that
   // the pending RenderFrameHost is still responsive.)
-  if (render_frame_host_->render_view_host()->IsWaitingForUnloadACK()) {
+  if (render_frame_host_->IsWaitingForUnloadACK()) {
     // The request has been started and paused while we're waiting for the
     // unload handler to finish.  We'll pretend that it did.  The pending
     // renderer will then be swapped in as part of the usual DidNavigate logic.
     // (If the unload handler later finishes, this call will be ignored because
     // the pending_nav_params_ state will already be cleaned up.)
-    current_host()->OnSwappedOut(true);
-  } else if (render_frame_host_->render_view_host()->
-                 is_waiting_for_beforeunload_ack()) {
+    current_frame_host()->OnSwappedOut();
+  } else if (render_frame_host_->is_waiting_for_beforeunload_ack()) {
     // Haven't gotten around to starting the request, because we're still
     // waiting for the beforeunload handler to finish.  We'll pretend that it
     // did finish, to let the navigation proceed.  Note that there's a danger
@@ -690,8 +689,8 @@ bool RenderFrameHostManager::ClearProxiesInSiteInstance(
     RenderFrameProxyHost* proxy = iter->second;
     // If the RVH is pending swap out, it needs to switch state to
     // pending shutdown. Otherwise it is deleted.
-    if (proxy->GetRenderViewHost()->rvh_state() ==
-        RenderViewHostImpl::STATE_PENDING_SWAP_OUT) {
+    if (proxy->render_frame_host()->rfh_state() ==
+        RenderFrameHostImpl::STATE_PENDING_SWAP_OUT) {
       scoped_ptr<RenderFrameHostImpl> swapped_out_rfh =
           proxy->PassFrameHostOwnership();
 
@@ -1224,7 +1223,7 @@ bool RenderFrameHostManager::InitRenderView(
   } else {
     // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
     // process unless it's swapped out.
-    if (!render_view_host->IsSwappedOut()) {
+    if (render_view_host->is_active()) {
       CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
                 render_view_host->GetProcess()->GetID()));
     }
@@ -1332,10 +1331,9 @@ void RenderFrameHostManager::CommitPending() {
     SwapOutOldPage(old_render_frame_host.get());
 
     // Schedule the old frame to shut down after it swaps out, if there are no
-    // other active views in its SiteInstance.
-    if (!static_cast<SiteInstanceImpl*>(
-            old_render_frame_host->GetSiteInstance())->active_view_count()) {
-      old_render_frame_host->render_view_host()->SetPendingShutdown(base::Bind(
+    // other active frames in its SiteInstance.
+    if (!old_render_frame_host->GetSiteInstance()->active_frame_count()) {
+      old_render_frame_host->SetPendingShutdown(base::Bind(
           &RenderFrameHostManager::ClearPendingShutdownRFHForSiteInstance,
           weak_factory_.GetWeakPtr(),
           old_site_instance_id,
@@ -1369,18 +1367,17 @@ void RenderFrameHostManager::CommitPending() {
   // If the old RFH is live, we are swapping it out and should keep track of
   // it in case we navigate back to it, or it is waiting for the unload event
   // to execute in the background.
-  // TODO(creis): Swap out the subframe in --site-per-process.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
     DCHECK(old_render_frame_host->is_swapped_out() ||
-           !RenderViewHostImpl::IsRVHStateActive(
-               old_render_frame_host->render_view_host()->rvh_state()));
+           !RenderFrameHostImpl::IsRFHStateActive(
+               old_render_frame_host->rfh_state()));
   }
 
   // If the RenderViewHost backing the RenderFrameHost is pending shutdown,
   // the RenderFrameHost should be put in the map of RenderFrameHosts pending
   // shutdown. Otherwise, it is stored in the map of proxy hosts.
-  if (old_render_frame_host->render_view_host()->rvh_state() ==
-      RenderViewHostImpl::STATE_PENDING_SHUTDOWN) {
+  if (old_render_frame_host->rfh_state() ==
+      RenderFrameHostImpl::STATE_PENDING_SHUTDOWN) {
     // The proxy for this RenderFrameHost is created when sending the
     // SwapOut message, so check if it already exists and delete it.
     RenderFrameProxyHostMap::iterator iter =
@@ -1400,12 +1397,11 @@ void RenderFrameHostManager::CommitPending() {
     CHECK(proxy_hosts_.find(render_frame_host_->GetSiteInstance()->GetId()) ==
           proxy_hosts_.end());
 
-    // Capture the active view count on the old RFH SiteInstance, since the
+    // Capture the active frame count on the old RFH SiteInstance, since the
     // ownership might be passed into the proxy and the pointer will be
     // invalid.
-    int active_view_count =
-        static_cast<SiteInstanceImpl*>(old_render_frame_host->GetSiteInstance())
-            ->active_view_count();
+    int active_frame_count =
+        old_render_frame_host->GetSiteInstance()->active_frame_count();
 
     if (is_main_frame) {
       RenderFrameProxyHostMap::iterator iter =
@@ -1414,23 +1410,23 @@ void RenderFrameHostManager::CommitPending() {
       iter->second->TakeFrameHostOwnership(old_render_frame_host.Pass());
     }
 
-    // If there are no active views in this SiteInstance, it means that
+    // If there are no active frames in this SiteInstance, it means that
     // this RFH was the last active one in the SiteInstance. Now that we
     // know that all RFHs are swapped out, we can delete all the RFPHs and
     // RVHs in this SiteInstance.
-    if (!active_view_count) {
+    if (!active_frame_count) {
       ShutdownRenderFrameProxyHostsInSiteInstance(old_site_instance_id);
-    } else {
-      // If this is a subframe, it should have a CrossProcessFrameConnector
-      // created already and we just need to link it to the proper view in the
-      // new process.
-      if (!is_main_frame) {
-        RenderFrameProxyHost* proxy = GetProxyToParent();
-        if (proxy) {
-          proxy->SetChildRWHView(
-              render_frame_host_->render_view_host()->GetView());
-        }
-      }
+    }
+  }
+
+  // If this is a subframe, it should have a CrossProcessFrameConnector
+  // created already and we just need to link it to the proper view in the
+  // new process.
+  if (!is_main_frame) {
+    RenderFrameProxyHost* proxy = GetProxyToParent();
+    if (proxy) {
+      proxy->SetChildRWHView(
+          render_frame_host_->render_view_host()->GetView());
     }
   }
 }
@@ -1619,9 +1615,9 @@ void RenderFrameHostManager::CancelPending() {
 
   // If the SiteInstance for the pending RFH is being used by others, don't
   // delete the RFH, just swap it out and it can be reused at a later point.
-  SiteInstanceImpl* site_instance = static_cast<SiteInstanceImpl*>(
-      pending_render_frame_host->GetSiteInstance());
-  if (site_instance->active_view_count() > 1) {
+  SiteInstanceImpl* site_instance =
+      pending_render_frame_host->GetSiteInstance();
+  if (site_instance->active_frame_count() > 1) {
     // Any currently suspended navigations are no longer needed.
     pending_render_frame_host->CancelSuspendedNavigations();
 
@@ -1653,11 +1649,11 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
     // count top-level ones.  This makes the value easier for consumers to
     // interpret.
     if (render_frame_host_) {
-      static_cast<SiteInstanceImpl*>(render_frame_host_->GetSiteInstance())->
+      render_frame_host_->GetSiteInstance()->
           IncrementRelatedActiveContentsCount();
     }
     if (old_render_frame_host) {
-      static_cast<SiteInstanceImpl*>(old_render_frame_host->GetSiteInstance())->
+      old_render_frame_host->GetSiteInstance()->
           DecrementRelatedActiveContentsCount();
     }
   }

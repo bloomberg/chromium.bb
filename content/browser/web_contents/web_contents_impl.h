@@ -232,8 +232,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual int32 GetMaxPageID() OVERRIDE;
   virtual int32 GetMaxPageIDForSiteInstance(
       SiteInstance* site_instance) OVERRIDE;
-  virtual SiteInstance* GetSiteInstance() const OVERRIDE;
-  virtual SiteInstance* GetPendingSiteInstance() const OVERRIDE;
+  virtual SiteInstanceImpl* GetSiteInstance() const OVERRIDE;
+  virtual SiteInstanceImpl* GetPendingSiteInstance() const OVERRIDE;
   virtual bool IsLoading() const OVERRIDE;
   virtual bool IsLoadingToDifferentDocument() const OVERRIDE;
   virtual bool IsWaitingForResponse() const OVERRIDE;
@@ -434,9 +434,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual WebPreferences ComputeWebkitPrefs() OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
   virtual void OnIgnoredUIEvent() OVERRIDE;
-  virtual void RendererUnresponsive(RenderViewHost* render_view_host,
-                                    bool is_during_beforeunload,
-                                    bool is_during_unload) OVERRIDE;
+  virtual void RendererUnresponsive(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RendererResponsive(RenderViewHost* render_view_host) OVERRIDE;
   virtual void LoadStateChanged(const GURL& url,
                                 const net::LoadStateWithParam& load_state,

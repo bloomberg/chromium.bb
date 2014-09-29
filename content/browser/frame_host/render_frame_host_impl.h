@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/mojo/service_registry_impl.h"
@@ -53,6 +54,7 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
+class TimeoutMonitor;
 struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
@@ -63,13 +65,37 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public BrowserAccessibilityDelegate {
  public:
+  // Keeps track of the state of the RenderFrameHostImpl, particularly with
+  // respect to swap out.
+  enum RenderFrameHostImplState {
+    // The standard state for a RFH handling the communication with an active
+    // RenderFrame.
+    STATE_DEFAULT = 0,
+    // The RFH has not received the SwapOutACK yet, but the new page has
+    // committed in a different RFH. The number of active frames of the RFH
+    // SiteInstanceImpl is not zero. Upon reception of the SwapOutACK, the RFH
+    // will be swapped out.
+    STATE_PENDING_SWAP_OUT,
+    // The RFH has not received the SwapOutACK yet, but the new page has
+    // committed in a different RFH. The number of active frames of the RFH
+    // SiteInstanceImpl is zero. Upon reception of the SwapOutACK, the RFH will
+    // be shutdown.
+    STATE_PENDING_SHUTDOWN,
+    // The RFH is swapped out and stored inside a RenderFrameProxyHost, being
+    // used as a placeholder to allow cross-process communication.
+    STATE_SWAPPED_OUT,
+  };
+  // Helper function to determine whether the RFH state should contribute to the
+  // number of active frames of a SiteInstance or not.
+  static bool IsRFHStateActive(RenderFrameHostImplState rfh_state);
+
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
 
   virtual ~RenderFrameHostImpl();
 
   // RenderFrameHost
   virtual int GetRoutingID() OVERRIDE;
-  virtual SiteInstance* GetSiteInstance() OVERRIDE;
+  virtual SiteInstanceImpl* GetSiteInstance() OVERRIDE;
   virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual RenderFrameHost* GetParent() OVERRIDE;
   virtual const std::string& GetFrameName() OVERRIDE;
@@ -192,14 +218,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // but not until WasSwappedOut is called (when it is no longer visible).
   void SwapOut(RenderFrameProxyHost* proxy);
 
-  void OnSwappedOut(bool timed_out);
-  bool is_swapped_out() { return is_swapped_out_; }
-  void set_swapped_out(bool is_swapped_out) {
-    is_swapped_out_ = is_swapped_out;
+  bool is_waiting_for_beforeunload_ack() const {
+    return is_waiting_for_beforeunload_ack_;
   }
 
-  // Sets the RVH for |this| as pending shutdown. |on_swap_out| will be called
-  // when the SwapOutACK is received.
+  // Whether the RFH is waiting for an unload ACK from the renderer.
+  bool IsWaitingForUnloadACK() const;
+
+  // Called when either the SwapOut request has been acknowledged or has timed
+  // out.
+  void OnSwappedOut();
+
+  // Whether this RenderFrameHost has been swapped out, such that the frame is
+  // now rendered by a RenderFrameHost in a different process.
+  bool is_swapped_out() const { return rfh_state_ == STATE_SWAPPED_OUT; }
+
+  // The current state of this RFH.
+  RenderFrameHostImplState rfh_state() const { return rfh_state_; }
+
+  // Set |this| as pending shutdown. |on_swap_out| will be called
+  // when the SwapOutACK is received, or when the unload timer times out.
   void SetPendingShutdown(const base::Closure& on_swap_out);
 
   // Sends the given navigation message. Use this rather than sending it
@@ -387,6 +425,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnHidePopup();
 #endif
 
+  // Updates the state of this RenderFrameHost and clears any waiting state
+  // that is no longer relevant.
+  void SetState(RenderFrameHostImplState rfh_state);
+
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since
   // it will be used to kill processes that commit unauthorized URLs.
@@ -451,7 +493,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::map<int, base::Closure> cancel_notification_callbacks_;
 
   int routing_id_;
-  bool is_swapped_out_;
+
+  // The current state of this RenderFrameHost.
+  RenderFrameHostImplState rfh_state_;
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.  Currently only used for subframes.
@@ -473,6 +517,30 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
+
+  // Set to true when there is a pending FrameMsg_ShouldClose message.  This
+  // ensures we don't spam the renderer with multiple beforeunload requests.
+  // When either this value or IsWaitingForUnloadACK is true, the value of
+  // unload_ack_is_for_cross_site_transition_ indicates whether this is for a
+  // cross-site transition or a tab close attempt.
+  // TODO(clamy): Remove this boolean and add one more state to the state
+  // machine.
+  bool is_waiting_for_beforeunload_ack_;
+
+  // Valid only when is_waiting_for_beforeunload_ack_ or
+  // IsWaitingForUnloadACK is true.  This tells us if the unload request
+  // is for closing the entire tab ( = false), or only this RenderFrameHost in
+  // the case of a cross-site transition ( = true).
+  bool unload_ack_is_for_cross_site_transition_;
+
+  // Used to swap out or shut down this RFH when the unload event is taking too
+  // long to execute, depending on the number of active frames in the
+  // SiteInstance.
+  scoped_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
+
+  // Called after receiving the SwapOutACK when the RFH is in the pending
+  // shutdown state. Also called if the unload timer times out.
+  base::Closure pending_shutdown_on_swap_out_;
 
   ServiceRegistryImpl service_registry_;
 

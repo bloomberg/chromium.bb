@@ -161,13 +161,13 @@ void TestWebContents::CommitPendingNavigation() {
   // Simulate the SwapOut_ACK. This is needed when cross-site navigation happens
   // (old_rfh != rfh).
   if (old_rfh != rfh)
-    old_rfh->OnSwappedOut(false);
+    old_rfh->OnSwappedOut();
 }
 
 void TestWebContents::ProceedWithCrossSiteNavigation() {
   if (!GetPendingMainFrame())
     return;
-  GetMainFrame()->GetRenderViewHost()->SendBeforeUnloadACK(true);
+  GetMainFrame()->SendBeforeUnloadACK(true);
 }
 
 RenderViewHostDelegateView* TestWebContents::GetDelegateView() {

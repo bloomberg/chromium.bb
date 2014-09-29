@@ -226,9 +226,7 @@ class TestRenderViewHost
   // RenderViewHostTester implementation.  Note that CreateRenderView
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
-  virtual void SendBeforeUnloadACK(bool proceed) OVERRIDE;
   virtual void SetContentsMimeType(const std::string& mime_type) OVERRIDE;
-  virtual void SimulateSwapOutACK() OVERRIDE;
   virtual void SimulateWasHidden() OVERRIDE;
   virtual void SimulateWasShown() OVERRIDE;
 
@@ -269,18 +267,6 @@ class TestRenderViewHost
   // check whether the RenderView has crashed or not.
   void set_render_view_created(bool created) {
     render_view_created_ = created;
-  }
-
-  // Returns whether the RenderViewHost is currently waiting to hear the result
-  // of a before unload handler from the renderer.
-  bool is_waiting_for_beforeunload_ack() const {
-    return is_waiting_for_beforeunload_ack_;
-  }
-
-  // Sets whether the RenderViewHost is currently swapped out, and thus
-  // filtering messages from the renderer.
-  void set_rvh_state(RenderViewHostImplState rvh_state) {
-    rvh_state_ = rvh_state;
   }
 
   // If set, navigations will appear to have loaded through a proxy

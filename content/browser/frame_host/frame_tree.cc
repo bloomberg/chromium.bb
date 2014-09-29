@@ -237,11 +237,12 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end()) {
-    // If a RenderViewHost is pending shutdown for this |site_instance|, put it
-    // in the map of RenderViewHosts pending shutdown. Otherwise return the
-    // existing RenderViewHost for the SiteInstance.
-    if (iter->second->rvh_state() ==
-        RenderViewHostImpl::STATE_PENDING_SHUTDOWN) {
+    // If a RenderViewHost's main frame is pending shutdown for this
+    // |site_instance|, put it in the map of RenderViewHosts pending shutdown.
+    // Otherwise return the existing RenderViewHost for the SiteInstance.
+    RenderFrameHost* main_frame = iter->second->GetMainFrame();
+    if (static_cast<RenderFrameHostImpl*>(main_frame)->rfh_state() ==
+        RenderFrameHostImpl::STATE_PENDING_SHUTDOWN) {
       render_view_host_pending_shutdown_map_.insert(
           std::pair<int, RenderViewHostImpl*>(site_instance->GetId(),
                                               iter->second));

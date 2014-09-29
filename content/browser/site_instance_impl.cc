@@ -25,7 +25,7 @@ int32 SiteInstanceImpl::next_site_instance_id_ = 1;
 
 SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
     : id_(next_site_instance_id_++),
-      active_view_count_(0),
+      active_frame_count_(0),
       browsing_instance_(browsing_instance),
       process_(NULL),
       has_site_(false) {

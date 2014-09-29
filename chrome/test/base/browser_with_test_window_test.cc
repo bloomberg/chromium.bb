@@ -34,6 +34,8 @@
 #endif
 
 using content::NavigationController;
+using content::RenderFrameHost;
+using content::RenderFrameHostTester;
 using content::RenderViewHost;
 using content::RenderViewHostTester;
 using content::WebContents;
@@ -135,6 +137,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 
   RenderViewHost* old_rvh =
       controller->GetWebContents()->GetRenderViewHost();
+  RenderFrameHost* old_rfh = old_rvh->GetMainFrame();
 
   RenderViewHost* pending_rvh = RenderViewHostTester::GetPendingForController(
       controller);
@@ -142,7 +145,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
     // Simulate the BeforeUnload_ACK that is received from the current renderer
     // for a cross-site navigation.
     DCHECK_NE(old_rvh, pending_rvh);
-    RenderViewHostTester::For(old_rvh)->SendBeforeUnloadACK(true);
+    RenderFrameHostTester::For(old_rfh)->SendBeforeUnloadACK(true);
   }
   // Commit on the pending_rvh, if one exists.
   RenderViewHost* test_rvh = pending_rvh ? pending_rvh : old_rvh;
@@ -150,7 +153,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 
   // Simulate a SwapOut_ACK before the navigation commits.
   if (pending_rvh)
-    RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
+    RenderFrameHostTester::For(old_rfh)->SimulateSwapOutACK();
 
   // For new navigations, we need to send a larger page ID. For renavigations,
   // we need to send the preexisting page ID. We can tell these apart because

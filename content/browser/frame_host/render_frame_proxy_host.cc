@@ -86,6 +86,12 @@ RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
       site_instance_.get());
 }
 
+void RenderFrameProxyHost::TakeFrameHostOwnership(
+    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+  render_frame_host_ = render_frame_host.Pass();
+  render_frame_host_->set_render_frame_proxy_host(this);
+}
+
 scoped_ptr<RenderFrameHostImpl> RenderFrameProxyHost::PassFrameHostOwnership() {
   render_frame_host_->set_render_frame_proxy_host(NULL);
   return render_frame_host_.Pass();

@@ -551,9 +551,10 @@ void NavigatorImpl::RequestOpenURL(
   SiteInstance* current_site_instance =
       GetRenderManager(render_frame_host)->current_frame_host()->
           GetSiteInstance();
-  // If this came from a swapped out RenderViewHost, we only allow the request
+  // If this came from a swapped out RenderFrameHost, we only allow the request
   // if we are still in the same BrowsingInstance.
-  if (render_frame_host->render_view_host()->IsSwappedOut() &&
+  // TODO(creis): Move this to RenderFrameProxyHost::OpenURL.
+  if (render_frame_host->is_swapped_out() &&
       !render_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
           current_site_instance)) {
     return;

@@ -156,9 +156,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.
-  virtual void RendererUnresponsive(RenderViewHost* render_view_host,
-                                    bool is_during_before_unload,
-                                    bool is_during_unload) {}
+  virtual void RendererUnresponsive(RenderViewHost* render_view_host) {}
 
   // Notification that a previously unresponsive renderer has become
   // responsive again. The delegate can use this notification to end the

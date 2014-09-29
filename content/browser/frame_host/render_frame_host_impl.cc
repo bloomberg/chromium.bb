@@ -149,6 +149,12 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
 
 }  // namespace
 
+// static
+bool RenderFrameHostImpl::IsRFHStateActive(RenderFrameHostImplState rfh_state) {
+  return rfh_state == STATE_DEFAULT;
+}
+
+// static
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
   return RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
@@ -177,15 +183,23 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
-      is_swapped_out_(is_swapped_out),
       render_frame_created_(false),
       navigations_suspended_(false),
+      is_waiting_for_beforeunload_ack_(false),
+      unload_ack_is_for_cross_site_transition_(false),
       weak_ptr_factory_(this) {
   frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_),
       this));
+
+  if (is_swapped_out) {
+    rfh_state_ = STATE_SWAPPED_OUT;
+  } else {
+    rfh_state_ = STATE_DEFAULT;
+    GetSiteInstance()->increment_active_frame_count();
+  }
 
   if (GetProcess()->GetServiceRegistry()) {
     RenderFrameSetupPtr setup;
@@ -196,6 +210,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
     service_registry_.BindRemoteServiceProvider(
         service_provider.PassMessagePipe());
   }
+
+  swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
+      &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -208,6 +225,11 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   FrameAccessibility::GetInstance()->OnRenderFrameHostDestroyed(this);
 
+  // If this was swapped out, it already decremented the active frame count of
+  // the SiteInstance it belongs to.
+  if (IsRFHStateActive(rfh_state_))
+    GetSiteInstance()->decrement_active_frame_count();
+
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
   frame_tree_->UnregisterRenderFrameHost(this);
@@ -217,7 +239,7 @@ int RenderFrameHostImpl::GetRoutingID() {
   return routing_id_;
 }
 
-SiteInstance* RenderFrameHostImpl::GetSiteInstance() {
+SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
   return render_view_host_->GetSiteInstance();
 }
 
@@ -300,7 +322,7 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
   // Route IPCs through the RenderFrameProxyHost when in swapped out state.
   // Note: For subframes in --site-per-process mode, we don't use swapped out
   // RenderFrameHosts.
-  if (frame_tree_node_->IsMainFrame() && render_view_host_->IsSwappedOut()) {
+  if (frame_tree_node_->IsMainFrame() && is_swapped_out()) {
     DCHECK(render_frame_proxy_host_);
     return render_frame_proxy_host_->Send(message);
   }
@@ -309,12 +331,9 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
-  // Filter out most IPC messages if this renderer is swapped out.
+  // Filter out most IPC messages if this frame is swapped out.
   // We still want to handle certain ACKs to keep our state consistent.
-  // TODO(nasko): Only check RenderViewHost state, as this object's own state
-  // isn't yet properly updated. Transition this check once the swapped out
-  // state is correct in RenderFrameHost itself.
-  if (render_view_host_->IsSwappedOut()) {
+  if (is_swapped_out()) {
     if (!SwappedOutMessages::CanHandleWhileSwappedOut(msg)) {
       // If this is a synchronous message and we decided not to handle it,
       // we must send an error reply, or else the renderer will be stuck
@@ -669,8 +688,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // We do not want to cancel the pending navigation in this case, since the
   // old page will soon be stopped.  Instead, treat this as a beforeunload ack
   // to allow the pending navigation to continue.
-  if (render_view_host_->is_waiting_for_beforeunload_ack_ &&
-      render_view_host_->unload_ack_is_for_cross_site_transition_ &&
+  if (is_waiting_for_beforeunload_ack_ &&
+      unload_ack_is_for_cross_site_transition_ &&
       ui::PageTransitionIsMainFrame(validated_params.transition)) {
     OnBeforeUnloadACK(true, send_before_unload_start_time_,
                       base::TimeTicks::Now());
@@ -682,7 +701,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // unload request.  It will either respond to the unload request soon or our
   // timer will expire.  Either way, we should ignore this message, because we
   // have already committed to closing this renderer.
-  if (render_view_host_->IsWaitingForUnloadACK())
+  if (IsWaitingForUnloadACK())
     return;
 
   RenderProcessHost* process = GetProcess();
@@ -764,20 +783,14 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
   // to be fixed when RenderViewHostImpl::OnSwapOut moves to RenderFrameHost.
   TRACE_EVENT_ASYNC_BEGIN0("navigation", "RenderFrameHostImpl::SwapOut", this);
 
-  // TODO(creis): Move swapped out state to RFH.  Until then, only update it
-  // when swapping out the main frame.
-  if (!GetParent()) {
-    // If this RenderViewHost is not in the default state, it must have already
-    // gone through this, therefore just return.
-    if (render_view_host_->rvh_state_ != RenderViewHostImpl::STATE_DEFAULT)
-      return;
+  // If this RenderFrameHost is not in the default state, it must have already
+  // gone through this, therefore just return.
+  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT)
+    return;
 
-    render_view_host_->SetState(
-        RenderViewHostImpl::STATE_PENDING_SWAP_OUT);
-    render_view_host_->unload_event_monitor_timeout_->Start(
-        base::TimeDelta::FromMilliseconds(
-            RenderViewHostImpl::kUnloadTimeoutMS));
-  }
+  SetState(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT);
+  swapout_event_monitor_timeout_->Start(
+      base::TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
 
   set_render_frame_proxy_host(proxy);
 
@@ -786,8 +799,6 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
 
   if (!GetParent())
     delegate_->SwappedOut(this);
-  else
-    set_swapped_out(true);
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(
@@ -796,12 +807,12 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     const base::TimeTicks& renderer_before_unload_end_time) {
   TRACE_EVENT_ASYNC_END0(
       "navigation", "RenderFrameHostImpl::BeforeUnload", this);
-  // TODO(creis): Support properly beforeunload on subframes. For now just
-  // pretend that the handler ran and allowed the navigation to proceed.
+  // TODO(creis): Support beforeunload on subframes.  For now just pretend that
+  // the handler ran and allowed the navigation to proceed.
   if (GetParent()) {
-    render_view_host_->is_waiting_for_beforeunload_ack_ = false;
+    is_waiting_for_beforeunload_ack_ = false;
     frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-        render_view_host_->unload_ack_is_for_cross_site_transition_, proceed,
+        unload_ack_is_for_cross_site_transition_, proceed,
         renderer_before_unload_end_time);
     return;
   }
@@ -816,11 +827,11 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   // happen when pending cross-site navigation is canceled by a second one just
   // before OnDidCommitProvisionalLoad while current RVH is waiting for commit
   // but second navigation is started from the beginning.
-  if (!render_view_host_->is_waiting_for_beforeunload_ack_) {
+  if (!is_waiting_for_beforeunload_ack_) {
     return;
   }
 
-  render_view_host_->is_waiting_for_beforeunload_ack_ = false;
+  is_waiting_for_beforeunload_ack_ = false;
 
   base::TimeTicks before_unload_end_time;
   if (!send_before_unload_start_time_.is_null() &&
@@ -858,7 +869,7 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
         is_skew_additive);
   }
   frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-      render_view_host_->unload_ack_is_for_cross_site_transition_, proceed,
+      unload_ack_is_for_cross_site_transition_, proceed,
       before_unload_end_time);
 
   // If canceled, notify the delegate to cancel its pending navigation entry.
@@ -866,15 +877,36 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     render_view_host_->GetDelegate()->DidCancelLoading();
 }
 
-void RenderFrameHostImpl::OnSwapOutACK() {
-  OnSwappedOut(false);
-  TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
+bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
+  return render_view_host_->is_waiting_for_close_ack_ ||
+      rfh_state_ == STATE_PENDING_SHUTDOWN ||
+      rfh_state_ == STATE_PENDING_SWAP_OUT;
 }
 
-void RenderFrameHostImpl::OnSwappedOut(bool timed_out) {
-  // For now, we only need to update the RVH state machine for top-level swaps.
-  if (!GetParent())
-    render_view_host_->OnSwappedOut(timed_out);
+void RenderFrameHostImpl::OnSwapOutACK() {
+  OnSwappedOut();
+}
+
+void RenderFrameHostImpl::OnSwappedOut() {
+  // Ignore spurious swap out ack.
+  if (rfh_state_ != STATE_PENDING_SWAP_OUT &&
+      rfh_state_ != STATE_PENDING_SHUTDOWN)
+    return;
+
+  TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
+  swapout_event_monitor_timeout_->Stop();
+
+  switch (rfh_state_) {
+    case STATE_PENDING_SWAP_OUT:
+      SetState(STATE_SWAPPED_OUT);
+      break;
+    case STATE_PENDING_SHUTDOWN:
+      DCHECK(!pending_shutdown_on_swap_out_.is_null());
+      pending_shutdown_on_swap_out_.Run();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
@@ -931,7 +963,7 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
     const base::string16& message,
     bool is_reload,
     IPC::Message* reply_msg) {
-  // While a JS before unload dialog is showing, tabs in the same process
+  // While a JS beforeunload dialog is showing, tabs in the same process
   // shouldn't process input events.
   GetProcess()->SetIgnoreInputEvents(true);
   render_view_host_->StopHangMonitorTimeout();
@@ -1035,7 +1067,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if ((accessibility_mode != AccessibilityModeOff) && view &&
-      RenderViewHostImpl::IsRVHStateActive(render_view_host_->rvh_state())) {
+      RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
     if (accessibility_mode & AccessibilityModeFlagPlatform) {
       GetOrCreateBrowserAccessibilityManager();
       if (browser_accessibility_manager_)
@@ -1106,8 +1138,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetView());
-  if (view &&
-      RenderViewHostImpl::IsRVHStateActive(render_view_host_->rvh_state())) {
+  if (view && RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
     AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
     if (accessibility_mode & AccessibilityModeFlagPlatform) {
       if (!browser_accessibility_manager_) {
@@ -1146,8 +1177,39 @@ void RenderFrameHostImpl::OnHidePopup() {
 }
 #endif
 
+void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
+  // We update the number of RenderFrameHosts in a SiteInstance when the swapped
+  // out status of a RenderFrameHost gets flipped to/from active.
+  if (!IsRFHStateActive(rfh_state_) && IsRFHStateActive(rfh_state))
+    GetSiteInstance()->increment_active_frame_count();
+  else if (IsRFHStateActive(rfh_state_) && !IsRFHStateActive(rfh_state))
+    GetSiteInstance()->decrement_active_frame_count();
+
+  // The active and swapped out state of the RVH is determined by its main
+  // frame, since subframes should have their own widgets.
+  if (frame_tree_node_->IsMainFrame()) {
+    render_view_host_->set_is_active(IsRFHStateActive(rfh_state));
+    render_view_host_->set_is_swapped_out(rfh_state == STATE_SWAPPED_OUT);
+  }
+
+  // Whenever we change the RFH state to and from active or swapped out state,
+  // we should not be waiting for beforeunload or close acks.  We clear them
+  // here to be safe, since they can cause navigations to be ignored in
+  // OnDidCommitProvisionalLoad.
+  // TODO(creis): Move is_waiting_for_beforeunload_ack_ into the state machine.
+  if (rfh_state == STATE_DEFAULT ||
+      rfh_state == STATE_SWAPPED_OUT ||
+      rfh_state_ == STATE_DEFAULT ||
+      rfh_state_ == STATE_SWAPPED_OUT) {
+    is_waiting_for_beforeunload_ack_ = false;
+    render_view_host_->is_waiting_for_close_ack_ = false;
+  }
+  rfh_state_ = rfh_state;
+}
+
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
-  render_view_host_->SetPendingShutdown(on_swap_out);
+  pending_shutdown_on_swap_out_ = on_swap_out;
+  SetState(STATE_PENDING_SHUTDOWN);
 }
 
 bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
@@ -1186,8 +1248,8 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
     suspended_nav_params_.reset(new FrameMsg_Navigate_Params(params));
   } else {
     // Get back to a clean state, in case we start a new navigation without
-    // completing a RVH swap or unload handler.
-    render_view_host_->SetState(RenderViewHostImpl::STATE_DEFAULT);
+    // completing a RFH swap or unload handler.
+    SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
     Send(new FrameMsg_Navigate(routing_id_, params));
   }
@@ -1230,9 +1292,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   // TODO(creis): Support subframes.
   if (GetParent() || !IsRenderFrameLive()) {
     // We don't have a live renderer, so just skip running beforeunload.
-    render_view_host_->is_waiting_for_beforeunload_ack_ = true;
-    render_view_host_->unload_ack_is_for_cross_site_transition_ =
-        for_cross_site_transition;
+    is_waiting_for_beforeunload_ack_ = true;
+    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     base::TimeTicks now = base::TimeTicks::Now();
     OnBeforeUnloadACK(true, now, now);
     return;
@@ -1241,22 +1302,20 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if she clicks the tab close button then the browser close
   // button), and we only send the message once.
-  if (render_view_host_->is_waiting_for_beforeunload_ack_) {
+  if (is_waiting_for_beforeunload_ack_) {
     // Some of our close messages could be for the tab, others for cross-site
     // transitions. We always want to think it's for closing the tab if any
     // of the messages were, since otherwise it might be impossible to close
     // (if there was a cross-site "close" request pending when the user clicked
     // the close button). We want to keep the "for cross site" flag only if
     // both the old and the new ones are also for cross site.
-    render_view_host_->unload_ack_is_for_cross_site_transition_ =
-        render_view_host_->unload_ack_is_for_cross_site_transition_ &&
-        for_cross_site_transition;
+    unload_ack_is_for_cross_site_transition_ =
+        unload_ack_is_for_cross_site_transition_ && for_cross_site_transition;
   } else {
     // Start the hang monitor in case the renderer hangs in the beforeunload
     // handler.
-    render_view_host_->is_waiting_for_beforeunload_ack_ = true;
-    render_view_host_->unload_ack_is_for_cross_site_transition_ =
-        for_cross_site_transition;
+    is_waiting_for_beforeunload_ack_ = true;
+    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     // Increment the in-flight event count, to ensure that input events won't
     // cancel the timeout timer.
     render_view_host_->increment_in_flight_event_count();
@@ -1282,8 +1341,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
     const base::string16& user_input,
     bool dialog_was_suppressed) {
   GetProcess()->SetIgnoreInputEvents(false);
-  bool is_waiting = render_view_host_->is_waiting_for_beforeunload_ack() ||
-                    render_view_host_->IsWaitingForUnloadACK();
+  bool is_waiting = is_waiting_for_beforeunload_ack_ || IsWaitingForUnloadACK();
 
   // If we are executing as part of (before)unload event handling, we don't
   // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
@@ -1306,10 +1364,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // This must be done after sending the reply since RenderView can't close
   // correctly while waiting for a response.
   if (is_waiting && dialog_was_suppressed)
-    render_view_host_->delegate_->RendererUnresponsive(
-        render_view_host_,
-        render_view_host_->is_waiting_for_beforeunload_ack(),
-        render_view_host_->IsWaitingForUnloadACK());
+    render_view_host_->delegate_->RendererUnresponsive(render_view_host_);
 }
 
 void RenderFrameHostImpl::NotificationClosed(int notification_id) {
@@ -1452,7 +1507,7 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
     // There's navigation message params waiting to be sent. Now that we're not
     // suspended anymore, resume navigation by sending them. If we were swapped
     // out, we should also stop filtering out the IPC messages now.
-    render_view_host_->SetState(RenderViewHostImpl::STATE_DEFAULT);
+    SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
     DCHECK(!proceed_time.is_null());
     suspended_nav_params_->browser_navigation_start = proceed_time;

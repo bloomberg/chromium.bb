@@ -53,6 +53,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       int page_id,
       const GURL& url,
       ui::PageTransition transition) OVERRIDE;
+  virtual void SendBeforeUnloadACK(bool proceed) OVERRIDE;
+  virtual void SimulateSwapOutACK() OVERRIDE;
 
   void SendNavigate(int page_id, const GURL& url);
   void SendFailedNavigate(int page_id, const GURL& url);
