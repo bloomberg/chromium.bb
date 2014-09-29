@@ -1,21 +1,25 @@
 ￼
 ￼
 ￼
-￼
+99
 111
 999
-1234
 1111
 9999
+11111
+99999
+123456
+111111
+999999
 This is a testharness.js-based test.
 PASS Numbers expected to be laid out in one combining block 
 PASS Numbers expected to be laid out in one combining block 
 PASS Numbers expected to be laid out in one combining block 
-PASS Numbers expected to be laid out in one combining block 
-PASS Number laid out vertically, not combined. 
-PASS Number laid out vertically, not combined. 
-PASS Number laid out vertically, not combined. 
-PASS Number laid out vertically, not combined. 
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 26.6953125
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 36.48046875
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 40.04296875
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 48.046875
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 53.390625
 PASS Number laid out vertically, not combined. 
 Harness: the test ran to completion.
 
