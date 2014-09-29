@@ -58,6 +58,7 @@ class ChromeMetricsServiceClient
   // metrics::MetricsServiceClient:
   virtual void SetMetricsClientId(const std::string& client_id) OVERRIDE;
   virtual bool IsOffTheRecordSessionActive() OVERRIDE;
+  virtual int32 GetProduct() OVERRIDE;
   virtual std::string GetApplicationLocale() OVERRIDE;
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual metrics::SystemProfileProto::Channel GetChannel() OVERRIDE;

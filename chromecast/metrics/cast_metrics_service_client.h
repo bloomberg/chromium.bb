@@ -43,6 +43,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   // metrics::MetricsServiceClient implementation:
   virtual void SetMetricsClientId(const std::string& client_id) OVERRIDE;
   virtual bool IsOffTheRecordSessionActive() OVERRIDE;
+  virtual int32_t GetProduct() OVERRIDE;
   virtual std::string GetApplicationLocale() OVERRIDE;
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual ::metrics::SystemProfileProto::Channel GetChannel() OVERRIDE;

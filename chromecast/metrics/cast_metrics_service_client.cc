@@ -54,6 +54,11 @@ bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
   return false;
 }
 
+int32_t CastMetricsServiceClient::GetProduct() {
+  // Chromecast currently uses the same product identifier as Chrome.
+  return metrics::ChromeUserMetricsExtension::CHROME;
+}
+
 std::string CastMetricsServiceClient::GetApplicationLocale() {
   return base::i18n::GetConfiguredLocale();
 }

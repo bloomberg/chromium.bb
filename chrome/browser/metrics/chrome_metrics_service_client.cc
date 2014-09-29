@@ -179,6 +179,10 @@ bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
   return chrome::IsOffTheRecordSessionActive();
 }
 
+int32 ChromeMetricsServiceClient::GetProduct() {
+  return metrics::ChromeUserMetricsExtension::CHROME;
+}
+
 std::string ChromeMetricsServiceClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }

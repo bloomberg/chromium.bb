@@ -46,26 +46,26 @@ class TestMetricsLog : public MetricsLog {
   TestMetricsLog(const std::string& client_id,
                  int session_id,
                  LogType log_type,
-                 metrics::MetricsServiceClient* client,
+                 MetricsServiceClient* client,
                  TestingPrefServiceSimple* prefs)
       : MetricsLog(client_id, session_id, log_type, client, prefs),
         prefs_(prefs) {
     InitPrefs();
- }
+  }
 
   virtual ~TestMetricsLog() {}
 
-  const metrics::ChromeUserMetricsExtension& uma_proto() const {
+  const ChromeUserMetricsExtension& uma_proto() const {
     return *MetricsLog::uma_proto();
   }
 
-  const metrics::SystemProfileProto& system_profile() const {
+  const SystemProfileProto& system_profile() const {
     return uma_proto().system_profile();
   }
 
  private:
   void InitPrefs() {
-    prefs_->SetString(metrics::prefs::kMetricsReportingEnabledTimestamp,
+    prefs_->SetString(prefs::kMetricsReportingEnabledTimestamp,
                       base::Int64ToString(kEnabledDate));
   }
 
@@ -91,7 +91,7 @@ class MetricsLogTest : public testing::Test {
  public:
   MetricsLogTest() {
     MetricsLog::RegisterPrefs(prefs_.registry());
-    metrics::MetricsStateManager::RegisterPrefs(prefs_.registry());
+    MetricsStateManager::RegisterPrefs(prefs_.registry());
   }
 
   virtual ~MetricsLogTest() {
@@ -100,30 +100,30 @@ class MetricsLogTest : public testing::Test {
  protected:
   // Check that the values in |system_values| correspond to the test data
   // defined at the top of this file.
-  void CheckSystemProfile(const metrics::SystemProfileProto& system_profile) {
+  void CheckSystemProfile(const SystemProfileProto& system_profile) {
     EXPECT_EQ(kInstallDateExpected, system_profile.install_date());
     EXPECT_EQ(kEnabledDateExpected, system_profile.uma_enabled_date());
 
     ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
               static_cast<size_t>(system_profile.field_trial_size()));
     for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
-      const metrics::SystemProfileProto::FieldTrial& field_trial =
+      const SystemProfileProto::FieldTrial& field_trial =
           system_profile.field_trial(i);
       EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
       EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
     }
     // Verify the right data is present for the synthetic trials.
     for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
-      const metrics::SystemProfileProto::FieldTrial& field_trial =
+      const SystemProfileProto::FieldTrial& field_trial =
           system_profile.field_trial(i + arraysize(kFieldTrialIds));
       EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
       EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
     }
 
-    EXPECT_EQ(metrics::TestMetricsServiceClient::kBrandForTesting,
+    EXPECT_EQ(TestMetricsServiceClient::kBrandForTesting,
               system_profile.brand_code());
 
-    const metrics::SystemProfileProto::Hardware& hardware =
+    const SystemProfileProto::Hardware& hardware =
         system_profile.hardware();
 
     EXPECT_TRUE(hardware.has_cpu());
@@ -378,8 +378,32 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
 TEST_F(MetricsLogTest, ChromeChannelWrittenToProtobuf) {
   TestMetricsServiceClient client;
   TestMetricsLog log(
-      "user@test.com", kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   EXPECT_TRUE(log.uma_proto().system_profile().has_channel());
+}
+
+TEST_F(MetricsLogTest, ProductNotSetIfDefault) {
+  TestMetricsServiceClient client;
+  EXPECT_EQ(ChromeUserMetricsExtension::CHROME, client.GetProduct());
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+  // Check that the product isn't set, since it's default and also verify the
+  // default value is indeed equal to Chrome.
+  EXPECT_FALSE(log.uma_proto().has_product());
+  EXPECT_EQ(ChromeUserMetricsExtension::CHROME, log.uma_proto().product());
+}
+
+TEST_F(MetricsLogTest, ProductSetIfNotDefault) {
+  const int32_t kTestProduct = 100;
+  EXPECT_NE(ChromeUserMetricsExtension::CHROME, kTestProduct);
+
+  TestMetricsServiceClient client;
+  client.set_product(kTestProduct);
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+  // Check that the product is set to |kTestProduct|.
+  EXPECT_TRUE(log.uma_proto().has_product());
+  EXPECT_EQ(kTestProduct, log.uma_proto().product());
 }
 
 }  // namespace metrics

@@ -23,6 +23,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   // MetricsServiceClient:
   virtual void SetMetricsClientId(const std::string& client_id) OVERRIDE;
   virtual bool IsOffTheRecordSessionActive() OVERRIDE;
+  virtual int32_t GetProduct() OVERRIDE;
   virtual std::string GetApplicationLocale() OVERRIDE;
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual SystemProfileProto::Channel GetChannel() OVERRIDE;
@@ -39,10 +40,12 @@ class TestMetricsServiceClient : public MetricsServiceClient {
 
   const std::string& get_client_id() const { return client_id_; }
   void set_version_string(const std::string& str) { version_string_ = str; }
+  void set_product(int32_t product) { product_ = product; }
 
  private:
   std::string client_id_;
   std::string version_string_;
+  int32_t product_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricsServiceClient);
 };
