@@ -680,6 +680,8 @@ class GPU_EXPORT TextureManager {
       GLint level,
       gfx::GLImage* image);
 
+  size_t GetSignatureSize() const;
+
   void AddToSignature(
       TextureRef* ref,
       GLenum target,

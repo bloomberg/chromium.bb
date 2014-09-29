@@ -69,6 +69,7 @@ class GPU_EXPORT Renderbuffer
 
   size_t EstimatedSize();
 
+  size_t GetSignatureSize() const;
   void AddToSignature(std::string* signature) const;
 
  private:

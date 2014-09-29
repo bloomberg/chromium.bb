@@ -14,6 +14,30 @@
 namespace gpu {
 namespace gles2 {
 
+// This should contain everything to uniquely identify a Renderbuffer.
+static const char RenderbufferTag[] = "|Renderbuffer|";
+struct RenderbufferSignature {
+  GLenum internal_format_;
+  GLsizei samples_;
+  GLsizei width_;
+  GLsizei height_;
+
+  // Since we will be hashing this signature structure, the padding must be
+  // zero initialized. Although the C++11 specifications specify that this is
+  // true, we will use a constructor with a memset to further enforce it instead
+  // of relying on compilers adhering to this deep dark corner specification.
+  RenderbufferSignature(GLenum internal_format,
+                        GLsizei samples,
+                        GLsizei width,
+                        GLsizei height) {
+    memset(this, 0, sizeof(RenderbufferSignature));
+    internal_format_ = internal_format;
+    samples_ = samples;
+    width_ = width;
+    height_ = height;
+  }
+};
+
 RenderbufferManager::RenderbufferManager(
     MemoryTracker* memory_tracker,
     GLint max_renderbuffer_size,
@@ -45,12 +69,21 @@ size_t Renderbuffer::EstimatedSize() {
   return size;
 }
 
-void Renderbuffer::AddToSignature(
-    std::string* signature) const {
+
+size_t Renderbuffer::GetSignatureSize() const {
+  return sizeof(RenderbufferTag) + sizeof(RenderbufferSignature);
+}
+
+void Renderbuffer::AddToSignature(std::string* signature) const {
   DCHECK(signature);
-  *signature += base::StringPrintf(
-      "|Renderbuffer|internal_format=%04x|samples=%d|width=%d|height=%d",
-      internal_format_, samples_, width_, height_);
+  RenderbufferSignature signature_data(internal_format_,
+                                       samples_,
+                                       width_,
+                                       height_);
+
+  signature->append(RenderbufferTag, sizeof(RenderbufferTag));
+  signature->append(reinterpret_cast<const char*>(&signature_data),
+                    sizeof(signature_data));
 }
 
 Renderbuffer::Renderbuffer(RenderbufferManager* manager,

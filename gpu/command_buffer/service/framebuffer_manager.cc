@@ -113,6 +113,11 @@ class RenderbufferAttachment
     return renderbuffer_.get();
   }
 
+  virtual size_t GetSignatureSize(
+      TextureManager* texture_manager) const OVERRIDE {
+    return renderbuffer_->GetSignatureSize();
+  }
+
   virtual void AddToSignature(
       TextureManager* texture_manager, std::string* signature) const OVERRIDE {
     DCHECK(signature);
@@ -237,6 +242,11 @@ class TextureAttachment
       return false;
     }
     return (need & have) != 0;
+  }
+
+  virtual size_t GetSignatureSize(
+      TextureManager* texture_manager) const OVERRIDE {
+    return texture_manager->GetSignatureSize();
   }
 
   virtual void AddToSignature(
@@ -508,14 +518,25 @@ GLenum Framebuffer::GetStatus(
   // Check if we have this combo already.
   std::string signature;
   if (allow_framebuffer_combo_complete_map_) {
-    signature = base::StringPrintf("|FBO|target=%04x", target);
+    size_t signature_size = sizeof(target);
     for (AttachmentMap::const_iterator it = attachments_.begin();
          it != attachments_.end(); ++it) {
       Attachment* attachment = it->second.get();
-      signature +=
-          base::StringPrintf("|Attachment|attachmentpoint=%04x", it->first);
+      signature_size += sizeof(it->first) +
+                        attachment->GetSignatureSize(texture_manager);
+    }
+
+    signature.reserve(signature_size);
+    signature.append(reinterpret_cast<const char*>(&target), sizeof(target));
+
+    for (AttachmentMap::const_iterator it = attachments_.begin();
+         it != attachments_.end(); ++it) {
+      Attachment* attachment = it->second.get();
+      signature.append(reinterpret_cast<const char*>(&it->first),
+                       sizeof(it->first));
       attachment->AddToSignature(texture_manager, &signature);
     }
+    DCHECK(signature.size() == signature_size);
 
     if (!framebuffer_combo_complete_map_) {
       framebuffer_combo_complete_map_ = new FramebufferComboCompleteMap();
@@ -564,8 +585,6 @@ void Framebuffer::SetDrawBuffers(GLsizei n, const GLenum* bufs) {
   for (GLsizei i = 0; i < n; ++i)
     draw_buffers_[i] = bufs[i];
 }
-
-
 
 bool Framebuffer::HasAlphaMRT() const {
   for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i) {

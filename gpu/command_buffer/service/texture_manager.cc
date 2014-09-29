@@ -21,6 +21,72 @@
 namespace gpu {
 namespace gles2 {
 
+// This should contain everything to uniquely identify a Texture.
+static const char TextureTag[] = "|Texture|";
+struct TextureSignature {
+  GLenum target_;
+  GLint level_;
+  GLenum min_filter_;
+  GLenum mag_filter_;
+  GLenum wrap_s_;
+  GLenum wrap_t_;
+  GLenum usage_;
+  GLenum internal_format_;
+  GLsizei width_;
+  GLsizei height_;
+  GLsizei depth_;
+  GLint border_;
+  GLenum format_;
+  GLenum type_;
+  bool has_image_;
+  bool can_render_;
+  bool can_render_to_;
+  bool npot_;
+
+  // Since we will be hashing this signature structure, the padding must be
+  // zero initialized. Although the C++11 specifications specify that this is
+  // true, we will use a constructor with a memset to further enforce it instead
+  // of relying on compilers adhering to this deep dark corner specification.
+  TextureSignature(GLenum target,
+                   GLint level,
+                   GLenum min_filter,
+                   GLenum mag_filter,
+                   GLenum wrap_s,
+                   GLenum wrap_t,
+                   GLenum usage,
+                   GLenum internal_format,
+                   GLsizei width,
+                   GLsizei height,
+                   GLsizei depth,
+                   GLint border,
+                   GLenum format,
+                   GLenum type,
+                   bool has_image,
+                   bool can_render,
+                   bool can_render_to,
+                   bool npot) {
+    memset(this, 0, sizeof(TextureSignature));
+    target_ = target;
+    level_ = level;
+    min_filter_ = min_filter;
+    mag_filter_ = mag_filter;
+    wrap_s_ = wrap_s;
+    wrap_t_ = wrap_t;
+    usage_ = usage;
+    internal_format_ = internal_format;
+    width_ = width;
+    height_ = height;
+    depth_ = depth;
+    border_ = border;
+    format_ = format;
+    type_ = type;
+    has_image_ = has_image;
+    can_render_ = can_render;
+    can_render_to_ = can_render_to;
+    npot_ = npot;
+  }
+};
+
 TextureManager::DestructionObserver::DestructionObserver() {}
 
 TextureManager::DestructionObserver::~DestructionObserver() {}
@@ -218,20 +284,32 @@ void Texture::AddToSignature(
             level_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             level_infos_[face_index].size());
+
   const Texture::LevelInfo& info =
       level_infos_[face_index][level];
-  *signature += base::StringPrintf(
-      "|Texture|target=%04x|level=%d|internal_format=%04x"
-      "|width=%d|height=%d|depth=%d|border=%d|format=%04x|type=%04x"
-      "|image=%d|canrender=%d|canrenderto=%d|npot_=%d"
-      "|min_filter=%04x|mag_filter=%04x|wrap_s=%04x|wrap_t=%04x"
-      "|usage=%04x",
-      target, level, info.internal_format,
-      info.width, info.height, info.depth, info.border,
-      info.format, info.type, info.image.get() != NULL,
-      CanRender(feature_info), CanRenderTo(), npot_,
-      min_filter_, mag_filter_, wrap_s_, wrap_t_,
-      usage_);
+
+  TextureSignature signature_data(target,
+                                  level,
+                                  min_filter_,
+                                  mag_filter_,
+                                  wrap_s_,
+                                  wrap_t_,
+                                  usage_,
+                                  info.internal_format,
+                                  info.width,
+                                  info.height,
+                                  info.depth,
+                                  info.border,
+                                  info.format,
+                                  info.type,
+                                  info.image.get() != NULL,
+                                  CanRender(feature_info),
+                                  CanRenderTo(),
+                                  npot_);
+
+  signature->append(TextureTag, sizeof(TextureTag));
+  signature->append(reinterpret_cast<const char*>(&signature_data),
+                    sizeof(signature_data));
 }
 
 void Texture::SetMailboxManager(MailboxManager* mailbox_manager) {
@@ -1265,6 +1343,10 @@ void TextureManager::SetLevelImage(
     gfx::GLImage* image) {
   DCHECK(ref);
   ref->texture()->SetLevelImage(feature_info_.get(), target, level, image);
+}
+
+size_t TextureManager::GetSignatureSize() const {
+  return sizeof(TextureTag) + sizeof(TextureSignature);
 }
 
 void TextureManager::AddToSignature(
