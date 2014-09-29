@@ -47,7 +47,7 @@ class StartupMetric(Metric):
     tab_load_times = []
     TabLoadTime = collections.namedtuple(
         'TabLoadTime',
-        ['load_start_ms', 'load_duration_ms'])
+        ['load_start_ms', 'load_duration_ms', 'request_start_ms'])
 
     def RecordTabLoadTime(t):
       try:
@@ -65,9 +65,15 @@ class StartupMetric(Metric):
           print "Page: ", tab_title, " didn't finish loading."
           return
 
+        perf_timing = t.EvaluateJavaScript('window.performance.timing')
+        if 'requestStart' not in perf_timing:
+          perf_timing['requestStart'] = 0  # Exclude from benchmark results
+          print 'requestStart is not supported by this browser'
+
         tab_load_times.append(TabLoadTime(
             int(result['load_start_ms']),
-            int(result['load_duration_ms'])))
+            int(result['load_duration_ms']),
+            int(perf_timing['requestStart'])))
       except util.TimeoutException:
         # Low memory Android devices may not be able to load more than
         # one tab at a time, so may timeout when the test attempts to
@@ -88,6 +94,10 @@ class StartupMetric(Metric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'foreground_tab_load_complete', 'ms',
         foreground_tab_load_complete))
+    if (foreground_tab_stats.request_start_ms > 0):
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'foreground_tab_request_start', 'ms',
+          foreground_tab_stats.request_start_ms - browser_main_entry_time_ms))
 
   def AddResults(self, tab, results):
     get_histogram_js = 'statsCollectionController.getBrowserHistogram("%s")'
