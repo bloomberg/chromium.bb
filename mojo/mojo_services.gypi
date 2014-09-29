@@ -457,8 +457,10 @@
       'type': 'static_library',
       'sources': [
         'services/public/interfaces/network/cookie_store.mojom',
+        'services/public/interfaces/network/net_address.mojom',
         'services/public/interfaces/network/network_error.mojom',
         'services/public/interfaces/network/network_service.mojom',
+        'services/public/interfaces/network/udp_socket.mojom',
         'services/public/interfaces/network/url_loader.mojom',
         'services/public/interfaces/network/web_socket.mojom',
       ],

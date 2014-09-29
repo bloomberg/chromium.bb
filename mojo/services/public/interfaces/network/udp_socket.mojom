@@ -1,0 +1,74 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "mojo/services/public/interfaces/network/net_address.mojom"
+import "mojo/services/public/interfaces/network/network_error.mojom"
+
+module mojo {
+
+// UDPSocket and UDPSocketClient represent a UDP socket and its client. The
+// typical flow of using the interfaces is:
+// - Acquire a UDPSocket interface pointer and set a UDPSocketClient instance.
+// - (optional) Set options which are allowed prior to Bind().
+// - Bind the socket.
+// - (optional) Set options which are allowed after Bind().
+// - Send / request to receive packets. Received packets will be delivered to
+//   UDPSocketClient.OnReceived().
+[Client=UDPSocketClient]
+interface UDPSocket {
+  // Allows the socket to share the local address to which it will be bound with
+  // other processes. Should be called before Bind().
+  // (This is equivalent to SO_REUSEADDR of the POSIX socket API.)
+  AllowAddressReuse() => (NetworkError result);
+
+  // Binds the socket to the given address.
+  // |bound_addr| is non-NULL on success. It might not be the same as |addr|.
+  // For example, if port 0 is used in |addr|, a random port is picked and
+  // returned in |bound_addr|.
+  Bind(NetAddress addr) => (NetworkError result, NetAddress? bound_addr);
+
+  // Sets the send buffer size (in bytes) for the socket. The socket must be
+  // bound.
+  //
+  // Note: This is only treated as a hint. Even if it succeeds, the service
+  // doesn't guarantee it will conform to the size.
+  SetSendBufferSize(uint32 size) => (NetworkError result);
+
+  // Sets the receive buffer size (in bytes) for the socket. The socket must be
+  // bound.
+  //
+  // Note: This is only treated as a hint. Even if it succeeds, the service
+  // doesn't guarantee it will conform to the size.
+  SetReceiveBufferSize(uint32 size) => (NetworkError result);
+
+  // Notifies that the client is ready to accept |number| of packets.
+  // Correspondingly, OnReceived() of the UDPSocketClient interface will be
+  // called |number| times (errors also count), unless the connection is closed
+  // before that. The socket must be bound.
+  //
+  // It is allowed to call this method again before the previous request is
+  // completely satisfied. For example:
+  //   service->ReceiveMorePackets(3);
+  //   ...
+  //   // OnReceived() is called.
+  //   // OnReceived() is called.
+  //   ...
+  //   service->ReceiveMorePackets(3);
+  //   // The client expects 4 more calls to OnReceived().
+  ReceiveMorePackets(uint32 number);
+
+  // Sends data to the specified destination. The socket must be bound.
+  // The method doesn't report the result of the operation.
+  SendToAndForget(NetAddress addr, uint8[] data);
+
+  // Sends data to the specified destination. The socket must be bound.
+  SendTo(NetAddress addr, uint8[] data) => (NetworkError result);
+};
+
+interface UDPSocketClient {
+  // |addr| and |data| are non-NULL on success.
+  OnReceived(NetworkError result, NetAddress? addr, uint8[]? data);
+};
+
+}
