@@ -12,20 +12,23 @@ namespace chromecast {
 CastService* CastService::Create(
     content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context_getter,
-    shell::CastNetworkDelegate* network_delegate) {
-  return new CastServiceAndroid(browser_context);
+    shell::CastNetworkDelegate* network_delegate,
+    const OptInStatsChangedCallback& opt_in_stats_callback) {
+  return new CastServiceAndroid(browser_context, opt_in_stats_callback);
 }
 
-CastServiceAndroid::CastServiceAndroid(content::BrowserContext* browser_context)
-    : CastService(browser_context) {
+CastServiceAndroid::CastServiceAndroid(
+    content::BrowserContext* browser_context,
+    const OptInStatsChangedCallback& opt_in_stats_callback)
+    : CastService(browser_context, opt_in_stats_callback) {
 }
 
 CastServiceAndroid::~CastServiceAndroid() {
 }
 
 void CastServiceAndroid::Initialize() {
-  // TODO(gunsch): Wire this the SendUsageStatsChanged callback once
-  // CastService::Delegate is added.
+  android::ChromecastConfigAndroid::GetInstance()->
+      SetSendUsageStatsChangedCallback(opt_in_stats_callback());
 }
 
 void CastServiceAndroid::StartInternal() {

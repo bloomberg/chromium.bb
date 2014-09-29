@@ -20,7 +20,8 @@ namespace chromecast {
 
 class CastServiceSimple : public CastService {
  public:
-  explicit CastServiceSimple(content::BrowserContext* browser_context);
+  CastServiceSimple(content::BrowserContext* browser_context,
+                    const OptInStatsChangedCallback& opt_in_stats_callback);
   virtual ~CastServiceSimple();
 
  protected:

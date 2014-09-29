@@ -73,12 +73,15 @@ class FillLayout : public aura::LayoutManager {
 CastService* CastService::Create(
     content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context_getter,
-    shell::CastNetworkDelegate* network_delegate) {
-  return new CastServiceSimple(browser_context);
+    shell::CastNetworkDelegate* network_delegate,
+    const OptInStatsChangedCallback& opt_in_stats_callback) {
+  return new CastServiceSimple(browser_context, opt_in_stats_callback);
 }
 
-CastServiceSimple::CastServiceSimple(content::BrowserContext* browser_context)
-    : CastService(browser_context) {
+CastServiceSimple::CastServiceSimple(
+    content::BrowserContext* browser_context,
+    const OptInStatsChangedCallback& opt_in_stats_callback)
+    : CastService(browser_context, opt_in_stats_callback) {
 }
 
 CastServiceSimple::~CastServiceSimple() {

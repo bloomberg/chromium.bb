@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_SERVICE_CAST_SERVICE_H_
 #define CHROMECAST_SERVICE_CAST_SERVICE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -27,6 +28,10 @@ class CastNetworkDelegate;
 
 class CastService {
  public:
+  // A callback that will be invoked when the user changes the opt-in stats
+  // value.
+  typedef base::Callback<void(bool)> OptInStatsChangedCallback;
+
   // Create() takes a separate url request context getter because the request
   // context getter obtained through the browser context might not be
   // appropriate for the url requests made by the cast service/reciever.
@@ -36,7 +41,8 @@ class CastService {
   static CastService* Create(
       content::BrowserContext* browser_context,
       net::URLRequestContextGetter* request_context_getter,
-      shell::CastNetworkDelegate* network_delegate);
+      shell::CastNetworkDelegate* network_delegate,
+      const OptInStatsChangedCallback& opt_in_stats_callback);
 
   virtual ~CastService();
 
@@ -45,7 +51,8 @@ class CastService {
   void Stop();
 
  protected:
-  explicit CastService(content::BrowserContext* browser_context);
+  CastService(content::BrowserContext* browser_context,
+              const OptInStatsChangedCallback& opt_in_stats_callback);
   virtual void Initialize() = 0;
 
   // Implementation-specific start/stop behavior.
@@ -53,11 +60,14 @@ class CastService {
   virtual void StopInternal() = 0;
 
   content::BrowserContext* browser_context() const { return browser_context_; }
+  const OptInStatsChangedCallback& opt_in_stats_callback() const {
+    return opt_in_stats_callback_;
+  }
 
  private:
   content::BrowserContext* const browser_context_;
+  const OptInStatsChangedCallback opt_in_stats_callback_;
   bool stopped_;
-
   const scoped_ptr<base::ThreadChecker> thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CastService);

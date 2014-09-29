@@ -15,6 +15,7 @@
 class PrefService;
 
 namespace base {
+class MessageLoopProxy;
 class TaskRunner;
 }
 
@@ -69,6 +70,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 
   scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
   scoped_ptr< ::metrics::MetricsService> metrics_service_;
+  scoped_refptr<base::MessageLoopProxy> metrics_service_loop_;
   net::URLRequestContextGetter* request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);

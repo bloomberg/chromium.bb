@@ -9,8 +9,11 @@
 
 namespace chromecast {
 
-CastService::CastService(content::BrowserContext* browser_context)
+CastService::CastService(
+    content::BrowserContext* browser_context,
+    const OptInStatsChangedCallback& opt_in_stats_callback)
     : browser_context_(browser_context),
+      opt_in_stats_callback_(opt_in_stats_callback),
       stopped_(true),
       thread_checker_(new base::ThreadChecker()) {
 }

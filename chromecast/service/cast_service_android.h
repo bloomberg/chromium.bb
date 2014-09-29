@@ -12,7 +12,8 @@ namespace chromecast {
 
 class CastServiceAndroid : public CastService {
  public:
-  explicit CastServiceAndroid(content::BrowserContext* browser_context);
+  CastServiceAndroid(content::BrowserContext* browser_context,
+                     const OptInStatsChangedCallback& opt_in_stats_callback);
   virtual ~CastServiceAndroid();
 
  protected:

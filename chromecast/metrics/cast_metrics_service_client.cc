@@ -105,6 +105,15 @@ CastMetricsServiceClient::CreateUploader(
 }
 
 void CastMetricsServiceClient::EnableMetricsService(bool enabled) {
+  if (!metrics_service_loop_->BelongsToCurrentThread()) {
+    metrics_service_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&CastMetricsServiceClient::EnableMetricsService,
+                   base::Unretained(this),
+                   enabled));
+    return;
+  }
+
   if (enabled) {
     metrics_service_->Start();
   } else {
@@ -126,6 +135,7 @@ CastMetricsServiceClient::CastMetricsServiceClient(
           metrics_state_manager_.get(),
           this,
           pref_service)),
+      metrics_service_loop_(base::MessageLoopProxy::current()),
       request_context_(request_context) {
   // Always create a client id as it may also be used by crash reporting,
   // (indirectly) included in feedback, and can be queried during setup.
