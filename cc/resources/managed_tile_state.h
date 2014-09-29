@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/platform_color.h"
-#include "cc/resources/raster_mode.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
@@ -38,12 +37,13 @@ scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin);
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
  public:
-  class CC_EXPORT TileVersion {
+  // This class holds all the state relevant to drawing a tile.
+  class CC_EXPORT DrawInfo {
    public:
     enum Mode { RESOURCE_MODE, SOLID_COLOR_MODE, PICTURE_PILE_MODE };
 
-    TileVersion();
-    ~TileVersion();
+    DrawInfo();
+    ~DrawInfo();
 
     Mode mode() const { return mode_; }
 
@@ -73,8 +73,6 @@ class CC_EXPORT ManagedTileState {
 
     inline bool has_resource() const { return !!resource_; }
 
-    size_t GPUMemoryUsageInBytes() const;
-
     void SetSolidColorForTesting(SkColor color) { set_solid_color(color); }
     void SetResourceForTesting(scoped_ptr<ScopedResource> resource) {
       resource_ = resource.Pass();
@@ -98,7 +96,6 @@ class CC_EXPORT ManagedTileState {
     Mode mode_;
     SkColor solid_color_;
     scoped_ptr<ScopedResource> resource_;
-    scoped_refptr<RasterTask> raster_task_;
   };
 
   ManagedTileState();
@@ -107,8 +104,8 @@ class CC_EXPORT ManagedTileState {
   void AsValueInto(base::debug::TracedValue* dict) const;
 
   // Persisted state: valid all the time.
-  TileVersion tile_versions[NUM_RASTER_MODES];
-  RasterMode raster_mode;
+  DrawInfo draw_info;
+  scoped_refptr<RasterTask> raster_task;
 
   ManagedTileBin bin;
 

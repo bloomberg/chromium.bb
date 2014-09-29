@@ -38,22 +38,24 @@ std::string ManagedTileBinToString(ManagedTileBin bin) {
 }
 
 ManagedTileState::ManagedTileState()
-    : raster_mode(LOW_QUALITY_RASTER_MODE),
-      bin(NEVER_BIN),
+    : bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       required_for_activation(false),
       priority_bin(TilePriority::EVENTUALLY),
       distance_to_visible(std::numeric_limits<float>::infinity()),
       visible_and_ready_to_draw(false),
-      scheduled_priority(0) {}
+      scheduled_priority(0) {
+}
 
-ManagedTileState::TileVersion::TileVersion()
+ManagedTileState::DrawInfo::DrawInfo()
     : mode_(RESOURCE_MODE), solid_color_(SK_ColorWHITE) {
 }
 
-ManagedTileState::TileVersion::~TileVersion() { DCHECK(!resource_); }
+ManagedTileState::DrawInfo::~DrawInfo() {
+  DCHECK(!resource_);
+}
 
-bool ManagedTileState::TileVersion::IsReadyToDraw() const {
+bool ManagedTileState::DrawInfo::IsReadyToDraw() const {
   switch (mode_) {
     case RESOURCE_MODE:
       return !!resource_;
@@ -65,21 +67,11 @@ bool ManagedTileState::TileVersion::IsReadyToDraw() const {
   return false;
 }
 
-size_t ManagedTileState::TileVersion::GPUMemoryUsageInBytes() const {
-  if (!resource_)
-    return 0;
-  return resource_->bytes();
-}
-
 ManagedTileState::~ManagedTileState() {}
 
 void ManagedTileState::AsValueInto(base::debug::TracedValue* state) const {
-  bool has_resource = false;
-  bool has_active_task = false;
-  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-    has_resource |= (tile_versions[mode].resource_.get() != 0);
-    has_active_task |= (tile_versions[mode].raster_task_.get() != 0);
-  }
+  bool has_resource = (draw_info.resource_.get() != 0);
+  bool has_active_task = (raster_task.get() != 0);
 
   bool is_using_gpu_memory = has_resource || has_active_task;
 
@@ -91,13 +83,11 @@ void ManagedTileState::AsValueInto(base::debug::TracedValue* state) const {
   state->SetDouble("distance_to_visible",
                    MathUtil::AsFloatSafely(distance_to_visible));
   state->SetBoolean("required_for_activation", required_for_activation);
-  state->SetBoolean(
-      "is_solid_color",
-      tile_versions[raster_mode].mode_ == TileVersion::SOLID_COLOR_MODE);
-  state->SetBoolean(
-      "is_transparent",
-      tile_versions[raster_mode].mode_ == TileVersion::SOLID_COLOR_MODE &&
-          !SkColorGetA(tile_versions[raster_mode].solid_color_));
+  state->SetBoolean("is_solid_color",
+                    draw_info.mode_ == DrawInfo::SOLID_COLOR_MODE);
+  state->SetBoolean("is_transparent",
+                    draw_info.mode_ == DrawInfo::SOLID_COLOR_MODE &&
+                        !SkColorGetA(draw_info.solid_color_));
   state->SetInteger("scheduled_priority", scheduled_priority);
 }
 

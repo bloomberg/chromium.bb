@@ -91,35 +91,13 @@ void Tile::AsValueInto(base::debug::TracedValue* res) const {
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {
-  size_t total_size = 0;
-  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode)
-    total_size += managed_state_.tile_versions[mode].GPUMemoryUsageInBytes();
-  return total_size;
-}
-
-RasterMode Tile::DetermineRasterModeForTree(WhichTree tree) const {
-  return DetermineRasterModeForResolution(priority(tree).resolution);
-}
-
-RasterMode Tile::DetermineOverallRasterMode() const {
-  return DetermineRasterModeForResolution(managed_state_.resolution);
-}
-
-RasterMode Tile::DetermineRasterModeForResolution(
-    TileResolution resolution) const {
-  RasterMode current_mode = managed_state_.raster_mode;
-  RasterMode raster_mode = resolution == LOW_RESOLUTION
-                               ? LOW_QUALITY_RASTER_MODE
-                               : HIGH_QUALITY_RASTER_MODE;
-  return std::min(raster_mode, current_mode);
+  if (managed_state_.draw_info.resource_)
+    return managed_state_.draw_info.resource_->bytes();
+  return 0;
 }
 
 bool Tile::HasRasterTask() const {
-  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-    if (managed_state_.tile_versions[mode].raster_task_.get())
-      return true;
-  }
-  return false;
+  return !!managed_state_.raster_task.get();
 }
 
 }  // namespace cc

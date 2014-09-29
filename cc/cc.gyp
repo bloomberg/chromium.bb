@@ -396,8 +396,6 @@
         'resources/priority_calculator.h',
         'resources/raster_buffer.cc',
         'resources/raster_buffer.h',
-        'resources/raster_mode.cc',
-        'resources/raster_mode.h',
         'resources/raster_tile_priority_queue.cc',
         'resources/raster_tile_priority_queue.h',
         'resources/raster_worker_pool.cc',

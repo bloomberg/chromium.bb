@@ -228,9 +228,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
          tile_it != all_tiles.end();
          ++tile_it) {
       Tile* tile = *tile_it;
-      ManagedTileState::TileVersion& tile_version =
-          tile->GetTileVersionForTesting(tile->GetRasterModeForTesting());
-      tile_version.SetResourceForTesting(
+      ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+      draw_info.SetResourceForTesting(
           ScopedResource::Create(resource_provider_.get()).Pass());
     }
 
@@ -257,9 +256,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
          tile_it != all_tiles.end();
          ++tile_it) {
       Tile* tile = *tile_it;
-      ManagedTileState::TileVersion& tile_version =
-          tile->GetTileVersionForTesting(tile->GetRasterModeForTesting());
-      tile_version.SetResourceForTesting(scoped_ptr<ScopedResource>());
+      ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+      draw_info.SetResourceForTesting(scoped_ptr<ScopedResource>());
     }
 
     perf_test::PrintResult(

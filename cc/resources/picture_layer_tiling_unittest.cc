@@ -1116,10 +1116,8 @@ TEST(PictureLayerTilingTest, TilingRasterTileIteratorStaticViewport) {
 
     // On the second iteration, mark everything as ready to draw (solid color).
     if (i == 1) {
-      ManagedTileState::TileVersion& tile_version =
-          last_tile->GetTileVersionForTesting(
-              last_tile->DetermineRasterModeForTree(ACTIVE_TREE));
-      tile_version.SetSolidColorForTesting(SK_ColorRED);
+      ManagedTileState::DrawInfo& draw_info = last_tile->draw_info();
+      draw_info.SetSolidColorForTesting(SK_ColorRED);
     }
     ++it;
     int eventually_bin_order_correct_count = 0;
@@ -1154,10 +1152,8 @@ TEST(PictureLayerTilingTest, TilingRasterTileIteratorStaticViewport) {
       // On the second iteration, mark everything as ready to draw (solid
       // color).
       if (i == 1) {
-        ManagedTileState::TileVersion& tile_version =
-            last_tile->GetTileVersionForTesting(
-                last_tile->DetermineRasterModeForTree(ACTIVE_TREE));
-        tile_version.SetSolidColorForTesting(SK_ColorRED);
+        ManagedTileState::DrawInfo& draw_info = last_tile->draw_info();
+        draw_info.SetSolidColorForTesting(SK_ColorRED);
       }
     }
 

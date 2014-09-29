@@ -125,10 +125,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       ManagedTileState& mts = tiles[i]->managed_state();
-      ManagedTileState::TileVersion& tile_version =
-          mts.tile_versions[HIGH_QUALITY_RASTER_MODE];
 
-      tile_version.resource_ =
+      mts.draw_info.resource_ =
           resource_pool_->AcquireResource(tiles[i]->size());
 
       bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
@@ -139,9 +137,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void ReleaseTileResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       Tile* tile = tiles[i];
-      for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-        FreeResourceForTile(tile, static_cast<RasterMode>(mode));
-      }
+      FreeResourcesForTile(tile);
     }
   }
 
@@ -210,7 +206,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
                                   bool was_canceled);
   void OnRasterTaskCompleted(Tile::Id tile,
                              scoped_ptr<ScopedResource> resource,
-                             RasterMode raster_mode,
                              const PicturePileImpl::Analysis& analysis,
                              bool was_canceled);
 
@@ -219,9 +214,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
                                      resource_pool_->resource_format());
   }
 
-  void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
-  void FreeUnusedResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<ImageDecodeTask> CreateImageDecodeTask(Tile* tile,
                                                        SkPixelRef* pixel_ref);

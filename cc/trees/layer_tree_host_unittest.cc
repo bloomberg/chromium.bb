@@ -5078,13 +5078,12 @@ class LayerTreeHostTestInvisibleDoesntActivate : public LayerTreeHostTest {
     for (std::vector<Tile*>::iterator it = tiles.begin(); it != tiles.end();
          ++it) {
       Tile* tile = *it;
-      const ManagedTileState::TileVersion& tile_version =
-          tile->GetTileVersionForDrawing();
-      EXPECT_TRUE(tile_version.IsReadyToDraw());
-      EXPECT_NE(ManagedTileState::TileVersion::PICTURE_PILE_MODE,
-                tile_version.mode());
+      const ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+      EXPECT_TRUE(draw_info.IsReadyToDraw());
+      EXPECT_NE(ManagedTileState::DrawInfo::PICTURE_PILE_MODE,
+                draw_info.mode());
       resource_tiles_count +=
-          tile_version.mode() == ManagedTileState::TileVersion::RESOURCE_MODE;
+          draw_info.mode() == ManagedTileState::DrawInfo::RESOURCE_MODE;
     }
     EXPECT_GT(resource_tiles_count, 0);
 

@@ -248,12 +248,11 @@ void PictureLayerImpl::AppendQuads(
       SkColor color;
       float width;
       if (*iter && iter->IsReadyToDraw()) {
-        ManagedTileState::TileVersion::Mode mode =
-            iter->GetTileVersionForDrawing().mode();
-        if (mode == ManagedTileState::TileVersion::SOLID_COLOR_MODE) {
+        ManagedTileState::DrawInfo::Mode mode = iter->draw_info().mode();
+        if (mode == ManagedTileState::DrawInfo::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
-        } else if (mode == ManagedTileState::TileVersion::PICTURE_PILE_MODE) {
+        } else if (mode == ManagedTileState::DrawInfo::PICTURE_PILE_MODE) {
           color = DebugColors::PictureTileBorderColor();
           width = DebugColors::PictureTileBorderWidth(layer_tree_impl());
         } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
@@ -316,10 +315,9 @@ void PictureLayerImpl::AppendQuads(
 
     bool has_draw_quad = false;
     if (*iter && iter->IsReadyToDraw()) {
-      const ManagedTileState::TileVersion& tile_version =
-          iter->GetTileVersionForDrawing();
-      switch (tile_version.mode()) {
-        case ManagedTileState::TileVersion::RESOURCE_MODE: {
+      const ManagedTileState::DrawInfo& draw_info = iter->draw_info();
+      switch (draw_info.mode()) {
+        case ManagedTileState::DrawInfo::RESOURCE_MODE: {
           gfx::RectF texture_rect = iter.texture_rect();
 
           // The raster_contents_scale_ is the best scale that the layer is
@@ -340,14 +338,14 @@ void PictureLayerImpl::AppendQuads(
                        geometry_rect,
                        opaque_rect,
                        visible_geometry_rect,
-                       tile_version.get_resource_id(),
+                       draw_info.get_resource_id(),
                        texture_rect,
                        iter.texture_size(),
-                       tile_version.contents_swizzled());
+                       draw_info.contents_swizzled());
           has_draw_quad = true;
           break;
         }
-        case ManagedTileState::TileVersion::PICTURE_PILE_MODE: {
+        case ManagedTileState::DrawInfo::PICTURE_PILE_MODE: {
           if (!layer_tree_impl()
                    ->GetRendererCapabilities()
                    .allow_rasterize_on_demand) {
@@ -376,13 +374,13 @@ void PictureLayerImpl::AppendQuads(
           has_draw_quad = true;
           break;
         }
-        case ManagedTileState::TileVersion::SOLID_COLOR_MODE: {
+        case ManagedTileState::DrawInfo::SOLID_COLOR_MODE: {
           SolidColorDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
           quad->SetNew(shared_quad_state,
                        geometry_rect,
                        visible_geometry_rect,
-                       tile_version.get_solid_color(),
+                       draw_info.get_solid_color(),
                        false);
           has_draw_quad = true;
           break;
@@ -790,13 +788,12 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
       << "iter rect " << iter.geometry_rect().ToString() << " content rect "
       << content_rect.ToString();
 
-  const ManagedTileState::TileVersion& tile_version =
-      iter->GetTileVersionForDrawing();
-  if (!tile_version.IsReadyToDraw() ||
-      tile_version.mode() != ManagedTileState::TileVersion::RESOURCE_MODE)
+  const ManagedTileState::DrawInfo& draw_info = iter->draw_info();
+  if (!draw_info.IsReadyToDraw() ||
+      draw_info.mode() != ManagedTileState::DrawInfo::RESOURCE_MODE)
     return 0;
 
-  return tile_version.get_resource_id();
+  return draw_info.get_resource_id();
 }
 
 void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {

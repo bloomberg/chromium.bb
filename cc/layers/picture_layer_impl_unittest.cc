@@ -1537,10 +1537,8 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
     if (viewport_for_tile_priority.Intersects(iter.geometry_rect())) {
       num_inside++;
       // Mark everything in viewport for tile priority as ready to draw.
-      ManagedTileState::TileVersion& tile_version =
-          tile->GetTileVersionForTesting(
-              tile->DetermineRasterModeForTree(PENDING_TREE));
-      tile_version.SetSolidColorForTesting(SK_ColorRED);
+      ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+      draw_info.SetSolidColorForTesting(SK_ColorRED);
     } else {
       num_outside++;
       EXPECT_FALSE(tile->required_for_activation());
@@ -2618,10 +2616,8 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
        tile_it != high_res_tiles.end();
        ++tile_it) {
     Tile* tile = *tile_it;
-    ManagedTileState::TileVersion& tile_version =
-        tile->GetTileVersionForTesting(
-            tile->DetermineRasterModeForTree(ACTIVE_TREE));
-    tile_version.SetSolidColorForTesting(SK_ColorRED);
+    ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+    draw_info.SetSolidColorForTesting(SK_ColorRED);
   }
 
   non_ideal_tile_count = 0;
