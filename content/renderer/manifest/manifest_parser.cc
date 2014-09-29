@@ -94,7 +94,6 @@ GURL ParseStartURL(const base::DictionaryValue& dictionary,
 // parsing failed.
 Manifest::DisplayMode ParseDisplay(const base::DictionaryValue& dictionary) {
   base::NullableString16 display = ParseString(dictionary, "display", Trim);
-
   if (display.is_null())
     return Manifest::DISPLAY_MODE_UNSPECIFIED;
 
@@ -275,6 +274,14 @@ std::vector<Manifest::Icon> ParseIcons(const base::DictionaryValue& dictionary,
   return icons;
 }
 
+// Parses the 'gcm_sender_id' field of the manifest.
+// This is a proprietary extension of the Web Manifest specification.
+// Returns the parsed string if any, a null string if the parsing failed.
+base::NullableString16 ParseGCMSenderID(
+    const base::DictionaryValue& dictionary)  {
+  return ParseString(dictionary, "gcm_sender_id", Trim);
+}
+
 } // anonymous namespace
 
 Manifest ManifestParser::Parse(const base::StringPiece& json,
@@ -307,6 +314,7 @@ Manifest ManifestParser::Parse(const base::StringPiece& json,
   manifest.display = ParseDisplay(*dictionary);
   manifest.orientation = ParseOrientation(*dictionary);
   manifest.icons = ParseIcons(*dictionary, manifest_url);
+  manifest.gcm_sender_id = ParseGCMSenderID(*dictionary);
 
   return manifest;
 }

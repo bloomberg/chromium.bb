@@ -31,6 +31,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::Manifest)
   IPC_STRUCT_TRAITS_MEMBER(display)
   IPC_STRUCT_TRAITS_MEMBER(orientation)
   IPC_STRUCT_TRAITS_MEMBER(icons)
+  IPC_STRUCT_TRAITS_MEMBER(gcm_sender_id)
 IPC_STRUCT_TRAITS_END()
 
 // The browser process requests for the manifest linked with the associated

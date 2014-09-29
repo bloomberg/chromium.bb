@@ -119,6 +119,10 @@ void ManifestManagerHost::OnRequestManifestResponse(
                                                Manifest::kMaxIPCStringLength),
         manifest.icons[i].type.is_null());
   }
+  manifest.gcm_sender_id = base::NullableString16(
+        manifest.gcm_sender_id.string().substr(
+            0, Manifest::kMaxIPCStringLength),
+        manifest.gcm_sender_id.is_null());
 
   callback->Run(manifest);
   callbacks->Remove(request_id);

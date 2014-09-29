@@ -65,6 +65,10 @@ void ManifestManager::OnRequestManifestComplete(
             0, Manifest::kMaxIPCStringLength),
         ipc_manifest.icons[i].type.is_null());
   }
+  ipc_manifest.gcm_sender_id = base::NullableString16(
+        ipc_manifest.gcm_sender_id.string().substr(
+            0, Manifest::kMaxIPCStringLength),
+        ipc_manifest.gcm_sender_id.is_null());
 
   Send(new ManifestManagerHostMsg_RequestManifestResponse(
       routing_id(), request_id, ipc_manifest));

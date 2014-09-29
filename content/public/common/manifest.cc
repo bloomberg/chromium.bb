@@ -30,7 +30,8 @@ bool Manifest::IsEmpty() const {
          start_url.is_empty() &&
          display == DISPLAY_MODE_UNSPECIFIED &&
          orientation == blink::WebScreenOrientationLockDefault &&
-         icons.empty();
+         icons.empty() &&
+         gcm_sender_id.is_null();
 }
 
 } // namespace content

@@ -580,4 +580,28 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest("{ \"gcm_sender_id\": \"foo\" }");
+    EXPECT_TRUE(EqualsASCII(manifest.gcm_sender_id.string(), "foo"));
+  }
+
+  // Trim whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"gcm_sender_id\": \"  foo  \" }");
+    EXPECT_TRUE(EqualsASCII(manifest.gcm_sender_id.string(), "foo"));
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"gcm_sender_id\": {} }");
+    EXPECT_TRUE(manifest.gcm_sender_id.is_null());
+  }
+  {
+    Manifest manifest = ParseManifest("{ \"gcm_sender_id\": 42 }");
+    EXPECT_TRUE(manifest.gcm_sender_id.is_null());
+  }
+}
+
 } // namespace content
