@@ -34,4 +34,10 @@ bool IsTouchEditingEnabled() {
 #endif
 }
 
+bool IsTouchFeedbackEnabled() {
+  static bool touch_feedback_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableTouchFeedback);
+  return touch_feedback_enabled;
+}
+
 }  // namespace switches

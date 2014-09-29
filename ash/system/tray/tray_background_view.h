@@ -186,10 +186,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // differently if set to true.
   bool draw_background_as_active_;
 
-  // True if touch view feedback command line flag has been enabled. When
-  // enabled touch gestures will toggle rendering the background as active.
-  bool touch_feedback_enabled_;
-
   scoped_ptr<TrayWidgetObserver> widget_observer_;
   scoped_ptr<TrayEventFilter> tray_event_filter_;
 

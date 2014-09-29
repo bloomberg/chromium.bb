@@ -24,6 +24,7 @@ UI_BASE_EXPORT extern const char kDisableTouchEditing[];
 UI_BASE_EXPORT extern const char kEnableTextInputFocusManager[];
 UI_BASE_EXPORT extern const char kEnableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kEnableTouchEditing[];
+UI_BASE_EXPORT extern const char kEnableTouchFeedback[];
 UI_BASE_EXPORT extern const char kLang[];
 UI_BASE_EXPORT extern const char kNoMessageBox[];
 UI_BASE_EXPORT extern const char kViewerConnect[];

@@ -4,7 +4,6 @@
 
 #include "ash/system/tray/tray_background_view.h"
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -23,6 +22,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -310,7 +310,6 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
           kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
       hovered_(false),
       draw_background_as_active_(false),
-      touch_feedback_enabled_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   set_notify_enter_exit_on_child(true);
 
@@ -328,11 +327,6 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
   SetFillsBoundsOpaquely(false);
   // Start the tray items not visible, because visibility changes are animated.
   views::View::SetVisible(false);
-
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kAshEnableTouchViewTouchFeedback)) {
-    touch_feedback_enabled_ = true;
-  }
 }
 
 TrayBackgroundView::~TrayBackgroundView() {
@@ -435,7 +429,7 @@ gfx::Rect TrayBackgroundView::GetFocusBounds() {
 }
 
 void TrayBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
-  if (touch_feedback_enabled_) {
+  if (switches::IsTouchFeedbackEnabled()) {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       SetDrawBackgroundAsActive(true);
     } else if (event->type() ==  ui::ET_GESTURE_SCROLL_BEGIN ||

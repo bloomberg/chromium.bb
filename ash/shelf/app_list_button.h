@@ -49,10 +49,6 @@ class AppListButton : public views::ImageButton {
   // the application list.
   bool draw_background_as_active_;
 
-  // True if touch view feedback command line flag has been enabled. When
-  // enabled touch gestures will toggle rendering the background as active.
-  bool touch_feedback_enabled_;
-
   ShelfButtonHost* host_;
   // Reference to the shelf widget containing this button, owned by the
   // root window controller.

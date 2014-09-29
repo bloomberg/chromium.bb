@@ -5,7 +5,6 @@
 #include "ash/shelf/app_list_button.h"
 
 #include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_item_types.h"
@@ -18,6 +17,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -37,8 +37,6 @@ AppListButton::AppListButton(views::ButtonListener* listener,
                              ShelfWidget* shelf_widget)
     : views::ImageButton(listener),
       draw_background_as_active_(false),
-      touch_feedback_enabled_(CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kAshEnableTouchViewTouchFeedback)),
       host_(host),
       shelf_widget_(shelf_widget) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE));
@@ -90,7 +88,7 @@ void AppListButton::OnMouseExited(const ui::MouseEvent& event) {
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
    case ui::ET_GESTURE_SCROLL_BEGIN:
-     if (touch_feedback_enabled_)
+     if (switches::IsTouchFeedbackEnabled())
        SetDrawBackgroundAsActive(false);
      host_->PointerPressedOnButton(this, ShelfButtonHost::TOUCH, *event);
      event->SetHandled();
@@ -105,13 +103,13 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
      event->SetHandled();
      return;
    case ui::ET_GESTURE_TAP_DOWN:
-     if (touch_feedback_enabled_)
+     if (switches::IsTouchFeedbackEnabled())
        SetDrawBackgroundAsActive(true);
      ImageButton::OnGestureEvent(event);
      break;
    case ui::ET_GESTURE_TAP_CANCEL:
    case ui::ET_GESTURE_TAP:
-     if (touch_feedback_enabled_)
+     if (switches::IsTouchFeedbackEnabled())
        SetDrawBackgroundAsActive(false);
      ImageButton::OnGestureEvent(event);
      break;

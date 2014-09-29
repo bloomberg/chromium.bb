@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -39,6 +38,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -297,7 +297,7 @@ class ShelfViewTest : public AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableTouchViewTouchFeedback);
+        switches::kEnableTouchFeedback);
     AshTestBase::SetUp();
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.shelf_model();
