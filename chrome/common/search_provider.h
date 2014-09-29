@@ -14,6 +14,7 @@ enum OSDDType {
 
   // The Open Search Description URL was given by Javascript.
   EXPLICIT_PROVIDER,
+  OSDD_TYPE_LAST = EXPLICIT_PROVIDER
 };
 
 // The install state of the search provider (not installed, installed, default).

@@ -84,7 +84,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status::Value,
                           ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized)
 IPC_ENUM_TRAITS(OmniboxFocusChangeReason)
 IPC_ENUM_TRAITS(OmniboxFocusState)
-IPC_ENUM_TRAITS(search_provider::OSDDType)
+IPC_ENUM_TRAITS_MAX_VALUE(search_provider::OSDDType,
+                          search_provider::OSDD_TYPE_LAST)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
 IPC_ENUM_TRAITS(ThemeBackgroundImageTiling)
