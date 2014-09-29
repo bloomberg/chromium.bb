@@ -16,24 +16,11 @@ body {
 }
 
 a {
-  color: #414141;
   text-decoration: none;
 }
 
-.colored {
+a.colored-link {
   color: rgb(66, 133, 244);
-}
-
-.label {
-  display: inline-block;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 28px;
-  white-space: nowrap;
-}
-
-.label a {
-  text-transform: uppercase;
 }
 
 #button-container {
@@ -65,4 +52,34 @@ a {
   display: block;
   height: 100px;
   margin: 0 auto 24px auto;
+}
+
+.label {
+  display: inline-block;
+  font-size: 14px;
+  margin: 14px 0;
+  /* We use a slightly different top-bottom padding because Roboto has a
+     rendering bug which makes an extra padding to be rendered at the bottom of
+     text. */
+  padding: 17px 14px 13px 14px;
+  white-space: nowrap;
+}
+
+.label a {
+  text-transform: uppercase;
+}
+
+#optin-label {
+  background: rgb(66, 133, 244);
+  background-clip: padding-box;
+  border-radius: 3px;
+  margin-right: 24px;
+}
+
+#optin-label a {
+  color: white;
+}
+
+#optout-label a {
+  color: rgb(66, 133, 244);
 }

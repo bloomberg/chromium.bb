@@ -1150,7 +1150,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Search with one touch
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION_1" desc="Part 1 of the description of the Contextual Search feature. Combined with FEATURE_NAME and DESCRIPTION_2 below, the whole should be a paragraph describing the feature. This line can be empty if it makes sense to start the sentence with FEATURE_NAME.">
-        Learn about topics on websites without leaving your browser.
+        Learn about topics on websites without leaving your tab.
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_FEATURE_NAME" desc="Name of the Contextual Search feature. See explanation in DESCRIPTION_1.">
         Tap to Search
