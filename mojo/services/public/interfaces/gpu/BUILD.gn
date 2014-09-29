@@ -12,6 +12,7 @@ mojom("gpu") {
 
   deps = [
     "//mojo/services/gles2:bindings",
+    "//mojo/services/gles2:interfaces",
     "//mojo/services/public/interfaces/geometry",
   ]
 }
