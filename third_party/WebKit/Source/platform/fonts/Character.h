@@ -51,9 +51,30 @@ public:
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion);
     static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion);
 
-    static bool treatAsSpace(UChar c) { return c == space || c == characterTabulation || c == newlineCharacter || c == noBreakSpace; }
-    static bool treatAsZeroWidthSpace(UChar c) { return treatAsZeroWidthSpaceInComplexScript(c) || c == 0x200c || c == 0x200d; }
-    static bool treatAsZeroWidthSpaceInComplexScript(UChar c) { return c < 0x20 || (c >= 0x7F && c < 0xA0) || c == softHyphen || c == zeroWidthSpace || (c >= 0x200e && c <= 0x200f) || (c >= 0x202a && c <= 0x202e) || c == zeroWidthNoBreakSpace || c == objectReplacementCharacter; }
+    static bool treatAsSpace(UChar c)
+    {
+        return c == space
+            || c == characterTabulation
+            || c == newlineCharacter
+            || c == noBreakSpace;
+    }
+    static bool treatAsZeroWidthSpace(UChar c)
+    {
+        return treatAsZeroWidthSpaceInComplexScript(c)
+            || c == zeroWidthNonJoiner
+            || c == zeroWidthJoiner;
+    }
+    static bool treatAsZeroWidthSpaceInComplexScript(UChar c)
+    {
+        return c < 0x20 // ASCII Control Characters
+            || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break space
+            || c == softHyphen
+            || c == zeroWidthSpace
+            || (c >= leftToRightMark && c <= rightToLeftMark)
+            || (c >= leftToRightEmbed && c <= rightToLeftOverride)
+            || c == zeroWidthNoBreakSpace
+            || c == objectReplacementCharacter;
+    }
     static bool canReceiveTextEmphasis(UChar32);
 
     static inline UChar normalizeSpaces(UChar character)
