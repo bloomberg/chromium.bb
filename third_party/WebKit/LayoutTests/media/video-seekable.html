@@ -7,12 +7,13 @@
     testDOMException("video.seekable.end(-1)", "DOMException.INDEX_SIZE_ERR");
     testDOMException("video.seekable.start(0)", "DOMException.INDEX_SIZE_ERR");
     testDOMException("video.seekable.end(0)", "DOMException.INDEX_SIZE_ERR");
-    waitForEvent('canplaythrough',
-        function () 
+    waitForEvent("loadedmetadata",
+        function ()
         {
             testExpected("video.seekable.length", 1);
             testExpected("video.seekable.start(0)", 0);
-            testExpected("video.seekable.end(0)",  0, ">");
+            testExpected("video.seekable.end(0)", 5, ">");
+            testExpected("video.seekable.end(0)", 7, "<");
             testDOMException("video.seekable.start(-1)", "DOMException.INDEX_SIZE_ERR");
             testDOMException("video.seekable.end(-1)", "DOMException.INDEX_SIZE_ERR");
             testDOMException("video.seekable.start(1)", "DOMException.INDEX_SIZE_ERR");

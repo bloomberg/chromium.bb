@@ -114,7 +114,17 @@ public:
     virtual void requestRemotePlaybackControl() { };
     virtual void setPreload(Preload) { };
     virtual WebTimeRanges buffered() const = 0;
-    virtual double maxTimeSeekable() const = 0;
+    virtual WebTimeRanges seekable() const
+    {
+        if (double end = maxTimeSeekable()) {
+            WebTimeRanges ranges(static_cast<size_t>(1));
+            ranges[0].start = 0.0;
+            ranges[0].end = end;
+            return ranges;
+        }
+        return WebTimeRanges();
+    }
+    virtual double maxTimeSeekable() const { return 0.0; }
 
     // True if the loaded media has a playable video/audio track.
     virtual bool hasVideo() const = 0;

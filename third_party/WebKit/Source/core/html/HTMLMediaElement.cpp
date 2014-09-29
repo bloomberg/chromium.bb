@@ -3291,12 +3291,10 @@ PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::played()
 
 PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::seekable() const
 {
-    if (webMediaPlayer()) {
-        double maxTimeSeekable = webMediaPlayer()->maxTimeSeekable();
-        if (maxTimeSeekable)
-            return TimeRanges::create(0, maxTimeSeekable);
-    }
-    return TimeRanges::create();
+    if (!webMediaPlayer())
+        return TimeRanges::create();
+
+    return TimeRanges::create(webMediaPlayer()->seekable());
 }
 
 bool HTMLMediaElement::potentiallyPlaying() const

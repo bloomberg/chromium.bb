@@ -3,10 +3,11 @@ TEST(video.seekable.start(-1)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to exe
 TEST(video.seekable.end(-1)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to execute 'end' on 'TimeRanges': The index provided (4294967295) is greater than the maximum bound (0).) OK
 TEST(video.seekable.start(0)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to execute 'start' on 'TimeRanges': The index provided (0) is greater than or equal to the maximum bound (0).) OK
 TEST(video.seekable.end(0)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to execute 'end' on 'TimeRanges': The index provided (0) is greater than or equal to the maximum bound (0).) OK
-EVENT(canplaythrough)
+EVENT(loadedmetadata)
 EXPECTED (video.seekable.length == '1') OK
 EXPECTED (video.seekable.start(0) == '0') OK
-EXPECTED (video.seekable.end(0) > '0') OK
+EXPECTED (video.seekable.end(0) > '5') OK
+EXPECTED (video.seekable.end(0) < '7') OK
 TEST(video.seekable.start(-1)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to execute 'start' on 'TimeRanges': The index provided (4294967295) is greater than the maximum bound (1).) OK
 TEST(video.seekable.end(-1)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to execute 'end' on 'TimeRanges': The index provided (4294967295) is greater than the maximum bound (1).) OK
 TEST(video.seekable.start(1)) THROWS(DOMException.INDEX_SIZE_ERR: Failed to execute 'start' on 'TimeRanges': The index provided (1) is greater than or equal to the maximum bound (1).) OK
