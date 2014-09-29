@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -60,6 +61,10 @@ using ::testing::AnyNumber;
 }
 @end
 
+@interface DownloadShelfController (Testing)
+- (void)animationDidEnd:(NSAnimation*)animation;
+@end
+
 // Subclass of the DownloadShelfController to override scheduleAutoClose and
 // cancelAutoClose. During regular operation, a scheduled autoClose waits for 5
 // seconds before closing the shelf (unless it is cancelled during this
@@ -69,7 +74,11 @@ using ::testing::AnyNumber;
  @public
   int scheduleAutoCloseCount_;
   int cancelAutoCloseCount_;
+  base::mac::ScopedBlock<dispatch_block_t> closeAnimationHandler_;
 }
+
+// Handler will be called at the end of a close animation.
+- (void)setCloseAnimationHandler:(dispatch_block_t)handler;
 @end
 
 @implementation CountingDownloadShelfController
@@ -81,6 +90,17 @@ using ::testing::AnyNumber;
 -(void)cancelAutoClose {
   ++cancelAutoCloseCount_;
 }
+
+- (void)setCloseAnimationHandler:(dispatch_block_t)handler {
+  closeAnimationHandler_.reset(handler);
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [super animationDidEnd:animation];
+  if (closeAnimationHandler_)
+    closeAnimationHandler_.get()();
+}
+
 @end
 
 namespace {
@@ -358,6 +378,23 @@ TEST_F(DownloadShelfControllerTest, CancelAutoCloseOnExit) {
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(3, shelf_.get()->cancelAutoCloseCount_);
   shelf_.reset();
+}
+
+// The view should not be hidden when the shelf is shown.
+// The view should be hidden after the closing animation.
+TEST_F(DownloadShelfControllerTest, ViewVisibility) {
+  [shelf_ showDownloadShelf:YES isUserAction:NO];
+  EXPECT_FALSE([[shelf_ view] isHidden]);
+
+  [shelf_ setCloseAnimationHandler:^{
+      base::MessageLoop::current()->QuitNow();
+  }];
+  [shelf_ showDownloadShelf:NO isUserAction:NO];
+  base::MessageLoop::current()->Run();
+  EXPECT_TRUE([[shelf_ view] isHidden]);
+
+  [shelf_ showDownloadShelf:YES isUserAction:NO];
+  EXPECT_FALSE([[shelf_ view] isHidden]);
 }
 
 }  // namespace

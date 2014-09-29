@@ -252,10 +252,12 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
   // do no animation over janky animation.  Find a way to make animating in
   // smoother.
   AnimatableView* view = [self animatableView];
-  if (show)
+  if (show) {
     [view setHeight:maxShelfHeight_];
-  else
+    [view setHidden:NO];
+  } else {
     [view animateToNewHeight:0 duration:kDownloadShelfCloseDuration];
+  }
 
   barIsVisible_ = show;
   [self updateCloseButton];
@@ -270,8 +272,10 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
-  if (![self isVisible])
+  if (![self isVisible]) {
     [self closed];
+    [[self view] setHidden:YES];  // So that it doesn't appear in AX hierarchy.
+  }
 }
 
 - (float)height {
