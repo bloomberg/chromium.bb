@@ -23,7 +23,7 @@ namespace content_settings {
 
 // A content settings provider which disables certain plugins for platform apps.
 class InternalExtensionProvider : public ObservableProvider,
-                            public content::NotificationObserver {
+                                  public content::NotificationObserver {
  public:
   explicit InternalExtensionProvider(ExtensionService* extension_service);
 

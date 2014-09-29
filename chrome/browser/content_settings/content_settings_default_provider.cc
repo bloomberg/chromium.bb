@@ -9,11 +9,11 @@
 
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -21,12 +21,8 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
-using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace {

@@ -26,10 +26,8 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
-using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace {
