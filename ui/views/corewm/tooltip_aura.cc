@@ -190,7 +190,6 @@ void TooltipAura::SetText(aura::Window* window,
   TrimTooltipToFit(label_.font_list(), GetMaxWidth(location), &trimmed_text,
                    &max_width, &line_count);
   label_.SetText(trimmed_text);
-  label_.SizeToFit(max_width + label_.GetInsets().width());
 
   if (!widget_) {
     widget_ = CreateTooltipWidget(tooltip_window_);
@@ -198,6 +197,7 @@ void TooltipAura::SetText(aura::Window* window,
     widget_->AddObserver(this);
   }
 
+  label_.SizeToFit(max_width + label_.GetInsets().width());
   SetTooltipBounds(location, label_.size());
 
   ui::NativeTheme* native_theme = widget_->GetNativeTheme();
