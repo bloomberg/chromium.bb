@@ -25,6 +25,10 @@ const float kInflexion = 0.35f;
 
 const float kEpsilon = 1e-5f;
 
+// Fling scroll is stopped when the scroll position is |kThresholdForFlingEnd|
+// pixels or closer from the end.
+const float kThresholdForFlingEnd = 0.1;
+
 bool ApproxEquals(float a, float b) {
   return std::abs(a - b) < kEpsilon;
 }
@@ -324,9 +328,10 @@ bool Scroller::ComputeScrollOffset(base::TimeTicks time) {
       curr_y_ = start_y_ + distance_coef * delta_y_;
       curr_y_ = Clamped(curr_y_, min_y_, max_y_);
 
-      if (ApproxEquals(curr_x_, final_x_) && ApproxEquals(curr_y_, final_y_)) {
+      float diff_x = std::abs(curr_x_ - final_x_);
+      float diff_y = std::abs(curr_y_ - final_y_);
+      if (diff_x < kThresholdForFlingEnd && diff_y < kThresholdForFlingEnd)
         finished_ = true;
-      }
     } break;
   }
 

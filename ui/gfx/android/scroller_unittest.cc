@@ -14,8 +14,8 @@ const float kDefaultStartX = 7.f;
 const float kDefaultStartY = 25.f;
 const float kDefaultDeltaX = -20.f;
 const float kDefaultDeltaY = 73.f;
-const float kDefaultVelocityX = -35.f;
-const float kDefaultVelocityY = 22.f;
+const float kDefaultVelocityX = -350.f;
+const float kDefaultVelocityY = 220.f;
 const float kEpsilon = 1e-3f;
 
 Scroller::Config DefaultConfig() {
