@@ -560,7 +560,7 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
     cmd = ['gsutil', 'ls', self.REMOTE_PATH]
     e = self._getException(cmd, error_msg)
     self.assertRaises(gs.GSContextPreconditionFailed,
-                        self.ctx._RetryFilter, e)
+                      self.ctx._RetryFilter, e)
 
   def testRetryOnlyFlakyErrors(self):
     """Test that we retry only flaky errors."""
@@ -625,6 +625,17 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
     with mock.MagicMock() as self.ctx.GetTrackerFilenames:
       self.assertRaises(gs.GSNoSuchKey, self.ctx._RetryFilter, e)
       self.assertFalse(self.ctx.GetTrackerFilenames.called)
+
+  def testRetryTransient(self):
+    """Verify retry behavior when hitting b/11762375"""
+    error = (
+        'Removing gs://foo/bar/monkey...\n'
+        'GSResponseError: status=403, code=InvalidAccessKeyId, '
+        'reason="Forbidden", message="The User Id you provided '
+        'does not exist in our records.", detail="GOOGBWPADTH7OV25KJXZ"'
+    )
+    e = self._getException(['gsutil', 'rm', 'gs://foo/bar/monkey'], error)
+    self.assertEqual(self.ctx._RetryFilter(e), True)
 
 
 class GSContextTest(AbstractGSContextTest):

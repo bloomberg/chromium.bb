@@ -530,6 +530,7 @@ class GSContext(object):
           'ServiceException: 5',
           'Failure: No JSON object could be decoded',
           'Oauth 2.0 User Account',
+          'InvalidAccessKeyId',
       )
       if any(x in error for x in TRANSIENT_ERROR_MESSAGE):
         return True
