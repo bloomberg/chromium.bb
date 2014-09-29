@@ -201,7 +201,14 @@ class VideoCaptureDeviceTest : public testing::Test {
   scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
-TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
+// Cause hangs on Windows Debug. http://crbug.com/417824
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_OpenInvalidDevice DISABLED_OpenInvalidDevice
+#else
+#define MAYBE_OpenInvalidDevice OpenInvalidDevice
+#endif
+
+TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
 #if defined(OS_WIN)
   VideoCaptureDevice::Name::CaptureApiType api_type =
       VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation()
@@ -313,7 +320,14 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   EXPECT_EQ(last_format().frame_size.height(), 480);
 }
 
-TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
+// Cause hangs on Windows Debug. http://crbug.com/417824
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_ReAllocateCamera DISABLED_ReAllocateCamera
+#else
+#define MAYBE_ReAllocateCamera ReAllocateCamera
+#endif
+
+TEST_F(VideoCaptureDeviceTest, MAYBE_ReAllocateCamera) {
   names_ = EnumerateDevices();
   if (!names_->size()) {
     DVLOG(1) << "No camera available. Exiting test.";
