@@ -230,7 +230,7 @@ int SocketLibevent::Read(IOBuffer* buf,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(!waiting_connect_);
-  DCHECK(read_callback_.is_null());
+  CHECK(read_callback_.is_null());
   // Synchronous operation not supported
   DCHECK(!callback.is_null());
   DCHECK_LT(0, buf_len);
@@ -258,7 +258,7 @@ int SocketLibevent::Write(IOBuffer* buf,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
   DCHECK(!waiting_connect_);
-  DCHECK(write_callback_.is_null());
+  CHECK(write_callback_.is_null());
   // Synchronous operation not supported
   DCHECK(!callback.is_null());
   DCHECK_LT(0, buf_len);

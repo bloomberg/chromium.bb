@@ -492,7 +492,7 @@ int TCPSocketWin::Read(IOBuffer* buf,
   DCHECK(CalledOnValidThread());
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_read_);
-  DCHECK(read_callback_.is_null());
+  CHECK(read_callback_.is_null());
   DCHECK(!core_->read_iobuffer_);
 
   return DoRead(buf, buf_len, callback);
@@ -504,7 +504,7 @@ int TCPSocketWin::Write(IOBuffer* buf,
   DCHECK(CalledOnValidThread());
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_write_);
-  DCHECK(write_callback_.is_null());
+  CHECK(write_callback_.is_null());
   DCHECK_GT(buf_len, 0);
   DCHECK(!core_->write_iobuffer_);
 
