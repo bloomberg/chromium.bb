@@ -48,7 +48,7 @@ EOF
 do_build() {
   echo "Building in out/$1 ..."
   if [ "$GOMA" = "auto" -a -v GOMA_DIR ]; then
-    ninja -j 1000 -C "out/$1" mojo || exit 1
+    ninja -j 1000 -l 100 -C "out/$1" mojo || exit 1
   else
     ninja -C "out/$1" mojo || exit 1
   fi
