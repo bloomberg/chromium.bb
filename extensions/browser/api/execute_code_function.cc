@@ -206,11 +206,13 @@ bool ExecuteCodeFunction::RunAsync() {
   }
 
   int resource_id;
-  if (ExtensionsBrowserClient::Get()
-          ->GetComponentExtensionResourceManager()
-          ->IsComponentExtensionResource(resource_.extension_root(),
-                                         resource_.relative_path(),
-                                         &resource_id)) {
+  ComponentExtensionResourceManager* component_extension_resource_manager =
+      ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager();
+  if (component_extension_resource_manager &&
+      component_extension_resource_manager->IsComponentExtensionResource(
+          resource_.extension_root(),
+          resource_.relative_path(),
+          &resource_id)) {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     DidLoadFile(true, rb.GetRawDataResource(resource_id).as_string());
   } else {
