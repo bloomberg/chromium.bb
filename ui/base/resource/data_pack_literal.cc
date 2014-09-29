@@ -51,7 +51,8 @@ extern const size_t kSamplePakSize2x = sizeof(kSamplePakContents2x);
 extern const char kEmptyPakContents[] = {
     0x04, 0x00, 0x00, 0x00,               // header(version
     0x00, 0x00, 0x00, 0x00,               //        no. entries
-    0x01
+    0x01,                                 //        encoding)
+    0x00, 0x00, 0x0f, 0x00, 0x00, 0x00    // extra entry for the size of last
 };
 
 extern const size_t kEmptyPakSize = sizeof(kEmptyPakContents);
