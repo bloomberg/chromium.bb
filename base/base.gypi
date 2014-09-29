@@ -122,6 +122,7 @@
           'command_line.cc',
           'command_line.h',
           'compiler_specific.h',
+          'containers/adapters.h',
           'containers/hash_tables.h',
           'containers/linked_list.h',
           'containers/mru_cache.h',
