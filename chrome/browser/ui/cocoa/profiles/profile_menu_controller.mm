@@ -70,9 +70,7 @@ class Observer : public chrome::BrowserListObserver,
     mainMenuItem_ = item;
 
     base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:
-        l10n_util::GetNSStringWithFixup(switches::IsNewAvatarMenu() ?
-        IDS_NEW_PROFILES_OPTIONS_GROUP_NAME :
-        IDS_PROFILES_OPTIONS_GROUP_NAME)]);
+        l10n_util::GetNSStringWithFixup(IDS_NEW_PROFILES_OPTIONS_GROUP_NAME)]);
     [mainMenuItem_ setSubmenu:menu];
 
     // This object will be constructed as part of nib loading, which happens
@@ -112,9 +110,8 @@ class Observer : public chrome::BrowserListObserver,
     return NO;
 
   if (dock) {
-    NSString* headerName = l10n_util::GetNSStringWithFixup(
-        switches::IsNewAvatarMenu() ? IDS_NEW_PROFILES_OPTIONS_GROUP_NAME :
-                                      IDS_PROFILES_OPTIONS_GROUP_NAME);
+    NSString* headerName =
+        l10n_util::GetNSStringWithFixup(IDS_NEW_PROFILES_OPTIONS_GROUP_NAME);
     base::scoped_nsobject<NSMenuItem> header(
         [[NSMenuItem alloc] initWithTitle:headerName
                                    action:NULL
@@ -193,20 +190,14 @@ class Observer : public chrome::BrowserListObserver,
 
   [[self menu] addItem:[NSMenuItem separatorItem]];
 
-  bool usingNewProfilesUI = switches::IsNewAvatarMenu();
-  NSString* editProfileTitle = l10n_util::GetNSStringWithFixup(
-      usingNewProfilesUI ? IDS_PROFILES_MANAGE_BUTTON_LABEL :
-                           IDS_PROFILES_CUSTOMIZE_PROFILE);
-  NSString* newProfileTitle = l10n_util::GetNSStringWithFixup(
-      usingNewProfilesUI ? IDS_NEW_PROFILES_CREATE_NEW_PROFILE_OPTION :
-                           IDS_PROFILES_CREATE_NEW_PROFILE_OPTION);
-
-  NSMenuItem* item = [self createItemWithTitle:editProfileTitle
+  NSMenuItem* item = [self createItemWithTitle:
+      l10n_util::GetNSStringWithFixup(IDS_PROFILES_MANAGE_BUTTON_LABEL)
                                         action:@selector(editProfile:)];
   [[self menu] addItem:item];
 
   [[self menu] addItem:[NSMenuItem separatorItem]];
-  item = [self createItemWithTitle:newProfileTitle
+  item = [self createItemWithTitle:l10n_util::GetNSStringWithFixup(
+      IDS_NEW_PROFILES_CREATE_NEW_PROFILE_OPTION)
                             action:@selector(newProfile:)];
   [[self menu] addItem:item];
 

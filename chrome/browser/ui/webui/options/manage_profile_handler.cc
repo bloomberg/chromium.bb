@@ -34,7 +34,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -82,8 +81,6 @@ void ManageProfileHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  const bool using_new_profiles_ui = switches::IsNewAvatarMenu();
-
   static OptionsStringResource resources[] = {
     { "manageProfilesNameLabel", IDS_PROFILES_MANAGE_NAME_LABEL },
     { "manageProfilesDuplicateNameError",
@@ -99,25 +96,19 @@ void ManageProfileHandler::GetLocalizedValues(
         IDS_PROFILES_CREATE_SUPERVISED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL },
     { "manageProfilesSupervisedSignInAgainLink",
         IDS_PROFILES_CREATE_SUPERVISED_SIGN_IN_AGAIN_LINK },
-    { "manageProfilesConfirm", using_new_profiles_ui ? IDS_SAVE : IDS_OK },
-    { "deleteProfileTitle", using_new_profiles_ui ?
-          IDS_NEW_PROFILES_DELETE_TITLE : IDS_PROFILES_DELETE_TITLE },
-    { "deleteProfileOK", using_new_profiles_ui ?
-          IDS_NEW_PROFILES_DELETE_OK_BUTTON_LABEL :
-          IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
-    { "deleteProfileMessage", using_new_profiles_ui ?
-        IDS_NEW_PROFILES_DELETE_MESSAGE : IDS_PROFILES_DELETE_MESSAGE },
+    { "manageProfilesConfirm", IDS_SAVE },
+    { "deleteProfileTitle", IDS_NEW_PROFILES_DELETE_TITLE },
+    { "deleteProfileOK", IDS_NEW_PROFILES_DELETE_OK_BUTTON_LABEL },
+    { "deleteProfileMessage", IDS_NEW_PROFILES_DELETE_MESSAGE },
     { "deleteSupervisedProfileAddendum",
         IDS_PROFILES_DELETE_SUPERVISED_ADDENDUM },
     { "disconnectManagedProfileTitle",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE },
     { "disconnectManagedProfileOK",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL },
-    { "createProfileTitle", using_new_profiles_ui ?
-          IDS_NEW_PROFILES_CREATE_TITLE : IDS_PROFILES_CREATE_TITLE },
+    { "createProfileTitle", IDS_NEW_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
-    { "createProfileConfirm", using_new_profiles_ui ?
-          IDS_ADD : IDS_PROFILES_CREATE_CONFIRM },
+    { "createProfileConfirm", IDS_ADD },
     { "createProfileShortcutCheckbox", IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX },
     { "createProfileShortcutButton", IDS_PROFILES_CREATE_SHORTCUT_BUTTON },
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },
@@ -127,11 +118,9 @@ void ManageProfileHandler::GetLocalizedValues(
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "manageProfile",
-                using_new_profiles_ui ? IDS_NEW_PROFILES_MANAGE_TITLE :
-                                        IDS_PROFILES_MANAGE_TITLE);
+                IDS_NEW_PROFILES_MANAGE_TITLE);
   RegisterTitle(localized_strings, "createProfile",
-                using_new_profiles_ui ? IDS_NEW_PROFILES_CREATE_TITLE :
-                                        IDS_PROFILES_CREATE_TITLE);
+                IDS_NEW_PROFILES_CREATE_TITLE);
 
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
