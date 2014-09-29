@@ -291,7 +291,7 @@ void BluetoothTaskManagerWin::PollAdapter() {
   if (!discovering_) {
     const BLUETOOTH_FIND_RADIO_PARAMS adapter_param =
         { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
-    if (adapter_handle_)
+    if (adapter_handle_.IsValid())
       adapter_handle_.Close();
     HANDLE temp_adapter_handle;
     HBLUETOOTH_RADIO_FIND handle = BluetoothFindFirstRadio(
@@ -317,7 +317,7 @@ void BluetoothTaskManagerWin::PollAdapter() {
 void BluetoothTaskManagerWin::PostAdapterStateToUi() {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
   AdapterState* state = new AdapterState();
-  GetAdapterState(adapter_handle_, state);
+  GetAdapterState(adapter_handle_.Get(), state);
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::OnAdapterStateChanged,
@@ -331,10 +331,11 @@ void BluetoothTaskManagerWin::SetPowered(
     const BluetoothAdapter::ErrorCallback& error_callback) {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
   bool success = false;
-  if (adapter_handle_) {
+  if (adapter_handle_.IsValid()) {
     if (!powered)
-      BluetoothEnableDiscovery(adapter_handle_, false);
-    success = !!BluetoothEnableIncomingConnections(adapter_handle_, powered);
+      BluetoothEnableDiscovery(adapter_handle_.Get(), false);
+    success =
+        !!BluetoothEnableIncomingConnections(adapter_handle_.Get(), powered);
   }
 
   if (success) {
@@ -351,8 +352,8 @@ void BluetoothTaskManagerWin::StartDiscovery() {
       FROM_HERE,
       base::Bind(&BluetoothTaskManagerWin::OnDiscoveryStarted,
                  this,
-                 !!adapter_handle_));
-  if (!adapter_handle_)
+                 adapter_handle_.IsValid()));
+  if (!adapter_handle_.IsValid())
     return;
   discovering_ = true;
 
@@ -369,7 +370,7 @@ void BluetoothTaskManagerWin::StopDiscovery() {
 
 void BluetoothTaskManagerWin::DiscoverDevices(int timeout_multiplier) {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
-  if (!discovering_ || !adapter_handle_) {
+  if (!discovering_ || !adapter_handle_.IsValid()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&BluetoothTaskManagerWin::OnDiscoveryStopped, this));

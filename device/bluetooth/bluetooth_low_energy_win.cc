@@ -171,7 +171,7 @@ bool CollectBluetoothLowEnergyDeviceProperty(
     std::string* error) {
   DWORD required_length;
   DEVPROPTYPE prop_type;
-  BOOL success = SetupDiGetDeviceProperty(device_info_handle,
+  BOOL success = SetupDiGetDeviceProperty(device_info_handle.Get(),
                                           device_info_data,
                                           &key,
                                           &prop_type,
@@ -184,7 +184,7 @@ bool CollectBluetoothLowEnergyDeviceProperty(
 
   scoped_ptr<uint8_t[]> prop_value(new uint8_t[required_length]);
   DWORD actual_length = required_length;
-  success = SetupDiGetDeviceProperty(device_info_handle,
+  success = SetupDiGetDeviceProperty(device_info_handle.Get(),
                                      device_info_data,
                                      &key,
                                      &prop_type,
@@ -211,7 +211,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
     scoped_ptr<DeviceRegistryPropertyValue>* value,
     std::string* error) {
   ULONG required_length = 0;
-  BOOL success = SetupDiGetDeviceRegistryProperty(device_info_handle,
+  BOOL success = SetupDiGetDeviceRegistryProperty(device_info_handle.Get(),
                                                   device_info_data,
                                                   property_id,
                                                   NULL,
@@ -224,7 +224,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
   scoped_ptr<uint8_t[]> property_value(new uint8_t[required_length]);
   ULONG actual_length = required_length;
   DWORD property_type;
-  success = SetupDiGetDeviceRegistryProperty(device_info_handle,
+  success = SetupDiGetDeviceRegistryProperty(device_info_handle.Get(),
                                              device_info_data,
                                              property_id,
                                              &property_type,
@@ -250,13 +250,13 @@ bool CollectBluetoothLowEnergyDeviceInstanceId(
     std::string* error) {
   ULONG required_length = 0;
   BOOL success = SetupDiGetDeviceInstanceId(
-      device_info_handle, device_info_data, NULL, 0, &required_length);
+      device_info_handle.Get(), device_info_data, NULL, 0, &required_length);
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
   scoped_ptr<WCHAR[]> instance_id(new WCHAR[required_length]);
   ULONG actual_length = required_length;
-  success = SetupDiGetDeviceInstanceId(device_info_handle,
+  success = SetupDiGetDeviceInstanceId(device_info_handle.Get(),
                                        device_info_data,
                                        instance_id.get(),
                                        actual_length,
@@ -417,7 +417,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
     std::string* error) {
   // Retrieve required # of bytes for interface details
   ULONG required_length = 0;
-  BOOL success = SetupDiGetDeviceInterfaceDetail(device_info_handle,
+  BOOL success = SetupDiGetDeviceInterfaceDetail(device_info_handle.Get(),
                                                  device_interface_data,
                                                  NULL,
                                                  0,
@@ -438,7 +438,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
   device_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
 
   ULONG actual_length = required_length;
-  success = SetupDiGetDeviceInterfaceDetail(device_info_handle,
+  success = SetupDiGetDeviceInterfaceDetail(device_info_handle.Get(),
                                             device_interface_data,
                                             device_interface_detail_data,
                                             actual_length,
@@ -486,7 +486,7 @@ DeviceInfoResult EnumerateSingleBluetoothLowEnergyDevice(
   GUID BluetoothInterfaceGUID = GUID_BLUETOOTHLE_DEVICE_INTERFACE;
   SP_DEVICE_INTERFACE_DATA device_interface_data = {0};
   device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-  BOOL success = ::SetupDiEnumDeviceInterfaces(device_info_handle,
+  BOOL success = ::SetupDiEnumDeviceInterfaces(device_info_handle.Get(),
                                                NULL,
                                                &BluetoothInterfaceGUID,
                                                device_index,
