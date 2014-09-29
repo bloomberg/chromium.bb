@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testReadCharacteristicValue() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertTrue(characteristic != null, '\'characteristic\' is null');
   chrome.test.assertEq(charId, characteristic.instanceId);
 
@@ -15,29 +21,39 @@ var badCharId = 'char_id1';
 
 var characteristic = null;
 
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testReadCharacteristicValue]);
+}
+
+
 // 1. Unknown characteristic instanceId.
 readCharacteristicValue(badCharId, function (result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('\'badCharId\' did not cause failure');
+    earlyError('\'badCharId\' did not cause failure');
+    return;
   }
 
   // 2. Known characteristic instanceId, but call failure.
   readCharacteristicValue(charId, function (result) {
     if (result || !chrome.runtime.lastError) {
-      chrome.test.fail('readCharacteristicValue should have failed');
+      earlyError('readCharacteristicValue should have failed');
+      return;
     }
 
     // 3. Call should succeed.
     readCharacteristicValue(charId, function (result) {
       if (chrome.runtime.lastError) {
-        chrome.test.fail(chrome.runtime.lastError.message);
+        earlyError(chrome.runtime.lastError.message);
+        return;
       }
 
       characteristic = result;
 
-      chrome.test.sendMessage('ready', function (message) {
+      chrome.test.sendMessage('ready', function (reply) {
         chrome.test.runTests([testReadCharacteristicValue]);
       });
     });
   });
 });
+

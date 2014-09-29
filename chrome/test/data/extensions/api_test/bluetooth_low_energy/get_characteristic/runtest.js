@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testGetCharacteristic() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertTrue(characteristic != null,
                          'Characteristic is null.');
   chrome.test.assertEq('char_id0', characteristic.instanceId);
@@ -38,35 +44,41 @@ var badCharId = 'char_id1';
 
 var characteristic = null;
 
+function expectFailed(result) {
+  if (result || !chrome.runtime.lastError) {
+    error = 'getCharacteristic call should have failed';
+    chrome.test.runTests([testGetCharacteristic]);
+    return false;
+  }
+  return true;
+}
+
 // 1. Unknown characteristic instanceId.
 chrome.bluetoothLowEnergy.getCharacteristic(badCharId, function (result) {
-  if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('getCharacteristics should have failed');
-  }
+  if (!expectFailed(result))
+    return;
 
   // 2. Known characteristic instanceId, but the mapped device is unknown.
   chrome.bluetoothLowEnergy.getCharacteristic(charId, function (result) {
-    if (result || !chrome.runtime.lastError) {
-      chrome.test.fail('getCharacteristics should have failed');
-    }
+    if (!expectFailed(result))
+      return;
 
     // 3. Known characteristic instanceId, but the mapped service is unknown.
     chrome.bluetoothLowEnergy.getCharacteristic(charId, function (result) {
-      if (result || !chrome.runtime.lastError) {
-        chrome.test.fail('getCharacteristics should have failed');
-      }
+      if (!expectFailed(result))
+        return;
 
       // 4. Known characteristic instanceId, but the mapped service does not
       // know about the characteristic.
       chrome.bluetoothLowEnergy.getCharacteristic(charId, function (result) {
-        if (result || !chrome.runtime.lastError) {
-          chrome.test.fail('getCharacteristics should have failed');
-        }
+        if (!expectFailed(result))
+          return;
 
         // 5. Success.
         chrome.bluetoothLowEnergy.getCharacteristic(charId, function (result) {
           if (chrome.runtime.lastError) {
-            chrome.test.fail(chrome.runtime.lastError.message);
+            error = 'Unexpected error: ' + chrome.runtime.lastError.message;
+            chrome.test.runTests([testGetCharacteristic]);
           }
 
           characteristic = result;

@@ -278,6 +278,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetServices) {
 
   // Load and wait for setup.
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/get_services")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -306,6 +307,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
 
   // Load and wait for setup.
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/get_service")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -323,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
   catcher.RestrictToBrowserContext(browser()->profile());
 
   // Load the extension and let it set up.
-  ExtensionTestMessageListener listener("ready", true);
+  ExtensionTestMessageListener listener(true);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/service_events")));
 
@@ -347,6 +349,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
       mock_adapter_, device0_.get(), service0_.get());
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -375,9 +378,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   event_router()->GattDiscoveryCompleteForService(mock_adapter_,
                                                   service0_.get());
 
-  ExtensionTestMessageListener get_service_success_listener("getServiceSuccess",
-                                                            true);
+  ExtensionTestMessageListener get_service_success_listener(true);
   EXPECT_TRUE(get_service_success_listener.WaitUntilSatisfied());
+  ASSERT_EQ("getServiceSuccess", get_service_success_listener.message())
+      << get_service_success_listener.message();
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   testing::Mock::VerifyAndClearExpectations(device0_.get());
 
@@ -388,9 +392,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   event_router()->GattServiceRemoved(
       mock_adapter_, device0_.get(), service0_.get());
 
-  ExtensionTestMessageListener get_service_fail_listener("getServiceFail",
-                                                         true);
+  ExtensionTestMessageListener get_service_fail_listener(true);
   EXPECT_TRUE(get_service_fail_listener.WaitUntilSatisfied());
+  ASSERT_EQ("getServiceFail", get_service_fail_listener.message())
+      << get_service_fail_listener.message();
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   testing::Mock::VerifyAndClearExpectations(device0_.get());
 
@@ -408,6 +413,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
 
   // Wait for initial call to end with failure as there is no mapping.
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   // Set up for the rest of the calls before replying. Included services can be
@@ -500,6 +506,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristic) {
 
   // Load the extension and wait for first test.
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/get_characteristic")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -560,6 +567,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
           BluetoothGattCharacteristic::kPropertyWritableAuxiliaries));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/characteristic_properties")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -594,8 +602,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_removed_characteristic")));
 
-  ExtensionTestMessageListener listener("ready", true);
+  ExtensionTestMessageListener listener(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   testing::Mock::VerifyAndClearExpectations(device0_.get());
   testing::Mock::VerifyAndClearExpectations(service0_.get());
@@ -609,6 +618,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
   listener.Reply("go");
   listener.Reset();
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
 
   listener.Reply("go");
 
@@ -713,9 +723,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
       .WillOnce(InvokeCallbackArgument<0>(value));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/read_characteristic_value")));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.WaitUntilSatisfied();
 
   listener.Reply("go");
 
@@ -755,6 +766,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
   EXPECT_CALL(*chrc0_, GetValue()).Times(1).WillOnce(ReturnRef(write_value));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/write_characteristic_value")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -796,6 +808,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptors) {
       .WillOnce(Return(descriptors));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/get_descriptors")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -840,6 +853,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptor) {
 
   // Load the extension and wait for first test.
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/get_descriptor")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -879,8 +893,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_removed_descriptor")));
 
-  ExtensionTestMessageListener listener("ready", true);
+  ExtensionTestMessageListener listener(true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   testing::Mock::VerifyAndClearExpectations(device0_.get());
   testing::Mock::VerifyAndClearExpectations(service0_.get());
@@ -896,6 +911,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
   listener.Reply("go");
   listener.Reset();
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
 
   listener.Reply("go");
 
@@ -970,6 +986,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
       .WillOnce(InvokeCallbackArgument<0>(value));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/read_descriptor_value")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -1018,6 +1035,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
   EXPECT_CALL(*desc0_, GetValue()).Times(1).WillOnce(ReturnRef(write_value));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/write_descriptor_value")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -1077,7 +1095,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
-  ExtensionTestMessageListener listener("ready", true);
+  ExtensionTestMessageListener listener(true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/uuid_permission_events")));
 
@@ -1097,6 +1115,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply("go");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_EQ("ready", listener.message()) << listener.message();
 
   event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
   event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
@@ -1184,15 +1203,17 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
       .Times(1)
       .WillOnce(SaveArg<0>(&connect_callback));
 
-  ExtensionTestMessageListener listener("ready", true);
+  ExtensionTestMessageListener listener(true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/connect_in_progress")));
 
-  listener.WaitUntilSatisfied();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
   connect_callback.Run(conn_ptr.Pass());
 
   listener.Reset();
-  listener.WaitUntilSatisfied();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_EQ("ready", listener.message()) << listener.message();
   disconnect_callback.Run();
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -1250,6 +1271,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
               session1));
 
   ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/start_stop_notifications")));
 

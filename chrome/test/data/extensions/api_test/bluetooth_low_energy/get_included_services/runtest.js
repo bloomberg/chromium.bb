@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testGetIncludedServices() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertTrue(services != null, '\'services\' is null');
   chrome.test.assertEq(1, services.length);
   chrome.test.assertEq(includedId, services[0].instanceId);
@@ -14,34 +20,47 @@ var serviceId = 'service_id0';
 var includedId = 'service_id1';
 var services = null;
 
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testGetIncludedServices]);
+}
+
 function failOnError() {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    earlyError(chrome.runtime.lastError.message);
+    return true;
   }
+  return false;
 }
 
 chrome.bluetoothLowEnergy.getIncludedServices(serviceId, function (result) {
   // No mapping for |serviceId|.
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('getIncludedServices should have failed');
+    earlyError('getIncludedServices should have failed');
+    return;
   }
 
   chrome.test.sendMessage('ready', function (message) {
     chrome.bluetoothLowEnergy.getIncludedServices(serviceId, function (result) {
-      failOnError();
+      if (failOnError())
+        return;
+
       if (!result || result.length != 0) {
-        chrome.test.fail('Included services should be empty.');
+        earlyError('Included services should be empty.');
+        return;
       }
 
       chrome.bluetoothLowEnergy.getIncludedServices(serviceId,
           function (result) {
-            failOnError();
+            if (failOnError())
+              return;
+
             services = result;
 
             chrome.test.sendMessage('ready', function (message) {
               chrome.test.runTests([testGetIncludedServices]);
             });
-      });
+          });
     });
   });
 });

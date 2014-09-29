@@ -7,7 +7,7 @@ var descId = 'desc_id0';
 
 getDescriptor(descId, function (result) {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    chrome.test.sendMessage(chrome.runtime.lastError.message);
   }
 
   chrome.test.assertEq(descId, result.instanceId);
@@ -15,7 +15,7 @@ getDescriptor(descId, function (result) {
   chrome.test.sendMessage('ready', function (message) {
     getDescriptor(descId, function (result) {
       if (result || !chrome.runtime.lastError) {
-        chrome.test.fail('Call to getDescriptor should have failed');
+        chrome.test.sendMessage('Call to getDescriptor should have failed');
       }
 
       chrome.test.sendMessage('ready', function (message) {

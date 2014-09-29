@@ -6,7 +6,7 @@ chrome.bluetoothLowEnergy.onServiceAdded.addListener(function (result) {
   // getService should return this service.
   chrome.bluetoothLowEnergy.getService(result.instanceId, function (service) {
     if (chrome.runtime.lastError) {
-      chrome.test.fail(chrome.runtime.lastError.message);
+      chrome.test.sendMessage(chrome.runtime.lastError.message);
     }
 
     chrome.test.assertEq(result.instanceId, service.instanceId);
@@ -19,7 +19,7 @@ chrome.bluetoothLowEnergy.onServiceRemoved.addListener(function (result) {
   // getService should return error.
   chrome.bluetoothLowEnergy.getService(result.instanceId, function (service) {
     if (service || !chrome.runtime.lastError) {
-      chrome.test.fail('Call to getService should have failed.');
+      chrome.test.sendMessage('Call to getService should have failed.');
     }
 
     chrome.test.sendMessage('getServiceFail', function (message) {

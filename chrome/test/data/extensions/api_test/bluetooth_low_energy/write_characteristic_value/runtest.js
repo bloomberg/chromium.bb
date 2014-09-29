@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testWriteCharacteristicValue() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertTrue(characteristic != null, '\'characteristic\' is null');
   chrome.test.assertEq(charId, characteristic.instanceId);
 
@@ -29,22 +35,30 @@ var writeValue = new ArrayBuffer(bytes.length);
 var valueBytes = new Uint8Array(writeValue);
 valueBytes.set(bytes);
 
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testWriteCharacteristicValue]);
+}
+
 // 1. Unknown characteristic instanceId.
 writeCharacteristicValue(badCharId, writeValue, function (result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('\'badCharId\' did not cause failure');
+    earlyError('\'badCharId\' did not cause failure');
+    return;
   }
 
   // 2. Known characteristic instanceId, but call failure.
   writeCharacteristicValue(charId, writeValue, function (result) {
     if (result || !chrome.runtime.lastError) {
-      chrome.test.fail('writeCharacteristicValue should have failed');
+      earlyError('writeCharacteristicValue should have failed');
+      return;
     }
 
     // 3. Call should succeed.
     writeCharacteristicValue(charId, writeValue, function (result) {
       if (chrome.runtime.lastError) {
-        chrome.test.fail(chrome.runtime.lastError.message);
+        earlyError(chrome.runtime.lastError.message);
+        return;
       }
 
       chrome.bluetoothLowEnergy.getCharacteristic(charId, function (result) {

@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testGetService() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertTrue(service != null);
 
   chrome.test.assertEq(serviceId, service.instanceId);
@@ -20,34 +26,48 @@ var badServiceId = 'service_id1';
 
 var service = null;
 
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testGetService]);
+}
+
 function failOnError() {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    earlyError(chrome.runtime.lastError.message);
+    return true;
   }
+  return false;
+}
+
+function failOnSuccess(result) {
+  if (result || !chrome.runtime.lastError) {
+    earlyError('Unexpected service.');
+    return true;
+  }
+  return false;
 }
 
 // 1. Unknown service instanceId.
 chrome.bluetoothLowEnergy.getService(badServiceId, function(result) {
-  if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('Unexpected service.');
-  }
+  if (failOnSuccess(result))
+    return;
 
   // 2. Known service instanceId, but the mapped device is unknown.
   chrome.bluetoothLowEnergy.getService(serviceId, function(result) {
-    if (result || !chrome.runtime.lastError) {
-      chrome.test.fail('Unexpected service.');
-    }
+    if (failOnSuccess(result))
+      return;
 
     // 3. Known service instanceId, but the mapped device does not know about
     // the service.
     chrome.bluetoothLowEnergy.getService(serviceId, function(result) {
-      if (result || !chrome.runtime.lastError) {
-        chrome.test.fail('Unexpected service.');
-      }
+      if (failOnSuccess(result))
+        return;
 
       // 4. Success.
       chrome.bluetoothLowEnergy.getService(serviceId, function(result) {
-        failOnError();
+        if (failOnError())
+          return;
+
         service = result;
 
         chrome.test.sendMessage('ready', function(message) {

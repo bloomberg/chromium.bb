@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testGetDescriptors() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertEq(2, descrs.length);
 
   chrome.test.assertEq('desc_id0', descrs[0].instanceId);
@@ -35,34 +41,48 @@ var badCharId = 'char_id1';
 
 var descrs = null;
 
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testGetDescriptors]);
+}
+
 function failOnError() {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    earlyError(chrome.runtime.lastError.message);
+    return true;
   }
+  return false;
 }
 
 // 1. Unknown characteristic ID.
 getDescriptors(badCharId, function (result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('getDescriptors should have failed for \'badCharId\'');
+    earlyError('getDescriptors should have failed for \'badCharId\'');
+    return;
   }
 
   // 2. Known ID, unknown characteristic.
   getDescriptors(charId, function (result) {
     if (result || !chrome.runtime.lastError) {
-      chrome.test.fail('getDescriptors should have failed');
+      earlyError('getDescriptors should have failed');
+      return;
     }
 
     // 3. Empty descriptors.
     getDescriptors(charId, function (result) {
-      failOnError();
+      if (failOnError())
+        return;
+
       if (!result || result.length != 0) {
-        chrome.test.fail('Descriptors should be empty');
+        earlyError('Descriptors should be empty');
+        return;
       }
 
       // 4. Success.
       getDescriptors(charId, function (result) {
-        failOnError();
+        if (failOnError())
+          return;
+
         descrs = result;
 
         chrome.test.sendMessage('ready', function (message) {

@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testWriteDescriptorValue() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertTrue(descriptor != null, '\'descriptor\' is null');
   chrome.test.assertEq(descId, descriptor.instanceId);
 
@@ -14,6 +20,11 @@ function testWriteDescriptorValue() {
   }
 
   chrome.test.succeed();
+}
+
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testWriteDescriptorValue]);
 }
 
 var writeDescriptorValue = chrome.bluetoothLowEnergy.writeDescriptorValue;
@@ -30,19 +41,22 @@ valueBytes.set(bytes);
 // 1. Unknown descriptor instanceId.
 writeDescriptorValue(badDescId, writeValue, function (result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('\'badDescId\' did not cause failure');
+    earlyError('\'badDescId\' did not cause failure');
+    return;
   }
 
   // 2. Known descriptor instanceId, but call failure.
   writeDescriptorValue(descId, writeValue, function (result) {
     if (result || !chrome.runtime.lastError) {
-      chrome.test.fail('writeDescriptorValue should have failed');
+      earlyError('writeDescriptorValue should have failed');
+      return;
     }
 
     // 3. Call should succeed.
     writeDescriptorValue(descId, writeValue, function (result) {
       if (chrome.runtime.lastError) {
-        chrome.test.fail(chrome.runtime.lastError.message);
+        earlyError(chrome.runtime.lastError.message);
+        return;
       }
 
       chrome.bluetoothLowEnergy.getDescriptor(descId, function (result) {

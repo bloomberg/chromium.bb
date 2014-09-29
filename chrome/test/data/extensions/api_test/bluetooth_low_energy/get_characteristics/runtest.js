@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testGetCharacteristics() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertEq(2, chrcs.length);
 
   chrome.test.assertEq('char_id0', chrcs[0].instanceId);
@@ -52,25 +58,37 @@ function testGetCharacteristics() {
 var serviceId = 'service_id0';
 var chrcs = null;
 
-function failOnError() {
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testGetCharacteristics]);
+}
+
+function expectSuccess() {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    earlyError('Unexpected Error: ' + chrome.runtime.lastError.message);
   }
+  return error !== undefined;
 }
 
 chrome.bluetoothLowEnergy.getCharacteristics(serviceId, function (result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('getCharacteristics should have failed.');
+    earlyError('getCharacteristics should have failed.');
+    return;
   }
 
   chrome.bluetoothLowEnergy.getCharacteristics(serviceId, function (result) {
-    failOnError();
+    if (expectSuccess())
+      return;
+
     if (!result || result.length != 0) {
-      chrome.test.fail('Characteristics should be empty.');
+      earlyError('Characteristics should be empty.');
+      return;
     }
 
     chrome.bluetoothLowEnergy.getCharacteristics(serviceId, function (result) {
-      failOnError();
+      if (expectSuccess())
+        return;
+
       chrcs = result;
 
       chrome.test.sendMessage('ready', function (message) {

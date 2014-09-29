@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testGetServices() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertEq(2, services.length);
 
   chrome.test.assertEq('service_id0', services[0].instanceId);
@@ -25,25 +31,38 @@ function testGetServices() {
 var deviceAddress = '11:22:33:44:55:66';
 var services = null;
 
+function earlyError(message) {
+  error = message;
+  chrome.test.runTests([testGetServices]);
+}
+
 function failOnError() {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    earlyError(chrome.runtime.lastError.message);
+    return true;
   }
+  return false;
 }
 
 chrome.bluetoothLowEnergy.getServices(deviceAddress, function(result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('Unexpected device.');
+    earlyError('Unexpected device.');
+    return;
   }
 
   chrome.bluetoothLowEnergy.getServices(deviceAddress, function(result) {
-    failOnError();
+    if (failOnError())
+      return;
+
     if (!result || result.length != 0) {
-      chrome.test.fail('Services should be empty.');
+      earlyError('Services should be empty.');
+      return;
     }
 
     chrome.bluetoothLowEnergy.getServices(deviceAddress, function(result) {
-      failOnError();
+      if (failOnError())
+        return;
+
       services = result;
 
       chrome.test.sendMessage('ready', function(message) {

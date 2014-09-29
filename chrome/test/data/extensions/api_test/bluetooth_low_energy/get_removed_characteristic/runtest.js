@@ -7,7 +7,7 @@ var charId = 'char_id0';
 
 getCharacteristic(charId, function (result) {
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    chrome.test.sendMessage(chrome.runtime.lastError.message);
   }
 
   chrome.test.assertEq(charId, result.instanceId);
@@ -15,7 +15,7 @@ getCharacteristic(charId, function (result) {
   chrome.test.sendMessage('ready', function (message) {
     getCharacteristic(charId, function (result) {
       if (result || !chrome.runtime.lastError) {
-        chrome.test.fail('Call to getCharacteristic should have failed');
+        chrome.test.sendMessage('Call to getCharacteristic should have failed');
       }
 
       chrome.test.sendMessage('ready', function (message) {

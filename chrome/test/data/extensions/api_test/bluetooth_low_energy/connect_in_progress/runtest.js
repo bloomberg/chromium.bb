@@ -10,12 +10,14 @@ var errorInProgress = 'In progress';
 function expectError(message) {
   if (!chrome.runtime.lastError ||
       chrome.runtime.lastError.message != message)
-    chrome.test.fail('Expected error: ' + message);
+    chrome.test.sendMessage('Expected error: <' + message + '> got <'
+        + chrome.runtime.lastError.message + '>');
 }
 
 function expectSuccess() {
   if (chrome.runtime.lastError)
-    chrome.test.fail('Unexpected error: ' + chrome.runtime.lastError.message);
+    chrome.test.sendMessage('Unexpected error: '
+        + chrome.runtime.lastError.message);
 }
 
 ble.connect(deviceAddress0, function () {

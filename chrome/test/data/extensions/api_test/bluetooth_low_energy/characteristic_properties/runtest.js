@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var error;
+
 function testCharacteristicProperties() {
+  if (error !== undefined) {
+    chrome.test.sendMessage('fail');
+    chrome.test.fail(error);
+  }
   chrome.test.assertEq(requestCount, characteristics.length);
 
   for (var i = 0; i < requestCount; i++) {
@@ -43,14 +49,21 @@ function compareProperties(a, b) {
 }
 
 function failOnError() {
+  if (error !== undefined)
+    return true;
+
   if (chrome.runtime.lastError) {
-    chrome.test.fail(chrome.runtime.lastError.message);
+    error = 'Unexpected error: ' + chrome.runtime.lastError.message;
+    chrome.test.runTests([testCharacteristicProperties]);
   }
+  return false;
 }
 
 for (var i = 0; i < requestCount; i++) {
   chrome.bluetoothLowEnergy.getCharacteristic(charId, function (result) {
-    failOnError();
+    if (failOnError())
+      return;
+
     characteristics.push(result);
 
     if (characteristics.length == requestCount) {
