@@ -949,6 +949,9 @@ void ProfileManager::OnProfileCreated(Profile* profile,
   } else {
     profile = NULL;
     profiles_info_.erase(iter);
+    // TODO(yiyaoliu): This is temporary, remove it after it's not used.
+    UMA_HISTOGRAM_COUNTS_100("UMA.ProfilesCount.AfterErase",
+                             profiles_info_.size());
   }
 
   if (profile) {

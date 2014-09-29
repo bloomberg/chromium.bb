@@ -35569,6 +35569,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UMA.ProfilesCount.AfterErase">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    Record the number of loaded profiles when a profile is erased from the
+    profiles map kept by profile manager.
+  </summary>
+</histogram>
+
 <histogram name="UMA.ProfileSignInStatus" enum="ProfileSigninStatus">
   <owner>asvitkine@chromium.org</owner>
   <owner>yiyaoliu@chromium.org</owner>
