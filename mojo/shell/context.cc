@@ -185,8 +185,14 @@ void Context::Init() {
   if (command_line->HasSwitch(switches::kEnableExternalApplications)) {
     listener_ = ExternalApplicationListener::Create(
         task_runners_->shell_runner(), task_runners_->io_runner());
+
+    base::FilePath socket_path =
+        command_line->GetSwitchValuePath(switches::kEnableExternalApplications);
+    if (socket_path.empty())
+      socket_path = ExternalApplicationListener::ConstructDefaultSocketPath();
+
     listener_->ListenInBackground(
-        ExternalApplicationListener::ConstructDefaultSocketPath(),
+        socket_path,
         base::Bind(&ApplicationManager::RegisterExternalApplication,
                    base::Unretained(&application_manager_)));
   }
