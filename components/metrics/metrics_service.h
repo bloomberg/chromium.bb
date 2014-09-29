@@ -364,6 +364,9 @@ class MetricsService : public base::HistogramFlattener {
   // Creates a new MetricsLog instance with the given |log_type|.
   scoped_ptr<MetricsLog> CreateLog(MetricsLog::LogType log_type);
 
+  // Records the current environment (system profile) in |log|.
+  void RecordCurrentEnvironment(MetricsLog* log);
+
   // Record complete list of histograms into the current log.
   // Called when we close a log.
   void RecordCurrentHistograms();

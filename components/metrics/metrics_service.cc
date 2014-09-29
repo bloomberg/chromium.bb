@@ -766,10 +766,7 @@ void MetricsService::CloseCurrentLog() {
   // MetricsLog class.
   MetricsLog* current_log = log_manager_.current_log();
   DCHECK(current_log);
-  std::vector<variations::ActiveGroupId> synthetic_trials;
-  GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  current_log->RecordEnvironment(
-      metrics_providers_.get(), synthetic_trials, GetInstallDate());
+  RecordCurrentEnvironment(current_log);
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
@@ -972,11 +969,7 @@ void MetricsService::PrepareInitialStabilityLog() {
 void MetricsService::PrepareInitialMetricsLog() {
   DCHECK(state_ == INIT_TASK_DONE || state_ == SENDING_INITIAL_STABILITY_LOG);
 
-  std::vector<variations::ActiveGroupId> synthetic_trials;
-  GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  initial_metrics_log_->RecordEnvironment(metrics_providers_.get(),
-                                          synthetic_trials,
-                                          GetInstallDate());
+  RecordCurrentEnvironment(initial_metrics_log_.get());
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
@@ -1175,6 +1168,15 @@ scoped_ptr<MetricsLog> MetricsService::CreateLog(MetricsLog::LogType log_type) {
                                         log_type,
                                         client_,
                                         local_state_));
+}
+
+void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
+  std::vector<variations::ActiveGroupId> synthetic_trials;
+  GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  log->RecordEnvironment(metrics_providers_.get(), synthetic_trials,
+                         GetInstallDate());
+  UMA_HISTOGRAM_COUNTS_100("UMA.SyntheticTrials.Count",
+                           synthetic_trials.size());
 }
 
 void MetricsService::RecordCurrentHistograms() {

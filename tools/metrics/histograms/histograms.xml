@@ -35618,6 +35618,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UMA.SyntheticTrials.Count">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of synthetic field trials added to the UMA log when the system
+    profile is recorded. Since this is done prior to capturing the histograms
+    from the current process, this will generally be logged once per UMA log.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Unacceptable_Log_Discarded">
   <obsolete>
     Deprecated as of May, 2012 (i.e. Chrome 21+).  Replaced by the
