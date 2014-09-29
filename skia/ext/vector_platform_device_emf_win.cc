@@ -510,8 +510,8 @@ void VectorPlatformDeviceEmf::drawPosText(const SkDraw& draw,
                                           const void* text,
                                           size_t len,
                                           const SkScalar pos[],
-                                          SkScalar constY,
                                           int scalarsPerPos,
+                                          const SkPoint& offset,
                                           const SkPaint& paint) {
   SkGDIFontSetup setup;
   bool useDrawText = true;
@@ -519,8 +519,8 @@ void VectorPlatformDeviceEmf::drawPosText(const SkDraw& draw,
   if (scalarsPerPos == 2 && len >= 2 &&
       SkPaint::kUTF8_TextEncoding != paint.getTextEncoding() &&
       setup.useGDI(hdc_, paint)) {
-    int startX = SkScalarRoundToInt(pos[0]);
-    int startY = SkScalarRoundToInt(pos[1] + getAscent(paint));
+    int startX = SkScalarRoundToInt(pos[0] + offset.x());
+    int startY = SkScalarRoundToInt(pos[1] + offset.y() + getAscent(paint));
     const int count = len >> 1;
     SkAutoSTMalloc<64, INT> storage(count);
     INT* advances = storage.get();
@@ -552,9 +552,11 @@ void VectorPlatformDeviceEmf::drawPosText(const SkDraw& draw,
     const char* curr = reinterpret_cast<const char*>(text);
     const char* stop = curr + len;
     while (curr < stop) {
-      SkScalar y = (1 == scalarsPerPos) ? constY : pos[1];
+      SkScalar x = offset.x() + pos[0];
+      SkScalar y = offset.y() + (2 == scalarsPerPos ? pos[1] : 0);
+
       size_t bytes = bytesPerCodePoint(curr);
-      drawText(draw, curr, bytes, pos[0], y, paint);
+      drawText(draw, curr, bytes, x, y, paint);
       curr += bytes;
       pos += scalarsPerPos;
     }

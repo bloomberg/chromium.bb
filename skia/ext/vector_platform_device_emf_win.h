@@ -59,8 +59,8 @@ class VectorPlatformDeviceEmf : public SkBitmapDevice, public PlatformDevice {
   virtual void drawText(const SkDraw& draw, const void* text, size_t len,
                         SkScalar x, SkScalar y, const SkPaint& paint) OVERRIDE;
   virtual void drawPosText(const SkDraw& draw, const void* text, size_t len,
-                           const SkScalar pos[], SkScalar constY,
-                           int scalarsPerPos, const SkPaint& paint) OVERRIDE;
+                           const SkScalar pos[], int scalarsPerPos,
+                           const SkPoint& offset, const SkPaint& paint) OVERRIDE;
   virtual void drawTextOnPath(const SkDraw& draw, const void* text, size_t len,
                               const SkPath& path, const SkMatrix* matrix,
                               const SkPaint& paint) OVERRIDE;

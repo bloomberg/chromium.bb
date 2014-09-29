@@ -222,8 +222,8 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                            const void* text,
                            size_t len,
                            const SkScalar pos[],
-                           SkScalar const_y,
                            int scalars_per_pos,
+                           const SkPoint& offset,
                            const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
     if (!GetBitmapFromPaint(paint, &bitmap))
@@ -235,21 +235,13 @@ class GatherPixelRefDevice : public SkBitmapDevice {
     // Similar to SkDraw asserts.
     SkASSERT(scalars_per_pos == 1 || scalars_per_pos == 2);
 
-    SkPoint min_point;
-    SkPoint max_point;
-    if (scalars_per_pos == 1) {
-      min_point.set(pos[0], const_y);
-      max_point.set(pos[0], const_y);
-    } else if (scalars_per_pos == 2) {
-      min_point.set(pos[0], const_y + pos[1]);
-      max_point.set(pos[0], const_y + pos[1]);
-    }
+    SkPoint min_point = SkPoint::Make(offset.x() + pos[0],
+                                      offset.y() + (2 == scalars_per_pos ? pos[1] : 0));
+    SkPoint max_point = min_point;
 
     for (size_t i = 0; i < len; ++i) {
-      SkScalar x = pos[i * scalars_per_pos];
-      SkScalar y = const_y;
-      if (scalars_per_pos == 2)
-        y += pos[i * scalars_per_pos + 1];
+      SkScalar x = offset.x() + pos[i * scalars_per_pos];
+      SkScalar y = offset.y() + (2 == scalars_per_pos ? pos[i * scalars_per_pos + 1] : 0);
 
       min_point.set(std::min(x, min_point.x()), std::min(y, min_point.y()));
       max_point.set(std::max(x, max_point.x()), std::max(y, max_point.y()));
