@@ -142,6 +142,8 @@
         'common/spannable_test.unitjs',
         'chromevox/injected/event_watcher_test.unitjs',
         'chromevox/injected/live_regions_test.unitjs',
+        'chromevox/injected/user_commands_test.unitjs',
+        'chromevox/injected/navigation_manager_test.unitjs',
         'cvox2/background/background.extjs',
         'host/chrome/braille_display_manager_test.unitjs',
         'host/chrome/braille_input_handler_test.unitjs',
