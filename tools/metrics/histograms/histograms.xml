@@ -42296,6 +42296,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="896" label="EASYUNLOCKPRIVATE_GETUSERINFO"/>
   <int value="897" label="HOTWORDPRIVATE_GETLAUNCHSTATE"/>
   <int value="898" label="HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED"/>
+  <int value="899" label="WEBVIEWINTERNAL_LOADDATAWITHBASEURL"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

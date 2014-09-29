@@ -184,7 +184,7 @@
           {
             "type": "function",
             "name": "callback",
-            "description": "Called after the current zoom factor is retreived.",
+            "description": "Called after the current zoom factor is retrieved.",
             "parameters": [
               {
                 "type": "number",
@@ -290,6 +290,40 @@
             "description": "Determines what to do with the active match after the find session has ended. 'clear' will clear the highlighting over the active match; 'keep' will keep the active match highlighted; 'activate' will keep the active match highlighted and simulate a user click on that match.",
             "optional": true,
             "enum": ["clear", "keep", "activate"]
+          }
+        ]
+      },
+      {
+	"name": "loadDataWithBaseUrl",
+	"type": "function",
+	"description": "Loads a data URL with a specified base URL used for relative links. Optionally, a virtual URL can be provided to be shown to the user instead of the data URL.",
+	"parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "dataUrl",
+            "description" : "The data URL to load."
+          },
+          {
+            "type": "string",
+            "name": "baseUrl",
+            "description": "The base URL that will be used for relative links."
+          },
+	  {
+            "type": "string",
+            "name": "virtualUrl",
+            "description": "The URL that will be displayed to the user.",
+	    "optional": true
+          },
+	  {
+            "type": "function",
+            "name": "callback",
+            "description": "Called internally for the purpose of reporting errors to console.error().",
+            "parameters": []
           }
         ]
       },

@@ -19,6 +19,11 @@ const char kAttributeSrc[] = "src";
 // API namespace.
 const char kAPINamespace[] = "webViewInternal";
 
+// API error messages.
+const char kAPILoadDataInvalidDataURL[] = "Invalid data URL \"%s\".";
+const char kAPILoadDataInvalidBaseURL[] = "Invalid base URL \"%s\".";
+const char kAPILoadDataInvalidVirtualURL[] = "Invalid virtual URL \"%s\".";
+
 // Events.
 const char kEventClose[] = "webViewInternal.onClose";
 const char kEventConsoleMessage[] = "webViewInternal.onConsoleMessage";

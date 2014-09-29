@@ -428,7 +428,7 @@
 	  {
             "type": "function",
             "name": "callback",
-            "description": "Called after the current zoom factor is retreived.",
+            "description": "Called after the current zoom factor is retrieved.",
             "parameters": [
               {
                 "type": "number",
@@ -538,6 +538,29 @@
         ]
       },
       {
+	"name": "loadDataWithBaseUrl",
+	"type": "function",
+	"description": "Loads a data URL with a specified base URL used for relative links. Optionally, a virtual URL can be provided to be shown to the user instead of the data URL.",
+	"parameters": [
+          {
+            "type": "string",
+            "name": "dataUrl",
+            "description" : "The data URL to load."
+          },
+          {
+            "type": "string",
+            "name": "baseUrl",
+            "description": "The base URL that will be used for relative links."
+          },
+	  {
+            "type": "string",
+            "name": "virtualUrl",
+            "description": "The URL that will be displayed to the user.",
+	    "optional": true
+          }
+        ]
+      },
+      {
         "name": "terminate",
         "type": "function",
         "description": "Forcibly kills the guest web page's renderer process. This may affect multiple <code>webview</code> tags in the current app if they share the same process, but it will not affect <code>webview</code> tags in other apps.",
@@ -614,7 +637,7 @@
         "parameters": [
           {
             "name": "processID",
-            "description": "Chrome's interal ID of the process that exited.",
+            "description": "Chrome's internal ID of the process that exited.",
             "type": "integer"
           },
           {

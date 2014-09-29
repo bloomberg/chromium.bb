@@ -236,6 +236,23 @@ class WebViewInternalStopFindingFunction
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalStopFindingFunction);
 };
 
+class WebViewInternalLoadDataWithBaseUrlFunction
+    : public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.loadDataWithBaseUrl",
+                             WEBVIEWINTERNAL_LOADDATAWITHBASEURL);
+
+  WebViewInternalLoadDataWithBaseUrlFunction();
+
+ protected:
+  virtual ~WebViewInternalLoadDataWithBaseUrlFunction();
+
+ private:
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalLoadDataWithBaseUrlFunction);
+};
+
 class WebViewInternalGoFunction : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.go", WEBVIEWINTERNAL_GO);

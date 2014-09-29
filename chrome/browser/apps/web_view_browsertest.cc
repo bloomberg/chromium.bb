@@ -2260,6 +2260,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFindAPI_findupdate) {
   TestHelper("testFindAPI_findupdate", "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
+  TestHelper("testLoadDataAPI", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
 // <webview> screenshot capture fails with ubercomp.
 // See http://crbug.com/327035.
 IN_PROC_BROWSER_TEST_F(WebViewCaptureTest,

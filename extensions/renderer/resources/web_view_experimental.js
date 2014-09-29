@@ -9,6 +9,7 @@
 // Chrome.
 
 var WebViewInternal = require('webView').WebViewInternal;
+var WebView = require('webViewInternal').WebView;
 
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
   return {};
@@ -24,8 +25,29 @@ WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.guestInstanceId, spec, callback);
 };
 
+/** @private */
+WebViewInternal.prototype.loadDataWithBaseUrl = function(
+    dataUrl, baseUrl, virtualUrl) {
+  if (!this.guestInstanceId) {
+    return;
+  }
+  WebView.loadDataWithBaseUrl(
+      this.guestInstanceId, dataUrl, baseUrl, virtualUrl, function () {
+        // Report any errors.
+        if (chrome.runtime.lastError != undefined) {
+          window.console.error(
+              "Error while running webview.loadDataWithBaseUrl: " +
+                  chrome.runtime.lastError.message);
+        }
+      });
+};
+
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.captureVisibleRegion = function(spec, callback) {
     privates(this).internal.captureVisibleRegion(spec, callback);
   };
+
+  proto.loadDataWithBaseUrl = function(dataUrl, baseUrl, virtualUrl) {
+    privates(this).internal.loadDataWithBaseUrl(dataUrl, baseUrl, virtualUrl);
+  }
 };

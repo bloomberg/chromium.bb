@@ -77,6 +77,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Sets the transparency of the guest.
   void SetAllowTransparency(bool allow);
 
+  // Loads a data URL with a specified base URL and virtual URL.
+  bool LoadDataWithBaseURL(const std::string& data_url,
+                           const std::string& base_url,
+                           const std::string& virtual_url,
+                           std::string* error);
+
   // GuestViewBase implementation.
   virtual const char* GetAPINamespace() const OVERRIDE;
   virtual int GetTaskPrefix() const OVERRIDE;

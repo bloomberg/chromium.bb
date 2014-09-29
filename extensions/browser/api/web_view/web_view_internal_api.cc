@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/web_view/web_view_internal_api.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -298,6 +299,31 @@ bool WebViewInternalStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
 
   guest->StopFinding(action);
   return true;
+}
+
+WebViewInternalLoadDataWithBaseUrlFunction::
+    WebViewInternalLoadDataWithBaseUrlFunction() {
+}
+
+WebViewInternalLoadDataWithBaseUrlFunction::
+    ~WebViewInternalLoadDataWithBaseUrlFunction() {
+}
+
+bool WebViewInternalLoadDataWithBaseUrlFunction::RunAsyncSafe(
+    WebViewGuest* guest) {
+  scoped_ptr<webview::LoadDataWithBaseUrl::Params> params(
+      webview::LoadDataWithBaseUrl::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // If a virtual URL was provided, use it. Otherwise, the user will be shown
+  // the data URL.
+  std::string virtual_url =
+      params->virtual_url ? *params->virtual_url : params->data_url;
+
+  bool successful = guest->LoadDataWithBaseURL(
+      params->data_url, params->base_url, virtual_url, &error_);
+  SendResponse(successful);
+  return successful;
 }
 
 WebViewInternalGoFunction::WebViewInternalGoFunction() {

@@ -28,6 +28,9 @@ embedder.setUp_ = function(config) {
   embedder.redirectGuestURLDest = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/guest_redirect.html';
   embedder.closeSocketURL = embedder.baseGuestURL + '/close-socket';
+  embedder.testImageBaseURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/';
+  embedder.virtualURL = 'http://virtualurl/';
 };
 
 window.runTest = function(testName) {
@@ -1827,6 +1830,43 @@ function testFindAPI_findupdate() {
   document.body.appendChild(webview);
 };
 
+function testLoadDataAPI() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+
+  var loadstopListener2 = function(e) {
+    // Test the virtual URL.
+    embedder.test.assertEq(webview.src, embedder.virtualURL);
+
+    // Test that the image was loaded from the right source.
+    webview.executeScript(
+        {code: "document.querySelector('img').src"}, function(e) {
+          embedder.test.assertEq(e, embedder.testImageBaseURL + "test.bmp");
+
+          // Test that insertCSS works (executeScript already works to reach
+          // this point).
+          webview.insertCSS({code: ''}, function() {
+            embedder.test.succeed();
+          });
+        });
+  }
+
+  var loadstopListener1 = function(e) {
+    webview.removeEventListener('loadstop', loadstopListener1);
+    webview.addEventListener('loadstop', loadstopListener2);
+
+    // Load a data URL containing a relatively linked image, with the
+    // image's base URL specified, and a virtual URL provided.
+    webview.loadDataWithBaseUrl("data:text/html;base64,PGh0bWw+CiAgVGhpcyBpcy" +
+        "BhIHRlc3QuPGJyPgogIDxpbWcgc3JjPSJ0ZXN0LmJtcCI+PGJyPgo8L2h0bWw+Cg==",
+                                embedder.testImageBaseURL,
+                                embedder.virtualURL);
+  }
+
+  webview.addEventListener('loadstop', loadstopListener1);
+  document.body.appendChild(webview);
+};
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -1897,7 +1937,8 @@ embedder.test.testList = {
   'testScreenshotCapture' : testScreenshotCapture,
   'testZoomAPI' : testZoomAPI,
   'testFindAPI': testFindAPI,
-  'testFindAPI_findupdate': testFindAPI
+  'testFindAPI_findupdate': testFindAPI,
+  'testLoadDataAPI': testLoadDataAPI
 };
 
 onload = function() {

@@ -999,6 +999,49 @@ void WebViewGuest::SetAllowTransparency(bool allow) {
   web_contents()->GetRenderViewHost()->GetView()->SetBackgroundOpaque(!allow);
 }
 
+bool WebViewGuest::LoadDataWithBaseURL(const std::string& data_url,
+                                       const std::string& base_url,
+                                       const std::string& virtual_url,
+                                       std::string* error) {
+  // Make GURLs from URLs.
+  const GURL data_gurl = GURL(data_url);
+  const GURL base_gurl = GURL(base_url);
+  const GURL virtual_gurl = GURL(virtual_url);
+
+  // Check that the provided URLs are valid.
+  // |data_url| must be a valid data URL.
+  if (!data_gurl.is_valid() || !data_gurl.SchemeIs(url::kDataScheme)) {
+    base::SStringPrintf(
+        error, webview::kAPILoadDataInvalidDataURL, data_url.c_str());
+    return false;
+  }
+  // |base_url| must be a valid URL.
+  if (!base_gurl.is_valid()) {
+    base::SStringPrintf(
+        error, webview::kAPILoadDataInvalidBaseURL, base_url.c_str());
+    return false;
+  }
+  // |virtual_url| must be a valid URL.
+  if (!virtual_gurl.is_valid()) {
+    base::SStringPrintf(
+        error, webview::kAPILoadDataInvalidVirtualURL, virtual_url.c_str());
+    return false;
+  }
+
+  // Set up the parameters to load |data_url| with the specified |base_url|.
+  content::NavigationController::LoadURLParams load_params(data_gurl);
+  load_params.load_type = content::NavigationController::LOAD_TYPE_DATA;
+  load_params.base_url_for_data_url = base_gurl;
+  load_params.virtual_url_for_data_url = virtual_gurl;
+  load_params.override_user_agent =
+      content::NavigationController::UA_OVERRIDE_INHERIT;
+
+  // Navigate to the data URL.
+  web_contents()->GetController().LoadURLWithParams(load_params);
+
+  return true;
+}
+
 void WebViewGuest::AddNewContents(content::WebContents* source,
                                   content::WebContents* new_contents,
                                   WindowOpenDisposition disposition,
