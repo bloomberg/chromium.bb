@@ -44,8 +44,6 @@
 namespace blink {
 
 class FetchRequest;
-class ExecutionContext;
-class ResourceFetcher;
 class HTMLImportChild;
 class HTMLImportChildClient;
 class HTMLImportLoader;

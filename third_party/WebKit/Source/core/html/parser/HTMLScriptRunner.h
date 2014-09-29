@@ -36,12 +36,9 @@
 namespace blink {
 
 class Resource;
-class ScriptResource;
 class Document;
 class Element;
-class LocalFrame;
 class HTMLScriptRunnerHost;
-class ScriptSourceCode;
 
 class HTMLScriptRunner FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLScriptRunner>, private ScriptResourceClient {
     WTF_MAKE_NONCOPYABLE(HTMLScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

@@ -28,7 +28,6 @@
 namespace blink {
 
 class DocumentFragment;
-class HTMLCollection;
 class HTMLFormElement;
 class HTMLMenuElement;
 class ExceptionState;

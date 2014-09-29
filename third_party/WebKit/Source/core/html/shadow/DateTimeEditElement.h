@@ -34,9 +34,7 @@
 namespace blink {
 
 class DateTimeFieldsState;
-class KeyboardEvent;
 class Locale;
-class MouseEvent;
 class StepRange;
 
 // DateTimeEditElement class contains numberic field and symbolc field for

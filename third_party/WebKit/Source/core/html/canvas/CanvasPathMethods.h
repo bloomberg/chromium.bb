@@ -34,7 +34,6 @@
 namespace blink {
 
 class ExceptionState;
-class FloatRect;
 
 class CanvasPathMethods {
 public:

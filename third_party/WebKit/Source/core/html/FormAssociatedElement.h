@@ -38,7 +38,6 @@ class HTMLElement;
 class HTMLFormElement;
 class Node;
 class ValidityState;
-class VisibleSelection;
 
 class FormAssociatedElement : public WillBeGarbageCollectedMixin {
 public:

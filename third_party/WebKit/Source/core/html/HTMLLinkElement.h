@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class DocumentFragment;
 class HTMLLinkElement;
 class KURL;
 class LinkImport;

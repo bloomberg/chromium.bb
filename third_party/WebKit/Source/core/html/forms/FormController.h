@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class FormAssociatedElement;
 class FormKeyGenerator;
 class HTMLFormControlElementWithState;
 class HTMLFormElement;

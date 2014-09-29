@@ -32,7 +32,6 @@
 namespace blink {
 
 class HTMLImageElement;
-class QualifiedName;
 
 // This class is just a big hack to find form elements even in malformed HTML elements.
 // The famous <table><tr><form><td> problem.

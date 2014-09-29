@@ -31,20 +31,14 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/WeakPtr.h"
 
-namespace WTF{
-class TextEncoding;
-}
-
 namespace blink {
 
 class Event;
 class FormAssociatedElement;
-class FormData;
 class GenericEventQueue;
 class HTMLFormControlElement;
 class HTMLFormControlsCollection;
 class HTMLImageElement;
-class HTMLInputElement;
 
 class HTMLFormElement FINAL : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();

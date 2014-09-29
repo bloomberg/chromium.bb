@@ -38,9 +38,6 @@ class WebString;
 
 namespace blink {
 
-class MediaPlayer;
-class TextTrackCue;
-
 class InbandTextTrack FINAL : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
     static PassRefPtrWillBeRawPtr<InbandTextTrack> create(blink::WebInbandTextTrack*);

@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class Document;
 class Event;
 
 class MediaControls FINAL : public HTMLDivElement {

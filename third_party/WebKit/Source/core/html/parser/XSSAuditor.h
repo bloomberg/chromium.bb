@@ -36,7 +36,6 @@
 namespace blink {
 
 class Document;
-class HTMLDocumentParser;
 class HTMLSourceTracker;
 class XSSInfo;
 class XSSAuditorDelegate;

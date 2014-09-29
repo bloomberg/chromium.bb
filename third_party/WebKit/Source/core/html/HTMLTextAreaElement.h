@@ -30,7 +30,6 @@ namespace blink {
 
 class BeforeTextInsertedEvent;
 class ExceptionState;
-class VisibleSelection;
 
 class HTMLTextAreaElement FINAL : public HTMLTextFormControlElement {
     DEFINE_WRAPPERTYPEINFO();

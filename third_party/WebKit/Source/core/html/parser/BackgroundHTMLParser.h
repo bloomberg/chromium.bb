@@ -41,7 +41,6 @@
 namespace blink {
 
 class HTMLDocumentParser;
-class SharedBuffer;
 class XSSAuditor;
 
 class BackgroundHTMLParser {

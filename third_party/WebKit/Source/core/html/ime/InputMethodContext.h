@@ -43,7 +43,6 @@ namespace blink {
 
 class ExecutionContext;
 class InputMethodController;
-class Node;
 
 class InputMethodContext FINAL : public NoBaseWillBeGarbageCollectedFinalized<InputMethodContext>, public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();

@@ -37,7 +37,6 @@ class ExceptionState;
 class FileList;
 class HTMLDataListElement;
 class HTMLImageLoader;
-class HTMLOptionElement;
 class InputType;
 class InputTypeView;
 class KURL;

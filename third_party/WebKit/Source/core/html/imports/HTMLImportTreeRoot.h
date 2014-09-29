@@ -12,6 +12,7 @@
 namespace blink {
 
 class HTMLImportChild;
+class KURL;
 
 class HTMLImportTreeRoot : public HTMLImport {
 public:

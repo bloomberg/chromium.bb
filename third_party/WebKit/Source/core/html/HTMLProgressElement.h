@@ -25,7 +25,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class ProgressValueElement;
 class RenderProgress;
 

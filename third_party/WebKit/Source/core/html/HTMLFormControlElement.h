@@ -30,11 +30,8 @@
 namespace blink {
 
 class FormDataList;
-class HTMLFieldSetElement;
 class HTMLFormElement;
-class HTMLLegendElement;
 class ValidationMessageClient;
-class ValidityState;
 
 // HTMLFormControlElement is the default implementation of FormAssociatedElement,
 // and form-associated element implementations should use HTMLFormControlElement

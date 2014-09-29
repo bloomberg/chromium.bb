@@ -32,7 +32,6 @@ namespace blink {
 class ExceptionState;
 class Position;
 class Range;
-class RenderTextControl;
 class VisiblePosition;
 
 enum TextFieldSelectionDirection { SelectionHasNoDirection, SelectionHasForwardDirection, SelectionHasBackwardDirection };

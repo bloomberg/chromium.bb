@@ -37,7 +37,6 @@
 namespace blink {
 
 class HTMLMeterElement;
-class RenderMeter;
 
 class MeterShadowElement : public HTMLDivElement {
 protected:

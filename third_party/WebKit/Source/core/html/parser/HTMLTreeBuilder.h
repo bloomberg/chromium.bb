@@ -42,13 +42,9 @@
 namespace blink {
 
 class AtomicHTMLToken;
-class Document;
 class DocumentFragment;
 class Element;
-class LocalFrame;
-class HTMLToken;
 class HTMLDocument;
-class Node;
 class HTMLDocumentParser;
 
 class HTMLTreeBuilder FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLTreeBuilder> {

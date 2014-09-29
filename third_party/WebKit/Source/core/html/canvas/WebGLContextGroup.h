@@ -37,7 +37,6 @@ class WebGraphicsContext3D;
 
 namespace blink {
 
-class WebGLExtension;
 class WebGLSharedObject;
 class WebGLRenderingContextBase;
 

@@ -38,8 +38,6 @@ namespace blink {
 
 class CanvasImageSource;
 class HTMLCanvasElement;
-class KURL;
-class WebGLObject;
 
 class CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext> {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);

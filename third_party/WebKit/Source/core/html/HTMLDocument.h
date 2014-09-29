@@ -29,9 +29,7 @@
 
 namespace blink {
 
-class FrameView;
 class HTMLBodyElement;
-class HTMLElement;
 
 class HTMLDocument : public Document, public ResourceClient {
     DEFINE_WRAPPERTYPEINFO();

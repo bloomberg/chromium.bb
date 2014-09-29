@@ -54,14 +54,13 @@ namespace blink {
 class BackgroundHTMLParser;
 class CompactHTMLToken;
 class Document;
+class DocumentEncodingData;
 class DocumentFragment;
 class HTMLDocument;
 class HTMLParserScheduler;
 class HTMLScriptRunner;
 class HTMLTreeBuilder;
 class HTMLResourcePreloader;
-class ScriptController;
-class ScriptSourceCode;
 
 class PumpSession;
 

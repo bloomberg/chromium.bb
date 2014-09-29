@@ -39,10 +39,8 @@
 
 namespace blink {
 
-class HTMLElement;
 class HTMLInputElement;
 class Event;
-class FloatPoint;
 
 class SliderThumbElement FINAL : public HTMLDivElement {
 public:

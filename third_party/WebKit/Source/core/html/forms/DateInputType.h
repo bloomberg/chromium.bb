@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class PickerIndicatorElement;
-
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 typedef BaseMultipleFieldsDateAndTimeInputType BaseDateInputType;
 #else

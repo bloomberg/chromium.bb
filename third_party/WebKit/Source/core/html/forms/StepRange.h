@@ -26,8 +26,6 @@
 
 namespace blink {
 
-class HTMLInputElement;
-
 enum AnyStepHandling { RejectAny, AnyIsDefaultStep };
 
 class StepRange {

@@ -36,9 +36,6 @@
 
 namespace blink {
 
-class SearchFieldCancelButtonElement;
-class SearchFieldDecorationElement;
-
 class SearchInputType FINAL : public BaseTextInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);

@@ -39,7 +39,6 @@
 #include "public/platform/WebMimeRegistry.h"
 
 namespace blink {
-class WebContentDecryptionModule;
 class WebInbandTextTrack;
 class WebLayer;
 }

@@ -29,7 +29,6 @@
 namespace blink {
 
 class FormAssociatedElement;
-class HTMLCollection;
 class HTMLFormControlsCollection;
 
 class HTMLFieldSetElement FINAL : public HTMLFormControlElement {

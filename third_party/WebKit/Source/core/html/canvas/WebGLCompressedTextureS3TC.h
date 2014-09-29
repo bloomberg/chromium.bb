@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class WebGLTexture;
-
 class WebGLCompressedTextureS3TC FINAL : public WebGLExtension, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:

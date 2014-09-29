@@ -38,11 +38,7 @@
 namespace blink {
 
 class Document;
-class LocalFrame;
-class HTMLImportChild;
 class HTMLImportLoader;
-class HTMLImportsController;
-class KURL;
 
 //
 // # Basic Data Structure and Algorithms of HTML Imports implemenation.

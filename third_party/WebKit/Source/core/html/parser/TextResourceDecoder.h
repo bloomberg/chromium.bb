@@ -28,7 +28,6 @@
 
 namespace blink {
 
-class DocumentEncodingData;
 class HTMLMetaCharsetParser;
 
 class TextResourceDecoder {

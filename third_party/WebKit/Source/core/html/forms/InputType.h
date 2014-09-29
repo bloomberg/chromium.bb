@@ -42,13 +42,10 @@
 namespace blink {
 
 class Chrome;
-class DateComponents;
 class DragData;
 class ExceptionState;
 class FileList;
 class FormDataList;
-class HTMLElement;
-class Node;
 
 // An InputType object represents the type-specific part of an HTMLInputElement.
 // Do not expose instances of InputType and classes derived from it to classes

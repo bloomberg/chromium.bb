@@ -29,7 +29,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class RenderMarquee;
 
 class HTMLMarqueeElement FINAL : public HTMLElement, private ActiveDOMObject {

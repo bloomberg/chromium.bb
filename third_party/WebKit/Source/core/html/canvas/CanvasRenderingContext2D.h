@@ -61,7 +61,6 @@ class HTMLCanvasElement;
 class HTMLImageElement;
 class HTMLVideoElement;
 class HitRegionOptions;
-class ImageBitmap;
 class ImageData;
 class TextMetrics;
 

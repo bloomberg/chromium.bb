@@ -37,7 +37,6 @@
 namespace blink {
 
 class ContainerNode;
-class DocumentFragment;
 class Element;
 class QualifiedName;
 

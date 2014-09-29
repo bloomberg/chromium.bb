@@ -34,7 +34,6 @@ namespace blink {
 
 class HTMLFormElement;
 class ImageCandidate;
-class MediaQueryList;
 
 class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
     DEFINE_WRAPPERTYPEINFO();
