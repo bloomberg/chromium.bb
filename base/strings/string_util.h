@@ -245,8 +245,14 @@ BASE_EXPORT bool ContainsOnlyChars(const StringPiece16& input,
 // to have the maximum 'discriminating' power from other encodings. If
 // there's a use case for just checking the structural validity, we have to
 // add a new function for that.
+//
+// IsStringASCII assumes the input is likely all ASCII, and does not leave early
+// if it is not the case.
 BASE_EXPORT bool IsStringUTF8(const std::string& str);
 BASE_EXPORT bool IsStringASCII(const StringPiece& str);
+BASE_EXPORT bool IsStringASCII(const StringPiece16& str);
+// A convenience adaptor for WebStrings, as they don't convert into
+// StringPieces directly.
 BASE_EXPORT bool IsStringASCII(const string16& str);
 
 // Converts the elements of the given string.  This version uses a pointer to
