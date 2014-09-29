@@ -1608,12 +1608,36 @@ class CppStyleTest(CppStyleTestBase):
             'int foo() OVERRIDE {',
             'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
         self.assert_multi_line_lint(
+            'int foo() override {',
+            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
+        self.assert_multi_line_lint(
+            'int foo() FINAL {',
+            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
+        self.assert_multi_line_lint(
+            'int foo() final {',
+            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
+        self.assert_multi_line_lint(
             'int foo() const\n'
             '{\n'
             '}\n',
             '')
         self.assert_multi_line_lint(
             'int foo() OVERRIDE\n'
+            '{\n'
+            '}\n',
+            '')
+        self.assert_multi_line_lint(
+            'int foo() override\n'
+            '{\n'
+            '}\n',
+            '')
+        self.assert_multi_line_lint(
+            'int foo() FINAL\n'
+            '{\n'
+            '}\n',
+            '')
+        self.assert_multi_line_lint(
+            'int foo() final\n'
             '{\n'
             '}\n',
             '')
