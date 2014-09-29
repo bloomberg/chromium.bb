@@ -564,7 +564,7 @@ translator-all() {
   driver-install-translator
 
   if ${PNACL_PRUNE}; then
-    sdk-clean newlib
+    sdk-clean
   fi
 }
 
@@ -2540,7 +2540,7 @@ sdk-setup() {
   fi
   SDK_IS_SETUP=true
 
-  SDK_INSTALL_ROOT="${INSTALL_ROOT}/sdk"
+  SDK_INSTALL_ROOT="${INSTALL_ROOT}/le32-nacl"
   SDK_INSTALL_LIB="${SDK_INSTALL_ROOT}/lib"
   SDK_INSTALL_INCLUDE="${SDK_INSTALL_ROOT}/include"
 }
@@ -2551,14 +2551,14 @@ sdk() {
   sdk-clean
   sdk-headers
   sdk-libs
-  sdk-verify
 }
 
 #+ sdk-clean             - Clean sdk stuff
 sdk-clean() {
   sdk-setup "$@"
   StepBanner "SDK" "Clean"
-  rm -rf "${SDK_INSTALL_ROOT}"
+  rm -rf "${SDK_INSTALL_LIB}"/{libnacl*.a,libpthread.a,libnosys.a}
+  rm -rf "${SDK_INSTALL_INCLUDE}"/{irt*.h,pthread.h,semaphore.h,nacl}
 
   # clean scons obj dirs
   rm -rf "${SCONS_OUT}"/nacl-*-pnacl*
@@ -2634,14 +2634,6 @@ sdk-private-libs() {
   cp "${outdir}"/lib*_private.a \
      "${outdir}"/lib{platform,imc,imc_syscalls,srpc,gio}.a "${SDK_INSTALL_LIB}"
   spopd
-}
-
-sdk-verify() {
-  sdk-setup "$@"
-  StepBanner "SDK" "Verify"
-
-  # Verify bitcode libraries
-  verify-bitcode-dir "${SDK_INSTALL_LIB}"
 }
 
 newlib-nacl-headers-clean() {

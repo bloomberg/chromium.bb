@@ -241,7 +241,9 @@ def BitcodeLibs(bias_arch, is_canonical):
   def B(component_name):
     return GSDJoin(component_name, bias_arch)
   bc_triple = BiasedBitcodeTriple(bias_arch)
-
+  clang_libdir = os.path.join(
+      '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', bc_triple)
+  libc_libdir = os.path.join('%(output)s', bc_triple, 'lib')
   libs = {
       B('newlib'): {
           'type': 'build' if is_canonical else 'work',
@@ -322,9 +324,15 @@ def BitcodeLibs(bias_arch, is_canonical):
                     os.path.join(NACL_DIR,'run.py') +' -arch env --retries=1" '+
                     '--param exe_suffix=".pexe" --param use_system_lib=true ' +
                     '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj '+
+                   # Since this testsuite is just testing C++ library features,
+                   # We just use the portable-bitcode build.
                     '-L' + os.path.join(
                         NACL_DIR,
-                        'toolchain/linux_x86/pnacl_newlib/sdk/lib') + '"',
+                        'toolchain/linux_x86/pnacl_newlib/lib/clang/' +
+                        CLANG_VER + '/lib/le32-nacl ') +
+                    '-L' + os.path.join(
+                        NACL_DIR,
+                        'toolchain/linux_x86/pnacl_newlib/le32-nacl/lib') + '"',
                    '-DLIBCXX_ENABLE_CXX0X=0',
                    '-DLIBCXX_ENABLE_SHARED=0',
                    '-DLIBCXX_CXX_ABI=libcxxabi',
@@ -395,37 +403,37 @@ def BitcodeLibs(bias_arch, is_canonical):
       },
       B('libs_support_bitcode'): {
           'type': 'build' if is_canonical else 'work',
-          'output_subdir': os.path.join(
-              'lib', 'clang', CLANG_VER, 'lib', bc_triple),
           'dependencies': [ B('newlib'), 'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR,
                                           'pnacl', 'support', 'bitcode')},
           'commands': [
+              command.Mkdir(clang_libdir, parents=True),
+              command.Mkdir(libc_libdir, parents=True),
               # Two versions of crt1.x exist, for different scenarios (with and
               # without EH).  See:
               # https://code.google.com/p/nativeclient/issues/detail?id=3069
               command.Copy(command.path.join('%(src)s', 'crt1.x'),
-                           command.path.join('%(output)s', 'crt1.x')),
+                           command.path.join(libc_libdir, 'crt1.x')),
               command.Copy(command.path.join('%(src)s', 'crt1_for_eh.x'),
-                           command.path.join('%(output)s', 'crt1_for_eh.x')),
+                           command.path.join(libc_libdir, 'crt1_for_eh.x')),
               # Install crti.bc (empty _init/_fini)
               BuildTargetBitcodeCmd('crti.c', 'crti.bc', bias_arch,
-                                    output_dir='%(output)s'),
+                                    output_dir=libc_libdir),
               # Install crtbegin bitcode (__cxa_finalize for C++)
               BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc', bias_arch,
-                                    output_dir='%(output)s'),
+                                    output_dir=clang_libdir),
               # Stubs for _Unwind_* functions when libgcc_eh is not included in
               # the native link).
               BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc',
-                                    bias_arch, output_dir='%(output)s'),
+                                    bias_arch, output_dir=clang_libdir),
               BuildTargetBitcodeCmd('sjlj_eh_redirect.cc',
                                     'sjlj_eh_redirect.bc', bias_arch,
-                                    output_dir='%(output)s'),
+                                    output_dir=clang_libdir),
               # libpnaclmm.a (__atomic_* library functions).
               BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc', bias_arch),
               command.Command([
                   PnaclTool('ar'), 'rc',
-                  command.path.join('%(output)s', 'libpnaclmm.a'),
+                  command.path.join(clang_libdir, 'libpnaclmm.a'),
                   'pnaclmm.bc']),
           ],
       },

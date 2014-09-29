@@ -655,12 +655,19 @@ def HostToolsDirectToNacl(host):
               # the lib dirs, which have unneeded host libs.
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
                for dir in ('lib', 'lib32', 'lib64', 'share')] +
-              # Create the set of directories for host libs and includes, for
+              # Create the set of directories for target libs and includes, for
               # experimentation before we actually build them.
               # Libc includes (libs dir is created by binutils)
               [command.Mkdir(command.path.join(
-                  '%(output)s', target, 'include'), parents=True)
-                for target in ['i686-nacl', 'x86_64-nacl']] +
+                  '%(output)s', 'x86_64-nacl', 'include'), parents=True),
+               command.Mkdir(command.path.join(
+                   '%(output)s', 'x86_64-nacl', 'lib32')),
+               command.Command(['ln', '-s', command.path.join('..','lib32'),
+                               command.path.join(
+                                   '%(output)s', 'x86_64-nacl', 'lib', '32')]),
+               command.Command(['ln', '-s', 'lib',
+                               command.path.join(
+                                   '%(output)s', 'x86_64-nacl', 'lib64')])] +
               # Compiler libs (includes are shared)
               [command.Mkdir(command.path.join('%(output)s',
                   'lib', 'clang', '3.4', 'lib', target), parents=True)
