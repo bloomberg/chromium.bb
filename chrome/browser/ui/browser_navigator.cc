@@ -292,11 +292,19 @@ class ScopedBrowserShower {
       : params_(params) {
   }
   ~ScopedBrowserShower() {
-    if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW_INACTIVE)
+    if (params_->window_action ==
+        chrome::NavigateParams::SHOW_WINDOW_INACTIVE) {
       params_->browser->window()->ShowInactive();
-    else if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW)
+    } else if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW) {
       params_->browser->window()->Show();
+      // If a user gesture opened a popup window, focus the contents.
+      if (params_->user_gesture && params_->disposition == NEW_POPUP &&
+          params_->target_contents) {
+        params_->target_contents->Focus();
+      }
+    }
   }
+
  private:
   chrome::NavigateParams* params_;
   DISALLOW_COPY_AND_ASSIGN(ScopedBrowserShower);
