@@ -115,7 +115,7 @@ class SyncWorkerTest : public testing::Test,
     scoped_ptr<SyncEngineContext>
         sync_engine_context(new SyncEngineContext(
             fake_drive_service.Pass(),
-            scoped_ptr<drive::DriveUploaderInterface>(),
+            nullptr /* drive_uploader */,
             nullptr /* task_logger */,
             base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
             base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */));

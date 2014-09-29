@@ -284,8 +284,7 @@ void SyncEngine::Initialize() {
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_.get()));
 
-  InitializeInternal(drive_service.Pass(), drive_uploader.Pass(),
-                     scoped_ptr<SyncWorkerInterface>());
+  InitializeInternal(drive_service.Pass(), drive_uploader.Pass(), nullptr);
 }
 
 void SyncEngine::InitializeForTesting(

@@ -190,7 +190,7 @@ scoped_ptr<FileTracker> CreateInitialAppRootTracker(
 
 scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj) {
   if (!obj)
-    return scoped_ptr<FileTracker>();
+    return nullptr;
   return scoped_ptr<FileTracker>(new FileTracker(*obj));
 }
 

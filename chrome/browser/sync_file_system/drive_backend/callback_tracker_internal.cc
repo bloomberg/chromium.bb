@@ -24,7 +24,7 @@ base::WeakPtr<AbortHelper> AbortHelper::AsWeakPtr() {
 scoped_ptr<AbortHelper> AbortHelper::TakeOwnership(
     const base::WeakPtr<AbortHelper>& abort_helper) {
   if (!abort_helper)
-    return scoped_ptr<AbortHelper>();
+    return nullptr;
   scoped_ptr<AbortHelper> result =
       abort_helper->tracker_->PassAbortHelper(abort_helper.get());
   abort_helper->weak_ptr_factory_.InvalidateWeakPtrs();

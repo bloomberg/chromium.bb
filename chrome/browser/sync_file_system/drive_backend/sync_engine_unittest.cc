@@ -56,12 +56,12 @@ class SyncEngineTest : public testing::Test,
         nullptr /* signin_manager */,
         nullptr /* token_service */,
         nullptr /* request_context */,
-        scoped_ptr<SyncEngine::DriveServiceFactory>(),
+        nullptr /* drive_service_factory */,
         nullptr /* in_memory_env */));
 
     sync_engine_->InitializeForTesting(
         fake_drive_service.Pass(),
-        scoped_ptr<drive::DriveUploaderInterface>(),
+        nullptr,  // drive_uploader
         scoped_ptr<SyncWorkerInterface>(new FakeSyncWorker));
     sync_engine_->SetSyncEnabled(true);
     sync_engine_->OnReadyToSendRequests();

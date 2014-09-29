@@ -291,7 +291,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
                      base::Passed(&task_blocker),
                      continuation),
           PRIORITY_HIGH);
-      MaybeStartNextForegroundTask(scoped_ptr<SyncTaskToken>());
+      MaybeStartNextForegroundTask(nullptr);
       return;
     }
   }
@@ -337,7 +337,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
   }
 
   token_ = foreground_task_token.Pass();
-  MaybeStartNextForegroundTask(scoped_ptr<SyncTaskToken>());
+  MaybeStartNextForegroundTask(nullptr);
   background_task_token->SetTaskLog(task_log.Pass());
   continuation.Run(background_task_token.Pass());
 }
@@ -348,7 +348,7 @@ scoped_ptr<SyncTaskToken> SyncTaskManager::GetToken(
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (!token_)
-    return scoped_ptr<SyncTaskToken>();
+    return nullptr;
   token_->UpdateTask(from_here, callback);
   return token_.Pass();
 }

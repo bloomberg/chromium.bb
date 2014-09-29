@@ -24,7 +24,7 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForTesting(
       base::WeakPtr<SyncTaskManager>(),
       base::ThreadTaskRunnerHandle::Get(),
       kTestingTaskTokenID,
-      scoped_ptr<TaskBlocker>(),
+      nullptr,  // task_blocker
       callback));
 }
 
@@ -36,7 +36,7 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForForegroundTask(
       manager,
       task_runner,
       kForegroundTaskTokenID,
-      scoped_ptr<TaskBlocker>(),
+      nullptr,  // task_blocker
       SyncStatusCallback()));
 }
 

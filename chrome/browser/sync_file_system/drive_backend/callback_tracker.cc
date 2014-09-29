@@ -30,7 +30,7 @@ scoped_ptr<internal::AbortHelper> CallbackTracker::PassAbortHelper(
     internal::AbortHelper* helper) {
   if (helpers_.erase(helper) == 1)
     return scoped_ptr<internal::AbortHelper>(helper);
-  return scoped_ptr<internal::AbortHelper>();
+  return nullptr;
 }
 
 }  // namespace drive_backend

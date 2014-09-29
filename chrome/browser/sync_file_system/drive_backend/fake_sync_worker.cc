@@ -110,12 +110,12 @@ void FakeSyncWorker::GetOriginStatusMap(
 
 scoped_ptr<base::ListValue> FakeSyncWorker::DumpFiles(const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return scoped_ptr<base::ListValue>();
+  return nullptr;
 }
 
 scoped_ptr<base::ListValue> FakeSyncWorker::DumpDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return scoped_ptr<base::ListValue>();
+  return nullptr;
 }
 
 void FakeSyncWorker::SetSyncEnabled(bool enabled) {

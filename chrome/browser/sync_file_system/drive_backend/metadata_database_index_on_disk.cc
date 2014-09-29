@@ -254,7 +254,7 @@ MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
 
   scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
   if (!service_metadata)
-    return scoped_ptr<MetadataDatabaseIndexOnDisk>();
+    return nullptr;
 
   PutVersionToDB(kDatabaseOnDiskVersion, db);
   RemoveUnreachableItems(db, service_metadata->sync_root_tracker_id());
