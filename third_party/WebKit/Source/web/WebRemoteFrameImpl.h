@@ -192,8 +192,6 @@ private:
     RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 
-    WebViewImpl* viewImpl() const;
-
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner> > m_ownersForChildren;
 
 #if ENABLE(OILPAN)

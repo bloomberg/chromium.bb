@@ -283,13 +283,6 @@ WebView* WebRemoteFrameImpl::view() const
     return WebViewImpl::fromPage(frame()->page());
 }
 
-WebViewImpl* WebRemoteFrameImpl::viewImpl() const
-{
-    if (!frame())
-        return 0;
-    return WebViewImpl::fromPage(frame()->page());
-}
-
 void WebRemoteFrameImpl::removeChild(WebFrame* frame)
 {
     WebFrame::removeChild(frame);
