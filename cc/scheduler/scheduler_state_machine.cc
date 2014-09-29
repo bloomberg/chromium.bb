@@ -280,21 +280,26 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
     return true;
 
   // Additional states where we should abort draws.
-  // Note: We don't force activation in these cases because doing so would
-  // result in checkerboarding on resize, becoming visible, etc.
   if (!can_draw_)
-    return true;
-  if (!visible_)
     return true;
   return false;
 }
 
 bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
-  // These are all the cases where, if we do not force activations to make
-  // forward progress, we might deadlock with the main thread.
-
   // There is no output surface to trigger our activations.
+  // If we do not force activations to make forward progress, we might deadlock
+  // with the main thread.
   if (output_surface_state_ == OUTPUT_SURFACE_LOST)
+    return true;
+
+  // If we're not visible, we should force activation.
+  // Since we set RequiresHighResToDraw when becoming visible, we ensure that we
+  // don't checkerboard until all visible resources are done. Furthermore, if we
+  // do keep the pending tree around, when becoming visible we might activate
+  // prematurely causing RequiresHighResToDraw flag to be reset. In all cases,
+  // we can simply activate on becoming invisible since we don't need to draw
+  // the active tree when we're in this state.
+  if (!visible_)
     return true;
 
   return false;

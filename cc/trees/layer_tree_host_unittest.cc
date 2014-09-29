@@ -5022,28 +5022,13 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousPainting);
 
-class LayerTreeHostTestInvisibleDoesntActivate : public LayerTreeHostTest {
+class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestInvisibleDoesntActivate() : activation_count_(0) {}
+  LayerTreeHostTestActivateOnInvisible()
+      : activation_count_(0), visible_(true) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->impl_side_painting = true;
-  }
-
-  virtual void SetupTree() OVERRIDE {
-    scoped_refptr<Layer> root_layer = Layer::Create();
-    root_layer->SetBounds(gfx::Size(1000, 1000));
-
-    // Set up a non-solid layer with a bunch of tiles.
-    client_.set_fill_with_nonsolid_color(true);
-    picture_layer_ = FakePictureLayer::Create(&client_);
-    picture_layer_->SetBounds(gfx::Size(1000, 1000));
-    picture_layer_->SetIsDrawable(true);
-    picture_layer_->SetNeedsDisplayRect(gfx::Rect(1000, 1000));
-    root_layer->AddChild(picture_layer_.get());
-
-    layer_tree_host()->SetRootLayer(root_layer);
-    LayerTreeHostTest::SetupTree();
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -5052,7 +5037,7 @@ class LayerTreeHostTestInvisibleDoesntActivate : public LayerTreeHostTest {
   }
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    // Make sure we don't activate before going invisible.
+    // Make sure we don't activate using the notify signal from tile manager.
     host_impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
@@ -5060,49 +5045,37 @@ class LayerTreeHostTestInvisibleDoesntActivate : public LayerTreeHostTest {
 
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) OVERRIDE {
+    visible_ = visible;
+
     // Once invisible, we can go visible again.
     if (!visible) {
-      // Allow activation from now on.
-      host_impl->BlockNotifyReadyToActivateForTesting(false);
       PostSetVisibleToMainThread(true);
+    } else {
+      EXPECT_TRUE(host_impl->active_tree()->RequiresHighResToDraw());
+      EndTest();
     }
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     ++activation_count_;
-    std::vector<Tile*> tiles = host_impl->tile_manager()->AllTilesForTesting();
-    EXPECT_GT(tiles.size(), 0u);
-    // When activating, ensure that all tiles are ready to draw with a mode
-    // other than rasterize on demand.
-    int resource_tiles_count = 0;
-    for (std::vector<Tile*>::iterator it = tiles.begin(); it != tiles.end();
-         ++it) {
-      Tile* tile = *it;
-      const ManagedTileState::DrawInfo& draw_info = tile->draw_info();
-      EXPECT_TRUE(draw_info.IsReadyToDraw());
-      EXPECT_NE(ManagedTileState::DrawInfo::PICTURE_PILE_MODE,
-                draw_info.mode());
-      resource_tiles_count +=
-          draw_info.mode() == ManagedTileState::DrawInfo::RESOURCE_MODE;
-    }
-    EXPECT_GT(resource_tiles_count, 0);
-
-    EndTest();
+    EXPECT_FALSE(visible_);
   }
 
   virtual void AfterTest() OVERRIDE {
-    // Double check that we activated once.
+    // Ensure we activated even though the signal was blocked.
     EXPECT_EQ(1, activation_count_);
+    EXPECT_TRUE(visible_);
   }
 
  private:
   int activation_count_;
+  bool visible_;
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> picture_layer_;
 };
 
 // TODO(vmpstr): Enable with single thread impl-side painting.
-MULTI_THREAD_TEST_F(LayerTreeHostTestInvisibleDoesntActivate);
+MULTI_THREAD_TEST_F(LayerTreeHostTestActivateOnInvisible);
 
 }  // namespace cc

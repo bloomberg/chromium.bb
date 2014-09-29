@@ -1909,5 +1909,39 @@ TEST(SchedulerTest,
   EXPECT_FALSE(scheduler->IsSyntheticBeginFrameSourceActive());
 }
 
+TEST(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
+  FakeSchedulerClient client;
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.impl_side_painting = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  // SetNeedsCommit should begin the frame.
+  client.Reset();
+  scheduler->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrame", client);
+
+  client.Reset();
+  client.AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  client.Reset();
+  scheduler->NotifyBeginMainFrameStarted();
+  scheduler->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
+
+  client.Reset();
+  scheduler->SetVisible(false);
+  // Sync tree should be forced to activate.
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client);
+}
+
 }  // namespace
 }  // namespace cc
