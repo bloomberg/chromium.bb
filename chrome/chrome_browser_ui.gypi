@@ -988,6 +988,8 @@
       'browser/ui/webui/chromeos/login/network_state_informer.h',
       'browser/ui/webui/chromeos/login/oobe_ui.cc',
       'browser/ui/webui/chromeos/login/oobe_ui.h',
+      'browser/ui/webui/chromeos/login/polymer_resources_map.cc',
+      'browser/ui/webui/chromeos/login/polymer_resources_map.h',
       'browser/ui/webui/chromeos/login/reset_screen_handler.cc',
       'browser/ui/webui/chromeos/login/reset_screen_handler.h',
       'browser/ui/webui/chromeos/login/screenlock_icon_provider.cc',

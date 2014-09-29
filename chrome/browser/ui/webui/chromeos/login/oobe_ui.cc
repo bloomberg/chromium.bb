@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/chromeos/login/polymer_resources_map.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
@@ -50,6 +51,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -75,6 +77,11 @@ const char kDemoUserLoginJSPath[] = "demo_user_login.js";
 const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
+
+void AddPolymerResourcesPaths(content::WebUIDataSource* source) {
+  for (const auto& mapping: GetPolymerResourcesMap())
+    source->AddResourcePath(mapping.first, mapping.second);
+}
 
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
@@ -107,6 +114,13 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);
   source->AddResourcePath(kEnrollmentCSSPath, IDR_OOBE_ENROLLMENT_CSS);
   source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
+
+  if (display_type == OobeUI::kOobeDisplay) {
+    AddPolymerResourcesPaths(source);
+    source->AddResourcePath("Roboto-Thin.ttf", IDR_FONT_ROBOTO_THIN);
+    source->AddResourcePath("Roboto-Light.ttf", IDR_FONT_ROBOTO_LIGHT);
+    source->AddResourcePath("Roboto-Bold.ttf", IDR_FONT_ROBOTO_BOLD);
+  }
 
   return source;
 }

@@ -3,14 +3,48 @@
  * found in the LICENSE file.
  */
 
-#host-pairing {
-  background: white;
-  height: 601px;
-  padding: 20px;
-  width: 720px;
+/* TODO(dzhioev): support RTL. */
+
+:host {
+  -webkit-user-select: none;
+  background-color: rgb(242, 166, 0);
+  color: white;
+  display: block;
+  font-family: 'Roboto';
+  height: 100%;
 }
 
-#host-pairing .page-name {
-  text-align: center;
+core-animated-pages {
+  left: 114px;
+  position: absolute;
+  right: 0;
+  top: 100px;
+}
+
+#illustration {
+  background-image: url(chrome://theme/IDR_BUILDINGS_ILLUSTRATION);
+  bottom: 95px;
+  height: 368px;
+  position: absolute;
+  right: 95px;
+  width: 503px;
+}
+
+#device-indicator {
+  bottom: 74px;
+  font-size: 33px;
+  font-weight: bolder;
+  left: 130px;
+  position: absolute;
+}
+
+#device-label {
+  margin-left: -0.3em;
+}
+
+#code {
+  font-family: 'Roboto';
+  font-size: 120px;
+  font-weight: lighter;
 }
 

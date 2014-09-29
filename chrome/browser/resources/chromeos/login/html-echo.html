@@ -1,0 +1,14 @@
+<!--
+  The <html-echo> injects given |content| into its innerHTML, bypassing HTML
+  escaping, which is always made by Polymer when we insert the result of an
+  Polymer expresion into element's body.
+
+  Example:
+
+  <html-echo content="<div>Hello</div>"></html-element>
+
+  will be equivalent to:
+
+  <span><div>Hello</div></span>
+-->
+<polymer-element name="html-echo" attributes="content"></polymer-element>
