@@ -772,9 +772,9 @@
       </if>  <!-- toolkit_views -->
       <if expr="is_macosx">
         <!-- Mac -->
-        <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_DROPARROW" file="mac/avatar_button/sign_in_button_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_DROPARROW_HOVER" file="mac/avatar_button/sign_in_button_arrow_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_DROPARROW_PRESSED" file="mac/avatar_button/sign_in_button_arrow_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_AVATAR" file="mac/avatar_button/sign_in_button_avatar.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_AVATAR_HOVER" file="mac/avatar_button/sign_in_button_avatar_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_AVATAR_PRESSED" file="mac/avatar_button/sign_in_button_avatar_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_NORMAL_BOTTOM" file="mac/avatar_button/sign_in_button_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_NORMAL_BOTTOM_LEFT" file="mac/avatar_button/sign_in_button_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_NORMAL_BOTTOM_RIGHT" file="mac/avatar_button/sign_in_button_bottom_right.png" />

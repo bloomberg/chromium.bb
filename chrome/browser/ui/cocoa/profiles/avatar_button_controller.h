@@ -17,6 +17,9 @@ class Browser;
 @interface AvatarButtonController : AvatarBaseController {
  @private
   BOOL isThemedWindow_;
+  // Whether the signed in profile has an authentication error. Used to
+  // display an error icon next to the button text.
+  BOOL hasError_;
 }
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;

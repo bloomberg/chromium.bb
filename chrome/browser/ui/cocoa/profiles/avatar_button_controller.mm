@@ -6,6 +6,8 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -25,10 +27,10 @@
 
 namespace {
 
-const CGFloat kButtonPadding = 12;
-const CGFloat kButtonDefaultPadding = 5;
-const CGFloat kButtonHeight = 27;
-const CGFloat kButtonTitleImageSpacing = 10;
+// NSButtons have a default padding of 5px. This button should have a padding
+// of 8px.
+const CGFloat kButtonExtraPadding = 8 - 5;
+const CGFloat kButtonHeight = 28;
 
 const ui::NinePartImageIds kNormalBorderImageIds =
     IMAGE_GRID(IDR_AVATAR_MAC_BUTTON_NORMAL);
@@ -50,7 +52,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 @interface CustomThemeButtonCell : NSButtonCell {
  @private
    BOOL isThemedWindow_;
-   base::scoped_nsobject<NSImage> authenticationErrorImage_;
+   BOOL hasError_;
 }
 - (void)setIsThemedWindow:(BOOL)isThemedWindow;
 - (void)setHasError:(BOOL)hasError withTitle:(NSString*)title;
@@ -61,56 +63,39 @@ NSImage* GetImageFromResourceID(int resourceId) {
 - (id)initWithThemedWindow:(BOOL)isThemedWindow {
   if ((self = [super init])) {
     isThemedWindow_ = isThemedWindow;
-    authenticationErrorImage_.reset();
+    hasError_ = false;
   }
   return self;
 }
 
 - (NSSize)cellSize {
   NSSize buttonSize = [super cellSize];
-  CGFloat errorWidth = [authenticationErrorImage_ size].width;
-  buttonSize.width += 2 * (kButtonPadding - kButtonDefaultPadding) + errorWidth;
+
+  // An image and no error means we are drawing the generic button, which
+  // is square. Otherwise, we are displaying the profile's name and an
+  // optional authentication error icon.
+  if ([self image] && !hasError_) {
+    buttonSize.width = kButtonHeight;
+  } else {
+    buttonSize.width += 2 * kButtonExtraPadding;
+  }
   buttonSize.height = kButtonHeight;
   return buttonSize;
 }
 
-- (NSRect)drawTitle:(NSAttributedString*)title
-          withFrame:(NSRect)frame
-             inView:(NSView*)controlView {
-  frame.origin.x = kButtonPadding;
-
-  // If there's an auth error, draw a warning icon before the cell image.
-  if (authenticationErrorImage_) {
-    NSSize imageSize = [authenticationErrorImage_ size];
-    NSRect rect = NSMakeRect(
-        frame.size.width - imageSize.width,
-        (kButtonHeight - imageSize.height) / 2,
-        imageSize.width,
-        imageSize.height);
-    [authenticationErrorImage_ drawInRect:rect
-                       fromRect:NSZeroRect
-                      operation:NSCompositeSourceOver
-                       fraction:1.0
-                 respectFlipped:YES
-                          hints:nil];
-    // Padding between the title and the error image.
-    frame.size.width -= kButtonTitleImageSpacing;
-  }
-
-  // Padding between the title (or error image, if it exists) and the
-  // button's drop down image.
-  frame.size.width -= kButtonTitleImageSpacing;
-  return [super drawTitle:title withFrame:frame inView:controlView];
+- (void)drawInteriorWithFrame:(NSRect)frame inView:(NSView*)controlView {
+  NSRect frameAfterPadding = NSInsetRect(frame, kButtonExtraPadding, 0);
+  [super drawInteriorWithFrame:frameAfterPadding inView:controlView];
 }
 
 - (void)drawImage:(NSImage*)image
         withFrame:(NSRect)frame
            inView:(NSView*)controlView {
-  // For the x-offset, we need to undo the default padding and apply the
-  // new one. For the y-offset, increasing the button height means we need
-  // to move the image a little down to align it nicely with the text; this
-  // was chosen by visual inspection.
-  frame = NSOffsetRect(frame, kButtonDefaultPadding - kButtonPadding, 2);
+  // The image used in the generic button case needs to be shifted down
+  // slightly to be centered correctly.
+  // TODO(noms): When the assets are fixed, remove this latter offset.
+  if (!hasError_)
+    frame = NSOffsetRect(frame, 0, 1);
   [super drawImage:image withFrame:frame inView:controlView];
 }
 
@@ -134,18 +119,15 @@ NSImage* GetImageFromResourceID(int resourceId) {
 }
 
 - (void)setHasError:(BOOL)hasError withTitle:(NSString*)title {
+  hasError_ = hasError;
   if (hasError) {
-    authenticationErrorImage_.reset(
-        [ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR).ToNSImage() retain]);
     [self accessibilitySetOverrideValue:l10n_util::GetNSStringF(
         IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME,
         base::SysNSStringToUTF16(title))
                            forAttribute:NSAccessibilityTitleAttribute];
   } else {
-    authenticationErrorImage_.reset();
     [self accessibilitySetOverrideValue:title
-                          forAttribute:NSAccessibilityTitleAttribute];
+                           forAttribute:NSAccessibilityTitleAttribute];
   }
 }
 
@@ -168,23 +150,16 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
     HoverImageButton* hoverButton =
         [[HoverImageButton alloc] initWithFrame:NSZeroRect];
-    [hoverButton setDefaultImage:GetImageFromResourceID(
-        IDR_AVATAR_MAC_BUTTON_DROPARROW)];
-    [hoverButton setHoverImage:GetImageFromResourceID(
-        IDR_AVATAR_MAC_BUTTON_DROPARROW_HOVER)];
-    [hoverButton setPressedImage:GetImageFromResourceID(
-        IDR_AVATAR_MAC_BUTTON_DROPARROW_PRESSED)];
-
     button_.reset(hoverButton);
     base::scoped_nsobject<CustomThemeButtonCell> cell(
         [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
-    SigninErrorController* errorController =
-        profiles::GetSigninErrorController(browser->profile());
-
     [button_ setCell:cell.get()];
 
-    if (errorController)
-      [cell setHasError:errorController->HasError() withTitle:[button_ title]];
+    // Check if the account already has an authentication error.
+    SigninErrorController* errorController =
+        profiles::GetSigninErrorController(browser->profile());
+    hasError_ = errorController && errorController->HasError();
+    [cell setHasError:hasError_ withTitle:nil];
 
     [button_ setWantsLayer:YES];
     [self setView:button_];
@@ -192,10 +167,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [button_ setBezelStyle:NSShadowlessSquareBezelStyle];
     [button_ setButtonType:NSMomentaryChangeButton];
     [button_ setBordered:YES];
-    // This is a workaround for an issue in the HoverImageButton where the
-    // button is initially sized incorrectly unless a default image is provided.
-    [button_ setImage:GetImageFromResourceID(IDR_AVATAR_MAC_BUTTON_DROPARROW)];
-    [button_ setImagePosition:NSImageRight];
+
     [button_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
     [button_ setTarget:self];
     [button_ setAction:@selector(buttonClicked:)];
@@ -248,8 +220,48 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
   }
 
-  NSString* buttonTitle = base::SysUTF16ToNSString(
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  // If there is a single local profile, then use the generic avatar button
+  // instead of the profile name. Never use the generic button if the active
+  // profile is Guest.
+  bool useGenericButton = (!browser_->profile()->IsGuestSession() &&
+                           cache.GetNumberOfProfiles() == 1 &&
+                           cache.GetUserNameOfProfileAtIndex(0).empty());
+
+
+  NSString* buttonTitle = base::SysUTF16ToNSString(useGenericButton ?
+      base::string16() :
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));
+
+  HoverImageButton* button =
+      base::mac::ObjCCastStrict<HoverImageButton>(button_);
+  if (useGenericButton) {
+    [button setDefaultImage:GetImageFromResourceID(
+        IDR_AVATAR_MAC_BUTTON_AVATAR)];
+    [button setHoverImage:GetImageFromResourceID(
+        IDR_AVATAR_MAC_BUTTON_AVATAR_HOVER)];
+    [button setPressedImage:GetImageFromResourceID(
+        IDR_AVATAR_MAC_BUTTON_AVATAR_PRESSED)];
+    // This is a workaround for an issue in the HoverImageButton where the
+    // button is initially sized incorrectly unless a default image is provided.
+    // See crbug.com/298501.
+    [button setImage:GetImageFromResourceID(IDR_AVATAR_MAC_BUTTON_AVATAR)];
+    [button setImagePosition:NSImageOnly];
+  } else if (hasError_) {
+    [button setDefaultImage:GetImageFromResourceID(
+        IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR)];
+    [button setHoverImage:nil];
+    [button setPressedImage:nil];
+    [button setImage:GetImageFromResourceID(
+        IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR)];
+    [button setImagePosition:NSImageRight];
+  } else {
+    [button setDefaultImage:nil];
+    [button setHoverImage:nil];
+    [button setPressedImage:nil];
+    [button setImagePosition:NSNoImage];
+  }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
@@ -274,6 +286,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 }
 
 - (void)updateErrorStatus:(BOOL)hasError {
+  hasError_ = hasError;
   [[button_ cell] setHasError:hasError withTitle:[button_ title]];
   [self updateAvatarButtonAndLayoutParent:YES];
 }
