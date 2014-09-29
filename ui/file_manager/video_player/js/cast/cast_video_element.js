@@ -224,8 +224,12 @@ CastVideoElement.prototype = {
       return;
 
     var play = function() {
+      // If the casted media is already playing and a pause request is not in
+      // progress, we can skip this play request.
       if (this.castMedia_.playerState ===
-              chrome.cast.media.PlayerState.PLAYING) {
+              chrome.cast.media.PlayerState.PLAYING &&
+          !this.pauseInProgress_) {
+        this.playInProgress_ = false;
         return;
       }
 
