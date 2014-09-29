@@ -787,6 +787,18 @@ void RenderWidgetCompositor::Layout() {
 }
 
 void RenderWidgetCompositor::ApplyViewportDeltas(
+    const gfx::Vector2d& inner_delta,
+    const gfx::Vector2d& outer_delta,
+    float page_scale,
+    float top_controls_delta) {
+  widget_->webwidget()->applyViewportDeltas(
+      inner_delta,
+      outer_delta,
+      page_scale,
+      top_controls_delta);
+}
+
+void RenderWidgetCompositor::ApplyViewportDeltas(
     const gfx::Vector2d& scroll_delta,
     float page_scale,
     float top_controls_delta) {

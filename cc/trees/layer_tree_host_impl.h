@@ -522,7 +522,12 @@ class CC_EXPORT LayerTreeHostImpl
   bool UseZeroCopyRasterizer() const;
   bool UseOneCopyRasterizer() const;
 
+  // Scroll by preferring to move the outer viewport first, only moving the
+  // inner if the outer is at its scroll extents.
   void ScrollViewportBy(gfx::Vector2dF scroll_delta);
+  // Scroll by preferring to move the inner viewport first, only moving the
+  // outer if the inner is at its scroll extents.
+  void ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta);
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);

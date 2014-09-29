@@ -2961,6 +2961,15 @@ void LayerTreeHostImpl::SetFullRootLayerDamage() {
   SetViewportDamage(gfx::Rect(DrawViewportSize()));
 }
 
+void LayerTreeHostImpl::ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta) {
+  DCHECK(InnerViewportScrollLayer());
+  LayerImpl* scroll_layer = InnerViewportScrollLayer();
+
+  gfx::Vector2dF unused_delta = scroll_layer->ScrollBy(scroll_delta);
+  if (!unused_delta.IsZero() && OuterViewportScrollLayer())
+    OuterViewportScrollLayer()->ScrollBy(unused_delta);
+}
+
 void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
   DCHECK(InnerViewportScrollLayer());
   LayerImpl* scroll_layer = OuterViewportScrollLayer()
@@ -2988,7 +2997,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   gfx::Vector2dF next_scroll =
       page_scale_animation_->ScrollOffsetAtTime(monotonic_time);
 
-  ScrollViewportBy(next_scroll - scroll_total);
+  ScrollViewportInnerFirst(next_scroll - scroll_total);
   SetNeedsRedraw();
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {

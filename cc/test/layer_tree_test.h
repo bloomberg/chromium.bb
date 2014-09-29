@@ -58,6 +58,10 @@ class TestHooks : public AnimationDelegate {
                                     bool has_unfinished_animation) {}
   virtual void WillAnimateLayers(LayerTreeHostImpl* host_impl,
                                  base::TimeTicks monotonic_time) {}
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
+                                   const gfx::Vector2d& outer_delta,
+                                   float scale,
+                                   float top_controls_delta) {}
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float scale,
                                    float top_controls_delta) {}
