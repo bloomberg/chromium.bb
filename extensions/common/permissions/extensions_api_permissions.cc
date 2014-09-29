@@ -80,6 +80,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kWebView, "webview",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWindowShape, "app.window.shape"},
+      {APIPermission::kImeWindowEnabled, "app.window.ime"},
   };
 
   std::vector<APIPermissionInfo*> permissions;

@@ -58,6 +58,17 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "app.window.ime": [
+    {
+       "channel": "stable",
+       "extension_types": ["extension"],
+       "platforms": ["chromeos"],
+       "whitelist": [
+         "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",
+         "F94EE6AB36D6C6588670B2B01EB65212D9C64E33"
+       ]
+    }
+  ],
   "audioCapture": [
     {
       "channel": "stable",

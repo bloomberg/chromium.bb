@@ -73,10 +73,10 @@ const int kShellWindowId_LockSystemModalContainer = 16;
 // The container for the status area.
 const int kShellWindowId_StatusContainer = 17;
 
-// A parent container that holds the virtual keyboard container. This is to
-// ensure that the virtual keyboard is stacked above most containers but below
-// the mouse cursor, context menus and the power off animation.
-const int kShellWindowId_VirtualKeyboardParentContainer = 18;
+// A parent container that holds the virtual keyboard container and ime windows
+// if any. This is to ensure that the virtual keyboard or ime window is stacked
+// above most containers but below the mouse cursor and the power off animation.
+const int kShellWindowId_ImeWindowParentContainer = 18;
 
 // The container for menus.
 const int kShellWindowId_MenuContainer = 19;

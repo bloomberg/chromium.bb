@@ -5,6 +5,7 @@
   "description": "Chrome OS XKB",
   "default_locale": "en",
   "permissions": [
+    "app.window.ime",
     "input",
     "metricsPrivate",
     "accessibilityFeatures.read"

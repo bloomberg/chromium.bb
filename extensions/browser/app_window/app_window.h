@@ -150,6 +150,7 @@ class AppWindow : public content::WebContentsDelegate,
     SkColor active_frame_color;
     SkColor inactive_frame_color;
     bool alpha_enabled;
+    bool is_ime_window;
 
     // The initial content/inner bounds specification (excluding any window
     // decorations).

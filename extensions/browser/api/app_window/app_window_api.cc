@@ -24,6 +24,7 @@
 #include "extensions/browser/image_util.h"
 #include "extensions/common/api/app_window.h"
 #include "extensions/common/features/simple_feature.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -58,6 +59,18 @@ const char kAlphaEnabledNeedsFrameNone[] =
     "The alphaEnabled option can only be used with \"frame: 'none'\".";
 const char kVisibleOnAllWorkspacesWrongChannel[] =
     "The visibleOnAllWorkspaces option requires dev channel or newer.";
+const char kImeWindowMissingPermission[] =
+    "Extensions require the \"app.window.ime\" permission to create windows.";
+const char kImeOptionIsNotSupported[] =
+    "The \"ime\" option is not supported for platform app.";
+#if !defined(OS_CHROMEOS)
+const char kImeWindowUnsupportedPlatform[] =
+    "The \"ime\" option can only be used on ChromeOS.";
+#else
+const char kImeOptionMustBeTrueAndNeedsFrameNone[] =
+    "IME extensions must create window with \"ime: true\" and "
+    "\"frame: 'none'\".";
+#endif
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -203,6 +216,35 @@ bool AppWindowCreateFunction::RunAsync() {
 
     if (!GetFrameOptions(*options, &create_params))
       return false;
+
+    if (extension()->GetType() == extensions::Manifest::TYPE_EXTENSION) {
+      // Whitelisted IME extensions are allowed to use this API to create IME
+      // specific windows to show accented characters or suggestions.
+      if (!extension()->permissions_data()->HasAPIPermission(
+              APIPermission::kImeWindowEnabled)) {
+        error_ = app_window_constants::kImeWindowMissingPermission;
+        return false;
+      }
+
+#if !defined(OS_CHROMEOS)
+      // IME window is only supported on ChromeOS.
+      error_ = app_window_constants::kImeWindowUnsupportedPlatform;
+      return false;
+#else
+      // IME extensions must create window with "ime: true" and "frame: none".
+      if (!options->ime.get() || !*options->ime.get() ||
+          create_params.frame != AppWindow::FRAME_NONE) {
+        error_ = app_window_constants::kImeOptionMustBeTrueAndNeedsFrameNone;
+        return false;
+      }
+      create_params.is_ime_window = true;
+#endif  // OS_CHROMEOS
+    } else {
+      if (options->ime.get()) {
+        error_ = app_window_constants::kImeOptionIsNotSupported;
+        return false;
+      }
+    }
 
     if (options->alpha_enabled.get()) {
       const char* whitelist[] = {

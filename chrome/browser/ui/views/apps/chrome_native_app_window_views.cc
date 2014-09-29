@@ -52,6 +52,10 @@
 #include "ui/aura/window_observer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/shell_window_ids.h"
+#endif
+
 using extensions::AppWindow;
 
 namespace {
@@ -229,6 +233,14 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
 #endif
 
   OnBeforeWidgetInit(&init_params, widget());
+#if defined(OS_CHROMEOS)
+  if (create_params.is_ime_window) {
+    // Puts ime windows into ime window container.
+    init_params.parent =
+        ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                 ash::kShellWindowId_ImeWindowParentContainer);
+  }
+#endif
   widget()->Init(init_params);
 
   // The frame insets are required to resolve the bounds specifications
@@ -256,6 +268,11 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     // but does not have, a new attribute has to be added.
     wm::SetShadowType(widget()->GetNativeWindow(), wm::SHADOW_TYPE_NONE);
   }
+
+#if defined(OS_CHROMEOS)
+  if (create_params.is_ime_window)
+    return;
+#endif
 
   // Register accelarators supported by app windows.
   // TODO(jeremya/stevenjb): should these be registered for panels too?

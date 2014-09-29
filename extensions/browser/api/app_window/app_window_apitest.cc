@@ -168,4 +168,29 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       << message_;
 }
 
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiImeWindowHasPermissions) {
+  EXPECT_TRUE(RunComponentExtensionTest(
+      "platform_apps/windows_api_ime/has_permissions_whitelisted"))
+      << message_;
+
+  EXPECT_TRUE(RunPlatformAppTestWithFlags(
+      "platform_apps/windows_api_ime/has_permissions_platform_app",
+      kFlagIgnoreManifestWarnings))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiImeWindowNoPermissions) {
+  EXPECT_TRUE(RunComponentExtensionTest(
+      "platform_apps/windows_api_ime/no_permissions_whitelisted"))
+      << message_;
+
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_ime/no_permissions_platform_app"))
+      << message_;
+}
+#endif  // OS_CHROMEOS
+
 }  // namespace extensions

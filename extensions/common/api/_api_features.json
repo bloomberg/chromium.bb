@@ -36,15 +36,29 @@
       "12E618C3C6E97495AAECF2AC12DEB082353241C6"   // QO component extension
     ]
   }],
-  "app.window": {
+  "app.window": [{
     "channel": "stable",
     "contexts": ["blessed_extension"],
     "extension_types": ["platform_app"],
     "noparent": true
-  },
-  "app.window.canSetVisibleOnAllWorkspaces": {
+  }, {
+    "channel": "stable",
+    "contexts": ["blessed_extension"],
+    "extension_types": ["extension"],
+    "noparent": true,
+    "component_extensions_auto_granted": false,
+    "whitelist": [
+      "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // Official xkb extension
+      "F94EE6AB36D6C6588670B2B01EB65212D9C64E33"   // Open source xkb extension
+    ]
+  }],
+  // This does not need to be a complex feature if we could set "noparent" here.
+  // But set "noparent" makes this feature available on stable channel. The
+  // issue is tracked in crbug.com/415750.
+  "app.window.canSetVisibleOnAllWorkspaces": [{
+    "contexts": ["blessed_extension"],
     "channel": "dev"
-  },
+  }],
   "app.currentWindowInternal": {
     "noparent": true,
     "internal": true,

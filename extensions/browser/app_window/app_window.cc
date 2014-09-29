@@ -152,6 +152,7 @@ AppWindow::CreateParams::CreateParams()
       active_frame_color(SK_ColorBLACK),
       inactive_frame_color(SK_ColorBLACK),
       alpha_enabled(false),
+      is_ime_window(false),
       creator_process_id(0),
       state(ui::SHOW_STATE_DEFAULT),
       hidden(false),

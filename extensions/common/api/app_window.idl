@@ -215,6 +215,12 @@ namespace app.window {
     // Type of window to create.
     [nodoc] WindowType? type;
 
+    // Creates a special ime window. This window is not focusable and can be
+    // stacked above virtual keyboard window. This is restriced to component ime
+    // extensions.
+    // Requires app.window.ime API permission.
+    [nodoc] boolean? ime;
+
     // Frame type: <code>none</code> or <code>chrome</code> (defaults to
     // <code>chrome</code>). For <code>none</code>, the
     // <code>-webkit-app-region</code> CSS property can be used to apply

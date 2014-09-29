@@ -641,8 +641,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(docked_layout_manager_);
   keyboard_controller->AddObserver(workspace_controller_->layout_manager());
   Shell::GetInstance()->delegate()->VirtualKeyboardActivated(true);
-  aura::Window* parent = GetContainer(
-      kShellWindowId_VirtualKeyboardParentContainer);
+  aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container =
       keyboard_controller->GetContainerWindow();
@@ -662,8 +661,8 @@ void RootWindowController::DeactivateKeyboard(
   aura::Window* keyboard_container =
       keyboard_controller->GetContainerWindow();
   if (keyboard_container->GetRootWindow() == GetRootWindow()) {
-    aura::Window* parent = GetContainer(
-        kShellWindowId_VirtualKeyboardParentContainer);
+    aura::Window* parent =
+        GetContainer(kShellWindowId_ImeWindowParentContainer);
     DCHECK(parent);
     parent->RemoveChild(keyboard_container);
     // Virtual keyboard may be deactivated while still showing, notify all
@@ -679,8 +678,7 @@ void RootWindowController::DeactivateKeyboard(
 }
 
 bool RootWindowController::IsVirtualKeyboardWindow(aura::Window* window) {
-  aura::Window* parent = GetContainer(
-      kShellWindowId_VirtualKeyboardParentContainer);
+  aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   return parent ? parent->Contains(window) : false;
 }
 
@@ -1002,7 +1000,7 @@ void RootWindowController::CreateContainersInRootWindow(
   DescendantShouldStayInSameRootWindow(settings_bubble_container);
 
   aura::Window* virtual_keyboard_parent_container =
-      CreateContainer(kShellWindowId_VirtualKeyboardParentContainer,
+      CreateContainer(kShellWindowId_ImeWindowParentContainer,
                       "VirtualKeyboardParentContainer",
                       lock_screen_related_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(
