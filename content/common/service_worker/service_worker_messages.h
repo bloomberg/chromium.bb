@@ -216,15 +216,15 @@ IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheKeys,
                     int /* request_id */,
                     int /* cache_id */,
                     content::ServiceWorkerFetchRequest,
-                    content::ServiceWorkerCacheQueryParams);
+                    content::ServiceWorkerCacheQueryParams)
 
 IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_CacheBatch,
                     int /* request_id */,
                     int /* cache_id */,
-                    std::vector<content::ServiceWorkerBatchOperation>);
+                    std::vector<content::ServiceWorkerBatchOperation>)
 
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheClosed,
-                    int /* cache_id */);
+                    int /* cache_id */)
 
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
