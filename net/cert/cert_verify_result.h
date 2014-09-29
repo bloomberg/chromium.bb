@@ -44,9 +44,10 @@ class NET_EXPORT CertVerifyResult {
   CertStatus cert_status;
 
   // Properties of the certificate chain.
-  bool has_md5;
   bool has_md2;
   bool has_md4;
+  bool has_md5;
+  bool has_sha1;
 
   // If the certificate was successfully verified then this contains the
   // hashes, in several hash algorithms, of the SubjectPublicKeyInfos of the

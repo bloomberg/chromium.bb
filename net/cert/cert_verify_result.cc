@@ -18,9 +18,10 @@ CertVerifyResult::~CertVerifyResult() {
 void CertVerifyResult::Reset() {
   verified_cert = NULL;
   cert_status = 0;
-  has_md5 = false;
   has_md2 = false;
   has_md4 = false;
+  has_md5 = false;
+  has_sha1 = false;
   is_issued_by_known_root = false;
   is_issued_by_additional_trust_anchor = false;
   common_name_fallback_used = false;

@@ -227,6 +227,13 @@ void GetCertChainInfo(CFArrayRef cert_chain,
       verify_result->has_md4 = true;
     } else if (CSSMOIDEqual(alg_oid, &CSSMOID_MD5WithRSA)) {
       verify_result->has_md5 = true;
+    } else if (CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithRSA) ||
+               CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithRSA_OIW) ||
+               CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithDSA) ||
+               CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithDSA_CMS) ||
+               CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithDSA_JDK) ||
+               CSSMOIDEqual(alg_oid, &CSSMOID_ECDSA_WithSHA1)) {
+      verify_result->has_sha1 = true;
     }
   }
   if (!verified_cert)

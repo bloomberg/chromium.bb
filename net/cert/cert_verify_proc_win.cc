@@ -334,6 +334,13 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
     } else if (strcmp(algorithm, szOID_RSA_MD4RSA) == 0) {
       // md4WithRSAEncryption: 1.2.840.113549.1.1.3
       verify_result->has_md4 = true;
+    } else if (strcmp(algorithm, szOID_RSA_SHA1RSA) == 0 ||
+               strcmp(algorithm, szOID_X957_SHA1DSA) == 0 ||
+               strcmp(algorithm, szOID_ECDSA_SHA1) == 0) {
+      // sha1WithRSAEncryption: 1.2.840.113549.1.1.5
+      // id-dsa-with-sha1: 1.2.840.10040.4.3
+      // ecdsa-with-SHA1: 1.2.840.10045.4.1
+      verify_result->has_sha1 = true;
     }
   }
 

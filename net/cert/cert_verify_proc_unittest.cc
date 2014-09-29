@@ -1260,13 +1260,18 @@ TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
 }
 #endif
 
+enum ExpectedAlgorithms {
+  EXPECT_MD2 = 1 << 0,
+  EXPECT_MD4 = 1 << 1,
+  EXPECT_MD5 = 1 << 2,
+  EXPECT_SHA1 = 1 << 3
+};
+
 struct WeakDigestTestData {
   const char* root_cert_filename;
   const char* intermediate_cert_filename;
   const char* ee_cert_filename;
-  bool expected_has_md5;
-  bool expected_has_md4;
-  bool expected_has_md2;
+  int expected_algorithms;
 };
 
 // GTest 'magic' pretty-printer, so that if/when a test fails, it knows how
@@ -1323,19 +1328,21 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
                   NULL,
                   empty_cert_list_,
                   &verify_result);
-  EXPECT_EQ(data.expected_has_md5, verify_result.has_md5);
-  EXPECT_EQ(data.expected_has_md4, verify_result.has_md4);
-  EXPECT_EQ(data.expected_has_md2, verify_result.has_md2);
+  EXPECT_EQ(!!(data.expected_algorithms & EXPECT_MD2), verify_result.has_md2);
+  EXPECT_EQ(!!(data.expected_algorithms & EXPECT_MD4), verify_result.has_md4);
+  EXPECT_EQ(!!(data.expected_algorithms & EXPECT_MD5), verify_result.has_md5);
+  EXPECT_EQ(!!(data.expected_algorithms & EXPECT_SHA1), verify_result.has_sha1);
+
   EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
 
   // Ensure that MD4 and MD2 are tagged as invalid.
-  if (data.expected_has_md4 || data.expected_has_md2) {
+  if (data.expected_algorithms & (EXPECT_MD2 | EXPECT_MD4)) {
     EXPECT_EQ(CERT_STATUS_INVALID,
               verify_result.cert_status & CERT_STATUS_INVALID);
   }
 
   // Ensure that MD5 is flagged as weak.
-  if (data.expected_has_md5) {
+  if (data.expected_algorithms & EXPECT_MD5) {
     EXPECT_EQ(
         CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
         verify_result.cert_status & CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
@@ -1348,9 +1355,9 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
   // OpenSSL, CryptoAPI, Security.framework) and upon which weak algorithm
   // present (MD2, MD4, MD5).
   if (data.root_cert_filename) {
-    if (data.expected_has_md4 || data.expected_has_md2) {
+    if (data.expected_algorithms & (EXPECT_MD2 | EXPECT_MD4)) {
       EXPECT_EQ(ERR_CERT_INVALID, rv);
-    } else if (data.expected_has_md5) {
+    } else if (data.expected_algorithms & EXPECT_MD5) {
       EXPECT_EQ(ERR_CERT_WEAK_SIGNATURE_ALGORITHM, rv);
     } else {
       EXPECT_EQ(OK, rv);
@@ -1371,14 +1378,14 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
 // The signature algorithm of the root CA should not matter.
 const WeakDigestTestData kVerifyRootCATestData[] = {
   { "weak_digest_md5_root.pem", "weak_digest_sha1_intermediate.pem",
-    "weak_digest_sha1_ee.pem", false, false, false },
+    "weak_digest_sha1_ee.pem", EXPECT_SHA1 },
 #if defined(USE_OPENSSL_CERTS) || defined(OS_WIN)
   // MD4 is not supported by OS X / NSS
   { "weak_digest_md4_root.pem", "weak_digest_sha1_intermediate.pem",
-    "weak_digest_sha1_ee.pem", false, false, false },
+    "weak_digest_sha1_ee.pem", EXPECT_SHA1 },
 #endif
   { "weak_digest_md2_root.pem", "weak_digest_sha1_intermediate.pem",
-    "weak_digest_sha1_ee.pem", false, false, false },
+    "weak_digest_sha1_ee.pem", EXPECT_SHA1 },
 };
 INSTANTIATE_TEST_CASE_P(VerifyRoot, CertVerifyProcWeakDigestTest,
                         testing::ValuesIn(kVerifyRootCATestData));
@@ -1386,14 +1393,14 @@ INSTANTIATE_TEST_CASE_P(VerifyRoot, CertVerifyProcWeakDigestTest,
 // The signature algorithm of intermediates should be properly detected.
 const WeakDigestTestData kVerifyIntermediateCATestData[] = {
   { "weak_digest_sha1_root.pem", "weak_digest_md5_intermediate.pem",
-    "weak_digest_sha1_ee.pem", true, false, false },
+    "weak_digest_sha1_ee.pem", EXPECT_MD5 | EXPECT_SHA1 },
 #if defined(USE_OPENSSL_CERTS) || defined(OS_WIN)
   // MD4 is not supported by OS X / NSS
   { "weak_digest_sha1_root.pem", "weak_digest_md4_intermediate.pem",
-    "weak_digest_sha1_ee.pem", false, true, false },
+    "weak_digest_sha1_ee.pem", EXPECT_MD4 | EXPECT_SHA1 },
 #endif
   { "weak_digest_sha1_root.pem", "weak_digest_md2_intermediate.pem",
-    "weak_digest_sha1_ee.pem", false, false, true },
+    "weak_digest_sha1_ee.pem", EXPECT_MD2 | EXPECT_SHA1 },
 };
 // Disabled on NSS - MD4 is not supported, and MD2 and MD5 are disabled.
 #if defined(USE_NSS) || defined(OS_IOS)
@@ -1409,14 +1416,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // The signature algorithm of end-entity should be properly detected.
 const WeakDigestTestData kVerifyEndEntityTestData[] = {
   { "weak_digest_sha1_root.pem", "weak_digest_sha1_intermediate.pem",
-    "weak_digest_md5_ee.pem", true, false, false },
+    "weak_digest_md5_ee.pem", EXPECT_MD5 | EXPECT_SHA1 },
 #if defined(USE_OPENSSL_CERTS) || defined(OS_WIN)
   // MD4 is not supported by OS X / NSS
   { "weak_digest_sha1_root.pem", "weak_digest_sha1_intermediate.pem",
-    "weak_digest_md4_ee.pem", false, true, false },
+    "weak_digest_md4_ee.pem", EXPECT_MD4 | EXPECT_SHA1 },
 #endif
   { "weak_digest_sha1_root.pem", "weak_digest_sha1_intermediate.pem",
-    "weak_digest_md2_ee.pem", false, false, true },
+    "weak_digest_md2_ee.pem", EXPECT_MD2 | EXPECT_SHA1 },
 };
 // Disabled on NSS - NSS caches chains/signatures in such a way that cannot
 // be cleared until NSS is cleanly shutdown, which is not presently supported
@@ -1433,14 +1440,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(MAYBE_VerifyEndEntity,
 // Incomplete chains should still report the status of the intermediate.
 const WeakDigestTestData kVerifyIncompleteIntermediateTestData[] = {
   { NULL, "weak_digest_md5_intermediate.pem", "weak_digest_sha1_ee.pem",
-    true, false, false },
+    EXPECT_MD5 | EXPECT_SHA1 },
 #if defined(USE_OPENSSL_CERTS) || defined(OS_WIN)
   // MD4 is not supported by OS X / NSS
   { NULL, "weak_digest_md4_intermediate.pem", "weak_digest_sha1_ee.pem",
-    false, true, false },
+    EXPECT_MD4 | EXPECT_SHA1 },
 #endif
   { NULL, "weak_digest_md2_intermediate.pem", "weak_digest_sha1_ee.pem",
-    false, false, true },
+    EXPECT_MD2 | EXPECT_SHA1 },
 };
 // Disabled on NSS - libpkix does not return constructed chains on error,
 // preventing us from detecting/inspecting the verified chain.
@@ -1458,14 +1465,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // Incomplete chains should still report the status of the end-entity.
 const WeakDigestTestData kVerifyIncompleteEETestData[] = {
   { NULL, "weak_digest_sha1_intermediate.pem", "weak_digest_md5_ee.pem",
-    true, false, false },
+    EXPECT_MD5 | EXPECT_SHA1 },
 #if defined(USE_OPENSSL_CERTS) || defined(OS_WIN)
   // MD4 is not supported by OS X / NSS
   { NULL, "weak_digest_sha1_intermediate.pem", "weak_digest_md4_ee.pem",
-    false, true, false },
+    EXPECT_MD4 | EXPECT_SHA1 },
 #endif
   { NULL, "weak_digest_sha1_intermediate.pem", "weak_digest_md2_ee.pem",
-    false, false, true },
+    EXPECT_MD2 | EXPECT_SHA1 },
 };
 // Disabled on NSS - libpkix does not return constructed chains on error,
 // preventing us from detecting/inspecting the verified chain.
@@ -1483,13 +1490,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // reported.
 const WeakDigestTestData kVerifyMixedTestData[] = {
   { "weak_digest_sha1_root.pem", "weak_digest_md5_intermediate.pem",
-    "weak_digest_md2_ee.pem", true, false, true },
+    "weak_digest_md2_ee.pem", EXPECT_MD2 | EXPECT_MD5 },
   { "weak_digest_sha1_root.pem", "weak_digest_md2_intermediate.pem",
-    "weak_digest_md5_ee.pem", true, false, true },
+    "weak_digest_md5_ee.pem", EXPECT_MD2 | EXPECT_MD5 },
 #if defined(USE_OPENSSL_CERTS) || defined(OS_WIN)
   // MD4 is not supported by OS X / NSS
   { "weak_digest_sha1_root.pem", "weak_digest_md4_intermediate.pem",
-    "weak_digest_md2_ee.pem", false, true, true },
+    "weak_digest_md2_ee.pem", EXPECT_MD2 | EXPECT_MD4 },
 #endif
 };
 // NSS does not support MD4 and does not enable MD2 by default, making all

@@ -203,6 +203,12 @@ void GetCertChainInfo(CERTCertList* cert_list,
       case SEC_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION:
         verify_result->has_md4 = true;
         break;
+      case SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION:
+      case SEC_OID_ISO_SHA1_WITH_RSA_SIGNATURE:
+      case SEC_OID_ANSIX9_DSA_SIGNATURE_WITH_SHA1_DIGEST:
+      case SEC_OID_ANSIX962_ECDSA_SHA1_SIGNATURE:
+        verify_result->has_sha1 = true;
+        break;
       default:
         break;
     }

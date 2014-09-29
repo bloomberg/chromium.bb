@@ -117,8 +117,14 @@ void GetCertChainInfo(X509_STORE_CTX* store_ctx,
         verify_result->has_md2 = true;
       } else if (sig_alg == NID_md4WithRSAEncryption) {
         verify_result->has_md4 = true;
-      } else if (sig_alg == NID_md5WithRSAEncryption) {
+      } else if (sig_alg == NID_md5WithRSAEncryption ||
+                 sig_alg == NID_md5WithRSA) {
         verify_result->has_md5 = true;
+      } else if (sig_alg == NID_sha1WithRSAEncryption ||
+                 sig_alg == NID_dsaWithSHA || sig_alg == NID_dsaWithSHA1 ||
+                 sig_alg == NID_dsaWithSHA1_2 || sig_alg == NID_sha1WithRSA ||
+                 sig_alg == NID_ecdsa_with_SHA1) {
+        verify_result->has_sha1 = true;
       }
     }
   }
