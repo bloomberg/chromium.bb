@@ -108,8 +108,11 @@ def CamelCase(name):
 
 def ConstantStyle(name):
   components = NameToComponent(name)
-  if components[0] == 'k':
+  if components[0] == 'k' and len(components) > 1:
     components = components[1:]
+  # variable cannot starts with a digit.
+  if components[0][0].isdigit():
+    components[0] = '_' + components[0]
   return '_'.join([x.upper() for x in components])
 
 def GetNameForElement(element):
@@ -126,9 +129,10 @@ def GetNameForElement(element):
     return (GetNameForElement(element.enum) + '.' +
             ConstantStyle(element.name))
   if isinstance(element, (mojom.NamedValue,
-                          mojom.Constant)):
+                          mojom.Constant,
+                          mojom.EnumField)):
     return ConstantStyle(element.name)
-  raise Exception('Unexpected element: ' % element)
+  raise Exception('Unexpected element: %s' % element)
 
 def GetInterfaceResponseName(method):
   return UpperCamelCase(method.name + 'Response')
@@ -215,7 +219,9 @@ def GetPackage(module):
   if 'JavaPackage' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaPackage'])
   # Default package.
-  return 'org.chromium.mojom.' + module.namespace
+  if module.namespace:
+    return 'org.chromium.mojom.' + module.namespace
+  return 'org.chromium.mojom'
 
 def GetNameForKind(context, kind):
   def _GetNameHierachy(kind):
@@ -344,13 +350,13 @@ def GetMethodOrdinalName(method):
 
 def HasMethodWithResponse(interface):
   for method in interface.methods:
-    if method.response_parameters:
+    if method.response_parameters is not None:
       return True
   return False
 
 def HasMethodWithoutResponse(interface):
   for method in interface.methods:
-    if not method.response_parameters:
+    if method.response_parameters is None:
       return True
   return False
 

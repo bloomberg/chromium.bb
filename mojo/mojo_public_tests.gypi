@@ -193,7 +193,9 @@
       'type': 'static_library',
       'sources': [
         'public/interfaces/bindings/tests/math_calculator.mojom',
+        'public/interfaces/bindings/tests/no_module.mojom',
         'public/interfaces/bindings/tests/rect.mojom',
+        'public/interfaces/bindings/tests/regression_tests.mojom',
         'public/interfaces/bindings/tests/sample_factory.mojom',
         'public/interfaces/bindings/tests/sample_import.mojom',
         'public/interfaces/bindings/tests/sample_import2.mojom',

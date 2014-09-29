@@ -19,12 +19,12 @@
 
 {%- macro declare_callback(method) -%}
 
-interface {{method|interface_response_name}} extends org.chromium.mojo.bindings.Callbacks.Callback{{method.response_parameters|length}}<
+interface {{method|interface_response_name}} extends org.chromium.mojo.bindings.Callbacks.Callback{{method.response_parameters|length}}{% if method.response_parameters %}<
 {%-   for param in method.response_parameters -%}
 {{param.kind|java_type(True)}}
 {%- if not loop.last %}, {% endif %}
 {%-   endfor -%}
-> { }
+>{% endif %} { }
 {%- endmacro -%}
 
 {%- macro run_callback(variable, parameters) -%}
@@ -105,8 +105,8 @@ try {
     }
     switch(header.getType()) {
 {%   for method in interface.methods %}
-{%     if (with_response and method.response_parameters) or
-        (not with_response and not method.response_parameters) %}
+{%     if (with_response and method.response_parameters != None) or
+        (not with_response and method.response_parameters == None) %}
 {%       set request_struct = method|struct_from_method %}
 {%       if with_response %}
 {%         set response_struct = method|response_struct_from_method %}
@@ -152,7 +152,7 @@ public interface {{interface|name}} extends {{super_class(client)}} {
 {% for method in interface.methods %}
 
     void {{method|name}}({{declare_request_params(method)}});
-{%   if method.response_parameters %}
+{%   if method.response_parameters != None %}
     {{declare_callback(method)|indent(4)}}
 {%   endif %}
 {% endfor %}
@@ -179,13 +179,13 @@ class {{interface|name}}_Internal {
         @Override
         public void {{method|name}}({{declare_request_params(method)}}) {
 {%   set request_struct = method|struct_from_method %}
-            {{request_struct|name}} message = new {{request_struct|name}}();
+            {{request_struct|name}} _message = new {{request_struct|name}}();
 {%   for param in method.parameters %}
-            message.{{param|name}} = {{param|name}};
+            _message.{{param|name}} = {{param|name}};
 {%   endfor %}
-{%   if method.response_parameters %}
+{%   if method.response_parameters != None %}
             getMessageReceiver().acceptWithResponder(
-                    message.serializeWithHeader(
+                    _message.serializeWithHeader(
                             getCore(),
                             new org.chromium.mojo.bindings.MessageHeader(
                                     {{method|method_ordinal_name}},
@@ -194,7 +194,7 @@ class {{interface|name}}_Internal {
                     new {{method|response_struct_from_method|name}}ForwardToCallback(callback));
 {%   else %}
             getMessageReceiver().accept(
-                    message.serializeWithHeader(
+                    _message.serializeWithHeader(
                             getCore(),
                             new org.chromium.mojo.bindings.MessageHeader({{method|method_ordinal_name}})));
 {%   endif %}
@@ -222,7 +222,7 @@ class {{interface|name}}_Internal {
 {% for method in interface.methods %}
 
     {{ struct_def(method|struct_from_method, True)|indent(4) }}
-{%   if method.response_parameters %}
+{%   if method.response_parameters != None %}
 {%   set response_struct = method|response_struct_from_method %}
 
     {{ struct_def(response_struct, True)|indent(4) }}
@@ -245,7 +245,9 @@ class {{interface|name}}_Internal {
                                            {{flags_for_method(method, False)}})) {
                     return false;
                 }
+{%   if method.response_parameters|length %}
                 {{response_struct|name}} response = {{response_struct|name}}.deserialize(messageWithHeader.getPayload());
+{%   endif %}
                 mCallback.call({{run_callback('response', method.response_parameters)}});
                 return true;
             } catch (org.chromium.mojo.bindings.DeserializationException e) {
@@ -271,18 +273,18 @@ class {{interface|name}}_Internal {
 
         @Override
         public void call({{declare_params(method.response_parameters, true)}}) {
-            {{response_struct|name}} response = new {{response_struct|name}}();
+            {{response_struct|name}} _response = new {{response_struct|name}}();
 {%   for param in method.response_parameters %}
-            response.{{param|name}} = {{param|name}};
+            _response.{{param|name}} = {{param|name}};
 {%   endfor %}
-            org.chromium.mojo.bindings.ServiceMessage message =
-                    response.serializeWithHeader(
+            org.chromium.mojo.bindings.ServiceMessage _message =
+                    _response.serializeWithHeader(
                             mCore,
                             new org.chromium.mojo.bindings.MessageHeader(
                                     {{method|method_ordinal_name}},
                                     {{flags_for_method(method, False)}},
                                     mRequestId));
-            mMessageReceiver.accept(message);
+            mMessageReceiver.accept(_message);
         }
     }
 {%   endif %}

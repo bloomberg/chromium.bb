@@ -8,7 +8,9 @@ mojom("test_interfaces") {
   testonly = true
   sources = [
     "math_calculator.mojom",
+    "no_module.mojom",
     "rect.mojom",
+    "regression_tests.mojom",
     "sample_factory.mojom",
     "sample_import.mojom",
     "sample_import2.mojom",

@@ -5,14 +5,14 @@ import sys
 
 CALLBACK_TEMPLATE = ("""
     /**
-      * A generic %d-argument callback.
-      *
-      * %s
-      */
+     * A generic %d-argument callback.
+     *
+     * %s
+     */
     interface Callback%d<%s> {
         /**
-          * Call the callback.
-          */
+         * Call the callback.
+         */
         public void call(%s);
     }
 """)
@@ -31,6 +31,16 @@ package org.chromium.mojo.bindings;
  * Contains a generic interface for callbacks.
  */
 public interface Callbacks {
+
+    /**
+     * A generic callback.
+     */
+    interface Callback0 {
+        /**
+         * Call the callback.
+         */
+        public void call();
+    }
 %s
 }""")
 

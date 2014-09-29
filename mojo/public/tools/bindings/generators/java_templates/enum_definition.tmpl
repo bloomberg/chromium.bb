@@ -4,7 +4,7 @@
 {%- elif index == 0 -%}
 0
 {%- else -%}
-{{enum.fields[index - 1].name}} + 1
+{{enum.fields[index - 1]|name}} + 1
 {%- endif -%}
 {%- endmacro -%}
 
@@ -12,7 +12,7 @@
 public {{ 'static ' if not top_level }}final class {{enum|name}} {
 
 {% for field in enum.fields %}
-    public static final int {{field.name}} = {{enum_value(enum, field, loop.index0)}};
+    public static final int {{field|name}} = {{enum_value(enum, field, loop.index0)}};
 {% endfor %}
 
     private {{enum|name}}() {}
