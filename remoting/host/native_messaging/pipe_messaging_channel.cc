@@ -72,12 +72,6 @@ void PipeMessagingChannel::Start(EventHandler* event_handler) {
 void PipeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
   DCHECK(CalledOnValidThread());
 
-  if (message->GetType() != base::Value::TYPE_DICTIONARY) {
-    LOG(ERROR) << "Expected DictionaryValue";
-    Shutdown();
-    return;
-  }
-
   if (event_handler_)
     event_handler_->OnMessage(message.Pass());
 }

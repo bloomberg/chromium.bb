@@ -104,6 +104,12 @@ void Me2MeNativeMessagingHost::Start(
 void Me2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (message->GetType() != base::Value::TYPE_DICTIONARY) {
+    LOG(ERROR) << "Received a message that's not a dictionary.";
+    channel_->SendMessage(nullptr);
+    return;
+  }
+
   scoped_ptr<base::DictionaryValue> message_dict(
       static_cast<base::DictionaryValue*>(message.release()));
   scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
