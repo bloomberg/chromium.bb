@@ -53,6 +53,7 @@ public:
 
     const TextRun& run() const { return m_run; }
     float runWidthSoFar() const { return m_runWidthSoFar; }
+    unsigned currentOffset() { return m_currentCharacter; }
 
 #if ENABLE(SVG_FONTS)
     Vector<SVGGlyph::ArabicForm>& arabicForms() { return m_arabicForms; }

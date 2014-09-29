@@ -664,17 +664,17 @@ float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, G
 
     SimpleShaper shaper(this, runInfo.run, 0, false, forTextEmphasis);
     shaper.advance(runInfo.from);
-    float beforeWidth = shaper.m_runWidthSoFar;
+    float beforeWidth = shaper.runWidthSoFar();
     shaper.advance(runInfo.to, &glyphBuffer);
 
     if (glyphBuffer.isEmpty())
         return 0;
 
-    float afterWidth = shaper.m_runWidthSoFar;
+    float afterWidth = shaper.runWidthSoFar();
 
     if (runInfo.run.rtl()) {
         shaper.advance(runInfo.run.length());
-        initialAdvance = shaper.m_runWidthSoFar - afterWidth;
+        initialAdvance = shaper.runWidthSoFar() - afterWidth;
         glyphBuffer.reverse();
     } else {
         initialAdvance = beforeWidth;
@@ -822,7 +822,7 @@ float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFont
         glyphBounds->setRight(ceilf(shaper.lastGlyphOverflow()));
     }
 
-    return shaper.m_runWidthSoFar;
+    return shaper.runWidthSoFar();
 }
 
 FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float height)
@@ -837,13 +837,13 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
 {
     SimpleShaper shaper(this, run, 0, accountForGlyphBounds);
     shaper.advance(from);
-    float fromX = shaper.m_runWidthSoFar;
+    float fromX = shaper.runWidthSoFar();
     shaper.advance(to);
-    float toX = shaper.m_runWidthSoFar;
+    float toX = shaper.runWidthSoFar();
 
     if (run.rtl()) {
         shaper.advance(run.length());
-        float totalWidth = shaper.m_runWidthSoFar;
+        float totalWidth = shaper.runWidthSoFar();
         float beforeWidth = fromX;
         float afterWidth = toX;
         fromX = totalWidth - afterWidth;
@@ -864,7 +864,7 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
     if (run.rtl()) {
         delta -= floatWidthForSimpleText(run);
         while (1) {
-            offset = shaper.m_currentCharacter;
+            offset = shaper.currentOffset();
             float w;
             if (!shaper.advanceOneCharacter(w))
                 break;
@@ -879,7 +879,7 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
         }
     } else {
         while (1) {
-            offset = shaper.m_currentCharacter;
+            offset = shaper.currentOffset();
             float w;
             if (!shaper.advanceOneCharacter(w))
                 break;

@@ -1242,8 +1242,8 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const
     widths.resize(m_len);
     for (unsigned i = 0; i < m_len; i++) {
         shaper.advance(i + 1);
-        widths[i] = shaper.m_runWidthSoFar - lastWidth;
-        lastWidth = shaper.m_runWidthSoFar;
+        widths[i] = shaper.runWidthSoFar() - lastWidth;
+        lastWidth = shaper.runWidthSoFar();
     }
 }
 
