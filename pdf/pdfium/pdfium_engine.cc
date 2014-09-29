@@ -2715,10 +2715,12 @@ PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
   GetVisibleSelectionsScreenRects(&new_selections);
   for (size_t i = 0; i < new_selections.size(); ++i) {
     for (size_t j = 0; j < old_selections_.size(); ++j) {
-      if (new_selections[i] == old_selections_[j]) {
+      if (!old_selections_[j].IsEmpty() &&
+          new_selections[i] == old_selections_[j]) {
         // Rectangle was selected before and after, so no need to invalidate it.
         // Mark the rectangles by setting them to empty.
         new_selections[i] = old_selections_[j] = pp::Rect();
+        break;
       }
     }
   }
