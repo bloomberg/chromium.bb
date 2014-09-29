@@ -242,10 +242,12 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
     Sequence(kSequenceStyleFunctionCall,
              func_call->args()->contents(),
              func_call->args()->End());
-    Print(" ");
-    Sequence(kSequenceStyleBracedBlock,
-             func_call->block()->statements(),
-             func_call->block()->End());
+    if (func_call->block()) {
+      Print(" ");
+      Sequence(kSequenceStyleBracedBlock,
+               func_call->block()->statements(),
+               func_call->block()->End());
+    }
   } else if (const IdentifierNode* identifier = root->AsIdentifier()) {
     Print(identifier->value().value());
   } else if (const ListNode* list = root->AsList()) {
