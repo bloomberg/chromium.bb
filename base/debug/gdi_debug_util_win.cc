@@ -15,9 +15,8 @@
 namespace {
 
 void CollectChildGDIUsageAndDie(DWORD parent_pid) {
-  HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) ;
-  if(snapshot == INVALID_HANDLE_VALUE)
-    CHECK(false);
+  HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  CHECK_NE(INVALID_HANDLE_VALUE, snapshot);
 
   int child_count = 0;
   base::debug::Alias(&child_count);
@@ -29,23 +28,22 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
   base::debug::Alias(&sum_user_count);
 
   PROCESSENTRY32 proc_entry = {0};
-  proc_entry.dwSize = sizeof(PROCESSENTRY32) ;
-  if(!Process32First(snapshot, &proc_entry))
-    CHECK(false);
+  proc_entry.dwSize = sizeof(PROCESSENTRY32);
+  CHECK(Process32First(snapshot, &proc_entry));
 
   do {
     if (parent_pid != proc_entry.th32ParentProcessID)
       continue;
     // Got a child process. Compute GDI usage.
     base::win::ScopedHandle process(
-        ::OpenProcess(PROCESS_QUERY_INFORMATION,
-                      FALSE,
-                      proc_entry.th32ParentProcessID));
+        OpenProcess(PROCESS_QUERY_INFORMATION,
+                    FALSE,
+                    proc_entry.th32ParentProcessID));
     if (!process.IsValid())
       continue;
 
-    int num_gdi_handles = ::GetGuiResources(process.Get(), GR_GDIOBJECTS);
-    int num_user_handles = ::GetGuiResources(process.Get(), GR_USEROBJECTS);
+    int num_gdi_handles = GetGuiResources(process.Get(), GR_GDIOBJECTS);
+    int num_user_handles = GetGuiResources(process.Get(), GR_USEROBJECTS);
 
     // Compute sum and peak counts.
     ++child_count;
@@ -54,9 +52,9 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
     if (peak_gdi_count < num_gdi_handles)
       peak_gdi_count = num_gdi_handles;
 
-  } while(Process32Next(snapshot, &proc_entry));
+  } while (Process32Next(snapshot, &proc_entry));
 
-  ::CloseHandle(snapshot) ;
+  CloseHandle(snapshot);
   CHECK(false);
 }
 
@@ -67,7 +65,7 @@ namespace debug {
 
 void GDIBitmapAllocFailure(BITMAPINFOHEADER* header, HANDLE shared_section) {
   // Make sure parameters are saved in the minidump.
-  DWORD last_error = ::GetLastError();
+  DWORD last_error = GetLastError();
 
   LONG width = header->biWidth;
   LONG heigth = header->biHeight;
@@ -92,21 +90,16 @@ void GDIBitmapAllocFailure(BITMAPINFOHEADER* header, HANDLE shared_section) {
   base::debug::Alias(&num_user_handles);
 
   const DWORD kLotsOfHandles = 9990;
-  if (num_gdi_handles > kLotsOfHandles)
-    CHECK(false);
+  CHECK_LE(num_gdi_handles, kLotsOfHandles);
 
   PROCESS_MEMORY_COUNTERS_EX pmc;
   pmc.cb = sizeof(pmc);
-  if (!GetProcessMemoryInfo(GetCurrentProcess(),
-                            reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
-                            sizeof(pmc))) {
-    CHECK(false);
-  }
+  CHECK(GetProcessMemoryInfo(GetCurrentProcess(),
+                             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
+                             sizeof(pmc)));
   const size_t kLotsOfMemory = 1500 * 1024 * 1024; // 1.5GB
-  if (pmc.PagefileUsage > kLotsOfMemory)
-    CHECK(false);
-  if (pmc.PrivateUsage > kLotsOfMemory)
-    CHECK(false);
+  CHECK_LE(pmc.PagefileUsage, kLotsOfMemory);
+  CHECK_LE(pmc.PrivateUsage, kLotsOfMemory);
 
   void* small_data = NULL;
   base::debug::Alias(&small_data);
@@ -120,9 +113,11 @@ void GDIBitmapAllocFailure(BITMAPINFOHEADER* header, HANDLE shared_section) {
     HBITMAP small_bitmap = CreateDIBSection(
         NULL, reinterpret_cast<BITMAPINFO*>(&header),
         0, &small_data, shared_section, 0);
+    CHECK(small_bitmap != NULL);
+    DeleteObject(small_bitmap);
   }
   // Maybe the child processes are the ones leaking GDI or USER resouces.
-  CollectChildGDIUsageAndDie(::GetCurrentProcessId());
+  CollectChildGDIUsageAndDie(GetCurrentProcessId());
 }
 
 }  // namespace debug
