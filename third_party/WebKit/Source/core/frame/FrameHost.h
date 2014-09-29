@@ -77,6 +77,9 @@ public:
     PinchViewport& pinchViewport() const;
     EventHandlerRegistry& eventHandlerRegistry() const;
 
+    const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
+    void setOverrideEncoding(const AtomicString& encoding) { m_overrideEncoding = encoding; }
+
     void trace(Visitor*);
 
 private:
@@ -85,6 +88,8 @@ private:
     RawPtrWillBeMember<Page> m_page;
     const OwnPtr<PinchViewport> m_pinchViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
+
+    AtomicString m_overrideEncoding;
 };
 
 }

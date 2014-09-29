@@ -285,7 +285,7 @@ void Page::refreshPlugins(bool reload)
     }
 
     for (size_t i = 0; i < framesNeedingReload.size(); ++i)
-        framesNeedingReload[i]->loader().reload();
+        framesNeedingReload[i]->loader().reload(NormalReload);
 }
 
 PluginData* Page::pluginData() const

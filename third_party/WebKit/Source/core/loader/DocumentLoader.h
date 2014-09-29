@@ -104,15 +104,12 @@ namespace blink {
         void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
-        const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
 
         bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
 
         bool shouldContinueForNavigationPolicy(const ResourceRequest&, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, bool isTransitionNavigation = false);
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
-
-        void setOverrideEncoding(const AtomicString& encoding) { m_overrideEncoding = encoding; }
 
         void setDefersLoading(bool);
 
@@ -198,8 +195,6 @@ namespace blink {
         bool m_committed;
         bool m_isClientRedirect;
         bool m_replacesCurrentHistoryItem;
-
-        AtomicString m_overrideEncoding;
 
         // The action that triggered loading - we keep this around for the
         // benefit of the various policy handlers.

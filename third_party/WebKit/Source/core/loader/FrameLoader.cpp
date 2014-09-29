@@ -806,7 +806,7 @@ ResourceRequest FrameLoader::requestFromHistoryItem(HistoryItem* item, ResourceR
     return request;
 }
 
-void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const AtomicString& overrideEncoding, ClientRedirectPolicy clientRedirectPolicy)
+void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
 {
     if (!m_currentItem)
         return;
@@ -832,7 +832,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     request.setSkipServiceWorker(reloadPolicy == EndToEndReload);
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, clientRedirectPolicy, overrideEncoding);
+    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, clientRedirectPolicy);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1254,8 +1254,8 @@ bool FrameLoader::shouldClose()
 
 bool FrameLoader::validateTransitionNavigationMode()
 {
-    if (frame()->document()->inQuirksMode()) {
-        frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Ignoring transition elements due to quirks mode."));
+    if (m_frame->document()->inQuirksMode()) {
+        m_frame->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Ignoring transition elements due to quirks mode."));
         return false;
     }
 
@@ -1266,7 +1266,7 @@ bool FrameLoader::validateTransitionNavigationMode()
 bool FrameLoader::dispatchNavigationTransitionData()
 {
     Vector<Document::TransitionElementData> elementData;
-    frame()->document()->getTransitionElementData(elementData);
+    m_frame->document()->getTransitionElementData(elementData);
     if (elementData.isEmpty() || !validateTransitionNavigationMode())
         return false;
 
@@ -1277,7 +1277,7 @@ bool FrameLoader::dispatchNavigationTransitionData()
     return true;
 }
 
-void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect, const AtomicString& overrideEncoding)
+void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect)
 {
     ASSERT(client()->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
@@ -1297,15 +1297,6 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     m_policyDocumentLoader->setTriggeringAction(action);
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     m_policyDocumentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
-
-    Frame* parent = m_frame->tree().parent();
-    if (parent && parent->isLocalFrame())
-        m_policyDocumentLoader->setOverrideEncoding(toLocalFrame(parent)->loader().documentLoader()->overrideEncoding());
-    else if (!overrideEncoding.isEmpty())
-        m_policyDocumentLoader->setOverrideEncoding(overrideEncoding);
-    else if (m_documentLoader)
-        m_policyDocumentLoader->setOverrideEncoding(m_documentLoader->overrideEncoding());
-
 
     bool isTransitionNavigation = false;
     if (RuntimeEnabledFeatures::navigationTransitionsEnabled() && type != FrameLoadTypeReload && type != FrameLoadTypeReloadFromOrigin && type != FrameLoadTypeSame)

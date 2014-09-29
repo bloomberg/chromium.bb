@@ -2697,15 +2697,15 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
     if (!m_page)
         return;
 
-    if (!m_page->mainFrame()->isLocalFrame())
-        return;
-
     // Only change override encoding, don't change default encoding.
     // Note that the new encoding must be 0 if it isn't supposed to be set.
     AtomicString newEncodingName;
     if (!encodingName.isEmpty())
         newEncodingName = encodingName;
-    m_page->deprecatedLocalMainFrame()->loader().reload(NormalReload, KURL(), newEncodingName);
+    m_page->frameHost().setOverrideEncoding(newEncodingName);
+
+    if (m_page->mainFrame()->isLocalFrame())
+        m_page->deprecatedLocalMainFrame()->loader().reload(NormalReload);
 }
 
 WebFrame* WebViewImpl::mainFrame()

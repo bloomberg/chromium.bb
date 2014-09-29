@@ -166,7 +166,7 @@ public:
     virtual void fire(LocalFrame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader().reload(NormalReload, KURL(), nullAtom, ClientRedirect);
+        frame->loader().reload(NormalReload, KURL(), ClientRedirect);
     }
 };
 
