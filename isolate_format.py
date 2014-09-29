@@ -68,7 +68,7 @@ def replace_variable(part, variables):
       raise IsolateError(
         'Variable "%s" was not found in %s.\nDid you forget to specify '
         '--path-variable?' % (m.group(1), variables))
-    return variables[m.group(1)]
+    return str(variables[m.group(1)])
   return part
 
 
