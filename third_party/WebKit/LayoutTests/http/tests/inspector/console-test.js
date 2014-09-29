@@ -17,6 +17,10 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace[0] && consoleMessage.stackTrace[0].functionName || "";
     if (functionName.indexOf("InjectedScript") !== -1)
         messageText = messageText.replace(/\bVM:\d+/, ""); // Only first replace.
+    if (messageText.startsWith("Navigated to")) {
+        var fileName = messageText.split(" ").pop().split("/").pop();
+        messageText = "Navigated to " + fileName;
+    }
     // The message might be extremely long in case of dumping stack overflow message.
     messageText = messageText.substring(0, 1024);
     return messageText;
