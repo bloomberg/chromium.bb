@@ -585,28 +585,6 @@
           'message': "Generating indirect_size.c ...",
         },
         {
-          'action_name': 'api_exec_es1_c',
-          'inputs': [
-            '<@(xmlfiles)',
-            'redirectoutput.py',
-            'src/src/mesa/main/es_generator.py',
-          ],
-          'outputs': [
-            '<(generated_src_dir)/mesa/api_exec_es1.c',
-          ],
-          'action': [
-            'python',
-            'redirectoutput.py',
-            '<(generated_src_dir)/mesa/api_exec_es1.c',
-            'src/src/mesa/main/es_generator.py',
-            '-S',
-            'src/src/mesa/main/APIspec.xml',
-            '-V',
-            'GLES1.1',
-          ],
-          'message': "Generating api_exec_es1.c ...",
-        },
-        {
           'action_name': 'git_sha1_h',
           'inputs': [
           ],
