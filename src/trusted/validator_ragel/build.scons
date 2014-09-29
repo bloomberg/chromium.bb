@@ -96,6 +96,16 @@ env.AddNodeToTestSuite(
     ['small_tests', 'validator_tests'],
     'run_trie_test')
 
+proof_tools_test = env.CommandTest(
+    'proof_tools_test.out',
+    ['${PYTHON}', env.File('proof_tools_test.py'), '--verbose'],
+    direct_emulation=False)
+
+env.AddNodeToTestSuite(
+    proof_tools_test,
+    ['small_tests', 'validator_tests'],
+    'run_proof_tools_test')
+
 dll_env = env.Clone(COMPONENT_STATIC=False)
 
 if env.Bit('windows'):

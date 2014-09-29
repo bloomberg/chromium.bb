@@ -98,7 +98,7 @@ def _ImmediateRE(group_name='immediate'):
       _HexRE(group_name=group_name + '_value'))
 
 
-def _MemoryRE(group_name='memory'):
+def MemoryRE(group_name='memory'):
   # Possible forms:
   #   (%eax)
   #   (%eax,%ebx,1)
@@ -118,7 +118,7 @@ def _IndirectJumpTargetRE(group_name='target'):
   return r'(?P<%s>\*(%s|%s))' % (
       group_name,
       _AnyRegisterRE(group_name=group_name + '_register'),
-      _MemoryRE(group_name=group_name + '_memory'))
+      MemoryRE(group_name=group_name + '_memory'))
 
 
 def _OperandRE(group_name='operand'):
@@ -126,7 +126,7 @@ def _OperandRE(group_name='operand'):
       group_name,
       _AnyRegisterRE(group_name=group_name + '_register'),
       _ImmediateRE(group_name=group_name + '_immediate'),
-      _MemoryRE(group_name=group_name + '_memory'),
+      MemoryRE(group_name=group_name + '_memory'),
       _IndirectJumpTargetRE(group_name=group_name + '_target'))
 
 
@@ -149,7 +149,16 @@ def _SplitOps(insn, args):
   return ops
 
 
-def _ParseInstruction(instruction):
+def ParseInstruction(instruction):
+  """Parse an instruction into operands.
+
+  Args:
+    instruction: objdump_parser.Instruction tuple
+  Returns:
+    prefixes, mnemonic, operands
+  Raises:
+    SandboxingError on erroneous bytes.
+  """
   # Strip comment.
   disasm, _, _ = instruction.disasm.partition('#')
   elems = disasm.split()
@@ -379,7 +388,7 @@ def _ProcessMemoryAccess(instruction, operands):
   """
   precondition = Condition()
   for op in operands:
-    m = re.match(_MemoryRE() + r'$', op)
+    m = re.match(MemoryRE() + r'$', op)
     if m is not None:
       assert m.group('memory_segment') is None
       base = m.group('memory_base')
@@ -1070,7 +1079,7 @@ def ValidateRegularInstruction(instruction, bitness):
     except DoNotMatchError:
       pass
 
-  prefixes, name, ops = _ParseInstruction(instruction)
+  prefixes, name, ops = ParseInstruction(instruction)
 
   for prefix in prefixes:
     if prefix != 'lock':
@@ -1090,7 +1099,7 @@ def ValidateRegularInstruction(instruction, bitness):
       raise SandboxingError(
           'access to test registers is not allowed', instruction)
 
-    m = re.match(_MemoryRE() + r'$', op)
+    m = re.match(MemoryRE() + r'$', op)
     if m is not None and m.group('memory_segment') is not None:
       raise SandboxingError(
           'segments in memory references are not allowed', instruction)
