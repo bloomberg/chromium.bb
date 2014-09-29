@@ -44,7 +44,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
-#include "chrome/browser/invalidation/invalidation_controller_android.h"
+#include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/prerender/external_prerender_handler_android.h"
@@ -76,6 +76,7 @@
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
+#include "components/invalidation/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
@@ -94,6 +95,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "Bookmarks", bookmarks::android::RegisterBookmarks },
   { "DomDistiller", dom_distiller::android::RegisterDomDistiller },
   { "GCMDriver", gcm::android::RegisterGCMDriverJni },
+  { "Invalidation", invalidation::android::RegisterInvalidationJni },
   { "NavigationInterception",
     navigation_interception::RegisterNavigationInterceptionJni },
   { "WebContentsDelegateAndroid",
@@ -148,9 +150,10 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ForeignSessionHelper",
     ForeignSessionHelper::RegisterForeignSessionHelper },
   { "InfoBarContainer", RegisterInfoBarContainer },
+  { "InvalidationServiceFactory",
+    invalidation::InvalidationServiceFactoryAndroid::Register },
   { "ShortcutHelper", ShortcutHelper::RegisterShortcutHelper },
   { "IntentHelper", RegisterIntentHelper },
-  { "InvalidationController", invalidation::RegisterInvalidationController },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
   { "LogoBridge", RegisterLogoBridge },

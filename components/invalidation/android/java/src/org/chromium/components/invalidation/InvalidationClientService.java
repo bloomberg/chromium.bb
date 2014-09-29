@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.components.invalidation;
 
 import android.accounts.Account;
 import android.app.PendingIntent;
@@ -22,14 +22,17 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.notifier.InvalidationClientNameProvider;
+import org.chromium.sync.notifier.InvalidationIntentProtocol;
+import org.chromium.sync.notifier.InvalidationPreferences;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
+import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -50,16 +53,14 @@ import javax.annotation.Nullable;
  *
  * @author dsmyers@google.com
  */
-public class InvalidationService extends AndroidListener {
+public class InvalidationClientService extends AndroidListener {
     /* This class must be public because it is exposed as a service. */
 
     /** Notification client typecode. */
     @VisibleForTesting
     static final int CLIENT_TYPE = ClientType.CHROME_SYNC_ANDROID;
 
-    private static final String TAG = "InvalidationService";
-
-    private static final Random RANDOM = new Random();
+    private static final String TAG = "InvalidationClientService";
 
     /**
      * Whether the underlying notification client has been started. This boolean is updated when a
@@ -207,7 +208,7 @@ public class InvalidationService extends AndroidListener {
                     @Override
                     public void tokenAvailable(String token) {
                         if (token != null) {
-                            setAuthToken(InvalidationService.this.getApplicationContext(),
+                            setAuthToken(InvalidationClientService.this.getApplicationContext(),
                                     pendingIntent, token, getOAuth2ScopeWithType());
                         }
                     }

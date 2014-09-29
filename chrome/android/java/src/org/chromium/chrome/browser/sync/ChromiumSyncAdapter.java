@@ -19,6 +19,8 @@ import com.google.protos.ipc.invalidation.Types;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.concurrent.Semaphore;
@@ -167,12 +169,13 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @VisibleForTesting
     public void requestSync(int objectSource, String objectId, long version, String payload) {
-        ProfileSyncService.get(mApplication)
+        InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
                 .requestSyncFromNativeChrome(objectSource, objectId, version, payload);
     }
 
     @VisibleForTesting
     public void requestSyncForAllTypes() {
-        ProfileSyncService.get(mApplication).requestSyncFromNativeChromeForAllTypes();
+        InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
+                .requestSyncFromNativeChromeForAllTypes();
     }
 }

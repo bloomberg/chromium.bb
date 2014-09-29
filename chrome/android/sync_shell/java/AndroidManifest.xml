@@ -176,8 +176,8 @@
 
         <!-- Notification service for sync. -->
         <meta-data android:name="ipc.invalidation.ticl.listener_service_class"
-                   android:value="org.chromium.sync.notifier.InvalidationService"/>
-        <service android:name="org.chromium.sync.notifier.InvalidationService"
+                   android:value="org.chromium.components.invalidation.InvalidationClientService"/>
+        <service android:name="org.chromium.components.invalidation.InvalidationClientService"
                  android:exported="false">
             <intent-filter>
                 <action android:name="com.google.ipc.invalidation.AUTH_TOKEN_REQUEST"/>

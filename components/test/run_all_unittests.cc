@@ -25,6 +25,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "components/invalidation/android/component_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
@@ -52,6 +53,7 @@ class ComponentsTestSuite : public base::TestSuite {
     JNIEnv* env = base::android::AttachCurrentThread();
     gfx::android::RegisterJni(env);
     ui::android::RegisterJni(env);
+    invalidation::android::RegisterInvalidationJni(env);
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

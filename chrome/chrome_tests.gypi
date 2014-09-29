@@ -2799,6 +2799,7 @@
             'chrome_java_test_support',
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
+            '../components/components.gyp:invalidation_javatests',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
           ],

@@ -488,7 +488,6 @@
       'browser/install_verification/win/module_verification_test.cc',
       'browser/install_verification/win/module_verification_test.h',
       'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
-      'browser/invalidation/invalidation_service_android_unittest.cc',
       'browser/invalidation/invalidator_storage_unittest.cc',
       'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
       'browser/io_thread_unittest.cc',

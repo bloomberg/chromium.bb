@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.components.invalidation;
 
 import android.accounts.Account;
 import android.content.ComponentName;
@@ -21,6 +21,8 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.notifier.InvalidationIntentProtocol;
+import org.chromium.sync.notifier.InvalidationPreferences;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
 import org.chromium.sync.signin.AccountManagerHelper;
 
@@ -32,19 +34,20 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Tests for the {@link InvalidationService}.
+ * Tests for the {@link InvalidationClientService}.
  *
  * @author dsmyers@google.com (Daniel Myers)
  */
-public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidationService> {
+public class InvalidationClientServiceTest extends
+          ServiceTestCase<TestableInvalidationClientService> {
     /** Id used when creating clients. */
     private static final byte[] CLIENT_ID = new byte[]{0, 4, 7};
 
     /** Intents provided to {@link #startService}. */
     private List<Intent> mStartServiceIntents;
 
-    public InvalidationServiceTest() {
-        super(TestableInvalidationService.class);
+    public InvalidationClientServiceTest() {
+        super(TestableInvalidationClientService.class);
     }
 
     @Override
@@ -55,7 +58,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
             @Override
             public ComponentName startService(Intent intent) {
                 mStartServiceIntents.add(intent);
-                return new ComponentName(this, InvalidationServiceTest.class);
+                return new ComponentName(this, InvalidationClientServiceTest.class);
             }
         });
         setupService();
@@ -63,11 +66,11 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
     @Override
     public void tearDown() throws Exception {
-        if (InvalidationService.getIsClientStartedForTest()) {
+        if (InvalidationClientService.getIsClientStartedForTest()) {
             Intent stopIntent = createStopIntent();
             getService().onHandleIntent(stopIntent);
         }
-        assertFalse(InvalidationService.getIsClientStartedForTest());
+        assertFalse(InvalidationClientService.getIsClientStartedForTest());
         super.tearDown();
     }
 
@@ -82,7 +85,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         Set<ObjectId> unregAccumulator = new HashSet<ObjectId>();
 
         // Empty existing and desired registrations should yield empty operation sets.
-        InvalidationService.computeRegistrationOps(
+        InvalidationClientService.computeRegistrationOps(
                 ModelType.modelTypesToObjectIds(
                         CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION)),
                 ModelType.modelTypesToObjectIds(
@@ -92,7 +95,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         assertEquals(0, unregAccumulator.size());
 
         // Equal existing and desired registrations should yield empty operation sets.
-        InvalidationService.computeRegistrationOps(new HashSet<ObjectId>(),
+        InvalidationClientService.computeRegistrationOps(new HashSet<ObjectId>(),
                 new HashSet<ObjectId>(), regAccumulator, unregAccumulator);
         assertEquals(0, regAccumulator.size());
         assertEquals(0, unregAccumulator.size());
@@ -102,7 +105,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         Set<ObjectId> desiredTypes =
                 CollectionUtil.newHashSet(
                         ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId());
-        InvalidationService.computeRegistrationOps(
+        InvalidationClientService.computeRegistrationOps(
                 new HashSet<ObjectId>(),
                 desiredTypes,
                 regAccumulator, unregAccumulator);
@@ -115,7 +118,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Unequal existing and desired registrations should yield both registrations and
         // unregistrations. We should unregister TYPED_URL and register BOOKMARK, keeping SESSION.
-        InvalidationService.computeRegistrationOps(
+        InvalidationClientService.computeRegistrationOps(
                 CollectionUtil.newHashSet(
                         ModelType.SESSION.toObjectId(), ModelType.TYPED_URL.toObjectId()),
                 CollectionUtil.newHashSet(
@@ -146,10 +149,10 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Issue ready.
         getService().ready(CLIENT_ID);
-        assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
+        assertTrue(Arrays.equals(CLIENT_ID, InvalidationClientService.getClientIdForTest()));
         byte[] otherCid = "otherCid".getBytes();
         getService().ready(otherCid);
-        assertTrue(Arrays.equals(otherCid, InvalidationService.getClientIdForTest()));
+        assertTrue(Arrays.equals(otherCid, InvalidationClientService.getClientIdForTest()));
 
         // Verify registrations issued.
         assertEquals(CollectionUtil.newHashSet(
@@ -466,11 +469,11 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         Intent startIntent = createStartIntent();
         getService().onHandleIntent(startIntent);
-        assertTrue(InvalidationService.getIsClientStartedForTest());
+        assertTrue(InvalidationClientService.getIsClientStartedForTest());
 
         Intent stopIntent = createStopIntent();
         getService().onHandleIntent(stopIntent);
-        assertFalse(InvalidationService.getIsClientStartedForTest());
+        assertFalse(InvalidationClientService.getIsClientStartedForTest());
 
         // The issued intents should have been an AndroidListener start intent followed by an
         // AndroidListener stop intent.
@@ -492,14 +495,14 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         // Start the service.
         Intent startIntent = createStartIntent();
         getService().onHandleIntent(startIntent);
-        assertTrue(InvalidationService.getIsClientStartedForTest());
+        assertTrue(InvalidationClientService.getIsClientStartedForTest());
 
         // Change configuration.
         getService().setShouldRunStates(false, false);
 
         // Send an Intent and verify that the service stops.
         getService().onHandleIntent(startIntent);
-        assertFalse(InvalidationService.getIsClientStartedForTest());
+        assertFalse(InvalidationClientService.getIsClientStartedForTest());
 
         // The issued intents should have been an AndroidListener start intent followed by an
         // AndroidListener stop intent.
@@ -526,7 +529,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
-        assertTrue(InvalidationService.getIsClientStartedForTest());
+        assertTrue(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
         assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
@@ -677,7 +680,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
-        assertTrue(InvalidationService.getIsClientStartedForTest());
+        assertTrue(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
         assertEquals(CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE),
@@ -687,7 +690,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Set client to be ready. This triggers registrations.
         getService().ready(CLIENT_ID);
-        assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
+        assertTrue(Arrays.equals(CLIENT_ID, InvalidationClientService.getClientIdForTest()));
 
         // Ensure registrations are correct.
         Set<ObjectId> expectedTypes =
@@ -707,7 +710,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
-        assertTrue(InvalidationService.getIsClientStartedForTest());
+        assertTrue(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
         assertEquals(new HashSet<String>(), invPrefs.getSavedSyncedTypes());
@@ -716,7 +719,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Make sure client is ready.
         getService().ready(CLIENT_ID);
-        assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
+        assertTrue(Arrays.equals(CLIENT_ID, InvalidationClientService.getClientIdForTest()));
 
         // Choose to register for all types in an already ready client.
         registrationIntent = createRegisterIntent(account, true, null);
@@ -746,7 +749,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         getService().onHandleIntent(registrationIntent);
 
         // Verify state written but client not started.
-        assertFalse(InvalidationService.getIsClientStartedForTest());
+        assertFalse(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
         assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
@@ -773,7 +776,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
-        assertTrue(InvalidationService.getIsClientStartedForTest());
+        assertTrue(InvalidationClientService.getIsClientStartedForTest());
         assertEquals(1, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
@@ -802,34 +805,34 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     public void testRegistrationRetries() {
         /*
          * Test plan: validate that the alarm receiver used by the AndroidListener underlying
-         * InvalidationService is correctly configured in the manifest and retries registrations
-         * with exponential backoff. May need to be implemented as a downstream Chrome for Android
-         * test.
+         * InvalidationClientService is correctly configured in the manifest and retries
+         * registrations with exponential backoff. May need to be implemented as a downstream
+         * Chrome for Android test.
          */
         // TODO(dsmyers): implement.
         // Bug: https://code.google.com/p/chromium/issues/detail?id=172398
     }
 
-    /** Creates an intent to start the InvalidationService. */
+    /** Creates an intent to start the InvalidationClientService. */
     private Intent createStartIntent() {
         Intent intent = new Intent();
         return intent;
     }
 
-    /** Creates an intent to stop the InvalidationService. */
+    /** Creates an intent to stop the InvalidationClientService. */
     private Intent createStopIntent() {
         Intent intent = new Intent();
         intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
         return intent;
     }
 
-    /** Creates an intent to register some types with the InvalidationService. */
+    /** Creates an intent to register some types with the InvalidationClientService. */
     private Intent createRegisterIntent(Account account, boolean allTypes, Set<ModelType> types) {
         Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
         return intent;
     }
 
-    /** Creates an intent to register some types with the InvalidationService. */
+    /** Creates an intent to register some types with the InvalidationClientService. */
     private Intent createRegisterIntent(
             Account account, int[] objectSources, String[] objectNames) {
         Intent intent = InvalidationIntentProtocol.createRegisterIntent(
@@ -840,7 +843,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     /** Returns whether {@code intent} is an {@link AndroidListener} start intent. */
     private boolean isAndroidListenerStartIntent(Intent intent) {
         Intent startIntent = AndroidListener.createStartIntent(getContext(),
-                InvalidationService.CLIENT_TYPE, "unused".getBytes());
+                InvalidationClientService.CLIENT_TYPE, "unused".getBytes());
         return intent.getExtras().keySet().equals(startIntent.getExtras().keySet());
     }
 

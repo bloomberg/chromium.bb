@@ -11,6 +11,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
+import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
@@ -35,8 +37,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class ProfileSyncService {
 
+    /**
+     * Listener for the underlying sync status.
+     */
     public interface SyncStateChangedListener {
-        // Invoked when the underlying sync status has changed.
+        // Invoked when the status has changed.
         public void syncStateChanged();
     }
 
@@ -138,25 +143,13 @@ public class ProfileSyncService {
         syncSignIn(account);
     }
 
-    public void requestSyncFromNativeChrome(
-            int objectSource, String objectId, long version, String payload) {
-        ThreadUtils.assertOnUiThread();
-        nativeNudgeSyncer(
-                mNativeProfileSyncServiceAndroid, objectSource, objectId, version, payload);
-    }
-
+    // TODO(maxbogue): Remove once downstream use is removed. See http://crbug.com/259559.
+    // Callers should use InvalidationService.requestSyncFromNativeChromeForAllTypes() instead.
+    @Deprecated
     public void requestSyncFromNativeChromeForAllTypes() {
         ThreadUtils.assertOnUiThread();
-        nativeNudgeSyncerForAllTypes(mNativeProfileSyncServiceAndroid);
-    }
-
-    /**
-     * Nudge the syncer to start a new sync cycle.
-     */
-    @VisibleForTesting
-    public void requestSyncCycleForTest() {
-        ThreadUtils.assertOnUiThread();
-        requestSyncFromNativeChromeForAllTypes();
+        InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
+                .requestSyncFromNativeChromeForAllTypes();
     }
 
     public String querySyncStatus() {
@@ -545,10 +538,6 @@ public class ProfileSyncService {
     }
 
     // Native methods
-    private native void nativeNudgeSyncer(
-            long nativeProfileSyncServiceAndroid, int objectSource, String objectId, long version,
-            String payload);
-    private native void nativeNudgeSyncerForAllTypes(long nativeProfileSyncServiceAndroid);
     private native long nativeInit();
     private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
     private native void nativeDisableSync(long nativeProfileSyncServiceAndroid);

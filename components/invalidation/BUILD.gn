@@ -1,6 +1,9 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 static_library("invalidation") {
   sources = [
@@ -75,6 +78,15 @@ static_library("invalidation") {
       "ticl_settings_provider.h",
     ]
   }
+  if (is_android) {
+    sources += [
+      "android/component_jni_registrar.cc",
+      "android/component_jni_registrar.h",
+      "invalidation_service_android.cc",
+      "invalidation_service_android.h",
+    ]
+    deps += [ ":jni_headers" ]
+  }
 
   public_deps = [
     "//third_party/cacheinvalidation",
@@ -92,6 +104,21 @@ static_library("invalidation") {
     "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
+}
+
+static_library("unittests") {
+  testonly = true
+  sources = []
+  deps = [
+    ":invalidation",
+    ":test_support",
+  ]
+  if (is_android) {
+    deps += [
+      ":javatests",
+      ":jni_headers",
+    ]
+  }
 }
 
 static_library("test_support") {
@@ -120,7 +147,11 @@ static_library("test_support") {
       "p2p_invalidation_service.h",
     ]
   }
-
+  if (is_android) {
+    deps += [
+      ":jni_headers",
+    ]
+  }
   deps = [
     "//base",
     "//components/gcm_driver:test_support",
@@ -136,4 +167,28 @@ static_library("test_support") {
     "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
+}
+
+if (is_android) {
+  static_library("java") {
+    deps = [
+      "//base",
+      "//sync:java",
+      "//third_party/cacheinvalidation:javalib",
+    ]
+    sources = [
+    ]
+  }
+  static_library("javatests") {
+    deps = [
+      ":java",
+      "//base:java_test_support",
+    ]
+  }
+  generate_jni("jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/components/invalidation/InvalidationService.java",
+    ]
+    jni_package = "components/invalidation"
+  }
 }

@@ -16,6 +16,8 @@ import junit.framework.Assert;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
@@ -198,7 +200,8 @@ public final class SyncTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ProfileSyncService.get(context).requestSyncCycleForTest();
+                InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
+                        .requestSyncFromNativeChromeForAllTypes();
             }
         });
 

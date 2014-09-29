@@ -34,20 +34,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // This method should be called once right after contructing the object.
   void Init();
 
-  // Called from Java when we need to nudge native syncer. The |objectSource|,
-  // |objectId|, |version| and |payload| values should come from an
-  // invalidation.
-  void NudgeSyncer(JNIEnv* env,
-                   jobject obj,
-                   jint objectSource,
-                   jstring objectId,
-                   jlong version,
-                   jstring payload);
-
-  // Called from Java when we need to nudge native syncer but have lost state on
-  // which types have changed.
-  void NudgeSyncerForAllTypes(JNIEnv* env, jobject obj);
-
   // Called from Java when the user manually enables sync
   void EnableSync(JNIEnv* env, jobject obj);
 
@@ -225,13 +211,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   virtual ~ProfileSyncServiceAndroid();
   // Remove observers to profile sync service.
   void RemoveObserver();
-  // Called from Java when we need to nudge native syncer. The |object_source|,
-  // |objectId|, |version| and |payload| values should come from an
-  // invalidation.
-  void SendNudgeNotification(int object_source,
-                             const std::string& str_object_id,
-                             int64 version,
-                             const std::string& payload);
 
   Profile* profile_;
   ProfileSyncService* sync_service_;
@@ -241,11 +220,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
 
   // Java-side ProfileSyncService object.
   JavaObjectWeakGlobalRef weak_java_profile_sync_service_;
-
-  // The invalidation API spec allows for the possibility of redundant
-  // invalidations, so keep track of the max versions and drop
-  // invalidations with old versions.
-  ObjectIdVersionMap max_invalidation_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceAndroid);
 };

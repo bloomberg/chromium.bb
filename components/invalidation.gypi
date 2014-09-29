@@ -10,6 +10,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
@@ -101,6 +102,17 @@
               'invalidation/ticl_settings_provider.h',
             ],
           }],
+        ['OS == "android"', {
+          'dependencies': [
+            'invalidation_jni_headers',
+          ],
+          'sources': [
+            'invalidation/android/component_jni_registrar.cc',
+            'invalidation/android/component_jni_registrar.h',
+            'invalidation/invalidation_service_android.cc',
+            'invalidation/invalidation_service_android.h',
+          ],
+        }],
       ],
     },
 
@@ -150,7 +162,55 @@
               'invalidation/p2p_invalidation_service.h',
             ],
           }],
+          ['OS == "android"', {
+            'dependencies': [
+              'invalidation_jni_headers',
+            ],
+          }],
       ],
     },
+  ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'invalidation_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../sync/sync.gyp:sync_java',
+            '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
+          ],
+          'variables': {
+            'java_in_dir': 'invalidation/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'invalidation_javatests',
+          'type': 'none',
+          'dependencies': [
+            'invalidation_java',
+            '../base/base.gyp:base_java_test_support',
+          ],
+          'variables': {
+            'java_in_dir': 'invalidation/android/javatests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'invalidation_jni_headers',
+          'type': 'none',
+          'sources': [
+            'invalidation/android/java/src/org/chromium/components/invalidation/InvalidationService.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'components/invalidation',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],
+     },
+    ],
   ],
 }

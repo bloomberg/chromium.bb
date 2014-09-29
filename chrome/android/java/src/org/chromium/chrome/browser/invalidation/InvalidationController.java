@@ -10,13 +10,11 @@ import android.content.Intent;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CalledByNative;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.notifier.InvalidationClientNameProvider;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
-import org.chromium.sync.notifier.InvalidationService;
 import org.chromium.sync.notifier.SyncStatusHelper;
 
 import java.util.Set;
@@ -42,7 +40,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     public void setRegisteredTypes(Account account, boolean allTypes, Set<ModelType> types) {
         Intent registerIntent =
                 InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
-        registerIntent.setClass(mContext, InvalidationService.class);
+        registerIntent.setClass(mContext, InvalidationClientService.class);
         mContext.startService(registerIntent);
     }
 
@@ -63,28 +61,10 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     }
 
     /**
-     * Sets object ids for which the client should register for notification. This is intended for
-     * registering non-Sync types; Sync types are registered with {@code setRegisteredTypes}.
-     *
-     * @param objectSources The sources of the objects.
-     * @param objectNames   The names of the objects.
-     */
-    @CalledByNative
-    public void setRegisteredObjectIds(int[] objectSources, String[] objectNames) {
-        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
-        Account account = invalidationPreferences.getSavedSyncedAccount();
-        Intent registerIntent =
-                InvalidationIntentProtocol.createRegisterIntent(
-                        account, objectSources, objectNames);
-        registerIntent.setClass(mContext, InvalidationService.class);
-        mContext.startService(registerIntent);
-    }
-
-    /**
      * Starts the invalidation client.
      */
     public void start() {
-        Intent intent = new Intent(mContext, InvalidationService.class);
+        Intent intent = new Intent(mContext, InvalidationClientService.class);
         mContext.startService(intent);
     }
 
@@ -92,7 +72,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Stops the invalidation client.
      */
     public void stop() {
-        Intent intent = new Intent(mContext, InvalidationService.class);
+        Intent intent = new Intent(mContext, InvalidationClientService.class);
         intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
         mContext.startService(intent);
     }
@@ -102,7 +82,6 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      *
      * Calling this method will create the instance if it does not yet exist.
      */
-    @CalledByNative
     public static InvalidationController get(Context context) {
         synchronized (LOCK) {
             if (sInstance == null) {
@@ -132,17 +111,5 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
                 stop();
             }
         }
-    }
-
-    /**
-     * Fetches the Invalidator client name.
-     *
-     * Note that there is a naming discrepancy here.  In C++, we refer to the invalidation client
-     * identifier that is unique for every invalidation client instance in an account as the client
-     * ID.  In Java, we call it the client name.
-     */
-    @CalledByNative
-    public byte[] getInvalidatorClientId() {
-        return InvalidationClientNameProvider.get().getInvalidatorClientName();
     }
 }

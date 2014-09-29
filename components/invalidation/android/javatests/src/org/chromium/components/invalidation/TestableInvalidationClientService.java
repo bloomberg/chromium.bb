@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.components.invalidation;
 
 import android.accounts.Account;
 import android.content.ComponentName;
@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Subclass of {@link InvalidationService} that captures events and allows controlling
+ * Subclass of {@link InvalidationClientService} that captures events and allows controlling
  * whether or not Chrome is in the foreground and sync is enabled.
  *
  * @author dsmyers@google.com (Daniel Myers)
  */
-public class TestableInvalidationService extends InvalidationService {
+public class TestableInvalidationClientService extends InvalidationClientService {
     /** Object ids given to {@link #register}, one list element per call. */
     final List<List<ObjectId>> mRegistrations = new ArrayList<List<ObjectId>>();
 
@@ -50,9 +50,6 @@ public class TestableInvalidationService extends InvalidationService {
 
     /** Whether sync is enabled. */
     private boolean mIsSyncEnabled = false;
-
-    public TestableInvalidationService() {
-    }
 
     @Override
     public void acknowledge(byte[] ackHandle) {

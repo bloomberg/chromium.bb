@@ -591,6 +591,7 @@
             '../components/components.gyp:bookmarks_java',
             '../components/components.gyp:dom_distiller_core_java',
             '../components/components.gyp:gcm_driver_java',
+            '../components/components.gyp:invalidation_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:sessions',
             '../components/components.gyp:variations_java',

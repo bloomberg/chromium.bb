@@ -30,8 +30,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/invalidation/invalidation_controller_android.h"
-#include "chrome/browser/invalidation/invalidation_service_android.h"
+#include "base/android/jni_android.h"
+#include "components/invalidation/invalidation_service_android.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -94,15 +94,12 @@ void ProfileInvalidationProviderFactory::RegisterTestingFactory(
 
 KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
-
   if (testing_factory_)
     return testing_factory_(context);
 
 #if defined(OS_ANDROID)
   return new ProfileInvalidationProvider(scoped_ptr<InvalidationService>(
-      new InvalidationServiceAndroid(profile,
-                                     new InvalidationControllerAndroid())));
+      new InvalidationServiceAndroid(base::android::GetApplicationContext())));
 #else
 
   scoped_ptr<IdentityProvider> identity_provider;
@@ -117,6 +114,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
         chromeos::DeviceOAuth2TokenServiceFactory::Get()));
   }
 #endif
+  Profile* profile = Profile::FromBrowserContext(context);
 
   if (!identity_provider) {
     identity_provider.reset(new ProfileIdentityProvider(

@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/about_sync_util.h"
@@ -23,13 +22,10 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/invalidation/object_id_invalidation_map.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -90,42 +86,6 @@ void ProfileSyncServiceAndroid::RemoveObserver() {
 
 ProfileSyncServiceAndroid::~ProfileSyncServiceAndroid() {
   RemoveObserver();
-}
-
-void ProfileSyncServiceAndroid::SendNudgeNotification(
-    int object_source,
-    const std::string& str_object_id,
-    int64 version,
-    const std::string& state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(nileshagrawal): Merge this with ChromeInvalidationClient::Invalidate.
-  // Construct the ModelTypeStateMap and send it over with the notification.
-  invalidation::ObjectId object_id(
-      object_source,
-      str_object_id);
-  syncer::ObjectIdInvalidationMap object_ids_with_states;
-  if (version == ipc::invalidation::Constants::UNKNOWN) {
-    object_ids_with_states.Insert(
-        syncer::Invalidation::InitUnknownVersion(object_id));
-  } else {
-    ObjectIdVersionMap::iterator it =
-        max_invalidation_versions_.find(object_id);
-    if ((it != max_invalidation_versions_.end()) &&
-        (version <= it->second)) {
-      DVLOG(1) << "Dropping redundant invalidation with version " << version;
-      return;
-    }
-    max_invalidation_versions_[object_id] = version;
-    object_ids_with_states.Insert(
-        syncer::Invalidation::Init(object_id, version, state));
-  }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
-      content::Source<Profile>(profile_),
-      content::Details<const syncer::ObjectIdInvalidationMap>(
-          &object_ids_with_states));
 }
 
 void ProfileSyncServiceAndroid::OnStateChanged() {
@@ -502,28 +462,6 @@ std::string ProfileSyncServiceAndroid::ModelTypeSelectionToStringForTest(
       Java_ProfileSyncService_modelTypeSelectionToStringForTest(
           AttachCurrentThread(), model_type_selection);
   return ConvertJavaStringToUTF8(string);
-}
-
-void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,
-                                            jobject obj,
-                                            jint objectSource,
-                                            jstring objectId,
-                                            jlong version,
-                                            jstring state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendNudgeNotification(objectSource, ConvertJavaStringToUTF8(env, objectId),
-                        version, ConvertJavaStringToUTF8(env, state));
-}
-
-void ProfileSyncServiceAndroid::NudgeSyncerForAllTypes(JNIEnv* env,
-                                                       jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  syncer::ObjectIdInvalidationMap object_ids_with_states;
-  content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
-        content::Source<Profile>(profile_),
-        content::Details<const syncer::ObjectIdInvalidationMap>(
-            &object_ids_with_states));
 }
 
 // static
