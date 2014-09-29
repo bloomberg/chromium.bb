@@ -13,8 +13,15 @@
 // NaCl does not allow intrinsics.
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL)
 #include <xmmintrin.h>
+// Don't use custom SSE versions where the auto-vectorized C version performs
+// better, which is anywhere clang is used.
+#if !defined(__clang__)
 #define FMAC_FUNC FMAC_SSE
 #define FMUL_FUNC FMUL_SSE
+#else
+#define FMAC_FUNC FMAC_C
+#define FMUL_FUNC FMUL_C
+#endif
 #define EWMAAndMaxPower_FUNC EWMAAndMaxPower_SSE
 #elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 #include <arm_neon.h>
