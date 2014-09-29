@@ -5,6 +5,8 @@
 #include "chrome/browser/android/enhanced_bookmarks/enhanced_bookmarks_bridge.h"
 
 #include "base/android/jni_string.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
@@ -18,8 +20,9 @@ namespace android {
 
 EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
                                                  jobject obj,
-                                                 jlong bookmark_model_ptr) {
-  bookmark_model_ = reinterpret_cast<BookmarkModel*>(bookmark_model_ptr);
+                                                 Profile* profile) {
+  profile_ = profile;
+  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
 }
 
 void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
@@ -56,9 +59,9 @@ void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, description));
 }
 
-static jlong Init(JNIEnv* env, jobject obj, jlong bookmark_model_ptr) {
-  return reinterpret_cast<jlong>(
-      new EnhancedBookmarksBridge(env, obj, bookmark_model_ptr));
+static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
+  return reinterpret_cast<jlong>(new EnhancedBookmarksBridge(
+        env, obj, ProfileAndroid::FromProfileAndroid(j_profile)));
 }
 
 bool RegisterEnhancedBookmarksBridge(JNIEnv* env) {

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
@@ -14,8 +15,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 public final class EnhancedBookmarksBridge {
     private long mNativeEnhancedBookmarksBridge;
 
-    public EnhancedBookmarksBridge(long nativeBookmarkModel) {
-        mNativeEnhancedBookmarksBridge = nativeInit(nativeBookmarkModel);
+    public EnhancedBookmarksBridge(Profile profile) {
+        mNativeEnhancedBookmarksBridge = nativeInit(profile);
     }
 
     public void destroy() {
@@ -34,7 +35,7 @@ public final class EnhancedBookmarksBridge {
                 description);
     }
 
-    private native long nativeInit(long bookmarkModelPointer);
+    private native long nativeInit(Profile profile);
 
     private native void nativeDestroy(long nativeEnhancedBookmarksBridge);
 

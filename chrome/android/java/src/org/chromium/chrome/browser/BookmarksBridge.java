@@ -473,13 +473,6 @@ public class BookmarksBridge {
         nativeEndGroupingUndos(mNativeBookmarksBridge);
     }
 
-    /**
-     * A bridge function to BookmarkModelFactory::GetForProfile.
-     */
-    public static long getNativeBookmarkModel(Profile profile) {
-        return nativeGetNativeBookmarkModel(profile);
-    }
-
     public static boolean isEditBookmarksEnabled() {
         return nativeIsEditBookmarksEnabled();
     }
@@ -644,7 +637,6 @@ public class BookmarksBridge {
     private native void nativeUndo(long nativeBookmarksBridge);
     private native void nativeStartGroupingUndos(long nativeBookmarksBridge);
     private native void nativeEndGroupingUndos(long nativeBookmarksBridge);
-    private static native long nativeGetNativeBookmarkModel(Profile profile);
     private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
     private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarksBridge);
 

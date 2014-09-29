@@ -126,14 +126,6 @@ static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
   return reinterpret_cast<intptr_t>(delegate);
 }
 
-static jlong GetNativeBookmarkModel(JNIEnv* env,
-                                    jclass caller,
-                                    jobject j_profile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  BookmarkModel *bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
-  return reinterpret_cast<jlong>(bookmark_model_);
-}
-
 static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
                                                   jclass clazz,
                                                   jobject j_profile) {

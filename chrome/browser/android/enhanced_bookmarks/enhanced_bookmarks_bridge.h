@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_ANDROID_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARKS_BRIDGE_H_
 
 #include "base/android/jni_android.h"
-
-class BookmarkModel;
+#include "chrome/browser/profiles/profile.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 
 namespace enhanced_bookmarks {
 namespace android {
 
 class EnhancedBookmarksBridge {
  public:
-  EnhancedBookmarksBridge(JNIEnv* env, jobject obj, jlong bookmark_model_ptr);
+  EnhancedBookmarksBridge(JNIEnv* env, jobject obj, Profile* profile);
   void Destroy(JNIEnv*, jobject);
 
   base::android::ScopedJavaLocalRef<jstring> GetBookmarkDescription(
@@ -31,7 +31,7 @@ class EnhancedBookmarksBridge {
 
  private:
   BookmarkModel* bookmark_model_;  // weak
-
+  Profile* profile_;                       // weak
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarksBridge);
 };
 
