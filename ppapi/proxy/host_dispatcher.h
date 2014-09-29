@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "ipc/message_filter.h"
 #include "ppapi/c/pp_instance.h"
@@ -27,11 +28,13 @@ namespace proxy {
 class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
  public:
   // This interface receives notifications about sync messages being sent by
-  // the dispatcher to the plugin process. It is used to detect a hung plugin.
+  // the dispatcher to the plugin process. Some parts of Chrome may need to
+  // know whether we are sending a synchronous message to the plugin; e.g. to
+  // detect a hung plugin or to avoid re-entering JavaScript.
   //
   // Note that there can be nested sync messages, so the begin/end status
   // actually represents a stack of blocking messages.
-  class SyncMessageStatusReceiver : public IPC::MessageFilter {
+  class SyncMessageStatusObserver {
    public:
     // Notification that a sync message is about to be sent out.
     virtual void BeginBlockOnSyncMessage() = 0;
@@ -41,7 +44,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
     virtual void EndBlockOnSyncMessage() = 0;
 
    protected:
-    virtual ~SyncMessageStatusReceiver() {}
+    virtual ~SyncMessageStatusObserver() {}
   };
 
   // Constructor for the renderer side. This will take a reference to the
@@ -50,7 +53,6 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // You must call InitHostWithChannel after the constructor.
   HostDispatcher(PP_Module module,
                  PP_GetInterface_Func local_get_interface,
-                 SyncMessageStatusReceiver* sync_status,
                  const PpapiPermissions& permissions);
   ~HostDispatcher();
 
@@ -102,6 +104,13 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // Returns the proxy interface for talking to the implementation.
   const PPB_Proxy_Private* ppb_proxy() const { return ppb_proxy_; }
 
+  // Register an observer that will be invoked when the dispatcher begins
+  // sending a sync message and finishes sending a sync message.
+  // Returns a Closure that can be used to unregister the observer (the Closure
+  // is bound to a weak pointer, so is safe to call even after the
+  // HostDispatcher is gone.)
+  base::Closure AddSyncMessageStatusObserver(SyncMessageStatusObserver* obs);
+
   void AddFilter(IPC::Listener* listener);
 
  protected:
@@ -114,7 +123,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
                               const std::string& source,
                               const std::string& value);
 
-  scoped_refptr<SyncMessageStatusReceiver> sync_status_;
+  void RemoveSyncMessageStatusObserver(SyncMessageStatusObserver* obs);
 
   PP_Module pp_module_;
 
@@ -133,7 +142,11 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // ultimately call back into the plugin.
   bool allow_plugin_reentrancy_;
 
+  ObserverList<SyncMessageStatusObserver> sync_status_observer_list_;
+
   std::vector<IPC::Listener*> filters_;
+
+  base::WeakPtrFactory<HostDispatcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };

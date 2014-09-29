@@ -61,13 +61,12 @@ class BoolRestorer {
 
 HostDispatcher::HostDispatcher(PP_Module module,
                                PP_GetInterface_Func local_get_interface,
-                               SyncMessageStatusReceiver* sync_status,
                                const PpapiPermissions& permissions)
     : Dispatcher(local_get_interface, permissions),
-      sync_status_(sync_status),
       pp_module_(module),
       ppb_proxy_(NULL),
-      allow_plugin_reentrancy_(false) {
+      allow_plugin_reentrancy_(false),
+      weak_ptr_factory_(this) {
   if (!g_module_to_dispatcher)
     g_module_to_dispatcher = new ModuleToDispatcherMap;
   (*g_module_to_dispatcher)[pp_module_] = this;
@@ -94,8 +93,6 @@ bool HostDispatcher::InitHostWithChannel(
   if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
                                    is_client))
     return false;
-  AddIOThreadMessageFilter(sync_status_.get());
-
   Send(new PpapiMsg_SetPreferences(preferences));
   return true;
 }
@@ -157,9 +154,11 @@ bool HostDispatcher::Send(IPC::Message* msg) {
     // destroys the plugin module and in turn the dispatcher.
     ScopedModuleReference scoped_ref(this);
 
-    sync_status_->BeginBlockOnSyncMessage();
+    FOR_EACH_OBSERVER(SyncMessageStatusObserver, sync_status_observer_list_,
+                      BeginBlockOnSyncMessage());
     bool result = Dispatcher::Send(msg);
-    sync_status_->EndBlockOnSyncMessage();
+    FOR_EACH_OBSERVER(SyncMessageStatusObserver, sync_status_observer_list_,
+                      EndBlockOnSyncMessage());
 
     return result;
   } else {
@@ -238,6 +237,19 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& iface_name) {
   if (iter->second)
     return proxied_interface;
   return NULL;
+}
+
+base::Closure HostDispatcher::AddSyncMessageStatusObserver(
+    SyncMessageStatusObserver* obs) {
+  sync_status_observer_list_.AddObserver(obs);
+  return base::Bind(&HostDispatcher::RemoveSyncMessageStatusObserver,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    obs);
+}
+
+void HostDispatcher::RemoveSyncMessageStatusObserver(
+    SyncMessageStatusObserver* obs) {
+  sync_status_observer_list_.RemoveObserver(obs);
 }
 
 void HostDispatcher::AddFilter(IPC::Listener* listener) {

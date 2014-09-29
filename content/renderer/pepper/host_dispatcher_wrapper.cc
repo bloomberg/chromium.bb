@@ -32,7 +32,7 @@ HostDispatcherWrapper::~HostDispatcherWrapper() {}
 bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
                                  PP_GetInterface_Func local_get_interface,
                                  const ppapi::Preferences& preferences,
-                                 PepperHungPluginFilter* filter) {
+                                 scoped_refptr<PepperHungPluginFilter> filter) {
   if (channel_handle.name.empty())
     return false;
 
@@ -44,7 +44,13 @@ bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
 
   dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
   dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-      module_->pp_module(), local_get_interface, filter, permissions_));
+      module_->pp_module(), local_get_interface, permissions_));
+  // The HungPluginFilter needs to know when we are blocked on a sync message
+  // to the plugin. Note the filter outlives the dispatcher, so there is no
+  // need to remove it as an observer.
+  dispatcher_->AddSyncMessageStatusObserver(filter.get());
+  // Guarantee the hung_plugin_filter_ outlives |dispatcher_|.
+  hung_plugin_filter_ = filter;
 
   if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
                                         peer_pid_,
@@ -55,6 +61,9 @@ bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
     dispatcher_delegate_.reset();
     return false;
   }
+  // HungPluginFilter needs to listen for some messages on the IO thread.
+  dispatcher_->AddIOThreadMessageFilter(filter);
+
   dispatcher_->channel()->SetRestrictDispatchChannelGroup(
       kRendererRestrictDispatchGroup_Pepper);
   return true;

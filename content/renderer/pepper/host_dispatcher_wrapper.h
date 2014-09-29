@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_HOST_DISPATCHER_WRAPPER_H_
 #define CONTENT_RENDERER_PEPPER_HOST_DISPATCHER_WRAPPER_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
+#include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -34,7 +36,7 @@ class HostDispatcherWrapper {
   bool Init(const IPC::ChannelHandle& channel_handle,
             PP_GetInterface_Func local_get_interface,
             const ppapi::Preferences& preferences,
-            PepperHungPluginFilter* filter);
+            scoped_refptr<PepperHungPluginFilter> filter);
 
   // Implements GetInterface for the proxied plugin.
   const void* GetProxiedInterface(const char* name);
@@ -69,6 +71,9 @@ class HostDispatcherWrapper {
 
   scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
   scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
+  // We hold the hung_plugin_filter_ to guarantee it outlives |dispatcher_|,
+  // since it is an observer of |dispatcher_| for sync calls.
+  scoped_refptr<PepperHungPluginFilter> hung_plugin_filter_;
 };
 
 }  // namespace content

@@ -26,9 +26,10 @@ namespace content {
 // thread. This is important since when we're blocked on a sync message to a
 // hung plugin, the main thread is frozen.
 //
-// NOTE: This class is refcounted (via SyncMessageStatusReceiver).
+// NOTE: This class is refcounted (via IPC::MessageFilter).
 class PepperHungPluginFilter
-    : public ppapi::proxy::HostDispatcher::SyncMessageStatusReceiver {
+    : public ppapi::proxy::HostDispatcher::SyncMessageStatusObserver,
+      public IPC::MessageFilter {
  public:
   // The |frame_routing_id| is the ID of the render_frame so that this class can
   // send messages to the browser via that frame's route. The |plugin_child_id|

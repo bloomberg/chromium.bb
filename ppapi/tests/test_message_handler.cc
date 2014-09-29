@@ -279,13 +279,8 @@ std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
     js_code +=      values_to_test[i];
     js_code +=    " result: \" + result);\n";
   }
-  // TODO(dmichael): Setting a property uses GetInstanceObject, which sends sync
-  // message, which can get interrupted with message to eval script, etc.
-  // FINISHED_WAITING message can therefore jump ahead. This test is
-  // currently carefully crafted to avoid races by doing all the JS in one call.
-  // That should be fixed before this API goes to stable. See crbug.com/384528
-  js_code += "plugin.postMessage('FINISHED_TEST');\n";
   instance_->EvalScript(js_code);
+  instance_->EvalScript("plugin.postMessage('FINISHED_TEST');\n");
   handler.WaitForTestFinishedMessage();
   handler.Unregister();
   ASSERT_SUBTEST_SUCCESS(handler.WaitForDestroy());
