@@ -52,7 +52,7 @@ class SelectFileDialogImpl;
       parentWindow:(NSWindow*)parentWindow;
 
 // NSSavePanel delegate method
-- (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename;
+- (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url;
 
 @end
 
@@ -161,8 +161,9 @@ void SelectFileDialogImpl::FileWasSelected(
 
 bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
                                                 NSString* filename) {
-  // If this is a single open file dialog, disable selecting packages.
-  if (type_map_[dialog] != SELECT_OPEN_FILE)
+  // If this is a single/multiple open file dialog, disable selecting packages.
+  if (type_map_[dialog] != SELECT_OPEN_FILE &&
+      type_map_[dialog] != SELECT_OPEN_MULTI_FILE)
     return true;
 
   return ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename];
@@ -425,8 +426,10 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
   [panel release];
 }
 
-- (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename {
-  return selectFileDialogImpl_->ShouldEnableFilename(sender, filename);
+- (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url {
+  if (![url isFileURL])
+    return NO;
+  return selectFileDialogImpl_->ShouldEnableFilename(sender, [url path]);
 }
 
 @end
