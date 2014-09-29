@@ -36,6 +36,8 @@ class WebFilterAnimationCurveImpl : public blink::WebFilterAnimationCurve {
                    double y1,
                    double x2,
                    double y2);
+  virtual void setTimingFunction(TimingFunctionType type);
+  virtual void setTimingFunction(double x1, double y1, double x2, double y2);
 
   scoped_ptr<cc::AnimationCurve> CloneToAnimationCurve() const;
 

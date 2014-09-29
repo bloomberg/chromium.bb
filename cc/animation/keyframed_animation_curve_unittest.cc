@@ -542,5 +542,98 @@ TEST(KeyframedAnimationCurveTest, MaximumScale) {
   EXPECT_FALSE(curve->MaximumScale(&maximum_scale));
 }
 
+// Tests that an animation with a curve timing function works as expected.
+TEST(KeyframedAnimationCurveTest, CurveTiming) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(
+      FloatKeyframe::Create(0.0, 0.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(1.0, 1.f, scoped_ptr<TimingFunction>()));
+  curve->SetTimingFunction(
+      CubicBezierTimingFunction::Create(0.75f, 0.f, 0.25f, 1.f).Pass());
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(-1.f));
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(0.f));
+  EXPECT_NEAR(0.05f, curve->GetValue(0.25f), 0.005f);
+  EXPECT_FLOAT_EQ(0.5f, curve->GetValue(0.5f));
+  EXPECT_NEAR(0.95f, curve->GetValue(0.75f), 0.005f);
+  EXPECT_FLOAT_EQ(1.f, curve->GetValue(1.f));
+  EXPECT_FLOAT_EQ(1.f, curve->GetValue(2.f));
+}
+
+// Tests that an animation with a curve and keyframe timing function works as
+// expected.
+TEST(KeyframedAnimationCurveTest, CurveAndKeyframeTiming) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(FloatKeyframe::Create(
+      0.0,
+      0.f,
+      CubicBezierTimingFunction::Create(0.35f, 0.f, 0.65f, 1.f).Pass()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(1.0, 1.f, scoped_ptr<TimingFunction>()));
+  // Curve timing function producing outputs outside of range [0,1].
+  curve->SetTimingFunction(
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(-1.f));
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(0.f));
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(0.25f));        // Clamped. c(.25) < 0
+  EXPECT_NEAR(0.17f, curve->GetValue(0.42f), 0.005f);  // c(.42)=.27, k(.27)=.17
+  EXPECT_FLOAT_EQ(0.5f, curve->GetValue(0.5f));
+  EXPECT_NEAR(0.83f, curve->GetValue(0.58f), 0.005f);  // c(.58)=.73, k(.73)=.83
+  EXPECT_FLOAT_EQ(1.f, curve->GetValue(0.75f));        // Clamped. c(.75) > 1
+  EXPECT_FLOAT_EQ(1.f, curve->GetValue(1.f));
+  EXPECT_FLOAT_EQ(1.f, curve->GetValue(2.f));
+}
+
+// Tests that an animation with a curve timing function and multiple keyframes
+// works as expected.
+TEST(KeyframedAnimationCurveTest, CurveTimingMultipleKeyframes) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(
+      FloatKeyframe::Create(0.0, 0.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(1.0, 1.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(2.0, 3.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(3.0, 6.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(4.0, 9.f, scoped_ptr<TimingFunction>()));
+  curve->SetTimingFunction(
+      CubicBezierTimingFunction::Create(0.5f, 0.f, 0.5f, 1.f).Pass());
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(-1.f));
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(0.f));
+  EXPECT_NEAR(0.42f, curve->GetValue(1.f), 0.005f);
+  EXPECT_NEAR(1.f, curve->GetValue(1.455f), 0.005f);
+  EXPECT_FLOAT_EQ(3.f, curve->GetValue(2.f));
+  EXPECT_NEAR(8.72f, curve->GetValue(3.5f), 0.01f);
+  EXPECT_FLOAT_EQ(9.f, curve->GetValue(4.f));
+  EXPECT_FLOAT_EQ(9.f, curve->GetValue(5.f));
+}
+
+// Tests that an animation with a curve timing function that overshoots works as
+// expected.
+TEST(KeyframedAnimationCurveTest, CurveTimingOvershootMultipeKeyframes) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(
+      FloatKeyframe::Create(0.0, 0.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(1.0, 1.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(2.0, 3.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(3.0, 6.f, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(4.0, 9.f, scoped_ptr<TimingFunction>()));
+  // Curve timing function producing outputs outside of range [0,1].
+  curve->SetTimingFunction(
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+  EXPECT_LE(curve->GetValue(1.f), 0.f);  // c(.25) < 0
+  EXPECT_GE(curve->GetValue(3.f), 9.f);  // c(.75) > 1
+}
+
 }  // namespace
 }  // namespace cc
