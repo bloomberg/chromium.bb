@@ -26,7 +26,7 @@ TEST(SimpleSources, SineWaveAudioSource) {
 
   SineWaveAudioSource source(1, freq, params.sample_rate());
   scoped_ptr<AudioBus> audio_bus = AudioBus::Create(params);
-  source.OnMoreData(audio_bus.get(), AudioBuffersState());
+  source.OnMoreData(audio_bus.get(), 0);
   EXPECT_EQ(1, source.callbacks());
   EXPECT_EQ(0, source.errors());
 
@@ -56,13 +56,13 @@ TEST(SimpleSources, SineWaveAudioCapped) {
 
   scoped_ptr<AudioBus> audio_bus = AudioBus::Create(1, 2 * kSampleCap);
   EXPECT_EQ(source.OnMoreData(
-      audio_bus.get(), AudioBuffersState()), kSampleCap);
+      audio_bus.get(), 0), kSampleCap);
   EXPECT_EQ(1, source.callbacks());
-  EXPECT_EQ(source.OnMoreData(audio_bus.get(), AudioBuffersState()), 0);
+  EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0), 0);
   EXPECT_EQ(2, source.callbacks());
   source.Reset();
   EXPECT_EQ(source.OnMoreData(
-      audio_bus.get(), AudioBuffersState()), kSampleCap);
+      audio_bus.get(), 0), kSampleCap);
   EXPECT_EQ(3, source.callbacks());
   EXPECT_EQ(0, source.errors());
 }

@@ -25,7 +25,6 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
 using media::AudioBus;
-using media::AudioBuffersState;
 using media::AudioInputStream;
 using media::AudioManager;
 using media::AudioManagerBase;
@@ -125,7 +124,7 @@ class MockAudioManager : public AudioManagerBase {
 
 class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
-  int OnMoreData(AudioBus* audio_bus, AudioBuffersState buffers_state) {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) {
     audio_bus->Zero();
     return audio_bus->frames();
   }

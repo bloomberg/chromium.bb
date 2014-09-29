@@ -36,8 +36,6 @@ if (!linux_link_pulseaudio) {
 source_set("audio") {
   sources = [
     "agc_audio_stream.h",
-    "audio_buffers_state.cc",
-    "audio_buffers_state.h",
     "audio_device_name.cc",
     "audio_device_name.h",
     "audio_device_thread.cc",

@@ -226,23 +226,14 @@ class FullDuplexAudioSinkSource
 
   // AudioOutputStream::AudioSourceCallback.
   virtual int OnMoreData(AudioBus* audio_bus,
-                         AudioBuffersState buffers_state) OVERRIDE {
+                         uint32 total_bytes_delay) OVERRIDE {
     base::AutoLock lock(lock_);
 
     // Update one component in the AudioDelayState for the packet
     // which is about to be played out.
     if (output_elements_to_write_ < kMaxDelayMeasurements) {
-      int output_delay_bytes = buffers_state.hardware_delay_bytes;
-#if defined(OS_WIN)
-      // Special fix for Windows in combination with Wave where the
-      // pending bytes field of the audio buffer state is used to
-      // report the delay.
-      if (!CoreAudioUtil::IsSupported()) {
-        output_delay_bytes = buffers_state.pending_bytes;
-      }
-#endif
       delay_states_[output_elements_to_write_].output_delay_ms =
-          BytesToMilliseconds(output_delay_bytes);
+          BytesToMilliseconds(total_bytes_delay);
       ++output_elements_to_write_;
     }
 

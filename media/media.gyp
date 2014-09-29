@@ -92,8 +92,6 @@
         'audio/android/opensles_output.cc',
         'audio/android/opensles_output.h',
         'audio/android/opensles_wrapper.cc',
-        'audio/audio_buffers_state.cc',
-        'audio/audio_buffers_state.h',
         'audio/audio_device_name.cc',
         'audio/audio_device_name.h',
         'audio/audio_device_thread.cc',

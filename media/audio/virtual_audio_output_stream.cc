@@ -77,7 +77,7 @@ double VirtualAudioOutputStream::ProvideInput(AudioBus* audio_bus,
   // platform.
   DCHECK(callback_);
 
-  const int frames = callback_->OnMoreData(audio_bus, AudioBuffersState());
+  const int frames = callback_->OnMoreData(audio_bus, 0);
   if (frames < audio_bus->frames())
     audio_bus->ZeroFramesPartial(frames, audio_bus->frames() - frames);
 

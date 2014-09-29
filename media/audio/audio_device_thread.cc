@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/base/audio_bus.h"
@@ -164,15 +165,21 @@ void AudioDeviceThread::Thread::ThreadMain() {
 void AudioDeviceThread::Thread::Run() {
   uint32 buffer_index = 0;
   while (true) {
-    int pending_data = 0;
+    uint32 pending_data = 0;
     size_t bytes_read = socket_.Receive(&pending_data, sizeof(pending_data));
     if (bytes_read != sizeof(pending_data))
       break;
 
     {
       base::AutoLock auto_lock(callback_lock_);
-      if (callback_)
-        callback_->Process(pending_data);
+      if (callback_) {
+        // TODO(acolwell): Update downstream code to use a uint32.
+        // Under normal operation saturation should never occur here
+        // and even if it does, it would only cause a temporary loss
+        // of A/V sync which is much better than crashing or halting
+        // playback.
+        callback_->Process(base::saturated_cast<uint32>(pending_data));
+      }
     }
 
     // Let the other end know which buffer we just filled.  The buffer index is

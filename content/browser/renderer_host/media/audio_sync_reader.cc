@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/common/content_switches.h"
-#include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 
 using media::AudioBus;

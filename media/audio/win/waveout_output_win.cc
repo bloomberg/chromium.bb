@@ -325,9 +325,10 @@ void PCMWaveOutAudioOutputStream::QueueNextPacket(WAVEHDR *buffer) {
   // return to us how many bytes were used.
   // TODO(fbarchard): Handle used 0 by queueing more.
 
-  // TODO(sergeyu): Specify correct hardware delay for AudioBuffersState.
+  // TODO(sergeyu): Specify correct hardware delay for |total_delay_bytes|.
+  uint32 total_delay_bytes = pending_bytes_;
   int frames_filled = callback_->OnMoreData(
-      audio_bus_.get(), AudioBuffersState(pending_bytes_, 0));
+      audio_bus_.get(), total_delay_bytes);
   uint32 used = frames_filled * audio_bus_->channels() *
       format_.Format.wBitsPerSample / 8;
 

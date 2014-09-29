@@ -29,7 +29,7 @@ SineWaveAudioSource::SineWaveAudioSource(int channels,
 // The implementation could be more efficient if a lookup table is constructed
 // but it is efficient enough for our simple needs.
 int SineWaveAudioSource::OnMoreData(AudioBus* audio_bus,
-                                    AudioBuffersState audio_buffers) {
+                                    uint32 total_bytes_delay) {
   base::AutoLock auto_lock(time_lock_);
   callbacks_++;
 

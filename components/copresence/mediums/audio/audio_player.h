@@ -67,8 +67,8 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
   // AudioOutputStream::AudioSourceCallback overrides:
   // Following methods could be called from *ANY* thread.
   virtual int OnMoreData(media::AudioBus* dest,
-                         media::AudioBuffersState /* state */) OVERRIDE;
-  virtual void OnError(media::AudioOutputStream* /* stream */) OVERRIDE;
+                         uint32 total_bytes_delay) OVERRIDE;
+  virtual void OnError(media::AudioOutputStream* stream) OVERRIDE;
 
   // Flushes the audio loop, making sure that any queued operations are
   // performed.

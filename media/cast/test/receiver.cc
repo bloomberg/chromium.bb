@@ -316,7 +316,7 @@ class NaivePlayer : public InProcessReceiver,
   ////////////////////////////////////////////////////////////////////
   // AudioSourceCallback implementation.
 
-  virtual int OnMoreData(AudioBus* dest, AudioBuffersState buffers_state)
+  virtual int OnMoreData(AudioBus* dest, uint32 total_bytes_delay)
       OVERRIDE {
     // Note: This method is being invoked by a separate thread unknown to us
     // (i.e., outside of CastEnvironment).
@@ -329,8 +329,8 @@ class NaivePlayer : public InProcessReceiver,
         base::AutoLock auto_lock(audio_lock_);
 
         // Prune the queue, skipping entries that are too old.
-        // TODO(miu): Use |buffers_state| to account for audio buffering delays
-        // upstream.
+        // TODO(miu): Use |total_bytes_delay| to account for audio buffering
+        // delays upstream.
         const base::TimeTicks earliest_time_to_play =
             cast_env()->Clock()->NowTicks() - max_frame_age_;
         while (!audio_playout_queue_.empty() &&

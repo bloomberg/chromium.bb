@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -30,7 +31,7 @@ class OnMoreDataConverter
 
   // AudioSourceCallback interface.
   virtual int OnMoreData(AudioBus* dest,
-                         AudioBuffersState buffers_state) OVERRIDE;
+                         uint32 total_bytes_delay) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream) OVERRIDE;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
@@ -54,9 +55,9 @@ class OnMoreDataConverter
   // Source callback.
   AudioOutputStream::AudioSourceCallback* source_callback_;
 
-  // Last AudioBuffersState object received via OnMoreData(), used to correct
+  // Last |total_bytes_delay| received via OnMoreData(), used to correct
   // playback delay by ProvideInput() and passed on to |source_callback_|.
-  AudioBuffersState current_buffers_state_;
+  uint32 current_total_bytes_delay_;
 
   const int input_bytes_per_second_;
 
@@ -327,8 +328,8 @@ void OnMoreDataConverter::Stop() {
 }
 
 int OnMoreDataConverter::OnMoreData(AudioBus* dest,
-                                    AudioBuffersState buffers_state) {
-  current_buffers_state_ = buffers_state;
+                                    uint32 total_bytes_delay) {
+  current_total_bytes_delay_ = total_bytes_delay;
   audio_converter_.Convert(dest);
 
   // Always return the full number of frames requested, ProvideInput()
@@ -341,13 +342,12 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
   // Adjust playback delay to include |buffer_delay|.
   // TODO(dalecurtis): Stop passing bytes around, it doesn't make sense since
   // AudioBus is just float data.  Use TimeDelta instead.
-  AudioBuffersState new_buffers_state;
-  new_buffers_state.pending_bytes =
-      io_ratio_ * (current_buffers_state_.total_bytes() +
-                   buffer_delay.InSecondsF() * input_bytes_per_second_);
+  uint32 new_total_bytes_delay = base::saturated_cast<uint32>(
+      io_ratio_ * (current_total_bytes_delay_ +
+                   buffer_delay.InSecondsF() * input_bytes_per_second_));
 
   // Retrieve data from the original callback.
-  const int frames = source_callback_->OnMoreData(dest, new_buffers_state);
+  const int frames = source_callback_->OnMoreData(dest, new_total_bytes_delay);
 
   // Zero any unfilled frames if anything was filled, otherwise we'll just
   // return a volume of zero and let AudioConverter drop the output.

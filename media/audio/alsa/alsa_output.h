@@ -154,7 +154,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // is passed into the output stream, but ownership is not transfered which
   // requires a synchronization on access of the |source_callback_| to avoid
   // using a deleted callback.
-  int RunDataCallback(AudioBus* audio_bus, AudioBuffersState buffers_state);
+  int RunDataCallback(AudioBus* audio_bus, uint32 total_bytes_delay);
   void RunErrorCallback(int code);
 
   // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to

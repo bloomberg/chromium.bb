@@ -360,7 +360,7 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
     scoped_refptr<media::DataBuffer> packet =
         new media::DataBuffer(packet_size_);
     int frames_filled = RunDataCallback(
-        audio_bus_.get(), AudioBuffersState(0, hardware_delay));
+        audio_bus_.get(), hardware_delay);
 
     size_t packet_size = frames_filled * bytes_per_frame_;
     DCHECK_LE(packet_size, packet_size_);
@@ -740,11 +740,11 @@ bool AlsaPcmOutputStream::IsOnAudioThread() const {
 }
 
 int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
-                                         AudioBuffersState buffers_state) {
+                                         uint32 total_bytes_delay) {
   TRACE_EVENT0("audio", "AlsaPcmOutputStream::RunDataCallback");
 
   if (source_callback_)
-    return source_callback_->OnMoreData(audio_bus, buffers_state);
+    return source_callback_->OnMoreData(audio_bus, total_bytes_delay);
 
   return 0;
 }
