@@ -118,6 +118,7 @@ protected:
     explicit ScrollingCoordinator(Page*);
 
     bool isForMainFrame(ScrollableArea*) const;
+    bool isForViewport(ScrollableArea*) const;
 
     Page* m_page;
 

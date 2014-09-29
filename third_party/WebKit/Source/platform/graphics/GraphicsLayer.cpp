@@ -1025,18 +1025,16 @@ void GraphicsLayer::removeLinkHighlight(LinkHighlightClient* linkHighlight)
     updateChildList();
 }
 
-void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isMainFrame)
+void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isViewport)
 {
     if (m_scrollableArea == scrollableArea)
         return;
 
     m_scrollableArea = scrollableArea;
 
-    // Main frame scrolling may involve pinch zoom and gets routed through
+    // Viewport scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via GraphicsLayer::didScroll.
-    // TODO(bokan): With pinch virtual viewport the special case will no
-    // longer be needed, remove once old-style pinch is gone.
-    if (isMainFrame)
+    if (isViewport)
         m_layer->layer()->setScrollClient(0);
     else
         m_layer->layer()->setScrollClient(this);

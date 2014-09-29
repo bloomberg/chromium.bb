@@ -2966,7 +2966,10 @@ IntPoint WebViewImpl::clampOffsetAtScale(const IntPoint& offset, float scale)
     if (!view)
         return offset;
 
-    return view->clampOffsetAtScale(offset, scale);
+    if (!pinchVirtualViewportEnabled())
+        return view->clampOffsetAtScale(offset, scale);
+
+    return page()->frameHost().pinchViewport().clampDocumentOffsetAtScale(offset, scale);
 }
 
 bool WebViewImpl::pinchVirtualViewportEnabled() const
@@ -3025,6 +3028,17 @@ void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
     page()->frameHost().pinchViewport().setLocation(pinchViewportOrigin);
 }
 
+void WebViewImpl::setPageScaleFactorAndLocation(float scaleFactor, const FloatPoint& location)
+{
+    ASSERT(pinchVirtualViewportEnabled());
+    ASSERT(page());
+
+    page()->frameHost().pinchViewport().setScaleAndLocation(
+        clampPageScaleFactorToLimits(scaleFactor),
+        location);
+    deviceOrPageScaleFactorChanged();
+}
+
 void WebViewImpl::setPageScaleFactor(float scaleFactor)
 {
     ASSERT(page());
@@ -3033,7 +3047,7 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
     if (scaleFactor == pageScaleFactor())
         return;
 
-    // TODO(bokan): Old-style pinch path. Remove when we're migrated to
+    // FIXME(bokan): Old-style pinch path. Remove when we're migrated to
     // virtual viewport pinch.
     if (!pinchVirtualViewportEnabled()) {
         IntPoint scrollOffset(mainFrame()->scrollOffset().width, mainFrame()->scrollOffset().height);
@@ -3309,8 +3323,8 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScrollAndScaleState()
 {
-    // TODO: This is done by the pinchViewport().reset() call below and can be removed when
-    // the new pinch path is the only one.
+    // FIXME(bokan): This is done by the pinchViewport().reset() call below and
+    // can be removed when the new pinch path is the only one.
     setPageScaleFactor(1);
     updateMainFrameScrollPosition(IntPoint(), true);
     page()->frameHost().pinchViewport().reset();
@@ -4229,8 +4243,23 @@ void WebViewImpl::applyViewportDeltas(
     float pageScaleDelta,
     float topControlsDelta)
 {
-    // FIXME(bokan): Will be replaced in 3-sided patch once Chromium side is landed.
-    applyViewportDeltas(pinchViewportDelta + mainFrameDelta, pageScaleDelta, topControlsDelta);
+    ASSERT(pinchVirtualViewportEnabled());
+
+    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
+        return;
+
+    setTopControlsContentOffset(m_topControlsContentOffset + topControlsDelta);
+
+    FloatPoint pinchViewportOffset = page()->frameHost().pinchViewport().visibleRect().location();
+    pinchViewportOffset.move(pinchViewportDelta.width, pinchViewportDelta.height);
+    setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta, pinchViewportOffset);
+
+    if (pageScaleDelta != 1)
+        m_doubleTapZoomPending = false;
+
+    IntPoint mainFrameScrollOffset = IntPoint(mainFrame()->scrollOffset());
+    mainFrameScrollOffset.move(mainFrameDelta.width, mainFrameDelta.height);
+    updateMainFrameScrollPosition(mainFrameScrollOffset, false);
 }
 
 void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)
@@ -4240,18 +4269,6 @@ void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScal
 
     setTopControlsContentOffset(m_topControlsContentOffset + topControlsDelta);
 
-    if (pinchVirtualViewportEnabled()) {
-        if (pageScaleDelta != 1) {
-            // When the virtual viewport is enabled, offsets are already set for us.
-            setPageScaleFactor(pageScaleFactor() * pageScaleDelta);
-            m_doubleTapZoomPending = false;
-        }
-
-        return;
-    }
-
-    // TODO(bokan): Old pinch path only - virtual viewport pinch scrolls are automatically updated via GraphicsLayer::DidScroll.
-    // this should be removed once old pinch is removed.
     if (pageScaleDelta == 1) {
         TRACE_EVENT_INSTANT2("blink", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);
         WebSize webScrollOffset = mainFrame()->scrollOffset();

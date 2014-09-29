@@ -81,8 +81,7 @@ void PinchViewport::setSize(const IntSize& size)
     TRACE_EVENT2("blink", "PinchViewport::setSize", "width", size.width(), "height", size.height());
     m_size = size;
 
-    // Make sure we clamp the offset to within the new bounds.
-    setLocation(m_offset);
+    clampToBoundaries();
 
     if (m_innerViewportContainerLayer) {
         m_innerViewportContainerLayer->setSize(m_size);
@@ -95,8 +94,7 @@ void PinchViewport::setSize(const IntSize& size)
 
 void PinchViewport::reset()
 {
-    setLocation(FloatPoint());
-    setScale(1);
+    setScaleAndLocation(1, FloatPoint());
 }
 
 void PinchViewport::mainFrameDidChangeSize()
@@ -107,8 +105,7 @@ void PinchViewport::mainFrameDidChangeSize()
     if (m_innerViewportScrollLayer)
         m_innerViewportScrollLayer->setSize(contentsSize());
 
-    // Make sure the viewport's offset is clamped within the newly sized main frame.
-    setLocation(m_offset);
+    clampToBoundaries();
 }
 
 FloatRect PinchViewport::visibleRect() const
@@ -151,18 +148,7 @@ void PinchViewport::scrollIntoView(const FloatRect& rect)
 
 void PinchViewport::setLocation(const FloatPoint& newLocation)
 {
-    FloatPoint clampedOffset(clampOffsetToBoundaries(newLocation));
-
-    if (clampedOffset == m_offset)
-        return;
-
-    m_offset = clampedOffset;
-
-    ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
-    ASSERT(coordinator);
-    coordinator->scrollableAreaScrollLayerDidChange(this);
-
-    mainFrame()->loader().saveScrollState();
+    setScaleAndLocation(m_scale, newLocation);
 }
 
 void PinchViewport::move(const FloatPoint& delta)
@@ -172,24 +158,46 @@ void PinchViewport::move(const FloatPoint& delta)
 
 void PinchViewport::setScale(float scale)
 {
-    if (scale == m_scale)
-        return;
+    setScaleAndLocation(scale, m_offset);
+}
 
-    m_scale = scale;
+void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
+{
+    bool valuesChanged = false;
 
-    if (mainFrame())
-        mainFrame()->loader().saveScrollState();
+    if (scale != m_scale) {
+        m_scale = scale;
+        valuesChanged = true;
+    }
 
     // Old-style pinch sets scale here but we shouldn't call into the
-    // clamping code below.
-    if (!m_innerViewportScrollLayer)
+    // location code below. Can be removed when there's no old-style pinch.
+    // FIXME(bokan): Remove when cleaning up old pinch code.
+    if (!m_innerViewportScrollLayer) {
+        if (valuesChanged)
+            mainFrame()->loader().saveScrollState();
+
+        return;
+    }
+
+    FloatPoint clampedOffset(clampOffsetToBoundaries(location));
+
+    if (clampedOffset != m_offset) {
+        m_offset = clampedOffset;
+
+        ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
+        ASSERT(coordinator);
+        coordinator->scrollableAreaScrollLayerDidChange(this);
+
+        valuesChanged = true;
+    }
+
+    if (!valuesChanged)
         return;
 
-    // Ensure we clamp so we remain within the bounds.
-    setLocation(visibleRect().location());
+    mainFrame()->loader().saveScrollState();
 
-    // TODO: We should probably be calling scaleDidChange type functions here.
-    // see Page::setPageScaleFactor.
+    clampToBoundaries();
 }
 
 // Modifies the top of the graphics layer tree to add layers needed to support
@@ -351,6 +359,26 @@ IntPoint PinchViewport::maximumScrollPosition() const
     return flooredIntPoint(FloatSize(contentsSize()) - visibleRect().size());
 }
 
+IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float scale)
+{
+    if (!mainFrame() || !mainFrame()->view())
+        return IntPoint();
+
+    FrameView* view = mainFrame()->view();
+
+    FloatSize scaledSize(m_size);
+    scaledSize.scale(1 / scale);
+
+    IntPoint pinchViewportMax = flooredIntPoint(FloatSize(contentsSize()) - scaledSize);
+    IntPoint max = view->maximumScrollPosition() + pinchViewportMax;
+    IntPoint min = view->minimumScrollPosition(); // PinchViewportMin should be (0, 0)
+
+    IntPoint clamped = offset;
+    clamped = clamped.shrunkTo(max);
+    clamped = clamped.expandedTo(min);
+    return clamped;
+}
+
 IntRect PinchViewport::scrollableAreaBoundingBox() const
 {
     // This method should return the bounding box in the parent view's coordinate
@@ -426,6 +454,11 @@ FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
     clampedOffset = clampedOffset.shrunkTo(FloatPoint(maximumScrollPosition()));
     clampedOffset = clampedOffset.expandedTo(FloatPoint(minimumScrollPosition()));
     return clampedOffset;
+}
+
+void PinchViewport::clampToBoundaries()
+{
+    setLocation(m_offset);
 }
 
 String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)

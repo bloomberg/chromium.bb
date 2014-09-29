@@ -115,6 +115,9 @@ public:
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE;
     virtual void setCursorVisibilityState(bool isVisible) OVERRIDE;
     virtual bool hasTouchEventHandlersAt(const WebPoint&) OVERRIDE;
+
+    // FIXME(bokan): Old pinch path only - This should be removed once old pinch
+    // is removed.
     virtual void applyViewportDeltas(
         const WebSize& scrollDelta,
         float pageScaleDelta,
@@ -490,6 +493,8 @@ public:
     // Returns the bounding box of the block type node touched by the WebRect.
     WebRect computeBlockBounds(const WebRect&, bool ignoreClipping);
 
+    // FIXME(bokan): Replace with PinchViewport::clampDocumentOffsetAtScale once
+    // old-path is gone.
     IntPoint clampOffsetAtScale(const IntPoint& offset, float scale);
 
     // Exposed for tests.
@@ -510,6 +515,7 @@ private:
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) OVERRIDE;
+    void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
     void scrollAndRescaleViewports(float scaleFactor, const IntPoint& mainFrameOrigin, const FloatPoint& pinchViewportOrigin);
 

@@ -94,6 +94,8 @@ public:
     // rotation on Android or window resize elsewhere).
     void mainFrameDidChangeSize();
 
+    // Sets scale and location in one operation, preventing intermediate clamping.
+    void setScaleAndLocation(float scale, const FloatPoint& location);
     void setScale(float);
     float scale() const { return m_scale; }
 
@@ -111,6 +113,11 @@ public:
     // top-level document is centered in the viewport. This method will avoid
     // scrolling the pinch viewport unless necessary.
     void scrollIntoView(const FloatRect&);
+
+    // Clamp the given point, in document coordinates, to the maximum/minimum
+    // scroll extents of the viewport within the document.
+    IntPoint clampDocumentOffsetAtScale(const IntPoint& offset, float scale);
+
 private:
     // ScrollableArea implementation
     virtual bool isActive() const OVERRIDE { return false; }
@@ -142,6 +149,7 @@ private:
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);
+    void clampToBoundaries();
 
     LocalFrame* mainFrame() const;
 

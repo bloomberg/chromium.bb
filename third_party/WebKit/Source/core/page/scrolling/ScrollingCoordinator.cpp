@@ -352,10 +352,7 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
 
     if (scrollLayer) {
         ASSERT(m_page);
-        // With pinch virtual viewport we no longer need to special case the main frame.
-        bool pinchVirtualViewportEnabled = m_page->settings().pinchVirtualViewportEnabled();
-        bool layerScrollShouldFireGraphicsLayerDidScroll = isForMainFrame(scrollableArea) && !pinchVirtualViewportEnabled;
-        scrollLayer->setScrollableArea(scrollableArea, layerScrollShouldFireGraphicsLayerDidScroll);
+        scrollLayer->setScrollableArea(scrollableArea, isForViewport(scrollableArea));
     }
 
     WebLayer* webLayer = toWebLayer(scrollableArea->layerForScrolling());
@@ -851,7 +848,16 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
 
 bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
 {
-    return m_page->mainFrame()->isLocalFrame() ? scrollableArea == m_page->deprecatedLocalMainFrame()->view() : false;
+    if (!m_page->mainFrame()->isLocalFrame())
+        return false;
+
+    return scrollableArea == m_page->deprecatedLocalMainFrame()->view();
+}
+
+bool ScrollingCoordinator::isForViewport(ScrollableArea* scrollableArea) const
+{
+    return isForMainFrame(scrollableArea)
+        || scrollableArea == &m_page->frameHost().pinchViewport();
 }
 
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)

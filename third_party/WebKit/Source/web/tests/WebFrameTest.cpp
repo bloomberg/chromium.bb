@@ -189,6 +189,15 @@ protected:
         settings->setPreferCompositingToLCDTextEnabled(true);
     }
 
+    static void configurePinchVirtualViewport(WebSettings* settings)
+    {
+        settings->setPinchVirtualViewportEnabled(true);
+        settings->setViewportMetaEnabled(true);
+        settings->setViewportEnabled(true);
+        settings->setMainFrameResizesAreOrientationChanges(true);
+        settings->setShrinksViewportContentToFit(true);
+    }
+
     static void configureLoadsImagesAutomatically(WebSettings* settings)
     {
         settings->setLoadsImagesAutomatically(true);
@@ -2150,7 +2159,342 @@ void setScaleAndScrollAndLayout(WebView* webView, WebPoint scroll, float scale)
     webView->layout();
 }
 
-TEST_F(WebFrameTest, DivAutoZoomParamsTest)
+void simulatePageScale(WebViewImpl* webViewImpl, float& scale)
+{
+    IntSize scrollDelta = webViewImpl->fakePageScaleAnimationTargetPositionForTesting() - webViewImpl->mainFrameImpl()->frameView()->scrollPosition();
+    float scaleDelta = webViewImpl->fakePageScaleAnimationPageScaleForTesting() / webViewImpl->pageScaleFactor();
+    webViewImpl->applyViewportDeltas(scrollDelta, scaleDelta, 0);
+    scale = webViewImpl->pageScaleFactor();
+}
+
+void simulateMultiTargetZoom(WebViewImpl* webViewImpl, const WebRect& rect, float& scale)
+{
+    if (webViewImpl->zoomToMultipleTargetsRect(rect))
+        simulatePageScale(webViewImpl, scale);
+}
+
+void simulateDoubleTap(WebViewImpl* webViewImpl, WebPoint& point, float& scale)
+{
+    webViewImpl->animateDoubleTapZoom(point);
+    EXPECT_TRUE(webViewImpl->fakeDoubleTapAnimationPendingForTesting());
+    simulatePageScale(webViewImpl, scale);
+}
+
+// =======
+
+TEST_F(WebFrameTest, DivAutoZoomParamsTest_VirtualViewport)
+{
+    registerMockedHttpURLLoad("get_scale_for_auto_zoom_into_div_test.html");
+
+    const float deviceScaleFactor = 2.0f;
+    int viewportWidth = 640 / deviceScaleFactor;
+    int viewportHeight = 1280 / deviceScaleFactor;
+    float doubleTapZoomAlreadyLegibleRatio = 1.2f;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "get_scale_for_auto_zoom_into_div_test.html", false, 0, 0, configurePinchVirtualViewport);
+    webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
+    webViewHelper.webView()->setPageScaleFactorLimits(0.01f, 4);
+    webViewHelper.webView()->setPageScaleFactor(0.5f);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->layout();
+
+    WebRect wideDiv(200, 100, 400, 150);
+    WebRect tallDiv(200, 300, 400, 800);
+    WebRect doubleTapPointWide(wideDiv.x + 50, wideDiv.y + 50, touchPointPadding, touchPointPadding);
+    WebRect doubleTapPointTall(tallDiv.x + 50, tallDiv.y + 50, touchPointPadding, touchPointPadding);
+    WebRect wideBlockBounds;
+    WebRect tallBlockBounds;
+    float scale;
+    WebPoint scroll;
+
+    float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+
+    // Test double-tap zooming into wide div.
+    wideBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    // The div should horizontally fill the screen (modulo margins), and
+    // vertically centered (modulo integer rounding).
+    EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
+    EXPECT_NEAR(wideDiv.x, scroll.x, 20);
+    EXPECT_EQ(0, scroll.y);
+
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), scroll, scale);
+
+    // Test zoom out back to minimum scale.
+    wideBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+
+    scale = webViewHelper.webViewImpl()->minimumPageScaleFactor();
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), scale);
+
+    // Test double-tap zooming into tall div.
+    tallBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointTall, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointTall.x, doubleTapPointTall.y), tallBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    // The div should start at the top left of the viewport.
+    EXPECT_NEAR(viewportWidth / (float) tallDiv.width, scale, 0.1);
+    EXPECT_NEAR(tallDiv.x, scroll.x, 20);
+    EXPECT_NEAR(tallDiv.y, scroll.y, 20);
+
+    // Test for Non-doubletap scaling
+    // Test zooming into div.
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(250, 250), webViewHelper.webViewImpl()->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
+}
+
+TEST_F(WebFrameTest, DivAutoZoomWideDivTest_VirtualViewport)
+{
+    registerMockedHttpURLLoad("get_wide_div_for_auto_zoom_test.html");
+
+    const float deviceScaleFactor = 2.0f;
+    int viewportWidth = 640 / deviceScaleFactor;
+    int viewportHeight = 1280 / deviceScaleFactor;
+    float doubleTapZoomAlreadyLegibleRatio = 1.2f;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "get_wide_div_for_auto_zoom_test.html", false, 0, 0, configurePinchVirtualViewport);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
+    webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
+    webViewHelper.webView()->setPageScaleFactor(1.0f);
+    webViewHelper.webView()->layout();
+
+    webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+
+    float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+
+    WebRect div(0, 100, viewportWidth, 150);
+    WebPoint point(div.x + 50, div.y + 50);
+    float scale;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+
+    simulateDoubleTap(webViewHelper.webViewImpl(), point, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), point, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+}
+
+TEST_F(WebFrameTest, DivAutoZoomVeryTallTest_VirtualViewport)
+{
+    // When a block is taller than the viewport and a zoom targets a lower part
+    // of it, then we should keep the target point onscreen instead of snapping
+    // back up the top of the block.
+    registerMockedHttpURLLoad("very_tall_div.html");
+
+    const float deviceScaleFactor = 2.0f;
+    int viewportWidth = 640 / deviceScaleFactor;
+    int viewportHeight = 1280 / deviceScaleFactor;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "very_tall_div.html", true, 0, 0, configurePinchVirtualViewport);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
+    webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
+    webViewHelper.webView()->setPageScaleFactor(1.0f);
+    webViewHelper.webView()->layout();
+
+    WebRect div(200, 300, 400, 5000);
+    WebPoint point(div.x + 50, div.y + 3000);
+    float scale;
+    WebPoint scroll;
+
+    WebRect blockBounds = webViewHelper.webViewImpl()->computeBlockBounds(WebRect(point.x, point.y, 0, 0), true);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(point, blockBounds, 0, 1.0f, scale, scroll);
+    EXPECT_EQ(scale, 1.0f);
+    EXPECT_EQ(scroll.y, 2660);
+}
+
+TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest_VirtualViewport)
+{
+    registerMockedHttpURLLoad("get_multiple_divs_for_auto_zoom_test.html");
+
+    const float deviceScaleFactor = 2.0f;
+    int viewportWidth = 640 / deviceScaleFactor;
+    int viewportHeight = 1280 / deviceScaleFactor;
+    float doubleTapZoomAlreadyLegibleRatio = 1.2f;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "get_multiple_divs_for_auto_zoom_test.html", false, 0, 0, configurePinchVirtualViewport);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->setPageScaleFactorLimits(0.5f, 4);
+    webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
+    webViewHelper.webView()->setPageScaleFactor(0.5f);
+    webViewHelper.webView()->layout();
+
+    webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+
+    WebRect topDiv(200, 100, 200, 150);
+    WebRect bottomDiv(200, 300, 200, 150);
+    WebPoint topPoint(topDiv.x + 50, topDiv.y + 50);
+    WebPoint bottomPoint(bottomDiv.x + 50, bottomDiv.y + 50);
+    float scale;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+
+    // Test double tap on two different divs
+    // After first zoom, we should go back to minimum page scale with a second double tap.
+    simulateDoubleTap(webViewHelper.webViewImpl(), topPoint, scale);
+    EXPECT_FLOAT_EQ(1, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+
+    // If the user pinch zooms after double tap, a second double tap should zoom back to the div.
+    simulateDoubleTap(webViewHelper.webViewImpl(), topPoint, scale);
+    EXPECT_FLOAT_EQ(1, scale);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 0.6f, 0);
+    simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(1, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+
+    // If we didn't yet get an auto-zoom update and a second double-tap arrives, should go back to minimum scale.
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
+    webViewHelper.webViewImpl()->animateDoubleTapZoom(topPoint);
+    EXPECT_TRUE(webViewHelper.webViewImpl()->fakeDoubleTapAnimationPendingForTesting());
+    simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+}
+
+TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest_VirtualViewport)
+{
+    registerMockedHttpURLLoad("get_scale_bounds_check_for_auto_zoom_test.html");
+
+    int viewportWidth = 320;
+    int viewportHeight = 480;
+    float doubleTapZoomAlreadyLegibleRatio = 1.2f;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "get_scale_bounds_check_for_auto_zoom_test.html", false, 0, 0, configurePinchVirtualViewport);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->setDeviceScaleFactor(1.5f);
+    webViewHelper.webView()->layout();
+
+    webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+
+    WebRect div(200, 100, 200, 150);
+    WebPoint doubleTapPoint(div.x + 50, div.y + 50);
+    float scale;
+
+    // Test double tap scale bounds.
+    // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1
+    webViewHelper.webView()->setPageScaleFactorLimits(0.5f, 4);
+    webViewHelper.webView()->layout();
+    float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(1, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(1, scale);
+
+    // Zoom in to reset double_tap_zoom_in_effect flag.
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
+    // 1 < minimumPageScale < doubleTapZoomAlreadyLegibleScale
+    webViewHelper.webView()->setPageScaleFactorLimits(1.1f, 4);
+    webViewHelper.webView()->layout();
+    doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+
+    // Zoom in to reset double_tap_zoom_in_effect flag.
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
+    // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale
+    webViewHelper.webView()->setPageScaleFactorLimits(0.95f, 4);
+    webViewHelper.webView()->layout();
+    doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+}
+
+TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest_VirtualViewport)
+{
+    registerMockedHttpURLLoad("get_scale_bounds_check_for_auto_zoom_test.html");
+
+    int viewportWidth = 320;
+    int viewportHeight = 480;
+    float doubleTapZoomAlreadyLegibleRatio = 1.2f;
+    float accessibilityFontScaleFactor = 1.13f;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "get_scale_bounds_check_for_auto_zoom_test.html", false, 0, 0, configurePinchVirtualViewport);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->layout();
+
+    webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+    webViewHelper.webViewImpl()->page()->settings().setTextAutosizingEnabled(true);
+    webViewHelper.webViewImpl()->page()->settings().setAccessibilityFontScaleFactor(accessibilityFontScaleFactor);
+
+    WebRect div(200, 100, 200, 150);
+    WebPoint doubleTapPoint(div.x + 50, div.y + 50);
+    float scale;
+
+    // Test double tap scale bounds.
+    // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1 < accessibilityFontScaleFactor
+    float legibleScale = accessibilityFontScaleFactor;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    webViewHelper.webView()->setPageScaleFactorLimits(0.5f, 4);
+    webViewHelper.webView()->layout();
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(legibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(legibleScale, scale);
+
+    // Zoom in to reset double_tap_zoom_in_effect flag.
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
+    // 1 < accessibilityFontScaleFactor < minimumPageScale < doubleTapZoomAlreadyLegibleScale
+    webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
+    webViewHelper.webView()->layout();
+    doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+
+    // Zoom in to reset double_tap_zoom_in_effect flag.
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
+    // minimumPageScale < 1 < accessibilityFontScaleFactor < doubleTapZoomAlreadyLegibleScale
+    webViewHelper.webView()->setPageScaleFactorLimits(0.95f, 4);
+    webViewHelper.webView()->layout();
+    doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
+
+    // Zoom in to reset double_tap_zoom_in_effect flag.
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
+    // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale < accessibilityFontScaleFactor
+    webViewHelper.webView()->setPageScaleFactorLimits(0.9f, 4);
+    webViewHelper.webView()->layout();
+    doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), (webViewHelper.webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(legibleScale, scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(legibleScale, scale);
+}
+
+// FIXME(bokan): The following tests marked with _OldPinch test AutoZoom
+// without the pinch virtual viewport mode enabled. As this becomes the default
+// and the old path is deprecated, these tests can be removed; they've been
+// cloned above to use the new virtual viewport path.
+
+TEST_F(WebFrameTest, DivAutoZoomParamsTest_OldPinch)
 {
     registerMockedHttpURLLoad("get_scale_for_auto_zoom_into_div_test.html");
 
@@ -2209,28 +2553,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
 }
 
-void simulatePageScale(WebViewImpl* webViewImpl, float& scale)
-{
-    IntSize scrollDelta = webViewImpl->fakePageScaleAnimationTargetPositionForTesting() - webViewImpl->mainFrameImpl()->frameView()->scrollPosition();
-    float scaleDelta = webViewImpl->fakePageScaleAnimationPageScaleForTesting() / webViewImpl->pageScaleFactor();
-    webViewImpl->applyViewportDeltas(scrollDelta, scaleDelta, 0);
-    scale = webViewImpl->pageScaleFactor();
-}
-
-void simulateMultiTargetZoom(WebViewImpl* webViewImpl, const WebRect& rect, float& scale)
-{
-    if (webViewImpl->zoomToMultipleTargetsRect(rect))
-        simulatePageScale(webViewImpl, scale);
-}
-
-void simulateDoubleTap(WebViewImpl* webViewImpl, WebPoint& point, float& scale)
-{
-    webViewImpl->animateDoubleTapZoom(point);
-    EXPECT_TRUE(webViewImpl->fakeDoubleTapAnimationPendingForTesting());
-    simulatePageScale(webViewImpl, scale);
-}
-
-TEST_F(WebFrameTest, DivAutoZoomWideDivTest)
+TEST_F(WebFrameTest, DivAutoZoomWideDivTest_OldPinch)
 {
     registerMockedHttpURLLoad("get_wide_div_for_auto_zoom_test.html");
 
@@ -2261,7 +2584,7 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest)
     EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
 }
 
-TEST_F(WebFrameTest, DivAutoZoomVeryTallTest)
+TEST_F(WebFrameTest, DivAutoZoomVeryTallTest_OldPinch)
 {
     // When a block is taller than the viewport and a zoom targets a lower part
     // of it, then we should keep the target point onscreen instead of snapping
@@ -2290,7 +2613,7 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest)
     EXPECT_EQ(scroll.y, 2660);
 }
 
-TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest)
+TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest_OldPinch)
 {
     registerMockedHttpURLLoad("get_multiple_divs_for_auto_zoom_test.html");
 
@@ -2339,7 +2662,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest)
     EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
 }
 
-TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
+TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest_OldPinch)
 {
     registerMockedHttpURLLoad("get_scale_bounds_check_for_auto_zoom_test.html");
 
@@ -2400,7 +2723,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
 }
 
-TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
+TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest_OldPinch)
 {
     registerMockedHttpURLLoad("get_scale_bounds_check_for_auto_zoom_test.html");
 
@@ -2477,6 +2800,8 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     simulateDoubleTap(webViewHelper.webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(legibleScale, scale);
 }
+
+// ================= End Old-Style Pinch tests to be removed ===================
 
 TEST_F(WebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
 {

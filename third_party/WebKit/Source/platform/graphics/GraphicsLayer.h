@@ -224,7 +224,7 @@ public:
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
     LinkHighlightClient* linkHighlight(int i) { return m_linkHighlights[i]; }
 
-    void setScrollableArea(ScrollableArea*, bool isMainFrame);
+    void setScrollableArea(ScrollableArea*, bool isViewport);
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 
     WebContentLayer* contentLayer() const { return m_layer.get(); }
