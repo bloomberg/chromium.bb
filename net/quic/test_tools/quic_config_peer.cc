@@ -16,12 +16,6 @@ void QuicConfigPeer::SetReceivedInitialWindow(QuicConfig* config,
 }
 
 // static
-void QuicConfigPeer::SetReceivedLossDetection(QuicConfig* config,
-                                              QuicTag loss_detection) {
-  config->loss_detection_.SetReceivedValue(loss_detection);
-}
-
-// static
 void QuicConfigPeer::SetReceivedInitialFlowControlWindow(QuicConfig* config,
                                                          uint32 window_bytes) {
   config->initial_flow_control_window_bytes_.SetReceivedValue(window_bytes);

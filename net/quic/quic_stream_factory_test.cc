@@ -113,7 +113,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  std::string(),
                  SupportedVersions(GetParam()),
                  /*enable_port_selection=*/true,
-                 /*enable_time_based_loss_detection=*/true,
                  /*always_require_handshake_confirmation=*/false,
                  /*disable_connection_pooling=*/false,
                  QuicTagVector()),

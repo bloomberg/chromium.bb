@@ -311,7 +311,9 @@ void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
   encrypted_packets_.push_back(encrypted);
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
-  sent_packet_manager_.OnSerializedPacket(packet.serialized_packet);
+  sent_packet_manager_.OnPacketSent(
+      &packet.serialized_packet, 0, QuicTime::Zero(), 1000,
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
 }
 
 MockSession::MockSession(QuicConnection* connection)

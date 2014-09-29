@@ -219,12 +219,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       idle_network_timeout_(
           QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
-      time_of_last_received_packet_(
-          FLAGS_quic_timeouts_require_activity
-              ? QuicTime::Zero() : clock_->ApproximateNow()),
-      time_of_last_sent_new_packet_(
-          FLAGS_quic_timeouts_require_activity
-              ? QuicTime::Zero() : clock_->ApproximateNow()),
+      time_of_last_received_packet_(clock_->ApproximateNow()),
+      time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_sent_packet_(0),
       sent_packet_manager_(
           is_server, clock_, &stats_,
@@ -1442,24 +1438,17 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
       sent_packet_manager_.least_packet_awaited_by_peer(),
       sent_packet_manager_.GetCongestionWindow());
 
-  if (packet->original_sequence_number == 0) {
-    sent_packet_manager_.OnSerializedPacket(packet->serialized_packet);
-  } else {
-    if (debug_visitor_.get() != NULL) {
-      debug_visitor_->OnPacketRetransmitted(
-          packet->original_sequence_number, sequence_number);
-    }
-    sent_packet_manager_.OnRetransmittedPacket(packet->original_sequence_number,
-                                               sequence_number);
+  if (packet->original_sequence_number != 0 && debug_visitor_.get() != NULL) {
+    debug_visitor_->OnPacketRetransmitted(
+        packet->original_sequence_number, sequence_number);
   }
   bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
-      sequence_number,
+      &packet->serialized_packet,
+      packet->original_sequence_number,
       now,
       encrypted->length(),
       packet->transmission_type,
       IsRetransmittable(*packet));
-  // The SentPacketManager now owns the retransmittable frames.
-  packet->serialized_packet.retransmittable_frames = NULL;
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     retransmission_alarm_->Update(sent_packet_manager_.GetRetransmissionTime(),
@@ -1887,7 +1876,11 @@ void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
 
   if (timeout < idle_network_timeout_) {
     idle_network_timeout_ = timeout;
-    CheckForTimeout();
+    if (FLAGS_quic_timeouts_only_from_alarms) {
+      SetTimeoutAlarm();
+    } else {
+      CheckForTimeout();
+    }
   } else {
     idle_network_timeout_ = timeout;
   }
@@ -1896,67 +1889,67 @@ void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
 void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
   if (timeout < overall_connection_timeout_) {
     overall_connection_timeout_ = timeout;
-    CheckForTimeout();
+    if (FLAGS_quic_timeouts_only_from_alarms) {
+      SetTimeoutAlarm();
+    } else {
+      CheckForTimeout();
+    }
   } else {
     overall_connection_timeout_ = timeout;
   }
 }
 
-bool QuicConnection::CheckForTimeout() {
+void QuicConnection::CheckForTimeout() {
   QuicTime now = clock_->ApproximateNow();
   QuicTime time_of_last_packet = max(time_of_last_received_packet_,
                                      time_of_last_sent_new_packet_);
 
-  // If no packets have been sent or received, then don't timeout.
-  if (FLAGS_quic_timeouts_require_activity &&
-      !time_of_last_packet.IsInitialized()) {
-    timeout_alarm_->Cancel();
-    timeout_alarm_->Set(now.Add(idle_network_timeout_));
-    return false;
-  }
-
   // |delta| can be < 0 as |now| is approximate time but |time_of_last_packet|
   // is accurate time. However, this should not change the behavior of
   // timeout handling.
-  QuicTime::Delta delta = now.Subtract(time_of_last_packet);
+  QuicTime::Delta idle_duration = now.Subtract(time_of_last_packet);
   DVLOG(1) << ENDPOINT << "last packet "
            << time_of_last_packet.ToDebuggingValue()
            << " now:" << now.ToDebuggingValue()
-           << " delta:" << delta.ToMicroseconds()
-           << " network_timeout: " << idle_network_timeout_.ToMicroseconds();
-  if (delta >= idle_network_timeout_) {
+           << " idle_duration:" << idle_duration.ToMicroseconds()
+           << " idle_network_timeout: "
+           << idle_network_timeout_.ToMicroseconds();
+  if (idle_duration >= idle_network_timeout_) {
     DVLOG(1) << ENDPOINT << "Connection timedout due to no network activity.";
     SendConnectionClose(QUIC_CONNECTION_TIMED_OUT);
-    return true;
+    return;
   }
 
-  // Next timeout delta.
-  QuicTime::Delta timeout = idle_network_timeout_.Subtract(delta);
-
   if (!overall_connection_timeout_.IsInfinite()) {
-    QuicTime::Delta connected_time =
+    QuicTime::Delta connected_duration =
         now.Subtract(stats_.connection_creation_time);
     DVLOG(1) << ENDPOINT << "connection time: "
-             << connected_time.ToMilliseconds() << " overall timeout: "
-             << overall_connection_timeout_.ToMilliseconds();
-    if (connected_time >= overall_connection_timeout_) {
+             << connected_duration.ToMicroseconds() << " overall timeout: "
+             << overall_connection_timeout_.ToMicroseconds();
+    if (connected_duration >= overall_connection_timeout_) {
       DVLOG(1) << ENDPOINT <<
           "Connection timedout due to overall connection timeout.";
       SendConnectionClose(QUIC_CONNECTION_OVERALL_TIMED_OUT);
-      return true;
-    }
-
-    // Take the min timeout.
-    QuicTime::Delta connection_timeout =
-        overall_connection_timeout_.Subtract(connected_time);
-    if (connection_timeout < timeout) {
-      timeout = connection_timeout;
+      return;
     }
   }
 
+  SetTimeoutAlarm();
+}
+
+void QuicConnection::SetTimeoutAlarm() {
+  QuicTime time_of_last_packet = max(time_of_last_received_packet_,
+                                     time_of_last_sent_new_packet_);
+
+  QuicTime deadline = time_of_last_packet.Add(idle_network_timeout_);
+  if (!overall_connection_timeout_.IsInfinite()) {
+    deadline = min(deadline,
+                   stats_.connection_creation_time.Add(
+                       overall_connection_timeout_));
+  }
+
   timeout_alarm_->Cancel();
-  timeout_alarm_->Set(now.Add(timeout));
-  return false;
+  timeout_alarm_->Set(deadline);
 }
 
 void QuicConnection::SetPingAlarm() {

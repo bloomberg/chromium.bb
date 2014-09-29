@@ -334,11 +334,6 @@ const char kDisableQuicPacing[]             = "disable-quic-pacing";
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 
-// Disable use of time-base loss detection for QUIC connections.
-// This only has an effect if QUIC protocol is enabled.
-const char kDisableQuicTimeBasedLossDetection[] =
-    "disable-quic-time-based-loss-detection";
-
 // Prevents the save password bubble from being enabled.
 const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
 
@@ -543,11 +538,6 @@ const char kEnableQuicPacing[]              = "enable-quic-pacing";
 // Enable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
-
-// Enables use of time-base loss detection for QUIC connections.
-// This only has an effect if QUIC protocol is enabled.
-const char kEnableQuicTimeBasedLossDetection[] =
-    "enable-quic-time-based-loss-detection";
 
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] =

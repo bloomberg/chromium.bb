@@ -88,12 +88,9 @@ bool IsEcdsaSupported() {
   return true;
 }
 
-QuicConfig InitializeQuicConfig(bool enable_time_based_loss_detection,
-                                const QuicTagVector& connection_options) {
+QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options) {
   QuicConfig config;
   config.SetDefaults();
-  if (enable_time_based_loss_detection)
-    config.SetLossDetectionToSend(kTIME);
   config.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds),
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds));
@@ -491,7 +488,6 @@ QuicStreamFactory::QuicStreamFactory(
     const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
     bool enable_port_selection,
-    bool enable_time_based_loss_detection,
     bool always_require_handshake_confirmation,
     bool disable_connection_pooling,
     const QuicTagVector& connection_options)
@@ -505,8 +501,7 @@ QuicStreamFactory::QuicStreamFactory(
       random_generator_(random_generator),
       clock_(clock),
       max_packet_length_(max_packet_length),
-      config_(InitializeQuicConfig(enable_time_based_loss_detection,
-                                   connection_options)),
+      config_(InitializeQuicConfig(connection_options)),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
       always_require_handshake_confirmation_(

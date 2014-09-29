@@ -273,12 +273,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTagVector SendConnectionOptions() const;
 
-  void SetLossDetectionToSend(QuicTag loss_detection);
-
-  bool HasReceivedLossDetection() const;
-
-  QuicTag ReceivedLossDetection() const;
-
   void set_idle_connection_state_lifetime(
       QuicTime::Delta max_idle_connection_state_lifetime,
       QuicTime::Delta default_idle_conection_state_lifetime);
@@ -375,8 +369,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicNegotiableTag congestion_feedback_;
   // Connection options.
   QuicFixedTagVector connection_options_;
-  // Loss detection feedback type.
-  QuicFixedTag loss_detection_;
   // Idle connection state lifetime
   QuicNegotiableUint32 idle_connection_state_lifetime_seconds_;
   // Keepalive timeout, or 0 to turn off keepalive probes

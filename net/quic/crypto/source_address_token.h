@@ -74,6 +74,9 @@ class NET_EXPORT_PRIVATE CachedNetworkParameters {
     previous_connection_state_ = previous_connection_state;
   }
 
+  int64 timestamp() const { return timestamp_; }
+  void set_timestamp(int64 timestamp) { timestamp_ = timestamp; }
+
  private:
   // serving_region_ is used to decide whether or not the bandwidth estimate and
   // min RTT are reasonable and if they should be used.
@@ -94,6 +97,8 @@ class NET_EXPORT_PRIVATE CachedNetworkParameters {
   int32 min_rtt_ms_;
   // Encodes the PreviousConnectionState enum.
   int32 previous_connection_state_;
+  // UNIX timestamp when this bandwidth estimate was created.
+  int64 timestamp_;
 };
 
 // TODO(rtenneti): sync with server more rationally.

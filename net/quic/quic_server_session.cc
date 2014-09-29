@@ -128,6 +128,8 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
       bandwidth_recorder.EstimateRecordedDuringSlowStart()
           ? CachedNetworkParameters::SLOW_START
           : CachedNetworkParameters::CONGESTION_AVOIDANCE);
+  cached_network_params.set_timestamp(
+      connection()->clock()->WallNow().ToUNIXSeconds());
   if (!serving_region_.empty()) {
     cached_network_params.set_serving_region(serving_region_);
   }

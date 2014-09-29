@@ -91,7 +91,6 @@ HttpNetworkSession::Params::Params()
       enable_websocket_over_spdy(false),
       enable_quic(false),
       enable_quic_port_selection(true),
-      enable_quic_time_based_loss_detection(false),
       quic_always_require_handshake_confirmation(false),
       quic_disable_connection_pooling(false),
       quic_clock(NULL),
@@ -134,7 +133,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_user_agent_id,
           params.quic_supported_versions,
           params.enable_quic_port_selection,
-          params.enable_quic_time_based_loss_detection,
           params.quic_always_require_handshake_confirmation,
           params.quic_disable_connection_pooling,
           params.quic_connection_options),
@@ -264,8 +262,6 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
     connection_options->AppendString("'" + QuicUtils::TagToString(*it) + "'");
   }
   dict->Set("connection_options", connection_options);
-  dict->SetBoolean("enable_quic_time_based_loss_detection",
-                   params_.enable_quic_time_based_loss_detection);
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
   dict->SetDouble("alternate_protocol_probability_threshold",

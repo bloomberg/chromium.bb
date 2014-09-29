@@ -127,7 +127,6 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
-  EXPECT_FALSE(params.enable_quic_time_based_loss_detection);
   EXPECT_EQ(1350u, params.quic_max_packet_length);
   EXPECT_EQ(1.0, params.alternate_protocol_probability_threshold);
   EXPECT_EQ(default_params.quic_supported_versions,
@@ -179,35 +178,6 @@ TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {
   net::QuicTagVector options;
   options.push_back(net::kPACE);
   EXPECT_EQ(options, params.quic_connection_options);
-}
-
-TEST_F(IOThreadTest, EnableTimeBasedLossDetectionFromCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitch("enable-quic-time-based-loss-detection");
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_quic_time_based_loss_detection);
-}
-
-TEST_F(IOThreadTest, EnableTimeBasedLossDetectionFromFieldTrialGroup) {
-  field_trial_group_ = "EnabledWithTimeBasedLossDetection";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_quic_time_based_loss_detection);
-}
-
-TEST_F(IOThreadTest, EnableTimeBasedLossDetectionFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["enable_time_based_loss_detection"] = "true";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_quic_time_based_loss_detection);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromCommandLine) {

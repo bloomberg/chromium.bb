@@ -112,7 +112,6 @@ class NET_EXPORT HttpNetworkSession
 
     bool enable_quic;
     bool enable_quic_port_selection;
-    bool enable_quic_time_based_loss_detection;
     bool quic_always_require_handshake_confirmation;
     bool quic_disable_connection_pooling;
     HostPortPair origin_to_force_quic_on;

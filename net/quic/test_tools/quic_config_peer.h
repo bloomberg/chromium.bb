@@ -18,9 +18,6 @@ class QuicConfigPeer {
   static void SetReceivedInitialWindow(QuicConfig* config,
                                        size_t initial_window);
 
-  static void SetReceivedLossDetection(QuicConfig* config,
-                                       QuicTag loss_detection);
-
   // TODO(rjshade): Remove when removing QUIC_VERSION_19.
   static void SetReceivedInitialFlowControlWindow(QuicConfig* config,
                                                   uint32 window_bytes);

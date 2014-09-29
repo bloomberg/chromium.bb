@@ -115,16 +115,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
 
-  // Called when a new packet is serialized.  If the packet contains
-  // retransmittable data, it will be added to the unacked packet map.
-  void OnSerializedPacket(const SerializedPacket& serialized_packet);
-
-  // Called when a packet is retransmitted with a new sequence number.
-  // Replaces the old entry in the unacked packet map with the new
-  // sequence number.
-  void OnRetransmittedPacket(QuicPacketSequenceNumber old_sequence_number,
-                             QuicPacketSequenceNumber new_sequence_number);
-
   // Processes the incoming ack.
   void OnIncomingAck(const QuicAckFrame& ack_frame,
                      QuicTime ack_receive_time);
@@ -169,7 +159,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.  Returns true if
   // the sender should reset the retransmission timer.
-  virtual bool OnPacketSent(QuicPacketSequenceNumber sequence_number,
+  virtual bool OnPacketSent(SerializedPacket* serialized_packet,
+                            QuicPacketSequenceNumber original_sequence_number,
                             QuicTime sent_time,
                             QuicByteCount bytes,
                             TransmissionType transmission_type,
@@ -265,6 +256,16 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
+
+  // Called when a new packet is serialized.  If the packet contains
+  // retransmittable data, it will be added to the unacked packet map.
+  void OnSerializedPacket(const SerializedPacket& serialized_packet);
+
+  // Called when a packet is retransmitted with a new sequence number.
+  // Replaces the old entry in the unacked packet map with the new
+  // sequence number.
+  void OnRetransmittedPacket(QuicPacketSequenceNumber old_sequence_number,
+                             QuicPacketSequenceNumber new_sequence_number);
 
   // Updates the least_packet_awaited_by_peer.
   void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& ack_frame);

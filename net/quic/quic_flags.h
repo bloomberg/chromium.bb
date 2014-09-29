@@ -15,7 +15,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_send_quic_crypto_reject_reason;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_fec;
 NET_EXPORT_PRIVATE extern bool FLAGS_close_quic_connection_unfinished_streams_2;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_bbr_congestion_control;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_timeouts_require_activity;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_more_open_streams;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_timeouts_only_from_alarms;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

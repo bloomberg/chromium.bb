@@ -122,8 +122,6 @@ const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 const char kQuicFieldTrialPacketLengthSuffix[] = "BytePackets";
 const char kQuicFieldTrialPacingSuffix[] = "WithPacing";
-const char kQuicFieldTrialTimeBasedLossDetectionSuffix[] =
-    "WithTimeBasedLossDetection";
 
 // The SPDY trial composes two different trial plus control groups:
 //  * A "holdback" group with SPDY disabled, and corresponding control
@@ -1015,8 +1013,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->enable_websocket_over_spdy);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
-  globals.enable_quic_time_based_loss_detection.CopyToIfSet(
-      &params->enable_quic_time_based_loss_detection);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
       &params->quic_always_require_handshake_confirmation);
   globals.quic_disable_connection_pooling.CopyToIfSet(
@@ -1169,9 +1165,6 @@ void IOThread::ConfigureQuicGlobals(
   bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group);
   globals->enable_quic.set(enable_quic);
   if (enable_quic) {
-    globals->enable_quic_time_based_loss_detection.set(
-        ShouldEnableQuicTimeBasedLossDetection(command_line, quic_trial_group,
-                                               quic_trial_params));
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
     globals->quic_disable_connection_pooling.set(
@@ -1331,26 +1324,6 @@ double IOThread::GetAlternateProtocolProbabilityThreshold(
     return value;
   }
   return -1;
-}
-
-// static
-bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
-    const CommandLine& command_line,
-    base::StringPiece quic_trial_group,
-    const VariationParameters& quic_trial_params) {
-  if (command_line.HasSwitch(switches::kEnableQuicTimeBasedLossDetection))
-    return true;
-
-  if (command_line.HasSwitch(switches::kDisableQuicTimeBasedLossDetection))
-    return false;
-
-  if (LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_time_based_loss_detection"),
-      "true"))
-    return true;
-
-  return quic_trial_group.ends_with(
-      kQuicFieldTrialTimeBasedLossDetectionSuffix);
 }
 
 // static

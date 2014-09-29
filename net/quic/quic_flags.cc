@@ -35,10 +35,10 @@ bool FLAGS_close_quic_connection_unfinished_streams_2 = false;
 // When true, defaults to BBR congestion control instead of Cubic.
 bool FLAGS_quic_use_bbr_congestion_control = false;
 
-// If true, only times out QUIC connections when there has been network
-// activity; packets sent or received.
-bool FLAGS_quic_timeouts_require_activity = false;
-
 // If true, the server will accept slightly more streams than the negotiated
 // limit.
 bool FLAGS_quic_allow_more_open_streams = false;
+
+// If true, then QUIC connections will only timeout when an alarm fires, never
+// when setting a timeout.
+bool FLAGS_quic_timeouts_only_from_alarms = true;

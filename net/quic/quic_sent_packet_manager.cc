@@ -128,10 +128,8 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   // TODO(ianswett): Remove the "HasReceivedLossDetection" branch once
   // the ConnectionOptions code is live everywhere.
-  if ((config.HasReceivedLossDetection() &&
-       config.ReceivedLossDetection() == kTIME) ||
-      (config.HasReceivedConnectionOptions() &&
-       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME))) {
+  if (config.HasReceivedConnectionOptions() &&
+      ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME)) {
     loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
   }
   send_algorithm_->SetFromConfig(config, is_server_);
@@ -151,6 +149,7 @@ void QuicSentPacketManager::OnSerializedPacket(
   unacked_packets_.AddPacket(serialized_packet);
 
   if (debug_delegate_ != NULL) {
+    // TODO(ianswett): Merge calls in the debug delegate.
     debug_delegate_->OnSerializedPacket(serialized_packet);
   }
 }
@@ -505,14 +504,23 @@ QuicSentPacketManager::GetLeastUnacked() const {
 }
 
 bool QuicSentPacketManager::OnPacketSent(
-    QuicPacketSequenceNumber sequence_number,
+    SerializedPacket* serialized_packet,
+    QuicPacketSequenceNumber original_sequence_number,
     QuicTime sent_time,
     QuicByteCount bytes,
     TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data) {
+  QuicPacketSequenceNumber sequence_number = serialized_packet->sequence_number;
   DCHECK_LT(0u, sequence_number);
-  DCHECK(unacked_packets_.IsUnacked(sequence_number));
+  DCHECK(!unacked_packets_.IsUnacked(sequence_number));
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
+  if (original_sequence_number == 0) {
+    OnSerializedPacket(*serialized_packet);
+    serialized_packet->retransmittable_frames = NULL;
+  } else {
+    OnRetransmittedPacket(original_sequence_number, sequence_number);
+  }
+
   if (pending_timer_transmission_count_ > 0) {
     --pending_timer_transmission_count_;
   }

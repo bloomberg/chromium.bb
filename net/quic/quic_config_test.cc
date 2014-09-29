@@ -114,7 +114,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.ReceivedInitialRoundTripTimeUs());
-  EXPECT_FALSE(config_.HasReceivedLossDetection());
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
   EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
   EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kTBBR);
@@ -167,7 +166,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.ReceivedInitialRoundTripTimeUs());
-  EXPECT_FALSE(config_.HasReceivedLossDetection());
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),

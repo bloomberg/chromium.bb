@@ -427,7 +427,6 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
 QuicConfig::QuicConfig()
     : congestion_feedback_(kCGST, PRESENCE_REQUIRED),
       connection_options_(kCOPT, PRESENCE_OPTIONAL),
-      loss_detection_(kLOSS, PRESENCE_OPTIONAL),
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
       keepalive_timeout_seconds_(kKATO, PRESENCE_OPTIONAL),
       max_streams_per_connection_(kMSPC, PRESENCE_REQUIRED),
@@ -477,18 +476,6 @@ bool QuicConfig::HasSendConnectionOptions() const {
 
 QuicTagVector QuicConfig::SendConnectionOptions() const {
   return connection_options_.GetSendValues();
-}
-
-void QuicConfig::SetLossDetectionToSend(QuicTag loss_detection) {
-  loss_detection_.SetSendValue(loss_detection);
-}
-
-bool QuicConfig::HasReceivedLossDetection() const {
-  return loss_detection_.HasReceivedValue();
-}
-
-QuicTag QuicConfig::ReceivedLossDetection() const {
-  return loss_detection_.GetReceivedValue();
 }
 
 void QuicConfig::set_idle_connection_state_lifetime(
@@ -676,7 +663,6 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   max_streams_per_connection_.ToHandshakeMessage(out);
   initial_congestion_window_.ToHandshakeMessage(out);
   initial_round_trip_time_us_.ToHandshakeMessage(out);
-  loss_detection_.ToHandshakeMessage(out);
   initial_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_stream_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_session_flow_control_window_bytes_.ToHandshakeMessage(out);
@@ -729,10 +715,6 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = socket_receive_buffer_.ProcessPeerHello(
-        peer_hello, hello_type, error_details);
-  }
-  if (error == QUIC_NO_ERROR) {
-    error = loss_detection_.ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {

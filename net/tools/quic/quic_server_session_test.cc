@@ -352,6 +352,8 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
                                              .ToMilliseconds());
   expected_network_params.set_previous_connection_state(
       CachedNetworkParameters::CONGESTION_AVOIDANCE);
+  expected_network_params.set_timestamp(
+      session_->connection()->clock()->WallNow().ToUNIXSeconds());
   expected_network_params.set_serving_region(serving_region);
 
   EXPECT_CALL(*crypto_stream,

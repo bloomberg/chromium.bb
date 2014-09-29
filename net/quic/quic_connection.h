@@ -439,9 +439,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // handshake finishes.
   void SetOverallConnectionTimeout(QuicTime::Delta timeout);
 
-  // If the connection has timed out, this will close the connection and return
-  // true.  Otherwise, it will return false and will reset the timeout alarm.
-  bool CheckForTimeout();
+  // If the connection has timed out, this will close the connection.
+  // Otherwise, it will reschedule the timeout alarm.
+  void CheckForTimeout();
 
   // Sends a ping, and resets the ping alarm.
   void SendPing();
@@ -650,6 +650,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Closes any FEC groups protecting packets before |sequence_number|.
   void CloseFecGroupsBefore(QuicPacketSequenceNumber sequence_number);
+
+  // Sets the timeout alarm to the appropriate value, if any.
+  void SetTimeoutAlarm();
 
   // Sets the ping alarm to the appropriate value, if any.
   void SetPingAlarm();

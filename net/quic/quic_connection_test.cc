@@ -2658,16 +2658,6 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
       QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
-  if (FLAGS_quic_timeouts_require_activity) {
-    // Simulate the timeout alarm firing.
-    clock_.AdvanceTime(
-        QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
-    connection_.GetTimeoutAlarm()->Fire();
-    // We should not actually timeout until a packet is sent.
-    EXPECT_TRUE(connection_.connected());
-    SendStreamDataToPeer(1, "GET /", 0, kFin, NULL);
-  }
-
   // Simulate the timeout alarm firing.
   clock_.AdvanceTime(
       QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));

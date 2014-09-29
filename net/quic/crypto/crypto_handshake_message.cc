@@ -259,7 +259,6 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
       case kAEAD:
       case kCGST:
       case kCOPT:
-      case kLOSS:
       case kPDMD:
       case kVER:
         // tag lists
