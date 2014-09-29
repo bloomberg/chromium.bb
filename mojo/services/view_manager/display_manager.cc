@@ -74,13 +74,16 @@ DisplayManager::DisplayManager(
     const Callback<void()>& native_viewport_closed_callback)
     : connection_manager_(connection_manager),
       in_setup_(false),
-      bounds_(800, 600),
+      size_(800, 600),
       draw_timer_(false, false),
       weak_factory_(this) {
   app_connection->ConnectToService("mojo:mojo_native_viewport_service",
                                    &native_viewport_);
   native_viewport_.set_client(this);
-  native_viewport_->Create(Size::From(bounds_));
+  native_viewport_->Create(
+      Size::From(size_),
+      base::Bind(&DisplayManager::OnCreatedNativeViewport,
+                 weak_factory_.GetWeakPtr()));
   native_viewport_->Show();
   app_connection->ConnectToService("mojo:mojo_surfaces_service",
                                    &surfaces_service_);
@@ -107,6 +110,9 @@ void DisplayManager::SchedulePaint(const ServerView* view,
   }
 }
 
+void DisplayManager::OnCreatedNativeViewport(uint64_t native_viewport_id) {
+}
+
 void DisplayManager::OnSurfaceConnectionCreated(SurfacePtr surface,
                                                 uint32_t id_namespace) {
   surface_ = surface.Pass();
@@ -120,10 +126,10 @@ void DisplayManager::Draw() {
     return;
   if (surface_id_.is_null()) {
     surface_id_ = surface_id_allocator_->GenerateId();
-    surface_->CreateSurface(SurfaceId::From(surface_id_), Size::From(bounds_));
+    surface_->CreateSurface(SurfaceId::From(surface_id_), Size::From(size_));
   }
 
-  PassPtr pass = CreateDefaultPass(1, gfx::Rect(bounds_));
+  PassPtr pass = CreateDefaultPass(1, gfx::Rect(size_));
   pass->damage_rect = Rect::From(dirty_rect_);
 
   DrawViewTree(pass.get(), connection_manager_->root(), gfx::Vector2d());
@@ -138,21 +144,18 @@ void DisplayManager::Draw() {
   dirty_rect_ = gfx::Rect();
 }
 
-void DisplayManager::OnCreated(uint64_t native_viewport_id) {
-}
-
 void DisplayManager::OnDestroyed() {
   native_viewport_closed_callback_.Run();
 }
 
-void DisplayManager::OnBoundsChanged(SizePtr bounds) {
-  bounds_ = bounds.To<gfx::Size>();
-  connection_manager_->root()->SetBounds(gfx::Rect(bounds_));
+void DisplayManager::OnSizeChanged(SizePtr size) {
+  size_ = size.To<gfx::Size>();
+  connection_manager_->root()->SetBounds(gfx::Rect(size_));
   if (surface_id_.is_null())
     return;
   surface_->DestroySurface(SurfaceId::From(surface_id_));
   surface_id_ = cc::SurfaceId();
-  SchedulePaint(connection_manager_->root(), gfx::Rect(bounds_));
+  SchedulePaint(connection_manager_->root(), gfx::Rect(size_));
 }
 
 void DisplayManager::OnEvent(EventPtr event,

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -29,7 +30,7 @@ class SurfacesApp : public ApplicationDelegate,
                     public SurfaceClient,
                     public NativeViewportClient {
  public:
-  SurfacesApp() {}
+  SurfacesApp() : weak_factory_(this) {}
   virtual ~SurfacesApp() {}
 
   // ApplicationDelegate implementation
@@ -46,7 +47,9 @@ class SurfacesApp : public ApplicationDelegate,
 
     size_ = gfx::Size(800, 600);
 
-    viewport_->Create(Size::From(size_));
+    viewport_->Create(Size::From(size_),
+                      base::Bind(&SurfacesApp::OnCreatedNativeViewport,
+                                 weak_factory_.GetWeakPtr()));
     viewport_->Show();
 
     child_size_ = gfx::Size(size_.width() / 3, size_.height() / 2);
@@ -103,8 +106,7 @@ class SurfacesApp : public ApplicationDelegate,
     DCHECK(!resources.size());
   }
   // NativeViewportClient implementation.
-  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {}
-  virtual void OnBoundsChanged(mojo::SizePtr bounds) OVERRIDE {}
+  virtual void OnSizeChanged(mojo::SizePtr size) OVERRIDE {}
   virtual void OnDestroyed() OVERRIDE {}
   virtual void OnEvent(mojo::EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE {
@@ -112,6 +114,8 @@ class SurfacesApp : public ApplicationDelegate,
   }
 
  private:
+  void OnCreatedNativeViewport(uint64_t native_viewport_id) {}
+
   SurfacesServicePtr surfaces_service_;
   SurfacePtr surface_;
   cc::SurfaceId onscreen_id_;
@@ -125,6 +129,8 @@ class SurfacesApp : public ApplicationDelegate,
   gfx::Size child_size_;
 
   NativeViewportPtr viewport_;
+
+  base::WeakPtrFactory<SurfacesApp> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesApp);
 };

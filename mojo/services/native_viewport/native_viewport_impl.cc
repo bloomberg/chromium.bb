@@ -45,14 +45,16 @@ NativeViewportImpl::~NativeViewportImpl() {
   platform_viewport_.reset();
 }
 
-void NativeViewportImpl::Create(SizePtr bounds) {
+void NativeViewportImpl::Create(SizePtr size,
+                                const Callback<void(uint64_t)>& callback) {
+  create_callback_ = callback;
   if (is_headless_)
     platform_viewport_ = PlatformViewportHeadless::Create(this);
   else
     platform_viewport_ = PlatformViewport::Create(this);
-  gfx::Rect rect = gfx::Rect(bounds.To<gfx::Size>());
-  platform_viewport_->Init(rect);
-  OnBoundsChanged(rect);
+  const gfx::Rect bounds(gfx::Rect(size.To<gfx::Size>()));
+  platform_viewport_->Init(bounds);
+  OnBoundsChanged(bounds);
 }
 
 void NativeViewportImpl::Show() {
@@ -68,8 +70,8 @@ void NativeViewportImpl::Close() {
   platform_viewport_->Close();
 }
 
-void NativeViewportImpl::SetBounds(SizePtr bounds) {
-  platform_viewport_->SetBounds(gfx::Rect(bounds.To<gfx::Size>()));
+void NativeViewportImpl::SetSize(SizePtr size) {
+  platform_viewport_->SetBounds(gfx::Rect(size.To<gfx::Size>()));
 }
 
 void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
@@ -81,7 +83,7 @@ void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
     viewport_surface_.reset(
         new ViewportSurface(surfaces_service_.get(),
                             gpu_service_.get(),
-                            bounds_.size(),
+                            size_,
                             child_surface_id.To<cc::SurfaceId>()));
     if (widget_id_)
       viewport_surface_->SetWidgetId(widget_id_);
@@ -92,17 +94,17 @@ void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
 }
 
 void NativeViewportImpl::OnBoundsChanged(const gfx::Rect& bounds) {
-  bounds_ = bounds;
-  client()->OnBoundsChanged(Size::From(bounds.size()));
+  size_ = bounds.size();
+  client()->OnSizeChanged(Size::From(size_));
   if (viewport_surface_)
-    viewport_surface_->SetSize(bounds.size());
+    viewport_surface_->SetSize(size_);
 }
 
 void NativeViewportImpl::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   widget_id_ = static_cast<uint64_t>(bit_cast<uintptr_t>(widget));
   // TODO(jamesr): Remove once everything is converted to surfaces.
-  client()->OnCreated(widget_id_);
+  create_callback_.Run(widget_id_);
   if (viewport_surface_)
     viewport_surface_->SetWidgetId(widget_id_);
 }

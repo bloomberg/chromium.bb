@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string>
 
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/examples/sample_app/gles2_client_impl.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -22,7 +24,7 @@ namespace examples {
 class SampleApp : public mojo::ApplicationDelegate,
                   public mojo::NativeViewportClient {
  public:
-  SampleApp() {}
+  SampleApp() : weak_factory_(this) {}
 
   virtual ~SampleApp() {
     // TODO(darin): Fix shutdown so we don't need to leak this.
@@ -39,27 +41,18 @@ class SampleApp : public mojo::ApplicationDelegate,
     mojo::SizePtr size(mojo::Size::New());
     size->width = 800;
     size->height = 600;
-    viewport_->Create(size.Pass());
+    viewport_->Create(size.Pass(),
+                      base::Bind(&SampleApp::OnCreatedNativeViewport,
+                                 weak_factory_.GetWeakPtr()));
     viewport_->Show();
-  }
-
-  virtual void OnCreated(uint64_t native_viewport_id) MOJO_OVERRIDE {
-    mojo::SizePtr size = mojo::Size::New();
-    size->width = 800;
-    size->height = 600;
-    mojo::CommandBufferPtr command_buffer;
-    // TODO(jamesr): Output to a surface instead.
-    gpu_service_->CreateOnscreenGLES2Context(
-        native_viewport_id, size.Pass(), Get(&command_buffer));
-    gles2_client_.reset(new GLES2ClientImpl(command_buffer.Pass()));
   }
 
   virtual void OnDestroyed() MOJO_OVERRIDE { mojo::RunLoop::current()->Quit(); }
 
-  virtual void OnBoundsChanged(mojo::SizePtr bounds) MOJO_OVERRIDE {
-    assert(bounds);
+  virtual void OnSizeChanged(mojo::SizePtr size) MOJO_OVERRIDE {
+    assert(size);
     if (gles2_client_)
-      gles2_client_->SetSize(*bounds);
+      gles2_client_->SetSize(*size);
   }
 
   virtual void OnEvent(mojo::EventPtr event,
@@ -71,9 +64,21 @@ class SampleApp : public mojo::ApplicationDelegate,
   }
 
  private:
+  void OnCreatedNativeViewport(uint64_t native_viewport_id) {
+    mojo::SizePtr size = mojo::Size::New();
+    size->width = 800;
+    size->height = 600;
+    mojo::CommandBufferPtr command_buffer;
+    // TODO(jamesr): Output to a surface instead.
+    gpu_service_->CreateOnscreenGLES2Context(
+        native_viewport_id, size.Pass(), Get(&command_buffer));
+    gles2_client_.reset(new GLES2ClientImpl(command_buffer.Pass()));
+  }
+
   scoped_ptr<GLES2ClientImpl> gles2_client_;
   mojo::NativeViewportPtr viewport_;
   mojo::GpuPtr gpu_service_;
+  base::WeakPtrFactory<SampleApp> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleApp);
 };

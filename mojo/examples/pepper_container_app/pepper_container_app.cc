@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -29,9 +30,10 @@ class PepperContainerApp: public ApplicationDelegate,
                           public NativeViewportClient,
                           public MojoPpapiGlobals::Delegate {
  public:
-  explicit PepperContainerApp()
+  PepperContainerApp()
       : ppapi_globals_(this),
-        plugin_module_(new PluginModule) {}
+        plugin_module_(new PluginModule),
+        weak_factory_(this) {}
 
   virtual ~PepperContainerApp() {}
 
@@ -45,20 +47,13 @@ class PepperContainerApp: public ApplicationDelegate,
     SizePtr size(Size::New());
     size->width = 800;
     size->height = 600;
-    viewport_->Create(size.Pass());
+    viewport_->Create(size.Pass(),
+                      base::Bind(&PepperContainerApp::OnCreatedNativeViewport,
+                                 weak_factory_.GetWeakPtr()));
     viewport_->Show();
   }
 
   // NativeViewportClient implementation.
-  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {
-    native_viewport_id_ = native_viewport_id;
-    ppapi::ProxyAutoLock lock;
-
-    plugin_instance_ = plugin_module_->CreateInstance().Pass();
-    if (!plugin_instance_->DidCreate())
-      plugin_instance_.reset();
-  }
-
   virtual void OnDestroyed() OVERRIDE {
     ppapi::ProxyAutoLock lock;
 
@@ -70,11 +65,13 @@ class PepperContainerApp: public ApplicationDelegate,
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnBoundsChanged(SizePtr bounds) OVERRIDE {
+  virtual void OnSizeChanged(SizePtr size) OVERRIDE {
     ppapi::ProxyAutoLock lock;
 
-    if (plugin_instance_)
-      plugin_instance_->DidChangeView(bounds.To<PP_Rect>());
+    if (plugin_instance_) {
+      PP_Rect pp_rect = {{0, 0}, {size->width, size->height}};
+      plugin_instance_->DidChangeView(pp_rect);
+    }
   }
 
   virtual void OnEvent(EventPtr event,
@@ -100,6 +97,15 @@ class PepperContainerApp: public ApplicationDelegate,
   }
 
  private:
+  void OnCreatedNativeViewport(uint64_t native_viewport_id) {
+    native_viewport_id_ = native_viewport_id;
+    ppapi::ProxyAutoLock lock;
+
+    plugin_instance_ = plugin_module_->CreateInstance().Pass();
+    if (!plugin_instance_->DidCreate())
+      plugin_instance_.reset();
+  }
+
   MojoPpapiGlobals ppapi_globals_;
 
   uint64_t native_viewport_id_;
@@ -107,6 +113,8 @@ class PepperContainerApp: public ApplicationDelegate,
   GpuPtr gpu_service_;
   scoped_refptr<PluginModule> plugin_module_;
   scoped_ptr<PluginInstance> plugin_instance_;
+
+  base::WeakPtrFactory<PepperContainerApp> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperContainerApp);
 };

@@ -49,13 +49,13 @@ class MOJO_VIEW_MANAGER_EXPORT DisplayManager
   bool in_setup() const { return in_setup_; }
 
  private:
+  void OnCreatedNativeViewport(uint64_t native_viewport_id);
   void OnSurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
   void Draw();
 
   // NativeViewportClient implementation.
-  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
-  virtual void OnBoundsChanged(SizePtr bounds) OVERRIDE;
+  virtual void OnSizeChanged(SizePtr size) OVERRIDE;
   virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE;
 
@@ -67,7 +67,7 @@ class MOJO_VIEW_MANAGER_EXPORT DisplayManager
   // Returns true if adding the root view's window to |window_tree_host_|.
   bool in_setup_;
 
-  gfx::Size bounds_;
+  gfx::Size size_;
   gfx::Rect dirty_rect_;
   base::Timer draw_timer_;
 

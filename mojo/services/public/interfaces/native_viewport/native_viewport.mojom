@@ -11,17 +11,19 @@ module mojo {
 
 [Client=NativeViewportClient]
 interface NativeViewport {
-  Create(Size size);
+  // TODO(sky): having a create function is awkward. Should there be a factory
+  // to create the NativeViewport that takes the size?
+  // TODO(sky): callback should take size too.
+  Create(Size size) => (uint64 native_viewport_id);
   Show();
   Hide();
   Close();
-  SetBounds(Size size);
+  SetSize(Size size);
   SubmittedFrame(SurfaceId surface_id);
 };
 
 interface NativeViewportClient {
-  OnCreated(uint64 native_viewport_id);
-  OnBoundsChanged(Size size);
+  OnSizeChanged(Size size);
   OnDestroyed();
   OnEvent(Event event) => ();
 };
