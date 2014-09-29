@@ -78,10 +78,11 @@ crbug.com/403987 fast/dom/element-attribute-js-null.html [ Leak ]
 crbug.com/403363 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Leak ]
 crbug.com/405125 media/media-controls-clone-crash.html [ Leak Pass ]
 
-
 # leaks in newly added web-platform tests
 crbug.com/413731 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak Failure ]
 crbug.com/413731 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak Failure ]
 crbug.com/413731 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak Failure ]
 
 crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
+
+crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
