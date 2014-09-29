@@ -792,8 +792,6 @@ private:
     bool isUserActionElementHovered() const;
     bool isUserActionElementFocused() const;
 
-    void traceStyleChange(StyleChangeType);
-    void traceStyleChangeIfNeeded(StyleChangeType);
     void setStyleChange(StyleChangeType);
 
     virtual RenderStyle* nonRendererStyle() const { return 0; }

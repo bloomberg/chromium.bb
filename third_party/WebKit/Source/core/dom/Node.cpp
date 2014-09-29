@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"
 #include "core/XMLNames.h"
@@ -695,66 +694,6 @@ void Node::markAncestorsWithChildNeedsDistributionRecalc()
     document().scheduleRenderTreeUpdateIfNeeded();
 }
 
-namespace {
-
-void addJsStack(TracedValue* stackFrames)
-{
-    RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(10);
-    if (!stack)
-        return;
-    for (size_t i = 0; i < stack->size(); i++)
-        stackFrames->pushString(stack->at(i).functionName());
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForStyleInvalidation(unsigned nodeCount, const Node* rootNode)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    value->setInteger("node_count", nodeCount);
-    value->setString("root_node", rootNode->debugName());
-    value->beginArray("js_stack");
-    addJsStack(value.get());
-    value->endArray();
-    return value;
-}
-
-} // anonymous namespace'd functions supporting traceStyleChange
-
-unsigned Node::styledSubtreeSize() const
-{
-    unsigned nodeCount = 0;
-
-    for (const Node* node = this; node; node = NodeTraversal::next(*node, this)) {
-        if (node->isTextNode() || node->isElementNode())
-            nodeCount++;
-        for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
-            nodeCount += root->styledSubtreeSize();
-    }
-
-    return nodeCount;
-}
-
-void Node::traceStyleChange(StyleChangeType changeType)
-{
-    static const unsigned kMinLoggedSize = 100;
-    unsigned nodeCount = styledSubtreeSize();
-    if (nodeCount < kMinLoggedSize)
-        return;
-
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("style.debug"),
-        "Node::setNeedsStyleRecalc",
-        "data", jsonObjectForStyleInvalidation(nodeCount, this)
-    );
-}
-
-void Node::traceStyleChangeIfNeeded(StyleChangeType changeType)
-{
-    // TRACE_EVENT_CATEGORY_GROUP_ENABLED macro loads a global static bool into our local bool.
-    bool styleTracingEnabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("style.debug"), &styleTracingEnabled);
-    if (UNLIKELY(styleTracingEnabled))
-        traceStyleChange(changeType);
-}
-
 inline void Node::setStyleChange(StyleChangeType changeType)
 {
     m_nodeFlags = (m_nodeFlags & ~StyleChangeMask) | changeType;
@@ -774,11 +713,8 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReas
         return;
 
     StyleChangeType existingChangeType = styleChangeType();
-    if (changeType > existingChangeType) {
+    if (changeType > existingChangeType)
         setStyleChange(changeType);
-        if (changeType >= SubtreeStyleChange)
-            traceStyleChangeIfNeeded(changeType);
-    }
 
     if (existingChangeType == NoStyleChange)
         markAncestorsWithChildNeedsStyleRecalc();
