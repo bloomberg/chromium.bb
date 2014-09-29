@@ -29,7 +29,6 @@ using content::WebContents;
 namespace {
 
 const char kTestText[] = "abcd1234";
-const int kRequestId = 4;
 
 class MockLogReceiver : public password_manager::LogReceiver {
  public:
@@ -330,63 +329,4 @@ TEST_F(ChromePasswordManagerClientTest,
       GURL("https://other.site.com/ServiceLogin?continue="
            "https://passwords.google.com&rart=234"));
   EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
-}
-
-TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnNotifyFailedSignIn) {
-  scoped_ptr<TestChromePasswordManagerClient> client(
-      new TestChromePasswordManagerClient(web_contents()));
-
-  password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
-                                        base::ASCIIToUTF16("name"),
-                                        GURL("https://example.com/image.png"));
-  client->OnNotifyFailedSignIn(kRequestId, info);
-
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeFailedSignIn::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
-}
-
-TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnNotifySignedIn) {
-  scoped_ptr<TestChromePasswordManagerClient> client(
-      new TestChromePasswordManagerClient(web_contents()));
-
-  password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
-                                        base::ASCIIToUTF16("name"),
-                                        GURL("https://example.com/image.png"));
-  client->OnNotifySignedIn(kRequestId, info);
-
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
-}
-
-TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnNotifySignedOut) {
-  scoped_ptr<TestChromePasswordManagerClient> client(
-      new TestChromePasswordManagerClient(web_contents()));
-
-  client->OnNotifySignedOut(kRequestId);
-
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedOut::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
-}
-
-TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnRequestCredential) {
-  scoped_ptr<TestChromePasswordManagerClient> client(
-      new TestChromePasswordManagerClient(web_contents()));
-
-  std::vector<GURL> federations;
-  client->OnRequestCredential(kRequestId, false, federations);
-
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
 }

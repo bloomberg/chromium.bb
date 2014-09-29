@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "components/password_manager/content/browser/content_credential_manager_dispatcher.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -66,17 +67,6 @@ class ChromePasswordManagerClient
   virtual void OnLogRouterAvailabilityChanged(bool router_can_be_used) OVERRIDE;
   virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
   virtual bool IsLoggingActive() const OVERRIDE;
-  virtual void OnNotifyFailedSignIn(
-      int request_id,
-      const password_manager::CredentialInfo&) OVERRIDE;
-  virtual void OnNotifySignedIn(
-      int request_id,
-      const password_manager::CredentialInfo&) OVERRIDE;
-  virtual void OnNotifySignedOut(int request_id) OVERRIDE;
-  virtual void OnRequestCredential(
-      int request_id,
-      bool zero_click_only,
-      const std::vector<GURL>& federations) OVERRIDE;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();
@@ -160,6 +150,9 @@ class ChromePasswordManagerClient
   Profile* const profile_;
 
   password_manager::ContentPasswordManagerDriver driver_;
+
+  password_manager::ContentCredentialManagerDispatcher
+      credential_manager_dispatcher_;
 
   // Observer for password generation popup.
   autofill::PasswordGenerationPopupObserver* observer_;

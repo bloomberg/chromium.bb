@@ -456,6 +456,7 @@
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
                 'metrics/gpu/gpu_metrics_provider_unittest.cc',
+                'password_manager/content/browser/content_credential_manager_dispatcher_unittest.cc',
                 'power/origin_power_map_unittest.cc',
               ],
               'dependencies': [
@@ -474,6 +475,10 @@
 
                 # Dependencies of keyed_service
                 'components.gyp:keyed_service_content',
+
+                # Dependencies of password_manager
+                'components.gyp:password_manager_content_browser',
+                'components.gyp:password_manager_content_common',
 
                 # Dependencies of precache/content
                 'components.gyp:precache_content',

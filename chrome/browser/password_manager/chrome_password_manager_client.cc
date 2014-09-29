@@ -69,6 +69,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       driver_(web_contents, this, autofill_client),
+      credential_manager_dispatcher_(web_contents, this),
       observer_(NULL),
       can_use_log_router_(false),
       autofill_sync_state_(ALLOW_SYNC_CREDENTIALS),
@@ -295,46 +296,6 @@ bool ChromePasswordManagerClient::IsLoggingActive() const {
   return can_use_log_router_ && !web_contents()->GetWebUI();
 }
 
-void ChromePasswordManagerClient::OnNotifyFailedSignIn(
-    int request_id,
-    const password_manager::CredentialInfo&) {
-  // TODO(mkwst): This is a stub.
-  web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_AcknowledgeFailedSignIn(
-          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
-}
-
-void ChromePasswordManagerClient::OnNotifySignedIn(
-    int request_id,
-    const password_manager::CredentialInfo&) {
-  // TODO(mkwst): This is a stub.
-  web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_AcknowledgeSignedIn(
-          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
-}
-
-void ChromePasswordManagerClient::OnNotifySignedOut(int request_id) {
-  // TODO(mkwst): This is a stub.
-  web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_AcknowledgeSignedOut(
-          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
-}
-
-void ChromePasswordManagerClient::OnRequestCredential(
-    int request_id,
-    bool zero_click_only,
-    const std::vector<GURL>& federations) {
-  // TODO(mkwst): This is a stub.
-  password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
-                                        base::ASCIIToUTF16("name"),
-                                        GURL("https://example.com/image.png"));
-  web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_SendCredential(
-          web_contents()->GetRenderViewHost()->GetRoutingID(),
-          request_id,
-          info));
-}
-
 // static
 password_manager::PasswordGenerationManager*
 ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
@@ -375,16 +336,6 @@ bool ChromePasswordManagerClient::OnMessageReceived(
                         HidePasswordGenerationPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordAutofillAgentConstructed,
                         NotifyRendererOfLoggingAvailability)
-
-    // Credential Manager messages:
-    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifyFailedSignIn,
-                        OnNotifyFailedSignIn);
-    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifySignedIn,
-                        OnNotifySignedIn);
-    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifySignedOut,
-                        OnNotifySignedOut);
-    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_RequestCredential,
-                        OnRequestCredential);
 
     // Default:
     IPC_MESSAGE_UNHANDLED(handled = false)

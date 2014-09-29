@@ -25,6 +25,7 @@
         # Note: sources list duplicated in GN build.
         'password_manager/core/browser/browser_save_password_progress_logger.cc',
         'password_manager/core/browser/browser_save_password_progress_logger.h',
+        'password_manager/core/browser/credential_manager_dispatcher.h',
         'password_manager/core/browser/log_receiver.h',
         'password_manager/core/browser/log_router.cc',
         'password_manager/core/browser/log_router.h',
@@ -220,6 +221,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'password_manager/content/browser/content_credential_manager_dispatcher.cc',
+            'password_manager/content/browser/content_credential_manager_dispatcher.h',
             'password_manager/content/browser/content_password_manager_driver.cc',
             'password_manager/content/browser/content_password_manager_driver.h',
             'password_manager/content/browser/password_manager_internals_service_factory.cc',

@@ -17,6 +17,7 @@ static_library("browser") {
   sources = [
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
+    "credential_manager_dispatcher.h",
     "log_receiver.h",
     "log_router.cc",
     "log_router.h",

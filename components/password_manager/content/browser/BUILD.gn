@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "content_credential_manager_dispatcher.cc",
+    "content_credential_manager_dispatcher.h",
     "content_password_manager_driver.cc",
     "content_password_manager_driver.h",
     "password_manager_internals_service_factory.cc",
