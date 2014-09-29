@@ -331,6 +331,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.ContentTypeHandler,
       self.NoContentHandler,
       self.ServerRedirectHandler,
+      self.CrossSiteRedirectHandler,
       self.ClientRedirectHandler,
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
@@ -1408,6 +1409,36 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.sendRedirectHelp(test_name)
       return True
     dest = urllib.unquote(self.path[query_char + 1:])
+
+    self.send_response(301)  # moved permanently
+    self.send_header('Location', dest)
+    self.send_header('Content-Type', 'text/html')
+    self.end_headers()
+    self.wfile.write('<html><head>')
+    self.wfile.write('</head><body>Redirecting to %s</body></html>' % dest)
+
+    return True
+
+  def CrossSiteRedirectHandler(self):
+    """Sends a server redirect to the given site. The syntax is
+    '/cross-site/hostname/...' to redirect to //hostname/...
+    It is used to navigate between different Sites, causing
+    cross-site/cross-process navigations in the browser."""
+
+    test_name = "/cross-site"
+    if not self._ShouldHandleRequest(test_name):
+      print "CSRH: not handling request for " + test_name
+      return False
+
+    params = urllib.unquote(self.path[(len(test_name) + 1):])
+    slash = params.find('/')
+    if slash < 0:
+      self.sendRedirectHelp(test_name)
+      return True
+
+    host = params[:slash]
+    path = params[(slash+1):]
+    dest = "//%s:%s/%s" % (host, str(self.server.server_port), path)
 
     self.send_response(301)  # moved permanently
     self.send_header('Location', dest)
