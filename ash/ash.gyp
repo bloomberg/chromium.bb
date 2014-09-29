@@ -1274,4 +1274,24 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'ash_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'ash_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'ash_unittests.isolate',
+          ],
+          'sources': [
+            'ash_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }

@@ -1,0 +1,64 @@
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+  'conditions': [
+    ['OS=="win" or OS=="linux"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/ash_unittests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
+          '<(PRODUCT_DIR)/chrome_200_percent.pak',
+          '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/keyboard_resources.pak',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'command': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)',
+          '<(PRODUCT_DIR)/ash_unittests',
+          '--test-launcher-bot-mode',
+        ],
+        'isolate_dependency_tracked': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libosmesa.so',
+        ],
+      },
+    }],
+    ['OS=="linux" and use_ozone==0', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/ash_unittests.exe',
+          '--test-launcher-bot-mode',
+        ],
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/osmesa.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/ash_unittests.exe.pdb',
+        ],
+      },
+    }],
+  ],
+  'includes': [
+    '../base/base.isolate',
+  ],
+}

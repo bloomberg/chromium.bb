@@ -6,6 +6,20 @@
     "accessibility_unittests",
     "app_list_unittests",
     {
+      "test": "ash_unittests",
+      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"],
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
+    {
+      "test": "ash_unittests",
+      "platforms": ["win"],
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
+    {
       "test": "base_unittests",
       "swarming": {
         "can_use_on_swarming_builders": true
@@ -157,14 +171,6 @@
     {
       "test": "app_shell_browsertests",
       "platforms": ["linux"]
-    },
-    {
-      "test": "ash_unittests",
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
-    },
-    {
-      "test": "ash_unittests",
-      "platforms": ["win"]
     },
     {
       "test": "aura_unittests",
