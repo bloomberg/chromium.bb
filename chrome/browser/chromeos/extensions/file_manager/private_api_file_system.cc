@@ -222,14 +222,6 @@ FileManagerPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
   if (!extension.get())
     return false;
 
-  // Make sure that only component extension can access the entire
-  // local file system.
-  if (extension_->location() != extensions::Manifest::COMPONENT) {
-    NOTREACHED() << "Private method access by non-component extension "
-                 << extension->id();
-    return false;
-  }
-
   storage::ExternalFileSystemBackend* backend =
       file_system_context->external_backend();
   if (!backend)

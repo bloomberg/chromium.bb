@@ -7,6 +7,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/install_warning.h"
 
 using ::testing::_;
 using ::testing::ReturnRef;
@@ -257,4 +259,14 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/mount_test"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
+  EXPECT_TRUE(
+      RunExtensionTestIgnoreManifestWarnings("file_browser/permissions"));
+  const extensions::Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(1u, extension->install_warnings().size());
+  const extensions::InstallWarning& warning = extension->install_warnings()[0];
+  EXPECT_EQ("fileManagerPrivate", warning.key);
 }
