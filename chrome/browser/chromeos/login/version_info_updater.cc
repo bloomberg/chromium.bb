@@ -33,7 +33,10 @@ const char* kReportingFlags[] = {
   chromeos::kReportDeviceLocation,
 };
 
-}
+// Strings used to generate the serial number part of the version string.
+const char kSerialNumberPrefix[] = "SN:";
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // VersionInfoUpdater public:
@@ -92,12 +95,15 @@ void VersionInfoUpdater::UpdateVersionLabel() {
   if (version_text_.empty())
     return;
 
+  UpdateSerialNumberInfo();
+
   chrome::VersionInfo version_info;
   std::string label_text = l10n_util::GetStringFUTF8(
       IDS_LOGIN_VERSION_LABEL_FORMAT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       base::UTF8ToUTF16(version_info.Version()),
-      base::UTF8ToUTF16(version_text_));
+      base::UTF8ToUTF16(version_text_),
+      base::UTF8ToUTF16(serial_number_text_));
 
   // Workaround over incorrect width calculation in old fonts.
   // TODO(glotov): remove the following line when new fonts are used.
@@ -121,6 +127,14 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name) {
         IDS_DEVICE_OWNED_BY_NOTICE,
         base::UTF8ToUTF16(domain_name));
     delegate_->OnEnterpriseInfoUpdated(enterprise_info);
+  }
+}
+
+void VersionInfoUpdater::UpdateSerialNumberInfo() {
+  std::string sn = policy::DeviceCloudPolicyManagerChromeOS::GetMachineID();
+  if (!sn.empty()) {
+    serial_number_text_ = kSerialNumberPrefix;
+    serial_number_text_.append(sn);
   }
 }
 
