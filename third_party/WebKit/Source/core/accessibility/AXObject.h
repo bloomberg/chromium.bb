@@ -80,7 +80,6 @@ enum AccessibilityRole {
     ContentInfoRole,
     DefinitionRole,
     DescriptionListDetailRole,
-    DescriptionListRole,
     DescriptionListTermRole,
     DetailsRole,
     DialogRole,
