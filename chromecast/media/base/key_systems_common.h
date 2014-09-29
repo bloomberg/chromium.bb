@@ -10,7 +10,9 @@
 namespace chromecast {
 namespace media {
 
+#if defined(PLAYREADY_CDM_AVAILABLE)
 extern const char kChromecastPlayreadyKeySystem[];
+#endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
 enum CastKeySystem {
   KEY_SYSTEM_NONE = 0,
