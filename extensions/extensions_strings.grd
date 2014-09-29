@@ -323,6 +323,15 @@
       <message name="IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in a webview tag in the Task Manager">
         Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_SERIAL" desc="Permission string for accessing a USB device with a known vendor name, product name and serial number.">
+        <ph name="PRODUCT_NAME">$2<ex>Nexus 5</ex></ph> from <ph name="VENDOR_NAME">$1<ex>Google Inc.</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>ABCDEF123456</ex></ph>)
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PID_SERIAL" desc="Permission string for accessing a USB device with a known vendor name and serial number and a hexidecimal product ID.">
+        Product <ph name="PRODUCT_ID">$2<ex>0x1234</ex></ph> from <ph name="VENDOR_NAME">$1<ex>Google Inc.</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>ABCDEF123456</ex></ph>)
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_VID_PID_SERIAL" desc="Permission string for accessing a USB device with a known serial number and a hexidecimal vendor and product IDs.">
+        Product <ph name="PRODUCT_ID">$2<ex>0x5678</ex></ph> from Vendor <ph name="VENDOR_ID">$1<ex>0x1234</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>ABCDEF123456</ex></ph>)
+      </message>
 
       <!-- Global error messages for extensions. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_WARNINGS_NETWORK_DELAY" desc="Warning message indicating that an extension caused excessive network delays for web requests">

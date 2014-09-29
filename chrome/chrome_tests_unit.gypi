@@ -4,7 +4,6 @@
 {
   'variables': {
     'chrome_unit_tests_sources': [
-      '../apps/saved_devices_service_unittest.cc',
       '../apps/saved_files_service_unittest.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.h',
@@ -317,6 +316,7 @@
       'browser/extensions/api/declarative_content/chrome_content_rules_registry_unittest.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',
+      'browser/extensions/api/device_permissions_manager_unittest.cc',
       'browser/extensions/api/dial/dial_device_data_unittest.cc',
       'browser/extensions/api/dial/dial_registry_unittest.cc',
       'browser/extensions/api/dial/dial_service_unittest.cc',

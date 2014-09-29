@@ -9,7 +9,6 @@ include_rules = [
   "+components/sessions",
   "+components/user_manager",
   "+components/web_modal",
-  "+device/usb",
   "+extensions",
   "+net/base",
   "+skia/ext",

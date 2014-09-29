@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/saved_devices_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
@@ -10,19 +9,18 @@
 #include "chrome/test/base/testing_profile.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace apps {
+namespace extensions {
 
 namespace {
 
 using device::UsbDevice;
 using device::UsbDeviceHandle;
-using device::UsbEndpointDirection;
-using device::UsbTransferCallback;
 using testing::Return;
 
 class MockUsbDevice : public UsbDevice {
@@ -39,12 +37,12 @@ class MockUsbDevice : public UsbDevice {
   MOCK_METHOD1(GetManufacturer, bool(base::string16*));
   MOCK_METHOD1(GetProduct, bool(base::string16*));
 
-  bool GetSerialNumber(base::string16* serial) OVERRIDE {
+  virtual bool GetSerialNumber(base::string16* serial_number) OVERRIDE {
     if (serial_number_.empty()) {
       return false;
     }
 
-    *serial = base::UTF8ToUTF16(serial_number_);
+    *serial_number = base::UTF8ToUTF16(serial_number_);
     return true;
   }
 
@@ -55,9 +53,10 @@ class MockUsbDevice : public UsbDevice {
 
   const std::string serial_number_;
 };
-}
 
-class SavedDevicesServiceTest : public testing::Test {
+}  // namespace
+
+class DevicePermissionsManagerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
@@ -73,7 +72,6 @@ class SavedDevicesServiceTest : public testing::Test {
                                         "    \"usb\""
                                         "  ]"
                                         "}"));
-    service_ = SavedDevicesService::Get(env_.profile());
     device0 = new MockUsbDevice("ABCDE", 0);
     device1 = new MockUsbDevice("", 1);
     device2 = new MockUsbDevice("12345", 2);
@@ -82,53 +80,49 @@ class SavedDevicesServiceTest : public testing::Test {
 
   extensions::TestExtensionEnvironment env_;
   const extensions::Extension* extension_;
-  SavedDevicesService* service_;
   scoped_refptr<MockUsbDevice> device0;
   scoped_refptr<MockUsbDevice> device1;
   scoped_refptr<MockUsbDevice> device2;
   scoped_refptr<MockUsbDevice> device3;
 };
 
-TEST_F(SavedDevicesServiceTest, RegisterDevices) {
-  SavedDevicesService::SavedDevices* saved_devices =
-      service_->GetOrInsert(extension_->id());
+TEST_F(DevicePermissionsManagerTest, RegisterDevices) {
+  DevicePermissionsManager* manager =
+      DevicePermissionsManager::Get(env_.profile());
+  manager->AllowUsbDevice(
+      extension_->id(), device0, base::ASCIIToUTF16("ABCDE"));
+  manager->AllowUsbDevice(extension_->id(), device1, base::string16());
 
-  base::string16 serial_number(base::ASCIIToUTF16("ABCDE"));
-  saved_devices->RegisterDevice(device0, &serial_number);
-  saved_devices->RegisterDevice(device1, NULL);
+  scoped_ptr<DevicePermissions> device_permissions =
+      manager->GetForExtension(extension_->id());
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
 
-  // This is necessary as writing out registered devices happens in a task on
-  // the UI thread.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-
-  ASSERT_TRUE(saved_devices->IsRegistered(device0));
-  ASSERT_TRUE(saved_devices->IsRegistered(device1));
-  ASSERT_FALSE(saved_devices->IsRegistered(device2));
-  ASSERT_FALSE(saved_devices->IsRegistered(device3));
-
-  std::vector<SavedDeviceEntry> device_entries =
-      service_->GetAllDevices(extension_->id());
-  ASSERT_EQ(1U, device_entries.size());
-  ASSERT_EQ(base::ASCIIToUTF16("ABCDE"), device_entries[0].serial_number);
+  std::vector<base::string16> device_messages =
+      manager->GetPermissionMessageStrings(extension_->id());
+  ASSERT_EQ(1U, device_messages.size());
+  ASSERT_NE(device_messages[0].find(base::ASCIIToUTF16("ABCDE")),
+            base::string16::npos);
 
   device1->NotifyDisconnect();
 
-  ASSERT_TRUE(saved_devices->IsRegistered(device0));
-  ASSERT_FALSE(saved_devices->IsRegistered(device1));
-  ASSERT_FALSE(saved_devices->IsRegistered(device2));
-  ASSERT_FALSE(saved_devices->IsRegistered(device3));
+  device_permissions = manager->GetForExtension(extension_->id());
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
 
-  service_->Clear(extension_->id());
+  manager->Clear(extension_->id());
 
-  // App is normally restarted, clearing its reference to the SavedDevices.
-  saved_devices = service_->GetOrInsert(extension_->id());
-  ASSERT_FALSE(saved_devices->IsRegistered(device0));
-  device_entries = service_->GetAllDevices(extension_->id());
-  ASSERT_EQ(0U, device_entries.size());
+  device_permissions = manager->GetForExtension(extension_->id());
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device0));
+  device_messages = manager->GetPermissionMessageStrings(extension_->id());
+  ASSERT_EQ(0U, device_messages.size());
 }
 
-TEST_F(SavedDevicesServiceTest, LoadPrefs) {
+TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
   scoped_ptr<base::Value> prefs_value = base::test::ParseJson(
       "["
       "  {"
@@ -141,12 +135,14 @@ TEST_F(SavedDevicesServiceTest, LoadPrefs) {
   env_.GetExtensionPrefs()->UpdateExtensionPref(
       extension_->id(), "devices", prefs_value.release());
 
-  SavedDevicesService::SavedDevices* saved_devices =
-      service_->GetOrInsert(extension_->id());
-  ASSERT_TRUE(saved_devices->IsRegistered(device0));
-  ASSERT_FALSE(saved_devices->IsRegistered(device1));
-  ASSERT_FALSE(saved_devices->IsRegistered(device2));
-  ASSERT_FALSE(saved_devices->IsRegistered(device3));
+  DevicePermissionsManager* manager =
+      DevicePermissionsManager::Get(env_.profile());
+  scoped_ptr<DevicePermissions> device_permissions =
+      manager->GetForExtension(extension_->id());
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
 }
 
-}  // namespace apps
+}  // namespace extensions
