@@ -47,15 +47,15 @@ void IncomingConnectionListenerPosix::StartListening() {
   DCHECK(listen_thread_checker_.CalledOnValidThread());
 
   int rv = net::OK;
-  if (base::PathExists(socket_path_)) {
-    LOG(ERROR) << "Listening socket file already exists.";
-    rv = net::ERR_FILE_EXISTS;
-  } else if (!base::DirectoryExists(socket_path_.DirName())) {
+  if (!base::DirectoryExists(socket_path_.DirName())) {
     LOG(ERROR) << "Directorty for listening socket does not exist.";
     rv = net::ERR_FILE_NOT_FOUND;
   } else if (!base::PathIsWritable(socket_path_.DirName())) {
     LOG(ERROR) << "Listening socket file path is not writable.";
     rv = net::ERR_ACCESS_DENIED;
+  } else if (!base::DeleteFile(socket_path_, false)) {
+    PLOG(ERROR) << "Listening socket file exists and can't be deleted";
+    rv = net::ERR_FILE_EXISTS;
   } else {
     const std::string& socket_address = socket_path_.value();
     rv = listen_socket_.ListenWithAddressAndPort(socket_address, 0, 100);
