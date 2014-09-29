@@ -115,7 +115,7 @@ interface InspectorInstrumentation {
     [CSS, Inline=FastReturn]
     void activeStyleSheetsUpdated([Keep] Document*);
 
-    [Console, PageRuntime]
+    [PageRuntime]
     void frameWindowDiscarded(LocalFrame*, LocalDOMWindow* domWindow);
 
     [CSS, Inline=FastReturn]
@@ -304,7 +304,7 @@ interface InspectorInstrumentation {
     [Resource]
     void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
-    [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
+    [Timeline, Resource]
     void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
 
     [Resource]

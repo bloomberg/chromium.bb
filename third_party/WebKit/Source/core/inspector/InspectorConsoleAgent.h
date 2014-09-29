@@ -69,7 +69,6 @@ public:
     virtual ~InspectorConsoleAgent();
     virtual void trace(Visitor*) OVERRIDE;
 
-    virtual void init() OVERRIDE;
     virtual void enable(ErrorString*) OVERRIDE FINAL;
     virtual void disable(ErrorString*) OVERRIDE FINAL;
     virtual void clearMessages(ErrorString*) OVERRIDE;
@@ -86,11 +85,9 @@ public:
     void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
     void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
-    void frameWindowDiscarded(LocalDOMWindow*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 
     void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url, const String& sendURL, unsigned sendLineNumber);
-    void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
     void addProfileFinishedMessageToConsole(PassRefPtrWillBeRawPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
     virtual void setMonitoringXHREnabled(ErrorString*, bool enabled) OVERRIDE;

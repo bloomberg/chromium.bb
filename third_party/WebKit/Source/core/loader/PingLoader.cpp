@@ -35,6 +35,7 @@
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -166,7 +167,7 @@ void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLRes
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         const ResourceResponse& resourceResponse = response.toResourceResponse();
         InspectorInstrumentation::didReceiveResourceResponse(page->deprecatedLocalMainFrame(), m_identifier, 0, resourceResponse, 0);
-        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        didFailLoading(page);
     }
     delete this;
 }
@@ -175,7 +176,7 @@ void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        didFailLoading(page);
     }
     delete this;
 }
@@ -184,7 +185,7 @@ void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        didFailLoading(page);
     }
     delete this;
 }
@@ -193,7 +194,7 @@ void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourc
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError(resourceError));
+        didFailLoading(page);
     }
     delete this;
 }
@@ -202,9 +203,17 @@ void PingLoader::timeout(Timer<PingLoader>*)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        didFailLoading(page);
     }
     delete this;
+}
+
+void PingLoader::didFailLoading(Page* page)
+{
+    LocalFrame* frame = page->deprecatedLocalMainFrame();
+    InspectorInstrumentation::didFailLoading(frame, m_identifier, ResourceError::cancelledError(m_url));
+    // Notification to FrameConsole should come AFTER Resource Agent notification, front-end relies on this.
+    frame->console().didFailLoading(m_identifier, ResourceError::cancelledError(m_url));
 }
 
 }

@@ -40,6 +40,7 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class DocumentLoader;
+class ResourceError;
 class ResourceResponse;
 class ScriptCallStack;
 class WorkerGlobalScopeProxy;
@@ -66,6 +67,8 @@ public:
 
     ConsoleMessageStorage* messageStorage();
     void clearMessages();
+
+    void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
 
     void trace(Visitor*);
 

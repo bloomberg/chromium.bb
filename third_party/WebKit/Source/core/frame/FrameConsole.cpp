@@ -40,6 +40,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
+#include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -183,6 +184,21 @@ void FrameConsole::clearMessages()
 void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* proxy)
 {
     messageStorage()->adoptWorkerMessagesAfterTermination(proxy);
+}
+
+void FrameConsole::didFailLoading(unsigned long requestIdentifier, const ResourceError& error)
+{
+    if (error.isCancellation()) // Report failures only.
+        return;
+    StringBuilder message;
+    message.appendLiteral("Failed to load resource");
+    if (!error.localizedDescription().isEmpty()) {
+        message.appendLiteral(": ");
+        message.append(error.localizedDescription());
+    }
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
+    consoleMessage->setRequestIdentifier(requestIdentifier);
+    messageStorage()->reportMessage(consoleMessage.release());
 }
 
 void FrameConsole::trace(Visitor* visitor)

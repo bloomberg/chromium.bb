@@ -176,6 +176,7 @@ void PageRuntimeAgent::frameWindowDiscarded(LocalDOMWindow* window)
         }
     }
     m_scriptStateToId.removeAll(scriptStatesToRemove);
+    injectedScriptManager()->discardInjectedScriptsFor(window);
 }
 
 } // namespace blink

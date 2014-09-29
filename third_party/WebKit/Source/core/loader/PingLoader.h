@@ -83,6 +83,8 @@ private:
 
     void timeout(Timer<PingLoader>*);
 
+    void didFailLoading(Page*);
+
     OwnPtr<blink::WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;
     String m_url;
