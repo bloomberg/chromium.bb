@@ -20,15 +20,15 @@
  *
  */
 
-#ifndef WidthIterator_h
-#define WidthIterator_h
+#ifndef SimpleShaper_h
+#define SimpleShaper_h
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/SVGGlyph.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
-#include "wtf/unicode/Unicode.h"
 #include "wtf/Vector.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace blink {
 
@@ -38,10 +38,10 @@ class SimpleFontData;
 class TextRun;
 struct GlyphData;
 
-struct PLATFORM_EXPORT WidthIterator {
+struct PLATFORM_EXPORT SimpleShaper {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    WidthIterator(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, bool accountForGlyphBounds = false, bool forTextEmphasis = false);
+    SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, bool accountForGlyphBounds = false, bool forTextEmphasis = false);
 
     unsigned advance(int to, GlyphBuffer* = 0);
     bool advanceOneCharacter(float& width);

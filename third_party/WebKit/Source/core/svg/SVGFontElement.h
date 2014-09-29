@@ -63,7 +63,7 @@ public:
     float horizontalKerningForPairOfGlyphs(Glyph, Glyph) const;
     float verticalKerningForPairOfGlyphs(Glyph, Glyph) const;
 
-    // Used by SimpleFontData/WidthIterator.
+    // Used by SimpleFontData/SimpleShaper.
     SVGGlyph svgGlyphForGlyph(Glyph);
     Glyph missingGlyph();
 

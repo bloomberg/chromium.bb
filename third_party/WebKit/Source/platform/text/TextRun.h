@@ -40,7 +40,7 @@ class GraphicsContext;
 class GlyphBuffer;
 class SimpleFontData;
 struct GlyphData;
-struct WidthIterator;
+struct SimpleShaper;
 
 class PLATFORM_EXPORT TextRun {
     WTF_MAKE_FAST_ALLOCATED;
@@ -207,7 +207,7 @@ public:
     public:
         virtual ~RenderingContext() { }
 
-        virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, WidthIterator&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) = 0;
+        virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) = 0;
         virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const = 0;
         virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const = 0;
     };

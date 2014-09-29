@@ -50,7 +50,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/WidthIterator.h"
+#include "platform/fonts/SimpleShaper.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -1238,13 +1238,13 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const
     TextRun textRun = constructTextRun(styleToUse, font);
 
     GlyphBuffer glyphBuffer;
-    WidthIterator it(&font, textRun);
+    SimpleShaper shaper(&font, textRun);
     float lastWidth = 0;
     widths.resize(m_len);
     for (unsigned i = 0; i < m_len; i++) {
-        it.advance(i + 1, &glyphBuffer);
-        widths[i] = it.m_runWidthSoFar - lastWidth;
-        lastWidth = it.m_runWidthSoFar;
+        shaper.advance(i + 1, &glyphBuffer);
+        widths[i] = shaper.m_runWidthSoFar - lastWidth;
+        lastWidth = shaper.m_runWidthSoFar;
     }
 }
 

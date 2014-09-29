@@ -165,7 +165,7 @@ private:
     PassTextBlobPtr buildTextBlobForSimpleText(const TextRunPaintInfo&, const FloatPoint& textOrigin, bool couldUseLCDRenderedText) const;
     PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds, float& advance, bool couldUseLCD) const;
 
-    friend struct WidthIterator;
+    friend struct SimpleShaper;
     friend class SVGTextRunRenderingContext;
 
 public:

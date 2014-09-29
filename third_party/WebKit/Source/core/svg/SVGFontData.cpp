@@ -33,7 +33,7 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/SVGGlyph.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/WidthIterator.h"
+#include "platform/fonts/SimpleShaper.h"
 #include "platform/text/TextRun.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -147,10 +147,10 @@ float SVGFontData::widthForSVGGlyph(Glyph glyph, float fontSize) const
     return svgGlyph.horizontalAdvanceX * scaleEmToUnits(fontSize, svgFontFaceElement->unitsPerEm());
 }
 
-bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& glyphData, bool mirror, int currentCharacter, unsigned& advanceLength) const
+bool SVGFontData::applySVGGlyphSelection(SimpleShaper& shaper, GlyphData& glyphData, bool mirror, int currentCharacter, unsigned& advanceLength) const
 {
-    const TextRun& run = iterator.run();
-    Vector<SVGGlyph::ArabicForm>& arabicForms = iterator.arabicForms();
+    const TextRun& run = shaper.run();
+    Vector<SVGGlyph::ArabicForm>& arabicForms = shaper.arabicForms();
     ASSERT(int(run.charactersLength()) >= currentCharacter);
 
     // Associate text with arabic forms, if needed.
@@ -260,7 +260,7 @@ bool SVGFontData::fillBMPGlyphs(SVGFontElement* fontElement, GlyphPage* pageToFi
             continue;
 
         // Associate entry in glyph page with first valid SVGGlyph.
-        // If there are multiple valid ones, just take the first one. WidthIterator will take
+        // If there are multiple valid ones, just take the first one. SimpleShaper will take
         // care of matching to the correct glyph, if multiple ones are available, as that's
         // only possible within the context of a string (eg. arabic form matching).
         haveGlyphs = true;
@@ -283,7 +283,7 @@ bool SVGFontData::fillNonBMPGlyphs(SVGFontElement* fontElement, GlyphPage* pageT
             continue;
 
         // Associate entry in glyph page with first valid SVGGlyph.
-        // If there are multiple valid ones, just take the first one. WidthIterator will take
+        // If there are multiple valid ones, just take the first one. SimpleShaper will take
         // care of matching to the correct glyph, if multiple ones are available, as that's
         // only possible within the context of a string (eg. arabic form matching).
         haveGlyphs = true;

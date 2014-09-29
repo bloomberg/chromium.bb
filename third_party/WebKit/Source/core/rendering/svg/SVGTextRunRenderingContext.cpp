@@ -32,7 +32,7 @@
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGGlyphElement.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/WidthIterator.h"
+#include "platform/fonts/SimpleShaper.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -72,7 +72,7 @@ static inline RenderObject* renderObjectFromRun(const TextRun& run)
 
 float SVGTextRunRenderingContext::floatWidthUsingSVGFont(const Font& font, const TextRun& run, int& charsConsumed, Glyph& glyphId) const
 {
-    WidthIterator it(&font, run);
+    SimpleShaper it(&font, run);
     GlyphBuffer glyphBuffer;
     charsConsumed += it.advance(run.length(), &glyphBuffer);
     glyphId = !glyphBuffer.isEmpty() ? glyphBuffer.glyphAt(0) : 0;
@@ -150,7 +150,7 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
     }
 }
 
-GlyphData SVGTextRunRenderingContext::glyphDataForCharacter(const Font& font, const TextRun& run, WidthIterator& iterator, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength)
+GlyphData SVGTextRunRenderingContext::glyphDataForCharacter(const Font& font, const TextRun& run, SimpleShaper& iterator, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength)
 {
     const SimpleFontData* primaryFont = font.primaryFont();
     ASSERT(primaryFont);

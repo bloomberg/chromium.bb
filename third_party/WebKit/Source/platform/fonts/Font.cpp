@@ -33,7 +33,7 @@
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/WidthIterator.h"
+#include "platform/fonts/SimpleShaper.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/text/TextRun.h"
@@ -662,19 +662,19 @@ float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, G
 {
     float initialAdvance;
 
-    WidthIterator it(this, runInfo.run, 0, false, forTextEmphasis);
-    it.advance(runInfo.from);
-    float beforeWidth = it.m_runWidthSoFar;
-    it.advance(runInfo.to, &glyphBuffer);
+    SimpleShaper shaper(this, runInfo.run, 0, false, forTextEmphasis);
+    shaper.advance(runInfo.from);
+    float beforeWidth = shaper.m_runWidthSoFar;
+    shaper.advance(runInfo.to, &glyphBuffer);
 
     if (glyphBuffer.isEmpty())
         return 0;
 
-    float afterWidth = it.m_runWidthSoFar;
+    float afterWidth = shaper.m_runWidthSoFar;
 
     if (runInfo.run.rtl()) {
-        it.advance(runInfo.run.length());
-        initialAdvance = it.m_runWidthSoFar - afterWidth;
+        shaper.advance(runInfo.run.length());
+        initialAdvance = shaper.m_runWidthSoFar - afterWidth;
         glyphBuffer.reverse();
     } else {
         initialAdvance = beforeWidth;
@@ -817,17 +817,17 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
 {
-    WidthIterator it(this, run, fallbackFonts, glyphBounds);
-    it.advance(run.length());
+    SimpleShaper shaper(this, run, fallbackFonts, glyphBounds);
+    shaper.advance(run.length());
 
     if (glyphBounds) {
-        glyphBounds->setTop(floorf(-it.minGlyphBoundingBoxY()));
-        glyphBounds->setBottom(ceilf(it.maxGlyphBoundingBoxY()));
-        glyphBounds->setLeft(floorf(it.firstGlyphOverflow()));
-        glyphBounds->setRight(ceilf(it.lastGlyphOverflow()));
+        glyphBounds->setTop(floorf(-shaper.minGlyphBoundingBoxY()));
+        glyphBounds->setBottom(ceilf(shaper.maxGlyphBoundingBoxY()));
+        glyphBounds->setLeft(floorf(shaper.firstGlyphOverflow()));
+        glyphBounds->setRight(ceilf(shaper.lastGlyphOverflow()));
     }
 
-    return it.m_runWidthSoFar;
+    return shaper.m_runWidthSoFar;
 }
 
 FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float height)
@@ -840,15 +840,15 @@ FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float
 
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
-    WidthIterator it(this, run, 0, accountForGlyphBounds);
-    it.advance(from);
-    float fromX = it.m_runWidthSoFar;
-    it.advance(to);
-    float toX = it.m_runWidthSoFar;
+    SimpleShaper shaper(this, run, 0, accountForGlyphBounds);
+    shaper.advance(from);
+    float fromX = shaper.m_runWidthSoFar;
+    shaper.advance(to);
+    float toX = shaper.m_runWidthSoFar;
 
     if (run.rtl()) {
-        it.advance(run.length());
-        float totalWidth = it.m_runWidthSoFar;
+        shaper.advance(run.length());
+        float totalWidth = shaper.m_runWidthSoFar;
         float beforeWidth = fromX;
         float afterWidth = toX;
         fromX = totalWidth - afterWidth;
@@ -856,22 +856,22 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
     }
 
     return pixelSnappedSelectionRect(point.x() + fromX, point.x() + toX,
-        accountForGlyphBounds ? it.minGlyphBoundingBoxY() : point.y(),
-        accountForGlyphBounds ? it.maxGlyphBoundingBoxY() - it.minGlyphBoundingBoxY() : h);
+        accountForGlyphBounds ? shaper.minGlyphBoundingBoxY() : point.y(),
+        accountForGlyphBounds ? shaper.maxGlyphBoundingBoxY() - shaper.minGlyphBoundingBoxY() : h);
 }
 
 int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool includePartialGlyphs) const
 {
     float delta = x;
 
-    WidthIterator it(this, run);
+    SimpleShaper shaper(this, run);
     unsigned offset;
     if (run.rtl()) {
         delta -= floatWidthForSimpleText(run);
         while (1) {
-            offset = it.m_currentCharacter;
+            offset = shaper.m_currentCharacter;
             float w;
-            if (!it.advanceOneCharacter(w))
+            if (!shaper.advanceOneCharacter(w))
                 break;
             delta += w;
             if (includePartialGlyphs) {
@@ -884,9 +884,9 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
         }
     } else {
         while (1) {
-            offset = it.m_currentCharacter;
+            offset = shaper.m_currentCharacter;
             float w;
-            if (!it.advanceOneCharacter(w))
+            if (!shaper.advanceOneCharacter(w))
                 break;
             delta -= w;
             if (includePartialGlyphs) {

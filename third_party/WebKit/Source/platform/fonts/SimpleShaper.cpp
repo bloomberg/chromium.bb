@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "platform/fonts/WidthIterator.h"
+#include "platform/fonts/SimpleShaper.h"
 
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
@@ -37,7 +37,7 @@ using namespace Unicode;
 
 namespace blink {
 
-WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, bool accountForGlyphBounds, bool forTextEmphasis)
+SimpleShaper::SimpleShaper(const Font* font, const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, bool accountForGlyphBounds, bool forTextEmphasis)
     : m_font(font)
     , m_run(run)
     , m_currentCharacter(0)
@@ -54,9 +54,9 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     // If the padding is non-zero, count the number of spaces in the run
     // and divide that by the padding for per space addition.
     m_expansion = m_run.expansion();
-    if (!m_expansion)
+    if (!m_expansion) {
         m_expansionPerOpportunity = 0;
-    else {
+    } else {
         bool isAfterExpansion = m_isAfterExpansion;
         unsigned expansionOpportunityCount = m_run.is8Bit() ? Character::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.direction(), isAfterExpansion) : Character::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.direction(), isAfterExpansion);
         if (isAfterExpansion && !m_run.allowsTrailingExpansion())
@@ -69,7 +69,7 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     }
 }
 
-GlyphData WidthIterator::glyphDataForCharacter(CharacterData& charData, bool normalizeSpace)
+GlyphData SimpleShaper::glyphDataForCharacter(CharacterData& charData, bool normalizeSpace)
 {
     ASSERT(m_font);
 
@@ -83,7 +83,7 @@ GlyphData WidthIterator::glyphDataForCharacter(CharacterData& charData, bool nor
     return m_font->glyphDataForCharacter(charData.character, m_run.rtl(), normalizeSpace);
 }
 
-float WidthIterator::characterWidth(UChar32 character, const GlyphData& glyphData) const
+float SimpleShaper::characterWidth(UChar32 character, const GlyphData& glyphData) const
 {
     const SimpleFontData* fontData = glyphData.fontData;
     ASSERT(fontData);
@@ -100,7 +100,7 @@ float WidthIterator::characterWidth(UChar32 character, const GlyphData& glyphDat
     return width;
 }
 
-void WidthIterator::cacheFallbackFont(const SimpleFontData* fontData,
+void SimpleShaper::cacheFallbackFont(const SimpleFontData* fontData,
     const SimpleFontData* primaryFont)
 {
     if (fontData == primaryFont)
@@ -109,7 +109,7 @@ void WidthIterator::cacheFallbackFont(const SimpleFontData* fontData,
     m_fallbackFonts->add(fontData);
 }
 
-float WidthIterator::adjustSpacing(float width, const CharacterData& charData,
+float SimpleShaper::adjustSpacing(float width, const CharacterData& charData,
     const SimpleFontData& fontData, GlyphBuffer* glyphBuffer)
 {
     // Account for letter-spacing.
@@ -162,7 +162,7 @@ float WidthIterator::adjustSpacing(float width, const CharacterData& charData,
     return width;
 }
 
-void WidthIterator::updateGlyphBounds(const GlyphData& glyphData, float width, bool firstCharacter)
+void SimpleShaper::updateGlyphBounds(const GlyphData& glyphData, float width, bool firstCharacter)
 {
     ASSERT(glyphData.fontData);
     FloatRect bounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
@@ -175,7 +175,7 @@ void WidthIterator::updateGlyphBounds(const GlyphData& glyphData, float width, b
 }
 
 template <typename TextIterator>
-unsigned WidthIterator::advanceInternal(TextIterator& textIterator, GlyphBuffer* glyphBuffer)
+unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* glyphBuffer)
 {
     bool hasExtraSpacing = (m_font->fontDescription().letterSpacing() || m_font->fontDescription().wordSpacing() || m_expansion)
         && !m_run.spacingDisabled();
@@ -233,7 +233,7 @@ unsigned WidthIterator::advanceInternal(TextIterator& textIterator, GlyphBuffer*
     return consumedCharacters;
 }
 
-unsigned WidthIterator::advance(int offset, GlyphBuffer* glyphBuffer)
+unsigned SimpleShaper::advance(int offset, GlyphBuffer* glyphBuffer)
 {
     int length = m_run.length();
 
@@ -252,7 +252,7 @@ unsigned WidthIterator::advance(int offset, GlyphBuffer* glyphBuffer)
     return advanceInternal(textIterator, glyphBuffer);
 }
 
-bool WidthIterator::advanceOneCharacter(float& width)
+bool SimpleShaper::advanceOneCharacter(float& width)
 {
     float initialWidth = m_runWidthSoFar;
 

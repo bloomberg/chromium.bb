@@ -68,7 +68,7 @@
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/WidthIterator.h"
+#include "platform/fonts/SimpleShaper.h"
 #include "platform/text/TextRun.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
@@ -752,9 +752,9 @@ void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, Ha
         RenderStyle* style = renderer->style(box->isFirstLineStyle());
         const Font& font = style->font();
         TextRun run = box->constructTextRunForInspector(style, font);
-        WidthIterator it(&font, run, 0, false);
+        SimpleShaper shaper(&font, run, 0, false);
         GlyphBuffer glyphBuffer;
-        it.advance(run.length(), &glyphBuffer);
+        shaper.advance(run.length(), &glyphBuffer);
         for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
             String familyName = glyphBuffer.fontDataAt(i)->platformData().fontFamilyName();
             if (familyName.isNull())
