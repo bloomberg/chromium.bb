@@ -230,6 +230,26 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
   }
 }
 
+bool ExtensionActionAPI::ExtensionWantsToRun(
+    const Extension* extension, content::WebContents* web_contents) {
+  // An extension wants to act if it has a visible page action on the given
+  // page...
+  ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser_context_)->GetPageAction(*extension);
+  if (page_action &&
+      page_action->GetIsVisible(SessionTabHelper::IdForTab(web_contents)))
+    return true;
+
+  // ... Or if it has pending scripts that need approval for execution.
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents);
+  if (active_script_controller &&
+      active_script_controller->WantsToRun(extension))
+    return true;
+
+  return false;
+}
+
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
                                       content::WebContents* web_contents,
                                       content::BrowserContext* context) {
@@ -255,9 +275,7 @@ void ExtensionActionAPI::ClearAllValuesForTab(
   for (ExtensionSet::const_iterator iter = enabled_extensions.begin();
        iter != enabled_extensions.end(); ++iter) {
     ExtensionAction* extension_action =
-        action_manager->GetBrowserAction(*iter->get());
-    if (!extension_action)
-      extension_action = action_manager->GetPageAction(*iter->get());
+        action_manager->GetExtensionAction(**iter);
     if (extension_action) {
       extension_action->ClearAllValuesForTab(tab_id);
       NotifyChange(extension_action, web_contents, browser_context);

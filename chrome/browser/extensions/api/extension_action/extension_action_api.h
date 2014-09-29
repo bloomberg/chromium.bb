@@ -91,6 +91,11 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                 Browser* browser,
                                 bool grant_active_tab_permissions);
 
+  // Returns true if the given |extension| wants to run on the tab pointed to
+  // by |web_contents|.
+  bool ExtensionWantsToRun(const Extension* extension,
+                           content::WebContents* web_contents);
+
   // Notifies that there has been a change in the given |extension_action|.
   void NotifyChange(ExtensionAction* extension_action,
                     content::WebContents* web_contents,

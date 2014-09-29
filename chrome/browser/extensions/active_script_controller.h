@@ -19,6 +19,7 @@
 #include "extensions/common/user_script.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -108,6 +109,10 @@ class ActiveScriptController : public content::WebContentsObserver,
   // Grants permission for the given request to run.
   void PermitScriptInjection(int64 request_id);
 
+  // Notifies the ExtensionActionAPI of a change (either that an extension now
+  // wants permission to run, or that it has been run).
+  void NotifyChange(const Extension* extension);
+
   // Log metrics.
   void LogUMA() const;
 
@@ -122,6 +127,9 @@ class ActiveScriptController : public content::WebContentsObserver,
       content::BrowserContext* browser_context,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
+  // The associated browser context.
+  content::BrowserContext* browser_context_;
 
   // Whether or not the ActiveScriptController is enabled (corresponding to the
   // kActiveScriptEnforcement switch). If it is not, it acts as an empty shell,
