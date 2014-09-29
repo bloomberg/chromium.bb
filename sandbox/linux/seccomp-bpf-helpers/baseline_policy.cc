@@ -234,16 +234,15 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 
 // Unfortunately C++03 doesn't allow delegated constructors.
 // Call other constructor when C++11 lands.
-BaselinePolicy::BaselinePolicy()
-    : fs_denied_errno_(EPERM), current_pid_(syscall(__NR_getpid)) {}
+BaselinePolicy::BaselinePolicy() : BaselinePolicy(EPERM) {}
 
 BaselinePolicy::BaselinePolicy(int fs_denied_errno)
-    : fs_denied_errno_(fs_denied_errno), current_pid_(syscall(__NR_getpid)) {}
+    : fs_denied_errno_(fs_denied_errno), policy_pid_(syscall(__NR_getpid)) {}
 
 BaselinePolicy::~BaselinePolicy() {
   // Make sure that this policy is created, used and destroyed by a single
   // process.
-  DCHECK_EQ(syscall(__NR_getpid), current_pid_);
+  DCHECK_EQ(syscall(__NR_getpid), policy_pid_);
 }
 
 ResultExpr BaselinePolicy::EvaluateSyscall(int sysno) const {
@@ -251,9 +250,9 @@ ResultExpr BaselinePolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   // Make sure that this policy is used in the creating process.
   if (1 == sysno) {
-    DCHECK_EQ(syscall(__NR_getpid), current_pid_);
+    DCHECK_EQ(syscall(__NR_getpid), policy_pid_);
   }
-  return EvaluateSyscallImpl(fs_denied_errno_, current_pid_, sysno);
+  return EvaluateSyscallImpl(fs_denied_errno_, policy_pid_, sysno);
 }
 
 ResultExpr BaselinePolicy::InvalidSyscall() const {

@@ -31,12 +31,13 @@ ResultExpr PpapiProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
+    case __NR_times:
+      return Allow();
     case __NR_sched_getaffinity:
     case __NR_sched_getparam:
     case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:
-    case __NR_times:
-      return Allow();
+      return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
     case __NR_ioctl:
       return Error(ENOTTY);  // Flash Access.
     default:

@@ -57,14 +57,15 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictSocketcallCommand();
 // Restrict |sysno| (which must be kill, tkill or tgkill) by allowing tgkill or
 // kill iff the first parameter is |target_pid|, crashing otherwise or if
 // |sysno| is tkill.
-bpf_dsl::ResultExpr RestrictKillTarget(pid_t target_pid, int sysno);
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictKillTarget(pid_t target_pid,
+                                                      int sysno);
 
 // Crash if FUTEX_CMP_REQUEUE_PI is used in the second argument of futex(2).
-bpf_dsl::ResultExpr RestrictFutex();
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictFutex();
 
 // Crash if |which| is not PRIO_PROCESS. EPERM if |who| is not 0, neither
 // |target_pid| while calling setpriority(2) / getpriority(2).
-bpf_dsl::ResultExpr RestrictGetSetpriority(pid_t target_pid);
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetSetpriority(pid_t target_pid);
 
 // Restrict |clk_id| for clock_getres(), clock_gettime() and clock_settime().
 // We allow accessing only CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID,

@@ -36,6 +36,8 @@ class SandboxBPFBasePolicy : public sandbox::bpf_dsl::SandboxBPFDSLPolicy {
   // Get the errno(3) to return for filesystem errors.
   static int GetFSDeniedErrno();
 
+  pid_t GetPolicyPid() const { return baseline_policy_->policy_pid(); }
+
  private:
   // Compose the BaselinePolicy from sandbox/.
   scoped_ptr<sandbox::BaselinePolicy> baseline_policy_;

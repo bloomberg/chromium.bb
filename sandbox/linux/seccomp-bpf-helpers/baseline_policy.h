@@ -32,10 +32,14 @@ class SANDBOX_EXPORT BaselinePolicy : public bpf_dsl::SandboxBPFDSLPolicy {
   virtual bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const OVERRIDE;
   virtual bpf_dsl::ResultExpr InvalidSyscall() const OVERRIDE;
+  pid_t policy_pid() const { return policy_pid_; }
 
  private:
   int fs_denied_errno_;
-  pid_t current_pid_;
+
+  // The PID that the policy applies to (should be equal to the current pid).
+  pid_t policy_pid_;
+
   DISALLOW_COPY_AND_ASSIGN(BaselinePolicy);
 };
 

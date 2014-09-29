@@ -25,6 +25,7 @@
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/broker_process.h"
@@ -186,15 +187,17 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_mprotect:
     // TODO(jln): restrict prctl.
     case __NR_prctl:
-    case __NR_sched_getaffinity:
-    case __NR_sched_setaffinity:
-    case __NR_setpriority:
       return Allow();
     case __NR_access:
     case __NR_open:
     case __NR_openat:
       DCHECK(broker_process_);
       return Trap(GpuSIGSYS_Handler, broker_process_);
+    case __NR_setpriority:
+      return sandbox::RestrictGetSetpriority(GetPolicyPid());
+    case __NR_sched_getaffinity:
+    case __NR_sched_setaffinity:
+      return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
     default:
       if (SyscallSets::IsEventFd(sysno))
         return Allow();
