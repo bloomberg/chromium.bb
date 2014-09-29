@@ -122,14 +122,22 @@ void Printer::Newline() {
   if (!comments_.empty()) {
     Print("  ");
     int i = 0;
+    // Save the margin, and temporarily set it to where the first comment
+    // starts so that multiple suffix comments are vertically aligned. This
+    // will need to be fancier once we enforce 80 col.
+    int old_margin = margin_;
     for (const auto& c : comments_) {
-      if (i > 0) {
+      if (i == 0)
+        margin_ = CurrentColumn();
+      else {
         Trim();
         Print("\n");
         PrintMargin();
       }
       TrimAndPrintToken(c);
+      ++i;
     }
+    margin_ = old_margin;
     comments_.clear();
   }
   Trim();
