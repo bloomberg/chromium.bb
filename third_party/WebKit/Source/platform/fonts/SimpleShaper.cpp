@@ -233,14 +233,14 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
     return consumedCharacters;
 }
 
-unsigned SimpleShaper::advance(int offset, GlyphBuffer* glyphBuffer)
+unsigned SimpleShaper::advance(unsigned offset, GlyphBuffer* glyphBuffer)
 {
-    int length = m_run.length();
+    unsigned length = m_run.length();
 
     if (offset > length)
         offset = length;
 
-    if (m_currentCharacter >= static_cast<unsigned>(offset))
+    if (m_currentCharacter >= offset)
         return 0;
 
     if (m_run.is8Bit()) {

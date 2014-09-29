@@ -43,7 +43,7 @@ struct PLATFORM_EXPORT SimpleShaper {
 public:
     SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, bool accountForGlyphBounds = false, bool forTextEmphasis = false);
 
-    unsigned advance(int to, GlyphBuffer* = 0);
+    unsigned advance(unsigned to, GlyphBuffer* = 0);
     bool advanceOneCharacter(float& width);
 
     float maxGlyphBoundingBoxY() const { ASSERT(m_accountForGlyphBounds); return m_maxGlyphBoundingBoxY; }
