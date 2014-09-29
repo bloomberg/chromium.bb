@@ -68,7 +68,8 @@ body {
   <div data-expected-width="50" data-offset-x="50" class="flex-one" style="width: 50px; margin: 0 20px 0 10px;"></div>
   <div data-expected-width="90" data-offset-x="10" class="flex-one" style="margin: 0 20px 0 10px;"></div>
   <div data-expected-width="120" data-offset-x="0" class="flex-one">
-    <div data-expected-width="120" style="width: 100%; background-color:black"></div>
+    <!-- Since no parent has a fixed height, this div shrink-wraps. -->
+    <div data-expected-width="0" style="width: 100%; background-color:black"></div>
   </div>
 </div>
 

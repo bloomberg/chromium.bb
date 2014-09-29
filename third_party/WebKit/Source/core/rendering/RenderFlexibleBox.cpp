@@ -609,7 +609,7 @@ bool RenderFlexibleBox::childPreferredMainAxisContentExtentRequiresLayout(Render
 
 LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox& child, bool hasInfiniteLineLength, bool relayoutChildren)
 {
-    clearLogicalOverrideSize(child);
+    child.clearOverrideSize();
 
     if (child.style()->hasAspectRatio() || child.isImage() || child.isVideo() || child.isCanvas())
         UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
@@ -991,14 +991,6 @@ void RenderFlexibleBox::setLogicalOverrideSize(RenderBox& child, LayoutUnit chil
         child.setOverrideLogicalContentWidth(childPreferredSize - child.borderAndPaddingLogicalWidth());
 }
 
-void RenderFlexibleBox::clearLogicalOverrideSize(RenderBox& child)
-{
-    if (hasOrthogonalFlow(child))
-        child.clearOverrideLogicalContentHeight();
-    else
-        child.clearOverrideLogicalContentWidth();
-}
-
 void RenderFlexibleBox::prepareChildForPositionedLayout(RenderBox& child, LayoutUnit mainAxisOffset, LayoutUnit crossAxisOffset, PositionedLayoutMode layoutMode)
 {
     ASSERT(child.isOutOfFlowPositioned());
@@ -1359,11 +1351,10 @@ void RenderFlexibleBox::applyStretchAlignmentToChild(RenderBox& child, LayoutUni
             LayoutUnit stretchedLogicalHeight = heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child);
             ASSERT(!child.needsLayout());
             LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
-            LayoutUnit desiredLogicalContentHeight = desiredLogicalHeight - child.borderAndPaddingLogicalHeight();
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-            if (desiredLogicalHeight != child.logicalHeight() || !child.hasOverrideHeight() || desiredLogicalContentHeight != child.overrideLogicalContentHeight()) {
-                child.setOverrideLogicalContentHeight(desiredLogicalContentHeight);
+            if (desiredLogicalHeight != child.logicalHeight()) {
+                child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
                 child.setLogicalHeight(0);
                 child.forceChildLayout();
             }

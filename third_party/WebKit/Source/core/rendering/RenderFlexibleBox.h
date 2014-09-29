@@ -149,7 +149,6 @@ private:
 
     void resetAutoMarginsAndLogicalTopInCrossAxis(RenderBox& child);
     void setLogicalOverrideSize(RenderBox& child, LayoutUnit childPreferredSize);
-    void clearLogicalOverrideSize(RenderBox& child);
     void prepareChildForPositionedLayout(RenderBox& child, LayoutUnit mainAxisOffset, LayoutUnit crossAxisOffset, PositionedLayoutMode);
     size_t numberOfInFlowPositionedChildren(const OrderedFlexItemList&) const;
     void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList&, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>&, bool hasInfiniteLineLength);
