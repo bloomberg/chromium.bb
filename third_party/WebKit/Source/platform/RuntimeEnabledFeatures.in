@@ -84,6 +84,7 @@ MediaController depends_on=Media, status=experimental
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
 MediaStream status=stable
+MediaStreamSpeech depends_on=MediaStream, status=experimental
 MemoryInfoInWorkers status=experimental
 NavigationTransitions status=experimental
 NavigatorContentUtils

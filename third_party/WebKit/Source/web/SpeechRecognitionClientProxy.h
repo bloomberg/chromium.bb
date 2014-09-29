@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class MediaStreamTrack;
 class WebSpeechRecognizer;
 class WebString;
 
@@ -46,7 +47,7 @@ public:
     static PassOwnPtr<SpeechRecognitionClientProxy> create(WebSpeechRecognizer*);
 
     // SpeechRecognitionClient:
-    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives) OVERRIDE;
+    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack*) OVERRIDE;
     virtual void stop(SpeechRecognition*) OVERRIDE;
     virtual void abort(SpeechRecognition*) OVERRIDE;
 

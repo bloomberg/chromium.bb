@@ -32,14 +32,16 @@
 
 namespace blink {
 
+class MediaStreamTrack;
+
 class SpeechRecognitionController FINAL : public NoBaseWillBeGarbageCollectedFinalized<SpeechRecognitionController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 public:
     virtual ~SpeechRecognitionController();
 
-    void start(SpeechRecognition* recognition, const SpeechGrammarList* grammars, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives)
+    void start(SpeechRecognition* recognition, const SpeechGrammarList* grammars, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)
     {
-        m_client->start(recognition, grammars, lang, continuous, interimResults, maxAlternatives);
+        m_client->start(recognition, grammars, lang, continuous, interimResults, maxAlternatives, audioTrack);
     }
 
     void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }

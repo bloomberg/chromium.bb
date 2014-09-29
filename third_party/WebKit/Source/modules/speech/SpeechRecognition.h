@@ -38,6 +38,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
+class MediaStreamTrack;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
@@ -49,6 +50,7 @@ public:
     static SpeechRecognition* create(ExecutionContext*);
     virtual ~SpeechRecognition();
 
+    // SpeechRecognition.idl implemementation.
     // Attributes.
     SpeechGrammarList* grammars() { return m_grammars; }
     void setGrammars(SpeechGrammarList* grammars) { m_grammars = grammars; }
@@ -60,6 +62,8 @@ public:
     void setInterimResults(bool interimResults) { m_interimResults = interimResults; }
     unsigned long maxAlternatives() { return m_maxAlternatives; }
     void setMaxAlternatives(unsigned long maxAlternatives) { m_maxAlternatives = maxAlternatives; }
+    MediaStreamTrack* audioTrack() { return m_audioTrack; }
+    void setAudioTrack(MediaStreamTrack* audioTrack) { m_audioTrack = audioTrack; }
 
     // Callable by the user.
     void start(ExceptionState&);
@@ -105,6 +109,7 @@ private:
     explicit SpeechRecognition(ExecutionContext*);
 
     Member<SpeechGrammarList> m_grammars;
+    Member<MediaStreamTrack> m_audioTrack;
     String m_lang;
     bool m_continuous;
     bool m_interimResults;

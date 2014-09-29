@@ -27,12 +27,15 @@
 #include "web/SpeechRecognitionClientProxy.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognition.h"
 #include "modules/speech/SpeechRecognitionError.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebMediaStreamTrack.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebSpeechGrammar.h"
 #include "public/web/WebSpeechRecognitionHandle.h"
@@ -52,13 +55,16 @@ PassOwnPtr<SpeechRecognitionClientProxy> SpeechRecognitionClientProxy::create(We
     return adoptPtr(new SpeechRecognitionClientProxy(recognizer));
 }
 
-void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const SpeechGrammarList* grammarList, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives)
+void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const SpeechGrammarList* grammarList, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)
 {
     WebVector<WebSpeechGrammar> webSpeechGrammars(static_cast<size_t>(grammarList->length()));
     for (unsigned long i = 0; i < grammarList->length(); ++i)
         webSpeechGrammars[i] = grammarList->item(i);
 
-    WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, WebSecurityOrigin(recognition->executionContext()->securityOrigin()));
+    WebMediaStreamTrack track;
+    if (RuntimeEnabledFeatures::mediaStreamSpeechEnabled() && audioTrack)
+        track.assign(audioTrack->component());
+    WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, track, WebSecurityOrigin(recognition->executionContext()->securityOrigin()));
     m_recognizer->start(WebSpeechRecognitionHandle(recognition), params, this);
 }
 
