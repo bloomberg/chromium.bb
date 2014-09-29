@@ -27,8 +27,8 @@ class CONTENT_EXPORT PepperTryCatch {
 
   virtual void SetException(const char* message) = 0;
   virtual bool HasException() = 0;
-  // Gets the plugin context. Virtual so it can be overriden for testing.
-  virtual v8::Handle<v8::Context> GetContext();
+  // Gets the context to execute scripts in.
+  virtual v8::Handle<v8::Context> GetContext() = 0;
 
   // Convenience functions for doing conversions to/from V8 values and sets an
   // exception if there is an error in the conversion.
@@ -66,6 +66,7 @@ class PepperTryCatchV8 : public PepperTryCatch {
   // PepperTryCatch
   virtual void SetException(const char* message) OVERRIDE;
   virtual bool HasException() OVERRIDE;
+  virtual v8::Handle<v8::Context> GetContext() OVERRIDE;
 
  private:
   PP_Var exception_;
@@ -86,6 +87,7 @@ class PepperTryCatchVar : public PepperTryCatch {
   // PepperTryCatch
   virtual void SetException(const char* message) OVERRIDE;
   virtual bool HasException() OVERRIDE;
+  virtual v8::Handle<v8::Context> GetContext() OVERRIDE;
 
  private:
   // Code which uses PepperTryCatchVar doesn't typically have a HandleScope,

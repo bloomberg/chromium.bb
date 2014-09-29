@@ -672,13 +672,18 @@ void PepperPluginInstanceImpl::MessageChannelDestroyed() {
   message_channel_object_.Reset();
 }
 
-v8::Local<v8::Context> PepperPluginInstanceImpl::GetContext() {
-  if (!container_ ||
-      container_->element().isNull() ||
-      container_->element().document().isNull() ||
-      !container_->element().document().frame()) {
+v8::Local<v8::Context> PepperPluginInstanceImpl::GetMainWorldContext() {
+  if (!container_)
     return v8::Handle<v8::Context>();
-  }
+
+  if (container_->element().isNull())
+    return v8::Handle<v8::Context>();
+
+  if (container_->element().document().isNull())
+    return v8::Handle<v8::Context>();
+
+  if (!container_->element().document().frame())
+    return v8::Handle<v8::Context>();
 
   v8::Local<v8::Context> context =
       container_->element().document().frame()->mainWorldScriptContext();

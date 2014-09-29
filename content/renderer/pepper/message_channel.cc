@@ -90,7 +90,7 @@ MessageChannel* MessageChannel::Create(PepperPluginInstanceImpl* instance,
                                        v8::Persistent<v8::Object>* result) {
   MessageChannel* message_channel = new MessageChannel(instance);
   v8::HandleScope handle_scope(instance->GetIsolate());
-  v8::Context::Scope context_scope(instance->GetContext());
+  v8::Context::Scope context_scope(instance->GetMainWorldContext());
   gin::Handle<MessageChannel> handle =
       gin::CreateHandle(instance->GetIsolate(), message_channel);
   result->Reset(instance->GetIsolate(), handle.ToV8()->ToObject());
@@ -112,7 +112,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
   // Because V8 is probably not on the stack for Native->JS calls, we need to
   // enter the appropriate context for the plugin.
-  v8::Local<v8::Context> context = instance_->GetContext();
+  v8::Local<v8::Context> context = instance_->GetMainWorldContext();
   if (context.IsEmpty())
     return;
 

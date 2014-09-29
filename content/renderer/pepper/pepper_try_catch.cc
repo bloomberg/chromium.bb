@@ -26,10 +26,6 @@ PepperTryCatch::PepperTryCatch(PepperPluginInstanceImpl* instance,
 
 PepperTryCatch::~PepperTryCatch() {}
 
-v8::Handle<v8::Context> PepperTryCatch::GetContext() {
-  return instance_->GetContext();
-}
-
 v8::Handle<v8::Value> PepperTryCatch::ToV8(PP_Var var) {
   if (HasException()) {
     SetException(kConversionException);
@@ -85,12 +81,17 @@ bool PepperTryCatchV8::HasException() {
   return GetContext().IsEmpty() || exception_.type != PP_VARTYPE_UNDEFINED;
 }
 
+v8::Handle<v8::Context> PepperTryCatchV8::GetContext() {
+  // When calling from JS into the plugin always use the current context.
+  return instance_->GetIsolate()->GetCurrentContext();
+}
+
 bool PepperTryCatchV8::ThrowException() {
   if (!HasException())
     return false;
 
-  // If the plugin context is gone, then we have an exception but we don't try
-  // to throw it into v8.
+  // If there is no context then we have an exception but we don't try to throw
+  // it into v8.
   if (GetContext().IsEmpty())
     return true;
 
@@ -154,6 +155,11 @@ bool PepperTryCatchVar::HasException() {
   }
 
   return exception_is_set_;
+}
+
+v8::Handle<v8::Context> PepperTryCatchVar::GetContext() {
+  // When calling into JS from the plugin, always use the plugin context.
+  return instance_->GetMainWorldContext();
 }
 
 void PepperTryCatchVar::SetException(const char* message) {

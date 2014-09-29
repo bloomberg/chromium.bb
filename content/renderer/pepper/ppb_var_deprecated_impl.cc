@@ -220,7 +220,7 @@ PP_Var CallDeprecatedInternal(PP_Var var,
 
   v8::Handle<v8::Object> function = accessor.GetObject();
   v8::Handle<v8::Object> recv =
-      accessor.instance()->GetContext()->Global();
+      accessor.instance()->GetMainWorldContext()->Global();
   if (v8_method_name.As<v8::String>()->Length() != 0) {
     function = function->Get(v8_method_name)->ToObject();
     recv = accessor.GetObject();
@@ -290,7 +290,7 @@ bool IsInstanceOfDeprecated(PP_Var var,
     return false;  // Not an object at all.
 
   v8::HandleScope handle_scope(object->instance()->GetIsolate());
-  v8::Context::Scope context_scope(object->instance()->GetContext());
+  v8::Context::Scope context_scope(object->instance()->GetMainWorldContext());
   PluginObject* plugin_object = PluginObject::FromV8Object(
       object->instance()->GetIsolate(), object->GetHandle());
   if (plugin_object && plugin_object->ppp_class() == ppp_class) {

@@ -149,8 +149,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // the plugin being destroyed.
   void MessageChannelDestroyed();
 
-  // Return the v8 context that the plugin is in.
-  v8::Local<v8::Context> GetContext();
+  // Return the v8 context for the frame that the plugin is contained in. Care
+  // should be taken to use the correct context for plugin<->JS interactions.
+  // In cases where JS calls into the plugin, the caller's context should
+  // typically be used. When calling from the plugin into JS, this context
+  // should typically used.
+  v8::Local<v8::Context> GetMainWorldContext();
 
   // Does some pre-destructor cleanup on the instance. This is necessary
   // because some cleanup depends on the plugin instance still existing (like
