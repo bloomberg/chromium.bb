@@ -72,6 +72,9 @@ class Printer {
   // Remove trailing spaces from the current line.
   void Trim();
 
+  // Whether there's a blank separator line at the current position.
+  bool HaveBlankLine();
+
   // Get the 0-based x position on the current line.
   int CurrentColumn();
 
@@ -139,6 +142,13 @@ void Printer::Trim() {
   while (n > 0 && output_[n - 1] == ' ')
     --n;
   output_.resize(n);
+}
+
+bool Printer::HaveBlankLine() {
+  size_t n = output_.size();
+  while (n > 0 && output_[n - 1] == ' ')
+    --n;
+  return n > 2 && output_[n - 1] == '\n' && output_[n - 2] == '\n';
 }
 
 int Printer::CurrentColumn() {
@@ -315,6 +325,15 @@ void Printer::Sequence(SequenceStyle style,
     size_t i = 0;
     for (const auto& x : list) {
       Newline();
+      // If:
+      // - we're going to output some comments, and;
+      // - we haven't just started this multiline list, and;
+      // - there isn't already a blank line here;
+      // Then: insert one.
+      if (i != 0 && x->comments() && !x->comments()->before().empty() &&
+          !HaveBlankLine()) {
+        Newline();
+      }
       ExprStyle expr_style = Expr(x);
       CHECK(!x->comments() || x->comments()->after().empty());
       if (i < list.size() - 1 || style == kSequenceStyleList) {
