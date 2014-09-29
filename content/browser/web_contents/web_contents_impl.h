@@ -412,6 +412,7 @@ class CONTENT_EXPORT WebContentsImpl
                                     int error_code) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateState(RenderViewHost* render_view_host,
+                           int32 rvh_page_id,
                            int32 page_id,
                            const PageState& page_state) OVERRIDE;
   virtual void UpdateTargetURL(const GURL& url) OVERRIDE;

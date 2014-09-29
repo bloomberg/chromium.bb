@@ -1002,6 +1002,7 @@ void RenderFrameHostImpl::OnUpdateTitle(
     int32 page_id,
     const base::string16& title,
     blink::WebTextDirection title_direction) {
+  CHECK_EQ(render_view_host_->page_id_, page_id);
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   if (title.length() > kMaxTitleChars) {
