@@ -14,6 +14,12 @@
 
 namespace extensions {
 
+// Tested in two places:
+// 1. chrome_permission_message_provider_unittest.cc, which is a regular unit
+//    test for this class
+// 2. chrome/browser/extensions/permission_messages_unittest.cc, which is an
+//    integration test that ensures messages are correctly generated for
+//    extensions created through the extension system.
 class ChromePermissionMessageProvider : public PermissionMessageProvider {
  public:
   ChromePermissionMessageProvider();

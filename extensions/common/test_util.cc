@@ -19,6 +19,20 @@ ExtensionBuilder& BuildExtension(ExtensionBuilder& builder) {
                       .Set("manifest_version", 2));
 }
 
+ExtensionBuilder& BuildApp(ExtensionBuilder& builder) {
+  return builder.SetManifest(
+      DictionaryBuilder()
+          .Set("name", "Test extension")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts",
+                       extensions::ListBuilder().Append("background.js")))));
+}
+
 scoped_refptr<Extension> CreateEmptyExtension() {
   return ExtensionBuilder()
       .SetManifest(
