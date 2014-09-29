@@ -816,6 +816,7 @@
       ],
       'sources': [
         'threading/thread_perftest.cc',
+        'message_loop/message_pump_perftest.cc',
         'test/run_all_unittests.cc',
         '../testing/perf/perf_test.cc'
       ],

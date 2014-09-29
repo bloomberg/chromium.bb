@@ -35,5 +35,17 @@ class JavaHandlerThread {
         });
     }
 
+    @CalledByNative
+    private void stop(final long nativeThread, final long nativeEvent) {
+        new Handler(mThread.getLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                nativeStopThread(nativeThread, nativeEvent);
+            }
+        });
+        mThread.quitSafely();
+    }
+
     private native void nativeInitializeThread(long nativeJavaHandlerThread, long nativeEvent);
+    private native void nativeStopThread(long nativeJavaHandlerThread, long nativeEvent);
 }

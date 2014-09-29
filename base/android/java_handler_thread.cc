@@ -44,6 +44,15 @@ void JavaHandlerThread::Start() {
 }
 
 void JavaHandlerThread::Stop() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::WaitableEvent shutdown_event(false, false);
+  Java_JavaHandlerThread_stop(env,
+                              java_thread_.obj(),
+                              reinterpret_cast<intptr_t>(this),
+                              reinterpret_cast<intptr_t>(&shutdown_event));
+  // Wait for thread to shut down before returning.
+  base::ThreadRestrictions::ScopedAllowWait wait_allowed;
+  shutdown_event.Wait();
 }
 
 void JavaHandlerThread::InitializeThread(JNIEnv* env, jobject obj,
@@ -51,6 +60,11 @@ void JavaHandlerThread::InitializeThread(JNIEnv* env, jobject obj,
   // TYPE_JAVA to get the Android java style message loop.
   message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_JAVA));
   static_cast<MessageLoopForUI*>(message_loop_.get())->Start();
+  reinterpret_cast<base::WaitableEvent*>(event)->Signal();
+}
+
+void JavaHandlerThread::StopThread(JNIEnv* env, jobject obj, jlong event) {
+  static_cast<MessageLoopForUI*>(message_loop_.get())->Quit();
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
 

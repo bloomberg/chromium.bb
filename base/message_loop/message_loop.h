@@ -391,12 +391,22 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
+  // Wakes up the message pump. Can be called on any thread. The caller is
+  // responsible for synchronizing ScheduleWork() calls.
+  void ScheduleWork(bool was_empty);
+
+  // Returns the TaskAnnotator which is used to add debug information to posted
+  // tasks.
+  debug::TaskAnnotator* task_annotator() { return &task_annotator_; }
+
+  // Runs the specified PendingTask.
+  void RunTask(const PendingTask& pending_task);
+
   //----------------------------------------------------------------------------
  protected:
   scoped_ptr<MessagePump> pump_;
 
  private:
-  friend class internal::IncomingTaskQueue;
   friend class RunLoop;
 
   // Configures various members for the two constructors.
@@ -407,9 +417,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Called to process any delayed non-nestable tasks.
   bool ProcessNextDelayedNonNestableTask();
-
-  // Runs the specified PendingTask.
-  void RunTask(const PendingTask& pending_task);
 
   // Calls RunTask or queues the pending_task on the deferred task list if it
   // cannot be run right now.  Returns true if the task was run.
@@ -423,17 +430,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // true if some work was done.
   bool DeletePendingTasks();
 
-  // Returns the TaskAnnotator which is used to add debug information to posted
-  // tasks.
-  debug::TaskAnnotator* task_annotator() { return &task_annotator_; }
-
   // Loads tasks from the incoming queue to |work_queue_| if the latter is
   // empty.
   void ReloadWorkQueue();
-
-  // Wakes up the message pump. Can be called on any thread. The caller is
-  // responsible for synchronizing ScheduleWork() calls.
-  void ScheduleWork(bool was_empty);
 
   // Start recording histogram info about events and action IF it was enabled
   // and IF the statistics recorder can accept a registration of our histogram.

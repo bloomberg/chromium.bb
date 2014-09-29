@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -259,7 +260,6 @@ typedef EventPerfTest<ConditionVariableEvent> ConditionVariablePerfTest;
 TEST_F(ConditionVariablePerfTest, EventPingPong) {
   RunPingPongTest("4_ConditionVariable_Threads", 4);
 }
-
 #if defined(OS_POSIX)
 
 // Absolutely 100% minimal posix waitable event. If there is a better/faster

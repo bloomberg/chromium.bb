@@ -34,6 +34,7 @@ class BASE_EXPORT JavaHandlerThread {
   // Called from java on the newly created thread.
   // Start() will not return before this methods has finished.
   void InitializeThread(JNIEnv* env, jobject obj, jlong event);
+  void StopThread(JNIEnv* env, jobject obj, jlong event);
 
   static bool RegisterBindings(JNIEnv* env);
 
