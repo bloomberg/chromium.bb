@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.3",
+  "version": "7.4",
   "entries": [
     {
       "id": 1,
@@ -578,22 +578,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_vendor": "Qualcomm.*",
       "features": [
         "wake_up_gpu_before_drawing"
-      ]
-    },
-    {
-      "id": 50,
-      "description": "NVIDIA driver requires unbinding a GpuMemoryBuffer from the texture before mapping it to main memory",
-      "os": {
-        "type": "android"
-      },
-      "gl_type": "gles",
-      "gl_version": {
-        "op": "<",
-        "value": "3.1"
-      },
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "release_image_after_use"
       ]
     },
     {

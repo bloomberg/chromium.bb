@@ -44,7 +44,6 @@ class GLImageSync : public gfx::GLImage {
                                     gfx::OverlayTransform transform,
                                     const gfx::Rect& bounds_rect,
                                     const gfx::RectF& crop_rect) OVERRIDE;
-  virtual void SetReleaseAfterUse() OVERRIDE;
 
  protected:
   virtual ~GLImageSync();
@@ -115,10 +114,6 @@ bool GLImageSync::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                        const gfx::RectF& crop_rect) {
   NOTREACHED();
   return false;
-}
-
-void GLImageSync::SetReleaseAfterUse() {
-  NOTREACHED();
 }
 
 #if !defined(OS_MACOSX)

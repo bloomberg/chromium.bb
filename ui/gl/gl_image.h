@@ -19,7 +19,7 @@ namespace gfx {
 // specific management.
 class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
  public:
-  GLImage();
+  GLImage() {}
 
   // Destroys the image.
   virtual void Destroy(bool have_context) = 0;
@@ -55,12 +55,8 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
                                     const Rect& bounds_rect,
                                     const RectF& crop_rect) = 0;
 
-  // Indicate that image should be released after use.
-  // (For an Android work-around only).
-  virtual void SetReleaseAfterUse();
-
  protected:
-  virtual ~GLImage();
+  virtual ~GLImage() {}
 
  private:
   friend class base::RefCounted<GLImage>;

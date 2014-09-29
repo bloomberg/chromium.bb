@@ -984,10 +984,6 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
   if (!image.get())
     return;
 
-  // For Android specific workaround.
-  if (context_group_->feature_info()->workarounds().release_image_after_use)
-    image->SetReleaseAfterUse();
-
   image_manager->AddImage(image.get(), id);
 }
 
