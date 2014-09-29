@@ -19,8 +19,8 @@
           'variables': {
             'nlib_target': 'libgtest_nacl.a',
             'build_glibc': 0,
-            'build_newlib': 1,
-            'build_pnacl_newlib': 0,
+            'build_newlib': 0,
+            'build_pnacl_newlib': 1,
           },
           'sources': [
             '<@(gtest_sources)',
@@ -69,8 +69,8 @@
           'variables': {
             'nlib_target': 'libgtest_main_nacl.a',
             'build_glibc': 0,
-            'build_newlib': 1,
-            'build_pnacl_newlib': 0,
+            'build_newlib': 0,
+            'build_pnacl_newlib': 1,
           },
           'dependencies': [
             'gtest_nacl',

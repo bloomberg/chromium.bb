@@ -11,7 +11,7 @@
 
 #define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 2)
 
-static void DoMojoCall(uint32_t params[], int num_params) {
+static void DoMojoCall(uint32_t params[], nacl_abi_size_t num_params) {
   NaClAbiNaClImcMsgIoVec iov[1] = {
     {params, num_params}
   };
