@@ -793,8 +793,8 @@ ExternalProvider.prototype = {
  */
 ExternalProvider.prototype.supportsEntry = function(entry) {
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  // TODO(mtomasz): Add support for provided file systems.
-  return locationInfo && locationInfo.isDriveBased;
+  return locationInfo && (locationInfo.isDriveBased ||
+      locationInfo.rootType === VolumeManagerCommon.RootType.PROVIDED);
 };
 
 /**
