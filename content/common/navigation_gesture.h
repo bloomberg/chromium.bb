@@ -16,6 +16,7 @@ enum NavigationGesture {
   NavigationGestureAuto,
   // Initial state.
   NavigationGestureUnknown,
+  NavigationGestureLast = NavigationGestureUnknown
 };
 
 }  // namespace content

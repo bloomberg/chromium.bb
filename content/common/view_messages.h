@@ -83,8 +83,11 @@ IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::MenuItem::Type)
-IPC_ENUM_TRAITS(content::NavigationGesture)
-IPC_ENUM_TRAITS(content::PageZoom)
+IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
+                          content::NavigationGestureLast)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::PageZoom,
+                              content::PageZoom::PAGE_ZOOM_OUT,
+                              content::PageZoom::PAGE_ZOOM_IN)
 IPC_ENUM_TRAITS(gfx::FontRenderParams::Hinting)
 IPC_ENUM_TRAITS(gfx::FontRenderParams::SubpixelRendering)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TapMultipleTargetsStrategy,
