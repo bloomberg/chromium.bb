@@ -7,10 +7,10 @@
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("network");
+    WebInspector.inspectorView._showPanel("network");
     var timelineData = InspectorTest.timelineData();
 
-    var timeline = WebInspector.inspectorView.showPanel("timeline");
+    var timeline = WebInspector.inspectorView._showPanel("timeline");
     timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
     timeline._flameChartEnabledSetting.set(true);
     timeline._onModeChanged();

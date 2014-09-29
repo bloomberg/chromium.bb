@@ -2,12 +2,12 @@ function initialize_LayerTreeTests()
 {
     // FIXME: remove once out of experimental.
     InspectorTest.registerModule("layers");
-    var extensions = runtime.extensions(WebInspector.Panel).forEach(function(extension) {
+    var extensions = runtime.extensions(WebInspector.PanelFactory).forEach(function(extension) {
         if (extension.module().name() === "layers")
             WebInspector.inspectorView.addPanel(new WebInspector.RuntimeExtensionPanelDescriptor(extension));
     });
     InspectorTest.layerTreeModel = WebInspector.targetManager.mainTarget().layerTreeModel;
-    InspectorTest.layers3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
+    InspectorTest.layers3DView = WebInspector.inspectorView._panel("layers")._layers3DView;
 
     InspectorTest.labelForLayer = function(layer)
     {
@@ -43,7 +43,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root)
-            root = WebInspector.inspectorView.panel("layers")._layerTree._treeOutline;
+            root = WebInspector.inspectorView._panel("layers")._layerTree._treeOutline;
         if (root.representedObject)
             InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.representedObject));
         root.children.forEach(InspectorTest.dumpLayerTreeOutline.bind(InspectorTest, prefix + "    "));

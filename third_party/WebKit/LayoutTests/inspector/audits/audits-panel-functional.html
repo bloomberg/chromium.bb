@@ -51,7 +51,7 @@ JSON = {};
 <script>
 var test = function()
 {
-    WebInspector.inspectorView.showPanel("audits");
+    WebInspector.inspectorView._showPanel("audits");
     InspectorTest.reloadPage();
     var pendingStyleSheetsCount = 4;
     InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", onStyleSheetLoaded, true);

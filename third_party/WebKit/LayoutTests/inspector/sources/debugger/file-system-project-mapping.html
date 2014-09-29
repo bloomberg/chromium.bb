@@ -334,7 +334,7 @@ function test()
             function didEvaluateInPage(result)
             {
                 InspectorTest.assertEquals("live-edited string", result.description, "edited function returns wrong result");
-                var panel = WebInspector.inspectorView.panel("sources");
+                var panel = WebInspector.inspectorView._panel("sources");
                 InspectorTest.dumpSourceFrameContents(panel.visibleView);
                 next();
             }

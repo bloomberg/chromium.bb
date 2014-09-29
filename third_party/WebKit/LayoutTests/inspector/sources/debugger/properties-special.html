@@ -21,7 +21,7 @@ var test = function()
     function step1()
     {
         // We need to initialize sources panel so that watch expressions section is created.
-        WebInspector.inspectorView.showPanel("sources");
+        WebInspector.inspectorView._showPanel("sources");
 
         var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
         watchExpressionsPane.expand();

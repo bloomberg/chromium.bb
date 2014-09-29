@@ -6,7 +6,7 @@
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     var prompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.cssPropertiesMetainfo, null, true);
 
     InspectorTest.runTestSuite([

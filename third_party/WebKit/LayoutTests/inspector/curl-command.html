@@ -5,7 +5,7 @@
 
 var test = function()
 {
-    var logView = WebInspector.inspectorView.panel("network")._networkLogView;
+    var logView = WebInspector.inspectorView._panel("network")._networkLogView;
 
     function newRequest(headers, data, opt_url)
     {

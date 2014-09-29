@@ -77,8 +77,8 @@ function startTimeline()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("timeline");
-    var panel = WebInspector.inspectorView.panel("timeline");
+    WebInspector.inspectorView._showPanel("timeline");
+    var panel = WebInspector.inspectorView._panel("timeline");
     panel._model._currentTarget = WebInspector.targetManager.mainTarget();
 
     InspectorTest.runTestSuite([

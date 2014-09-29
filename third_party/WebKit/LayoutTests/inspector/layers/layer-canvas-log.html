@@ -24,7 +24,7 @@ function test()
         layer.requestSnapshot(onSnapshotDone);
     }
 
-    WebInspector.inspectorView.showPanel("layers");
+    WebInspector.inspectorView._showPanel("layers");
     InspectorTest.requestLayers(onGotLayers);
 }
 </script>

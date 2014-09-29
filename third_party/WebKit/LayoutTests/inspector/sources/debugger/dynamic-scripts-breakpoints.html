@@ -18,7 +18,7 @@ foobar();
 function test()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.inspectorView.showPanel("sources");
+    var panel = WebInspector.inspectorView._showPanel("sources");
 
     InspectorTest.startDebuggerTest();
 

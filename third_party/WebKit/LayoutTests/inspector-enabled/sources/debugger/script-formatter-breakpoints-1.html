@@ -25,7 +25,7 @@ function onload()
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.inspectorView.showPanel("sources");
+    var panel = WebInspector.inspectorView._showPanel("sources");
     var scriptFormatter;
     var sourceFrame;
 

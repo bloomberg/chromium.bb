@@ -9,7 +9,7 @@
 var test = function()
 {
     var worker = Runtime.startWorker("script_formatter_worker");
-    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView._showPanel("sources");
 
     InspectorTest.runTestSuite([
         function testScriptFormatterWorker(next)
@@ -41,7 +41,7 @@ var test = function()
 
             function didFormatContent(content, mapping)
             {
-                var source = WebInspector.inspectorView.panel("sources").visibleView._textEditor.text();
+                var source = WebInspector.inspectorView._panel("sources").visibleView._textEditor.text();
                 var formattedSource = content;
 
                 function testMapping(string)

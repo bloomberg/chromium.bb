@@ -43,7 +43,7 @@ function test()
 
     function countTextNodes(textContent)
     {
-        WebInspector.inspectorView.panel("console");
+        WebInspector.inspectorView._panel("console");
         InspectorTest.disableConsoleViewport();
 
         var count = 0;

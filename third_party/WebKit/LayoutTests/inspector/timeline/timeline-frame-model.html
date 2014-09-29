@@ -175,7 +175,7 @@ function test()
         ]
     };
 
-    var timelinePanel = WebInspector.inspectorView.showPanel("timeline");
+    var timelinePanel = WebInspector.inspectorView._showPanel("timeline");
     timelinePanel._overviewModeSetting.set("Frames");
     timelinePanel._onModeChanged();
     var overview = timelinePanel._overviewPane;

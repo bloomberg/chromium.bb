@@ -53,7 +53,7 @@ InspectorTest.timelineUIUtils = function()
 
 InspectorTest.startTimeline = function(callback)
 {
-    var panel = WebInspector.inspectorView.panel("timeline");
+    var panel = WebInspector.inspectorView._panel("timeline");
     function onRecordingStarted()
     {
         panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
@@ -65,7 +65,7 @@ InspectorTest.startTimeline = function(callback)
 
 InspectorTest.stopTimeline = function(callback)
 {
-    var panel = WebInspector.inspectorView.panel("timeline");
+    var panel = WebInspector.inspectorView._panel("timeline");
     function didStop()
     {
         panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
@@ -105,7 +105,7 @@ InspectorTest.invokeAsyncWithTimeline = function(functionName, doneCallback)
 
 InspectorTest.loadTimelineRecords = function(records)
 {
-    var model = WebInspector.inspectorView.showPanel("timeline")._model;
+    var model = WebInspector.inspectorView._showPanel("timeline")._model;
     model.reset();
     records.forEach(model._addRecord, model);
 }

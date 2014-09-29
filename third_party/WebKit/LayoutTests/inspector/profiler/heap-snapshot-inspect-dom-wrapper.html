@@ -13,7 +13,7 @@ function handleLoad()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("profiles");
+    WebInspector.inspectorView._showPanel("profiles");
     var heapProfileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
     heapProfileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
     InspectorTest.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);

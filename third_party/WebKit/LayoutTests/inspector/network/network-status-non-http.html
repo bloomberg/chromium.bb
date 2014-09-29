@@ -40,7 +40,7 @@ function test() {
     }
 
     WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequestFinished);
-    WebInspector.inspectorView.showPanel("network");
+    WebInspector.inspectorView._showPanel("network");
     InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadResources()");
 }

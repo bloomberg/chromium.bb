@@ -17,7 +17,7 @@ function initialize_LayersPanelnMouseEvents()
 
 InspectorTest.findLayerTreeElement = function(layer)
 {
-    var layerTree = WebInspector.inspectorView.panel("layers").sidebarTree;
+    var layerTree = WebInspector.inspectorView._panel("layers").sidebarTree;
     var element = layerTree.getCachedTreeElement(layer);
     element.reveal();
     return element.listItemElement;
@@ -80,7 +80,7 @@ function test()
 
         InspectorTest.completeTest();
     }
-    WebInspector.inspectorView.showPanel("layers");
+    WebInspector.inspectorView._showPanel("layers");
     InspectorTest.requestLayers(step1);
 
 }

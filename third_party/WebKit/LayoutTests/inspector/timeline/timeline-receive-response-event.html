@@ -19,8 +19,8 @@ function performActions(callback)
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("timeline");
-    WebInspector.inspectorView.panel("timeline")._model._currentTarget = WebInspector.targetManager.mainTarget();
+    WebInspector.inspectorView._showPanel("timeline");
+    WebInspector.inspectorView._panel("timeline")._model._currentTarget = WebInspector.targetManager.mainTarget();
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()

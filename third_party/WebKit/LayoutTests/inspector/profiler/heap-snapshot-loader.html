@@ -6,7 +6,7 @@
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("profiles");
+    WebInspector.inspectorView._showPanel("profiles");
     var source = InspectorTest.createHeapSnapshotMockRaw();
     var sourceStringified = JSON.stringify(source);
     var partSize = sourceStringified.length >> 3;

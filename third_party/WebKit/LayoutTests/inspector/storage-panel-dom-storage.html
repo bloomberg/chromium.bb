@@ -17,7 +17,7 @@ function populateDOMStorage()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("resources");
+    WebInspector.inspectorView._showPanel("resources");
 
     InspectorTest.evaluateInPage("populateDOMStorage()", function(result) {
         InspectorTest.addResult("Populated local and session storage");

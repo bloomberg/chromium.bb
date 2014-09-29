@@ -19,7 +19,7 @@ function test()
 {
     var results = [];
     var dataTreeElement;
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     InspectorTest.nodeWithId("data", step1);
 
     function step1(node)

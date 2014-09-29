@@ -136,7 +136,7 @@ InspectorTest.waitForStylesForClass = function(classValue, callback, requireRebu
 
 InspectorTest.selectNodeAndWaitForStyles = function(idValue, callback)
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
 
     callback = InspectorTest.safeWrap(callback);
 
@@ -526,7 +526,7 @@ InspectorTest.expandElementsTree = function(callback)
         // Make all promises succeed.
         setTimeout(callback.bind(null, expandedSomething));
     }
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     InspectorTest.findNode(function() { return false; }, onAllNodesAvailable);
 };
 
@@ -739,7 +739,7 @@ InspectorTest.dumpBreadcrumb = function(message)
     if (message)
         InspectorTest.addResult(message + ":");
     var result = [];
-    var crumbs = WebInspector.inspectorView.panel("elements").crumbsElement;
+    var crumbs = WebInspector.inspectorView._panel("elements").crumbsElement;
     var crumb = crumbs.lastChild;
     while (crumb) {
         result.unshift(crumb.textContent);

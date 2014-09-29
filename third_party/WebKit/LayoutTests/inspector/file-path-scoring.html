@@ -20,7 +20,7 @@ function test()
         ["adscon", "./Source/devtools/front_end/AdvancedSearchController.pl"]
     ];
 
-    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView._showPanel("sources");
     InspectorTest.evaluateInPage("blinkFilePaths()", step1);
     InspectorTest.addResult("Expected score must be equal to the actual score");
 

@@ -12,7 +12,7 @@ function test()
         return;
     }
 
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
     InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", revisionAdded);
 

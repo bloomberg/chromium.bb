@@ -5,7 +5,7 @@
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("profiles");
+    WebInspector.inspectorView._showPanel("profiles");
     var cleaner = new WebInspector.TempStorageCleaner();
     function finish()
     {

@@ -6,7 +6,7 @@
 function test()
 {
     // force the loading of NetworkPanel code.
-    var networkPanel = WebInspector.inspectorView.showPanel("network");
+    var networkPanel = WebInspector.inspectorView._showPanel("network");
 
     function createNetworkRequestWithJSONMIMEType(type)
     {

@@ -34,7 +34,7 @@ function setupEventListeners()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
 
     Object.defineProperty(WebInspector.EventListenerBar.prototype, "subtitleAsTextForTest", {
         configurable: true,

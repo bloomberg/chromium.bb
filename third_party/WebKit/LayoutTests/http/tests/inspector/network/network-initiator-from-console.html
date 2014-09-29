@@ -38,7 +38,7 @@ var test = function()
         if (!findRequestByURL(/silent_script.js/))
             return;
 
-        WebInspector.inspectorView.showPanel("network");
+        WebInspector.inspectorView._showPanel("network");
         InspectorTest.completeTest();
     }
 }

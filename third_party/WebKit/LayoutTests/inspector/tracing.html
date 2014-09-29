@@ -19,7 +19,7 @@ function doWork()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("timeline");
+    WebInspector.inspectorView._showPanel("timeline");
 
     var tracingManager = new WebInspector.TracingManager();
     var tracingModel = new WebInspector.TracingModel();

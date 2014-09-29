@@ -56,7 +56,7 @@ InspectorTest.waitForPseudoIdNodeStyles = function(idValue, pseudoType, callback
 
 InspectorTest.selectPseudoIdNodeAndWaitForStyles = function(idValue, pseudoType, callback)
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     callback = InspectorTest.safeWrap(callback);
 
     var targetNode;

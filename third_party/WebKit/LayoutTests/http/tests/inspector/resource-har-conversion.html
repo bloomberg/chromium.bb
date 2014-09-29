@@ -18,7 +18,7 @@ function doXHR()
 var test = function()
 {
     InspectorTest.reloadPage(step1);
-    WebInspector.inspectorView.showPanel("network");
+    WebInspector.inspectorView._showPanel("network");
 
     function step1()
     {

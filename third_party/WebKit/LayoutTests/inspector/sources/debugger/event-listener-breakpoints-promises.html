@@ -30,7 +30,7 @@ var test = function()
     var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
     var numberOfPauses = 6;
 
-    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView._showPanel("sources");
     InspectorTest.setQuiet(true);
     InspectorTest.startDebuggerTest(step1);
 

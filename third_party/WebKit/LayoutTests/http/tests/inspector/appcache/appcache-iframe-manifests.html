@@ -9,7 +9,7 @@ function test()
     var frameId2;
     var frameId3;
 
-    WebInspector.inspectorView.showPanel("resources");
+    WebInspector.inspectorView._showPanel("resources");
     InspectorTest.dumpApplicationCache();
     InspectorTest.createAndNavigateIFrame("resources/page-with-manifest.php?manifestId=1", step1);
 

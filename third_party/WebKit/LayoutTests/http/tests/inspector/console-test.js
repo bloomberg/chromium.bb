@@ -3,7 +3,7 @@ var initialize_ConsoleTest = function() {
 
 InspectorTest.showConsolePanel = function()
 {
-    WebInspector.inspectorView.showPanel("console");
+    WebInspector.inspectorView._showPanel("console");
 }
 
 InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessage)
@@ -42,7 +42,7 @@ InspectorTest.fixConsoleViewportDimensions = function(width, height)
 
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames, formatter)
 {
-    WebInspector.inspectorView.panel("console");
+    WebInspector.inspectorView._panel("console");
     formatter = formatter || InspectorTest.prepareConsoleMessageText;
     var result = [];
     InspectorTest.disableConsoleViewport();
@@ -106,7 +106,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate)
 
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
-    WebInspector.inspectorView.panel("console");
+    WebInspector.inspectorView._panel("console");
     var result = [];
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
@@ -120,7 +120,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 }
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
-    WebInspector.inspectorView.panel("console");
+    WebInspector.inspectorView._panel("console");
     var result = [];
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
@@ -136,7 +136,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 
 InspectorTest.expandConsoleMessages = function(callback, deepFilter)
 {
-    WebInspector.inspectorView.panel("console");
+    WebInspector.inspectorView._panel("console");
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
 
     // Initiate round-trips to fetch necessary data for further rendering.
@@ -181,7 +181,7 @@ InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    WebInspector.inspectorView.panel("console");
+    WebInspector.inspectorView._panel("console");
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var m = messageViews[i].consoleMessage();
@@ -217,7 +217,7 @@ InspectorTest.waitUntilNthMessageReceived = function(count, callback)
 
 InspectorTest.changeExecutionContext = function(namePrefix)
 {
-    WebInspector.inspectorView.panel("console");
+    WebInspector.inspectorView._panel("console");
     var selector = WebInspector.ConsolePanel._view()._executionContextSelector._selectElement;
     var option = selector.firstChild;
     while (option) {

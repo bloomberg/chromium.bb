@@ -38,7 +38,7 @@ function test()
     // FIXME: Remove once taken out of experiments. Also a hack below should be removed.
     Runtime.experiments.enableForTest("canvasInspection");
 
-    WebInspector.inspectorView.showPanel("profiles");
+    WebInspector.inspectorView._showPanel("profiles");
     var profilesPanel = WebInspector.panels.profiles;
     var typeRegistry = WebInspector.ProfileTypeRegistry.instance;
     var profileType = typeRegistry.canvasProfileType;

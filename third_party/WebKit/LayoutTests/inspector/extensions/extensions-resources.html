@@ -17,7 +17,7 @@ function initialize_ExtensionResourceTests()
 
 InspectorTest.clickOnURL = function()
 {
-    WebInspector.inspectorView.showPanel("console");
+    WebInspector.inspectorView._showPanel("console");
     var xpathResult = document.evaluate("//a[starts-with(., 'extensions-resources.html')]",
                                         WebInspector.panels.console.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
     var click = document.createEvent("MouseEvent");

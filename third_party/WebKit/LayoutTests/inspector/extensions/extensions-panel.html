@@ -45,7 +45,7 @@ function initialize_extensionsPanelTest()
 
     InspectorTest.clickOnURL = function()
     {
-        WebInspector.inspectorView.showPanel("console");
+        WebInspector.inspectorView._showPanel("console");
         InspectorTest.disableConsoleViewport();
         var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]", WebInspector.ConsolePanel._view()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
         var click = document.createEvent("MouseEvent");
@@ -62,9 +62,9 @@ function initialize_extensionsPanelTest()
         }
         InspectorTest.recordNetwork();
 
-        InspectorTest.addSniffer(WebInspector.inspectorView.panel("sources"), "showUILocation", showUILocationHook, true);
-        InspectorTest.addSniffer(WebInspector.inspectorView.panel("resources"), "showResource", showResourceHook, true);
-        InspectorTest.addSniffer(WebInspector.inspectorView.panel("network"), "revealAndHighlightRequest", showRequestHook, true);
+        InspectorTest.addSniffer(WebInspector.inspectorView._panel("sources"), "showUILocation", showUILocationHook, true);
+        InspectorTest.addSniffer(WebInspector.inspectorView._panel("resources"), "showResource", showResourceHook, true);
+        InspectorTest.addSniffer(WebInspector.inspectorView._panel("network"), "revealAndHighlightRequest", showRequestHook, true);
 
         function showUILocationHook(uiLocation)
         {
@@ -85,7 +85,7 @@ function initialize_extensionsPanelTest()
     InspectorTest.switchToLastPanel = function()
     {
         var lastPanelName = WebInspector.inspectorView._tabbedPane._tabs.peekLast().id;
-        WebInspector.inspectorView.showPanel(lastPanelName);
+        WebInspector.inspectorView._showPanel(lastPanelName);
     }
 }
 

@@ -16,7 +16,7 @@ function clickPseudo()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     WebInspector.domModel.setInspectModeEnabled(true, false, inspectModeEnabled.bind(this));
 
     function inspectModeEnabled()

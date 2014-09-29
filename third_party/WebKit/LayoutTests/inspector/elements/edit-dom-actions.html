@@ -8,7 +8,7 @@
 function test()
 {
     // Save time on style updates.
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     WebInspector.StylesSidebarPane.prototype.update = function() {};
     WebInspector.MetricsSidebarPane.prototype.update = function() {};
 

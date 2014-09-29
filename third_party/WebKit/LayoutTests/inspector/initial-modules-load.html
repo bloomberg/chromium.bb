@@ -13,19 +13,19 @@ function test()
 
         function testCreateElementsPanel(next)
         {
-            WebInspector.inspectorView.panel("elements");
+            WebInspector.inspectorView._panel("elements");
             InspectorTest.dumpLoadedModules(next);
         },
 
         function testCreateNetworkPanel(next)
         {
-            WebInspector.inspectorView.panel("network");
+            WebInspector.inspectorView._panel("network");
             InspectorTest.dumpLoadedModules(next);
         },
 
         function testShowSourcesPanel(next)
         {
-            WebInspector.inspectorView.showPanel("sources");
+            WebInspector.inspectorView._showPanel("sources");
             InspectorTest.dumpLoadedModules(next);
         },
 

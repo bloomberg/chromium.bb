@@ -3,7 +3,7 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 function test() {
-    var panel = WebInspector.inspectorView.showPanel("network");
+    var panel = WebInspector.inspectorView._showPanel("network");
     var target = panel._networkLogView;
     var types = WebInspector.resourceTypes;
 

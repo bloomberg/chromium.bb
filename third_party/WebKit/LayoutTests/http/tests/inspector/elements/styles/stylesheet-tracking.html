@@ -69,7 +69,7 @@ function test()
 {
     var inspectedNode;
 
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, null);
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
     var headers = WebInspector.cssModel.styleSheetHeaders();

@@ -12,7 +12,7 @@ function addStyle()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetAdded);
     InspectorTest.evaluateInPage("addStyle()");
 

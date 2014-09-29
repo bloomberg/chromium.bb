@@ -63,7 +63,7 @@ function test()
             {
                 WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.addResult("Stylesheet loaded.");
-                WebInspector.inspectorView.showPanel("elements");
+                WebInspector.inspectorView._showPanel("elements");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
             }
 

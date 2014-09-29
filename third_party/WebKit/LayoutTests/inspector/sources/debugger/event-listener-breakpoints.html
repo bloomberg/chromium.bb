@@ -58,7 +58,7 @@ function onVideoPlay()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView._showPanel("sources");
     var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
     InspectorTest.runDebuggerTestSuite([
         function testClickBreakpoint(next)

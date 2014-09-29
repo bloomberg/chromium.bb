@@ -2,7 +2,7 @@ function initialize_TracingTest()
 {
 
 // FIXME: remove when tracing is out of experimental
-WebInspector.inspectorView.showPanel("timeline");
+WebInspector.inspectorView._showPanel("timeline");
 InspectorTest.tracingManager = WebInspector.panels.timeline._tracingManager || new WebInspector.TracingManager();
 InspectorTest.tracingModel = new WebInspector.TracingModel();
 InspectorTest.tracingTimelineModel = new WebInspector.TracingTimelineModel(InspectorTest.tracingManager, InspectorTest.tracingModel, new WebInspector.TimelineRecordHiddenTypeFilter([]));

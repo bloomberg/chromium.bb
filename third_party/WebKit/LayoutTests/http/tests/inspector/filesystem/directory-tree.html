@@ -8,7 +8,7 @@
 document.addEventListener("DOMContentLoaded", runTest);
 function test()
 {
-    var resourcesPanel = WebInspector.inspectorView.showPanel("resources");
+    var resourcesPanel = WebInspector.inspectorView._showPanel("resources");
     var fileSystemListTreeElement = resourcesPanel.fileSystemListTreeElement;
     if (!fileSystemListTreeElement) {
         fileSystemListTreeElement = new WebInspector.FileSystemListTreeElement(resourcesPanel);

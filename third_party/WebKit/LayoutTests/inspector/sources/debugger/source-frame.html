@@ -17,7 +17,7 @@ function methodForBreakpoint()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("resources");
+    WebInspector.inspectorView._showPanel("resources");
     InspectorTest.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
@@ -70,7 +70,7 @@ function test()
 
         function testShowResource(next)
         {
-            WebInspector.inspectorView.showPanel("network");
+            WebInspector.inspectorView._showPanel("network");
 
             InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "show", didShowSourceFrame);
 

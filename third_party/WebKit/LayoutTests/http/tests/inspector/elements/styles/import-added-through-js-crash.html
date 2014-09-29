@@ -13,7 +13,7 @@ function addImportRule()
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
+    WebInspector.inspectorView._showPanel("elements");
     InspectorTest.runTestSuite([
         function selectNode(next)
         {

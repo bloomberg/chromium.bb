@@ -21,7 +21,7 @@ function performActions()
 function test()
 {
     // Force panel load.
-    WebInspector.inspectorView.panel("elements");
+    WebInspector.inspectorView._panel("elements");
 
     InspectorTest.evaluateInPage("var unused = document.body.offsetWidth;", function() {
          InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
@@ -29,7 +29,7 @@ function test()
 
     function clickValueLink(record, row)
     {
-        var panel = WebInspector.inspectorView.panel("timeline");
+        var panel = WebInspector.inspectorView._panel("timeline");
         var helper = panel._uiUtils.generateDetailsContent(record, panel._model, new WebInspector.Linkifier(), onDetailsContentReady);
 
         function onDetailsContentReady(element)
@@ -53,7 +53,7 @@ function test()
 
     function onSelectedNodeChanged()
     {
-        // avoid using WebInspector.inspectorView.panel("elements"), as we get first event from constructor,
+        // avoid using WebInspector.inspectorView._panel("elements"), as we get first event from constructor,
         // and this call would cause another instance to get constructed.
         var node = WebInspector.panels.elements.selectedDOMNode();
         // We may first get an old selected node while switching to the Elements panel.

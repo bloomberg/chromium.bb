@@ -13,7 +13,7 @@ function throwAnException()
 
 var test = function()
 {
-    var panel = WebInspector.inspectorView.showPanel("sources");
+    var panel = WebInspector.inspectorView._showPanel("sources");
     DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
 
     InspectorTest.runDebuggerTestSuite([

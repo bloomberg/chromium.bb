@@ -19,7 +19,7 @@ function initialize_extensionsSidebarTest()
 
     InspectorTest._extensionSidebar = function()
     {
-        return WebInspector.inspectorView.panel("elements")._extensionSidebarPanes[0];
+        return WebInspector.inspectorView._panel("elements")._extensionSidebarPanes[0];
     }
 }
 

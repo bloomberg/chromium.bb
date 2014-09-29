@@ -45,7 +45,7 @@ InspectorTest.showPanel = function(panelId)
 {
     if (panelId === "extension")
         panelId = WebInspector.inspectorView._tabbedPane._tabs[WebInspector.inspectorView._tabbedPane._tabs.length - 1].id;
-    WebInspector.inspectorView.showPanel(panelId);
+    WebInspector.inspectorView._showPanel(panelId);
 }
 
 InspectorTest.runExtensionTests = function()

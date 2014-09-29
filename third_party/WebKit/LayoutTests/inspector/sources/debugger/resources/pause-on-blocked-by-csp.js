@@ -1,6 +1,6 @@
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView._showPanel("sources");
 
     InspectorTest.addSniffer(WebInspector.CallStackSidebarPane.prototype, "setStatus", setStatus, false);
 

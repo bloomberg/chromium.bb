@@ -11,7 +11,7 @@ function testFunction() {
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView._showPanel("sources");
     InspectorTest.startDebuggerTest(startDebuggerTestCallback);
 
     function startDebuggerTestCallback()

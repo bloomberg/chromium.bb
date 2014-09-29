@@ -6,7 +6,7 @@
 <script>
 function test()
 {
-    WebInspector.inspectorView.showPanel("timeline");
+    WebInspector.inspectorView._showPanel("timeline");
     InspectorTest.invokeWithTracing("(function(callback) { callback(); })", processTracingEvents);
 
     function processTracingEvents()
