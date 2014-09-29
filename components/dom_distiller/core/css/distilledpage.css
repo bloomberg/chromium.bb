@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 /* Set the global 'box-sizing' state to 'border-box'.
- * *::after and *::before used to select psuedo-elements not selectable by *. */
+ * *::after and *::before used to select pseudo-elements not selectable by *. */
 
 *,
 *::after,
