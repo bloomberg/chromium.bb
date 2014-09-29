@@ -49,25 +49,62 @@ var MockTts = function() {
 };
 
 MockTts.prototype = {
-  /** Tracks all spoken text. @type {!Array.<string>} */
-  utterances: [],
+  /**
+   * A list of predicate callbacks.
+   * @type {!Array.<function(string) : boolean>}
+   * @private
+   */
+  callbacks_: [],
+
+  /**
+   * A list of strings stored whenever there are no expectations.
+   * @type {!Array.<string}
+   * @private
+   */
+  idleUtterances_: [],
 
   /** @override */
   speak: function(textString, queueMode, properties) {
-    this.utterances.push(textString);
+    this.process_(textString);
   },
 
   /**
-   * Checks to see if a string was spoken.
-   * @param {string} textString The string to check.
-   * @return {boolean} True if the string was spoken (possibly as part of a
-   * larger utterance).
+   * Adds an expectation for the given string to be spoken. If satisfied,
+   * |opt_callback| is called.
+   * @param {string} expected
+   * @param {function() : void=} opt_callback
    */
-  checkIfSubstringWasSpoken: function(textString) {
-    return this.utterances.some(function(t) {
-      return t.indexOf(textString) != -1;
+  expectSpeech: function(expected, opt_callback) {
+    this.callbacks_.push(function(actual) {
+      var match = actual.indexOf(expected) != -1;
+      if (opt_callback && match)
+        opt_callback();
+      return match;
     });
-  }
+
+    // Process any idleUtterances.
+    this.idleUtterances_.forEach(this.process_, true);
+  },
+
+  /**
+   * @param {string} textString Utterance to match against callbacks.
+   * @param {boolean=} opt_manual True if called outside of tts.speak.
+   * @private
+   */
+  process_: function(textString, opt_manual) {
+    if (this.callbacks_.length == 0) {
+      if (!opt_manual)
+        this.idleUtterances_.push(textString);
+      return;
+    }
+
+    var allUtterances = this.idleUtterances_.concat([textString]);
+    var targetCallback = this.callbacks_.shift();
+    if (allUtterances.some(targetCallback))
+      this.idleUtterances_.length = 0;
+    else
+      this.callbacks_.unshift(targetCallback);
+  },
 };
 
 /** Tests that ChromeVox classic is in this context. */
@@ -100,13 +137,21 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
 
   chrome.automation.getDesktop(function(root) {
     var testButton = findStatusTray(root);
-    testButton.addEventListener(chrome.automation.EventType.focus,
-        function(e) {
-          var result =
-              cvox.ChromeVox.tts.checkIfSubstringWasSpoken('Status tray');
-          testDone([result, '']);
-        },
-        true);
+    cvox.ChromeVox.tts.expectSpeech('Status tray', testDone);
     testButton.focus();
   });
+});
+
+/** Tests feedback once a page loads. */
+TEST_F('BackgroundTest', 'InitialFeedback', function() {
+  this.runWithDocument(function() {/*!
+    <p>start
+    <p>end
+  */},
+  function() {
+    cvox.ChromeVox.tts.expectSpeech('start', function() {
+      cvox2.global.backgroundObj.onGotCommand('nextLine');
+    });
+    cvox.ChromeVox.tts.expectSpeech('end', testDone);
+  }.bind(this));
 });

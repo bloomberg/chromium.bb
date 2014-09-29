@@ -4,15 +4,8 @@
 
 GEN_INCLUDE([
     'chrome/browser/resources/chromeos/chromevox/testing/assert_additions.js']);
-
-/**
- * Shortcut for document.getElementById.
- * @param {string} id of the element.
- * @return {HTMLElement} with the id.
- */
-function $(id) {
-  return document.getElementById(id);
-}
+GEN_INCLUDE([
+  'chrome/browser/resources/chromeos/chromevox/testing/common.js']);
 
 /**
  * Base test fixture for ChromeVox unit tests.
@@ -74,7 +67,8 @@ ChromeVoxUnitTestBase.prototype = {
    *     comment inside an anonymous function - see example, above.
    */
   loadDoc: function(commentEncodedHtml) {
-    var html = this.extractHtmlFromCommentEncodedString_(commentEncodedHtml);
+    var html =
+        TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.loadHtml(html);
   },
 
@@ -91,7 +85,8 @@ ChromeVoxUnitTestBase.prototype = {
    *     comment inside an anonymous function - see example, above.
    */
   appendDoc: function(commentEncodedHtml) {
-    var html = this.extractHtmlFromCommentEncodedString_(commentEncodedHtml);
+    var html =
+        TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.appendHtml(html);
   },
 
@@ -108,24 +103,6 @@ ChromeVoxUnitTestBase.prototype = {
       fragment.appendChild(div.firstChild);
     }
     document.body.appendChild(fragment);
-  },
-
-  /**
-   * Extracts some inlined html encoded as a comment inside a function,
-   * so you can use it like this:
-   *
-   * this.appendDoc(function() {/*!
-   *     <p>Html goes here</p>
-   * * /});
-   *
-   * @param {Function} commentEncodedHtml The html , embedded as a
-   *     comment inside an anonymous function - see example, above.
-   @ @return {String} The html text.
-   */
-  extractHtmlFromCommentEncodedString_: function(commentEncodedHtml) {
-    return commentEncodedHtml.toString().
-        replace(/^[^\/]+\/\*!?/, '').
-        replace(/\*\/[^\/]+$/, '');
   },
 
   /**

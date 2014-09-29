@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE([
+    'chrome/browser/resources/chromeos/chromevox/testing/common.js']);
+
 /**
  * Base test fixture for ChromeVox end to end tests.
  *
@@ -52,6 +55,29 @@ ChromeVoxE2ETest.prototype = {
           ash::A11Y_NOTIFICATION_NONE);
   WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
     */});
+  },
+
+  /**
+   * Run a test with the specified HTML snippet loaded.
+   * @param {function() : void} doc Snippet wrapped inside of a function.
+   * @param {function()} callback Called once the document is ready.
+   */
+  runWithDocument: function(doc, callback) {
+    var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
+    var url = 'data:text/html,<!doctype html>' +
+        docString +
+        '<!-- chromevox_next_test -->';
+    var createParams = {
+      active: true,
+      url: url
+    };
+    chrome.tabs.create(createParams, function(tab) {
+      chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+        if (tabId == tab.id && changeInfo.status == 'complete') {
+          callback();
+        }
+      });
+    });
   }
 };
 

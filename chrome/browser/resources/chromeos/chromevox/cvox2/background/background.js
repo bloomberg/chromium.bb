@@ -11,6 +11,9 @@ goog.provide('cvox2.Background');
 goog.provide('cvox2.global');
 
 goog.require('cvox.TabsApiHandler');
+goog.require('cvox2.AutomationPredicates');
+goog.require('cvox2.AutomationUtil');
+goog.require('cvox2.Dir');
 
 /** Classic Chrome accessibility API. */
 cvox2.global.accessibility =
@@ -26,6 +29,14 @@ cvox2.Background = function() {
    * @type {!Array.<string>}
    */
   this.whitelist_ = ['http://www.chromevox.com/', 'chromevox_next_test'];
+
+  /** @type {cvox.TabsApiHandler} @private */
+  this.tabsHandler_ = new cvox.TabsApiHandler(cvox.ChromeVox.tts,
+                                              cvox.ChromeVox.braille,
+                                              cvox.ChromeVox.earcons);
+
+  /** @type {AutomationNode} @private */
+  this.currentNode_ = null;
 
   /** @type {cvox.TabsApiHandler} @private */
   this.tabsHandler_ = new cvox.TabsApiHandler(cvox.ChromeVox.tts,
@@ -66,9 +77,8 @@ cvox2.Background.prototype = {
         return;
       }
 
-      if (!chrome.commands.onCommand.hasListeners()) {
+      if (!chrome.commands.onCommand.hasListeners())
         chrome.commands.onCommand.addListener(this.onGotCommand);
-      }
 
       this.disableClassicChromeVox_(tab.id);
 
@@ -83,19 +93,14 @@ cvox2.Background.prototype = {
   onGotTree: function(root) {
     // Register all automation event listeners.
     root.addEventListener(chrome.automation.EventType.focus,
-                          this.onAutomationEvent.bind(this),
+                          this.onFocus,
                           true);
-  },
+    root.addEventListener(chrome.automation.EventType.loadComplete,
+                          this.onLoadComplete,
+                          true);
 
-  /**
-   * A generic handler for all desktop automation events.
-   * @param {AutomationEvent} evt The event.
-   */
-  onAutomationEvent: function(evt) {
-    var output = evt.target.attributes.name + ' ' + evt.target.role;
-    cvox.ChromeVox.tts.speak(output, cvox.AbstractTts.QUEUE_MODE_FLUSH);
-    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
-    chrome.accessibilityPrivate.setFocusRing([evt.target.location]);
+    if (root.attributes.docLoaded)
+      this.onLoadComplete({target: root});
   },
 
   /**
@@ -103,6 +108,99 @@ cvox2.Background.prototype = {
    * @param {string} command
    */
   onGotCommand: function(command) {
+    if (!this.current_)
+      return;
+
+    var previous = this.current_;
+    var current = this.current_;
+
+    var dir = cvox2.Dir.FORWARD;
+    var pred = null;
+    switch (command) {
+      case 'nextHeading':
+        dir = cvox2.Dir.FORWARD;
+        pred = cvox2.AutomationPredicates.heading;
+        break;
+      case 'previousHeading':
+        dir = cvox2.Dir.BACKWARD;
+        pred = cvox2.AutomationPredicates.heading;
+        break;
+      case 'nextLine':
+        dir = cvox2.Dir.FORWARD;
+        pred = cvox2.AutomationPredicates.inlineTextBox;
+        break;
+      case 'previousLine':
+        dir = cvox2.Dir.BACKWARD;
+        pred = cvox2.AutomationPredicates.inlineTextBox;
+        break;
+      case 'nextLink':
+        dir = cvox2.Dir.FORWARD;
+        pred = cvox2.AutomationPredicates.link;
+        break;
+      case 'previousLink':
+        dir = cvox2.Dir.BACKWARD;
+        pred = cvox2.AutomationPredicates.link;
+        break;
+      case 'nextElement':
+        current = current.role == chrome.automation.RoleType.inlineTextBox ?
+            current.parent() : current;
+        current = cvox2.AutomationUtil.findNextNode(current,
+            cvox2.Dir.FORWARD,
+            cvox2.AutomationPredicates.inlineTextBox);
+        current = current ? current.parent() : current;
+        break;
+      case 'previousElement':
+        current = current.role == chrome.automation.RoleType.inlineTextBox ?
+            current.parent() : current;
+        current = cvox2.AutomationUtil.findNextNode(current,
+            cvox2.Dir.BACKWARD,
+            cvox2.AutomationPredicates.inlineTextBox);
+        current = current ? current.parent() : current;
+        break;
+    }
+
+    if (pred)
+      current = cvox2.AutomationUtil.findNextNode(current, dir, pred);
+
+    if (current)
+      current.focus();
+
+    this.onFocus({target: current || previous});
+  },
+
+  /**
+   * Provides all feedback once ChromeVox's focus changes.
+   * @param {Object} evt
+   */
+  onFocus: function(evt) {
+    var node = evt.target;
+    if (!node)
+      return;
+    var container = node;
+    while (container && (container.role == 'inlineTextBox' ||
+        container.role == 'staticText'))
+      container = container.parent();
+
+    var role = container ? container.role : node.role;
+
+    var output =
+        [node.attributes.name, node.attributes.value, role].join(', ');
+    cvox.ChromeVox.tts.speak(output, cvox.AbstractTts.QUEUE_MODE_FLUSH);
+    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
+    chrome.accessibilityPrivate.setFocusRing([evt.target.location]);
+
+    this.current_ = node;
+  },
+
+  /**
+   * Provides all feedback once a load complete event fires.
+   * @param {Object} evt
+   */
+  onLoadComplete: function(evt) {
+    this.current_ = cvox2.AutomationUtil.findNodePost(evt.target,
+        cvox2.Dir.FORWARD,
+        cvox2.AutomationPredicates.inlineTextBox);
+    this.onFocus({target: this.current_});
   },
 
   /**
@@ -118,7 +216,7 @@ cvox2.Background.prototype = {
 
   /**
    * Disables classic ChromeVox.
-   * @param {number} tabId The tab where ChromeVox classic is running.
+   * @param {number} tabId The tab where ChromeVox classic is running in.
    */
   disableClassicChromeVox_: function(tabId) {
     chrome.tabs.executeScript(

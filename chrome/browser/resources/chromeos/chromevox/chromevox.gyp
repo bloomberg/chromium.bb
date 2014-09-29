@@ -191,7 +191,7 @@
           'type': 'none',
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest_next.json',
-'use_chromevox_next': 1,
+            'use_chromevox_next': 1,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },
