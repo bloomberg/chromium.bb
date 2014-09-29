@@ -406,6 +406,8 @@ TEST(ScopedPtrTest, PassBehavior) {
 
     // Should auto-destruct logger by end of scope.
     scoper.Pass();
+    // This differs from unique_ptr, as Pass() has side effects but std::move()
+    // does not.
     EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
@@ -601,4 +603,56 @@ TEST(ScopedPtrTest, OverloadedNewAndDelete) {
   }
   EXPECT_EQ(1, OverloadedNewAndDelete::delete_count());
   EXPECT_EQ(1, OverloadedNewAndDelete::new_count());
+}
+
+scoped_ptr<int> NullIntReturn() {
+  return nullptr;
+}
+
+TEST(ScopedPtrTest, Nullptr) {
+  scoped_ptr<int> scoper1(nullptr);
+  scoped_ptr<int> scoper2(new int);
+  scoper2 = nullptr;
+  scoped_ptr<int> scoper3(NullIntReturn());
+  scoped_ptr<int> scoper4 = NullIntReturn();
+  EXPECT_EQ(nullptr, scoper1.get());
+  EXPECT_EQ(nullptr, scoper2.get());
+  EXPECT_EQ(nullptr, scoper3.get());
+  EXPECT_EQ(nullptr, scoper4.get());
+}
+
+scoped_ptr<int[]> NullIntArrayReturn() {
+  return nullptr;
+}
+
+TEST(ScopedPtrTest, NullptrArray) {
+  scoped_ptr<int[]> scoper1(nullptr);
+  scoped_ptr<int[]> scoper2(new int[3]);
+  scoper2 = nullptr;
+  scoped_ptr<int[]> scoper3(NullIntArrayReturn());
+  scoped_ptr<int[]> scoper4 = NullIntArrayReturn();
+  EXPECT_EQ(nullptr, scoper1.get());
+  EXPECT_EQ(nullptr, scoper2.get());
+  EXPECT_EQ(nullptr, scoper3.get());
+  EXPECT_EQ(nullptr, scoper4.get());
+}
+
+class Super {};
+class Sub : public Super {};
+
+scoped_ptr<Sub> SubClassReturn() {
+  return make_scoped_ptr(new Sub);
+}
+
+TEST(ScopedPtrTest, Conversion) {
+  scoped_ptr<Sub> sub1(new Sub);
+  scoped_ptr<Sub> sub2(new Sub);
+
+  // Upcast with Pass() works.
+  scoped_ptr<Super> super1 = sub1.Pass();
+  super1 = sub2.Pass();
+
+  // Upcast with an rvalue works.
+  scoped_ptr<Super> super2 = SubClassReturn();
+  super2 = SubClassReturn();
 }
