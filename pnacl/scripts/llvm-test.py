@@ -242,7 +242,7 @@ def SetupEnvironment(options):
   env['PNACL_BIN'] = (
     '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/bin'.format(**env))
   env['PNACL_SDK_DIR'] = (
-    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/le32_nacl/lib'
+    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/le32-nacl/lib'
     .format(**env))
   env['PNACL_SCRIPTS'] = '{NACL_ROOT}/pnacl/scripts'.format(**env)
   env['LLVM_REGRESSION_KNOWN_FAILURES'] = (
@@ -510,6 +510,7 @@ def main(argv):
                                   'LLVM_REGRESSION_KNOWN_FAILURES',
                                   env, options)
   if options.run_libcxx_tests:
+    EnsureSdkExists(env)
     result = result or RunLitTest(env['TC_BUILD_LIBCXX'], 'check-libcxx',
                                   'LIBCXX_KNOWN_FAILURES',
                                   env, options)

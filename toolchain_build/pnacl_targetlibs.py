@@ -323,16 +323,10 @@ def BitcodeLibs(bias_arch, is_canonical):
                    '-DLLVM_LIT_ARGS=--verbose  --param shell_prefix="' +
                     os.path.join(NACL_DIR,'run.py') +' -arch env --retries=1" '+
                     '--param exe_suffix=".pexe" --param use_system_lib=true ' +
-                    '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj '+
-                   # Since this testsuite is just testing C++ library features,
-                   # We just use the portable-bitcode build.
-                    '-L' + os.path.join(
-                        NACL_DIR,
-                        'toolchain/linux_x86/pnacl_newlib/lib/clang/' +
-                        CLANG_VER + '/lib/le32-nacl ') +
-                    '-L' + os.path.join(
-                        NACL_DIR,
-                        'toolchain/linux_x86/pnacl_newlib/le32-nacl/lib') + '"',
+                    '--param cxx_under_test="' +  os.path.join(NACL_DIR,
+                        'toolchain/linux_x86/pnacl_newlib/bin/pnacl-clang++') +
+                    '" '+
+                    '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj"',
                    '-DLIBCXX_ENABLE_CXX0X=0',
                    '-DLIBCXX_ENABLE_SHARED=0',
                    '-DLIBCXX_CXX_ABI=libcxxabi',
