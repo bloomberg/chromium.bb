@@ -27,6 +27,7 @@ executable("mojo_shell") {
 source_set("lib") {
   deps = [
     ":app_child_process_bindings",
+    ":external_application_registrar_bindings",
     ":external_service_bindings",
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -57,6 +58,11 @@ source_set("lib") {
     "dynamic_application_loader.cc",
     "dynamic_application_loader.h",
     "dynamic_service_runner.h",
+    "external_application_listener_posix.cc",
+    "external_application_listener_win.cc",
+    "external_application_listener.h",
+    "incoming_connection_listener_posix.cc",
+    "incoming_connection_listener_posix.h",
     "init.cc",
     "init.h",
     "in_process_dynamic_service_runner.cc",
@@ -101,6 +107,25 @@ mojom("external_service_bindings") {
   ]
 }
 
+mojom("external_application_registrar_bindings") {
+  sources = [
+    "external_application_registrar.mojom"
+  ]
+}
+
+source_set("external_application_registrar_connection") {
+  sources = [
+    "external_application_registrar_connection.cc",
+    "external_application_registrar_connection.h",
+  ]
+
+  deps = [
+   ":external_application_registrar_bindings",
+   "//net"
+  ]
+}
+
+# GYP version: mojo/mojo.gyp:mojo_shell_tests
 test("mojo_shell_tests") {
   deps = [
     ":lib",
@@ -151,5 +176,28 @@ source_set("test_support") {
     ":lib",
     "//base:base_static",
     "//mojo/system",
+  ]
+}
+
+# GYP version: mojo/mojo.gyp:external_application_tests
+test("mojo_external_application_tests") {
+  deps = [
+    ":lib",
+    ":external_application_registrar_connection",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//net:test_support",
+    "//url",
+    "//mojo/application_manager",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/system",
+  ]
+
+  sources = [
+    "incoming_connection_listener_unittest.cc",
+    "external_application_listener_unittest.cc",
+    "external_application_test_main.cc",
   ]
 }

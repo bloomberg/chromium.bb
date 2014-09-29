@@ -87,6 +87,7 @@
           'dependencies': [
             'mojo_dbus_echo',
             'mojo_dbus_echo_service',
+            'mojo_external_application_tests',
           ],
         }],
         ['component != "shared_library" and OS == "linux"', {
@@ -176,6 +177,12 @@
         'shell/dynamic_application_loader.cc',
         'shell/dynamic_application_loader.h',
         'shell/dynamic_service_runner.h',
+        'shell/external_application_listener_posix.cc',
+        'shell/external_application_listener_win.cc',
+        'shell/external_application_listener.h',
+        'shell/external_application_registrar.mojom',
+        'shell/incoming_connection_listener_posix.cc',
+        'shell/incoming_connection_listener_posix.h',
         'shell/init.cc',
         'shell/init.h',
         'shell/in_process_dynamic_service_runner.cc',
@@ -203,6 +210,10 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus',
+          ],
+          'sources': [
+            'shell/external_application_registrar_connection.cc',
+            'shell/external_application_registrar_connection.h',
           ],
         }],
         ['OS=="android"', {
@@ -323,7 +334,7 @@
       ],
     },
     {
-      # GN version: //mojo/application_manager:unittests
+      # GN version: //mojo/application_manager:mojo_application_manager_unittests
       'target_name': 'mojo_application_manager_unittests',
       'type': 'executable',
       'dependencies': [
@@ -444,6 +455,28 @@
           'sources': [
             'dbus/dbus_external_service.h',
             'dbus/dbus_external_service.cc',
+          ],
+        },
+        {
+          # GN version: //mojo/shell:mojo_external_application_tests
+          'target_name': 'mojo_external_application_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../net/net.gyp:net_test_support',
+            '../url/url.gyp:url_lib',
+            'mojo_application_manager',
+            'mojo_base.gyp:mojo_common_lib',
+            'mojo_base.gyp:mojo_environment_chromium',
+            'mojo_base.gyp:mojo_system_impl',
+            'mojo_shell_lib',
+          ],
+          'sources': [
+            'shell/incoming_connection_listener_unittest.cc',
+            'shell/external_application_listener_unittest.cc',
+            'shell/external_application_test_main.cc',
           ],
         },
       ],

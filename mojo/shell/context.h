@@ -22,6 +22,7 @@ class Spy;
 namespace shell {
 
 class DynamicApplicationLoader;
+class ExternalApplicationListener;
 
 // The "global" context for the shell's main process.
 class Context : ApplicationManager::Delegate {
@@ -53,6 +54,7 @@ class Context : ApplicationManager::Delegate {
 
   std::set<GURL> app_urls_;
   scoped_ptr<TaskRunners> task_runners_;
+  scoped_ptr<ExternalApplicationListener> listener_;
   ApplicationManager application_manager_;
   MojoURLResolver mojo_url_resolver_;
   scoped_ptr<Spy> spy_;

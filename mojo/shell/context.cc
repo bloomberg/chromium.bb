@@ -6,7 +6,9 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -22,6 +24,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/shell/dynamic_application_loader.h"
+#include "mojo/shell/external_application_listener.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
@@ -178,6 +181,15 @@ void Context::Init() {
     mojo_url_resolver_.AddLocalFileMapping(GURL(kLocalMojoURLs[i]));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(switches::kEnableExternalApplications)) {
+    listener_ = ExternalApplicationListener::Create(
+        task_runners_->shell_runner(), task_runners_->io_runner());
+    listener_->ListenInBackground(
+        ExternalApplicationListener::ConstructDefaultSocketPath(),
+        base::Bind(&ApplicationManager::RegisterExternalApplication,
+                   base::Unretained(&application_manager_)));
+  }
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory;
   if (command_line->HasSwitch(switches::kEnableMultiprocess))
     runner_factory.reset(new OutOfProcessDynamicServiceRunnerFactory());
@@ -225,6 +237,9 @@ void Context::Init() {
                                          GURL("mojo:mojo_network_service"));
   }
 #endif
+
+  if (listener_)
+    listener_->WaitForListening();
 }
 
 void Context::OnApplicationError(const GURL& gurl) {

@@ -18,6 +18,11 @@ const char kContentHandlers[] = "content-handlers";
 // instructions.
 const char kDisableCache[] = "disable-cache";
 
+// Allow externally-running applications to discover, connect to, and register
+// themselves with the shell.
+// TODO(cmasone): Work in progress. Once we're sure this works, remove.
+const char kEnableExternalApplications[] = "enable-external-applications";
+
 // Load apps in separate processes.
 // TODO(vtl): Work in progress; doesn't work. Flip this to "disable" (or maybe
 // change it to "single-process") when it works.

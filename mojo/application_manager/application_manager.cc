@@ -206,6 +206,13 @@ void ApplicationManager::ConnectToClient(ShellImpl* shell_impl,
   }
 }
 
+void ApplicationManager::RegisterExternalApplication(
+    const GURL& url,
+    ScopedMessagePipeHandle shell_handle) {
+  url_to_shell_impl_[url] =
+      WeakBindToPipe(new ShellImpl(this, url), shell_handle.Pass());
+}
+
 void ApplicationManager::RegisterLoadedApplication(
     const GURL& url,
     const GURL& requestor_url,

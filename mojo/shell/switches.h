@@ -12,6 +12,7 @@ namespace switches {
 extern const char kChildProcessType[];
 extern const char kContentHandlers[];
 extern const char kDisableCache[];
+extern const char kEnableExternalApplications[];
 extern const char kEnableMultiprocess[];
 extern const char kOrigin[];
 extern const char kSpy[];

@@ -23,7 +23,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   class MOJO_APPLICATION_MANAGER_EXPORT Delegate {
    public:
     virtual ~Delegate();
-    // Send when the Applicaiton holding the handle on the other end of the
+    // Send when the Application holding the handle on the other end of the
     // Shell pipe goes away.
     virtual void OnApplicationError(const GURL& url) = 0;
   };
@@ -79,6 +79,9 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   ScopedMessagePipeHandle ConnectToServiceByName(
       const GURL& application_url,
       const std::string& interface_name);
+
+  void RegisterExternalApplication(const GURL& application_url,
+                                   ScopedMessagePipeHandle shell);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
