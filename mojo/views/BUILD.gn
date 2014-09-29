@@ -48,7 +48,6 @@ component("views_internal") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//skia",
     "//third_party/icu",

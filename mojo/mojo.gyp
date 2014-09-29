@@ -121,7 +121,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_static',
         '../net/net.gyp:http_server',
         '../url/url.gyp:url_lib',
         'mojo_application_manager',
@@ -233,7 +232,6 @@
       'target_name': 'mojo_shell_test_support',
       'type': 'static_library',
       'dependencies': [
-        '../base/base.gyp:base_static',
         'mojo_base.gyp:mojo_system_impl',
         'mojo_shell_lib',
       ],
@@ -545,7 +543,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',

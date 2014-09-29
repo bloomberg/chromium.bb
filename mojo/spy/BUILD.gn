@@ -8,7 +8,6 @@ source_set("spy") {
   deps = [
     ":spy_bindings",
     "//base",
-    "//base:base_static",
     "//net:http_server",
     "//url",
     "//mojo/application_manager",

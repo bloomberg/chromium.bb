@@ -173,7 +173,6 @@ source_set("test_support") {
 
   deps = [
     ":lib",
-    "//base:base_static",
     "//mojo/system",
   ]
 }
