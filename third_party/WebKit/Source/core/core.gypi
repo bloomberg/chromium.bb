@@ -3576,6 +3576,7 @@
             'rendering/RenderPartTest.cpp',
             'rendering/RenderTableCellTest.cpp',
             'rendering/RenderTableRowTest.cpp',
+            'rendering/TextPainterTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
             'rendering/style/OutlineValueTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
