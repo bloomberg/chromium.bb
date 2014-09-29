@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/avatar_label.h"
+#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/signin_header_helper.h"
@@ -20,9 +20,9 @@
 namespace {
 
 // A custom border for the supervised user avatar label.
-class AvatarLabelBorder : public views::Border {
+class SupervisedUserAvatarLabelBorder : public views::Border {
  public:
-  explicit AvatarLabelBorder(bool label_on_right);
+  explicit SupervisedUserAvatarLabelBorder(bool label_on_right);
 
   // views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
@@ -33,10 +33,11 @@ class AvatarLabelBorder : public views::Border {
   scoped_ptr<views::Painter> painter_;
   gfx::Insets insets_;
 
-  DISALLOW_COPY_AND_ASSIGN(AvatarLabelBorder);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserAvatarLabelBorder);
 };
 
-AvatarLabelBorder::AvatarLabelBorder(bool label_on_right) {
+SupervisedUserAvatarLabelBorder::SupervisedUserAvatarLabelBorder(
+    bool label_on_right) {
   const int kHorizontalInsetRight = label_on_right ? 43 : 10;
   const int kHorizontalInsetLeft = label_on_right ? 10 : 43;
   const int kVerticalInsetTop = 2;
@@ -54,7 +55,8 @@ AvatarLabelBorder::AvatarLabelBorder(bool label_on_right) {
   painter_.reset(views::Painter::CreateImageGridPainter(kImages));
 }
 
-void AvatarLabelBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
+void SupervisedUserAvatarLabelBorder::Paint(
+    const views::View& view, gfx::Canvas* canvas) {
   // Paint the default background using the image assets provided by UI. This
   // includes a border with almost transparent white color.
   painter_->Paint(canvas, view.size());
@@ -80,11 +82,11 @@ void AvatarLabelBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   canvas->DrawRoundRect(rect, kRadius, paint);
 }
 
-gfx::Insets AvatarLabelBorder::GetInsets() const {
+gfx::Insets SupervisedUserAvatarLabelBorder::GetInsets() const {
   return insets_;
 }
 
-gfx::Size AvatarLabelBorder::GetMinimumSize() const {
+gfx::Size SupervisedUserAvatarLabelBorder::GetMinimumSize() const {
   gfx::Size size(4, 4);
   size.SetToMax(painter_->GetMinimumSize());
   return size;
@@ -92,7 +94,7 @@ gfx::Size AvatarLabelBorder::GetMinimumSize() const {
 
 }  // namespace
 
-AvatarLabel::AvatarLabel(BrowserView* browser_view)
+SupervisedUserAvatarLabel::SupervisedUserAvatarLabel(BrowserView* browser_view)
     : LabelButton(NULL,
                   l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_AVATAR_LABEL)),
       browser_view_(browser_view) {
@@ -100,9 +102,9 @@ AvatarLabel::AvatarLabel(BrowserView* browser_view)
   UpdateLabelStyle();
 }
 
-AvatarLabel::~AvatarLabel() {}
+SupervisedUserAvatarLabel::~SupervisedUserAvatarLabel() {}
 
-bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
+bool SupervisedUserAvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
   if (!LabelButton::OnMousePressed(event))
     return false;
 
@@ -112,7 +114,7 @@ bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void AvatarLabel::UpdateLabelStyle() {
+void SupervisedUserAvatarLabel::UpdateLabelStyle() {
   // |browser_view_| can be NULL in unit tests.
   if (!browser_view_)
     return;
@@ -124,6 +126,7 @@ void AvatarLabel::UpdateLabelStyle() {
   SchedulePaint();
 }
 
-void AvatarLabel::SetLabelOnRight(bool label_on_right) {
-  SetBorder(scoped_ptr<views::Border>(new AvatarLabelBorder(label_on_right)));
+void SupervisedUserAvatarLabel::SetLabelOnRight(bool label_on_right) {
+  SetBorder(scoped_ptr<views::Border>(
+      new SupervisedUserAvatarLabelBorder(label_on_right)));
 }

@@ -70,6 +70,12 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_import_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -295,11 +301,13 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StartupPagesHandler());
+#if defined(ENABLE_MANAGED_USERS)
   AddOptionsPageUIHandler(localized_strings,
                           new SupervisedUserCreateConfirmHandler());
   AddOptionsPageUIHandler(localized_strings, new SupervisedUserImportHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new SupervisedUserLearnMoreHandler());
+#endif
   AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler(
       g_browser_process->profile_manager()));
   AddOptionsPageUIHandler(localized_strings, new WebsiteSettingsHandler());

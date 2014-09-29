@@ -8,7 +8,9 @@
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "ui/views/window/non_client_view.h"
 
-class AvatarLabel;
+#if defined(ENABLE_MANAGED_USERS)
+class SupervisedUserAvatarLabel;
+#endif
 class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
@@ -25,7 +27,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
 
   NewAvatarButton* new_avatar_button() const { return new_avatar_button_; }
 
-  AvatarLabel* avatar_label() const { return avatar_label_; }
+#if defined(ENABLE_MANAGED_USERS)
+  SupervisedUserAvatarLabel* supervised_user_avatar_label() const {
+    return supervised_user_avatar_label_;
+  }
+
+  virtual void OnThemeChanged() OVERRIDE;
+#endif
 
   // Retrieves the bounds, in non-client view coordinates within which the
   // TabStrip should be laid out.
@@ -46,7 +54,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Overriden from views::View.
   virtual void VisibilityChanged(views::View* starting_from,
                                  bool is_visible) OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
 
  protected:
   BrowserView* browser_view() const { return browser_view_; }
@@ -72,8 +79,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // icon.  May be NULL for some frame styles.
   AvatarMenuButton* avatar_button_;
 
-  // Avatar label that is used for a supervised user.
-  AvatarLabel* avatar_label_;
+#if defined(ENABLE_MANAGED_USERS)
+  SupervisedUserAvatarLabel* supervised_user_avatar_label_;
+#endif
 
   // Menu button that displays the name of the active or guest profile.
   // May be NULL and will not be displayed for off the record profiles.

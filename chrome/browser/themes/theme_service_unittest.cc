@@ -10,8 +10,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -24,6 +22,11 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
 
 using extensions::ExtensionRegistry;
 
@@ -234,6 +237,7 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
                                           ExtensionRegistry::DISABLED));
 }
 
+#if defined(ENABLE_MANAGED_USERS)
 class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
  public:
   ThemeServiceSupervisedUserTest() {}
@@ -270,6 +274,7 @@ TEST_F(ThemeServiceSupervisedUserTest, SupervisedUserThemeReplacesNativeTheme) {
   EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
             CustomThemeSupplier::SUPERVISED_USER_THEME);
 }
-#endif
+#endif // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif // defined(ENABLE_MANAGED_USERS)
 
 }; // namespace theme_service_internal

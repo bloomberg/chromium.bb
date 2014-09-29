@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/views/profiles/avatar_label.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
@@ -14,6 +13,10 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
+#endif
 
 namespace {
 
@@ -52,8 +55,10 @@ const int kAvatarOuterSpacing = 2;
 // Space between the edge of the avatar and the tabstrip.
 const int kAvatarInnerSpacing = 4;
 
+#if defined(ENABLE_MANAGED_USERS)
 // Space between the trailing edge of the avatar label and the tabstrip.
-const int kAvatarLabelInnerSpacing = 10;
+const int kSupervisedUserAvatarLabelInnerSpacing = 10;
+#endif
 
 // How far the new avatar button is from the closest caption button.
 const int kNewAvatarButtonOffset = 5;
@@ -115,7 +120,9 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       close_button_(NULL),
       window_icon_(NULL),
       window_title_(NULL),
-      avatar_label_(NULL),
+#if defined(ENABLE_MANAGED_USERS)
+      supervised_user_avatar_label_(NULL),
+#endif
       avatar_button_(NULL),
       new_avatar_button_(NULL) {
   trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
@@ -146,10 +153,15 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
 
   int leading_tabstrip_indent = kTabStripIndent;
   if (delegate_->ShouldShowAvatar() && !ShouldAvatarBeOnRight()) {
-    if (avatar_label_ && avatar_label_->bounds().width())
-      leading_tabstrip_indent += kAvatarLabelInnerSpacing;
+#if defined(ENABLE_MANAGED_USERS)
+    if (supervised_user_avatar_label_ &&
+        supervised_user_avatar_label_->bounds().width())
+      leading_tabstrip_indent += kSupervisedUserAvatarLabelInnerSpacing;
     else
       leading_tabstrip_indent += kAvatarInnerSpacing;
+#else
+    leading_tabstrip_indent += kAvatarInnerSpacing;
+#endif
   }
   bounds.Inset(leading_tabstrip_indent, 0, 0, 0);
   return bounds;
@@ -432,12 +444,13 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
     avatar_button_->SetBoundsRect(avatar_bounds_);
 
     int edge_offset;
-    if (avatar_label_) {
-      avatar_label_->SetLabelOnRight(avatar_on_right);
+#if defined(ENABLE_MANAGED_USERS)
+    if (supervised_user_avatar_label_) {
+      supervised_user_avatar_label_->SetLabelOnRight(avatar_on_right);
       // Space between the bottom of the avatar and the bottom of the avatar
       // label.
-      const int kAvatarLabelBottomSpacing = 3;
-      gfx::Size label_size = avatar_label_->GetPreferredSize();
+      const int kSupervisedUserAvatarLabelBottomSpacing = 3;
+      gfx::Size label_size = supervised_user_avatar_label_->GetPreferredSize();
       // The outside edge of the avatar label should be just outside that of the
       // avatar menu button.
       int avatar_label_x = avatar_on_right ?
@@ -445,14 +458,18 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
           leading_button_start_;
       gfx::Rect label_bounds(
           avatar_label_x,
-          avatar_bottom - kAvatarLabelBottomSpacing - label_size.height(),
+          avatar_bottom - kSupervisedUserAvatarLabelBottomSpacing -
+            label_size.height(),
           label_size.width(),
           delegate_->ShouldShowAvatar() ? label_size.height() : 0);
-      avatar_label_->SetBoundsRect(label_bounds);
+      supervised_user_avatar_label_->SetBoundsRect(label_bounds);
       edge_offset = label_size.width();
     } else {
       edge_offset = kAvatarOuterSpacing + incognito_icon.width();
     }
+#else
+    edge_offset = kAvatarOuterSpacing + incognito_icon.width();
+#endif
     if (avatar_on_right)
       trailing_button_start_ += edge_offset;
     else
@@ -630,9 +647,12 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       }
       window_title_ = static_cast<views::Label*>(view);
       break;
-    case VIEW_ID_AVATAR_LABEL:
-      avatar_label_ = static_cast<AvatarLabel*>(view);
+#if defined(ENABLE_MANAGED_USERS)
+    case VIEW_ID_SUPERVISED_USER_AVATAR_LABEL:
+      supervised_user_avatar_label_ =
+          static_cast<SupervisedUserAvatarLabel*>(view);
       break;
+#endif
     case VIEW_ID_AVATAR_BUTTON:
       if (view) {
         DCHECK_EQ(std::string(AvatarMenuButton::kViewClassName),

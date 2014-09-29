@@ -2157,8 +2157,6 @@
       'browser/ui/views/passwords/manage_passwords_icon_view.h',
       'browser/ui/views/pdf_password_dialog.cc',
       'browser/ui/views/process_singleton_dialog_linux.cc',
-      'browser/ui/views/profiles/avatar_label.cc',
-      'browser/ui/views/profiles/avatar_label.h',
       'browser/ui/views/profiles/avatar_menu_bubble_view.cc',
       'browser/ui/views/profiles/avatar_menu_bubble_view.h',
       'browser/ui/views/profiles/avatar_menu_button.cc',
@@ -2169,6 +2167,8 @@
       'browser/ui/views/profiles/profile_chooser_view.h',
       'browser/ui/views/profiles/profile_reset_bubble_view.cc',
       'browser/ui/views/profiles/profile_reset_bubble_view.h',
+      'browser/ui/views/profiles/supervised_user_avatar_label.cc',
+      'browser/ui/views/profiles/supervised_user_avatar_label.h',
       'browser/ui/views/profiles/user_manager_view.cc',
       'browser/ui/views/profiles/user_manager_view.h',
       'browser/ui/views/renderer_context_menu/render_view_context_menu_views.cc',
@@ -2962,6 +2962,18 @@
         }],
         ['enable_google_now==1 and OS!="android"', {
           'sources': [ '<@(chrome_browser_ui_google_now_non_android_sources)' ],
+        }],
+        ['enable_managed_users==0', {
+          'sources!': [
+            'browser/ui/views/profiles/supervised_user_avatar_label.cc',
+            'browser/ui/views/profiles/supervised_user_avatar_label.h',
+            'browser/ui/webui/options/supervised_user_create_confirm_handler.cc',
+            'browser/ui/webui/options/supervised_user_create_confirm_handler.h',
+            'browser/ui/webui/options/supervised_user_import_handler.cc',
+            'browser/ui/webui/options/supervised_user_import_handler.h',
+            'browser/ui/webui/options/supervised_user_learn_more_handler.cc',
+            'browser/ui/webui/options/supervised_user_learn_more_handler.h',
+          ],
         }],
         ['enable_webrtc==1', {
           'sources': [ '<@(chrome_browser_ui_webrtc_sources)' ],

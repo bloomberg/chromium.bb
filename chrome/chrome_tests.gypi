@@ -1513,6 +1513,10 @@
         'browser/ui/webui/downloads_ui_browsertest.cc',
         'browser/ui/webui/downloads_ui_browsertest.h',
         'browser/ui/webui/downloads_ui_browsertest.js',
+        'browser/ui/webui/downloads_ui_browsertest_base.js',
+        'browser/ui/webui/downloads_ui_supervised_browsertest.cc',
+        'browser/ui/webui/downloads_ui_supervised_browsertest.h',
+        'browser/ui/webui/downloads_ui_supervised_browsertest.js',
         'browser/ui/webui/extensions/chromeos/kiosk_apps_browsertest.js',
         'browser/ui/webui/extensions/extension_settings_browsertest.cc',
         'browser/ui/webui/extensions/extension_settings_browsertest.h',
@@ -2078,6 +2082,14 @@
             ['exclude', '^browser/ui/webui/app_list/'],
           ],
         }],
+        ['enable_managed_users==0', {
+          'sources/': [
+            ['exclude', '^browser/supervised_user/'],
+            ['exclude', '^browser/ui/webui/downloads_ui_supervised_browsertest.cc'],
+            ['exclude', '^browser/ui/webui/downloads_ui_supervised_browsertest.h'],
+            ['exclude', '^browser/ui/webui/downloads_ui_supervised_browsertest.js'],
+          ],
+        }],
         ['enable_pepper_cdms==1', {
           'dependencies': [
             # Runtime dependencies.
@@ -2581,6 +2593,11 @@
           'sources!': [
             'browser/sync/test/integration/single_client_app_list_sync_test.cc',
             'browser/sync/test/integration/two_client_app_list_sync_test.cc',
+          ],
+        }],
+        ['enable_managed_users==0', {
+          'sources!': [
+            'browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc',
           ],
         }],
       ],

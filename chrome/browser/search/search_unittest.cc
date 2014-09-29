@@ -13,9 +13,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -33,6 +30,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#endif
 
 namespace chrome {
 
@@ -431,6 +434,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
 }
 
+#if defined(ENABLE_MANAGED_USERS)
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   // Block access to foo.com in the URL filter.
   SupervisedUserService* supervised_user_service =
@@ -448,6 +452,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), false));
 }
+#endif
 
 TEST_F(SearchTest, GetInstantURL) {
   // No Instant URL because "strk" is missing.

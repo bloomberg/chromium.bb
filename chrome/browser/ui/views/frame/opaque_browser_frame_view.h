@@ -129,6 +129,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // border height in order to increase the window draggable area.
   int TopResizeHeight() const;
 
+  // Returns true if the specified point is within the avatar menu buttons.
+  bool IsWithinAvatarMenuButtons(const gfx::Point& point) const;
+
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;

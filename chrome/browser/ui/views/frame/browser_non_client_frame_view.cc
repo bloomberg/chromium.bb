@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
-#include "chrome/browser/ui/views/profiles/avatar_label.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -25,12 +24,18 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/background.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
+#endif
+
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
       browser_view_(browser_view),
       avatar_button_(NULL),
-      avatar_label_(NULL),
+#if defined(ENABLE_MANAGED_USERS)
+      supervised_user_avatar_label_(NULL),
+#endif
       new_avatar_button_(NULL) {
 }
 
@@ -49,20 +54,26 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
     UpdateAvatarInfo();
 }
 
+#if defined(ENABLE_MANAGED_USERS)
 void BrowserNonClientFrameView::OnThemeChanged() {
-  if (avatar_label_)
-    avatar_label_->UpdateLabelStyle();
+  if (supervised_user_avatar_label_)
+    supervised_user_avatar_label_->UpdateLabelStyle();
 }
+#endif
 
 void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
+#if defined(ENABLE_MANAGED_USERS)
       Profile* profile = browser_view_->browser()->profile();
-      if (profile->IsSupervised() && !avatar_label_) {
-        avatar_label_ = new AvatarLabel(browser_view_);
-        avatar_label_->set_id(VIEW_ID_AVATAR_LABEL);
-        AddChildView(avatar_label_);
+      if (profile->IsSupervised() && !supervised_user_avatar_label_) {
+        supervised_user_avatar_label_ =
+            new SupervisedUserAvatarLabel(browser_view_);
+        supervised_user_avatar_label_->set_id(
+            VIEW_ID_SUPERVISED_USER_AVATAR_LABEL);
+        AddChildView(supervised_user_avatar_label_);
       }
+#endif
       avatar_button_ = new AvatarMenuButton(
           browser_view_->browser(), !browser_view_->IsRegularOrGuestSession());
       avatar_button_->set_id(VIEW_ID_AVATAR_BUTTON);
@@ -72,12 +83,14 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
       frame_->GetRootView()->Layout();
     }
   } else if (avatar_button_) {
+#if defined(ENABLE_MANAGED_USERS)
     // The avatar label can just be there if there is also an avatar button.
-    if (avatar_label_) {
-      RemoveChildView(avatar_label_);
-      delete avatar_label_;
-      avatar_label_ = NULL;
+    if (supervised_user_avatar_label_) {
+      RemoveChildView(supervised_user_avatar_label_);
+      delete supervised_user_avatar_label_;
+      supervised_user_avatar_label_ = NULL;
     }
+#endif
     RemoveChildView(avatar_button_);
     delete avatar_button_;
     avatar_button_ = NULL;

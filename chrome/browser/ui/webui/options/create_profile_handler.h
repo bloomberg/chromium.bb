@@ -19,7 +19,9 @@ class DictionaryValue;
 class ListValue;
 }
 
+#if defined(ENABLE_MANAGED_USERS)
 class SupervisedUserRegistrationUtility;
+#endif
 
 namespace options {
 
@@ -44,21 +46,14 @@ class CreateProfileHandler: public OptionsPageUIHandler {
     PROFILE_CREATION_ERROR,
   };
 
-  // Represents errors that could occur during a profile creation.
-  // It is used to map error types to messages that will be displayed
-  // to the user.
-  enum ProfileCreationErrorType {
-    REMOTE_ERROR,
-    LOCAL_ERROR,
-    SIGNIN_ERROR
-  };
-
   // Represents the type of the in progress profile creation operation.
   // It is used to map the type of the profile creation operation to the
   // correct UMA metric name.
   enum ProfileCreationOperationType {
+#if defined(ENABLE_MANAGED_USERS)
     SUPERVISED_PROFILE_CREATION,
     SUPERVISED_PROFILE_IMPORT,
+#endif
     NON_SUPERVISED_PROFILE_CREATION,
     NO_CREATION_IN_PROGRESS
   };
@@ -90,19 +85,6 @@ class CreateProfileHandler: public OptionsPageUIHandler {
                                     const std::string& supervised_user_id,
                                     Profile* profile);
 
-  // After a new supervised-user profile has been created, registers the user
-  // with the management server.
-  void RegisterSupervisedUser(bool create_shortcut,
-                              chrome::HostDesktopType desktop_type,
-                              const std::string& supervised_user_id,
-                              Profile* new_profile);
-
-  // Called back with the result of the supervised user registration.
-  void OnSupervisedUserRegistered(bool create_shortcut,
-                                  chrome::HostDesktopType desktop_type,
-                                  Profile* profile,
-                                  const GoogleServiceAuthError& error);
-
   // Creates desktop shortcut and updates the UI to indicate success
   // when creating a profile.
   void CreateShortcutAndShowSuccess(bool create_shortcut,
@@ -114,6 +96,37 @@ class CreateProfileHandler: public OptionsPageUIHandler {
 
   // Updates the UI to show a non-fatal warning when creating a profile.
   void ShowProfileCreationWarning(const base::string16& warning);
+
+  // Records UMA histograms relevant to profile creation.
+  void RecordProfileCreationMetrics(Profile::CreateStatus status);
+
+  base::string16 GetProfileCreationErrorMessageLocal() const;
+#if defined(ENABLE_MANAGED_USERS)
+  // The following error messages only apply to supervised profiles.
+  base::string16 GetProfileCreationErrorMessageRemote() const;
+  base::string16 GetProfileCreationErrorMessageSignin() const;
+#endif
+
+  std::string GetJavascriptMethodName(ProfileCreationStatus status) const;
+
+  // Used to allow cancelling a profile creation (particularly a supervised-user
+  // registration) in progress. Set when profile creation is begun, and
+  // cleared when all the callbacks have been run and creation is complete.
+  base::FilePath profile_path_being_created_;
+
+  // Used to track how long profile creation takes.
+  base::TimeTicks profile_creation_start_time_;
+
+  // Indicates the type of the in progress profile creation operation.
+  // The value is only relevant while we are creating/importing a profile.
+  ProfileCreationOperationType profile_creation_type_;
+
+#if defined(ENABLE_MANAGED_USERS)
+  // Extracts the supervised user ID from the args passed into CreateProfile,
+  // sets |profile_creation_type_| if necessary, and returns true if the
+  // supervised user id specified in |args| are valid.
+  bool ProcessSupervisedCreateProfileArgs(const base::ListValue* args,
+                                          std::string* supervised_user_id);
 
   // Cancels creation of a supervised-user profile currently in progress, as
   // indicated by profile_path_being_created_, removing the object and files
@@ -127,35 +140,30 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // was caused implicitly, e.g. by shutting down the browser.
   void CancelProfileRegistration(bool user_initiated);
 
-  // Records UMA histograms relevant to profile creation.
-  void RecordProfileCreationMetrics(Profile::CreateStatus status);
+  // After a new supervised-user profile has been created, registers the user
+  // with the management server.
+  void RegisterSupervisedUser(bool create_shortcut,
+                              chrome::HostDesktopType desktop_type,
+                              const std::string& managed_user_id,
+                              Profile* new_profile);
+
+  // Called back with the result of the supervised user registration.
+  void OnSupervisedUserRegistered(bool create_shortcut,
+                                  chrome::HostDesktopType desktop_type,
+                                  Profile* profile,
+                                  const GoogleServiceAuthError& error);
 
   // Records UMA histograms relevant to supervised user profiles
   // creation and registration.
   void RecordSupervisedProfileCreationMetrics(
       GoogleServiceAuthError::State error_state);
 
-  base::string16 GetProfileCreationErrorMessage(
-      ProfileCreationErrorType error) const;
-  std::string GetJavascriptMethodName(ProfileCreationStatus status) const;
-
   bool IsValidExistingSupervisedUserId(
       const std::string& existing_supervised_user_id) const;
 
-  // Used to allow cancelling a profile creation (particularly a supervised-user
-  // registration) in progress. Set when profile creation is begun, and
-  // cleared when all the callbacks have been run and creation is complete.
-  base::FilePath profile_path_being_created_;
-
-  // Used to track how long profile creation takes.
-  base::TimeTicks profile_creation_start_time_;
-
   scoped_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;
-
-  // Indicates the type of the in progress profile creation operation.
-  // The value is only relevant while we are creating/importing a profile.
-  ProfileCreationOperationType profile_creation_type_;
+#endif
 
   base::WeakPtrFactory<CreateProfileHandler> weak_ptr_factory_;
 

@@ -15,17 +15,21 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
-#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
+#endif
 
 namespace options {
 
@@ -35,7 +39,10 @@ CreateProfileHandler::CreateProfileHandler()
 }
 
 CreateProfileHandler::~CreateProfileHandler() {
+#if defined(ENABLE_MANAGED_USERS)
+  // Cancellation is only supported for supervised users.
   CancelProfileRegistration(false);
+#endif
 }
 
 void CreateProfileHandler::GetLocalizedValues(
@@ -43,10 +50,13 @@ void CreateProfileHandler::GetLocalizedValues(
 }
 
 void CreateProfileHandler::RegisterMessages() {
+#if defined(ENABLE_MANAGED_USERS)
+  // Cancellation is only supported for supervised users.
   web_ui()->RegisterMessageCallback(
       "cancelCreateProfile",
       base::Bind(&CreateProfileHandler::HandleCancelProfileCreation,
                  base::Unretained(this)));
+#endif
   web_ui()->RegisterMessageCallback(
       "createProfile",
       base::Bind(&CreateProfileHandler::CreateProfile,
@@ -54,12 +64,12 @@ void CreateProfileHandler::RegisterMessages() {
 }
 
 void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
+#if defined(ENABLE_MANAGED_USERS)
   // This handler could have been called for a supervised user, for example
-  // because the user fiddled with the web inspector. Silently return in this
-  // case.
-  Profile* current_profile = Profile::FromWebUI(web_ui());
-  if (current_profile->IsSupervised())
+  // because the user fiddled with the web inspector. Silently return.
+  if (Profile::FromWebUI(web_ui())->IsSupervised())
     return;
+#endif
 
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -77,44 +87,17 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
 
   base::string16 name;
   base::string16 icon;
-  std::string supervised_user_id;
   bool create_shortcut = false;
-  bool supervised_user = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
     base::TrimWhitespace(name, base::TRIM_ALL, &name);
     CHECK(!name.empty());
-    if (args->GetBoolean(2, &create_shortcut)) {
-      bool success = args->GetBoolean(3, &supervised_user);
-      DCHECK(success);
-      success = args->GetString(4, &supervised_user_id);
-      DCHECK(success);
-    }
+    args->GetBoolean(2, &create_shortcut);
   }
-
-  if (supervised_user) {
-    if (!IsValidExistingSupervisedUserId(supervised_user_id))
-      return;
-
-    profile_creation_type_ = SUPERVISED_PROFILE_IMPORT;
-    if (supervised_user_id.empty()) {
-      profile_creation_type_ = SUPERVISED_PROFILE_CREATION;
-      supervised_user_id =
-          SupervisedUserRegistrationUtility::GenerateNewSupervisedUserId();
-
-      // If sync is not yet fully initialized, the creation may take extra time,
-      // so show a message. Import doesn't wait for an acknowledgement, so it
-      // won't have the same potential delay.
-      ProfileSyncService* sync_service =
-          ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-              current_profile);
-      ProfileSyncService::SyncStatusSummary status =
-          sync_service->QuerySyncStatusSummary();
-      if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED) {
-        ShowProfileCreationWarning(l10n_util::GetStringUTF16(
-            IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN));
-      }
-    }
-  }
+  std::string supervised_user_id;
+#if defined(ENABLE_MANAGED_USERS)
+  if (!ProcessSupervisedCreateProfileArgs(args, &supervised_user_id))
+    return;
+#endif
 
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
 
@@ -139,8 +122,7 @@ void CreateProfileHandler::OnProfileCreated(
 
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL: {
-      ShowProfileCreationError(profile,
-                               GetProfileCreationErrorMessage(LOCAL_ERROR));
+      ShowProfileCreationError(profile, GetProfileCreationErrorMessageLocal());
       break;
     }
     case Profile::CREATE_STATUS_CREATED: {
@@ -176,15 +158,221 @@ void CreateProfileHandler::HandleProfileCreationSuccess(
       CreateShortcutAndShowSuccess(create_shortcut, desktop_type, profile);
       break;
     }
+#if defined(ENABLE_MANAGED_USERS)
     case SUPERVISED_PROFILE_CREATION:
     case SUPERVISED_PROFILE_IMPORT:
       RegisterSupervisedUser(create_shortcut, desktop_type,
                              supervised_user_id, profile);
       break;
+#endif
     case NO_CREATION_IN_PROGRESS:
       NOTREACHED();
       break;
   }
+}
+
+void CreateProfileHandler::CreateShortcutAndShowSuccess(
+    bool create_shortcut,
+    chrome::HostDesktopType desktop_type,
+    Profile* profile) {
+  if (create_shortcut) {
+    ProfileShortcutManager* shortcut_manager =
+        g_browser_process->profile_manager()->profile_shortcut_manager();
+
+    if (shortcut_manager)
+      shortcut_manager->CreateProfileShortcut(profile->GetPath());
+  }
+
+  DCHECK_EQ(profile_path_being_created_.value(), profile->GetPath().value());
+  profile_path_being_created_.clear();
+  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  base::DictionaryValue dict;
+  dict.SetString("name",
+                 profile->GetPrefs()->GetString(prefs::kProfileName));
+  dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
+#if defined(ENABLE_MANAGED_USERS)
+  bool is_supervised =
+      profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
+      profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
+  dict.SetBoolean("isSupervised", is_supervised);
+#endif
+  web_ui()->CallJavascriptFunction(
+      GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
+
+  // If the new profile is a supervised user, instead of opening a new window
+  // right away, a confirmation overlay will be shown by JS from the creation
+  // dialog. If we are importing an existing supervised profile or creating a
+  // new non-supervised user profile we don't show any confirmation, so open
+  // the new window now.
+  bool should_open_new_window = true;
+#if defined(ENABLE_MANAGED_USERS)
+  if (profile_creation_type_ == SUPERVISED_PROFILE_CREATION)
+    should_open_new_window = false;
+#endif
+
+  if (should_open_new_window) {
+    // Opening the new window must be the last action, after all callbacks
+    // have been run, to give them a chance to initialize the profile.
+    helper::OpenNewWindowForProfile(desktop_type,
+                                    profile,
+                                    Profile::CREATE_STATUS_INITIALIZED);
+  }
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
+}
+
+void CreateProfileHandler::ShowProfileCreationError(
+    Profile* profile,
+    const base::string16& error) {
+  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
+  profile_path_being_created_.clear();
+  web_ui()->CallJavascriptFunction(
+      GetJavascriptMethodName(PROFILE_CREATION_ERROR),
+      base::StringValue(error));
+  // The ProfileManager calls us back with a NULL profile in some cases.
+  if (profile)
+    helper::DeleteProfileAtPath(profile->GetPath(), web_ui());
+}
+
+void CreateProfileHandler::RecordProfileCreationMetrics(
+    Profile::CreateStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.CreateResult",
+                            status,
+                            Profile::MAX_CREATE_STATUS);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "Profile.CreateTimeNoTimeout",
+      base::TimeTicks::Now() - profile_creation_start_time_);
+}
+
+base::string16 CreateProfileHandler::GetProfileCreationErrorMessageLocal()
+    const {
+  int message_id = IDS_PROFILES_CREATE_LOCAL_ERROR;
+#if defined(ENABLE_MANAGED_USERS)
+  // Local errors can occur during supervised profile import.
+  if (profile_creation_type_ == SUPERVISED_PROFILE_IMPORT)
+    message_id = IDS_SUPERVISED_USER_IMPORT_LOCAL_ERROR;
+#endif
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+#if defined(ENABLE_MANAGED_USERS)
+base::string16 CreateProfileHandler::GetProfileCreationErrorMessageRemote()
+    const {
+  return l10n_util::GetStringUTF16(
+      profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
+          IDS_SUPERVISED_USER_IMPORT_REMOTE_ERROR :
+          IDS_PROFILES_CREATE_REMOTE_ERROR);
+}
+
+base::string16 CreateProfileHandler::GetProfileCreationErrorMessageSignin()
+    const {
+  return l10n_util::GetStringUTF16(
+      profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
+          IDS_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR :
+          IDS_PROFILES_CREATE_SIGN_IN_ERROR);
+}
+#endif
+
+std::string CreateProfileHandler::GetJavascriptMethodName(
+    ProfileCreationStatus status) const {
+  switch (profile_creation_type_) {
+#if defined(ENABLE_MANAGED_USERS)
+    case SUPERVISED_PROFILE_IMPORT:
+      switch (status) {
+        case PROFILE_CREATION_SUCCESS:
+          return "BrowserOptions.showSupervisedUserImportSuccess";
+        case PROFILE_CREATION_ERROR:
+          return "BrowserOptions.showSupervisedUserImportError";
+      }
+      break;
+#endif
+    default:
+      switch (status) {
+        case PROFILE_CREATION_SUCCESS:
+          return "BrowserOptions.showCreateProfileSuccess";
+        case PROFILE_CREATION_ERROR:
+          return "BrowserOptions.showCreateProfileError";
+      }
+      break;
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
+#if defined(ENABLE_MANAGED_USERS)
+bool CreateProfileHandler::ProcessSupervisedCreateProfileArgs(
+    const base::ListValue* args, std::string* supervised_user_id) {
+  bool supervised_user = false;
+  if (args->GetSize() == 4) {
+      bool success = args->GetBoolean(3, &supervised_user);
+      DCHECK(success);
+
+      success = args->GetString(4, supervised_user_id);
+      DCHECK(success);
+  }
+
+  if (supervised_user) {
+    if (!IsValidExistingSupervisedUserId(*supervised_user_id))
+      return false;
+
+    profile_creation_type_ = SUPERVISED_PROFILE_IMPORT;
+    if (supervised_user_id->empty()) {
+      profile_creation_type_ = SUPERVISED_PROFILE_CREATION;
+      *supervised_user_id =
+          SupervisedUserRegistrationUtility::GenerateNewSupervisedUserId();
+
+      // If sync is not yet fully initialized, the creation may take extra time,
+      // so show a message. Import doesn't wait for an acknowledgment, so it
+      // won't have the same potential delay.
+      ProfileSyncService* sync_service =
+          ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+              Profile::FromWebUI(web_ui()));
+      ProfileSyncService::SyncStatusSummary status =
+          sync_service->QuerySyncStatusSummary();
+      if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED) {
+        ShowProfileCreationWarning(l10n_util::GetStringUTF16(
+            IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN));
+      }
+    }
+  }
+  return true;
+}
+
+void CreateProfileHandler::HandleCancelProfileCreation(
+    const base::ListValue* args) {
+  CancelProfileRegistration(true);
+}
+
+// Non-supervised user creation cannot be canceled. (Creating a non-supervised
+// profile shouldn't take significant time, and it can easily be deleted
+// afterward.)
+void CreateProfileHandler::CancelProfileRegistration(bool user_initiated) {
+  if (profile_path_being_created_.empty())
+    return;
+
+  ProfileManager* manager = g_browser_process->profile_manager();
+  Profile* new_profile = manager->GetProfileByPath(profile_path_being_created_);
+  if (!new_profile || !new_profile->IsSupervised())
+    return;
+
+  DCHECK(supervised_user_registration_utility_.get());
+  supervised_user_registration_utility_.reset();
+
+  if (user_initiated) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Profile.CreateTimeCanceledNoTimeout",
+        base::TimeTicks::Now() - profile_creation_start_time_);
+    RecordProfileCreationMetrics(Profile::CREATE_STATUS_CANCELED);
+  }
+
+  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
+
+  // Cancelling registration means the callback passed into
+  // RegisterAndInitSync() won't be called, so the cleanup must be done here.
+  profile_path_being_created_.clear();
+  helper::DeleteProfileAtPath(new_profile->GetPath(), web_ui());
 }
 
 void CreateProfileHandler::RegisterSupervisedUser(
@@ -229,66 +417,11 @@ void CreateProfileHandler::OnSupervisedUserRegistered(
       state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
       state == GoogleServiceAuthError::ACCOUNT_DELETED ||
       state == GoogleServiceAuthError::ACCOUNT_DISABLED) {
-    error_msg = GetProfileCreationErrorMessage(SIGNIN_ERROR);
+    error_msg = GetProfileCreationErrorMessageSignin();
   } else {
-    error_msg = GetProfileCreationErrorMessage(REMOTE_ERROR);
+    error_msg = GetProfileCreationErrorMessageRemote();
   }
   ShowProfileCreationError(profile, error_msg);
-}
-
-void CreateProfileHandler::CreateShortcutAndShowSuccess(
-    bool create_shortcut,
-    chrome::HostDesktopType desktop_type,
-    Profile* profile) {
-  if (create_shortcut) {
-    ProfileShortcutManager* shortcut_manager =
-        g_browser_process->profile_manager()->profile_shortcut_manager();
-
-    if (shortcut_manager)
-      shortcut_manager->CreateProfileShortcut(profile->GetPath());
-  }
-
-  DCHECK_EQ(profile_path_being_created_.value(), profile->GetPath().value());
-  profile_path_being_created_.clear();
-  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  base::DictionaryValue dict;
-  dict.SetString("name",
-                 profile->GetPrefs()->GetString(prefs::kProfileName));
-  dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
-  bool is_supervised =
-      profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
-      profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
-  dict.SetBoolean("isSupervised", is_supervised);
-  web_ui()->CallJavascriptFunction(
-      GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
-
-  // If the new profile is a supervised user, instead of opening a new window
-  // right away, a confirmation overlay will be shown by JS from the creation
-  // dialog. If we are importing an existing supervised profile or creating a
-  // new non-supervised user profile we don't show any confirmation, so open
-  // the new window now.
-  if (profile_creation_type_ != SUPERVISED_PROFILE_CREATION) {
-    // Opening the new window must be the last action, after all callbacks
-    // have been run, to give them a chance to initialize the profile.
-    helper::OpenNewWindowForProfile(desktop_type,
-                                    profile,
-                                    Profile::CREATE_STATUS_INITIALIZED);
-  }
-  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
-}
-
-void CreateProfileHandler::ShowProfileCreationError(
-    Profile* profile,
-    const base::string16& error) {
-  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
-  profile_path_being_created_.clear();
-  web_ui()->CallJavascriptFunction(
-      GetJavascriptMethodName(PROFILE_CREATION_ERROR),
-      base::StringValue(error));
-  // The ProfileManager calls us back with a NULL profile in some cases.
-  if (profile)
-    helper::DeleteProfileAtPath(profile->GetPath(), web_ui());
 }
 
 void CreateProfileHandler::ShowProfileCreationWarning(
@@ -296,55 +429,6 @@ void CreateProfileHandler::ShowProfileCreationWarning(
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
   web_ui()->CallJavascriptFunction("BrowserOptions.showCreateProfileWarning",
                                    base::StringValue(warning));
-}
-
-void CreateProfileHandler::HandleCancelProfileCreation(
-    const base::ListValue* args) {
-  CancelProfileRegistration(true);
-}
-
-void CreateProfileHandler::CancelProfileRegistration(bool user_initiated) {
-  if (profile_path_being_created_.empty())
-    return;
-
-  ProfileManager* manager = g_browser_process->profile_manager();
-  Profile* new_profile = manager->GetProfileByPath(profile_path_being_created_);
-  if (!new_profile)
-    return;
-
-  // Non-supervised user creation cannot be canceled. (Creating a non-supervised
-  // profile shouldn't take significant time, and it can easily be deleted
-  // afterward.)
-  if (!new_profile->IsSupervised())
-    return;
-
-  if (user_initiated) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Profile.CreateTimeCanceledNoTimeout",
-        base::TimeTicks::Now() - profile_creation_start_time_);
-    RecordProfileCreationMetrics(Profile::CREATE_STATUS_CANCELED);
-  }
-
-  DCHECK(supervised_user_registration_utility_.get());
-  supervised_user_registration_utility_.reset();
-
-  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
-
-  // Cancelling registration means the callback passed into
-  // RegisterAndInitSync() won't be called, so the cleanup must be done here.
-  profile_path_being_created_.clear();
-  helper::DeleteProfileAtPath(new_profile->GetPath(), web_ui());
-}
-
-void CreateProfileHandler::RecordProfileCreationMetrics(
-    Profile::CreateStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.CreateResult",
-                            status,
-                            Profile::MAX_CREATE_STATUS);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "Profile.CreateTimeNoTimeout",
-      base::TimeTicks::Now() - profile_creation_start_time_);
 }
 
 void CreateProfileHandler::RecordSupervisedProfileCreationMetrics(
@@ -365,50 +449,6 @@ void CreateProfileHandler::RecordSupervisedProfileCreationMetrics(
         "Profile.SupervisedProfileTotalImportTime",
         base::TimeTicks::Now() - profile_creation_start_time_);
   }
-}
-
-base::string16 CreateProfileHandler::GetProfileCreationErrorMessage(
-    ProfileCreationErrorType error) const {
-  int message_id = -1;
-  switch (error) {
-    case SIGNIN_ERROR:
-      message_id =
-          profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-              IDS_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR :
-              IDS_PROFILES_CREATE_SIGN_IN_ERROR;
-      break;
-    case REMOTE_ERROR:
-      message_id =
-          profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-              IDS_SUPERVISED_USER_IMPORT_REMOTE_ERROR :
-              IDS_PROFILES_CREATE_REMOTE_ERROR;
-      break;
-    case LOCAL_ERROR:
-      message_id =
-          profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-              IDS_SUPERVISED_USER_IMPORT_LOCAL_ERROR :
-              IDS_PROFILES_CREATE_LOCAL_ERROR;
-      break;
-  }
-
-  return l10n_util::GetStringUTF16(message_id);
-}
-
-std::string CreateProfileHandler::GetJavascriptMethodName(
-    ProfileCreationStatus status) const {
-  switch (status) {
-    case PROFILE_CREATION_SUCCESS:
-      return profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-          "BrowserOptions.showSupervisedUserImportSuccess" :
-          "BrowserOptions.showCreateProfileSuccess";
-    case PROFILE_CREATION_ERROR:
-      return profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-          "BrowserOptions.showSupervisedUserImportError" :
-          "BrowserOptions.showCreateProfileError";
-  }
-
-  NOTREACHED();
-  return std::string();
 }
 
 bool CreateProfileHandler::IsValidExistingSupervisedUserId(
@@ -433,5 +473,6 @@ bool CreateProfileHandler::IsValidExistingSupervisedUserId(
   }
   return true;
 }
+#endif
 
 }  // namespace options

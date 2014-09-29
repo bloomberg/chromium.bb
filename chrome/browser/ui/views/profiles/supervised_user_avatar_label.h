@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_LABEL_H_
-#define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_LABEL_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_SUPERVISED_USER_AVATAR_LABEL_H_
+#define CHROME_BROWSER_UI_VIEWS_PROFILES_SUPERVISED_USER_AVATAR_LABEL_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/supervised_user/supervised_users.h"
 #include "ui/views/controls/button/label_button.h"
 
 class BrowserView;
 
-// AvatarLabel
+// SupervisedUserAvatarLabel
 //
 // A label used to display a string indicating that the current profile belongs
 // to a supervised user.
-class AvatarLabel : public views::LabelButton {
+class SupervisedUserAvatarLabel : public views::LabelButton {
  public:
-  explicit AvatarLabel(BrowserView* browser_view);
-  virtual ~AvatarLabel();
+  explicit SupervisedUserAvatarLabel(BrowserView* browser_view);
+  virtual ~SupervisedUserAvatarLabel();
 
   // views::LabelButton:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -33,7 +34,7 @@ class AvatarLabel : public views::LabelButton {
  private:
   BrowserView* browser_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(AvatarLabel);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserAvatarLabel);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_LABEL_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_SUPERVISED_USER_AVATAR_LABEL_H_

@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/profiles/avatar_label.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -43,6 +42,10 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
+#endif
 
 namespace {
 
@@ -236,7 +239,7 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   int hit_test = ash::FrameBorderHitTestController::NonClientHitTest(this,
       caption_button_container_, point);
 
-  // See if the point is actually within the avatar menu button.
+  // See if the point is actually within the avatar menu button.d
   if (hit_test == HTCAPTION && avatar_button() &&
       ConvertedHitTest(this, avatar_button(), point)) {
     return HTCLIENT;
@@ -247,6 +250,14 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
       ConvertedHitTest(this, web_app_back_button_, point)) {
     return HTCLIENT;
   }
+
+#if defined(ENABLE_MANAGED_USERS)
+  // ...or within the avatar label, if it's a supervised user.
+  if (hit_test == HTCAPTION && supervised_user_avatar_label() &&
+      ConvertedHitTest(this, supervised_user_avatar_label(), point)) {
+    return HTCLIENT;
+  }
+#endif
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
