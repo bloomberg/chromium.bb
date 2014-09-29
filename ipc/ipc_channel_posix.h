@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "ipc/file_descriptor_set_posix.h"
@@ -152,20 +153,20 @@ class IPC_EXPORT ChannelPosix : public Channel,
 
   // File descriptor we're listening on for new connections if we listen
   // for connections.
-  int server_listen_pipe_;
+  base::ScopedFD server_listen_pipe_;
 
   // The pipe used for communication.
-  int pipe_;
+  base::ScopedFD pipe_;
 
   // For a server, the client end of our socketpair() -- the other end of our
   // pipe_ that is passed to the client.
-  int client_pipe_;
+  base::ScopedFD client_pipe_;
   mutable base::Lock client_pipe_lock_;  // Lock that protects |client_pipe_|.
 
 #if defined(IPC_USES_READWRITE)
   // Linux/BSD use a dedicated socketpair() for passing file descriptors.
-  int fd_pipe_;
-  int remote_fd_pipe_;
+  base::ScopedFD fd_pipe_;
+  base::ScopedFD remote_fd_pipe_;
 #endif
 
   // The "name" of our pipe.  On Windows this is the global identifier for

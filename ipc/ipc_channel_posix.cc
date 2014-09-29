@@ -185,13 +185,6 @@ ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
       is_blocked_on_write_(false),
       waiting_connect_(true),
       message_send_bytes_written_(0),
-      server_listen_pipe_(-1),
-      pipe_(-1),
-      client_pipe_(-1),
-#if defined(IPC_USES_READWRITE)
-      fd_pipe_(-1),
-      remote_fd_pipe_(-1),
-#endif  // IPC_USES_READWRITE
       pipe_name_(channel_handle.name),
       must_unlink_(false) {
   memset(input_cmsg_buf_, 0, sizeof(input_cmsg_buf_));
@@ -233,7 +226,7 @@ bool SocketPair(int* fd1, int* fd2) {
 
 bool ChannelPosix::CreatePipe(
     const IPC::ChannelHandle& channel_handle) {
-  DCHECK(server_listen_pipe_ == -1 && pipe_ == -1);
+  DCHECK(!server_listen_pipe_.is_valid() && !pipe_.is_valid());
 
   // Four possible cases:
   // 1) It's a channel wrapping a pipe that is given to us.
@@ -244,14 +237,14 @@ bool ChannelPosix::CreatePipe(
   //   4a) Client side: Pull the pipe out of the GlobalDescriptors set.
   //   4b) Server side: create the pipe.
 
-  int local_pipe = -1;
+  base::ScopedFD local_pipe;
   if (channel_handle.socket.fd != -1) {
     // Case 1 from comment above.
-    local_pipe = channel_handle.socket.fd;
+    local_pipe.reset(channel_handle.socket.fd);
 #if defined(IPC_USES_READWRITE)
     // Test the socket passed into us to make sure it is nonblocking.
     // We don't want to call read/write on a blocking socket.
-    int value = fcntl(local_pipe, F_GETFL);
+    int value = fcntl(local_pipe.get(), F_GETFL);
     if (value == -1) {
       PLOG(ERROR) << "fcntl(F_GETFL) " << pipe_name_;
       return false;
@@ -263,28 +256,33 @@ bool ChannelPosix::CreatePipe(
 #endif   // IPC_USES_READWRITE
   } else if (mode_ & MODE_NAMED_FLAG) {
     // Case 2 from comment above.
+    int local_pipe_fd = -1;
+
     if (mode_ & MODE_SERVER_FLAG) {
       if (!CreateServerUnixDomainSocket(base::FilePath(pipe_name_),
-                                        &local_pipe)) {
+                                        &local_pipe_fd)) {
         return false;
       }
+
       must_unlink_ = true;
     } else if (mode_ & MODE_CLIENT_FLAG) {
       if (!CreateClientUnixDomainSocket(base::FilePath(pipe_name_),
-                                        &local_pipe)) {
+                                        &local_pipe_fd)) {
         return false;
       }
     } else {
       LOG(ERROR) << "Bad mode: " << mode_;
       return false;
     }
+
+    local_pipe.reset(local_pipe_fd);
   } else {
-    local_pipe = PipeMap::GetInstance()->Lookup(pipe_name_);
+    local_pipe.reset(PipeMap::GetInstance()->Lookup(pipe_name_));
     if (mode_ & MODE_CLIENT_FLAG) {
-      if (local_pipe != -1) {
+      if (local_pipe.is_valid()) {
         // Case 3 from comment above.
         // We only allow one connection.
-        local_pipe = HANDLE_EINTR(dup(local_pipe));
+        local_pipe.reset(HANDLE_EINTR(dup(local_pipe.release())));
         PipeMap::GetInstance()->Remove(pipe_name_);
       } else {
         // Case 4a from comment above.
@@ -299,19 +297,25 @@ bool ChannelPosix::CreatePipe(
         }
         used_initial_channel = true;
 
-        local_pipe =
-            base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel);
+        local_pipe.reset(
+            base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel));
       }
     } else if (mode_ & MODE_SERVER_FLAG) {
       // Case 4b from comment above.
-      if (local_pipe != -1) {
+      if (local_pipe.is_valid()) {
         LOG(ERROR) << "Server already exists for " << pipe_name_;
+        // This is a client side pipe registered by other server and
+        // shouldn't be closed.
+        ignore_result(local_pipe.release());
         return false;
       }
       base::AutoLock lock(client_pipe_lock_);
-      if (!SocketPair(&local_pipe, &client_pipe_))
+      int local_pipe_fd = -1, client_pipe_fd = -1;
+      if (!SocketPair(&local_pipe_fd, &client_pipe_fd))
         return false;
-      PipeMap::GetInstance()->Insert(pipe_name_, client_pipe_);
+      local_pipe.reset(local_pipe_fd);
+      client_pipe_.reset(client_pipe_fd);
+      PipeMap::GetInstance()->Insert(pipe_name_, client_pipe_fd);
     } else {
       LOG(ERROR) << "Bad mode: " << mode_;
       return false;
@@ -322,33 +326,35 @@ bool ChannelPosix::CreatePipe(
   // Create a dedicated socketpair() for exchanging file descriptors.
   // See comments for IPC_USES_READWRITE for details.
   if (mode_ & MODE_CLIENT_FLAG) {
-    if (!SocketPair(&fd_pipe_, &remote_fd_pipe_)) {
+    int fd_pipe_fd = 1, remote_fd_pipe_fd = -1;
+    if (!SocketPair(&fd_pipe_fd, &remote_fd_pipe_fd)) {
       return false;
     }
+
+    fd_pipe_.reset(fd_pipe_fd);
+    remote_fd_pipe_.reset(remote_fd_pipe_fd);
   }
 #endif  // IPC_USES_READWRITE
 
-  if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG)) {
-    server_listen_pipe_ = local_pipe;
-    local_pipe = -1;
-  }
-
-  pipe_ = local_pipe;
+  if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG))
+    server_listen_pipe_.reset(local_pipe.release());
+  else
+    pipe_.reset(local_pipe.release());
   return true;
 }
 
 bool ChannelPosix::Connect() {
-  if (server_listen_pipe_ == -1 && pipe_ == -1) {
+  if (!server_listen_pipe_.is_valid() && !pipe_.is_valid()) {
     DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;
   }
 
   bool did_connect = true;
-  if (server_listen_pipe_ != -1) {
+  if (server_listen_pipe_.is_valid()) {
     // Watch the pipe for connections, and turn any connections into
     // active sockets.
     base::MessageLoopForIO::current()->WatchFileDescriptor(
-        server_listen_pipe_,
+        server_listen_pipe_.get(),
         true,
         base::MessageLoopForIO::WATCH_READ,
         &server_listen_connection_watcher_,
@@ -386,7 +392,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
   if (output_queue_.empty())
     return true;
 
-  if (pipe_ == -1)
+  if (!pipe_.is_valid())
     return false;
 
   // Write out all the messages we can till the write blocks or there are no
@@ -447,8 +453,9 @@ bool ChannelPosix::ProcessOutgoingMessages() {
         // fd_pipe_ which makes Seccomp sandbox operation more efficient.
         struct iovec fd_pipe_iov = { const_cast<char *>(""), 1 };
         msgh.msg_iov = &fd_pipe_iov;
-        fd_written = fd_pipe_;
-        bytes_written = HANDLE_EINTR(sendmsg(fd_pipe_, &msgh, MSG_DONTWAIT));
+        fd_written = fd_pipe_.get();
+        bytes_written =
+            HANDLE_EINTR(sendmsg(fd_pipe_.get(), &msgh, MSG_DONTWAIT));
         msgh.msg_iov = &iov;
         msgh.msg_controllen = 0;
         if (bytes_written > 0) {
@@ -459,17 +466,18 @@ bool ChannelPosix::ProcessOutgoingMessages() {
     }
 
     if (bytes_written == 1) {
-      fd_written = pipe_;
+      fd_written = pipe_.get();
 #if defined(IPC_USES_READWRITE)
       if ((mode_ & MODE_CLIENT_FLAG) && IsHelloMessage(*msg)) {
         DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
       }
       if (!msgh.msg_controllen) {
-        bytes_written = HANDLE_EINTR(write(pipe_, out_bytes, amt_to_write));
+        bytes_written =
+            HANDLE_EINTR(write(pipe_.get(), out_bytes, amt_to_write));
       } else
 #endif  // IPC_USES_READWRITE
       {
-        bytes_written = HANDLE_EINTR(sendmsg(pipe_, &msgh, MSG_DONTWAIT));
+        bytes_written = HANDLE_EINTR(sendmsg(pipe_.get(), &msgh, MSG_DONTWAIT));
       }
     }
     if (bytes_written > 0)
@@ -507,7 +515,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       // Tell libevent to call us back once things are unblocked.
       is_blocked_on_write_ = true;
       base::MessageLoopForIO::current()->WatchFileDescriptor(
-          pipe_,
+          pipe_.get(),
           false,  // One shot
           base::MessageLoopForIO::WATCH_WRITE,
           &write_watcher_,
@@ -518,7 +526,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
 
       // Message sent OK!
       DVLOG(2) << "sent message @" << msg << " on channel @" << this
-               << " with type " << msg->type() << " on fd " << pipe_;
+               << " with type " << msg->type() << " on fd " << pipe_.get();
       delete output_queue_.front();
       output_queue_.pop();
     }
@@ -546,62 +554,46 @@ bool ChannelPosix::Send(Message* message) {
 
 int ChannelPosix::GetClientFileDescriptor() const {
   base::AutoLock lock(client_pipe_lock_);
-  return client_pipe_;
+  return client_pipe_.get();
 }
 
 int ChannelPosix::TakeClientFileDescriptor() {
   base::AutoLock lock(client_pipe_lock_);
-  int fd = client_pipe_;
-  if (client_pipe_ != -1) {
-    PipeMap::GetInstance()->Remove(pipe_name_);
-    client_pipe_ = -1;
-  }
-  return fd;
+  if (!client_pipe_.is_valid())
+    return -1;
+  PipeMap::GetInstance()->Remove(pipe_name_);
+  return client_pipe_.release();
 }
 
 void ChannelPosix::CloseClientFileDescriptor() {
   base::AutoLock lock(client_pipe_lock_);
-  if (client_pipe_ != -1) {
-    PipeMap::GetInstance()->Remove(pipe_name_);
-    if (IGNORE_EINTR(close(client_pipe_)) < 0)
-      PLOG(ERROR) << "close " << pipe_name_;
-    client_pipe_ = -1;
-  }
+  if (!client_pipe_.is_valid())
+    return;
+  PipeMap::GetInstance()->Remove(pipe_name_);
+  client_pipe_.reset();
 }
 
 bool ChannelPosix::AcceptsConnections() const {
-  return server_listen_pipe_ != -1;
+  return server_listen_pipe_.is_valid();
 }
 
 bool ChannelPosix::HasAcceptedConnection() const {
-  return AcceptsConnections() && pipe_ != -1;
+  return AcceptsConnections() && pipe_.is_valid();
 }
 
 bool ChannelPosix::GetPeerEuid(uid_t* peer_euid) const {
   DCHECK(!(mode_ & MODE_SERVER) || HasAcceptedConnection());
-  return IPC::GetPeerEuid(pipe_, peer_euid);
+  return IPC::GetPeerEuid(pipe_.get(), peer_euid);
 }
 
 void ChannelPosix::ResetToAcceptingConnectionState() {
   // Unregister libevent for the unix domain socket and close it.
   read_watcher_.StopWatchingFileDescriptor();
   write_watcher_.StopWatchingFileDescriptor();
-  if (pipe_ != -1) {
-    if (IGNORE_EINTR(close(pipe_)) < 0)
-      PLOG(ERROR) << "close pipe_ " << pipe_name_;
-    pipe_ = -1;
-  }
+  pipe_.reset();
 #if defined(IPC_USES_READWRITE)
-  if (fd_pipe_ != -1) {
-    if (IGNORE_EINTR(close(fd_pipe_)) < 0)
-      PLOG(ERROR) << "close fd_pipe_ " << pipe_name_;
-    fd_pipe_ = -1;
-  }
-  if (remote_fd_pipe_ != -1) {
-    if (IGNORE_EINTR(close(remote_fd_pipe_)) < 0)
-      PLOG(ERROR) << "close remote_fd_pipe_ " << pipe_name_;
-    remote_fd_pipe_ = -1;
-  }
+  fd_pipe_.reset();
+  remote_fd_pipe_.reset();
 #endif  // IPC_USES_READWRITE
 
   while (!output_queue_.empty()) {
@@ -640,15 +632,15 @@ void ChannelPosix::SetGlobalPid(int pid) {
 
 // Called by libevent when we can read from the pipe without blocking.
 void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
-  if (fd == server_listen_pipe_) {
+  if (fd == server_listen_pipe_.get()) {
     int new_pipe = 0;
-    if (!ServerAcceptConnection(server_listen_pipe_, &new_pipe) ||
+    if (!ServerAcceptConnection(server_listen_pipe_.get(), &new_pipe) ||
         new_pipe < 0) {
       Close();
       listener()->OnChannelListenError();
     }
 
-    if (pipe_ != -1) {
+    if (pipe_.is_valid()) {
       // We already have a connection. We only handle one at a time.
       // close our new descriptor.
       if (HANDLE_EINTR(shutdown(new_pipe, SHUT_RDWR)) < 0)
@@ -658,7 +650,7 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
       listener()->OnChannelDenied();
       return;
     }
-    pipe_ = new_pipe;
+    pipe_.reset(new_pipe);
 
     if ((mode_ & MODE_OPEN_ACCESS_FLAG) == 0) {
       // Verify that the IPC channel peer is running as the same user.
@@ -706,7 +698,7 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
 
 // Called by libevent when we can write to the pipe without blocking.
 void ChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
-  DCHECK_EQ(pipe_, fd);
+  DCHECK_EQ(pipe_.get(), fd);
   is_blocked_on_write_ = false;
   if (!ProcessOutgoingMessages()) {
     ClosePipeOnError();
@@ -715,7 +707,11 @@ void ChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
 
 bool ChannelPosix::AcceptConnection() {
   base::MessageLoopForIO::current()->WatchFileDescriptor(
-      pipe_, true, base::MessageLoopForIO::WATCH_READ, &read_watcher_, this);
+      pipe_.get(),
+      true,
+      base::MessageLoopForIO::WATCH_READ,
+      &read_watcher_,
+      this);
   QueueHelloMessage();
 
   if (mode_ & MODE_CLIENT_FLAG) {
@@ -768,8 +764,8 @@ void ChannelPosix::QueueHelloMessage() {
   }
 #if defined(IPC_USES_READWRITE)
   scoped_ptr<Message> hello;
-  if (remote_fd_pipe_ != -1) {
-    if (!msg->WriteBorrowingFile(remote_fd_pipe_)) {
+  if (remote_fd_pipe_.is_valid()) {
+    if (!msg->WriteBorrowingFile(remote_fd_pipe_.get())) {
       NOTREACHED() << "Unable to pickle hello message file descriptors";
     }
     DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
@@ -782,7 +778,7 @@ ChannelPosix::ReadState ChannelPosix::ReadData(
     char* buffer,
     int buffer_len,
     int* bytes_read) {
-  if (pipe_ == -1)
+  if (!pipe_.is_valid())
     return READ_FAILED;
 
   struct msghdr msg = {0};
@@ -796,14 +792,14 @@ ChannelPosix::ReadState ChannelPosix::ReadData(
   // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
   // is waiting on the pipe.
 #if defined(IPC_USES_READWRITE)
-  if (fd_pipe_ >= 0) {
-    *bytes_read = HANDLE_EINTR(read(pipe_, buffer, buffer_len));
+  if (fd_pipe_.is_valid()) {
+    *bytes_read = HANDLE_EINTR(read(pipe_.get(), buffer, buffer_len));
     msg.msg_controllen = 0;
   } else
 #endif  // IPC_USES_READWRITE
   {
     msg.msg_controllen = sizeof(input_cmsg_buf_);
-    *bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
+    *bytes_read = HANDLE_EINTR(recvmsg(pipe_.get(), &msg, MSG_DONTWAIT));
   }
   if (*bytes_read < 0) {
     if (errno == EAGAIN) {
@@ -818,7 +814,7 @@ ChannelPosix::ReadState ChannelPosix::ReadData(
     } else if (errno == ECONNRESET || errno == EPIPE) {
       return READ_FAILED;
     } else {
-      PLOG(ERROR) << "pipe error (" << pipe_ << ")";
+      PLOG(ERROR) << "pipe error (" << pipe_.get() << ")";
       return READ_FAILED;
     }
   } else if (*bytes_read == 0) {
@@ -845,7 +841,8 @@ bool ChannelPosix::ReadFileDescriptorsFromFDPipe() {
   msg.msg_iovlen = 1;
   msg.msg_control = input_cmsg_buf_;
   msg.msg_controllen = sizeof(input_cmsg_buf_);
-  ssize_t bytes_received = HANDLE_EINTR(recvmsg(fd_pipe_, &msg, MSG_DONTWAIT));
+  ssize_t bytes_received =
+      HANDLE_EINTR(recvmsg(fd_pipe_.get(), &msg, MSG_DONTWAIT));
 
   if (bytes_received != 1)
     return true;  // No message waiting.
@@ -994,7 +991,7 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
         if (!msg.ReadFile(&iter, &descriptor)) {
           NOTREACHED();
         }
-        fd_pipe_ = descriptor.release();
+        fd_pipe_.reset(descriptor.release());
       }
 #endif  // IPC_USES_READWRITE
       peer_pid_ = pid;
@@ -1033,10 +1030,9 @@ void ChannelPosix::Close() {
     unlink(pipe_name_.c_str());
     must_unlink_ = false;
   }
-  if (server_listen_pipe_ != -1) {
-    if (IGNORE_EINTR(close(server_listen_pipe_)) < 0)
-      DPLOG(ERROR) << "close " << server_listen_pipe_;
-    server_listen_pipe_ = -1;
+
+  if (server_listen_pipe_.is_valid()) {
+    server_listen_pipe_.reset();
     // Unregister libevent for the listening socket and close it.
     server_listen_connection_watcher_.StopWatchingFileDescriptor();
   }
