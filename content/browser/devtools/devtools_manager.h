@@ -54,7 +54,8 @@ class CONTENT_EXPORT DevToolsManager {
   void RenderViewCreated(WebContents* web_contents, RenderViewHost* rvh);
   void AgentHostChanged(scoped_refptr<DevToolsAgentHost> agent_host);
 
-  static void SetObserverThrottleIntervalForTest(base::TimeDelta interval);
+  typedef base::Callback<void(base::Closure)> Scheduler;
+  void SetSchedulerForTest(Scheduler scheduler);
 
  private:
   friend struct DefaultSingletonTraits<DevToolsManager>;
@@ -69,8 +70,7 @@ class CONTENT_EXPORT DevToolsManager {
   bool update_target_list_required_;
   bool update_target_list_scheduled_;
   base::CancelableClosure update_target_list_callback_;
-
-  static base::TimeDelta observer_throttle_interval_;
+  Scheduler scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
 };

@@ -191,9 +191,6 @@ class TestDevToolsManagerObserver : public DevToolsManager::Observer {
          it != targets.end(); ++it) {
       hosts_.push_back((*it)->GetAgentHost());
     }
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::MessageLoop::QuitClosure());
   }
 
  private:
@@ -360,14 +357,41 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
   client_host.Close();
 }
 
+class TestDevToolsManagerScheduler {
+ public:
+  DevToolsManager::Scheduler callback() {
+    return base::Bind(&TestDevToolsManagerScheduler::Schedule,
+                      base::Unretained(this));
+  }
+
+  void Run() {
+    ASSERT_FALSE(closure_.is_null());
+    base::Closure copy = closure_;
+    closure_.Reset();
+    copy.Run();
+  }
+
+  bool IsEmpty() {
+    return closure_.is_null();
+  }
+
+ private:
+  void Schedule(base::Closure closure) {
+    EXPECT_TRUE(closure_.is_null());
+    closure_ = closure;
+  }
+
+  base::Closure closure_;
+};
+
 TEST_F(DevToolsManagerTest, TestObserver) {
   GURL url1("data:text/html,<body>Body1</body>");
   GURL url2("data:text/html,<body>Body2</body>");
   GURL url3("data:text/html,<body>Body3</body>");
 
+  TestDevToolsManagerScheduler scheduler;
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsManager::SetObserverThrottleIntervalForTest(
-      base::TimeDelta::FromMilliseconds(200));
+  manager->SetSchedulerForTest(scheduler.callback());
 
   contents()->NavigateAndCommit(url1);
   RunAllPendingInMessageLoop();
@@ -375,29 +399,25 @@ TEST_F(DevToolsManagerTest, TestObserver) {
   scoped_ptr<TestDevToolsManagerObserver> observer(
       new TestDevToolsManagerObserver());
   manager->AddObserver(observer.get());
-  RunMessageLoop();
   // Added observer should get an update.
   EXPECT_EQ(1, observer->updates_count());
-  EXPECT_EQ(1u, observer->hosts().size());
+  ASSERT_EQ(1u, observer->hosts().size());
   EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
   EXPECT_EQ(url1.spec(), observer->hosts()[0]->GetURL().spec());
 
   contents()->NavigateAndCommit(url2);
   RunAllPendingInMessageLoop();
   contents()->NavigateAndCommit(url3);
-  RunMessageLoop();
+  scheduler.Run();
   // Updates should be coalesced.
   EXPECT_EQ(2, observer->updates_count());
-  EXPECT_EQ(1u, observer->hosts().size());
+  ASSERT_EQ(1u, observer->hosts().size());
   EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
   EXPECT_EQ(url3.spec(), observer->hosts()[0]->GetURL().spec());
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(250));
-  base::MessageLoop::current()->Run();
   // Check there were no extra updates.
+  scheduler.Run();
+  EXPECT_TRUE(scheduler.IsEmpty());
   EXPECT_EQ(2, observer->updates_count());
 
   scoped_ptr<WorkerStoragePartition> partition(new WorkerStoragePartition(
@@ -417,9 +437,8 @@ TEST_F(DevToolsManagerTest, TestObserver) {
       1, 1, shared_worker);
   contents()->NavigateAndCommit(url2);
 
-  RunMessageLoop();
   EXPECT_EQ(3, observer->updates_count());
-  EXPECT_EQ(2u, observer->hosts().size());
+  ASSERT_EQ(2u, observer->hosts().size());
   EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
   EXPECT_EQ(url2.spec(), observer->hosts()[0]->GetURL().spec());
   EXPECT_EQ(DevToolsAgentHost::TYPE_SHARED_WORKER,
@@ -427,21 +446,21 @@ TEST_F(DevToolsManagerTest, TestObserver) {
   EXPECT_EQ(shared_worker_url.spec(), observer->hosts()[1]->GetURL().spec());
 
   EmbeddedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(1, 1);
-  RunMessageLoop();
+  scheduler.Run();
   EXPECT_EQ(4, observer->updates_count());
-  EXPECT_EQ(1u, observer->hosts().size());
+  ASSERT_EQ(1u, observer->hosts().size());
   EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
   EXPECT_EQ(url2.spec(), observer->hosts()[0]->GetURL().spec());
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(250));
-  base::MessageLoop::current()->Run();
   // Check there were no extra updates.
+  scheduler.Run();
+  EXPECT_TRUE(scheduler.IsEmpty());
   EXPECT_EQ(4, observer->updates_count());
 
   manager->RemoveObserver(observer.get());
+
+  EXPECT_TRUE(scheduler.IsEmpty());
+  manager->SetSchedulerForTest(DevToolsManager::Scheduler());
 }
 
 }  // namespace content

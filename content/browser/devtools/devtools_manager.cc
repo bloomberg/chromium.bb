@@ -14,6 +14,12 @@
 
 namespace content {
 
+namespace {
+
+int kObserverThrottleInterval = 500; // ms
+
+}  // namespace
+
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
   return Singleton<DevToolsManager>::get();
@@ -91,10 +97,14 @@ void DevToolsManager::UpdateTargetListThrottled() {
   }
 
   update_target_list_scheduled_ = true;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      update_target_list_callback_.callback(),
-      observer_throttle_interval_);
+  if (scheduler_.is_null()) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        update_target_list_callback_.callback(),
+        base::TimeDelta::FromMilliseconds(kObserverThrottleInterval));
+  } else {
+    scheduler_.Run(update_target_list_callback_.callback());
+  }
 
   update_target_list_required_ = false;
   if (!delegate_) {
@@ -113,14 +123,8 @@ void DevToolsManager::NotifyTargetListChanged(
   STLDeleteContainerPointers(targets.begin(), targets.end());
 }
 
-// static
-base::TimeDelta DevToolsManager::observer_throttle_interval_ =
-    base::TimeDelta::FromMilliseconds(500);
-
-// static
-void DevToolsManager::SetObserverThrottleIntervalForTest(
-    base::TimeDelta interval) {
-  observer_throttle_interval_ = interval;
+void DevToolsManager::SetSchedulerForTest(Scheduler scheduler) {
+  scheduler_ = scheduler;
 }
 
 }  // namespace content
