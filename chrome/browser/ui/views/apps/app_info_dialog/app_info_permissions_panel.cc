@@ -10,7 +10,12 @@
 #include "apps/app_load_service.h"
 #include "apps/saved_files_service.h"
 #include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "device/usb/usb_ids.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -31,10 +36,14 @@ AppInfoPermissionsPanel::AppInfoPermissionsPanel(
       active_permissions_list_(NULL),
       retained_files_heading_(NULL),
       retained_files_list_(NULL),
-      revoke_file_permissions_button_(NULL) {
+      revoke_file_permissions_button_(NULL),
+      retained_devices_heading_(NULL),
+      retained_devices_list_(NULL),
+      revoke_device_permissions_button_(NULL) {
   // Create UI elements.
   CreateActivePermissionsControl();
   CreateRetainedFilesControl();
+  CreateRetainedDevicesControl();
 
   // Layout elements.
   SetLayoutManager(
@@ -45,6 +54,7 @@ AppInfoPermissionsPanel::AppInfoPermissionsPanel(
 
   LayoutActivePermissionsControl();
   LayoutRetainedFilesControl();
+  LayoutRetainedDevicesControl();
 }
 
 AppInfoPermissionsPanel::~AppInfoPermissionsPanel() {
@@ -142,6 +152,24 @@ void AppInfoPermissionsPanel::CreateRetainedFilesControl() {
   }
 }
 
+void AppInfoPermissionsPanel::CreateRetainedDevicesControl() {
+  const std::vector<base::string16> retained_device_permission_messages =
+      GetRetainedDevices();
+
+  if (!retained_device_permission_messages.empty()) {
+    revoke_device_permissions_button_ = new views::LabelButton(
+        this,
+        l10n_util::GetStringUTF16(
+            IDS_APPLICATION_INFO_REVOKE_DEVICE_PERMISSIONS_BUTTON_TEXT));
+    revoke_device_permissions_button_->SetStyle(views::Button::STYLE_BUTTON);
+
+    retained_devices_heading_ = CreateHeading(l10n_util::GetStringUTF16(
+        IDS_APPLICATION_INFO_RETAINED_DEVICE_PERMISSIONS_TEXT));
+    retained_devices_list_ = CreateBulletedListView(
+        retained_device_permission_messages, false, gfx::ELIDE_TAIL);
+  }
+}
+
 void AppInfoPermissionsPanel::LayoutActivePermissionsControl() {
   if (active_permissions_list_) {
     views::View* vertical_stack = CreateVerticalStack();
@@ -176,10 +204,35 @@ void AppInfoPermissionsPanel::LayoutRetainedFilesControl() {
   }
 }
 
+void AppInfoPermissionsPanel::LayoutRetainedDevicesControl() {
+  if (retained_devices_list_) {
+    DCHECK(retained_devices_heading_);
+    DCHECK(revoke_device_permissions_button_);
+
+    // Add a sub-view so the revoke button is right-aligned.
+    views::View* right_aligned_button = new views::View();
+    views::BoxLayout* right_aligned_horizontal_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    right_aligned_horizontal_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+    right_aligned_button->SetLayoutManager(right_aligned_horizontal_layout);
+    right_aligned_button->AddChildView(revoke_device_permissions_button_);
+
+    views::View* vertical_stack = CreateVerticalStack();
+    vertical_stack->AddChildView(retained_devices_heading_);
+    vertical_stack->AddChildView(retained_devices_list_);
+    vertical_stack->AddChildView(right_aligned_button);
+
+    AddChildView(vertical_stack);
+  }
+}
+
 void AppInfoPermissionsPanel::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   if (sender == revoke_file_permissions_button_) {
     RevokeFilePermissions();
+  } else if (sender == revoke_device_permissions_button_) {
+    RevokeDevicePermissions();
   } else {
     NOTREACHED();
   }
@@ -209,6 +262,19 @@ AppInfoPermissionsPanel::GetRetainedFilePaths() const {
 
 void AppInfoPermissionsPanel::RevokeFilePermissions() {
   apps::SavedFilesService::Get(profile_)->ClearQueue(app_);
+  apps::AppLoadService::Get(profile_)->RestartApplicationIfRunning(app_->id());
+
+  GetWidget()->Close();
+}
+
+const std::vector<base::string16> AppInfoPermissionsPanel::GetRetainedDevices()
+    const {
+  return extensions::DevicePermissionsManager::Get(profile_)
+      ->GetPermissionMessageStrings(app_->id());
+}
+
+void AppInfoPermissionsPanel::RevokeDevicePermissions() {
+  extensions::DevicePermissionsManager::Get(profile_)->Clear(app_->id());
   apps::AppLoadService::Get(profile_)->RestartApplicationIfRunning(app_->id());
 
   GetWidget()->Close();

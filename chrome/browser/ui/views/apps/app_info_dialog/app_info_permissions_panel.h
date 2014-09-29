@@ -57,9 +57,11 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
   // Internal initialisation methods.
   void CreateActivePermissionsControl();
   void CreateRetainedFilesControl();
+  void CreateRetainedDevicesControl();
 
   void LayoutActivePermissionsControl();
   void LayoutRetainedFilesControl();
+  void LayoutRetainedDevicesControl();
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
@@ -68,6 +70,8 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
   const std::vector<base::string16> GetActivePermissionMessages() const;
   const std::vector<base::string16> GetRetainedFilePaths() const;
   void RevokeFilePermissions();
+  const std::vector<base::string16> GetRetainedDevices() const;
+  void RevokeDevicePermissions();
 
   // UI elements on the dialog.
   views::Label* active_permissions_heading_;
@@ -76,6 +80,10 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
   views::Label* retained_files_heading_;
   views::View* retained_files_list_;
   views::LabelButton* revoke_file_permissions_button_;
+
+  views::Label* retained_devices_heading_;
+  views::View* retained_devices_list_;
+  views::LabelButton* revoke_device_permissions_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoPermissionsPanel);
 };

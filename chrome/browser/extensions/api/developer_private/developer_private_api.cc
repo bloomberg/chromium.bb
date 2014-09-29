@@ -46,6 +46,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_error.h"
@@ -758,7 +759,14 @@ bool DeveloperPrivateShowPermissionsDialogFunction::RunSync() {
       retained_file_paths.push_back(retained_file_entries[i].path);
     }
   }
-  prompt_->ReviewPermissions(this, extension, retained_file_paths);
+  std::vector<base::string16> retained_device_messages;
+  if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
+    retained_device_messages =
+        extensions::DevicePermissionsManager::Get(GetProfile())
+            ->GetPermissionMessageStrings(extension_id_);
+  }
+  prompt_->ReviewPermissions(
+      this, extension, retained_file_paths, retained_device_messages);
   return true;
 }
 

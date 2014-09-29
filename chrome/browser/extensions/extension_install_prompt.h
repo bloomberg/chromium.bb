@@ -84,6 +84,7 @@ class ExtensionInstallPrompt
     PERMISSIONS_DETAILS = 0,
     WITHHELD_PERMISSIONS_DETAILS,
     RETAINED_FILES_DETAILS,
+    RETAINED_DEVICES_DETAILS,
   };
 
   // This enum is used to differentiate regular and withheld permissions for
@@ -135,6 +136,7 @@ class ExtensionInstallPrompt
     base::string16 GetPermissionsHeading(
         PermissionsType permissions_type) const;
     base::string16 GetRetainedFilesHeading() const;
+    base::string16 GetRetainedDevicesHeading() const;
 
     bool ShouldShowPermissions() const;
     bool ShouldShowExplanationText() const;
@@ -160,6 +162,8 @@ class ExtensionInstallPrompt
     bool GetIsShowingDetails(DetailsType type, size_t index) const;
     size_t GetRetainedFileCount() const;
     base::string16 GetRetainedFile(size_t index) const;
+    size_t GetRetainedDeviceCount() const;
+    base::string16 GetRetainedDeviceMessageString(size_t index) const;
 
     // Populated for BUNDLE_INSTALL_PROMPT.
     const extensions::BundleInstaller* bundle() const { return bundle_; }
@@ -176,6 +180,10 @@ class ExtensionInstallPrompt
     // May be populated for POST_INSTALL_PERMISSIONS_PROMPT.
     void set_retained_files(const std::vector<base::FilePath>& retained_files) {
       retained_files_ = retained_files;
+    }
+    void set_retained_device_messages(
+        const std::vector<base::string16>& retained_device_messages) {
+      retained_device_messages_ = retained_device_messages;
     }
 
     const gfx::Image& icon() const { return icon_; }
@@ -204,6 +212,8 @@ class ExtensionInstallPrompt
 
     virtual ~Prompt();
 
+    bool ShouldDisplayRevokeButton() const;
+
     // Returns the InstallPromptPermissions corresponding to
     // |permissions_type|.
     InstallPromptPermissions& GetPermissionsForType(
@@ -222,6 +232,7 @@ class ExtensionInstallPrompt
     InstallPromptPermissions withheld_prompt_permissions_;
 
     bool is_showing_details_for_retained_files_;
+    bool is_showing_details_for_retained_devices_;
 
     // The extension or bundle being installed.
     const extensions::Extension* extension_;
@@ -247,6 +258,7 @@ class ExtensionInstallPrompt
     bool has_webstore_data_;
 
     std::vector<base::FilePath> retained_files_;
+    std::vector<base::string16> retained_device_messages_;
 
     scoped_refptr<ExtensionInstallPromptExperiment> experiment_;
 
@@ -389,7 +401,8 @@ class ExtensionInstallPrompt
   virtual void ReviewPermissions(
       Delegate* delegate,
       const extensions::Extension* extension,
-      const std::vector<base::FilePath>& retained_file_paths);
+      const std::vector<base::FilePath>& retained_file_paths,
+      const std::vector<base::string16>& retained_device_messages);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const extensions::Extension* extension,

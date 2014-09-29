@@ -405,42 +405,76 @@ void ExtensionInstallDialogView::InitView() {
     }
   }
 
-  if (prompt_->GetRetainedFileCount()) {
-    // Slide in under the permissions, if there are any. If there are
-    // either, the retained files prompt stretches all the way to the
-    // right of the dialog. If there are no permissions, the retained
-    // files prompt just takes up the left column.
-    int space_for_files = left_column_width;
+  int space_for_files_and_devices = left_column_width;
+  if (prompt_->GetRetainedFileCount() || prompt_->GetRetainedDeviceCount()) {
+    // Slide in under the permissions, if there are any. If there are either,
+    // the retained files and devices prompts stretch all the way to the right
+    // of the dialog. If there are no permissions, the retained files and
+    // devices prompts just take up the left column.
+
     if (has_permissions) {
-      space_for_files += kIconSize;
+      space_for_files_and_devices += kIconSize;
       views::ColumnSet* column_set = layout->AddColumnSet(++column_set_id);
       column_set->AddColumn(views::GridLayout::FILL,
                             views::GridLayout::FILL,
                             1,
                             views::GridLayout::USE_PREF,
                             0,  // no fixed width
-                            space_for_files);
+                            space_for_files_and_devices);
     }
+  }
 
+  if (prompt_->GetRetainedFileCount()) {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
     layout->StartRow(0, column_set_id);
-    views::Label* retained_files_header = NULL;
-    retained_files_header =
+    views::Label* retained_files_header =
         new views::Label(prompt_->GetRetainedFilesHeading());
     retained_files_header->SetMultiLine(true);
     retained_files_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    retained_files_header->SizeToFit(space_for_files);
+    retained_files_header->SizeToFit(space_for_files_and_devices);
     layout->AddView(retained_files_header);
 
     layout->StartRow(0, column_set_id);
     PermissionDetails details;
-    for (size_t i = 0; i < prompt_->GetRetainedFileCount(); ++i)
+    for (size_t i = 0; i < prompt_->GetRetainedFileCount(); ++i) {
       details.push_back(prompt_->GetRetainedFile(i));
+    }
     ExpandableContainerView* issue_advice_view =
-        new ExpandableContainerView(
-            this, base::string16(), details, space_for_files,
-            false, true, false);
+        new ExpandableContainerView(this,
+                                    base::string16(),
+                                    details,
+                                    space_for_files_and_devices,
+                                    false,
+                                    true,
+                                    false);
+    layout->AddView(issue_advice_view);
+  }
+
+  if (prompt_->GetRetainedDeviceCount()) {
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    layout->StartRow(0, column_set_id);
+    views::Label* retained_devices_header =
+        new views::Label(prompt_->GetRetainedDevicesHeading());
+    retained_devices_header->SetMultiLine(true);
+    retained_devices_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    retained_devices_header->SizeToFit(space_for_files_and_devices);
+    layout->AddView(retained_devices_header);
+
+    layout->StartRow(0, column_set_id);
+    PermissionDetails details;
+    for (size_t i = 0; i < prompt_->GetRetainedDeviceCount(); ++i) {
+      details.push_back(prompt_->GetRetainedDeviceMessageString(i));
+    }
+    ExpandableContainerView* issue_advice_view =
+        new ExpandableContainerView(this,
+                                    base::string16(),
+                                    details,
+                                    space_for_files_and_devices,
+                                    false,
+                                    true,
+                                    false);
     layout->AddView(issue_advice_view);
   }
 

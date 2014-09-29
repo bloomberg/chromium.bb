@@ -70,6 +70,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/blacklist_state.h"
@@ -799,9 +800,11 @@ void ExtensionSettingsHandler::ExtensionWarningsChanged() {
   MaybeUpdateAfterNotification();
 }
 
-// This is called when the user clicks "Revoke File Access."
+// This is called when the user clicks "Revoke File/Device Access."
 void ExtensionSettingsHandler::InstallUIProceed() {
   Profile* profile = Profile::FromWebUI(web_ui());
+  extensions::DevicePermissionsManager::Get(profile)
+      ->Clear(extension_id_prompting_);
   apps::SavedFilesService::Get(profile)->ClearQueue(
       extension_service_->GetExtensionById(extension_id_prompting_, true));
   apps::AppLoadService::Get(profile)
@@ -1177,9 +1180,18 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
       retained_file_paths.push_back(retained_file_entries[i].path);
     }
   }
+  std::vector<base::string16> retained_device_messages;
+  if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
+    retained_device_messages =
+        extensions::DevicePermissionsManager::Get(Profile::FromWebUI(web_ui()))
+            ->GetPermissionMessageStrings(extension_id_prompting_);
+  }
+
   // The BrokerDelegate manages its own lifetime.
-  prompt_->ReviewPermissions(
-      new BrokerDelegate(AsWeakPtr()), extension, retained_file_paths);
+  prompt_->ReviewPermissions(new BrokerDelegate(AsWeakPtr()),
+                             extension,
+                             retained_file_paths,
+                             retained_device_messages);
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(
