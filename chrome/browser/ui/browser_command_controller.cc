@@ -15,6 +15,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration.h"
@@ -1027,6 +1028,8 @@ void BrowserCommandController::InitCommandState() {
 void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
     CommandUpdater* command_updater,
     Profile* profile) {
+  const bool guest_session = profile->IsGuestSession();
+  // TODO(mlerman): Make GetAvailability account for profile->IsGuestSession().
   IncognitoModePrefs::Availability incognito_availability =
       IncognitoModePrefs::GetAvailability(profile->GetPrefs());
   command_updater->UpdateCommandEnabled(
@@ -1034,9 +1037,8 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
       incognito_availability != IncognitoModePrefs::FORCED);
   command_updater->UpdateCommandEnabled(
       IDC_NEW_INCOGNITO_WINDOW,
-      incognito_availability != IncognitoModePrefs::DISABLED);
+      incognito_availability != IncognitoModePrefs::DISABLED && !guest_session);
 
-  const bool guest_session = profile->IsGuestSession();
   const bool forced_incognito =
       incognito_availability == IncognitoModePrefs::FORCED ||
       guest_session;  // Guest always runs in Incognito mode.
