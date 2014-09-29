@@ -16,15 +16,16 @@
 
 class AccessorNode;
 class BinaryOpNode;
+class BlockCommentNode;
 class BlockNode;
 class ConditionNode;
+class EndNode;
 class FunctionCallNode;
 class IdentifierNode;
 class ListNode;
 class LiteralNode;
 class Scope;
 class UnaryOpNode;
-class BlockCommentNode;
 
 class Comments {
  public:
@@ -74,14 +75,15 @@ class ParseNode {
 
   virtual const AccessorNode* AsAccessor() const;
   virtual const BinaryOpNode* AsBinaryOp() const;
+  virtual const BlockCommentNode* AsBlockComment() const;
   virtual const BlockNode* AsBlock() const;
   virtual const ConditionNode* AsConditionNode() const;
+  virtual const EndNode* AsEnd() const;
   virtual const FunctionCallNode* AsFunctionCall() const;
   virtual const IdentifierNode* AsIdentifier() const;
   virtual const ListNode* AsList() const;
   virtual const LiteralNode* AsLiteral() const;
   virtual const UnaryOpNode* AsUnaryOp() const;
-  virtual const BlockCommentNode* AsBlockComment() const;
 
   virtual Value Execute(Scope* scope, Err* err) const = 0;
 
@@ -226,7 +228,8 @@ class BlockNode : public ParseNode {
   virtual void Print(std::ostream& out, int indent) const OVERRIDE;
 
   void set_begin_token(const Token& t) { begin_token_ = t; }
-  void set_end_token(const Token& t) { end_token_ = t; }
+  void set_end(scoped_ptr<EndNode> e) { end_ = e.Pass(); }
+  const EndNode* End() const { return end_.get(); }
 
   const std::vector<ParseNode*>& statements() const { return statements_; }
   void append_statement(scoped_ptr<ParseNode> s) {
@@ -239,9 +242,10 @@ class BlockNode : public ParseNode {
  private:
   bool has_scope_;
 
-  // Tokens corresponding to { and }, if any (may be NULL).
+  // Tokens corresponding to { and }, if any (may be NULL). The end is stored
+  // in a custom parse node so that it can have comments hung off of it.
   Token begin_token_;
-  Token end_token_;
+  scoped_ptr<EndNode> end_;
 
   // Owning pointers, use unique_ptr when we can use C++11.
   std::vector<ParseNode*> statements_;
@@ -367,7 +371,8 @@ class ListNode : public ParseNode {
   virtual void Print(std::ostream& out, int indent) const OVERRIDE;
 
   void set_begin_token(const Token& t) { begin_token_ = t; }
-  void set_end_token(const Token& t) { end_token_ = t; }
+  void set_end(scoped_ptr<EndNode> e) { end_ = e.Pass(); }
+  const EndNode* End() const { return end_.get(); }
 
   void append_item(scoped_ptr<ParseNode> s) {
     contents_.push_back(s.release());
@@ -375,9 +380,10 @@ class ListNode : public ParseNode {
   const std::vector<const ParseNode*>& contents() const { return contents_; }
 
  private:
-  // Tokens corresponding to the [ and ].
+  // Tokens corresponding to the [ and ]. The end token is stored in inside an
+  // custom parse node so that it can have comments hung off of it.
   Token begin_token_;
-  Token end_token_;
+  scoped_ptr<EndNode> end_;
 
   // Owning pointers, use unique_ptr when we can use C++11.
   std::vector<const ParseNode*> contents_;
@@ -467,6 +473,34 @@ class BlockCommentNode : public ParseNode {
   Token comment_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockCommentNode);
+};
+
+// EndNode ---------------------------------------------------------------------
+
+// This node type is used as the end_ object for lists and blocks (rather than
+// just the end ']', '}', or ')' token). This is so that during formatting
+// traversal there is a node that appears at the end of the block to which
+// comments can be attached.
+class EndNode : public ParseNode {
+ public:
+  EndNode(const Token& token);
+  virtual ~EndNode();
+
+  virtual const EndNode* AsEnd() const OVERRIDE;
+  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
+  virtual LocationRange GetRange() const OVERRIDE;
+  virtual Err MakeErrorDescribing(
+      const std::string& msg,
+      const std::string& help = std::string()) const OVERRIDE;
+  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+
+  const Token& value() const { return value_; }
+  void set_value(const Token& t) { value_ = t; }
+
+ private:
+  Token value_;
+
+  DISALLOW_COPY_AND_ASSIGN(EndNode);
 };
 
 #endif  // TOOLS_GN_PARSE_TREE_H_

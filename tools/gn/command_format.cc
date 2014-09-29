@@ -50,6 +50,7 @@ class Printer {
     kSequenceStyleFunctionCall,
     kSequenceStyleList,
     kSequenceStyleBlock,
+    kSequenceStyleBracedBlock,
   };
 
   enum ExprStyle {
@@ -78,8 +79,13 @@ class Printer {
   // added to the output.
   ExprStyle Expr(const ParseNode* root);
 
+  // Format a list of values using the given style.
+  // |end| holds any trailing comments to be printed just before the closing
+  // bracket.
   template <class PARSENODE>  // Just for const covariance.
-  void Sequence(SequenceStyle style, const std::vector<PARSENODE*>& list);
+  void Sequence(SequenceStyle style,
+                const std::vector<PARSENODE*>& list,
+                const ParseNode* end);
 
   std::string output_;           // Output buffer.
   std::vector<Token> comments_;  // Pending end-of-line comments.
@@ -210,18 +216,14 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
     Print(" ");
     Expr(binop->right());
   } else if (const BlockNode* block = root->AsBlock()) {
-    Sequence(kSequenceStyleBlock, block->statements());
+    Sequence(kSequenceStyleBracedBlock, block->statements(), block->End());
   } else if (const ConditionNode* condition = root->AsConditionNode()) {
     Print("if (");
     Expr(condition->condition());
-    Print(") {");
-    margin_ += kIndentSize;
-    Newline();
-    Block(condition->if_true());
-    margin_ -= kIndentSize;
-    Trim();
-    PrintMargin();
-    Print("}");
+    Print(") ");
+    Sequence(kSequenceStyleBracedBlock,
+             condition->if_true()->statements(),
+             condition->if_true()->End());
     if (condition->if_false()) {
       Print(" else ");
       // If it's a block it's a bare 'else', otherwise it's an 'else if'. See
@@ -230,31 +232,24 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
       if (is_else_if) {
         Expr(condition->if_false());
       } else {
-        Print("{");
-        margin_ += kIndentSize;
-        Newline();
-        Block(condition->if_false());
-        margin_ -= kIndentSize;
-        Trim();
-        PrintMargin();
-        Print("}");
+        Sequence(kSequenceStyleBracedBlock,
+                 condition->if_false()->AsBlock()->statements(),
+                 condition->if_false()->AsBlock()->End());
       }
     }
   } else if (const FunctionCallNode* func_call = root->AsFunctionCall()) {
     Print(func_call->function().value());
-    Sequence(kSequenceStyleFunctionCall, func_call->args()->contents());
-    Print(" {");
-    margin_ += kIndentSize;
-    Newline();
-    Block(func_call->block());
-    margin_ -= kIndentSize;
-    Trim();
-    PrintMargin();
-    Print("}");
+    Sequence(kSequenceStyleFunctionCall,
+             func_call->args()->contents(),
+             func_call->args()->End());
+    Print(" ");
+    Sequence(kSequenceStyleBracedBlock,
+             func_call->block()->statements(),
+             func_call->block()->End());
   } else if (const IdentifierNode* identifier = root->AsIdentifier()) {
     Print(identifier->value().value());
   } else if (const ListNode* list = root->AsList()) {
-    Sequence(kSequenceStyleList, list->contents());
+    Sequence(kSequenceStyleList, list->contents(), list->End());
   } else if (const LiteralNode* literal = root->AsLiteral()) {
     // TODO(scottmg): Quoting?
     Print(literal->value().value());
@@ -264,6 +259,8 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
   } else if (const BlockCommentNode* block_comment = root->AsBlockComment()) {
     Print(block_comment->comment().value());
     result = kExprStyleComment;
+  } else if (const EndNode* end = root->AsEnd()) {
+    Print(end->value().value());
   } else {
     CHECK(false) << "Unhandled case in Expr.";
   }
@@ -280,14 +277,20 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
 
 template <class PARSENODE>
 void Printer::Sequence(SequenceStyle style,
-                       const std::vector<PARSENODE*>& list) {
+                       const std::vector<PARSENODE*>& list,
+                       const ParseNode* end) {
   bool force_multiline = false;
   if (style == kSequenceStyleFunctionCall)
     Print("(");
   else if (style == kSequenceStyleList)
     Print("[");
+  else if (style == kSequenceStyleBracedBlock)
+    Print("{");
 
-  if (style == kSequenceStyleBlock)
+  if (style == kSequenceStyleBlock || style == kSequenceStyleBracedBlock)
+    force_multiline = true;
+
+  if (end && end->comments() && !end->comments()->before().empty())
     force_multiline = true;
 
   // If there's before line comments, make sure we have a place to put them.
@@ -302,7 +305,7 @@ void Printer::Sequence(SequenceStyle style,
     if (style != kSequenceStyleFunctionCall)
       Print(" ");
     Expr(list[0]);
-    CHECK(list[0]->comments()->after().empty());
+    CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
     if (style != kSequenceStyleFunctionCall)
       Print(" ");
   } else {
@@ -311,14 +314,26 @@ void Printer::Sequence(SequenceStyle style,
     for (const auto& x : list) {
       Newline();
       ExprStyle expr_style = Expr(x);
-      CHECK(x->comments()->after().empty());
+      CHECK(!x->comments() || x->comments()->after().empty());
       if (i < list.size() - 1 || style == kSequenceStyleList) {
-        if (expr_style == kExprStyleRegular)
+        if ((style == kSequenceStyleList || kSequenceStyleFunctionCall) &&
+            expr_style == kExprStyleRegular) {
           Print(",");
-        else
+        } else {
           Newline();
+        }
       }
       ++i;
+    }
+
+    // Trailing comments.
+    if (end->comments()) {
+      if (!list.empty())
+        Newline();
+      for (const auto& c : end->comments()->before()) {
+        Newline();
+        TrimAndPrintToken(c);
+      }
     }
 
     margin_ -= kIndentSize;
@@ -329,6 +344,8 @@ void Printer::Sequence(SequenceStyle style,
     Print(")");
   else if (style == kSequenceStyleList)
     Print("]");
+  else if (style == kSequenceStyleBracedBlock)
+    Print("}");
 }
 
 }  // namespace

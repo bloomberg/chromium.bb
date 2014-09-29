@@ -285,7 +285,7 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
                                                Token token) {
   scoped_ptr<ListNode> list(new ListNode);
   list->set_begin_token(token);
-  list->set_end_token(token);
+  list->set_end(make_scoped_ptr(new EndNode(token)));
   scoped_ptr<BlockNode> block;
   bool has_arg = false;
   if (LookAhead(Token::LEFT_PAREN)) {
@@ -418,7 +418,7 @@ scoped_ptr<ListNode> Parser::ParseList(Token start_token,
     *err_ = Err(cur_token(), "Trailing comma");
     return scoped_ptr<ListNode>();
   }
-  list->set_end_token(cur_token());
+  list->set_end(make_scoped_ptr(new EndNode(cur_token())));
   return list.Pass();
 }
 
@@ -479,7 +479,7 @@ scoped_ptr<BlockNode> Parser::ParseBlock() {
 
   for (;;) {
     if (LookAhead(Token::RIGHT_BRACE)) {
-      block->set_end_token(Consume());
+      block->set_end(make_scoped_ptr(new EndNode(Consume())));
       break;
     }
 
@@ -526,6 +526,7 @@ void Parser::TraverseOrder(const ParseNode* root,
           ++i) {
         TraverseOrder(*i, pre, post);
       }
+      TraverseOrder(block->End(), pre, post);
     } else if (const ConditionNode* condition = root->AsConditionNode()) {
       TraverseOrder(condition->condition(), pre, post);
       TraverseOrder(condition->if_true(), pre, post);
@@ -542,11 +543,14 @@ void Parser::TraverseOrder(const ParseNode* root,
           ++i) {
         TraverseOrder(*i, pre, post);
       }
+      TraverseOrder(list->End(), pre, post);
     } else if (root->AsLiteral()) {
       // Nothing.
     } else if (const UnaryOpNode* unaryop = root->AsUnaryOp()) {
       TraverseOrder(unaryop->operand(), pre, post);
     } else if (root->AsBlockComment()) {
+      // Nothing.
+    } else if (root->AsEnd()) {
       // Nothing.
     } else {
       CHECK(false) << "Unhandled case in TraverseOrder.";
@@ -592,7 +596,7 @@ void Parser::AssignComments(ParseNode* file) {
        ++i) {
     // Don't assign suffix comments to the function call or list, but instead
     // to the last thing inside.
-    if ((*i)->AsFunctionCall() || (*i)->AsList())
+    if ((*i)->AsFunctionCall() || (*i)->AsList() || (*i)->AsEnd())
       continue;
 
     const Location& start = (*i)->GetRange().begin();
@@ -620,6 +624,7 @@ void Parser::AssignComments(ParseNode* file) {
 
     // Suffix comments were assigned in reverse, so if there were multiple on
     // the same node, they need to be reversed.
-    const_cast<ParseNode*>(*i)->comments_mutable()->ReverseSuffix();
+    if ((*i)->comments() && !(*i)->comments()->suffix().empty())
+      const_cast<ParseNode*>(*i)->comments_mutable()->ReverseSuffix();
   }
 }

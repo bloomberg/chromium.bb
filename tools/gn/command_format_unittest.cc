@@ -24,7 +24,7 @@ bool FormatFileToString(const std::string& input_filename,
                            FILE_PATH_LITERAL(#n)                       \
                                FILE_PATH_LITERAL(".golden")),          \
         &expected));                                                   \
-    EXPECT_EQ(out, expected);                                          \
+    EXPECT_EQ(expected, out);                                          \
   }
 
 // These are expanded out this way rather than a runtime loop so that
@@ -43,3 +43,6 @@ FORMAT_TEST(011)
 FORMAT_TEST(012)
 FORMAT_TEST(013)
 FORMAT_TEST(014)
+FORMAT_TEST(015)
+// TODO(scottmg): Requires precedence/parentheses FORMAT_TEST(016)
+FORMAT_TEST(017)

@@ -40,14 +40,15 @@ ParseNode::~ParseNode() {
 
 const AccessorNode* ParseNode::AsAccessor() const { return NULL; }
 const BinaryOpNode* ParseNode::AsBinaryOp() const { return NULL; }
+const BlockCommentNode* ParseNode::AsBlockComment() const { return NULL; }
 const BlockNode* ParseNode::AsBlock() const { return NULL; }
 const ConditionNode* ParseNode::AsConditionNode() const { return NULL; }
+const EndNode* ParseNode::AsEnd() const { return NULL; }
 const FunctionCallNode* ParseNode::AsFunctionCall() const { return NULL; }
 const IdentifierNode* ParseNode::AsIdentifier() const { return NULL; }
 const ListNode* ParseNode::AsList() const { return NULL; }
 const LiteralNode* ParseNode::AsLiteral() const { return NULL; }
 const UnaryOpNode* ParseNode::AsUnaryOp() const { return NULL; }
-const BlockCommentNode* ParseNode::AsBlockComment() const { return NULL; }
 
 Comments* ParseNode::comments_mutable() {
   if (!comments_)
@@ -263,8 +264,8 @@ Value BlockNode::Execute(Scope* containing_scope, Err* err) const {
 
 LocationRange BlockNode::GetRange() const {
   if (begin_token_.type() != Token::INVALID &&
-      end_token_.type() != Token::INVALID) {
-    return begin_token_.range().Union(end_token_.range());
+      end_->value().type() != Token::INVALID) {
+    return begin_token_.range().Union(end_->value().range());
   } else if (!statements_.empty()) {
     return statements_[0]->GetRange().Union(
         statements_[statements_.size() - 1]->GetRange());
@@ -282,6 +283,8 @@ void BlockNode::Print(std::ostream& out, int indent) const {
   PrintComments(out, indent);
   for (size_t i = 0; i < statements_.size(); i++)
     statements_[i]->Print(out, indent + 1);
+  if (end_ && end_->comments())
+    end_->Print(out, indent + 1);
 }
 
 Value BlockNode::ExecuteBlockInScope(Scope* our_scope, Err* err) const {
@@ -478,7 +481,8 @@ Value ListNode::Execute(Scope* scope, Err* err) const {
 }
 
 LocationRange ListNode::GetRange() const {
-  return LocationRange(begin_token_.location(), end_token_.location());
+  return LocationRange(begin_token_.location(),
+                       end_->value().location());
 }
 
 Err ListNode::MakeErrorDescribing(const std::string& msg,
@@ -491,6 +495,8 @@ void ListNode::Print(std::ostream& out, int indent) const {
   PrintComments(out, indent);
   for (size_t i = 0; i < contents_.size(); i++)
     contents_[i]->Print(out, indent + 1);
+  if (end_ && end_->comments())
+    end_->Print(out, indent + 1);
 }
 
 // LiteralNode -----------------------------------------------------------------
@@ -608,5 +614,36 @@ Err BlockCommentNode::MakeErrorDescribing(const std::string& msg,
 
 void BlockCommentNode::Print(std::ostream& out, int indent) const {
   out << IndentFor(indent) << "BLOCK_COMMENT(" << comment_.value() << ")\n";
+  PrintComments(out, indent);
+}
+
+
+// EndNode ---------------------------------------------------------------------
+
+EndNode::EndNode(const Token& token) : value_(token) {
+}
+
+EndNode::~EndNode() {
+}
+
+const EndNode* EndNode::AsEnd() const {
+  return this;
+}
+
+Value EndNode::Execute(Scope* scope, Err* err) const {
+  return Value();
+}
+
+LocationRange EndNode::GetRange() const {
+  return value_.range();
+}
+
+Err EndNode::MakeErrorDescribing(const std::string& msg,
+                                        const std::string& help) const {
+  return Err(value_, msg, help);
+}
+
+void EndNode::Print(std::ostream& out, int indent) const {
+  out << IndentFor(indent) << "END(" << value_.value() << ")\n";
   PrintComments(out, indent);
 }
