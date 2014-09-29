@@ -98,7 +98,7 @@ base::TimeTicks ClockNow(clockid_t clk_id) {
 
   absolute_micro =
       (static_cast<int64>(ts.tv_sec) * base::Time::kMicrosecondsPerSecond) +
-      (static_cast<int64>(ts.tv_nsec) / base::Time::kNanosecondsPerMicrosecond);
+      (static_cast<int64>(ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond));
 
   return base::TimeTicks::FromInternalValue(absolute_micro);
 }
