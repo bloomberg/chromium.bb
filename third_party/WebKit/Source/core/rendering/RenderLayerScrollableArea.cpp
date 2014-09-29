@@ -58,6 +58,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/ScrollbarPainter.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -1070,7 +1071,7 @@ void RenderLayerScrollableArea::paintScrollCorner(GraphicsContext* context, cons
         return;
 
     if (m_scrollCorner) {
-        m_scrollCorner->paintIntoRect(context, paintOffset, absRect);
+        ScrollbarPainter::paintIntoRect(m_scrollCorner, context, paintOffset, absRect);
         return;
     }
 
@@ -1178,7 +1179,7 @@ void RenderLayerScrollableArea::paintResizer(GraphicsContext* context, const Int
         return;
 
     if (m_resizer) {
-        m_resizer->paintIntoRect(context, paintOffset, absRect);
+        ScrollbarPainter::paintIntoRect(m_resizer, context, paintOffset, absRect);
         return;
     }
 

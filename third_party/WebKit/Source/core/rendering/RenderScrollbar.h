@@ -49,8 +49,6 @@ public:
 
     RenderBox* owningRenderer() const;
 
-    void paintPart(GraphicsContext*, ScrollbarPart, const IntRect&);
-
     IntRect buttonRect(ScrollbarPart);
     IntRect trackRect(int startLength, int endLength);
     IntRect trackPieceRectWithMargins(ScrollbarPart, const IntRect&);
@@ -58,6 +56,8 @@ public:
     int minimumThumbLength();
 
     virtual bool isOverlayScrollbar() const OVERRIDE { return false; }
+
+    RenderScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
 
 private:
     virtual void setParent(Widget*) OVERRIDE;

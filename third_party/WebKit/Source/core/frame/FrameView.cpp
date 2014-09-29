@@ -55,6 +55,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/ScrollbarPainter.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
@@ -2298,7 +2299,7 @@ void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& corne
         bool needsBackgorund = m_frame->isMainFrame();
         if (needsBackgorund)
             context->fillRect(cornerRect, baseBackgroundColor());
-        m_scrollCorner->paintIntoRect(context, cornerRect.location(), cornerRect);
+        ScrollbarPainter::paintIntoRect(m_scrollCorner, context, cornerRect.location(), cornerRect);
         return;
     }
 

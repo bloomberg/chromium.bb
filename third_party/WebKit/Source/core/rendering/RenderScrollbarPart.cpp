@@ -169,26 +169,6 @@ void RenderScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
     }
 }
 
-void RenderScrollbarPart::paintIntoRect(GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)
-{
-    // Make sure our dimensions match the rect.
-    setLocation(rect.location() - toSize(paintOffset));
-    setWidth(rect.width());
-    setHeight(rect.height());
-
-    // Now do the paint.
-    PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseBlockBackground, PaintBehaviorNormal);
-    paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseChildBlockBackgrounds;
-    paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseFloat;
-    paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseForeground;
-    paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseOutline;
-    paint(paintInfo, paintOffset);
-}
-
 RenderObject* RenderScrollbarPart::rendererOwningScrollbar() const
 {
     if (!m_scrollbar)

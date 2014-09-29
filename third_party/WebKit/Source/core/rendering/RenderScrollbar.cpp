@@ -256,14 +256,6 @@ void RenderScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
         partRenderer->setStyle(partStyle.release());
 }
 
-void RenderScrollbar::paintPart(GraphicsContext* graphicsContext, ScrollbarPart partType, const IntRect& rect)
-{
-    RenderScrollbarPart* partRenderer = m_parts.get(partType);
-    if (!partRenderer)
-        return;
-    partRenderer->paintIntoRect(graphicsContext, location(), rect);
-}
-
 IntRect RenderScrollbar::buttonRect(ScrollbarPart partType)
 {
     RenderScrollbarPart* partRenderer = m_parts.get(partType);

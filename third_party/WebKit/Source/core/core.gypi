@@ -1522,6 +1522,8 @@
             'paint/ReplacedPainter.h',
             'paint/ReplicaPainter.cpp',
             'paint/ReplicaPainter.h',
+            'paint/ScrollbarPainter.cpp',
+            'paint/ScrollbarPainter.h',
             'paint/SVGForeignObjectPainter.cpp',
             'paint/SVGForeignObjectPainter.h',
             'paint/SVGImagePainter.cpp',

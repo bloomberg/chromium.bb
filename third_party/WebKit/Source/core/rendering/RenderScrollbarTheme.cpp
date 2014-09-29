@@ -24,8 +24,10 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarTheme.h"
+
+#include "core/paint/ScrollbarPainter.h"
+#include "core/rendering/RenderScrollbar.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/StdLibExtras.h"
@@ -116,27 +118,27 @@ void RenderScrollbarTheme::paintScrollCorner(GraphicsContext* context, const Int
 
 void RenderScrollbarTheme::paintScrollbarBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar)
 {
-    toRenderScrollbar(scrollbar)->paintPart(context, ScrollbarBGPart, scrollbar->frameRect());
+    ScrollbarPainter(*toRenderScrollbar(scrollbar)).paintPart(context, ScrollbarBGPart, scrollbar->frameRect());
 }
 
 void RenderScrollbarTheme::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    toRenderScrollbar(scrollbar)->paintPart(context, TrackBGPart, rect);
+    ScrollbarPainter(*toRenderScrollbar(scrollbar)).paintPart(context, TrackBGPart, rect);
 }
 
 void RenderScrollbarTheme::paintTrackPiece(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
-    toRenderScrollbar(scrollbar)->paintPart(context, part, rect);
+    ScrollbarPainter(*toRenderScrollbar(scrollbar)).paintPart(context, part, rect);
 }
 
 void RenderScrollbarTheme::paintButton(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
-    toRenderScrollbar(scrollbar)->paintPart(context, part, rect);
+    ScrollbarPainter(*toRenderScrollbar(scrollbar)).paintPart(context, part, rect);
 }
 
 void RenderScrollbarTheme::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    toRenderScrollbar(scrollbar)->paintPart(context, ThumbPart, rect);
+    ScrollbarPainter(*toRenderScrollbar(scrollbar)).paintPart(context, ThumbPart, rect);
 }
 
 void RenderScrollbarTheme::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
