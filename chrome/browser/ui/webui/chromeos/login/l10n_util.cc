@@ -167,18 +167,7 @@ scoped_ptr<base::ListValue> GetLanguageList(
     if (std::find(base_language_codes.begin(),
                   base_language_codes.end(),
                   *it) == base_language_codes.end()) {
-      // Try to translate language code and look up again.
-      std::string resolved_locale;
-
-      if (!l10n_util::CheckAndResolveLocale(*it, &resolved_locale))
-        continue;
-
-      if (std::find(base_language_codes.begin(),
-                    base_language_codes.end(),
-                    resolved_locale) == base_language_codes.end()) {
-        continue;
-      }
-      // Translated language was successfully found.
+      continue;
     }
 
     const base::string16 display_name =
