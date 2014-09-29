@@ -52,7 +52,7 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::Map(
     size_t offset,
     size_t length) {
   if (!IsValidMap(offset, length))
-    return scoped_ptr<PlatformSharedBufferMapping>();
+    return nullptr;
 
   return MapNoCheck(offset, length);
 }
