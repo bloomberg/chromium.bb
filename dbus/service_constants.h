@@ -1669,6 +1669,7 @@ const char kUpdateStatusReportingErrorEvent[] =
     "UPDATE_STATUS_REPORTING_ERROR_EVENT";
 const char kUpdateStatusAttemptingRollback[] =
     "UPDATE_STATUS_ATTEMPTING_ROLLBACK";
+const char kUpdateStatusDisabled[] = "UPDATE_STATUS_DISABLED";
 }  // namespace update_engine
 
 namespace debugd {
