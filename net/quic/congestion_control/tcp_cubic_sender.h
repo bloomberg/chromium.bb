@@ -39,6 +39,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Start implementation of SendAlgorithmInterface.
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+  virtual void SetNumEmulatedConnections(int num_connections) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time) OVERRIDE;
@@ -92,8 +93,11 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   const RttStats* rtt_stats_;
   QuicConnectionStats* stats_;
 
-  // Reno provided for testing.
+  // If true, Reno congestion control is used instead of Cubic.
   const bool reno_;
+
+  // Number of connections to simulate.
+  int num_connections_;
 
   // ACK counter for the Reno implementation.
   int64 congestion_window_count_;

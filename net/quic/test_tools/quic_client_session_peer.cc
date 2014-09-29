@@ -13,8 +13,7 @@ namespace test {
 void QuicClientSessionPeer::SetMaxOpenStreams(QuicClientSession* session,
                                               size_t max_streams,
                                               size_t default_streams) {
-  session->config()->set_max_streams_per_connection(max_streams,
-                                                    default_streams);
+  session->config()->SetMaxStreamsPerConnection(max_streams, default_streams);
 }
 
 // static

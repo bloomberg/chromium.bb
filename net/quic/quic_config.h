@@ -258,10 +258,10 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicConfig();
   ~QuicConfig();
 
-  void set_congestion_feedback(const QuicTagVector& congestion_feedback,
-                               QuicTag default_congestion_feedback);
+  void SetCongestionFeedback(const QuicTagVector& congestion_feedback,
+                             QuicTag default_congestion_feedback);
 
-  QuicTag congestion_feedback() const;
+  QuicTag CongestionFeedback() const;
 
   void SetConnectionOptionsToSend(const QuicTagVector& connection_options);
 
@@ -273,23 +273,36 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTagVector SendConnectionOptions() const;
 
-  void set_idle_connection_state_lifetime(
+  void SetIdleConnectionStateLifetime(
       QuicTime::Delta max_idle_connection_state_lifetime,
       QuicTime::Delta default_idle_conection_state_lifetime);
 
-  QuicTime::Delta idle_connection_state_lifetime() const;
+  QuicTime::Delta IdleConnectionStateLifetime() const;
 
-  QuicTime::Delta keepalive_timeout() const;
+  QuicTime::Delta KeepaliveTimeout() const;
 
-  void set_max_streams_per_connection(size_t max_streams,
-                                      size_t default_streams);
+  void SetMaxStreamsPerConnection(size_t max_streams, size_t default_streams);
 
-  uint32 max_streams_per_connection() const;
+  uint32 MaxStreamsPerConnection() const;
 
   void set_max_time_before_crypto_handshake(
-      QuicTime::Delta max_time_before_crypto_handshake);
+      QuicTime::Delta max_time_before_crypto_handshake) {
+    max_time_before_crypto_handshake_ = max_time_before_crypto_handshake;
+  }
 
-  QuicTime::Delta max_time_before_crypto_handshake() const;
+  QuicTime::Delta max_time_before_crypto_handshake() const {
+    return max_time_before_crypto_handshake_;
+  }
+
+  void set_max_idle_time_before_crypto_handshake(
+      QuicTime::Delta max_idle_time_before_crypto_handshake) {
+    max_idle_time_before_crypto_handshake_ =
+        max_idle_time_before_crypto_handshake;
+  }
+
+  QuicTime::Delta max_idle_time_before_crypto_handshake() const {
+    return max_idle_time_before_crypto_handshake_;
+  }
 
   // Sets the peer's default initial congestion window in packets.
   void SetInitialCongestionWindowToSend(size_t initial_window);
@@ -347,7 +360,7 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32 ReceivedSocketReceiveBuffer() const;
 
-  bool negotiated();
+  bool negotiated() const;
 
   // SetDefaults sets the members to sensible, default values.
   void SetDefaults();
@@ -365,6 +378,12 @@ class NET_EXPORT_PRIVATE QuicConfig {
  private:
   friend class test::QuicConfigPeer;
 
+  // Configurations options that are not negotiated.
+  // Maximum time the session can be alive before crypto handshake is finished.
+  QuicTime::Delta max_time_before_crypto_handshake_;
+  // Maximum idle time before the crypto handshake has completed.
+  QuicTime::Delta max_idle_time_before_crypto_handshake_;
+
   // Congestion control feedback type.
   QuicNegotiableTag congestion_feedback_;
   // Connection options.
@@ -375,9 +394,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicNegotiableUint32 keepalive_timeout_seconds_;
   // Maximum number of streams that the connection can support.
   QuicNegotiableUint32 max_streams_per_connection_;
-  // Maximum time till the session can be alive before crypto handshake is
-  // finished. (Not negotiated).
-  QuicTime::Delta max_time_before_crypto_handshake_;
   // Initial congestion window in packets.
   QuicFixedUint32 initial_congestion_window_;
   // Initial round trip time estimate in microseconds.

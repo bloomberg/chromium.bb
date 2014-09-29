@@ -21,7 +21,8 @@ using std::min;
 namespace net {
 namespace test {
 
-const uint32 kDefaultWindowTCP = 10 * kDefaultTCPMSS;
+const int64 kInitialCongestionWindow = 10;
+const uint32 kDefaultWindowTCP = kInitialCongestionWindow * kDefaultTCPMSS;
 
 // TODO(ianswett): Remove 10000 once b/10075719 is fixed.
 const QuicTcpCongestionWindow kDefaultMaxCongestionWindowTCP = 10000;
@@ -200,6 +201,7 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
+  sender_->SetNumEmulatedConnections(1);
   EXPECT_EQ(kDefaultMaxCongestionWindowTCP * kDefaultTCPMSS,
             sender_->GetSlowStartThreshold());
 
@@ -250,6 +252,7 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
+  sender_->SetNumEmulatedConnections(1);
   const int kNumberOfAcks = 10;
   for (int i = 0; i < kNumberOfAcks; ++i) {
     // Send our full send window.
@@ -299,7 +302,21 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   EXPECT_FALSE(sender_->hybrid_slow_start().started());
 }
 
+TEST_F(TcpCubicSenderTest, NoPRRWhenLessThanOnePacketInFlight) {
+  SendAvailableSendWindow();
+  LoseNPackets(kInitialCongestionWindow - 1);
+  AckNPackets(1);
+  // PRR will allow 2 packets for every ack during recovery.
+  EXPECT_EQ(2, SendAvailableSendWindow());
+  // Simulate abandoning all packets by supplying a bytes_in_flight of 0.
+  // PRR should now allow a packet to be sent, even though prr's state
+  // variables believe it has sent enough packets.
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            sender_->TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA));
+}
+
 TEST_F(TcpCubicSenderTest, SlowStartPacketLossPRR) {
+  sender_->SetNumEmulatedConnections(1);
   // Test based on the first example in RFC6937.
   // Ack 10 packets in 5 acks to raise the CWND to 20, as in the example.
   const int kNumberOfAcks = 5;
@@ -348,6 +365,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLossPRR) {
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
+  sender_->SetNumEmulatedConnections(1);
   // Test based on the second example in RFC6937, though we also implement
   // forward acknowledgements, so the first two incoming acks will trigger
   // PRR immediately.
@@ -577,7 +595,62 @@ TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
   EXPECT_EQ(congestion_window, sender_->congestion_window());
 }
 
-TEST_F(TcpCubicSenderTest, CongestionAvoidanceAtEndOfRecovery) {
+TEST_F(TcpCubicSenderTest, 2ConnectionCongestionAvoidanceAtEndOfRecovery) {
+  sender_->SetNumEmulatedConnections(2);
+  // Ack 10 packets in 5 acks to raise the CWND to 20.
+  const int kNumberOfAcks = 5;
+  for (int i = 0; i < kNumberOfAcks; ++i) {
+    // Send our full send window.
+    SendAvailableSendWindow();
+    AckNPackets(2);
+  }
+  SendAvailableSendWindow();
+  QuicByteCount expected_send_window = kDefaultWindowTCP +
+      (kDefaultTCPMSS * 2 * kNumberOfAcks);
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  LoseNPackets(1);
+
+  // We should now have fallen out of slow start, and window should be cut in
+  // half by Reno. New cwnd should be 10.
+  expected_send_window /= 2;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // No congestion window growth should occur in recovery phase, i.e., until the
+  // currently outstanding 20 packets are acked.
+  for (int i = 0; i < 10; ++i) {
+    // Send our full send window.
+    SendAvailableSendWindow();
+    EXPECT_TRUE(sender_->InRecovery());
+    AckNPackets(2);
+    EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+  }
+  EXPECT_FALSE(sender_->InRecovery());
+
+  // Out of recovery now. Congestion window should not grow for half an RTT.
+  SendAvailableSendWindow();
+  AckNPackets(2);
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Next ack will be the 5th and should increase congestion window by 1MSS.
+  AckNPackets(2);
+  expected_send_window += kDefaultTCPMSS;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  for (int i = 0; i < 2; ++i) {
+    SendAvailableSendWindow();
+    AckNPackets(2);
+    EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+  }
+
+  // Next ack should cause congestion window to grow by 1MSS.
+  AckNPackets(2);
+  expected_send_window += kDefaultTCPMSS;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+}
+
+TEST_F(TcpCubicSenderTest, 1ConnectionCongestionAvoidanceAtEndOfRecovery) {
+  sender_->SetNumEmulatedConnections(1);
   // Ack 10 packets in 5 acks to raise the CWND to 20.
   const int kNumberOfAcks = 5;
   for (int i = 0; i < kNumberOfAcks; ++i) {
@@ -602,9 +675,11 @@ TEST_F(TcpCubicSenderTest, CongestionAvoidanceAtEndOfRecovery) {
   for (int i = 0; i < 10; ++i) {
     // Send our full send window.
     SendAvailableSendWindow();
+    EXPECT_TRUE(sender_->InRecovery());
     AckNPackets(2);
     EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
   }
+  EXPECT_FALSE(sender_->InRecovery());
 
   // Out of recovery now. Congestion window should not grow during RTT.
   for (int i = 0; i < 4; ++i) {

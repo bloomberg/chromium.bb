@@ -281,10 +281,6 @@ TEST_P(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
 TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
   // Tests that we send a BLOCKED frame to the peer when we attempt to write,
   // but are flow control blocked.
-  if (GetParam() <= QUIC_VERSION_16) {
-    return;
-  }
-
   Initialize(kShouldProcessData);
 
   // Set a small flow control limit.
@@ -319,9 +315,6 @@ TEST_P(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
   // sequencer, whether they are consumed immediately or buffered. However we
   // only send WINDOW_UPDATE frames based on increasing number of bytes
   // consumed.
-  if (GetParam() <= QUIC_VERSION_16) {
-    return;
-  }
 
   // Don't process data - it will be buffered instead.
   Initialize(!kShouldProcessData);
@@ -366,10 +359,6 @@ TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
   // Tests that on receipt of data, the stream updates its receive window offset
   // appropriately, and sends WINDOW_UPDATE frames when its receive window drops
   // too low.
-  if (GetParam() <= QUIC_VERSION_16) {
-    return;
-  }
-
   Initialize(kShouldProcessData);
 
   // Set a small flow control limit.
@@ -467,9 +456,6 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
 TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   // Tests that on if the peer sends too much data (i.e. violates the flow
   // control protocol), then we terminate the connection.
-  if (GetParam() <= QUIC_VERSION_16) {
-    return;
-  }
 
   // Stream should not process data, so that data gets buffered in the
   // sequencer, triggering flow control limits.
@@ -533,9 +519,6 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
 TEST_P(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {
   // An attempt to write a FIN with no data should not be flow control blocked,
   // even if the send window is 0.
-  if (GetParam() <= QUIC_VERSION_16) {
-    return;
-  }
 
   Initialize(kShouldProcessData);
 

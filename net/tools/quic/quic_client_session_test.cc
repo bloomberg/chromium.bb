@@ -69,7 +69,7 @@ TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
 }
 
 TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
-  session_->config()->set_max_streams_per_connection(1, 1);
+  session_->config()->SetMaxStreamsPerConnection(1, 1);
   // FLAGS_max_streams_per_connection = 1;
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();

@@ -36,11 +36,6 @@ QuicFlowController::QuicFlowController(QuicConnection* connection,
            << ", max receive window to: "
            << max_receive_window_
            << ", setting send window offset to: " << send_window_offset_;
-  if (connection_->version() <= QUIC_VERSION_16) {
-    DVLOG(1) << ENDPOINT << "Disabling QuicFlowController for stream " << id_
-             << ", QUIC version " << connection_->version();
-    Disable();
-  }
 }
 
 void QuicFlowController::AddBytesConsumed(uint64 bytes_consumed) {

@@ -93,12 +93,12 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
   CompleteCryptoHandshake();
 
   const QuicConfig* config = session_->config();
-  EXPECT_EQ(kQBIC, config->congestion_feedback());
+  EXPECT_EQ(kQBIC, config->CongestionFeedback());
   EXPECT_EQ(kMaximumIdleTimeoutSecs,
-            config->idle_connection_state_lifetime().ToSeconds());
+            config->IdleConnectionStateLifetime().ToSeconds());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
-            config->max_streams_per_connection());
-  EXPECT_EQ(0, config->keepalive_timeout().ToSeconds());
+            config->MaxStreamsPerConnection());
+  EXPECT_EQ(0, config->KeepaliveTimeout().ToSeconds());
 
   const QuicCryptoNegotiatedParameters& crypto_params(
       stream_->crypto_negotiated_params());

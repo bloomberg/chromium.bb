@@ -426,29 +426,6 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
       QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 }
 
-TEST_F(ReliableQuicStreamTest, StreamFlowControlShouldNotBlockInLessThanQ017) {
-  // TODO(rjshade): Remove this test when we no longer have any versions <
-  //                QUIC_VERSION_17.
-
-  // Make sure we are using a version which does not support flow control.
-  QuicVersion kTestQuicVersions[] = {QUIC_VERSION_16};
-  QuicVersionVector versions;
-  for (size_t i = 0; i < arraysize(kTestQuicVersions); ++i) {
-    versions.push_back(kTestQuicVersions[i]);
-  }
-  set_supported_versions(versions);
-
-  // Peer is not talking QUIC_VERSION_17 so assumes that it can send a zero
-  // length flow control receive window with no consequences.
-  set_initial_flow_control_window_bytes(0);
-
-  Initialize(kShouldProcessData);
-
-  // The stream should _not_ be flow control blocked, because we are not talking
-  // a version which has flow control enabled.
-  EXPECT_FALSE(stream_->flow_controller()->IsBlocked());
-}
-
 void SaveProxyAckNotifierDelegate(
     scoped_refptr<QuicAckNotifier::DelegateInterface>* delegate_out,
     QuicAckNotifier::DelegateInterface* delegate) {

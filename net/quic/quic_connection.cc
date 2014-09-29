@@ -216,8 +216,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       ping_alarm_(helper->CreateAlarm(new PingAlarm(this))),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
-      idle_network_timeout_(
-          QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
+      idle_network_timeout_(FLAGS_quic_unified_timeouts ?
+          QuicTime::Delta::Infinite() :
+          QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs)),
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
@@ -233,16 +234,11 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       peer_port_changed_(false),
       self_ip_changed_(false),
       self_port_changed_(false) {
-#if 0
-  // TODO(rtenneti): Should we enable this code in chromium?
-  if (!is_server_) {
-    // Pacing will be enabled if the client negotiates it.
-    sent_packet_manager_.MaybeEnablePacing();
-  }
-#endif
   DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
            << connection_id;
-  timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
+  if (!FLAGS_quic_unified_timeouts) {
+    timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
+  }
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
@@ -263,7 +259,17 @@ QuicConnection::~QuicConnection() {
 }
 
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
-  SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
+  if (FLAGS_quic_unified_timeouts) {
+    if (config.negotiated()) {
+      SetNetworkTimeouts(QuicTime::Delta::Infinite(),
+                         config.IdleConnectionStateLifetime());
+    } else {
+      SetNetworkTimeouts(config.max_time_before_crypto_handshake(),
+                         config.max_idle_time_before_crypto_handshake());
+    }
+  } else {
+    SetIdleNetworkTimeout(config.IdleConnectionStateLifetime());
+  }
   sent_packet_manager_.SetFromConfig(config);
 }
 
@@ -1346,8 +1352,6 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
 
   QuicPacketSequenceNumber sequence_number =
       packet->serialized_packet.sequence_number;
-  // Some encryption algorithms require the packet sequence numbers not be
-  // repeated.
   DCHECK_LE(sequence_number_of_last_sent_packet_, sequence_number);
   sequence_number_of_last_sent_packet_ = sequence_number;
 
@@ -1407,6 +1411,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   if (debug_visitor_.get() != NULL) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(sequence_number,
+                                 packet->original_sequence_number,
                                  packet->encryption_level,
                                  packet->transmission_type,
                                  *encrypted,
@@ -1438,10 +1443,6 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
       sent_packet_manager_.least_packet_awaited_by_peer(),
       sent_packet_manager_.GetCongestionWindow());
 
-  if (packet->original_sequence_number != 0 && debug_visitor_.get() != NULL) {
-    debug_visitor_->OnPacketRetransmitted(
-        packet->original_sequence_number, sequence_number);
-  }
   bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
       &packet->serialized_packet,
       packet->original_sequence_number,
@@ -1554,21 +1555,7 @@ void QuicConnection::SendPing() {
   if (retransmission_alarm_->IsSet()) {
     return;
   }
-  if (version() == QUIC_VERSION_16) {
-    // TODO(rch): remove this when we remove version 15 and 16.
-    // This is a horrible hideous hack which we should not support.
-    IOVector data;
-    char c_data[] = "C";
-    data.Append(c_data, 1);
-    QuicConsumedData consumed_data =
-        packet_generator_.ConsumeData(kCryptoStreamId, data, 0, false,
-                                      MAY_FEC_PROTECT, NULL);
-    if (consumed_data.bytes_consumed == 0) {
-      DLOG(ERROR) << "Unable to send ping!?";
-    }
-  } else {
-    packet_generator_.AddControlFrame(QuicFrame(new QuicPingFrame));
-  }
+  packet_generator_.AddControlFrame(QuicFrame(new QuicPingFrame));
 }
 
 void QuicConnection::SendAck() {
@@ -1897,6 +1884,24 @@ void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
   } else {
     overall_connection_timeout_ = timeout;
   }
+}
+
+void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
+                                        QuicTime::Delta idle_timeout) {
+  LOG_IF(DFATAL, idle_timeout > overall_timeout)
+      << "idle_timeout:" << idle_timeout.ToMilliseconds()
+      << " overall_timeout:" << overall_timeout.ToMilliseconds();
+  // Adjust the idle timeout on client and server to prevent clients from
+  // sending requests to servers which have already closed the connection.
+  if (is_server_) {
+    idle_timeout = idle_timeout.Add(QuicTime::Delta::FromSeconds(1));
+  } else if (idle_timeout > QuicTime::Delta::FromSeconds(1)) {
+    idle_timeout = idle_timeout.Subtract(QuicTime::Delta::FromSeconds(1));
+  }
+  overall_connection_timeout_ = overall_timeout;
+  idle_network_timeout_ = idle_timeout;
+
+  SetTimeoutAlarm();
 }
 
 void QuicConnection::CheckForTimeout() {

@@ -1329,6 +1329,30 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
 #endif
 }
 
+TEST_F(QuicSentPacketManagerTest, NegotiateNumConnectionsFromOptions) {
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(k1CON);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, SetNumEmulatedConnections(1));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+
+  QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
+  QuicConfig client_config;
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, SetNumEmulatedConnections(1));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(client_config);
+}
+
 TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   EXPECT_FALSE(manager_.using_pacing());
 

@@ -69,8 +69,8 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
       : crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()) {
     config_.SetDefaults();
-    config_.set_max_streams_per_connection(kMaxStreamsForTest,
-                                           kMaxStreamsForTest);
+    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest,
+                                       kMaxStreamsForTest);
     config_.SetInitialFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
@@ -198,12 +198,15 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
   // many data streams. The server accepts slightly more than the negotiated
   // stream limit to deal with rare cases where a client FIN/RST is lost.
 
-  // The slightly increased stream limit is set during config negotiation.
+  // The slightly increased stream limit is set during config negotiation. It
+  // should be either an increase of 10 over negotiated limit, or a fixed
+  // percentage scaling, whichever is larger. Test both before continuing.
   EXPECT_EQ(kMaxStreamsForTest, session_->get_max_open_streams());
   session_->OnConfigNegotiated();
-  EXPECT_EQ(kMaxStreamsMultiplier * kMaxStreamsForTest,
+  EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
+            kMaxStreamsForTest + kMaxStreamsMinimumIncrement);
+  EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
             session_->get_max_open_streams());
-
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
   QuicStreamId stream_id = kClientDataStreamId1;
   // Open the max configured number of streams, should be no problem.
@@ -213,10 +216,12 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
     stream_id += 2;
   }
 
-  // Open one more stream: server should accept slightly more than the
-  // configured limit.
-  EXPECT_TRUE(
-      QuicServerSessionPeer::GetIncomingDataStream(session_.get(), stream_id));
+  // Open more streams: server should accept slightly more than the limit.
+  for (size_t i = 0; i < kMaxStreamsMinimumIncrement; ++i) {
+    EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                             stream_id));
+    stream_id += 2;
+  }
 
   // Now violate the server's internal stream limit.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
@@ -235,14 +240,17 @@ TEST_P(QuicServerSessionTest, MaxOpenStreamsImplicit) {
   // The slightly increased stream limit is set during config negotiation.
   EXPECT_EQ(kMaxStreamsForTest, session_->get_max_open_streams());
   session_->OnConfigNegotiated();
-  EXPECT_EQ(kMaxStreamsMultiplier * kMaxStreamsForTest,
+  EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
+            kMaxStreamsForTest + kMaxStreamsMinimumIncrement);
+  EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
             session_->get_max_open_streams());
 
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
   EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(
       session_.get(), kClientDataStreamId1));
   // Implicitly open streams up to the server's limit.
-  const int kActualMaxStreams = kMaxStreamsMultiplier * kMaxStreamsForTest;
+  const int kActualMaxStreams =
+      kMaxStreamsForTest + kMaxStreamsMinimumIncrement;
   const int kMaxValidStreamId =
       kClientDataStreamId1 + (kActualMaxStreams - 1) * 2;
   EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(

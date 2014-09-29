@@ -23,6 +23,8 @@ class NET_EXPORT_PRIVATE Cubic {
  public:
   Cubic(const QuicClock* clock, QuicConnectionStats* stats);
 
+  void SetNumConnections(int num_connections);
+
   // Call after a timeout to reset the cubic state.
   void Reset();
 
@@ -45,10 +47,18 @@ class NET_EXPORT_PRIVATE Cubic {
     return QuicTime::Delta::FromMilliseconds(30);
   }
 
+  // Compute the TCP Cubic alpha and beta based on the current number of
+  // connections.
+  float Alpha() const;
+  float Beta() const;
+
   // Update congestion control variables in QuicConnectionStats.
   void UpdateCongestionControlStats(QuicTcpCongestionWindow new_cubic_mode_cwnd,
                                     QuicTcpCongestionWindow new_reno_mode_cwnd);
   const QuicClock* clock_;
+
+  // Number of connections to simulate.
+  int num_connections_;
 
   // Time when this cycle started, after last loss event.
   QuicTime epoch_;

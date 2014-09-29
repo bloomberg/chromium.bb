@@ -114,69 +114,6 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 }
 
-TEST_F(QuicFlowControllerTest,
-       DisabledWhenQuicVersionDoesNotSupportFlowControl) {
-  // Only support version 16: no flow control.
-  QuicConnectionPeer::SetSupportedVersions(&connection_,
-                                           SupportedVersions(QUIC_VERSION_16));
-
-  Initialize();
-
-  MockConnection connection(false);
-
-  // Should not be enabled, and should not report as blocked.
-  EXPECT_FALSE(flow_controller_->IsEnabled());
-  EXPECT_FALSE(flow_controller_->IsBlocked());
-  EXPECT_FALSE(flow_controller_->FlowControlViolation());
-
-  // Any attempts to add/remove bytes should have no effect.
-  EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
-  EXPECT_EQ(send_window_,
-            QuicFlowControllerPeer::SendWindowOffset(flow_controller_.get()));
-  EXPECT_EQ(receive_window_, QuicFlowControllerPeer::ReceiveWindowOffset(
-                                 flow_controller_.get()));
-  flow_controller_->AddBytesSent(123);
-  flow_controller_->AddBytesConsumed(456);
-  flow_controller_->UpdateHighestReceivedOffset(789);
-  EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
-  EXPECT_EQ(send_window_,
-            QuicFlowControllerPeer::SendWindowOffset(flow_controller_.get()));
-  EXPECT_EQ(receive_window_, QuicFlowControllerPeer::ReceiveWindowOffset(
-                                 flow_controller_.get()));
-
-  // Any attempt to change offset should have no effect.
-  EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
-  EXPECT_EQ(send_window_,
-            QuicFlowControllerPeer::SendWindowOffset(flow_controller_.get()));
-  flow_controller_->UpdateSendWindowOffset(send_window_ + 12345);
-  EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
-  EXPECT_EQ(send_window_,
-            QuicFlowControllerPeer::SendWindowOffset(flow_controller_.get()));
-
-  // The connection should never send WINDOW_UPDATE or BLOCKED frames, even if
-  // the internal state implies that it should.
-
-  // If the flow controller was enabled, then a send window size of 0 would
-  // trigger a BLOCKED frame to be sent.
-  EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
-  EXPECT_CALL(connection_, SendBlocked(_)).Times(0);
-  flow_controller_->MaybeSendBlocked();
-
-  // If the flow controller was enabled, then a WINDOW_UPDATE would be sent if
-  // (receive window) < (max receive window / 2)
-  QuicFlowControllerPeer::SetReceiveWindowOffset(flow_controller_.get(),
-                                                 max_receive_window_ / 10);
-  EXPECT_TRUE(QuicFlowControllerPeer::ReceiveWindowSize(
-                  flow_controller_.get()) < (max_receive_window_ / 2));
-  EXPECT_CALL(connection_, SendWindowUpdate(_, _)).Times(0);
-  flow_controller_->AddBytesConsumed(0);
-
-  // Should not be enabled, and should not report as blocked.
-  EXPECT_FALSE(flow_controller_->IsEnabled());
-  EXPECT_FALSE(flow_controller_->IsBlocked());
-  EXPECT_FALSE(flow_controller_->FlowControlViolation());
-}
-
 TEST_F(QuicFlowControllerTest, OnlySendBlockedFrameOncePerOffset) {
   Initialize();
 

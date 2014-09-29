@@ -139,12 +139,6 @@ vector<TestParams> GetTestParams() {
         for (size_t i = 1; i < all_supported_versions.size(); ++i) {
           QuicVersionVector server_supported_versions;
           server_supported_versions.push_back(all_supported_versions[i]);
-          if (all_supported_versions[i] >= QUIC_VERSION_18) {
-            // Until flow control is globally rolled out and we remove
-            // QUIC_VERSION_16, the server MUST support at least one QUIC
-            // version that does not use flow control.
-            server_supported_versions.push_back(QUIC_VERSION_16);
-          }
           params.push_back(TestParams(all_supported_versions,
                                       server_supported_versions,
                                       server_supported_versions[0],
@@ -693,14 +687,6 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  if (client_supported_versions_[0] >= QUIC_VERSION_18 &&
-      negotiated_version_ <= QUIC_VERSION_16) {
-    // If the version negotiation has resulted in a downgrade, then the client
-    // must wait for the handshake to complete before sending any data.
-    // Otherwise it may have queued frames which will trigger a
-    // DFATAL when they are serialized after the downgrade.
-    client_->client()->WaitForCryptoHandshakeConfirmed();
-  }
   client_->WaitForResponseForMs(-1);
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
@@ -714,14 +700,6 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   StartServer();
 
   client_->Connect();
-  if (client_supported_versions_[0] >= QUIC_VERSION_18 &&
-      negotiated_version_ <= QUIC_VERSION_16) {
-    // If the version negotiation has resulted in a downgrade, then the client
-    // must wait for the handshake to complete before sending any data.
-    // Otherwise it may have queued frames which will trigger a
-    // DFATAL when they are serialized after the downgrade.
-    client_->client()->WaitForCryptoHandshakeConfirmed();
-  }
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
   EXPECT_EQ(2, client_->client()->session()->GetNumSentClientHellos());
@@ -870,7 +848,7 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
 }
 
 TEST_P(EndToEndTest, Timeout) {
-  client_config_.set_idle_connection_state_lifetime(
+  client_config_.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromMicroseconds(500),
       QuicTime::Delta::FromMicroseconds(500));
   // Note: we do NOT ASSERT_TRUE: we may time out during initial handshake:
@@ -883,7 +861,7 @@ TEST_P(EndToEndTest, Timeout) {
 
 TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
   // Negotiate 1 max open stream.
-  client_config_.set_max_streams_per_connection(1, 1);
+  client_config_.SetMaxStreamsPerConnection(1, 1);
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
@@ -932,14 +910,14 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
 
 TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   // Server limits the number of max streams to 2.
-  server_config_.set_max_streams_per_connection(2, 2);
+  server_config_.SetMaxStreamsPerConnection(2, 2);
   // Client tries to negotiate for 10.
-  client_config_.set_max_streams_per_connection(10, 5);
+  client_config_.SetMaxStreamsPerConnection(10, 5);
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
-  EXPECT_EQ(2u, client_negotiated_config->max_streams_per_connection());
+  EXPECT_EQ(2u, client_negotiated_config->MaxStreamsPerConnection());
 }
 
 TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {

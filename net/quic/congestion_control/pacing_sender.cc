@@ -27,6 +27,10 @@ void PacingSender::SetFromConfig(const QuicConfig& config, bool is_server) {
   sender_->SetFromConfig(config, is_server);
 }
 
+void PacingSender::SetNumEmulatedConnections(int num_connections) {
+  sender_->SetNumEmulatedConnections(num_connections);
+}
+
 void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time) {

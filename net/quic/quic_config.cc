@@ -425,16 +425,16 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
 }
 
 QuicConfig::QuicConfig()
-    : congestion_feedback_(kCGST, PRESENCE_REQUIRED),
+    : max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
+      max_idle_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
+      congestion_feedback_(kCGST, PRESENCE_REQUIRED),
       connection_options_(kCOPT, PRESENCE_OPTIONAL),
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
       keepalive_timeout_seconds_(kKATO, PRESENCE_OPTIONAL),
       max_streams_per_connection_(kMSPC, PRESENCE_REQUIRED),
-      max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
       initial_congestion_window_(kSWND, PRESENCE_OPTIONAL),
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
-      // TODO(rjshade): Make this PRESENCE_REQUIRED when QUIC_VERSION_16 is
-      // retired.
+      // TODO(rjshade): Remove this when retiring QUIC_VERSION_19.
       initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL),
       // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
       // QUIC_VERSION_19.
@@ -447,13 +447,13 @@ QuicConfig::QuicConfig()
 
 QuicConfig::~QuicConfig() {}
 
-void QuicConfig::set_congestion_feedback(
+void QuicConfig::SetCongestionFeedback(
     const QuicTagVector& congestion_feedback,
     QuicTag default_congestion_feedback) {
   congestion_feedback_.set(congestion_feedback, default_congestion_feedback);
 }
 
-QuicTag QuicConfig::congestion_feedback() const {
+QuicTag QuicConfig::CongestionFeedback() const {
   return congestion_feedback_.GetTag();
 }
 
@@ -478,7 +478,7 @@ QuicTagVector QuicConfig::SendConnectionOptions() const {
   return connection_options_.GetSendValues();
 }
 
-void QuicConfig::set_idle_connection_state_lifetime(
+void QuicConfig::SetIdleConnectionStateLifetime(
     QuicTime::Delta max_idle_connection_state_lifetime,
     QuicTime::Delta default_idle_conection_state_lifetime) {
   idle_connection_state_lifetime_seconds_.set(
@@ -486,32 +486,23 @@ void QuicConfig::set_idle_connection_state_lifetime(
       default_idle_conection_state_lifetime.ToSeconds());
 }
 
-QuicTime::Delta QuicConfig::idle_connection_state_lifetime() const {
+QuicTime::Delta QuicConfig::IdleConnectionStateLifetime() const {
   return QuicTime::Delta::FromSeconds(
       idle_connection_state_lifetime_seconds_.GetUint32());
 }
 
-QuicTime::Delta QuicConfig::keepalive_timeout() const {
+QuicTime::Delta QuicConfig::KeepaliveTimeout() const {
   return QuicTime::Delta::FromSeconds(
       keepalive_timeout_seconds_.GetUint32());
 }
 
-void QuicConfig::set_max_streams_per_connection(size_t max_streams,
-                                                size_t default_streams) {
+void QuicConfig::SetMaxStreamsPerConnection(size_t max_streams,
+                                            size_t default_streams) {
   max_streams_per_connection_.set(max_streams, default_streams);
 }
 
-uint32 QuicConfig::max_streams_per_connection() const {
+uint32 QuicConfig::MaxStreamsPerConnection() const {
   return max_streams_per_connection_.GetUint32();
-}
-
-void QuicConfig::set_max_time_before_crypto_handshake(
-    QuicTime::Delta max_time_before_crypto_handshake) {
-  max_time_before_crypto_handshake_ = max_time_before_crypto_handshake;
-}
-
-QuicTime::Delta QuicConfig::max_time_before_crypto_handshake() const {
-  return max_time_before_crypto_handshake_;
 }
 
 void QuicConfig::SetInitialCongestionWindowToSend(size_t initial_window) {
@@ -628,7 +619,7 @@ uint32 QuicConfig::ReceivedSocketReceiveBuffer() const {
   return socket_receive_buffer_.GetReceivedValue();
 }
 
-bool QuicConfig::negotiated() {
+bool QuicConfig::negotiated() const {
   // TODO(ianswett): Add the negotiated parameters once and iterate over all
   // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
   // ProcessServerHello.
@@ -643,13 +634,15 @@ void QuicConfig::SetDefaults() {
   congestion_feedback.push_back(kQBIC);
   congestion_feedback_.set(congestion_feedback, kQBIC);
   idle_connection_state_lifetime_seconds_.set(kMaximumIdleTimeoutSecs,
-                                              kDefaultInitialTimeoutSecs);
+                                              kDefaultIdleTimeoutSecs);
   // kKATO is optional. Return 0 if not negotiated.
   keepalive_timeout_seconds_.set(0, 0);
-  set_max_streams_per_connection(kDefaultMaxStreamsPerConnection,
-                                 kDefaultMaxStreamsPerConnection);
-  max_time_before_crypto_handshake_ = QuicTime::Delta::FromSeconds(
-      kDefaultMaxTimeForCryptoHandshakeSecs);
+  SetMaxStreamsPerConnection(kDefaultMaxStreamsPerConnection,
+                             kDefaultMaxStreamsPerConnection);
+  max_time_before_crypto_handshake_ =
+      QuicTime::Delta::FromSeconds(kMaxTimeForCryptoHandshakeSecs);
+  max_idle_time_before_crypto_handshake_ =
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs);
 
   SetInitialFlowControlWindowToSend(kDefaultFlowControlSendWindow);
   SetInitialStreamFlowControlWindowToSend(kDefaultFlowControlSendWindow);

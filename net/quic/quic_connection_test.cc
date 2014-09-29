@@ -2650,17 +2650,48 @@ TEST_P(QuicConnectionTest, DontUpdateQuicCongestionFeedbackFrameForRevived) {
 }
 
 TEST_P(QuicConnectionTest, InitialTimeout) {
-  EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+  if (!FLAGS_quic_unified_timeouts) {
+    EXPECT_TRUE(connection_.connected());
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
+    EXPECT_CALL(*send_algorithm_,
+                OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
 
+    QuicTime default_timeout = clock_.ApproximateNow().Add(
+        QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs));
+    EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
+
+    // Simulate the timeout alarm firing.
+    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs));
+    connection_.GetTimeoutAlarm()->Fire();
+
+    EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+    EXPECT_FALSE(connection_.connected());
+
+    EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+    EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+    EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
+    EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+    EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+    return;
+  }
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+
+  // SetFromConfig sets the initial timeouts before negotiation.
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  config.SetDefaults();
+  connection_.SetFromConfig(config);
+  // Subtract a second from the idle timeout on the client side.
   QuicTime default_timeout = clock_.ApproximateNow().Add(
-      QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1));
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
   // Simulate the timeout alarm firing.
   clock_.AdvanceTime(
-      QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1));
   connection_.GetTimeoutAlarm()->Fire();
 
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
@@ -2674,29 +2705,34 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
 }
 
 TEST_P(QuicConnectionTest, OverallTimeout) {
-  connection_.SetOverallConnectionTimeout(
-      QuicTime::Delta::FromSeconds(kDefaultMaxTimeForCryptoHandshakeSecs));
+  // Use a shorter overall connection timeout than idle timeout for this test.
+  const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(5);
+  connection_.SetNetworkTimeouts(timeout, timeout);
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_,
-              OnConnectionClosed(QUIC_CONNECTION_OVERALL_TIMED_OUT, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
 
-  QuicTime overall_timeout = clock_.ApproximateNow().Add(
-      QuicTime::Delta::FromSeconds(kDefaultMaxTimeForCryptoHandshakeSecs));
+  QuicTime overall_timeout = clock_.ApproximateNow().Add(timeout).Subtract(
+      QuicTime::Delta::FromSeconds(1));
   EXPECT_EQ(overall_timeout, connection_.GetTimeoutAlarm()->deadline());
-
   EXPECT_TRUE(connection_.connected());
+
+  // Send and ack new data 3 seconds later to lengthen the idle timeout.
   SendStreamDataToPeer(1, "GET /", 0, kFin, NULL);
-
-  clock_.AdvanceTime(
-      QuicTime::Delta::FromSeconds(2 * kDefaultInitialTimeoutSecs));
-
-  // Process an ack and see that the connection still times out.
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(3));
   QuicAckFrame frame = InitAckFrame(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&frame);
 
+  // Fire early to verify it wouldn't timeout yet.
+  connection_.GetTimeoutAlarm()->Fire();
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_TRUE(connection_.connected());
+
+  clock_.AdvanceTime(timeout.Subtract(QuicTime::Delta::FromSeconds(2)));
+
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_CONNECTION_OVERALL_TIMED_OUT, false));
   // Simulate the timeout alarm firing.
   connection_.GetTimeoutAlarm()->Fire();
 
@@ -2759,36 +2795,76 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {
+  if (!FLAGS_quic_unified_timeouts) {
+    EXPECT_TRUE(connection_.connected());
+
+    QuicTime default_timeout = clock_.ApproximateNow().Add(
+        QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs));
+
+    // When we send a packet, the timeout will change to 5000 +
+    // kDefaultInitialTimeoutSecs.
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+
+    // Send an ack so we don't set the retransmission alarm.
+    SendAckPacketToPeer();
+    EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
+
+    // The original alarm will fire.  We should not time out because we had a
+    // network event at t=5000.  The alarm will reregister.
+    clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(
+        kDefaultIdleTimeoutSecs * 1000000 - 5000));
+    EXPECT_EQ(default_timeout, clock_.ApproximateNow());
+    connection_.GetTimeoutAlarm()->Fire();
+    EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+    EXPECT_TRUE(connection_.connected());
+    EXPECT_EQ(default_timeout.Add(QuicTime::Delta::FromMilliseconds(5)),
+              connection_.GetTimeoutAlarm()->deadline());
+
+    // This time, we should time out.
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+    EXPECT_EQ(default_timeout.Add(QuicTime::Delta::FromMilliseconds(5)),
+              clock_.ApproximateNow());
+    connection_.GetTimeoutAlarm()->Fire();
+    EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+    EXPECT_FALSE(connection_.connected());
+    return;
+  }
   EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  config.SetDefaults();
+  connection_.SetFromConfig(config);
 
-  QuicTime default_timeout = clock_.ApproximateNow().Add(
-      QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
+  const QuicTime::Delta initial_idle_timeout =
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+  const QuicTime::Delta five_ms = QuicTime::Delta::FromMilliseconds(5);
+  QuicTime default_timeout = clock_.ApproximateNow().Add(initial_idle_timeout);
 
-  // When we send a packet, the timeout will change to 5000 +
-  // kDefaultInitialTimeoutSecs.
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  // When we send a packet, the timeout will change to 5ms +
+  // kInitialIdleTimeoutSecs.
+  clock_.AdvanceTime(five_ms);
 
   // Send an ack so we don't set the retransmission alarm.
   SendAckPacketToPeer();
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
   // The original alarm will fire.  We should not time out because we had a
-  // network event at t=5000.  The alarm will reregister.
-  clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(
-      kDefaultInitialTimeoutSecs * 1000000 - 5000));
+  // network event at t=5ms.  The alarm will reregister.
+  clock_.AdvanceTime(initial_idle_timeout.Subtract(five_ms));
   EXPECT_EQ(default_timeout, clock_.ApproximateNow());
   connection_.GetTimeoutAlarm()->Fire();
   EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
   EXPECT_TRUE(connection_.connected());
-  EXPECT_EQ(default_timeout.Add(QuicTime::Delta::FromMilliseconds(5)),
+  EXPECT_EQ(default_timeout.Add(five_ms),
             connection_.GetTimeoutAlarm()->deadline());
 
   // This time, we should time out.
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
-  EXPECT_EQ(default_timeout.Add(QuicTime::Delta::FromMilliseconds(5)),
-            clock_.ApproximateNow());
+  clock_.AdvanceTime(five_ms);
+  EXPECT_EQ(default_timeout.Add(five_ms), clock_.ApproximateNow());
   connection_.GetTimeoutAlarm()->Fire();
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
   EXPECT_FALSE(connection_.connected());
@@ -3844,16 +3920,13 @@ class MockQuicConnectionDebugVisitor
   MOCK_METHOD1(OnFrameAddedToPacket,
                void(const QuicFrame&));
 
-  MOCK_METHOD5(OnPacketSent,
+  MOCK_METHOD6(OnPacketSent,
                void(QuicPacketSequenceNumber,
+                    QuicPacketSequenceNumber,
                     EncryptionLevel,
                     TransmissionType,
                     const QuicEncryptedPacket&,
                     WriteResult));
-
-  MOCK_METHOD2(OnPacketRetransmitted,
-               void(QuicPacketSequenceNumber,
-                    QuicPacketSequenceNumber));
 
   MOCK_METHOD3(OnPacketReceived,
                void(const IPEndPoint&,

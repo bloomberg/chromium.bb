@@ -16,6 +16,7 @@ using base::StringPiece;
 using base::hash_map;
 using base::hash_set;
 using std::make_pair;
+using std::max;
 using std::vector;
 
 namespace net {
@@ -103,7 +104,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
       config_(config),
-      max_open_streams_(config_.max_streams_per_connection()),
+      max_open_streams_(config_.MaxStreamsPerConnection()),
       next_stream_id_(is_server() ? 2 : 5),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
@@ -126,7 +127,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
 void QuicSession::InitializeSession() {
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetFromConfig(config_);
-  if (connection_->connected()) {
+  if (!FLAGS_quic_unified_timeouts && connection_->connected()) {
     connection_->SetOverallConnectionTimeout(
         config_.max_time_before_crypto_handshake());
   }
@@ -471,16 +472,19 @@ void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
   QuicVersion version = connection()->version();
 
-  // A server should accept a small number of additional streams beyond the
-  // limit sent to the client. This helps avoid early connection termination
-  // when FIN/RSTs for old streams are lost or arrive out of order.
   if (FLAGS_quic_allow_more_open_streams) {
-    set_max_open_streams((is_server() ? kMaxStreamsMultiplier : 1.0) *
-                         config_.max_streams_per_connection());
-  }
-
-  if (version <= QUIC_VERSION_16) {
-    return;
+    uint32 max_streams = config_.MaxStreamsPerConnection();
+    if (is_server()) {
+      // A server should accept a small number of additional streams beyond the
+      // limit sent to the client. This helps avoid early connection termination
+      // when FIN/RSTs for old streams are lost or arrive out of order.
+      // Use a minimum number of additional streams, or a percentage increase,
+      // whichever is larger.
+      max_streams =
+          max(max_streams + kMaxStreamsMinimumIncrement,
+              static_cast<uint32>(max_streams * kMaxStreamsMultiplier));
+    }
+    set_max_open_streams(max_streams);
   }
 
   if (version <= QUIC_VERSION_19) {
@@ -566,9 +570,11 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
       connection_->NeuterUnencryptedPackets();
-      connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
+      if (!FLAGS_quic_unified_timeouts) {
+        connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
+      }
       if (!FLAGS_quic_allow_more_open_streams) {
-        max_open_streams_ = config_.max_streams_per_connection();
+        max_open_streams_ = config_.MaxStreamsPerConnection();
       }
       break;
 
@@ -773,12 +779,6 @@ void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
   if (version < QUIC_VERSION_21) {
     GetCryptoStream()->flow_controller()->Disable();
     headers_stream_->flow_controller()->Disable();
-  }
-  for (DataStreamMap::iterator it = stream_map_.begin();
-       it != stream_map_.end(); ++it) {
-    if (version <= QUIC_VERSION_16) {
-      it->second->flow_controller()->Disable();
-    }
   }
 }
 

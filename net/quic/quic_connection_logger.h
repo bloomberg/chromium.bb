@@ -35,13 +35,11 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
 
   // QuicConnectionDebugVisitorInterface
   virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                            QuicPacketSequenceNumber original_sequence_number,
                             EncryptionLevel level,
                             TransmissionType transmission_type,
                             const QuicEncryptedPacket& packet,
                             WriteResult result) OVERRIDE;
-  virtual void OnPacketRetransmitted(
-      QuicPacketSequenceNumber old_sequence_number,
-      QuicPacketSequenceNumber new_sequence_number) OVERRIDE;
   virtual void OnPacketReceived(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) OVERRIDE;

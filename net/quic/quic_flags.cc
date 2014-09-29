@@ -42,3 +42,7 @@ bool FLAGS_quic_allow_more_open_streams = false;
 // If true, then QUIC connections will only timeout when an alarm fires, never
 // when setting a timeout.
 bool FLAGS_quic_timeouts_only_from_alarms = true;
+
+// If true, then QUIC connections will set both idle and overall timeouts in a
+// single method.
+bool FLAGS_quic_unified_timeouts = false;

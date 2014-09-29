@@ -91,7 +91,7 @@ bool IsEcdsaSupported() {
 QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options) {
   QuicConfig config;
   config.SetDefaults();
-  config.set_idle_connection_state_lifetime(
+  config.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds),
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds));
   config.SetConnectionOptionsToSend(connection_options);

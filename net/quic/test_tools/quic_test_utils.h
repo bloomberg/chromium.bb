@@ -440,6 +440,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   virtual ~MockSendAlgorithm();
 
   MOCK_METHOD2(SetFromConfig, void(const QuicConfig& config, bool is_server));
+  MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
   MOCK_METHOD1(SetMaxPacketSize, void(QuicByteCount max_packet_size));
   MOCK_METHOD2(OnIncomingQuicCongestionFeedbackFrame,
                void(const QuicCongestionFeedbackFrame&,

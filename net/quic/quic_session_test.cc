@@ -578,8 +578,8 @@ TEST_P(QuicSessionTest, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
-  // Add 1 to the connection timeout on the server side.
-  EXPECT_EQ(kDefaultInitialTimeoutSecs + 1,
+  EXPECT_EQ((FLAGS_quic_unified_timeouts ?
+             kInitialIdleTimeoutSecs : kDefaultIdleTimeoutSecs) + 1,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
   CryptoHandshakeMessage msg;
   session_.GetCryptoStream()->OnHandshakeMessage(msg);
@@ -632,9 +632,6 @@ TEST_P(QuicSessionTest, MultipleRstStreamsCauseSingleConnectionClose) {
 TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   // Test that if a stream is flow control blocked, then on receipt of the SHLO
   // containing a suitable send window offset, the stream becomes unblocked.
-  if (version() <= QUIC_VERSION_16) {
-    return;
-  }
 
   // Ensure that Writev consumes all the data it is given (simulate no socket
   // blocking).
@@ -660,7 +657,7 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
   // TODO(rjshade): Remove this test when removing QUIC_VERSION_19.
   // Test that receipt of an invalid (< default) flow control window from
   // the peer results in the connection being torn down.
-  if (version() <= QUIC_VERSION_16 || version() > QUIC_VERSION_19) {
+  if (version() > QUIC_VERSION_19) {
     return;
   }
 
@@ -857,10 +854,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
 TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
   // Test that if we receive a stream RST with a highest byte offset that
   // violates flow control, that we close the connection.
-  if (version() <= QUIC_VERSION_16) {
-    return;
-  }
-
   const uint64 kLargeOffset = kInitialSessionFlowControlWindowForTest + 1;
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA))
@@ -898,11 +891,6 @@ TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
   session_.OnSuccessfulVersionNegotiation(QUIC_VERSION_18);
   EXPECT_FALSE(session_.flow_controller()->IsEnabled());
   EXPECT_TRUE(stream->flow_controller()->IsEnabled());
-
-  // Version 16 means all flow control is disabled.
-  session_.OnSuccessfulVersionNegotiation(QUIC_VERSION_16);
-  EXPECT_FALSE(session_.flow_controller()->IsEnabled());
-  EXPECT_FALSE(stream->flow_controller()->IsEnabled());
 }
 
 TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {

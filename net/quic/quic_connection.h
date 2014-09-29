@@ -125,16 +125,11 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when a packet has been sent.
   virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                            QuicPacketSequenceNumber original_sequence_number,
                             EncryptionLevel level,
                             TransmissionType transmission_type,
                             const QuicEncryptedPacket& packet,
                             WriteResult result) {}
-
-  // Called when the contents of a packet have been retransmitted as
-  // a new packet.
-  virtual void OnPacketRetransmitted(
-      QuicPacketSequenceNumber old_sequence_number,
-      QuicPacketSequenceNumber new_sequence_number) {}
 
   // Called when a packet has been received, but before it is
   // validated or parsed.
@@ -430,6 +425,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Returns true if the connection has queued packets or frames.
   bool HasQueuedData() const;
 
+  // TODO(ianswett): Remove when quic_unified_timeouts is removed.
   // Sets (or resets) the idle state connection timeout. Also, checks and times
   // out the connection if network timer has expired for |timeout|.
   void SetIdleNetworkTimeout(QuicTime::Delta timeout);
@@ -438,6 +434,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // |timeout|. Used to limit the time a connection can be alive before crypto
   // handshake finishes.
   void SetOverallConnectionTimeout(QuicTime::Delta timeout);
+
+  // Sets the overall and idle state connection timeouts.
+  // Times out the connection if the timeout has been reached and
+  // the quic_timeouts_only_from_alarms flag is false.
+  void SetNetworkTimeouts(QuicTime::Delta overall_timeout,
+                          QuicTime::Delta idle_timeout);
 
   // If the connection has timed out, this will close the connection.
   // Otherwise, it will reschedule the timeout alarm.

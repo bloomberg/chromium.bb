@@ -22,6 +22,9 @@ class QuicSentPacketManagerPeer {
   static void SetSendAlgorithm(QuicSentPacketManager* sent_packet_manager,
                                SendAlgorithmInterface* send_algorithm);
 
+  static void SetIsServer(QuicSentPacketManager* sent_packet_manager,
+                          bool is_server);
+
   static const LossDetectionInterface* GetLossAlgorithm(
       QuicSentPacketManager* sent_packet_manager);
 

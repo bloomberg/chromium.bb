@@ -28,34 +28,42 @@ const int kCubeCongestionWindowScale = 410;
 const uint64 kCubeFactor = (GG_UINT64_C(1) << kCubeScale) /
     kCubeCongestionWindowScale;
 
-const uint32 kNumConnections = 2;
+const uint32 kDefaultNumConnections = 2;
 const float kBeta = 0.7f;  // Default Cubic backoff factor.
 // Additional backoff factor when loss occurs in the concave part of the Cubic
 // curve. This additional backoff factor is expected to give up bandwidth to
 // new concurrent flows and speed up convergence.
 const float kBetaLastMax = 0.85f;
 
-// kNConnectionBeta is the backoff factor after loss for our N-connection
-// emulation, which emulates the effective backoff of an ensemble of N TCP-Reno
-// connections on a single loss event. The effective multiplier is computed as:
-const float kNConnectionBeta = (kNumConnections - 1 + kBeta) / kNumConnections;
-
-// TCPFriendly alpha is described in Section 3.3 of the CUBIC paper. Note that
-// kBeta here is a cwnd multiplier, and is equal to 1-beta from the CUBIC paper.
-// We derive the equivalent kNConnectionAlpha for an N-connection emulation as:
-const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *
-      (1 - kNConnectionBeta) / (1 + kNConnectionBeta);
-// TODO(jri): Compute kNConnectionBeta and kNConnectionAlpha from
-// number of active streams.
-
 }  // namespace
 
 Cubic::Cubic(const QuicClock* clock, QuicConnectionStats* stats)
     : clock_(clock),
+      num_connections_(kDefaultNumConnections),
       epoch_(QuicTime::Zero()),
       last_update_time_(QuicTime::Zero()),
       stats_(stats) {
   Reset();
+}
+
+void Cubic::SetNumConnections(int num_connections) {
+  num_connections_ = num_connections;
+}
+
+float Cubic::Alpha() const {
+  // TCPFriendly alpha is described in Section 3.3 of the CUBIC paper. Note that
+  // beta here is a cwnd multiplier, and is equal to 1-beta from the paper.
+  // We derive the equivalent alpha for an N-connection emulation as:
+  const float beta = Beta();
+  return 3 * num_connections_ * num_connections_ * (1 - beta) / (1 + beta);
+}
+
+float Cubic::Beta() const {
+  // kNConnectionBeta is the backoff factor after loss for our N-connection
+  // emulation, which emulates the effective backoff of an ensemble of N
+  // TCP-Reno connections on a single loss event. The effective multiplier is
+  // computed as:
+  return (num_connections_ - 1 + kBeta) / num_connections_;
 }
 
 void Cubic::Reset() {
@@ -99,7 +107,7 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
     last_max_congestion_window_ = current_congestion_window;
   }
   epoch_ = QuicTime::Zero();  // Reset time.
-  return static_cast<int>(current_congestion_window * kNConnectionBeta);
+  return static_cast<int>(current_congestion_window * Beta());
 }
 
 QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
@@ -155,7 +163,7 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
   while (true) {
     // Update estimated TCP congestion_window.
     uint32 required_ack_count =
-        estimated_tcp_congestion_window_ / kNConnectionAlpha;
+        estimated_tcp_congestion_window_ / Alpha();
     if (acked_packets_count_ < required_ack_count) {
       break;
     }

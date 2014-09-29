@@ -52,16 +52,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicByteCount byte_size) {}
 
     virtual void OnSentPacket(
-        QuicPacketSequenceNumber sequence_number,
+        const SerializedPacket& packet,
+        QuicPacketSequenceNumber original_sequence_number,
         QuicTime sent_time,
         QuicByteCount bytes,
         TransmissionType transmission_type) {}
-
-    virtual void OnRetransmittedPacket(
-        QuicPacketSequenceNumber old_sequence_number,
-        QuicPacketSequenceNumber new_sequence_number,
-        TransmissionType transmission_type,
-        QuicTime time) {}
 
     virtual void OnIncomingAck(
         const QuicAckFrame& ack_frame,
@@ -69,9 +64,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicPacketSequenceNumber largest_observed,
         bool largest_observed_acked,
         QuicPacketSequenceNumber least_unacked_sent_packet) {}
-
-    virtual void OnSerializedPacket(
-        const SerializedPacket& packet) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -257,10 +249,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
 
-  // Called when a new packet is serialized.  If the packet contains
-  // retransmittable data, it will be added to the unacked packet map.
-  void OnSerializedPacket(const SerializedPacket& serialized_packet);
-
   // Called when a packet is retransmitted with a new sequence number.
   // Replaces the old entry in the unacked packet map with the new
   // sequence number.
@@ -330,6 +318,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void RecordSpuriousRetransmissions(
       const SequenceNumberList& all_transmissions,
       QuicPacketSequenceNumber acked_sequence_number);
+
+  // Returns true if the client is sending or the server has received a
+  // connection option.
+  bool HasClientSentConnectionOption(const QuicConfig& config,
+                                     QuicTag tag) const;
 
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is

@@ -108,12 +108,14 @@ const QuicStreamId kHeadersStreamId = 3;
 // Maximum delayed ack time, in ms.
 const int kMaxDelayedAckTimeMs = 25;
 
-// The default idle timeout before the crypto handshake succeeds.
-const int64 kDefaultInitialTimeoutSecs = 120;  // 2 mins.
+// The timeout before the handshake succeeds.
+const int64 kInitialIdleTimeoutSecs = 5;
+// The default idle timeout.
+const int64 kDefaultIdleTimeoutSecs = 30;
 // The maximum idle timeout that can be negotiated.
 const int64 kMaximumIdleTimeoutSecs = 60 * 10;  // 10 minutes.
 // The default timeout for a connection until the crypto handshake succeeds.
-const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 10;  // 10 secs.
+const int64 kMaxTimeForCryptoHandshakeSecs = 10;  // 10 secs.
 
 // Default ping timeout.
 const int64 kPingTimeoutSecs = 15;  // 15 secs.
@@ -124,9 +126,14 @@ const int kMinIntervalBetweenServerConfigUpdatesRTTs = 10;
 // Minimum time between Server Config Updates (SCUP) sent to client.
 const int kMinIntervalBetweenServerConfigUpdatesMs = 1000;
 
-// Multiplier that allows server to accept slightly more streams than
-// negotiated in handshake.
+// The number of open streams that a server will accept is set to be slightly
+// larger than the negotiated limit. Immediately closing the connection if the
+// client opens slightly too many streams is not ideal: the client may have sent
+// a FIN that was lost, and simultaneously opened a new stream. The number of
+// streams a server accepts is a fixed increment over the negotiated limit, or a
+// percentage increase, whichever is larger.
 const float kMaxStreamsMultiplier = 1.1f;
+const int kMaxStreamsMinimumIncrement = 10;
 
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
@@ -287,7 +294,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_16 = 16,  // STOP_WAITING frame.
   QUIC_VERSION_18 = 18,  // PING frame.
   QUIC_VERSION_19 = 19,  // Connection level flow control.
   QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
@@ -306,8 +312,7 @@ static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_23,
                                                      QUIC_VERSION_22,
                                                      QUIC_VERSION_21,
                                                      QUIC_VERSION_19,
-                                                     QUIC_VERSION_18,
-                                                     QUIC_VERSION_16};
+                                                     QUIC_VERSION_18};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 

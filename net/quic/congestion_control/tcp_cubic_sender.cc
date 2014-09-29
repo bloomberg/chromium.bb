@@ -36,6 +36,7 @@ TcpCubicSender::TcpCubicSender(
       rtt_stats_(rtt_stats),
       stats_(stats),
       reno_(reno),
+      num_connections_(2),
       congestion_window_count_(0),
       receive_window_(kDefaultSocketReceiveBuffer),
       prr_out_(0),
@@ -75,6 +76,11 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
     // Set the initial socket receive buffer size in bytes.
     receive_window_ = config.ReceivedSocketReceiveBuffer();
   }
+}
+
+void TcpCubicSender::SetNumEmulatedConnections(int num_connections) {
+  num_connections_ = max(1, num_connections);
+  cubic_.SetNumConnections(num_connections_);
 }
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
@@ -273,10 +279,11 @@ void TcpCubicSender::MaybeIncreaseCwnd(
   }
   // Congestion avoidance
   if (reno_) {
-    // Classic Reno congestion avoidance provided for testing.
-
+    // Classic Reno congestion avoidance.
     ++congestion_window_count_;
-    if (congestion_window_count_ >= congestion_window_) {
+    // Divide by num_connections to smoothly increase the CWND at a faster
+    // rate than conventional Reno.
+    if (congestion_window_count_ * num_connections_ >= congestion_window_) {
       ++congestion_window_;
       congestion_window_count_ = 0;
     }

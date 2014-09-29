@@ -117,17 +117,12 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kReno, stats_));
   }
-  if (is_server_) {
-    if (config.HasReceivedConnectionOptions() &&
-        ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE)) {
-      EnablePacing();
-    }
-  } else if (config.HasSendConnectionOptions() &&
-             ContainsQuicTag(config.SendConnectionOptions(), kPACE)) {
+  if (HasClientSentConnectionOption(config, kPACE)) {
     EnablePacing();
   }
-  // TODO(ianswett): Remove the "HasReceivedLossDetection" branch once
-  // the ConnectionOptions code is live everywhere.
+  if (HasClientSentConnectionOption(config, k1CON)) {
+    send_algorithm_->SetNumEmulatedConnections(1);
+  }
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME)) {
     loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
@@ -139,19 +134,18 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
 }
 
-// TODO(ianswett): Combine this method with OnPacketSent once packets are always
-// sent in order and the connection tracks RetransmittableFrames for longer.
-void QuicSentPacketManager::OnSerializedPacket(
-    const SerializedPacket& serialized_packet) {
-  if (serialized_packet.retransmittable_frames) {
-    ack_notifier_manager_.OnSerializedPacket(serialized_packet);
+bool QuicSentPacketManager::HasClientSentConnectionOption(
+    const QuicConfig& config, QuicTag tag) const {
+  if (is_server_) {
+    if (config.HasReceivedConnectionOptions() &&
+        ContainsQuicTag(config.ReceivedConnectionOptions(), tag)) {
+      return true;
+    }
+  } else if (config.HasSendConnectionOptions() &&
+             ContainsQuicTag(config.SendConnectionOptions(), tag)) {
+    return true;
   }
-  unacked_packets_.AddPacket(serialized_packet);
-
-  if (debug_delegate_ != NULL) {
-    // TODO(ianswett): Merge calls in the debug delegate.
-    debug_delegate_->OnSerializedPacket(serialized_packet);
-  }
+  return false;
 }
 
 void QuicSentPacketManager::OnRetransmittedPacket(
@@ -177,13 +171,6 @@ void QuicSentPacketManager::OnRetransmittedPacket(
   unacked_packets_.OnRetransmittedPacket(old_sequence_number,
                                          new_sequence_number,
                                          transmission_type);
-
-  if (debug_delegate_ != NULL) {
-    debug_delegate_->OnRetransmittedPacket(old_sequence_number,
-        new_sequence_number,
-        transmission_type,
-        clock_->ApproximateNow());
-  }
 }
 
 void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
@@ -514,8 +501,19 @@ bool QuicSentPacketManager::OnPacketSent(
   DCHECK_LT(0u, sequence_number);
   DCHECK(!unacked_packets_.IsUnacked(sequence_number));
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
+  if (debug_delegate_ != NULL) {
+    debug_delegate_->OnSentPacket(*serialized_packet,
+                                  original_sequence_number,
+                                  sent_time,
+                                  bytes,
+                                  transmission_type);
+  }
+
   if (original_sequence_number == 0) {
-    OnSerializedPacket(*serialized_packet);
+    if (serialized_packet->retransmittable_frames) {
+      ack_notifier_manager_.OnSerializedPacket(*serialized_packet);
+    }
+    unacked_packets_.AddPacket(*serialized_packet);
     serialized_packet->retransmittable_frames = NULL;
   } else {
     OnRetransmittedPacket(original_sequence_number, sequence_number);
@@ -541,11 +539,6 @@ bool QuicSentPacketManager::OnPacketSent(
                                     bytes,
                                     has_retransmittable_data);
   unacked_packets_.SetSent(sequence_number, sent_time, bytes, in_flight);
-
-  if (debug_delegate_ != NULL) {
-    debug_delegate_->OnSentPacket(
-        sequence_number, sent_time, bytes, transmission_type);
-  }
 
   // Reset the retransmission timer anytime a pending packet is sent.
   return in_flight;

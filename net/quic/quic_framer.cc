@@ -375,11 +375,6 @@ SerializedPacket QuicFramer::BuildDataPacket(
         }
         break;
       case PING_FRAME:
-        if (quic_version_ == QUIC_VERSION_16) {
-          LOG(DFATAL) << "Attempt to add a PingFrame in "
-                      << QuicVersionToString(quic_version_);
-          return kNoPacket;
-        }
         // Ping has no payload.
         break;
       case RST_STREAM_FRAME:
@@ -1236,11 +1231,6 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
         continue;
       }
       case PING_FRAME: {
-        if (quic_version_ == QUIC_VERSION_16) {
-          LOG(DFATAL) << "Trying to read a Ping in "
-                      << QuicVersionToString(quic_version_);
-          return RaiseError(QUIC_INTERNAL_ERROR);
-        }
         // Ping has no payload.
         QuicPingFrame ping_frame;
         if (!visitor_->OnPingFrame(ping_frame)) {

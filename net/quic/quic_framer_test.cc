@@ -3003,10 +3003,6 @@ TEST_P(QuicFramerTest, BlockedFrame) {
 }
 
 TEST_P(QuicFramerTest, PingFrame) {
-  if (version_ <= QUIC_VERSION_16) {
-    return;
-  }
-
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
     0x3C,

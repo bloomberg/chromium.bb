@@ -27,6 +27,13 @@ void QuicSentPacketManagerPeer::SetSendAlgorithm(
 }
 
 // static
+void QuicSentPacketManagerPeer::SetIsServer(
+    QuicSentPacketManager* sent_packet_manager,
+    bool is_server) {
+  sent_packet_manager->is_server_ = is_server;
+}
+
+// static
 const LossDetectionInterface* QuicSentPacketManagerPeer::GetLossAlgorithm(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->loss_algorithm_.get();
