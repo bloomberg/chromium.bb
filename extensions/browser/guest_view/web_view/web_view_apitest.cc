@@ -66,6 +66,10 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAPIMethodExistence) {
   RunTest("testAPIMethodExistence", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAssignSrcAfterCrash) {
+  RunTest("testAssignSrcAfterCrash", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeAfterNavigation) {
   RunTest("testAutosizeAfterNavigation", "web_view/apitest");
 }
@@ -86,4 +90,34 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeWithPartialAttributes) {
   RunTest("testAutosizeWithPartialAttributes", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCannotMutateEventName) {
+  RunTest("testCannotMutateEventName", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContentLoadEvent) {
+  RunTest("testContentLoadEvent", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDestroyOnEventListener) {
+  RunTest("testDestroyOnEventListener", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewLoad) {
+  RunTest("testDisplayNoneWebviewLoad", "web_view/apitest");
+}
+
+// TODO(lfg) Re-enable this test once the fix for webview leaking
+// RenderProcessHost has landed.
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       DISABLED_TestDisplayNoneWebviewRemoveChild) {
+  RunTest("testDisplayNoneWebviewRemoveChild", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScript) {
+  RunTest("testExecuteScript", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScriptFail) {
+  RunTest("testExecuteScriptFail", "web_view/apitest");
+}
 }  // namespace extensions

@@ -111,6 +111,28 @@ function testAPIMethodExistence() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that assigning the src attribute the same value it had
+// prior to a crash spawns off a new guest process.
+function testAssignSrcAfterCrash() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('partition', arguments.callee.name);
+  var terminated = false;
+  webview.addEventListener('loadstop', function(evt) {
+    if (!terminated) {
+      webview.terminate();
+      return;
+    }
+    // The guest has recovered after being terminated.
+    embedder.test.succeed();
+  });
+  webview.addEventListener('exit', function(evt) {
+    terminated = true;
+    webview.setAttribute('src', 'data:text/html,test page');
+  });
+  webview.setAttribute('src', 'data:text/html,test page');
+  document.body.appendChild(webview);
+}
+
 // Makes sure 'sizechanged' event is fired only if autosize attribute is
 // specified.
 // After loading <webview> without autosize attribute and a size, say size1,
@@ -336,17 +358,205 @@ function testAutosizeWithPartialAttributes() {
   document.body.appendChild(webview);
 }
 
+// This test registers two event listeners on a same event (loadcommit).
+// Each of the listener tries to change some properties on the event param,
+// which should not be possible.
+function testCannotMutateEventName() {
+  var webview = document.createElement('webview');
+  var url = 'data:text/html,<body>Two</body>';
+  var loadCommitACalled = false;
+  var loadCommitBCalled = false;
+
+  var maybeFinishTest = function(e) {
+    if (loadCommitACalled && loadCommitBCalled) {
+      embedder.test.assertEq('loadcommit', e.type);
+      embedder.test.succeed();
+    }
+  };
+
+  var onLoadCommitA = function(e) {
+    if (e.url == url) {
+      embedder.test.assertEq('loadcommit', e.type);
+      embedder.test.assertTrue(e.isTopLevel);
+      embedder.test.assertFalse(loadCommitACalled);
+      loadCommitACalled = true;
+      // Try mucking with properities inside |e|.
+      e.type = 'modified';
+      maybeFinishTest(e);
+    }
+  };
+  var onLoadCommitB = function(e) {
+    if (e.url == url) {
+      embedder.test.assertEq('loadcommit', e.type);
+      embedder.test.assertTrue(e.isTopLevel);
+      embedder.test.assertFalse(loadCommitBCalled);
+      loadCommitBCalled = true;
+      // Try mucking with properities inside |e|.
+      e.type = 'modified';
+      maybeFinishTest(e);
+    }
+  };
+
+  // The test starts from here, by setting the src to |url|. Event
+  // listener registration works because we already have a (dummy) src set
+  // on the <webview> tag.
+  webview.addEventListener('loadcommit', onLoadCommitA);
+  webview.addEventListener('loadcommit', onLoadCommitB);
+  webview.setAttribute('src', url);
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the load event fires when the a new page is
+// loaded.
+// TODO(fsamuel): Add a test to verify that subframe loads within a guest
+// do not fire the 'contentload' event.
+function testContentLoadEvent() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('contentload', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
+
+// This test registers two listeners on an event (loadcommit) and removes
+// the <webview> tag when the first listener fires.
+// Current expected behavior is that the second event listener will still
+// fire without crashing.
+function testDestroyOnEventListener() {
+  var webview = document.createElement('webview');
+  var url = 'data:text/html,<body>Destroy test</body>';
+
+  var loadCommitCount = 0;
+  function loadCommitCommon(e) {
+    embedder.test.assertEq('loadcommit', e.type);
+    if (url != e.url)
+      return;
+    ++loadCommitCount;
+    if (loadCommitCount == 2) {
+      // Pass in a timeout so that we can catch if any additional loadcommit
+      // occurs.
+      setTimeout(function() {
+        embedder.test.succeed();
+      }, 0);
+    } else if (loadCommitCount > 2) {
+      embedder.test.fail();
+    }
+  };
+
+  // The test starts from here, by setting the src to |url|.
+  webview.addEventListener('loadcommit', function(e) {
+    window.console.log('loadcommit1');
+    webview.parentNode.removeChild(webview);
+    loadCommitCommon(e);
+  });
+  webview.addEventListener('loadcommit', function(e) {
+    window.console.log('loadcommit2');
+    loadCommitCommon(e);
+  });
+  webview.setAttribute('src', url);
+  document.body.appendChild(webview);
+}
+
+// Tests that a <webview> that starts with "display: none" style loads
+// properly.
+function testDisplayNoneWebviewLoad() {
+  var webview = document.createElement('webview');
+  var visible = false;
+  webview.style.display = 'none';
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertTrue(visible);
+    embedder.test.succeed();
+  });
+  // Set the .src while we are "display: none".
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+
+  setTimeout(function() {
+    visible = true;
+    // This should trigger loadstop.
+    webview.style.display = '';
+  }, 0);
+}
+
+function testDisplayNoneWebviewRemoveChild() {
+  var webview = document.createElement('webview');
+  var visibleAndInDOM = false;
+  webview.style.display = 'none';
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertTrue(visibleAndInDOM);
+    embedder.test.succeed();
+  });
+  // Set the .src while we are "display: none".
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+
+  setTimeout(function() {
+    webview.parentNode.removeChild(webview);
+    webview.style.display = '';
+    visibleAndInDOM = true;
+    // This should trigger loadstop.
+    document.body.appendChild(webview);
+  }, 0);
+}
+
+function testExecuteScript() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadstop', function() {
+    webview.executeScript(
+      {code:'document.body.style.backgroundColor = "red";'},
+      function(results) {
+        embedder.test.assertEq(1, results.length);
+        embedder.test.assertEq('red', results[0]);
+        embedder.test.succeed();
+      });
+  });
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
+
+function testExecuteScriptFail() {
+  var webview = document.createElement('webview');
+  try {
+    webview.executeScript(
+        {code: 'document.body.style.backgroundColor = "red";'},
+        function(results) { embedder.test.fail(); });
+  }
+  catch (e) {
+    embedder.test.succeed();
+  }
+}
+
+
 
 // Tests end.
 
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAPIMethodExistence': testAPIMethodExistence,
+  'testAssignSrcAfterCrash': testAssignSrcAfterCrash,
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,
   'testAutosizeHeight': testAutosizeHeight,
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,
-  'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes
+  'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
+  'testCannotMutateEventName': testCannotMutateEventName,
+  'testContentLoadEvent': testContentLoadEvent,
+  'testDestroyOnEventListener': testDestroyOnEventListener,
+  'testDisplayNoneWebviewLoad': testDisplayNoneWebviewLoad,
+  'testDisplayNoneWebviewRemoveChild': testDisplayNoneWebviewRemoveChild,
+  'testExecuteScript': testExecuteScript,
+  'testExecuteScriptFail': testExecuteScriptFail
 };
 
 onload = function() {
