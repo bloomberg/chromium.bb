@@ -1873,3 +1873,8 @@ pdf.dll!pp::InputEvent_HandleEvent
 ppapi_proxy.dll!ppapi::CallWhileUnlocked<>
 ppapi_proxy.dll!ppapi::proxy::PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent
 
+UNINITIALIZED READ
+name=bug_418767
+*!extensions::core_api::cast_channel::CastTransport::SetErrorState
+*!extensions::core_api::cast_channel::CastTransport::Do*Complete
+*!extensions::core_api::cast_channel::CastTransport::On*Result
