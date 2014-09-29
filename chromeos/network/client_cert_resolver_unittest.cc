@@ -34,6 +34,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+// http://crbug.com/418369
+#ifdef NDEBUG
+
 namespace chromeos {
 
 namespace {
@@ -318,3 +321,5 @@ TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
 }
 
 }  // namespace chromeos
+
+#endif
