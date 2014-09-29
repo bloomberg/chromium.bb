@@ -162,10 +162,6 @@
   },
   "Linux Tests (dbg)(1)": {
     "gtest_tests": [
-    ]
-  },
-  "Linux Tests (dbg)(2)": {
-    "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_browsertests",
@@ -262,6 +258,10 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
+    ]
+  },
+  "Linux Tests (dbg)(2)": {
+    "gtest_tests": [
     ]
   },
   "Linux Clang (dbg)": {
