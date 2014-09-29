@@ -53,6 +53,7 @@ class VideoSourceHandlerTest : public ::testing::Test {
 
   virtual void TearDown() {
     registry_.reset();
+    handler_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }
 
