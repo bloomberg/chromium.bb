@@ -102,6 +102,77 @@ LengthBox StyleBuilderConverter::convertClip(StyleResolverState& state, CSSValue
         convertLengthOrAuto(state, rect->left()));
 }
 
+static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueID)
+{
+    switch (valueID) {
+    case CSSValueWebkitBody:
+        return FontDescription::StandardFamily;
+    case CSSValueSerif:
+        return FontDescription::SerifFamily;
+    case CSSValueSansSerif:
+        return FontDescription::SansSerifFamily;
+    case CSSValueCursive:
+        return FontDescription::CursiveFamily;
+    case CSSValueFantasy:
+        return FontDescription::FantasyFamily;
+    case CSSValueMonospace:
+        return FontDescription::MonospaceFamily;
+    case CSSValueWebkitPictograph:
+        return FontDescription::PictographFamily;
+    default:
+        return FontDescription::NoFamily;
+    }
+}
+
+static bool convertFontFamilyName(StyleResolverState& state, CSSPrimitiveValue* primitiveValue,
+    FontDescription::GenericFamilyType& genericFamily, AtomicString& familyName)
+{
+    if (primitiveValue->isString()) {
+        genericFamily = FontDescription::NoFamily;
+        familyName = AtomicString(primitiveValue->getStringValue());
+    } else if (state.document().settings()) {
+        genericFamily = convertGenericFamily(primitiveValue->getValueID());
+        familyName = state.fontBuilder().genericFontFamilyName(genericFamily);
+    }
+
+    return !familyName.isEmpty();
+}
+
+FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(StyleResolverState& state, CSSValue* value)
+{
+    ASSERT(value->isValueList());
+
+    FontDescription::FamilyDescription desc(FontDescription::NoFamily);
+    FontFamily* currFamily = nullptr;
+
+    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
+        CSSValue* item = i.value();
+        if (!item->isPrimitiveValue())
+            continue;
+
+        FontDescription::GenericFamilyType genericFamily = FontDescription::NoFamily;
+        AtomicString familyName;
+
+        if (!convertFontFamilyName(state, toCSSPrimitiveValue(item), genericFamily, familyName))
+            continue;
+
+        if (!currFamily) {
+            currFamily = &desc.family;
+        } else {
+            RefPtr<SharedFontFamily> newFamily = SharedFontFamily::create();
+            currFamily->appendFamily(newFamily);
+            currFamily = newFamily.get();
+        }
+
+        currFamily->setFamily(familyName);
+
+        if (genericFamily != FontDescription::NoFamily)
+            desc.genericFamily = genericFamily;
+    }
+
+    return desc;
+}
+
 PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSettings(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal)

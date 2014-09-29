@@ -49,6 +49,7 @@ public:
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
     static LengthBox convertClip(StyleResolverState&, CSSValue*);
     template <typename T> static T convertFlags(StyleResolverState&, CSSValue*);
+    static FontDescription::FamilyDescription convertFontFamily(StyleResolverState&, CSSValue*);
     static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(StyleResolverState&, CSSValue*);
     static FontDescription::Size convertFontSize(StyleResolverState&, CSSValue*);
     static FontWeight convertFontWeight(StyleResolverState&, CSSValue*);

@@ -23,13 +23,13 @@
 #include "config.h"
 #include "core/css/resolver/FontBuilder.h"
 
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSToLengthConversionData.h"
+#include "core/CSSValueKeywords.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
+#include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/LocaleToScriptMapping.h"
 
@@ -75,21 +75,6 @@ void FontBuilder::initForStyleResolve(const Document& document, RenderStyle* sty
     m_fontDirty = false;
 }
 
-inline static void setFontFamilyToStandard(FontDescription& fontDescription, const Document* document)
-{
-    if (!document || !document->settings())
-        return;
-
-    fontDescription.setGenericFamily(FontDescription::StandardFamily);
-    const AtomicString& standardFontFamily = document->settings()->genericFontFamilySettings().standard();
-    if (standardFontFamily.isEmpty())
-        return;
-
-    fontDescription.firstFamily().setFamily(standardFontFamily);
-    // FIXME: Why is this needed here?
-    fontDescription.firstFamily().appendFamily(nullptr);
-}
-
 void FontBuilder::setInitial(float effectiveZoom)
 {
     ASSERT(m_document && m_document->settings());
@@ -99,7 +84,7 @@ void FontBuilder::setInitial(float effectiveZoom)
     FontDescriptionChangeScope scope(this);
 
     scope.reset();
-    setFontFamilyToStandard(scope.fontDescription(), m_document);
+    setFamilyDescription(scope.fontDescription(), FontBuilder::initialFamilyDescription());
     setSize(scope.fontDescription(), FontBuilder::initialSize());
 }
 
@@ -137,101 +122,51 @@ void FontBuilder::fromSystemFont(CSSValueID valueId, float effectiveZoom)
     scope.set(fontDescription);
 }
 
-void FontBuilder::setFontFamilyInitial()
+FontFamily FontBuilder::standardFontFamily() const
 {
-    FontDescriptionChangeScope scope(this);
-
-    setFontFamilyToStandard(scope.fontDescription(), m_document);
+    FontFamily family;
+    family.setFamily(standardFontFamilyName());
+    return family;
 }
 
-void FontBuilder::setFontFamilyInherit(const FontDescription& parentFontDescription)
+AtomicString FontBuilder::standardFontFamilyName() const
 {
-    FontDescriptionChangeScope scope(this);
-
-    scope.fontDescription().setGenericFamily(parentFontDescription.genericFamily());
-    scope.fontDescription().setFamily(parentFontDescription.family());
+    ASSERT(m_document);
+    Settings* settings = m_document->settings();
+    if (settings)
+        return settings->genericFontFamilySettings().standard();
+    return AtomicString();
 }
 
-// FIXME: I am not convinced FontBuilder needs to know anything about CSSValues.
-void FontBuilder::setFontFamilyValue(CSSValue* value)
+AtomicString FontBuilder::genericFontFamilyName(FontDescription::GenericFamilyType genericFamily) const
 {
-    FontDescriptionChangeScope scope(this);
-
-    if (!value->isValueList())
-        return;
-
-    FontFamily& firstFamily = scope.fontDescription().firstFamily();
-    FontFamily* currFamily = 0;
-
-    // Before mapping in a new font-family property, we should reset the generic family.
-    FixedPitchFontType oldFixedPitchFontType = scope.fontDescription().fixedPitchFontType();
-    scope.fontDescription().setGenericFamily(FontDescription::NoFamily);
-
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
-        if (!item->isPrimitiveValue())
-            continue;
-        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
-        AtomicString face;
-        Settings* settings = m_document->settings();
-        if (contentValue->isString()) {
-            face = AtomicString(contentValue->getStringValue());
-        } else if (settings) {
-            switch (contentValue->getValueID()) {
-            case CSSValueWebkitBody:
-                face = settings->genericFontFamilySettings().standard();
-                break;
-            case CSSValueSerif:
-                face = FontFamilyNames::webkit_serif;
-                scope.fontDescription().setGenericFamily(FontDescription::SerifFamily);
-                break;
-            case CSSValueSansSerif:
-                face = FontFamilyNames::webkit_sans_serif;
-                scope.fontDescription().setGenericFamily(FontDescription::SansSerifFamily);
-                break;
-            case CSSValueCursive:
-                face = FontFamilyNames::webkit_cursive;
-                scope.fontDescription().setGenericFamily(FontDescription::CursiveFamily);
-                break;
-            case CSSValueFantasy:
-                face = FontFamilyNames::webkit_fantasy;
-                scope.fontDescription().setGenericFamily(FontDescription::FantasyFamily);
-                break;
-            case CSSValueMonospace:
-                face = FontFamilyNames::webkit_monospace;
-                scope.fontDescription().setGenericFamily(FontDescription::MonospaceFamily);
-                break;
-            case CSSValueWebkitPictograph:
-                face = FontFamilyNames::webkit_pictograph;
-                scope.fontDescription().setGenericFamily(FontDescription::PictographFamily);
-                break;
-            default:
-                break;
-            }
-        }
-
-        if (!face.isEmpty()) {
-            if (!currFamily) {
-                // Filling in the first family.
-                firstFamily.setFamily(face);
-                firstFamily.appendFamily(nullptr); // Remove any inherited family-fallback list.
-                currFamily = &firstFamily;
-            } else {
-                RefPtr<SharedFontFamily> newFamily = SharedFontFamily::create();
-                newFamily->setFamily(face);
-                currFamily->appendFamily(newFamily);
-                currFamily = newFamily.get();
-            }
-        }
+    switch (genericFamily) {
+    default:
+        ASSERT_NOT_REACHED();
+    case FontDescription::NoFamily:
+        return AtomicString();
+    case FontDescription::StandardFamily:
+        return standardFontFamilyName();
+    case FontDescription::SerifFamily:
+        return FontFamilyNames::webkit_serif;
+    case FontDescription::SansSerifFamily:
+        return FontFamilyNames::webkit_sans_serif;
+    case FontDescription::MonospaceFamily:
+        return FontFamilyNames::webkit_monospace;
+    case FontDescription::CursiveFamily:
+        return FontFamilyNames::webkit_cursive;
+    case FontDescription::FantasyFamily:
+        return FontFamilyNames::webkit_fantasy;
+    case FontDescription::PictographFamily:
+        return FontFamilyNames::webkit_pictograph;
     }
+}
 
-    // We can't call useFixedDefaultSize() until all new font families have been added
-    // If currFamily is non-zero then we set at least one family on this description.
-    if (!currFamily)
-        return;
+void FontBuilder::setFamilyDescription(const FontDescription::FamilyDescription& familyDescription)
+{
+    FontDescriptionChangeScope scope(this);
 
-    if (scope.fontDescription().keywordSize() && scope.fontDescription().fixedPitchFontType() != oldFixedPitchFontType)
-        setSize(scope.fontDescription(), FontDescription::Size(scope.fontDescription().keywordSize(), 0.0f, false));
+    setFamilyDescription(scope.fontDescription(), familyDescription);
 }
 
 void FontBuilder::setWeight(FontWeight fontWeight)
@@ -310,6 +245,19 @@ void FontBuilder::setFeatureSettings(PassRefPtr<FontFeatureSettings> settings)
     FontDescriptionChangeScope scope(this);
 
     scope.fontDescription().setFeatureSettings(settings);
+}
+
+void FontBuilder::setFamilyDescription(FontDescription& fontDescription, const FontDescription::FamilyDescription& familyDescription)
+{
+    FixedPitchFontType oldFixedPitchFontType = fontDescription.fixedPitchFontType();
+
+    bool isInitial = familyDescription.genericFamily == FontDescription::StandardFamily && familyDescription.family.familyIsEmpty();
+
+    fontDescription.setGenericFamily(familyDescription.genericFamily);
+    fontDescription.setFamily(isInitial ? standardFontFamily() : familyDescription.family);
+
+    if (fontDescription.keywordSize() && fontDescription.fixedPitchFontType() != oldFixedPitchFontType)
+        setSize(fontDescription, FontDescription::Size(fontDescription.keywordSize(), 0.0f, false));
 }
 
 void FontBuilder::setSize(FontDescription& fontDescription, const FontDescription::Size& size)
@@ -466,8 +414,7 @@ void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fon
     fontDescription.setLocale(documentStyle->locale());
     fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
 
-    setFontFamilyToStandard(fontDescription, m_document);
-
+    setFamilyDescription(fontDescription, FontBuilder::initialFamilyDescription());
     setSize(fontDescription, FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false));
     updateComputedSize(fontDescription, documentStyle);
 

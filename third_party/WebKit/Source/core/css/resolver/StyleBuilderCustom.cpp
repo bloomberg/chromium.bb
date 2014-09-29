@@ -232,21 +232,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolverState& s
         element->document().setDirectionSetOnDocumentElement(true);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFontFamily(StyleResolverState& state)
-{
-    state.fontBuilder().setFontFamilyInitial();
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFontFamily(StyleResolverState& state)
-{
-    state.fontBuilder().setFontFamilyInherit(state.parentFontDescription());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolverState& state, CSSValue* value)
-{
-    state.fontBuilder().setFontFamilyValue(value);
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)

@@ -115,7 +115,19 @@ public:
         float value;
     };
 
+    struct FamilyDescription {
+        FamilyDescription(GenericFamilyType genericFamily) : genericFamily(genericFamily) { }
+        FamilyDescription(GenericFamilyType genericFamily, const FontFamily& family)
+            : genericFamily(genericFamily)
+            , family(family)
+        {
+        }
+        GenericFamilyType genericFamily;
+        FontFamily family;
+    };
+
     const FontFamily& family() const { return m_familyList; }
+    FamilyDescription familyDescription() const { return FamilyDescription(genericFamily(), family()); }
     FontFamily& firstFamily() { return m_familyList; }
     Size size() const { return Size(m_keywordSize, m_specifiedSize, m_isAbsoluteSize); }
     float specifiedSize() const { return m_specifiedSize; }
