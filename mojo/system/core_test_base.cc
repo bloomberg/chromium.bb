@@ -175,8 +175,7 @@ CoreTestBase::~CoreTestBase() {
 }
 
 void CoreTestBase::SetUp() {
-  core_ = new Core(scoped_ptr<embedder::PlatformSupport>(
-      new embedder::SimplePlatformSupport()));
+  core_ = new Core(make_scoped_ptr(new embedder::SimplePlatformSupport()));
 }
 
 void CoreTestBase::TearDown() {

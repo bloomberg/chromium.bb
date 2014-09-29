@@ -79,9 +79,8 @@ scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
-  return scoped_ptr<PlatformSharedBufferMapping>(
-      new SimplePlatformSharedBufferMapping(
-          base, length, real_base, real_length));
+  return make_scoped_ptr(new SimplePlatformSharedBufferMapping(
+      base, length, real_base, real_length));
 }
 
 // SimplePlatformSharedBufferMapping -------------------------------------------

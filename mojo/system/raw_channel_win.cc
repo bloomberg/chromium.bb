@@ -573,7 +573,7 @@ void RawChannelWin::OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
 // static
 scoped_ptr<RawChannel> RawChannel::Create(
     embedder::ScopedPlatformHandle handle) {
-  return scoped_ptr<RawChannel>(new RawChannelWin(handle.Pass()));
+  return make_scoped_ptr(new RawChannelWin(handle.Pass()));
 }
 
 }  // namespace system
