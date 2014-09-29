@@ -38,10 +38,7 @@ void SaveRegistrationCallback(
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration_out,
     ServiceWorkerStatusCode status,
-    ServiceWorkerRegistration* registration,
-    ServiceWorkerVersion* version) {
-  ASSERT_TRUE(!version || version->registration_id() == registration->id())
-      << version << " " << registration;
+    ServiceWorkerRegistration* registration) {
   EXPECT_EQ(expected_status, status);
   *called = true;
   *registration_out = registration;

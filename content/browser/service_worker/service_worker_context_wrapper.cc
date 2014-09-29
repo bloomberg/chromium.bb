@@ -78,8 +78,7 @@ ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
 static void FinishRegistrationOnIO(
     const ServiceWorkerContext::ResultCallback& continuation,
     ServiceWorkerStatusCode status,
-    int64 registration_id,
-    int64 version_id) {
+    int64 registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI,

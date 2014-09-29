@@ -129,8 +129,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                             int provider_id,
                             int request_id,
                             ServiceWorkerStatusCode status,
-                            int64 registration_id,
-                            int64 version_id);
+                            int64 registration_id);
 
   void UnregistrationComplete(int thread_id,
                               int request_id,

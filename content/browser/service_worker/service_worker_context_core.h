@@ -59,8 +59,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              int64 registration_id,
-                              int64 version_id)> RegistrationCallback;
+                              int64 registration_id)> RegistrationCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status)> UnregistrationCallback;
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
@@ -195,8 +194,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RegistrationComplete(const GURL& pattern,
                             const RegistrationCallback& callback,
                             ServiceWorkerStatusCode status,
-                            ServiceWorkerRegistration* registration,
-                            ServiceWorkerVersion* version);
+                            ServiceWorkerRegistration* registration);
 
   void UnregistrationComplete(const GURL& pattern,
                               const UnregistrationCallback& callback,

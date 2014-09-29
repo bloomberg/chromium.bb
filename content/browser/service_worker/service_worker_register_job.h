@@ -38,8 +38,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
                                  public ServiceWorkerRegistration::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              ServiceWorkerRegistration* registration,
-                              ServiceWorkerVersion* version)>
+                              ServiceWorkerRegistration* registration)>
       RegistrationCallback;
 
   // For registration jobs.
@@ -132,8 +131,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   void Complete(ServiceWorkerStatusCode status);
   void CompleteInternal(ServiceWorkerStatusCode status);
   void ResolvePromise(ServiceWorkerStatusCode status,
-                      ServiceWorkerRegistration* registration,
-                      ServiceWorkerVersion* version);
+                      ServiceWorkerRegistration* registration);
 
   // EmbeddedWorkerInstance::Listener override of OnPausedAfterDownload.
   virtual void OnPausedAfterDownload() OVERRIDE;
@@ -144,7 +142,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
       ServiceWorkerRegistration* registration) OVERRIDE;
 
   void OnCompareScriptResourcesComplete(
-      ServiceWorkerVersion* most_recent_version,
       ServiceWorkerStatusCode status,
       bool are_equal);
 
@@ -163,7 +160,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   bool is_promise_resolved_;
   ServiceWorkerStatusCode promise_resolved_status_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
-  scoped_refptr<ServiceWorkerVersion> promise_resolved_version_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);

@@ -477,8 +477,7 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     int provider_id,
     int request_id,
     ServiceWorkerStatusCode status,
-    int64 registration_id,
-    int64 version_id) {
+    int64 registration_id) {
   if (!GetContext())
     return;
 
@@ -498,11 +497,11 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, info, attrs));
-  TRACE_EVENT_ASYNC_END2("ServiceWorker",
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerDispatcherHost::RegisterServiceWorker",
                          request_id,
-                         "Registration ID", registration_id,
-                         "Version ID", version_id);
+                         "Registration ID",
+                         registration_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(

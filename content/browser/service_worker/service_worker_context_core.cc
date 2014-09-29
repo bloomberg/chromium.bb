@@ -180,8 +180,7 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (storage()->IsDisabled()) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT,
-                 kInvalidServiceWorkerRegistrationId,
-                 kInvalidServiceWorkerVersionId);
+                 kInvalidServiceWorkerRegistrationId);
     return;
   }
 
@@ -224,21 +223,15 @@ void ServiceWorkerContextCore::RegistrationComplete(
     const GURL& pattern,
     const ServiceWorkerContextCore::RegistrationCallback& callback,
     ServiceWorkerStatusCode status,
-    ServiceWorkerRegistration* registration,
-    ServiceWorkerVersion* version) {
+    ServiceWorkerRegistration* registration) {
   if (status != SERVICE_WORKER_OK) {
-    DCHECK(!version);
-    callback.Run(status,
-                 kInvalidServiceWorkerRegistrationId,
-                 kInvalidServiceWorkerVersionId);
+    DCHECK(!registration);
+    callback.Run(status, kInvalidServiceWorkerRegistrationId);
     return;
   }
 
-  DCHECK(version);
-  DCHECK_EQ(version->registration_id(), registration->id());
-  callback.Run(status,
-               registration->id(),
-               version->version_id());
+  DCHECK(registration);
+  callback.Run(status, registration->id());
   if (observer_list_.get()) {
     observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationStored,
                            pattern);
