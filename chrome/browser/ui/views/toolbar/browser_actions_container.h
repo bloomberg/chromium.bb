@@ -8,9 +8,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
+#include "chrome/browser/ui/views/toolbar/chevron_menu_button.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -123,11 +123,9 @@ class ResizeArea;
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserActionsContainer
     : public views::View,
-      public views::MenuButtonListener,
       public views::ResizeAreaDelegate,
       public gfx::AnimationDelegate,
       public extensions::ExtensionToolbarModel::Observer,
-      public BrowserActionOverflowMenuController::Observer,
       public BrowserActionView::Delegate,
       public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
@@ -218,10 +216,6 @@ class BrowserActionsContainer
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
-  // Overridden from views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
-
   // Overridden from views::DragController:
   virtual void WriteDragDataForView(View* sender,
                                     const gfx::Point& press_pt,
@@ -238,10 +232,6 @@ class BrowserActionsContainer
   // Overridden from gfx::AnimationDelegate:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-
-  // Overridden from BrowserActionOverflowMenuController::Observer:
-  virtual void NotifyMenuDeleted(
-      BrowserActionOverflowMenuController* controller) OVERRIDE;
 
   // Overridden from BrowserActionView::Delegate:
   virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
@@ -317,18 +307,6 @@ class BrowserActionsContainer
   // are displayed.
   void SetChevronVisibility();
 
-  // Closes the overflow menu if open.
-  void CloseOverflowMenu();
-
-  // Cancels the timer for showing the drop down menu.
-  void StopShowFolderDropMenuTimer();
-
-  // Show the drop down folder after a slight delay.
-  void StartShowFolderDropMenuTimer();
-
-  // Show the overflow menu.
-  void ShowDropFolder();
-
   // Given a number of |icons| and whether to |display_chevron|, returns the
   // amount of pixels needed to draw the entire container.  For convenience,
   // callers can set |icons| to -1 to mean "all icons".
@@ -398,14 +376,10 @@ class BrowserActionsContainer
 
   // The chevron for accessing the overflow items. Can be NULL when in overflow
   // mode or if the toolbar is permanently suppressing the chevron menu.
-  views::MenuButton* chevron_;
+  ChevronMenuButton* chevron_;
 
   // The painter used when we are highlighting a subset of extensions.
   scoped_ptr<views::Painter> highlight_painter_;
-
-  // The menu to show for the overflow button (chevron). This class manages its
-  // own lifetime so that it can stay alive during drag and drop operations.
-  BrowserActionOverflowMenuController* overflow_menu_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<gfx::SlideAnimation> resize_animation_;
@@ -434,9 +408,6 @@ class BrowserActionsContainer
   // The maximum number of icons to show per row when in overflow mode (showing
   // icons in the application menu).
   static int icons_per_overflow_menu_row_;
-
-  // Handles delayed showing of the overflow menu when hovering.
-  base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

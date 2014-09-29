@@ -52,35 +52,6 @@ namespace {
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = ToolbarView::kStandardSpacing - 2;
 
-// A version of MenuButton with almost empty insets to fit properly on the
-// toolbar.
-class ChevronMenuButton : public views::MenuButton {
- public:
-  ChevronMenuButton(views::ButtonListener* listener,
-                    const base::string16& text,
-                    views::MenuButtonListener* menu_button_listener,
-                    bool show_menu_marker)
-      : views::MenuButton(listener,
-                          text,
-                          menu_button_listener,
-                          show_menu_marker) {
-  }
-
-  virtual ~ChevronMenuButton() {}
-
-  virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      OVERRIDE {
-    // The chevron resource was designed to not have any insets.
-    scoped_ptr<views::LabelButtonBorder> border =
-        views::MenuButton::CreateDefaultBorder();
-    border->set_insets(gfx::Insets());
-    return border.Pass();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChevronMenuButton);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,11 +98,9 @@ BrowserActionsContainer::BrowserActionsContainer(
       container_width_(0),
       resize_area_(NULL),
       chevron_(NULL),
-      overflow_menu_(NULL),
       suppress_chevron_(false),
       resize_amount_(0),
-      animation_target_size_(0),
-      show_menu_task_factory_(this) {
+      animation_target_size_(0) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   model_ = extensions::ExtensionToolbarModel::Get(browser->profile());
@@ -156,7 +125,10 @@ BrowserActionsContainer::BrowserActionsContainer(
     // 'Main' mode doesn't need a chevron overflow when overflow is shown inside
     // the Chrome menu.
     if (!overflow_experiment) {
-      chevron_ = new ChevronMenuButton(NULL, base::string16(), this, false);
+      // Since the ChevronMenuButton holds a raw pointer to us, we need to
+      // ensure it doesn't outlive us.  Having it owned by the view hierarchy as
+      // a child will suffice.
+      chevron_ = new ChevronMenuButton(this);
       chevron_->EnableCanvasFlippingForRTLUI(true);
       chevron_->SetAccessibleName(
           l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
@@ -171,11 +143,8 @@ BrowserActionsContainer::~BrowserActionsContainer() {
                     observers_,
                     OnBrowserActionsContainerDestroyed());
 
-  if (overflow_menu_)
-    overflow_menu_->set_observer(NULL);
   if (model_)
     model_->RemoveObserver(this);
-  StopShowFolderDropMenuTimer();
   HideActivePopup();
   DeleteBrowserActionViews();
 }
@@ -233,8 +202,6 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
   HideActivePopup();
-  if (overflow_menu_)
-    overflow_menu_->NotifyBrowserActionViewsDeleting();
   STLDeleteElements(&browser_action_views_);
 }
 
@@ -382,7 +349,7 @@ void BrowserActionsContainer::Layout() {
 
   // If the icons don't all fit, show the chevron (unless suppressed).
   int max_x = GetPreferredSize().width();
-  if ((IconCountToWidth(-1, false) > max_x) && !suppress_chevron_ && chevron_) {
+  if (IconCountToWidth(-1, false) > max_x && !suppress_chevron_ && chevron_) {
     chevron_->SetVisible(true);
     gfx::Size chevron_size(chevron_->GetPreferredSize());
     max_x -=
@@ -447,14 +414,6 @@ bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
 
 int BrowserActionsContainer::OnDragUpdated(
     const ui::DropTargetEvent& event) {
-  // First check if we are above the chevron (overflow) menu.
-  if (chevron_ && GetEventHandlerForPoint(event.location()) == chevron_) {
-    if (!show_menu_task_factory_.HasWeakPtrs() && !overflow_menu_)
-      StartShowFolderDropMenuTimer();
-    return ui::DragDropTypes::DRAG_MOVE;
-  }
-  StopShowFolderDropMenuTimer();
-
   size_t row_index = 0;
   size_t before_icon_in_row = 0;
   // If there are no visible browser actions (such as when dragging an icon to
@@ -534,7 +493,6 @@ int BrowserActionsContainer::OnDragUpdated(
 }
 
 void BrowserActionsContainer::OnDragExited() {
-  StopShowFolderDropMenuTimer();
   drop_position_.reset();
   SchedulePaint();
 }
@@ -594,21 +552,6 @@ void BrowserActionsContainer::GetAccessibleState(
     ui::AXViewState* state) {
   state->role = ui::AX_ROLE_GROUP;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS);
-}
-
-void BrowserActionsContainer::OnMenuButtonClicked(views::View* source,
-                                                  const gfx::Point& point) {
-  if (source == chevron_) {
-    overflow_menu_ =
-        new BrowserActionOverflowMenuController(this,
-                                                browser_,
-                                                chevron_,
-                                                browser_action_views_,
-                                                VisibleBrowserActions(),
-                                                false);
-    overflow_menu_->set_observer(this);
-    overflow_menu_->RunMenu(GetWidget());
-  }
 }
 
 void BrowserActionsContainer::WriteDragDataForView(View* sender,
@@ -690,12 +633,6 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionsContainerAnimationEnded());
-}
-
-void BrowserActionsContainer::NotifyMenuDeleted(
-    BrowserActionOverflowMenuController* controller) {
-  DCHECK_EQ(overflow_menu_, controller);
-  overflow_menu_ = NULL;
 }
 
 content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
@@ -819,7 +756,8 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
            "exists.";
   }
 #endif
-  CloseOverflowMenu();
+  if (chevron_)
+    chevron_->CloseMenu();
 
   if (!ShouldDisplayBrowserAction(extension))
     return;
@@ -866,7 +804,8 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
 
 void BrowserActionsContainer::ToolbarExtensionRemoved(
     const Extension* extension) {
-  CloseOverflowMenu();
+  if (chevron_)
+    chevron_->CloseMenu();
 
   size_t visible_actions = VisibleBrowserActionsAfterAnimation();
   for (BrowserActionViews::iterator i(browser_action_views_.begin());
@@ -1006,36 +945,6 @@ void BrowserActionsContainer::SetChevronVisibility() {
     chevron_->SetVisible(
         VisibleBrowserActionsAfterAnimation() < browser_action_views_.size());
   }
-}
-
-void BrowserActionsContainer::CloseOverflowMenu() {
-  if (overflow_menu_)
-    overflow_menu_->CancelMenu();
-}
-
-void BrowserActionsContainer::StopShowFolderDropMenuTimer() {
-  show_menu_task_factory_.InvalidateWeakPtrs();
-}
-
-void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&BrowserActionsContainer::ShowDropFolder,
-                 show_menu_task_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
-}
-
-void BrowserActionsContainer::ShowDropFolder() {
-  DCHECK(!overflow_menu_);
-  overflow_menu_ =
-      new BrowserActionOverflowMenuController(this,
-                                              browser_,
-                                              chevron_,
-                                              browser_action_views_,
-                                              VisibleBrowserActions(),
-                                              true);
-  overflow_menu_->set_observer(this);
-  overflow_menu_->RunMenu(GetWidget());
 }
 
 int BrowserActionsContainer::IconCountToWidth(int icons,
