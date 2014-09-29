@@ -279,6 +279,12 @@ void ConnectionManager::OnViewSurfaceIdChanged(const ServerView* view) {
   display_manager_.SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
 
+void ConnectionManager::OnViewReordered(const ServerView* view,
+                                        const ServerView* relative,
+                                        OrderDirection direction) {
+  display_manager_.SchedulePaint(view, gfx::Rect(view->bounds().size()));
+}
+
 void ConnectionManager::OnWillChangeViewVisibility(const ServerView* view) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end();

@@ -36,6 +36,10 @@ class MOJO_VIEW_MANAGER_EXPORT ServerViewDelegate {
 
   virtual void OnViewSurfaceIdChanged(const ServerView* view) = 0;
 
+  virtual void OnViewReordered(const ServerView* view,
+                               const ServerView* relative,
+                               OrderDirection direction) = 0;
+
   virtual void OnWillChangeViewVisibility(const ServerView* view) = 0;
 
  protected:

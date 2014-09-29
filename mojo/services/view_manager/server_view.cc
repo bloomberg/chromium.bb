@@ -73,6 +73,7 @@ void ServerView::Reorder(ServerView* child,
     DCHECK(i != children_.end());
     children_.insert(i, child);
   }
+  delegate_->OnViewReordered(this, relative, direction);
 }
 
 void ServerView::SetBounds(const gfx::Rect& bounds) {

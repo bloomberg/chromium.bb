@@ -32,6 +32,7 @@ class Window;
 }
 
 namespace wm {
+class FocusRules;
 class ScopedCaptureClient;
 }
 
@@ -68,6 +69,7 @@ class WindowManagerApp
   virtual ~WindowManagerApp();
 
   static View* GetViewForWindow(aura::Window* window);
+  aura::Window* GetWindowForViewId(Id view);
 
   // Register/deregister new connections to the window manager service.
   void AddConnection(WindowManagerServiceImpl* connection);
@@ -83,6 +85,8 @@ class WindowManagerApp
   // A client of this object will use this accessor to gain access to the
   // aura::Window hierarchy and attach event handlers.
   aura::WindowTreeHost* host() { return window_tree_host_.get(); }
+
+  void InitFocus(wm::FocusRules* rules);
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* impl) MOJO_OVERRIDE;
@@ -129,8 +133,6 @@ class WindowManagerApp
   // Overridden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) MOJO_OVERRIDE;
-
-  aura::Window* GetWindowForViewId(Id view) const;
 
   // Creates an aura::Window for every view in the hierarchy beneath |view|,
   // and adds to the registry so that it can be retrieved later via

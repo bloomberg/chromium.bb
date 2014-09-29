@@ -172,6 +172,9 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnViewSurfaceIdChanged(const ServerView* view) OVERRIDE;
+  virtual void OnViewReordered(const ServerView* view,
+                               const ServerView* relative,
+                               OrderDirection direction) OVERRIDE;
   virtual void OnWillChangeViewVisibility(const ServerView* view) OVERRIDE;
 
   ApplicationConnection* app_connection_;
