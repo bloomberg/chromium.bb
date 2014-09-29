@@ -49,23 +49,6 @@ private:
 
 } // namespace
 
-WebMediaStreamTrack WebMediaStreamTrack::ExtraData::owner()
-{
-    ASSERT(m_owner);
-    return WebMediaStreamTrack(m_owner);
-}
-
-void WebMediaStreamTrack::ExtraData::setOwner(MediaStreamComponent* owner)
-{
-    ASSERT(!m_owner);
-    m_owner = owner;
-}
-
-WebMediaStreamTrack::WebMediaStreamTrack(PassRefPtr<MediaStreamComponent> mediaStreamComponent)
-    : m_private(mediaStreamComponent)
-{
-}
-
 WebMediaStreamTrack::WebMediaStreamTrack(MediaStreamComponent* mediaStreamComponent)
     : m_private(mediaStreamComponent)
 {
@@ -90,11 +73,6 @@ void WebMediaStreamTrack::initialize(const WebString& id, const WebMediaStreamSo
 void WebMediaStreamTrack::reset()
 {
     m_private.reset();
-}
-
-WebMediaStreamTrack::operator PassRefPtr<MediaStreamComponent>() const
-{
-    return m_private.get();
 }
 
 WebMediaStreamTrack::operator MediaStreamComponent*() const
@@ -131,10 +109,6 @@ WebMediaStreamTrack::ExtraData* WebMediaStreamTrack::extraData() const
 void WebMediaStreamTrack::setExtraData(ExtraData* extraData)
 {
     ASSERT(!m_private.isNull());
-
-    if (extraData)
-        extraData->setOwner(m_private.get());
-
     m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
 }
 

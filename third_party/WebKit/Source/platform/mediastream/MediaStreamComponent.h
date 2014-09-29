@@ -33,9 +33,9 @@
 #define MediaStreamComponent_h
 
 #include "platform/audio/AudioSourceProvider.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
 
@@ -44,15 +44,15 @@ namespace blink {
 class MediaStreamSource;
 class WebAudioSourceProvider;
 
-class PLATFORM_EXPORT MediaStreamComponent : public RefCounted<MediaStreamComponent> {
+class PLATFORM_EXPORT MediaStreamComponent FINAL : public GarbageCollectedFinalized<MediaStreamComponent> {
 public:
     class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<MediaStreamComponent> create(PassRefPtr<MediaStreamSource>);
-    static PassRefPtr<MediaStreamComponent> create(const String& id, PassRefPtr<MediaStreamSource>);
+    static MediaStreamComponent* create(MediaStreamSource*);
+    static MediaStreamComponent* create(const String& id, MediaStreamSource*);
 
     MediaStreamSource* source() const { return m_source.get(); }
 
@@ -69,8 +69,11 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
+    void trace(Visitor*);
+    void dispose();
+
 private:
-    MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource>);
+    MediaStreamComponent(const String& id, MediaStreamSource*);
 
 #if ENABLE(WEB_AUDIO)
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
@@ -99,14 +102,14 @@ private:
     AudioSourceProviderImpl m_sourceProvider;
 #endif // ENABLE(WEB_AUDIO)
 
-    RefPtr<MediaStreamSource> m_source;
+    Member<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;
     bool m_muted;
     OwnPtr<ExtraData> m_extraData;
 };
 
-typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;
+typedef HeapVector<Member<MediaStreamComponent> > MediaStreamComponentVector;
 
 } // namespace blink
 

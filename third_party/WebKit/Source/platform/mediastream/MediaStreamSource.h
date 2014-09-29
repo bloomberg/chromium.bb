@@ -34,22 +34,23 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT MediaStreamSource FINAL : public RefCounted<MediaStreamSource> {
+class PLATFORM_EXPORT MediaStreamSource FINAL : public GarbageCollectedFinalized<MediaStreamSource> {
 public:
-    class Observer {
+    class Observer : public GarbageCollectedMixin {
     public:
         virtual ~Observer() { }
         virtual void sourceChangedState() = 0;
+        virtual void trace(Visitor*) { }
     };
 
     class ExtraData {
@@ -68,7 +69,7 @@ public:
         ReadyStateEnded = 2
     };
 
-    static PassRefPtr<MediaStreamSource> create(const String& id, Type, const String& name, ReadyState = ReadyStateLive, bool requiresConsumer = false);
+    static MediaStreamSource* create(const String& id, Type, const String& name, ReadyState = ReadyStateLive, bool requiresConsumer = false);
 
     const String& id() const { return m_id; }
     Type type() const { return m_type; }
@@ -94,6 +95,9 @@ public:
     bool removeAudioConsumer(AudioDestinationConsumer*);
     const HeapHashSet<Member<AudioDestinationConsumer> >& audioConsumers() { return m_audioConsumers; }
 
+    void trace(Visitor*);
+    void dispose();
+
 private:
     MediaStreamSource(const String& id, Type, const String& name, ReadyState, bool requiresConsumer);
 
@@ -102,14 +106,14 @@ private:
     String m_name;
     ReadyState m_readyState;
     bool m_requiresConsumer;
-    Vector<Observer*> m_observers;
+    HeapHashSet<WeakMember<Observer> > m_observers;
     Mutex m_audioConsumersLock;
-    PersistentHeapHashSet<Member<AudioDestinationConsumer> > m_audioConsumers;
+    HeapHashSet<Member<AudioDestinationConsumer> > m_audioConsumers;
     OwnPtr<ExtraData> m_extraData;
     blink::WebMediaConstraints m_constraints;
 };
 
-typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;
+typedef HeapVector<Member<MediaStreamSource> > MediaStreamSourceVector;
 
 } // namespace blink
 
