@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="win" or OS=="linux"', {
+    ['OS=="win" or chromeos==1', {
       'variables': {
         'isolate_dependency_tracked': [
           '../testing/test_env.py',
