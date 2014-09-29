@@ -381,7 +381,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     if (eventBehavior == DispatchNoEvent)
         setLastChangeWasNotUserEdit();
     updatePlaceholderVisibility(false);
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     m_suggestedValue = String();
     setNeedsValidityCheck();
     if (isFinishedParsingChildren()) {
@@ -473,7 +473,7 @@ void HTMLTextAreaElement::setSuggestedValue(const String& value)
     else
         setInnerEditorValue(m_value);
     updatePlaceholderVisibility(false);
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
 }
 
 String HTMLTextAreaElement::validationMessage() const

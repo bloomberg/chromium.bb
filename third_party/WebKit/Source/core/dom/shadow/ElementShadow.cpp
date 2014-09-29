@@ -254,7 +254,7 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 
 void ElementShadow::distribute()
 {
-    host()->setNeedsStyleRecalc(SubtreeStyleChange);
+    host()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
     WillBeHeapVector<RawPtrWillBeMember<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
 

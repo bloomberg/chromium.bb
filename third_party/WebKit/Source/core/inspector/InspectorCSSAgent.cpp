@@ -983,7 +983,7 @@ void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, c
         m_nodeIdToForcedPseudoState.set(nodeId, forcedPseudoState);
     else
         m_nodeIdToForcedPseudoState.remove(nodeId);
-    element->ownerDocument()->setNeedsStyleRecalc(SubtreeStyleChange);
+    element->ownerDocument()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
 PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const MediaList* media, MediaListSource mediaListSource, const String& sourceURL, CSSStyleSheet* parentStyleSheet)
@@ -1451,7 +1451,7 @@ void InspectorCSSAgent::resetPseudoStates()
 
     m_nodeIdToForcedPseudoState.clear();
     for (WillBeHeapHashSet<RawPtrWillBeMember<Document> >::iterator it = documentsToChange.begin(), end = documentsToChange.end(); it != end; ++it)
-        (*it)->setNeedsStyleRecalc(SubtreeStyleChange);
+        (*it)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
 void InspectorCSSAgent::trace(Visitor* visitor)

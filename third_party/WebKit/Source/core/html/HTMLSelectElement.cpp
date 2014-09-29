@@ -646,7 +646,7 @@ void HTMLSelectElement::setActiveSelectionEndIndex(int index)
     if (index == m_activeSelectionEndIndex)
         return;
     m_activeSelectionEndIndex = index;
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Control));
 }
 
 void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions)
@@ -770,7 +770,7 @@ void HTMLSelectElement::setRecalcListItems()
     // Manual selection anchor is reset when manipulating the select programmatically.
     m_activeSelectionAnchorIndex = -1;
     setOptionsChangedOnRenderer();
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     if (!inDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
             collection->invalidateCache();
@@ -1168,7 +1168,7 @@ void HTMLSelectElement::resetImpl()
         firstOption->setSelectedState(true);
 
     setOptionsChangedOnRenderer();
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     setNeedsValidityCheck();
 }
 

@@ -111,7 +111,7 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
             }
         }
 
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::LinkColorChange));
     } else if (name == onloadAttr)
         document().setWindowAttributeEventListener(EventTypeNames::load, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     else if (name == onbeforeunloadAttr)

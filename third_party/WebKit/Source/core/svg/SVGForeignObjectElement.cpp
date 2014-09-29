@@ -97,7 +97,7 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr) {
         invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange);
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange));
     }
 
     SVGElement::InvalidationGuard invalidationGuard(this);

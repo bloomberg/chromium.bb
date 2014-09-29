@@ -196,7 +196,7 @@ void StyleSheetInvalidationAnalysis::invalidateStyle(Document& document)
 
     if (!m_scopingNodes.isEmpty()) {
         for (unsigned i = 0; i < m_scopingNodes.size(); ++i)
-            m_scopingNodes.at(i)->setNeedsStyleRecalc(SubtreeStyleChange);
+            m_scopingNodes.at(i)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
     }
 
     if (m_idScopes.isEmpty() && m_classScopes.isEmpty())
@@ -204,7 +204,7 @@ void StyleSheetInvalidationAnalysis::invalidateStyle(Document& document)
     Element* element = ElementTraversal::firstWithin(document);
     while (element) {
         if (elementMatchesSelectorScopes(element, m_idScopes, m_classScopes)) {
-            element->setNeedsStyleRecalc(SubtreeStyleChange);
+            element->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
             // The whole subtree is now invalidated, we can skip to the next sibling.
             element = ElementTraversal::nextSkippingChildren(*element);
             continue;

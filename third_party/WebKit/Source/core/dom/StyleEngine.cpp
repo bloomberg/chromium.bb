@@ -696,7 +696,7 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
 
     if (m_resolver)
         m_resolver->invalidateMatchedPropertiesCache();
-    document().setNeedsStyleRecalc(SubtreeStyleChange);
+    document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Fonts));
 }
 
 void StyleEngine::trace(Visitor* visitor)

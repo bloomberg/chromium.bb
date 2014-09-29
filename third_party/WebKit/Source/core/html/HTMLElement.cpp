@@ -758,7 +758,7 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(Element
         Element* elementToAdjust = this;
         for (; elementToAdjust; elementToAdjust = elementToAdjust->parentElement()) {
             if (elementAffectsDirectionality(elementToAdjust)) {
-                elementToAdjust->setNeedsStyleRecalc(SubtreeStyleChange);
+                elementToAdjust->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
                 return;
             }
         }
@@ -773,7 +773,7 @@ void HTMLElement::calculateAndAdjustDirectionality()
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
         setHasDirAutoFlagRecursively(root, hasDirectionAuto());
     if (renderer() && renderer()->style() && renderer()->style()->direction() != textDirection)
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
 }
 
 void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange& change)

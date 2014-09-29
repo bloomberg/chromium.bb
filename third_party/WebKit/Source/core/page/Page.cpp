@@ -234,7 +234,7 @@ void Page::scheduleForcedStyleRecalcForAllPages()
     for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it)
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
-                toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+                toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
         }
 }
 

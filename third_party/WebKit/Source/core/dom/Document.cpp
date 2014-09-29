@@ -1200,7 +1200,7 @@ void Document::setContentLanguage(const AtomicString& language)
     m_contentLanguage = language;
 
     // Document's style depends on the content language.
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Language));
 }
 
 void Document::setXMLVersion(const String& version, ExceptionState& exceptionState)
@@ -1710,7 +1710,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     // rare and just invalidate the cache for now.
     if (styleEngine()->usesRemUnits() && (documentElement()->needsAttach() || documentElement()->computedStyle()->fontSize() != documentElementStyle->fontSize())) {
         ensureStyleResolver().invalidateMatchedPropertiesCache();
-        documentElement()->setNeedsStyleRecalc(SubtreeStyleChange);
+        documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FontSizeChange));
     }
 
     EOverflow overflowX = OAUTO;
@@ -1748,13 +1748,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     if (body) {
         if (RenderStyle* style = body->renderStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
-                body->setNeedsStyleRecalc(SubtreeStyleChange);
+                body->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
         }
     }
 
     if (RenderStyle* style = documentElement()->renderStyle()) {
         if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
-            documentElement()->setNeedsStyleRecalc(SubtreeStyleChange);
+            documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
     }
 }
 
@@ -1937,7 +1937,7 @@ void Document::updateLayout()
 
 void Document::setNeedsFocusedElementCheck()
 {
-    setNeedsStyleRecalc(LocalStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
 }
 
 void Document::clearFocusedElementSoon()
@@ -2063,7 +2063,7 @@ bool Document::dirtyElementsForLayerUpdate()
         return false;
 
     for (WillBeHeapHashSet<RawPtrWillBeMember<Element> >::iterator it = m_layerUpdateSVGFilterElements.begin(), end = m_layerUpdateSVGFilterElements.end(); it != end; ++it)
-        (*it)->setNeedsStyleRecalc(LocalStyleChange);
+        (*it)->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGFilterLayerUpdate));
     m_layerUpdateSVGFilterElements.clear();
     return true;
 }
@@ -4308,7 +4308,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         // FIXME: How is possible to not have a renderer here?
         if (renderView())
             renderView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisuallyOrdered));
     }
 }
 
@@ -4470,7 +4470,7 @@ void Document::setDesignMode(InheritedBool value)
             continue;
         if (!toLocalFrame(frame)->document())
             break;
-        toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+        toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::DesignMode));
     }
 }
 

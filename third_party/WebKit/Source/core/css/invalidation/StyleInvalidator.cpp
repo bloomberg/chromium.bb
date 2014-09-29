@@ -145,13 +145,13 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
         someChildrenNeedStyleRecalc = invalidateChildren(element, recursionData);
 
     if (thisElementNeedsStyleRecalc) {
-        element.setNeedsStyleRecalc(recursionData.wholeSubtreeInvalid() ? SubtreeStyleChange : LocalStyleChange);
+        element.setNeedsStyleRecalc(recursionData.wholeSubtreeInvalid() ? SubtreeStyleChange : LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
     } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
         // Clone the RenderStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
         if (RenderObject* renderer = element.renderer())
             renderer->setStyleInternal(RenderStyle::clone(renderer->style()));
         else
-            element.setNeedsStyleRecalc(LocalStyleChange);
+            element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
     }
 
     element.clearChildNeedsStyleInvalidation();

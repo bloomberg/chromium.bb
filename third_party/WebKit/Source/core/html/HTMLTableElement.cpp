@@ -242,7 +242,7 @@ void HTMLTableElement::setNeedsTableStyleRecalc() const
 {
     Element* element = ElementTraversal::next(*this, this);
     while (element) {
-        element->setNeedsStyleRecalc(LocalStyleChange);
+        element->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(rulesAttr));
         if (isHTMLTableCellElement(*element))
             element = ElementTraversal::nextSkippingChildren(*element, this);
         else

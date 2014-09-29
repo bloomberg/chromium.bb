@@ -438,7 +438,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
     // FIXME: This should not call updateStyleIfNeeded.
-    document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
     document()->updateRenderTreeIfNeeded();
 
     m_fullScreenElement->didBecomeFullscreenElement();
@@ -467,7 +467,7 @@ void Fullscreen::didExitFullScreenForElement(Element*)
         m_fullScreenRenderer->unwrapRenderer();
 
     m_fullScreenElement = nullptr;
-    document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
 
     if (document()->frame())
         document()->frame()->eventHandler().scheduleHoverStateUpdate();

@@ -655,7 +655,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // We only need to setChanged if the form is looking at the default value right now.
         if (!hasDirtyValue()) {
             updatePlaceholderVisibility(false);
-            setNeedsStyleRecalc(SubtreeStyleChange);
+            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(valueAttr));
         }
         m_needsToUpdateViewValue = true;
         setNeedsValidityCheck();
@@ -695,10 +695,10 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // time to relayout for this change.
         if (m_maxResults != oldResults && (m_maxResults <= 0 || oldResults <= 0))
             lazyReattachIfAttached();
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(resultsAttr));
         UseCounter::count(document(), UseCounter::ResultsAttribute);
     } else if (name == incrementalAttr) {
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(incrementalAttr));
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {
         m_inputTypeView->minOrMaxAttributeChanged();
@@ -959,7 +959,7 @@ void HTMLInputElement::setSuggestedValue(const String& value)
         return;
     m_needsToUpdateViewValue = true;
     m_suggestedValue = sanitizeValue(value);
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     m_inputTypeView->updateView();
 }
 
@@ -1593,7 +1593,7 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)
     m_maxLength = maxLength;
     if (oldMaxLength != maxLength)
         updateValueIfNeeded();
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(maxlengthAttr));
     setNeedsValidityCheck();
 }
 

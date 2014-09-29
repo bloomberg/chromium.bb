@@ -2188,6 +2188,8 @@
             'dom/StaticNodeList.h',
             'dom/StringCallback.cpp',
             'dom/StringCallback.h',
+            'dom/StyleChangeReason.cpp',
+            'dom/StyleChangeReason.h',
             'dom/StyleElement.cpp',
             'dom/StyleElement.h',
             'dom/StyleEngine.cpp',

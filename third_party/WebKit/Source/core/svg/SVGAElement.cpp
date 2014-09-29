@@ -91,7 +91,7 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
         setIsLink(!hrefString().isNull());
 
         if (wasLink != isLink())
-            setNeedsStyleRecalc(SubtreeStyleChange);
+            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::LinkColorChange));
 
         return;
     }

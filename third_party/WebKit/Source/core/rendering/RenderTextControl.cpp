@@ -75,7 +75,7 @@ void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* 
         innerEditorRenderer->style()->setHeight(Length());
         innerEditorRenderer->style()->setWidth(Length());
         innerEditorRenderer->setStyle(createInnerEditorStyle(style()));
-        innerEditor->setNeedsStyleRecalc(SubtreeStyleChange);
+        innerEditor->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Control));
     }
     textFormControlElement()->updatePlaceholderVisibility(false);
 }

@@ -204,7 +204,7 @@ static inline void applyCSSPropertyToTarget(SVGElement* targetElement, CSSProper
     if (!propertySet->setProperty(id, value, false, 0))
         return;
 
-    targetElement->setNeedsStyleRecalc(LocalStyleChange);
+    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
 }
 
 static inline void removeCSSPropertyFromTarget(SVGElement* targetElement, CSSPropertyID id)
@@ -213,7 +213,7 @@ static inline void removeCSSPropertyFromTarget(SVGElement* targetElement, CSSPro
     ASSERT_WITH_SECURITY_IMPLICATION(!targetElement->m_deletionHasBegun);
 #endif
     targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
-    targetElement->setNeedsStyleRecalc(LocalStyleChange);
+    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
 }
 
 static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElement, const QualifiedName& attributeName, const String& valueAsString)

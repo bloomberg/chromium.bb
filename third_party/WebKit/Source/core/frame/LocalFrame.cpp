@@ -567,7 +567,7 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
             toLocalFrame(child.get())->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
     }
 
-    document->setNeedsStyleRecalc(SubtreeStyleChange);
+    document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Zoom));
     document->updateLayoutIgnorePendingStylesheets();
 }
 

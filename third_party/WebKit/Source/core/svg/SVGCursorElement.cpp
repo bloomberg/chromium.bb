@@ -117,7 +117,7 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = m_clients.end();
 
     for (; it != end; ++it)
-        (*it)->setNeedsStyleRecalc(SubtreeStyleChange);
+        (*it)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
 }
 
 void SVGCursorElement::trace(Visitor* visitor)

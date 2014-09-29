@@ -492,7 +492,7 @@ void TextFieldInputType::subtreeHasChanged()
     element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerEditorValue())));
     element().updatePlaceholderVisibility(false);
     // Recalc for :invalid change.
-    element().setNeedsStyleRecalc(SubtreeStyleChange);
+    element().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
 
     didSetValueByUserEdit(wasChanged ? ValueChangeStateChanged : ValueChangeStateNone);
 }

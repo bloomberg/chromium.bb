@@ -300,7 +300,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
             RenderObject* renderObject = renderer();
             if (renderObject && renderObject->isSVGRoot()) {
                 invalidateSVGPresentationAttributeStyle();
-                setNeedsStyleRecalc(LocalStyleChange);
+                setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange));
             }
         }
     }

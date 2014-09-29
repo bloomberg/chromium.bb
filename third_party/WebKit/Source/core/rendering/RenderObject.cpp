@@ -2528,9 +2528,9 @@ void RenderObject::updateDragState(bool dragOn)
     setIsDragging(dragOn);
     if (valueChanged && node()) {
         if (node()->isElementNode() && toElement(node())->childrenOrSiblingsAffectedByDrag())
-            node()->setNeedsStyleRecalc(SubtreeStyleChange);
+            node()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Drag));
         else if (style()->affectedByDrag())
-            node()->setNeedsStyleRecalc(LocalStyleChange);
+            node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Drag));
     }
     for (RenderObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
         curr->updateDragState(dragOn);

@@ -65,7 +65,7 @@ void VisitedLinkState::invalidateStyleForAllLinks()
         return;
     for (Node* node = document().firstChild(); node; node = NodeTraversal::next(*node)) {
         if (node->isLink())
-            node->setNeedsStyleRecalc(SubtreeStyleChange);
+            node->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisitedLink));
     }
 }
 
@@ -75,7 +75,7 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
         return;
     for (Node* node = document().firstChild(); node; node = NodeTraversal::next(*node)) {
         if (node->isLink() && linkHashForElement(toElement(*node)) == linkHash)
-            node->setNeedsStyleRecalc(SubtreeStyleChange);
+            node->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisitedLink));
     }
 }
 

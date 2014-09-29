@@ -959,7 +959,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         styleAttributeChanged(newValue, reason);
     } else if (isStyledElement() && isPresentationAttribute(name)) {
         elementData()->m_presentationAttributeStyleIsDirty = true;
-        setNeedsStyleRecalc(LocalStyleChange);
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
     }
 
     if (isIdAttributeName(name)) {
@@ -980,7 +980,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 
     // If there is currently no StyleResolver, we can't be sure that this attribute change won't affect style.
     if (!styleResolver)
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->handleAttributeChanged(name, this);
@@ -1622,7 +1622,7 @@ void Element::setNeedsAnimationStyleRecalc()
     if (styleChangeType() != NoStyleChange)
         return;
 
-    setNeedsStyleRecalc(LocalStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
     setAnimationStyleChange(true);
 }
 
@@ -2635,7 +2635,7 @@ void Element::setFloatingPointAttribute(const QualifiedName& attributeName, doub
 void Element::setContainsFullScreenElement(bool flag)
 {
     setElementFlag(ContainsFullScreenElement, flag);
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
 }
 
 static Element* parentCrossingFrameBoundaries(Element* element)
@@ -3100,14 +3100,14 @@ void Element::styleAttributeChanged(const AtomicString& newStyleString, Attribut
 
     elementData()->m_styleAttributeIsDirty = false;
 
-    setNeedsStyleRecalc(LocalStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
     InspectorInstrumentation::didInvalidateStyleAttr(this);
 }
 
 void Element::inlineStyleChanged()
 {
     ASSERT(isStyledElement());
-    setNeedsStyleRecalc(LocalStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inline));
     ASSERT(elementData());
     elementData()->m_styleAttributeIsDirty = true;
     InspectorInstrumentation::didInvalidateStyleAttr(this);

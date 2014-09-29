@@ -767,7 +767,7 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
     document().scheduleRenderTreeUpdateIfNeeded();
 }
 
-void Node::setNeedsStyleRecalc(StyleChangeType changeType)
+void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReasonForTracing& reason)
 {
     ASSERT(changeType != NoStyleChange);
     if (!inActiveDocument())
@@ -2428,7 +2428,7 @@ void Node::setCustomElementState(CustomElementState newState)
     setFlag(newState == Upgraded, CustomElementUpgradedFlag);
 
     if (oldState == NotCustomElement || newState == Upgraded)
-        setNeedsStyleRecalc(SubtreeStyleChange); // :unresolved has changed
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Unresolved)); // :unresolved has changed
 }
 
 void Node::trace(Visitor* visitor)

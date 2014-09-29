@@ -397,7 +397,7 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type)
         return;
 
     m_parentElement->clearMutableInlineStyleIfEmpty();
-    m_parentElement->setNeedsStyleRecalc(LocalStyleChange);
+    m_parentElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
     m_parentElement->invalidateStyleAttribute();
     StyleAttributeMutationScope(this).didInvalidateStyleAttr();
 }

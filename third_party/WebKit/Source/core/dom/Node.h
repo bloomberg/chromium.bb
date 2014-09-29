@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/TreeShared.h"
 #include "core/editing/EditingBoundary.h"
@@ -354,7 +355,7 @@ public:
     void setChildNeedsStyleRecalc() { setFlag(ChildNeedsStyleRecalcFlag); }
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
 
-    void setNeedsStyleRecalc(StyleChangeType);
+    void setNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
     void clearNeedsStyleRecalc();
 
     bool childNeedsDistributionRecalc() const { return getFlag(ChildNeedsDistributionRecalcFlag); }

@@ -116,7 +116,7 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
         }
     }
     if (change.requiresFullStyleRecalc)
-        document().setNeedsStyleRecalc(SubtreeStyleChange);
+        document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ActiveStylesheetsUpdate));
 
     collection.swap(*this);
 

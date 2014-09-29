@@ -189,7 +189,7 @@ void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
         input->setNeedsValidityCheck();
     } else {
         input->setValueInternal(newValue, DispatchNoEvent);
-        input->setNeedsStyleRecalc(SubtreeStyleChange);
+        input->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
         input->dispatchFormControlInputEvent();
     }
     input->notifyFormStateChanged();

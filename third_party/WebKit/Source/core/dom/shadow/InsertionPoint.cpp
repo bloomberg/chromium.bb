@@ -123,7 +123,7 @@ void InsertionPoint::willRecalcStyle(StyleRecalcChange change)
     if (change < Inherit)
         return;
     for (size_t i = 0; i < m_distribution.size(); ++i)
-        m_distribution.at(i)->setNeedsStyleRecalc(SubtreeStyleChange);
+        m_distribution.at(i)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropagateInheritChangeToDistributedNodes));
 }
 
 bool InsertionPoint::shouldUseFallbackElements() const

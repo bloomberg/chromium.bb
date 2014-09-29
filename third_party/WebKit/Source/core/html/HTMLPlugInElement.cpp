@@ -260,7 +260,7 @@ void HTMLPlugInElement::finishParsingChildren()
 
     setNeedsWidgetUpdate(true);
     if (inDocument())
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Plugin));
 }
 
 void HTMLPlugInElement::resetInstance()
