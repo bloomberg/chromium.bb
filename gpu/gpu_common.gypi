@@ -38,6 +38,8 @@
       'command_buffer/client/gpu_memory_buffer_factory.h',
       'command_buffer/client/gpu_memory_buffer_tracker.cc',
       'command_buffer/client/gpu_memory_buffer_tracker.h',
+      'command_buffer/client/gpu_switches.cc',
+      'command_buffer/client/gpu_switches.h',
       'command_buffer/client/program_info_manager.cc',
       'command_buffer/client/program_info_manager.h',
       'command_buffer/client/query_tracker.cc',

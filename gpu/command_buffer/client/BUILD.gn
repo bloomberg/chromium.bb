@@ -84,6 +84,8 @@ gles2_implementation_source_files = [
   "gpu_memory_buffer_factory.h",
   "gpu_memory_buffer_tracker.cc",
   "gpu_memory_buffer_tracker.h",
+  "gpu_switches.cc",
+  "gpu_switches.h",
   "program_info_manager.cc",
   "program_info_manager.h",
   "query_tracker.cc",
@@ -123,7 +125,6 @@ component("gles2_implementation") {
     "//base",
     "//gpu/command_buffer/common",
     "//ui/gfx/geometry",
-    "//ui/gl",
   ]
 }
 

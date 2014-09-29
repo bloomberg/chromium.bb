@@ -33,7 +33,7 @@
 
 #if defined(GPU_CLIENT_DEBUG)
 #include "base/command_line.h"
-#include "ui/gl/gl_switches.h"
+#include "gpu/command_buffer/client/gpu_switches.h"
 #endif
 
 namespace gpu {

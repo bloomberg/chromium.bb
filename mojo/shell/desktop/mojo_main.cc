@@ -11,13 +11,17 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/switches.h"
-#include "ui/gfx/switches.h"
 
 #if defined(COMPONENT_BUILD)
 #include "ui/gl/gl_surface.h"
 #endif
 
 namespace {
+
+#if defined(OS_LINUX)
+// Copied from ui/gfx/switches.cc to avoid a dependency on //ui/gfx
+const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
+#endif
 
 void RunApps(mojo::shell::Context* context) {
   const base::CommandLine& command_line =
@@ -40,7 +44,7 @@ int main(int argc, char** argv) {
   // backend (currently the default on linux) is not close to threadsafe. Force
   // use of the harfbuzz backend for now.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableHarfBuzzRenderText);
+      kEnableHarfBuzzRenderText);
 #endif
   mojo::shell::InitializeLogging();
 

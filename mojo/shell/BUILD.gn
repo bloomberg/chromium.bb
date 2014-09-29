@@ -11,7 +11,6 @@ executable("mojo_shell") {
     "//base",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//ui/gfx",
   ]
 
   if (is_component_build) {

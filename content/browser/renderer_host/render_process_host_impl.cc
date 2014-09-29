@@ -132,6 +132,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/url_constants.h"
+#include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
