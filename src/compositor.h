@@ -57,6 +57,7 @@ struct weston_seat;
 struct weston_output;
 struct input_method;
 struct weston_pointer;
+struct linux_dmabuf_buffer;
 
 enum weston_keyboard_modifier {
 	MODIFIER_CTRL = (1 << 0),
@@ -588,6 +589,10 @@ struct weston_renderer {
 				    void *target, size_t size,
 				    int src_x, int src_y,
 				    int width, int height);
+
+	/** See weston_compositor_import_dmabuf() */
+	bool (*import_dmabuf)(struct weston_compositor *ec,
+			      struct linux_dmabuf_buffer *buffer);
 };
 
 enum weston_capability {
@@ -1363,6 +1368,10 @@ void
 weston_compositor_read_presentation_clock(
 			const struct weston_compositor *compositor,
 			struct timespec *ts);
+
+bool
+weston_compositor_import_dmabuf(struct weston_compositor *compositor,
+				struct linux_dmabuf_buffer *buffer);
 
 void
 weston_compositor_shutdown(struct weston_compositor *ec);

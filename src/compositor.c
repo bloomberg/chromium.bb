@@ -4672,6 +4672,34 @@ weston_compositor_read_presentation_clock(
 	}
 }
 
+/** Import dmabuf buffer into current renderer
+ *
+ * \param compositor
+ * \param buffer the dmabuf buffer to import
+ * \return true on usable buffers, false otherwise
+ *
+ * This function tests that the linux_dmabuf_buffer is usable
+ * for the current renderer. Returns false on unusable buffers. Usually
+ * usability is tested by importing the dmabufs for composition.
+ *
+ * This hook is also used for detecting if the renderer supports
+ * dmabufs at all. If the renderer hook is NULL, dmabufs are not
+ * supported.
+ * */
+WL_EXPORT bool
+weston_compositor_import_dmabuf(struct weston_compositor *compositor,
+				struct linux_dmabuf_buffer *buffer)
+{
+	struct weston_renderer *renderer;
+
+	renderer = compositor->renderer;
+
+	if (renderer->import_dmabuf == NULL)
+		return false;
+
+	return renderer->import_dmabuf(compositor, buffer);
+}
+
 WL_EXPORT void
 weston_version(int *major, int *minor, int *micro)
 {
