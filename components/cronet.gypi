@@ -400,7 +400,7 @@
           'type': 'none',
           'sources': [
             'cronet/android/test/src/org/chromium/cronet_test_apk/CronetTestUtil.java',
-            'cronet/android/test/javatests/src/org/chromium/cronet_test_apk/MockUrlRequestJobTest.java',
+            'cronet/android/test/src/org/chromium/cronet_test_apk/MockUrlRequestJobUtil.java',
           ],
           'variables': {
             'jni_gen_package': 'cronet_tests',
@@ -412,8 +412,8 @@
           'type': 'shared_library',
           'sources': [
             'cronet/android/test/cronet_test_jni.cc',
-            'cronet/android/test/mock_url_request_job_test.cc',
-            'cronet/android/test/mock_url_request_job_test.h',
+            'cronet/android/test/mock_url_request_job_util.cc',
+            'cronet/android/test/mock_url_request_job_util.h',
             '../net/base/directory_lister.cc',
             '../net/base/directory_lister.h',
             '../net/url_request/url_request_file_job.cc',

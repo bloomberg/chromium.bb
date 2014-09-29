@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mock_url_request_job_test.h"
+#include "mock_url_request_job_util.h"
 
 #include "base/android/jni_android.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "jni/MockUrlRequestJobTest_jni.h"
+#include "jni/MockUrlRequestJobUtil_jni.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 
 namespace cronet {
 
-static void AddUrlInterceptors(JNIEnv* env, jobject jcaller) {
+void AddUrlInterceptors(JNIEnv* env, jclass jcaller) {
   base::FilePath test_files_root;
   PathService::Get(base::DIR_ANDROID_APP_DATA, &test_files_root);
   net::URLRequestMockHTTPJob::AddUrlHandler(
@@ -22,7 +22,7 @@ static void AddUrlInterceptors(JNIEnv* env, jobject jcaller) {
   net::URLRequestFailedJob::AddUrlHandler();
 }
 
-bool RegisterMockUrlRequestJobTest(JNIEnv* env) {
+bool RegisterMockUrlRequestJobUtil(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

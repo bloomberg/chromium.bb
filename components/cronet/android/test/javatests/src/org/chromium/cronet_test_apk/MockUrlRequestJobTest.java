@@ -8,7 +8,6 @@ import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestListener;
@@ -16,7 +15,6 @@ import org.chromium.net.HttpUrlRequestListener;
 import java.util.HashMap;
 
 // Tests that use mock URLRequestJobs to simulate URL requests.
-@JNINamespace("cronet")
 public class MockUrlRequestJobTest extends CronetTestBase {
     private static final String TAG = "MockURLRequestJobTest";
     private static final String MOCK_CRONET_TEST_SUCCESS_URL =
@@ -65,7 +63,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         CronetTestActivity activity = launchCronetTestApp();
         assertNotNull(activity);
         // AddUrlInterceptors() after native application context is initialized.
-        nativeAddUrlInterceptors();
+        MockUrlRequestJobUtil.addUrlInterceptors();
 
         HashMap<String, String> headers = new HashMap<String, String>();
         MockHttpUrlRequestListener listener = new MockHttpUrlRequestListener();
@@ -126,6 +124,4 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         assertEquals(MOCK_CRONET_TEST_FAILED_URL, listener.mUrl);
         assertEquals(0, listener.mHttpStatusCode);
     }
-
-    private native void nativeAddUrlInterceptors();
 }

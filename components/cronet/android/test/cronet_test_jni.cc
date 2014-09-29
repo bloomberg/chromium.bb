@@ -8,12 +8,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "components/cronet/android/cronet_loader.h"
-#include "mock_url_request_job_test.h"
+#include "mock_url_request_job_util.h"
 
 namespace {
 
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
-  {"MockURLRequestJobTest", cronet::RegisterMockUrlRequestJobTest},
+  {"MockURLRequestJobUtil", cronet::RegisterMockUrlRequestJobUtil},
 };
 
 }  // namespace
