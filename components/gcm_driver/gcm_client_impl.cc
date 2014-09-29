@@ -403,10 +403,17 @@ void GCMClientImpl::ResetState() {
   // TODO(fgorski): reset all of the necessart objects and start over.
 }
 
-void GCMClientImpl::SetAccountsForCheckin(
-    const std::map<std::string, std::string>& account_tokens) {
+void GCMClientImpl::SetAccountTokens(
+    const std::vector<AccountTokenInfo>& account_tokens) {
+  device_checkin_info_.account_tokens.clear();
+  for (std::vector<AccountTokenInfo>::const_iterator iter =
+           account_tokens.begin();
+       iter != account_tokens.end();
+       ++iter) {
+    device_checkin_info_.account_tokens[iter->email] = iter->access_token;
+  }
+
   bool accounts_set_before = device_checkin_info_.accounts_set;
-  device_checkin_info_.account_tokens = account_tokens;
   device_checkin_info_.accounts_set = true;
 
   DVLOG(1) << "Set account called with: " << account_tokens.size()
@@ -420,8 +427,10 @@ void GCMClientImpl::SetAccountsForCheckin(
            device_checkin_info_.last_checkin_accounts.begin();
        iter != device_checkin_info_.last_checkin_accounts.end();
        ++iter) {
-    if (account_tokens.find(*iter) == account_tokens.end())
+    if (device_checkin_info_.account_tokens.find(*iter) ==
+            device_checkin_info_.account_tokens.end()) {
       account_removed = true;
+    }
   }
 
   // Checkin will be forced when any of the accounts was removed during the

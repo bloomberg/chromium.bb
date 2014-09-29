@@ -284,9 +284,10 @@ class GCMClient {
   virtual GCMStatistics GetStatistics() const = 0;
 
   // Sets a list of accounts with OAuth2 tokens for the next checkin.
-  // |account_tokens| maps email addresses to OAuth2 access tokens.
-  virtual void SetAccountsForCheckin(
-      const std::map<std::string, std::string>& account_tokens) = 0;
+  // |account_tokens|: list of email addresses, account IDs and OAuth2 access
+  //                   tokens.
+  virtual void SetAccountTokens(
+      const std::vector<AccountTokenInfo>& account_tokens) = 0;
 
   // Persists the |account_mapping| in the store.
   virtual void UpdateAccountMapping(const AccountMapping& account_mapping) = 0;

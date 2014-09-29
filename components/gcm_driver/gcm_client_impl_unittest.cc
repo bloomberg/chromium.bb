@@ -68,6 +68,24 @@ MCSMessage BuildDownstreamMessage(
   return MCSMessage(kDataMessageStanzaTag, data_message);
 }
 
+GCMClient::AccountTokenInfo MakeAccountToken(const std::string& email,
+                                             const std::string& token) {
+  GCMClient::AccountTokenInfo account_token;
+  account_token.email = email;
+  account_token.access_token = token;
+  return account_token;
+}
+
+std::map<std::string, std::string> MakeEmailToTokenMap(
+    const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
+  std::map<std::string, std::string> email_token_map;
+  for (std::vector<GCMClient::AccountTokenInfo>::const_iterator iter =
+           account_tokens.begin(); iter != account_tokens.end(); ++iter) {
+    email_token_map[iter->email] = iter->access_token;
+  }
+  return email_token_map;
+}
+
 class FakeMCSClient : public MCSClient {
  public:
   FakeMCSClient(base::Clock* clock,
@@ -843,14 +861,15 @@ TEST_F(GCMClientImplCheckinTest, CheckinWithAccounts) {
                   GServicesSettings::CalculateDigest(settings),
                   settings);
 
-  std::map<std::string, std::string> account_tokens;
-  account_tokens["test_user1@gmail.com"] = "token1";
-  account_tokens["test_user2@gmail.com"] = "token2";
-  gcm_client()->SetAccountsForCheckin(account_tokens);
+  std::vector<GCMClient::AccountTokenInfo> account_tokens;
+  account_tokens.push_back(MakeAccountToken("test_user1@gmail.com", "token1"));
+  account_tokens.push_back(MakeAccountToken("test_user2@gmail.com", "token2"));
+  gcm_client()->SetAccountTokens(account_tokens);
 
   EXPECT_TRUE(device_checkin_info().last_checkin_accounts.empty());
   EXPECT_TRUE(device_checkin_info().accounts_set);
-  EXPECT_EQ(account_tokens, device_checkin_info().account_tokens);
+  EXPECT_EQ(MakeEmailToTokenMap(account_tokens),
+            device_checkin_info().account_tokens);
 
   PumpLoopUntilIdle();
   CompleteCheckin(kDeviceAndroidId,
@@ -863,7 +882,8 @@ TEST_F(GCMClientImplCheckinTest, CheckinWithAccounts) {
   accounts.insert("test_user2@gmail.com");
   EXPECT_EQ(accounts, device_checkin_info().last_checkin_accounts);
   EXPECT_TRUE(device_checkin_info().accounts_set);
-  EXPECT_EQ(account_tokens, device_checkin_info().account_tokens);
+  EXPECT_EQ(MakeEmailToTokenMap(account_tokens),
+            device_checkin_info().account_tokens);
 }
 
 // This test only checks that periodic checkin happens.
@@ -879,10 +899,10 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
                   GServicesSettings::CalculateDigest(settings),
                   settings);
 
-  std::map<std::string, std::string> account_tokens;
-  account_tokens["test_user1@gmail.com"] = "token1";
-  account_tokens["test_user2@gmail.com"] = "token2";
-  gcm_client()->SetAccountsForCheckin(account_tokens);
+  std::vector<GCMClient::AccountTokenInfo> account_tokens;
+  account_tokens.push_back(MakeAccountToken("test_user1@gmail.com", "token1"));
+  account_tokens.push_back(MakeAccountToken("test_user2@gmail.com", "token2"));
+  gcm_client()->SetAccountTokens(account_tokens);
   PumpLoopUntilIdle();
   CompleteCheckin(kDeviceAndroidId,
                   kDeviceSecurityToken,
@@ -891,10 +911,11 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
 
   EXPECT_EQ(2UL, device_checkin_info().last_checkin_accounts.size());
   EXPECT_TRUE(device_checkin_info().accounts_set);
-  EXPECT_EQ(account_tokens, device_checkin_info().account_tokens);
+  EXPECT_EQ(MakeEmailToTokenMap(account_tokens),
+            device_checkin_info().account_tokens);
 
-  account_tokens.erase(account_tokens.find("test_user2@gmail.com"));
-  gcm_client()->SetAccountsForCheckin(account_tokens);
+  account_tokens.erase(account_tokens.begin() + 1);
+  gcm_client()->SetAccountTokens(account_tokens);
 
   PumpLoopUntilIdle();
   CompleteCheckin(kDeviceAndroidId,
@@ -906,7 +927,8 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
   accounts.insert("test_user1@gmail.com");
   EXPECT_EQ(accounts, device_checkin_info().last_checkin_accounts);
   EXPECT_TRUE(device_checkin_info().accounts_set);
-  EXPECT_EQ(account_tokens, device_checkin_info().account_tokens);
+  EXPECT_EQ(MakeEmailToTokenMap(account_tokens),
+            device_checkin_info().account_tokens);
 }
 
 // This test only checks that periodic checkin happens.
@@ -922,9 +944,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
                   GServicesSettings::CalculateDigest(settings),
                   settings);
 
-  std::map<std::string, std::string> account_tokens;
-  account_tokens["test_user1@gmail.com"] = "token1";
-  gcm_client()->SetAccountsForCheckin(account_tokens);
+  std::vector<GCMClient::AccountTokenInfo> account_tokens;
+  account_tokens.push_back(MakeAccountToken("test_user1@gmail.com", "token1"));
+  gcm_client()->SetAccountTokens(account_tokens);
 
   PumpLoopUntilIdle();
   CompleteCheckin(kDeviceAndroidId,
@@ -938,9 +960,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
 
   // This should trigger another checkin, because the list of accounts is
   // different.
-  account_tokens.erase(account_tokens.find("test_user1@gmail.com"));
-  account_tokens["test_user2@gmail.com"] = "token2";
-  gcm_client()->SetAccountsForCheckin(account_tokens);
+  account_tokens.clear();
+  account_tokens.push_back(MakeAccountToken("test_user2@gmail.com", "token2"));
+  gcm_client()->SetAccountTokens(account_tokens);
 
   PumpLoopUntilIdle();
   CompleteCheckin(kDeviceAndroidId,
@@ -952,7 +974,8 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
   accounts.insert("test_user2@gmail.com");
   EXPECT_EQ(accounts, device_checkin_info().last_checkin_accounts);
   EXPECT_TRUE(device_checkin_info().accounts_set);
-  EXPECT_EQ(account_tokens, device_checkin_info().account_tokens);
+  EXPECT_EQ(MakeEmailToTokenMap(account_tokens),
+            device_checkin_info().account_tokens);
 }
 
 class GCMClientImplStartAndStopTest : public GCMClientImplTest {

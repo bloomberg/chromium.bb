@@ -37,6 +37,30 @@ std::string MakeAccessToken(const std::string& account_key) {
   return "access_token-" + account_key;
 }
 
+GCMClient::AccountTokenInfo MakeAccountToken(const std::string& account_key) {
+  GCMClient::AccountTokenInfo token_info;
+  token_info.account_id = account_key;
+  token_info.email = account_key;
+  token_info.access_token = MakeAccessToken(account_key);
+  return token_info;
+}
+
+void VerifyAccountTokens(
+    const std::vector<GCMClient::AccountTokenInfo>& expected_tokens,
+    const std::vector<GCMClient::AccountTokenInfo>& actual_tokens) {
+  EXPECT_EQ(expected_tokens.size(), actual_tokens.size());
+  for (std::vector<GCMClient::AccountTokenInfo>::const_iterator
+           expected_iter = expected_tokens.begin(),
+           actual_iter = actual_tokens.begin();
+       expected_iter != expected_tokens.end() &&
+           actual_iter != actual_tokens.end();
+       ++expected_iter, ++actual_iter) {
+    EXPECT_EQ(expected_iter->account_id, actual_iter->account_id);
+    EXPECT_EQ(expected_iter->email, actual_iter->email);
+    EXPECT_EQ(expected_iter->access_token, actual_iter->access_token);
+  }
+}
+
 }  // namespace
 
 class GCMAccountTrackerTest : public testing::Test {
@@ -45,7 +69,7 @@ class GCMAccountTrackerTest : public testing::Test {
   virtual ~GCMAccountTrackerTest();
 
   // Callback for the account tracker.
-  void UpdateAccounts(const std::map<std::string, std::string>& accounts);
+  void UpdateAccounts(const std::vector<GCMClient::AccountTokenInfo>& accounts);
 
   // Helpers to pass fake events to the tracker. Tests should have either a pair
   // of Start/FinishAccountSignIn or SignInAccount per account. Don't mix.
@@ -62,7 +86,7 @@ class GCMAccountTrackerTest : public testing::Test {
   // Test results and helpers.
   void ResetResults();
   bool update_accounts_called() const { return update_accounts_called_; }
-  const std::map<std::string, std::string>& accounts() const {
+  const std::vector<GCMClient::AccountTokenInfo>& accounts() const {
     return accounts_;
   }
 
@@ -70,7 +94,7 @@ class GCMAccountTrackerTest : public testing::Test {
   GCMAccountTracker* tracker() { return tracker_.get(); }
 
  private:
-  std::map<std::string, std::string> accounts_;
+  std::vector<GCMClient::AccountTokenInfo> accounts_;
   bool update_accounts_called_;
 
   base::MessageLoop message_loop_;
@@ -104,7 +128,7 @@ GCMAccountTrackerTest::~GCMAccountTrackerTest() {
 }
 
 void GCMAccountTrackerTest::UpdateAccounts(
-    const std::map<std::string, std::string>& accounts) {
+    const std::vector<GCMClient::AccountTokenInfo>& accounts) {
   update_accounts_called_ = true;
   accounts_ = accounts;
 }
@@ -177,9 +201,9 @@ TEST_F(GCMAccountTrackerTest, SingleAccount) {
 
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  VerifyAccountTokens(expected_accounts, accounts());
   tracker()->Stop();
 }
 
@@ -198,10 +222,10 @@ TEST_F(GCMAccountTrackerTest, MultipleAccounts) {
   IssueAccessToken(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  expected_accounts[kAccountId2] = MakeAccessToken(kAccountId2);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  expected_accounts.push_back(MakeAccountToken(kAccountId2));
+  VerifyAccountTokens(expected_accounts, accounts());
 
   tracker()->Stop();
 }
@@ -216,9 +240,9 @@ TEST_F(GCMAccountTrackerTest, AccountAdded) {
   IssueAccessToken(kAccountId1);
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  VerifyAccountTokens(expected_accounts, accounts());
 
   tracker()->Stop();
 }
@@ -238,9 +262,9 @@ TEST_F(GCMAccountTrackerTest, AccountRemoved) {
   SignOutAccount(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  VerifyAccountTokens(expected_accounts, accounts());
 
   tracker()->Stop();
 }
@@ -256,9 +280,9 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailed) {
   IssueError(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  VerifyAccountTokens(expected_accounts, accounts());
 
   tracker()->Stop();
 }
@@ -275,9 +299,9 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailedAccountRemoved) {
   SignOutAccount(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  VerifyAccountTokens(expected_accounts, accounts());
 
   tracker()->Stop();
 }
@@ -294,9 +318,9 @@ TEST_F(GCMAccountTrackerTest, AccountRemovedWhileRequestsPending) {
   IssueAccessToken(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
 
-  std::map<std::string, std::string> expected_accounts;
-  expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
-  EXPECT_EQ(expected_accounts, accounts());
+  std::vector<GCMClient::AccountTokenInfo> expected_accounts;
+  expected_accounts.push_back(MakeAccountToken(kAccountId1));
+  VerifyAccountTokens(expected_accounts, accounts());
 
   tracker()->Stop();
 }

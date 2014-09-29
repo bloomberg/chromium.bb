@@ -56,8 +56,8 @@ class FakeGCMClient : public GCMClient {
   virtual void SetRecording(bool recording) OVERRIDE;
   virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
-  virtual void SetAccountsForCheckin(
-      const std::map<std::string, std::string>& account_tokens) OVERRIDE;
+  virtual void SetAccountTokens(
+      const std::vector<AccountTokenInfo>& account_tokens) OVERRIDE;
   virtual void UpdateAccountMapping(
       const AccountMapping& account_mapping) OVERRIDE;
   virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;

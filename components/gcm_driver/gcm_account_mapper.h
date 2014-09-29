@@ -37,7 +37,7 @@ class GCMAccountMapper : public GCMAppHandler {
   // Called by AccountTracker, when a new list of account tokens is available.
   // This will cause a refresh of account mappings and sending updates to GCM.
   void SetAccountTokens(
-      const std::vector<GCMClient::AccountTokenInfo> account_tokens);
+      const std::vector<GCMClient::AccountTokenInfo>& account_tokens);
 
   // Implementation of GCMAppHandler:
   virtual void ShutdownHandler() OVERRIDE;

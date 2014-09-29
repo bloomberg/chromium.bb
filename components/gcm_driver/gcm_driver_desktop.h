@@ -37,6 +37,7 @@ class URLRequestContextGetter;
 
 namespace gcm {
 
+class GCMAccountMapper;
 class GCMAppHandler;
 class GCMClientFactory;
 class GCMDelayedTaskController;
@@ -74,18 +75,11 @@ class GCMDriverDesktop : public GCMDriver {
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) OVERRIDE;
+  virtual void SetAccountTokens(
+      const std::vector<GCMClient::AccountTokenInfo>& account_tokens) OVERRIDE;
   virtual void UpdateAccountMapping(
       const AccountMapping& account_mapping) OVERRIDE;
   virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
-
-  // GCMDriverDesktop specific implementation.
-  // Sets a list of accounts with OAuth2 tokens for the next checkin.
-  // |account_tokens| maps email addresses to OAuth2 access tokens.
-  // |account_removed| indicates that an account has been removed since the
-  //     last time the callback was called, which triggers an immediate checkin,
-  //     to ensure that association between device and account is removed.
-  void SetAccountsForCheckin(
-      const std::map<std::string, std::string>& account_tokens);
 
   // Exposed for testing purpose.
   bool gcm_enabled() const { return gcm_enabled_; }
@@ -156,6 +150,9 @@ class GCMDriverDesktop : public GCMDriver {
   // List of observers to notify when connection state changes.
   // Makes sure list is empty on destruction.
   ObserverList<GCMConnectionObserver, true> connection_observer_list_;
+
+  // Account mapper. Only works when user is signed in.
+  scoped_ptr<GCMAccountMapper> account_mapper_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;

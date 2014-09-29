@@ -152,7 +152,7 @@ void GCMAccountTracker::CompleteCollectingTokens() {
   }
 
   bool account_removed = false;
-  std::map<std::string, std::string> account_tokens;
+  std::vector<GCMClient::AccountTokenInfo> account_tokens;
   for (AccountInfos::iterator iter = account_infos_.begin();
        iter != account_infos_.end();) {
     switch (iter->second.state) {
@@ -165,10 +165,15 @@ void GCMAccountTracker::CompleteCollectingTokens() {
         account_infos_.erase(iter++);
         break;
 
-      case TOKEN_PRESENT:
-        account_tokens[iter->second.email] = iter->second.access_token;
+      case TOKEN_PRESENT: {
+        GCMClient::AccountTokenInfo token_info;
+        token_info.account_id = iter->first;
+        token_info.email = iter->second.email;
+        token_info.access_token = iter->second.access_token;
+        account_tokens.push_back(token_info);
         ++iter;
         break;
+      }
 
       case GETTING_TOKEN:
         // This should not happen, as we are making a check that there are no

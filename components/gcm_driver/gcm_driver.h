@@ -118,6 +118,14 @@ class GCMDriver {
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) = 0;
 
+  // sets a list of signed in accounts with OAuth2 access tokens, when GCMDriver
+  // works in context of a signed in entity (e.g. browser profile where user is
+  // signed into sync).
+  // |account_tokens|: list of email addresses, account IDs and OAuth2 access
+  //                   tokens.
+  virtual void SetAccountTokens(
+      const std::vector<GCMClient::AccountTokenInfo>& account_tokens) = 0;
+
   // Updates the |account_mapping| information in persistent store.
   virtual void UpdateAccountMapping(const AccountMapping& account_mapping) = 0;
 

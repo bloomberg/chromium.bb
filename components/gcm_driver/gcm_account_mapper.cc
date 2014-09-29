@@ -56,7 +56,7 @@ void GCMAccountMapper::Initialize(
 }
 
 void GCMAccountMapper::SetAccountTokens(
-    const std::vector<GCMClient::AccountTokenInfo> account_tokens) {
+    const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
   // If account mapper is not ready to handle tasks yet, save the latest
   // account tokens and return.
   if (!IsReady()) {

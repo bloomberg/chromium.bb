@@ -116,8 +116,8 @@ GCMClient::GCMStatistics FakeGCMClient::GetStatistics() const {
   return GCMClient::GCMStatistics();
 }
 
-void FakeGCMClient::SetAccountsForCheckin(
-    const std::map<std::string, std::string>& account_tokens) {
+void FakeGCMClient::SetAccountTokens(
+    const std::vector<AccountTokenInfo>& account_tokens) {
 }
 
 void FakeGCMClient::UpdateAccountMapping(

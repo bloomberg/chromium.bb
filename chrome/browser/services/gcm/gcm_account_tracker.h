@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -49,9 +50,9 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
     AccountState state;
   };
 
-  // Callback for the GetAccountsForCheckin call. |account_tokens| maps email
-  // addresses to OAuth2 access tokens.
-  typedef base::Callback<void(const std::map<std::string, std::string>&
+  // Callback for the GetAccountsForCheckin call. |account_tokens|: list of
+  // email addresses, account ids and OAuth2 access tokens.
+  typedef base::Callback<void(const std::vector<GCMClient::AccountTokenInfo>&
                                   account_tokens)> UpdateAccountsCallback;
 
   // Creates an instance of GCMAccountTracker. |account_tracker| is used to

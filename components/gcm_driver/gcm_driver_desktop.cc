@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/gcm_driver/gcm_account_mapper.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -76,8 +77,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void GetGCMStatistics(bool clear_logs);
   void SetGCMRecording(bool recording);
 
-  void SetAccountsForCheckin(
-      const std::map<std::string, std::string>& account_tokens);
+  void SetAccountTokens(
+      const std::vector<GCMClient::AccountTokenInfo>& account_tokens);
   void UpdateAccountMapping(const AccountMapping& account_mapping);
   void RemoveAccountMapping(const std::string& account_id);
 
@@ -307,12 +308,12 @@ void GCMDriverDesktop::IOWorker::SetGCMRecording(bool recording) {
       base::Bind(&GCMDriverDesktop::GetGCMStatisticsFinished, service_, stats));
 }
 
-void GCMDriverDesktop::IOWorker::SetAccountsForCheckin(
-    const std::map<std::string, std::string>& account_tokens) {
+void GCMDriverDesktop::IOWorker::SetAccountTokens(
+    const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   if (gcm_client_.get())
-    gcm_client_->SetAccountsForCheckin(account_tokens);
+    gcm_client_->SetAccountTokens(account_tokens);
 }
 
 void GCMDriverDesktop::IOWorker::UpdateAccountMapping(
@@ -610,13 +611,13 @@ void GCMDriverDesktop::RemoveAccountMapping(const std::string& account_id) {
                  account_id));
 }
 
-void GCMDriverDesktop::SetAccountsForCheckin(
-    const std::map<std::string, std::string>& account_tokens) {
+void GCMDriverDesktop::SetAccountTokens(
+    const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::SetAccountsForCheckin,
+      base::Bind(&GCMDriverDesktop::IOWorker::SetAccountTokens,
                  base::Unretained(io_worker_.get()),
                  account_tokens));
 }
