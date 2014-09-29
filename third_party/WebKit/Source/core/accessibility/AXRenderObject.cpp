@@ -323,21 +323,12 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
                 return CheckBoxMenuItemRole;
             return CheckBoxRole;
         }
-        if (type == InputTypeNames::date)
-            return DateRole;
-        if (type == InputTypeNames::datetime
-            || type == InputTypeNames::datetime_local
-            || type == InputTypeNames::month
-            || type == InputTypeNames::week)
-            return DateTimeRole;
         if (type == InputTypeNames::radio)
             return RadioButtonRole;
         if (input.isTextButton())
             return buttonRoleType();
         if (type == InputTypeNames::color)
             return ColorWellRole;
-        if (type == InputTypeNames::time)
-            return TimeRole;
     }
 
     if (isFileUploadButton())

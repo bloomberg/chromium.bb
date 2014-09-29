@@ -212,13 +212,6 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
                 return CheckBoxMenuItemRole;
             return CheckBoxRole;
         }
-        if (type == InputTypeNames::date)
-            return DateRole;
-        if (type == InputTypeNames::datetime
-            || type == InputTypeNames::datetime_local
-            || type == InputTypeNames::month
-            || type == InputTypeNames::week)
-            return DateTimeRole;
         if (type == InputTypeNames::radio)
             return RadioButtonRole;
         if (input.isTextButton())
@@ -227,8 +220,6 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
             return SliderRole;
         if (type == InputTypeNames::color)
             return ColorWellRole;
-        if (type == InputTypeNames::time)
-            return TimeRole;
         return TextFieldRole;
     }
     if (isHTMLSelectElement(*node())) {
