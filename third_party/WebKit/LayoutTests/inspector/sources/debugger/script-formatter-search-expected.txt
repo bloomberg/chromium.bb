@@ -2,12 +2,12 @@ Tests that search across files works with formatted scripts.
 
 Pre-format search results:
 Search matches: 
-lineNumber: 25, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
-lineNumber: 39, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
+lineNumber: 30, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
+lineNumber: 44, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
 
 Post-format search results:
 Search matches: 
-lineNumber: 25, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
-lineNumber: 39, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
+lineNumber: 30, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
+lineNumber: 44, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
 
 

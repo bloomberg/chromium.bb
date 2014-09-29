@@ -8,10 +8,18 @@ var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
     var panel = WebInspector.inspectorView.showPanel("sources");
-    var scriptFormatter = InspectorTest.scriptFormatter();
+    var scriptFormatter;
     var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
+        function testSetup(next)
+        {
+            InspectorTest.scriptFormatter().then(function(sf) {
+                scriptFormatter = sf;
+                next();
+            });
+        },
+
         function testBreakpointsSetAndRemoveInFormattedSource(next)
         {
             InspectorTest.showScriptSource("unformatted2.js", didShowScriptSource);

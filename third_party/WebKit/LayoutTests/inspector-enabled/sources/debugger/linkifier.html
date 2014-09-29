@@ -22,13 +22,20 @@ function onload()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(waitForScripts);
     var panel = WebInspector.inspectorView.panel("sources");
-    var scriptFormatter = InspectorTest.scriptFormatter();
+    var scriptFormatter;
     var linkifier;
     var link;
     var script;
     var uiSourceCode;
+
+    InspectorTest.scriptFormatter().then(startDebuggerTest);
+
+    function startDebuggerTest(sf)
+    {
+        scriptFormatter = sf;
+        InspectorTest.startDebuggerTest(waitForScripts);
+    }
 
     function waitForScripts()
     {

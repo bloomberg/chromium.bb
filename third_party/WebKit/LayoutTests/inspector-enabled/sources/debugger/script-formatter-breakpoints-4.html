@@ -26,9 +26,17 @@ var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
     var panel = WebInspector.inspectorView.showPanel("sources");
-    var scriptFormatter = InspectorTest.scriptFormatter();
+    var scriptFormatter;
 
     InspectorTest.runDebuggerTestSuite([
+        function testSetup(next)
+        {
+            InspectorTest.scriptFormatter().then(function(sf) {
+                scriptFormatter = sf;
+                next();
+            });
+        },
+
         function testBreakpointSetInOriginalAndRemovedInFormatted(next)
         {
             InspectorTest.showScriptSource("script-formatter-breakpoints-4.html", didShowScriptSource);

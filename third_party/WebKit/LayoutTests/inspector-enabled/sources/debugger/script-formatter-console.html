@@ -24,9 +24,17 @@ var test = function()
 {
     var panel = WebInspector.inspectorView.showPanel("sources");
     var sourceFrame;
-    var scriptFormatter = InspectorTest.scriptFormatter();
+    var scriptFormatter;
 
     InspectorTest.runDebuggerTestSuite([
+        function testSetup(next)
+        {
+            InspectorTest.scriptFormatter().then(function(sf) {
+                scriptFormatter = sf;
+                next();
+            });
+        },
+
         function testConsoleMessagesForFormattedScripts(next)
         {
             InspectorTest.showScriptSource("script-formatter-console.html", didShowScriptSource);

@@ -11,9 +11,14 @@ var test = function()
 {
     var scriptSource;
     var shouldRequestContent = false;
-    var scriptFormatter = InspectorTest.scriptFormatter();
+    InspectorTest.scriptFormatter().then(startDebuggerTest);
+    var scriptFormatter;
 
-    InspectorTest.startDebuggerTest(started);
+    function startDebuggerTest(sf)
+    {
+        scriptFormatter = sf;
+        InspectorTest.startDebuggerTest(started);
+    }
 
     function started()
     {

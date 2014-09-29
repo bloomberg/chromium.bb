@@ -1,6 +1,8 @@
 Tests the script formatting is working fine with breakpoints.
 
 
+Running: testSetup
+
 Running: testBreakpointsSetAndRemoveInFormattedSource
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed

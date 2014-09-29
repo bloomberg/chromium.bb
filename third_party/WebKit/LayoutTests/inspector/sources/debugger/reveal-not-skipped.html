@@ -72,9 +72,10 @@ var test = function()
             {
                 InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Formatting...");
-                var scriptFormatter = InspectorTest.scriptFormatter();
-                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
-                scriptFormatter._toggleFormatScriptSource();
+                InspectorTest.scriptFormatter().then(function(scriptFormatter) {
+                    InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                    scriptFormatter._toggleFormatScriptSource();
+                });
             }
 
             function uiSourceCodeScriptFormatted()

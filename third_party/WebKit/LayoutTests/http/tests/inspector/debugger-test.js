@@ -455,11 +455,13 @@ InspectorTest.checkUILocation = function(uiSourceCode, lineNumber, columnNumber,
 
 InspectorTest.scriptFormatter = function()
 {
-    var editorActions = self.runtime.instances(WebInspector.SourcesView.EditorAction);
-    for (var i = 0; i < editorActions.length; ++i) {
-        if (editorActions[i] instanceof WebInspector.ScriptFormatterEditorAction)
-            return editorActions[i];
-    }
+    return self.runtime.instancesPromise(WebInspector.SourcesView.EditorAction).then(function(editorActions) {
+        for (var i = 0; i < editorActions.length; ++i) {
+            if (editorActions[i] instanceof WebInspector.ScriptFormatterEditorAction)
+                return editorActions[i];
+        }
+        return null;
+    });
 };
 
 };
