@@ -5,12 +5,12 @@
 <title>Font Width Variant Text Combine</title>
 <style>
 @font-face {
-    font-family: CSSHWOrientationTest;
-    src: url(../../third_party/CSSOrientationTest/CSSHWOrientationTest.ttf) format("truetype");
+    font-family: LiberationSansWidthVariants;
+    src: url(../../third_party/LiberationSansWidthVariants/liberation_sans_width_variants.ttf) format("truetype");
 }
 
 .vertical {
-    font-family: "CSSHWOrientationTest";
+    font-family: "LiberationSansWidthVariants";
     font-size: 24px;
     text-rendering: geometricPrecision;
     -webkit-writing-mode: vertical-lr;
@@ -30,7 +30,7 @@
     <script type="text/javascript">
     setup({ explicit_done: true });
     function testWidthVariant() {
-        var EXPECTED_COMBINED_UNTIL = 4;
+        var EXPECTED_COMBINED_UNTIL = 8;
         var EXPECTED_LINE_HEIGHT = 24;
         var NUM_TESTS = 9;
         for (var testId = 0; testId < NUM_TESTS; testId++) {
@@ -57,12 +57,16 @@
         <div><span class="combine">9</span></div>
         <div><span class="combine">11</span></div>
         <div><span class="combine">99</span></div>
-        <!-- vertical -->
         <div><span class="combine">111</span></div>
         <div><span class="combine">999</span></div>
-        <div><span class="combine">1234</span></div>
         <div><span class="combine">1111</span></div>
         <div><span class="combine">9999</span></div>
+        <!-- vertical -->
+        <div><span class="combine">11111</span></div>
+        <div><span class="combine">99999</span></div>
+        <div><span class="combine">123456</span></div>
+        <div><span class="combine">111111</span></div>
+        <div><span class="combine">999999</span></div>
     </div>
     <div id="log"></div>
 </body>
