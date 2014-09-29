@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/verify_config_window_win.h"
 #include "remoting/host/win/core_resource.h"
@@ -50,16 +51,15 @@ const char kUnprivilegedConfigFileSecurityDescriptor[] =
     "O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;AU)";
 
 // Configuration keys.
-const char kHostId[] = "host_id";
-const char kXmppLogin[] = "xmpp_login";
-const char kHostOwner[] = "host_owner";
-const char kHostSecretHash[] = "host_secret_hash";
 
 // The configuration keys that cannot be specified in UpdateConfig().
-const char* const kReadonlyKeys[] = { kHostId, kHostOwner, kXmppLogin };
+const char* const kReadonlyKeys[] = {
+  kHostIdConfigPath, kHostOwnerConfigPath, kHostOwnerEmailConfigPath,
+  kXmppLoginConfigPath };
 
 // The configuration keys whose values may be read by GetConfig().
-const char* const kUnprivilegedConfigKeys[] = { kHostId, kXmppLogin };
+const char* const kUnprivilegedConfigKeys[] = {
+  kHostIdConfigPath, kXmppLoginConfigPath };
 
 // Determines if the client runs in the security context that allows performing
 // administrative tasks (i.e. the user belongs to the adminstrators group and
@@ -220,14 +220,16 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
     return E_FAIL;
   }
   std::string email;
-  if (!config_dict->GetString(kHostOwner, &email)) {
-    if (!config_dict->GetString(kXmppLogin, &email)) {
-      return E_FAIL;
+  if (!config_dict->GetString(kHostOwnerEmailConfigPath, &email)) {
+    if (!config_dict->GetString(kHostOwnerConfigPath, &email)) {
+      if (!config_dict->GetString(kXmppLoginConfigPath, &email)) {
+        return E_FAIL;
+      }
     }
   }
   std::string host_id, host_secret_hash;
-  if (!config_dict->GetString(kHostId, &host_id) ||
-      !config_dict->GetString(kHostSecretHash, &host_secret_hash)) {
+  if (!config_dict->GetString(kHostIdConfigPath, &host_id) ||
+      !config_dict->GetString(kHostSecretHashConfigPath, &host_secret_hash)) {
     return E_FAIL;
   }
 

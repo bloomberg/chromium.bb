@@ -113,13 +113,14 @@ ChromotingHost::~ChromotingHost() {
     FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnShutdown());
 }
 
-void ChromotingHost::Start(const std::string& host_owner) {
+void ChromotingHost::Start(const std::string& host_owner_email) {
   DCHECK(CalledOnValidThread());
   DCHECK(!started_);
 
   HOST_LOG << "Starting host";
   started_ = true;
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnStart(host_owner));
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnStart(host_owner_email));
 
   // Start the SessionManager, supplying this ChromotingHost as the listener.
   session_manager_->Init(signal_strategy_, this);

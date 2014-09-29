@@ -65,3 +65,19 @@ remoting.SignalStrategy.prototype.getError = function() {};
 
 /** @return {string} Current JID when in CONNECTED state. */
 remoting.SignalStrategy.prototype.getJid = function() {};
+
+/**
+ * Creates the appropriate signal strategy for the current environment.
+ * @param {function(remoting.SignalStrategy.State): void} onStateChangedCallback
+ * @return {remoting.SignalStrategy} New signal strategy object.
+ */
+remoting.SignalStrategy.create = function(onStateChangedCallback) {
+  // Only use XMPP when TCP API is available and TLS support is enabled. That's
+  // not the case for V1 app (socket API is available only to platform apps)
+  // and for Chrome releases before 38.
+  if (chrome.socket && chrome.socket.secure) {
+    return new remoting.XmppConnection(onStateChangedCallback);
+  } else {
+    return new remoting.WcsAdapter(onStateChangedCallback);
+  }
+};

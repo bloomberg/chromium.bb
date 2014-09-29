@@ -295,6 +295,7 @@ class HostProcess
   std::string oauth_refresh_token_;
   std::string serialized_config_;
   std::string host_owner_;
+  std::string host_owner_email_;
   bool use_service_account_;
   bool enable_vp9_;
   int64_t frame_recorder_buffer_size_;
@@ -869,6 +870,13 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     use_service_account_ = false;
   }
 
+  // For non-Gmail Google accounts, the owner base JID differs from the email.
+  // host_owner_ contains the base JID (used for authenticating clients), while
+  // host_owner_email contains the account's email (used for UI and logs).
+  if (!config->GetString(kHostOwnerEmailConfigPath, &host_owner_email_)) {
+    host_owner_email_ = host_owner_;
+  }
+
   // Allow offering of VP9 encoding to be overridden by the command-line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
     enable_vp9_ = true;
@@ -926,6 +934,17 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
 
 void HostProcess::ApplyHostDomainPolicy() {
   HOST_LOG << "Policy sets host domain: " << host_domain_;
+
+  // If the user does not have a Google email, their client JID will not be
+  // based on their email. In that case, the username/host domain policies would
+  // be meaningless, since there is no way to check that the JID attempting to
+  // connect actually corresponds to the owner email in question.
+  if (host_owner_ != host_owner_email_) {
+    LOG(ERROR) << "The username and host domain policies cannot be enabled for "
+               << "accounts with a non-Google email.";
+    ShutdownHost(kInvalidHostDomainExitCode);
+  }
+
   if (!host_domain_.empty() &&
       !EndsWith(host_owner_, std::string("@") + host_domain_, false)) {
     LOG(ERROR) << "The host domain does not match the policy.";
@@ -947,6 +966,13 @@ bool HostProcess::OnHostDomainPolicyUpdate(base::DictionaryValue* policies) {
 }
 
 void HostProcess::ApplyUsernamePolicy() {
+  // See comment in ApplyHostDomainPolicy.
+  if (host_owner_ != host_owner_email_) {
+    LOG(ERROR) << "The username and host domain policies cannot be enabled for "
+               << "accounts with a non-Google email.";
+    ShutdownHost(kUsernameMismatchExitCode);
+  }
+
   if (host_username_match_required_) {
     HOST_LOG << "Policy requires host username match.";
     std::string username = GetUsername();
@@ -1310,7 +1336,7 @@ void HostProcess::StartHost() {
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   host_->SetEnableCurtaining(curtain_required_);
-  host_->Start(host_owner_);
+  host_->Start(host_owner_email_);
 
   CreateAuthenticatorFactory();
 }

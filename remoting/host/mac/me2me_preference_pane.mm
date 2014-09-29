@@ -468,14 +468,18 @@ std::string JsonHostConfig::GetSerializedData() const {
 
   std::string email;
   if (config_.get()) {
-    bool result = config_->GetString(remoting::kHostOwnerConfigPath, &email);
+    bool result =
+        config_->GetString(remoting::kHostOwnerEmailConfigPath, &email);
     if (!result) {
-      result = config_->GetString(remoting::kXmppLoginConfigPath, &email);
-
-      // The config has already been checked by |IsConfigValid|.
+      result = config_->GetString(remoting::kHostOwnerConfigPath, &email);
       if (!result) {
-        [self showError];
-        return;
+        result = config_->GetString(remoting::kXmppLoginConfigPath, &email);
+
+        // The config has already been checked by |IsConfigValid|.
+        if (!result) {
+          [self showError];
+          return;
+        }
       }
     }
   }

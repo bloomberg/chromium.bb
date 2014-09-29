@@ -171,10 +171,11 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} privateKey
    * @param {string} xmppLogin
    * @param {string} refreshToken
+   * @param {string} clientBaseJid
    * @param {string} hostSecretHash
    */
-  function startHostWithHash(hostName, publicKey, privateKey,
-                             xmppLogin, refreshToken, hostSecretHash) {
+  function startHostWithHash(hostName, publicKey, privateKey, xmppLogin,
+                             refreshToken, clientBaseJid, hostSecretHash) {
     var hostConfig = {
       xmpp_login: xmppLogin,
       oauth_refresh_token: refreshToken,
@@ -183,9 +184,13 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
       host_secret_hash: hostSecretHash,
       private_key: privateKey
     };
-    var hostOwner = remoting.identity.getCachedEmail();
+    var hostOwner = clientBaseJid;
+    var hostOwnerEmail = remoting.identity.getCachedEmail();
     if (hostOwner != xmppLogin) {
       hostConfig['host_owner'] = hostOwner;
+      if (hostOwnerEmail != hostOwner) {
+        hostConfig['host_owner_email'] = hostOwnerEmail;
+      }
     }
     that.hostDaemonFacade_.startDaemon(
         hostConfig, consent, onStarted.bind(null, hostName, publicKey),
@@ -198,14 +203,30 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} privateKey
    * @param {string} email
    * @param {string} refreshToken
+   * @param {string} clientBaseJid
+   */
+  function onClientBaseJid(
+      hostName, publicKey, privateKey, email, refreshToken, clientBaseJid) {
+    that.hostDaemonFacade_.getPinHash(
+        newHostId, hostPin,
+        startHostWithHash.bind(null, hostName, publicKey, privateKey,
+                               email, refreshToken, clientBaseJid),
+        onError);
+  }
+
+  /**
+   * @param {string} hostName
+   * @param {string} publicKey
+   * @param {string} privateKey
+   * @param {string} email
+   * @param {string} refreshToken
    */
   function onServiceAccountCredentials(
       hostName, publicKey, privateKey, email, refreshToken) {
-    that.hostDaemonFacade_.getPinHash(
-        newHostId, hostPin,
-        startHostWithHash.bind(
+    that.getClientBaseJid_(
+        onClientBaseJid.bind(
             null, hostName, publicKey, privateKey, email, refreshToken),
-        onError);
+        onStartError);
   }
 
   /**
@@ -497,6 +518,57 @@ remoting.HostController.prototype.deletePairedClient = function(
 remoting.HostController.prototype.clearPairedClients = function(
     onDone, onError) {
   this.hostDaemonFacade_.clearPairedClients(onDone, onError);
+};
+
+/**
+ * Gets the host owner's base JID, used by the host for client authorization.
+ * In most cases this is the same as the owner's email address, but for
+ * non-Gmail accounts, it may be different.
+ *
+ * @private
+ * @param {function(string): void} onSuccess
+ * @param {function(remoting.Error): void} onError
+ */
+remoting.HostController.prototype.getClientBaseJid_ = function(
+    onSuccess, onError) {
+  var signalStrategy = null;
+
+  var onState = function(state) {
+    switch (state) {
+      case remoting.SignalStrategy.State.CONNECTED:
+        var jid = signalStrategy.getJid().split('/')[0].toLowerCase();
+        base.dispose(signalStrategy);
+        signalStrategy = null;
+        onSuccess(jid);
+        break;
+
+      case remoting.SignalStrategy.State.FAILED:
+        var error = signalStrategy.getError();
+        base.dispose(signalStrategy);
+        signalStrategy = null;
+        onError(error);
+        break;
+    }
+  };
+
+  signalStrategy = remoting.SignalStrategy.create(onState);
+
+  /** @param {string} token */
+  function connectSignalingWithToken(token) {
+    remoting.identity.getEmail(
+        connectSignalingWithTokenAndEmail.bind(null, token), onError);
+  }
+
+  /**
+   * @param {string} token
+   * @param {string} email
+   */
+  function connectSignalingWithTokenAndEmail(token, email) {
+    signalStrategy.connect(
+        remoting.settings.XMPP_SERVER_ADDRESS, email, token);
+  }
+
+  remoting.identity.callWithToken(connectSignalingWithToken, onError);
 };
 
 /** @type {remoting.HostController} */
