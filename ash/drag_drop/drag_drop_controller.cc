@@ -557,9 +557,9 @@ void DragDropController::Cleanup() {
     drag_window_->RemoveObserver(this);
   drag_window_ = NULL;
   drag_data_ = NULL;
-  // Cleanup can be called again while deleting DragDropTracker, so use Pass
-  // instead of reset to avoid double free.
-  drag_drop_tracker_.Pass();
+  // Cleanup can be called again while deleting DragDropTracker, so delete
+  // the pointer with a local variable to avoid double free.
+  scoped_ptr<ash::DragDropTracker> holder = drag_drop_tracker_.Pass();
 }
 
 }  // namespace ash
