@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 309x18
-          text run at (0,0) width 309: "The following sets of buttons should not overlap."
-      RenderTable {TABLE} at (0,18) size 784x22
+      RenderBlock (anonymous) at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 315x16
+          text run at (0,0) width 315: "The following sets of buttons should not overlap."
+      RenderTable {TABLE} at (0,16) size 784x22
         RenderTableSection {TBODY} at (0,0) size 784x22
           RenderTableRow {TR} at (0,1) size 784x20
             RenderTableCell {TD} at (1,1) size 67x20 [r=0 c=0 rs=1 cs=1]
@@ -24,13 +24,13 @@ layer at (0,0) size 800x600
                 RenderBlock (anonymous) at (8,2.50) size 47x13
                   RenderText {#text} at (0,0) size 47x13
                     text run at (0,0) width 47: "Reply All"
-            RenderTableCell {TD} at (183,1) size 600x20 [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 4x18
+            RenderTableCell {TD} at (183,2) size 600x18 [r=0 c=3 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 4x16
                 text run at (1,1) width 4: " "
-      RenderBlock (anonymous) at (0,40) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
-        RenderBR {BR} at (0,18) size 0x18
-      RenderTable {TABLE} at (0,76) size 784x22
+      RenderBlock (anonymous) at (0,38) size 784x32
+        RenderBR {BR} at (0,0) size 0x16
+        RenderBR {BR} at (0,16) size 0x16
+      RenderTable {TABLE} at (0,70) size 784x22
         RenderTableSection {TBODY} at (0,0) size 784x22
           RenderTableRow {TR} at (0,1) size 784x20
             RenderTableCell {TD} at (1,1) size 67x20 [r=0 c=0 rs=1 cs=1]
@@ -48,6 +48,6 @@ layer at (0,0) size 800x600
                 RenderBlock (anonymous) at (8,2.50) size 47x13
                   RenderText {#text} at (0,0) size 47x13
                     text run at (0,0) width 47: "Reply All"
-            RenderTableCell {TD} at (183,1) size 600x20 [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 4x18
+            RenderTableCell {TD} at (183,2) size 600x18 [r=0 c=3 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 4x16
                 text run at (1,1) width 4: " "
