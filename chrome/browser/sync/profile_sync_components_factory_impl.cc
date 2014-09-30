@@ -65,7 +65,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/api/attachments/fake_attachment_store.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/attachments/attachment_downloader.h"
 #include "sync/internal_api/public/attachments/attachment_service.h"
