@@ -1596,7 +1596,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 };
 
 var focusGridRowSelector = [
-  '.day-results > .entry:not(.fade-out)',
+  ':-webkit-any(.day-results, .search-results) > .entry:not(.fade-out)',
   '.expand .grouped .entry:not(.fade-out)',
   '.site-domain-wrapper'
 ].join(', ');
