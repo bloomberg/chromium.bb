@@ -512,6 +512,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/build/android/rezip.gyp:rezip#host',
+        '<(DEPTH)/build/android/rezip.gyp:rezip_apk_jar',
       ],
     }],
     ['gyp_managed_install == 1', {
@@ -547,6 +548,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/build/android/rezip.gyp:rezip#host',
+        '<(DEPTH)/build/android/rezip.gyp:rezip_apk_jar',
       ],
     }],
     ['is_test_apk == 1', {

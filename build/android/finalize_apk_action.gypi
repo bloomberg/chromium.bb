@@ -27,9 +27,11 @@
         ['android_webview_build==0', {
           'zipalign_path%': ['<!@(find <(android_sdk_root) -name zipalign)'],
           'rezip_path%': '<(PRODUCT_DIR)/rezip',
+          'rezip_apk_jar_path%': '<(PRODUCT_DIR)/lib.java/rezip_apk.jar'
         }, {
           'zipalign_path%': "",
           'rezip_path%': "",
+          'rezip_apk_jar_path%': "",
         }],
     ],
   },
@@ -52,5 +54,6 @@
     '--key-passwd=<(keystore_password)',
     '--load-library-from-zip-file=<(load_library_from_zip_file)',
     '--rezip-path=<(rezip_path)',
+    '--rezip-apk-jar-path=<(rezip_apk_jar_path)',
   ],
 }

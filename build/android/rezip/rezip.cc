@@ -490,6 +490,8 @@ int main(int argc, const char* argv[]) {
     LOG(ERROR) << "   renames files of the form lib/*/lib*.so to "
         "lib/*/crazy.lib*.so. Note libchromium_android_linker.so is "
         "not renamed as the crazy linker can not load itself.";
+    LOG(ERROR) << " 'renameinflate':";
+    LOG(ERROR) << "   combines rename and inflate steps in a single pass.";
     exit(1);
   }
 
@@ -501,12 +503,17 @@ int main(int argc, const char* argv[]) {
   AlignFun align_fun = NULL;
   RenameFun rename_fun = NULL;
   bool check_page_align = false;
+  // Note although only "renameinflate" is used in the build process, the
+  // other steps are used in the LGPL compliance process.
   if (strcmp("inflatealign", action) == 0) {
     inflate_predicate_fun = &IsCrazyLibraryFilename;
     align_fun = &PageAlignCrazyLibrary;
     check_page_align = true;
   } else if (strcmp("rename", action) == 0) {
     rename_fun = &RenameLibraryForCrazyLinker;
+  } else if (strcmp("renameinflate", action) == 0) {
+    rename_fun = &RenameLibraryForCrazyLinker;
+    inflate_predicate_fun = &IsLibraryFilename;
   } else if (strcmp("dropdescriptors", action) == 0) {
     // Minizip does not know about data descriptors, so the default
     // copying action will drop the descriptors. This should be fine
