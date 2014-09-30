@@ -80,10 +80,6 @@ class GenericScopedHandle {
     return handle_;
   }
 
-  operator Handle() const {
-    return handle_;
-  }
-
   // Transfers ownership away from this object.
   Handle Take() {
     Handle temp = handle_;
