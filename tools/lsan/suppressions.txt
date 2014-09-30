@@ -56,6 +56,7 @@ leak:blink::WindowProxy::initializeIfNeeded
 leak:blink::*::*GetterCallback
 leak:blink::CSSComputedStyleDeclaration::create
 leak:blink::V8PerIsolateData::ensureDomInJSContext
+leak:gin/object_template_builder.h
 
 # http://crbug.com/356785
 leak:content::RenderViewImplTest_DecideNavigationPolicyForWebUI_Test::TestBody
