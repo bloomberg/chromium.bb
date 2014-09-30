@@ -290,7 +290,8 @@ void Page::refreshPlugins(bool reload)
 
 PluginData* Page::pluginData() const
 {
-    if (!deprecatedLocalMainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
+    if (!mainFrame()->isLocalFrame()
+        || !deprecatedLocalMainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return 0;
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
