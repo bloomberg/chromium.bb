@@ -24,9 +24,9 @@ CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 
 CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_PALADIN,
-    constants.PRE_CQ_BUILDER_NAME,
+    constants.PRE_CQ_GROUP_CONFIG,
     'pre-cq',
-    'pre-cq-launcher',
+    constants.PRE_CQ_LAUNCHER_CONFIG,
     'incremental',
     'telemetry',
     CONFIG_TYPE_FULL,
@@ -1681,7 +1681,7 @@ compile_only_pre_cq = pre_cq.derive(
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 # TODO(davidjames): Revert CL:221326 so daisy_spring and duck can build
 #                   images again
-_config.add_group(constants.PRE_CQ_BUILDER_NAME,
+_config.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),

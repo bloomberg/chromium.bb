@@ -724,8 +724,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Note, this includes all patches of the given change.
 
     Args:
-      change: A GerritChangeTuple or GerritPatchTuple specifing the
-              change.
+      change: A GerritChangeTuple, GerritPatchTuple or GerritPatch
+              specifying the change.
 
     Returns:
       A list of actions, in timestamp order, each of which is a dict
@@ -851,6 +851,20 @@ class CIDBConnectionFactory(object):
           'A non-mock CIDB is already set up.')
     cls._ConnectionType = cls._CONNECTION_TYPE_NONE
     cls._ConnectionIsSetup = True
+
+
+  @classmethod
+  def ClearMock(cls):
+    """Clear a mock CIDB object.
+
+    This method clears a cidb mock object, but leaves the connection factory
+    in _CONNECTION_TYPE_MOCK, so that future calls to set up a non-mock
+    cidb will fail.
+    """
+    assert cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
+        'CIDB is not set for mock use.')
+    cls._ConnectionIsSetup = False
+    cls._MockCIDB = None
 
 
   @classmethod
