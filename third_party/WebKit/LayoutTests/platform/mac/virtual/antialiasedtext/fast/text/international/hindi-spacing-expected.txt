@@ -3,25 +3,25 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 769x54
+      RenderText {#text} at (0,0) size 769x48
         text run at (0,0) width 769: "This tests the width of a breaking space after a Hindi character to ensure that it's measured properly and enough space is"
-        text run at (0,18) width 761: "left for it. Neither the Hindi on the button below nor the same text on two lines below that should be truncated at either"
-        text run at (0,36) width 28: "end."
-      RenderBR {BR} at (27,50) size 1x0
-      RenderButton {INPUT} at (0,54) size 100.48x18 [bgcolor=#C0C0C0]
+        text run at (0,16) width 761: "left for it. Neither the Hindi on the button below nor the same text on two lines below that should be truncated at either"
+        text run at (0,32) width 28: "end."
+      RenderBR {BR} at (27,44) size 1x0
+      RenderButton {INPUT} at (0,48) size 100.48x18 [bgcolor=#C0C0C0]
         RenderBlock (anonymous) at (8,0.50) size 84.48x17
           RenderText {#text} at (0,0) size 85x13
             text run at (0,0) width 85: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      RenderBR {BR} at (100,65) size 1x0
-      RenderInline {SPAN} at (0,0) size 123x18
-        RenderText {#text} at (0,73) size 123x18
-          text run at (0,73) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      RenderText {#text} at (122,73) size 26x18
-        text run at (122,73) width 26: "Foo"
-      RenderBR {BR} at (147,87) size 1x0
+      RenderBR {BR} at (100,59) size 1x0
+      RenderInline {SPAN} at (0,0) size 123x16
+        RenderText {#text} at (0,69) size 123x16
+          text run at (0,69) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
+      RenderText {#text} at (122,69) size 26x16
+        text run at (122,69) width 26: "Foo"
+      RenderBR {BR} at (147,81) size 1x0
       RenderInline {SPAN} at (0,0) size 123x17
-        RenderText {#text} at (0,99) size 123x17
-          text run at (0,99) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      RenderText {#text} at (122,99) size 26x18
-        text run at (122,99) width 26: "Foo"
-      RenderBR {BR} at (147,113) size 1x0
+        RenderText {#text} at (0,93) size 123x17
+          text run at (0,93) width 123: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
+      RenderText {#text} at (122,95) size 26x16
+        text run at (122,95) width 26: "Foo"
+      RenderBR {BR} at (147,107) size 1x0

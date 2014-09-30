@@ -1,28 +1,36 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x552
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 485x18
+layer at (0,0) size 785x967
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x967
+  RenderBlock {HTML} at (0,0) size 785x967
+    RenderBody {BODY} at (8,8) size 769x919
+      RenderBlock (anonymous) at (0,0) size 769x16
+        RenderText {#text} at (0,0) size 485x16
           text run at (0,0) width 485: "This tests the ZWJ and ZWNJ format control characters on basic Latin text."
-      RenderBlock {DIV} at (0,58) size 784x218
-        RenderBlock {P} at (0,0) size 784x46
-          RenderText {#text} at (0,0) size 290x46
+      RenderBlock {DIV} at (0,56) size 769x414
+        RenderBlock {P} at (0,0) size 769x40
+          RenderText {#text} at (0,0) size 290x40
             text run at (0,0) width 290: "fi fl ff ffi ffl fl f   i"
-        RenderBlock {P} at (0,86) size 784x46
-          RenderText {#text} at (0,0) size 290x46
-            text run at (0,0) width 290: "f\x{200C}i f\x{200C}l f\x{200C}f f\x{200C}f\x{200C}i f\x{200C}f\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}i"
-        RenderBlock {P} at (0,172) size 784x46
-          RenderText {#text} at (0,0) size 290x46
-            text run at (0,0) width 290: "f\x{200D}i f\x{200D}l f\x{200D}f f\x{200D}f\x{200D}i f\x{200D}f\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}i"
-      RenderBlock {DIV} at (0,316) size 784x221
-        RenderBlock {P} at (0,0) size 784x47
+        RenderBlock {P} at (0,80) size 769x147
+          RenderText {#text} at (0,9) size 664x138
+            text run at (0,9) width 646: "f\x{200C}i f\x{200C}l f\x{200C}f f\x{200C}f\x{200C}i f\x{200C}f\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}l"
+            text run at (0,58) width 664: "f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}"
+            text run at (0,107) width 222: "\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}i"
+        RenderBlock {P} at (0,267) size 769x147
+          RenderText {#text} at (0,9) size 664x138
+            text run at (0,9) width 646: "f\x{200D}i f\x{200D}l f\x{200D}f f\x{200D}f\x{200D}i f\x{200D}f\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}l"
+            text run at (0,58) width 664: "f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}"
+            text run at (0,107) width 222: "\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}i"
+      RenderBlock {DIV} at (0,510) size 769x409
+        RenderBlock {P} at (0,0) size 769x47
           RenderText {#text} at (0,1) size 290x45
             text run at (0,1) width 290: "fi fl ff ffi ffl fl f   i"
-        RenderBlock {P} at (0,87) size 784x47
-          RenderText {#text} at (0,1) size 290x45
-            text run at (0,1) width 290: "f\x{200C}i f\x{200C}l f\x{200C}f f\x{200C}f\x{200C}i f\x{200C}f\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}i"
-        RenderBlock {P} at (0,174) size 784x47
-          RenderText {#text} at (0,1) size 290x45
-            text run at (0,1) width 290: "f\x{200D}i f\x{200D}l f\x{200D}f f\x{200D}f\x{200D}i f\x{200D}f\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}i"
+        RenderBlock {P} at (0,87) size 769x141
+          RenderText {#text} at (0,1) size 640x139
+            text run at (0,1) width 630: "f\x{200C}i f\x{200C}l f\x{200C}f f\x{200C}f\x{200C}i f\x{200C}f\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}l"
+            text run at (0,48) width 640: "f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}"
+            text run at (0,95) width 214: "\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}i"
+        RenderBlock {P} at (0,268) size 769x141
+          RenderText {#text} at (0,1) size 640x139
+            text run at (0,1) width 630: "f\x{200D}i f\x{200D}l f\x{200D}f f\x{200D}f\x{200D}i f\x{200D}f\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}l"
+            text run at (0,48) width 640: "f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}"
+            text run at (0,95) width 214: "\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}i"

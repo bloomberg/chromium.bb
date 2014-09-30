@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x52
-  RenderBlock {HTML} at (0,0) size 800x52
-    RenderBody {BODY} at (8,8) size 784x36
-      RenderBlock {DIV} at (0,0) size 200x36 [bgcolor=#FFFF00]
-        RenderText {#text} at (0,0) size 152x18
+layer at (0,0) size 800x48
+  RenderBlock {HTML} at (0,0) size 800x48
+    RenderBody {BODY} at (8,8) size 784x32
+      RenderBlock {DIV} at (0,0) size 200x32 [bgcolor=#FFFF00]
+        RenderText {#text} at (0,0) size 152x16
           text run at (0,0) width 152: "Overflow should "
-        RenderInline {SPAN} at (0,0) size 22x18
-          RenderText {#text} at (151,0) size 22x18
+        RenderInline {SPAN} at (0,0) size 22x16
+          RenderText {#text} at (151,0) size 22x16
             text run at (151,0) width 22: "not"
-        RenderText {#text} at (0,18) size 154x18
-          text run at (0,18) width 154: "even be tolerated."
+        RenderText {#text} at (0,16) size 154x16
+          text run at (0,16) width 154: "even be tolerated."

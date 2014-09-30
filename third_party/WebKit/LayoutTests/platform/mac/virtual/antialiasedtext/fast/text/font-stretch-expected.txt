@@ -1,73 +1,73 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x411
-  RenderBlock {HTML} at (0,0) size 800x411
-    RenderBody {BODY} at (8,8) size 784x395
-      RenderBlock {H1} at (0,0) size 784x23
-        RenderText {#text} at (0,0) size 252x23
+layer at (0,0) size 800x386
+  RenderBlock {HTML} at (0,0) size 800x386
+    RenderBody {BODY} at (8,8) size 784x370
+      RenderBlock {H1} at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 252x20
           text run at (0,0) width 252: "Tests support for font-stretch"
-      RenderBlock {P} at (0,25) size 784x17
-        RenderText {#text} at (0,0) size 226x17
+      RenderBlock {P} at (0,22) size 784x15
+        RenderText {#text} at (0,0) size 226x15
           text run at (0,0) width 226: "Tests that CSS font-stretch is supported."
-      RenderBlock {SECTION} at (0,50) size 784x173
-        RenderBlock {H2} at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 61x18
+      RenderBlock {SECTION} at (0,45) size 784x153
+        RenderBlock {H2} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 61x16
             text run at (0,0) width 61: "Segoe UI"
-        RenderBlock {P} at (0,20) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 162x17
+        RenderBlock {P} at (0,18) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 162x15
               text run at (0,0) width 162: "font-stretch: ultra-condensed"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,37) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 164x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,33) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 164x15
               text run at (0,0) width 164: "font-stretch: extra-condensed"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,54) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 132x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,48) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 132x15
               text run at (0,0) width 132: "font-stretch: condensed"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,71) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 163x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,63) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 163x15
               text run at (0,0) width 163: "font-stretch: semi-condensed"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,88) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 112x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,78) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 112x15
               text run at (0,0) width 112: "font-stretch: normal"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,105) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 157x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,93) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 157x15
               text run at (0,0) width 157: "font-stretch: semi-expanded"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,122) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 126x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,108) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 126x15
               text run at (0,0) width 126: "font-stretch: expanded"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,139) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 159x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,123) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 159x15
               text run at (0,0) width 159: "font-stretch: extra-expanded"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-        RenderBlock {P} at (0,156) size 784x17
-          RenderBlock {SPAN} at (0,0) size 188.45x17
-            RenderText {#text} at (0,0) size 156x17
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+        RenderBlock {P} at (0,138) size 784x15
+          RenderBlock {SPAN} at (0,0) size 193.59x15
+            RenderText {#text} at (0,0) size 156x15
               text run at (0,0) width 156: "font-stretch: ultra-expanded"
-          RenderText {#text} at (188,0) size 347x17
-            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
-      RenderBlock {SECTION} at (0,231) size 784x164
+          RenderText {#text} at (193,0) size 347x15
+            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+      RenderBlock {SECTION} at (0,206) size 784x164
         RenderBlock {H2} at (0,0) size 784x18
           RenderText {#text} at (0,0) size 36x17
             text run at (0,0) width 36: "Arial"

@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x124
-  RenderBlock {HTML} at (0,0) size 800x124
-    RenderBody {BODY} at (8,16) size 784x100
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 689x18
+layer at (0,0) size 800x122
+  RenderBlock {HTML} at (0,0) size 800x122
+    RenderBody {BODY} at (8,16) size 784x98
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 689x16
           text run at (0,0) width 403: "The base of the following three letters should all be connected "
           text run at (402,0) width 287: "and not have a gap between the | and _ parts."
-      RenderBlock (anonymous) at (0,34) size 784x66
-        RenderInline {SPAN} at (0,0) size 25x55
-          RenderText {#text} at (55,3) size 25x55
-            text run at (55,3) width 25 RTL: "\x{640}\x{622}"
-        RenderText {#text} at (51,32) size 5x18
-          text run at (51,32) width 5 RTL: " "
-        RenderInline {SPAN} at (0,0) size 25x55
-          RenderText {#text} at (27,3) size 25x55
-            text run at (27,3) width 25 RTL: "\x{640}\x{623}"
-        RenderText {#text} at (23,32) size 5x18
-          text run at (23,32) width 5 RTL: " "
-        RenderInline {SPAN} at (0,0) size 24x55
-          RenderText {#text} at (0,3) size 24x55
-            text run at (0,3) width 24 RTL: "\x{640}\x{625}"
+      RenderBlock (anonymous) at (0,32) size 784x66
+        RenderInline {SPAN} at (0,0) size 25x48
+          RenderText {#text} at (55,10) size 25x48
+            text run at (55,10) width 25 RTL: "\x{640}\x{622}"
+        RenderText {#text} at (51,34) size 5x16
+          text run at (51,34) width 5 RTL: " "
+        RenderInline {SPAN} at (0,0) size 25x48
+          RenderText {#text} at (27,10) size 25x48
+            text run at (27,10) width 25 RTL: "\x{640}\x{623}"
+        RenderText {#text} at (23,34) size 5x16
+          text run at (23,34) width 5 RTL: " "
+        RenderInline {SPAN} at (0,0) size 24x48
+          RenderText {#text} at (0,10) size 24x48
+            text run at (0,10) width 24 RTL: "\x{640}\x{625}"
         RenderText {#text} at (0,0) size 0x0

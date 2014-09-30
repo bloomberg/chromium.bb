@@ -3,47 +3,47 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x579
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 260x18
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 260x16
           text run at (0,0) width 260: "This test checks for a regression against "
-        RenderInline {I} at (0,0) size 747x36
-          RenderInline {A} at (0,0) size 354x18 [color=#0000EE]
-            RenderText {#text} at (259,0) size 354x18
+        RenderInline {I} at (0,0) size 747x32
+          RenderInline {A} at (0,0) size 354x16 [color=#0000EE]
+            RenderText {#text} at (259,0) size 354x16
               text run at (259,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5619"
-          RenderText {#text} at (612,0) size 747x36
+          RenderText {#text} at (612,0) size 747x32
             text run at (612,0) width 135: " CSS2: pre-wrap has"
-            text run at (0,18) width 181: "overflow/selection problems"
-        RenderText {#text} at (180,18) size 5x18
-          text run at (180,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 707x18
+            text run at (0,16) width 181: "overflow/selection problems"
+        RenderText {#text} at (180,16) size 5x16
+          text run at (180,16) width 5: "."
+      RenderBlock {P} at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 707x16
           text run at (0,0) width 707: "Both boxes should not have scroll bars. The selection should not spill out of the blue box to the right of \x{201C}text\x{201D}."
-      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {HR} at (0,197) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {PRE} at (0,212) size 108x83 [border: (4px solid #0000FF)]
-        RenderText {#text} at (4,4) size 100x75
+      RenderBlock {HR} at (0,80) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {HR} at (0,181) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {PRE} at (0,196) size 108x73 [border: (4px solid #0000FF)]
+        RenderText {#text} at (4,4) size 100x65
           text run at (4,4) width 86: "This   text"
           text run at (89,4) width 15: "     "
-          text run at (4,19) width 71: "will wrap"
-          text run at (74,19) width 1: " "
-          text run at (4,34) width 71: "and   fit"
-          text run at (74,34) width 24: "   "
-          text run at (4,49) width 79: "within the"
-          text run at (82,49) width 1: " "
-          text run at (4,64) width 32: "box."
-          text run at (35,64) width 1: " "
-layer at (8,109) size 108x83 clip at (12,113) size 100x75
-  RenderBlock {PRE} at (0,101) size 108x83 [border: (4px solid #A52A2A)]
-    RenderText {#text} at (4,4) size 100x75
+          text run at (4,17) width 71: "will wrap"
+          text run at (74,17) width 1: " "
+          text run at (4,30) width 71: "and   fit"
+          text run at (74,30) width 24: "   "
+          text run at (4,43) width 79: "within the"
+          text run at (82,43) width 1: " "
+          text run at (4,56) width 32: "box."
+          text run at (35,56) width 1: " "
+layer at (8,103) size 108x73 clip at (12,107) size 100x65
+  RenderBlock {PRE} at (0,95) size 108x73 [border: (4px solid #A52A2A)]
+    RenderText {#text} at (4,4) size 100x65
       text run at (4,4) width 86: "This   text"
       text run at (89,4) width 15: "     "
-      text run at (4,19) width 71: "will wrap"
-      text run at (74,19) width 1: " "
-      text run at (4,34) width 71: "and   fit"
-      text run at (74,34) width 24: "   "
-      text run at (4,49) width 79: "within the"
-      text run at (82,49) width 1: " "
-      text run at (4,64) width 32: "box."
-      text run at (35,64) width 1: " "
+      text run at (4,17) width 71: "will wrap"
+      text run at (74,17) width 1: " "
+      text run at (4,30) width 71: "and   fit"
+      text run at (74,30) width 24: "   "
+      text run at (4,43) width 79: "within the"
+      text run at (82,43) width 1: " "
+      text run at (4,56) width 32: "box."
+      text run at (35,56) width 1: " "
 selection start: position 7 of child 0 {#text} of child 7 {PRE} of body
 selection end:   position 15 of child 0 {#text} of child 11 {PRE} of body

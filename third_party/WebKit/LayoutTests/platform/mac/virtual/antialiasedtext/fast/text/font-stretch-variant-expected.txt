@@ -1,83 +1,83 @@
-layer at (0,0) size 785x623
+layer at (0,0) size 785x609
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x623
-  RenderBlock {HTML} at (0,0) size 785x623.44
-    RenderBody {BODY} at (8,19.91) size 769x595.53
-      RenderBlock {SECTION} at (0,0) size 769x135.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 414x28
+layer at (0,0) size 785x609
+  RenderBlock {HTML} at (0,0) size 785x609.44
+    RenderBody {BODY} at (8,19.91) size 769x581.53
+      RenderBlock {SECTION} at (0,0) size 769x129.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 414x24
             text run at (0,0) width 414: "font-stretch: condensed vs Arial Narrow"
-        RenderBlock {DIV} at (0,47.91) size 769x18
+        RenderBlock {DIV} at (0,43.91) size 769x18
           RenderText {#text} at (0,0) size 447x17
             text run at (0,0) width 447: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
+        RenderBlock {DIV} at (0,61.91) size 769x18
           RenderText {#text} at (0,0) size 367x18
             text run at (0,0) width 367: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
+        RenderBlock {DIV} at (0,79.91) size 769x18
           RenderText {#text} at (0,0) size 367x18
             text run at (0,0) width 367: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {P} at (0,117.91) size 769x18
-          RenderText {#text} at (0,0) size 331x18
+        RenderBlock {P} at (0,113.91) size 769x16
+          RenderText {#text} at (0,0) size 331x16
             text run at (0,0) width 331: "The three lines above should have the same weight."
-      RenderBlock {SECTION} at (0,155.81) size 769x209.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 210x28
+      RenderBlock {SECTION} at (0,149.81) size 769x205.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 210x24
             text run at (0,0) width 210: "Specific width, Arial"
-        RenderBlock {DIV} at (0,47.91) size 769x18
+        RenderBlock {DIV} at (0,43.91) size 769x18
           RenderText {#text} at (0,0) size 665x17
             text run at (0,0) width 665: "font-stretch: ultra-condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
+        RenderBlock {DIV} at (0,61.91) size 769x18
           RenderText {#text} at (0,0) size 669x17
             text run at (0,0) width 669: "font-stretch: extra-condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
+        RenderBlock {DIV} at (0,79.91) size 769x18
           RenderText {#text} at (0,0) size 628x17
             text run at (0,0) width 628: "font-stretch: condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,101.91) size 769x18
+        RenderBlock {DIV} at (0,97.91) size 769x18
           RenderText {#text} at (0,0) size 668x17
             text run at (0,0) width 668: "font-stretch: semi-condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,119.91) size 769x18
+        RenderBlock {DIV} at (0,115.91) size 769x18
           RenderText {#text} at (0,0) size 599x17
             text run at (0,0) width 599: "font-stretch: normal - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,137.91) size 769x18
+        RenderBlock {DIV} at (0,133.91) size 769x18
           RenderText {#text} at (0,0) size 660x17
             text run at (0,0) width 660: "font-stretch: semi-expanded - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,155.91) size 769x18
+        RenderBlock {DIV} at (0,151.91) size 769x18
           RenderText {#text} at (0,0) size 620x17
             text run at (0,0) width 620: "font-stretch: expanded - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,173.91) size 769x18
+        RenderBlock {DIV} at (0,169.91) size 769x18
           RenderText {#text} at (0,0) size 661x17
             text run at (0,0) width 661: "font-stretch: extra-expanded - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,191.91) size 769x18
+        RenderBlock {DIV} at (0,187.91) size 769x18
           RenderText {#text} at (0,0) size 652x17
             text run at (0,0) width 652: "font-stretch: ulta-expanded - Back in June we delivered oxygen equipment of the same size."
-      RenderBlock {SECTION} at (0,385.63) size 769x209.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 296x28
+      RenderBlock {SECTION} at (0,375.63) size 769x205.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 296x24
             text run at (0,0) width 296: "Specific width, Arial Narrow"
-        RenderBlock {DIV} at (0,47.91) size 769x18
+        RenderBlock {DIV} at (0,43.91) size 769x18
           RenderText {#text} at (0,0) size 545x18
             text run at (0,0) width 545: "font-stretch: ultra-condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
+        RenderBlock {DIV} at (0,61.91) size 769x18
           RenderText {#text} at (0,0) size 549x18
             text run at (0,0) width 549: "font-stretch: extra-condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
+        RenderBlock {DIV} at (0,79.91) size 769x18
           RenderText {#text} at (0,0) size 515x18
             text run at (0,0) width 515: "font-stretch: condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,101.91) size 769x18
+        RenderBlock {DIV} at (0,97.91) size 769x18
           RenderText {#text} at (0,0) size 548x18
             text run at (0,0) width 548: "font-stretch: semi-condensed - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,119.91) size 769x18
+        RenderBlock {DIV} at (0,115.91) size 769x18
           RenderText {#text} at (0,0) size 491x18
             text run at (0,0) width 491: "font-stretch: normal - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,137.91) size 769x18
+        RenderBlock {DIV} at (0,133.91) size 769x18
           RenderText {#text} at (0,0) size 541x18
             text run at (0,0) width 541: "font-stretch: semi-expanded - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,155.91) size 769x18
+        RenderBlock {DIV} at (0,151.91) size 769x18
           RenderText {#text} at (0,0) size 509x18
             text run at (0,0) width 509: "font-stretch: expanded - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,173.91) size 769x18
+        RenderBlock {DIV} at (0,169.91) size 769x18
           RenderText {#text} at (0,0) size 542x18
             text run at (0,0) width 542: "font-stretch: extra-expanded - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,191.91) size 769x18
+        RenderBlock {DIV} at (0,187.91) size 769x18
           RenderText {#text} at (0,0) size 534x18
             text run at (0,0) width 534: "font-stretch: ulta-expanded - Back in June we delivered oxygen equipment of the same size."

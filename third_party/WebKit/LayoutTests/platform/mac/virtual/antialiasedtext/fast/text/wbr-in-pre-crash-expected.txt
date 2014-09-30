@@ -3,25 +3,25 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 55x16
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 741x36
-          RenderInline {A} at (0,0) size 306x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 306x18
+        RenderInline {I} at (0,0) size 741x32
+          RenderInline {A} at (0,0) size 306x16 [color=#0000EE]
+            RenderText {#text} at (54,0) size 306x16
               text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=17464"
-          RenderText {#text} at (359,0) size 741x36
+          RenderText {#text} at (359,0) size 741x32
             text run at (359,0) width 5: " "
             text run at (363,0) width 378: "REGRESSION: Crash in RenderBlock::findNextLineBreak"
-            text run at (0,18) width 253: "reading r30444 commit email in GMail"
-        RenderText {#text} at (252,18) size 5x18
-          text run at (252,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 159x18
+            text run at (0,16) width 253: "reading r30444 commit email in GMail"
+        RenderText {#text} at (252,16) size 5x16
+          text run at (252,16) width 5: "."
+      RenderBlock {P} at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 159x16
           text run at (0,0) width 159: "No crash means success."
-      RenderBlock {DIV} at (0,86) size 100x36
-        RenderText {#text} at (0,0) size 86x18
+      RenderBlock {DIV} at (0,80) size 100x32
+        RenderText {#text} at (0,0) size 86x16
           text run at (0,0) width 86: "Lorem ipsum"
         RenderWordBreak {WBR} at (0,0) size 0x0
-        RenderText {#text} at (0,18) size 88x18
-          text run at (0,18) width 88: "dolor sit amet"
+        RenderText {#text} at (0,16) size 88x16
+          text run at (0,16) width 88: "dolor sit amet"

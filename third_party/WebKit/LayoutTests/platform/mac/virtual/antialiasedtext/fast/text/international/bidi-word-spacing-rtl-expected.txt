@@ -1,50 +1,50 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x358
-  RenderBlock {HTML} at (0,0) size 800x358
-    RenderBody {BODY} at (8,10) size 784x338
-      RenderBlock {DIV} at (300,0) size 184x48 [border: (1px solid #000000)]
-        RenderText {#text} at (169,1) size 14x46
+layer at (0,0) size 800x322
+  RenderBlock {HTML} at (0,0) size 800x322
+    RenderBody {BODY} at (8,10) size 784x302
+      RenderBlock {DIV} at (300,0) size 184x42 [border: (1px solid #000000)]
+        RenderText {#text} at (169,1) size 14x40
           text run at (169,1) width 14 RTL: "!"
-        RenderInline {SPAN} at (0,0) size 48x46
-          RenderText {#text} at (22,1) size 48x46
+        RenderInline {SPAN} at (0,0) size 48x40
+          RenderText {#text} at (22,1) size 48x40
             text run at (22,1) width 48 RTL: " @"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (300,58) size 184x48 [border: (1px solid #000000)]
-        RenderText {#text} at (169,1) size 14x46
+      RenderBlock {DIV} at (300,52) size 184x42 [border: (1px solid #000000)]
+        RenderText {#text} at (169,1) size 14x40
           text run at (169,1) width 14 RTL: "!"
-        RenderInline {SPAN} at (0,0) size 111x46
-          RenderText {#text} at (159,1) size 11x46
+        RenderInline {SPAN} at (0,0) size 111x40
+          RenderText {#text} at (159,1) size 11x40
             text run at (159,1) width 11 RTL: " "
-        RenderText {#text} at (22,1) size 38x46
+        RenderText {#text} at (22,1) size 38x40
           text run at (22,1) width 38 RTL: "@"
-      RenderBlock {DIV} at (300,116) size 184x48 [border: (1px solid #000000)]
-        RenderInline {SPAN} at (0,0) size 124x46
-          RenderText {#text} at (59,1) size 124x46
+      RenderBlock {DIV} at (300,104) size 184x42 [border: (1px solid #000000)]
+        RenderInline {SPAN} at (0,0) size 124x40
+          RenderText {#text} at (59,1) size 124x40
             text run at (59,1) width 124 RTL: "! "
-        RenderText {#text} at (22,1) size 38x46
+        RenderText {#text} at (22,1) size 38x40
           text run at (22,1) width 38 RTL: "@"
-      RenderBlock {DIV} at (300,174) size 184x48 [border: (1px solid #000000)]
-        RenderText {#text} at (169,1) size 14x46
+      RenderBlock {DIV} at (300,156) size 184x42 [border: (1px solid #000000)]
+        RenderText {#text} at (169,1) size 14x40
           text run at (169,1) width 14 RTL: "!"
-        RenderInline {SPAN} at (0,0) size 111x46
-          RenderText {#text} at (159,1) size 11x46
+        RenderInline {SPAN} at (0,0) size 111x40
+          RenderText {#text} at (159,1) size 11x40
             text run at (159,1) width 11 RTL: " "
-        RenderText {#text} at (12,1) size 48x46
+        RenderText {#text} at (12,1) size 48x40
           text run at (12,1) width 48 RTL: "@ \x{200F}"
-      RenderBlock {DIV} at (300,232) size 184x48 [border: (1px solid #000000)]
-        RenderText {#text} at (169,1) size 14x46
+      RenderBlock {DIV} at (300,208) size 184x42 [border: (1px solid #000000)]
+        RenderText {#text} at (169,1) size 14x40
           text run at (169,1) width 14 RTL: "!"
-        RenderInline {SPAN} at (0,0) size 111x46
-          RenderText {#text} at (159,1) size 11x46
+        RenderInline {SPAN} at (0,0) size 111x40
+          RenderText {#text} at (159,1) size 11x40
             text run at (159,1) width 11 RTL: " "
-        RenderText {#text} at (22,1) size 38x46
+        RenderText {#text} at (22,1) size 38x40
           text run at (22,1) width 38 RTL: "@"
-      RenderBlock {DIV} at (300,290) size 184x48 [border: (1px solid #000000)]
-        RenderText {#text} at (22,1) size 38x46
+      RenderBlock {DIV} at (300,260) size 184x42 [border: (1px solid #000000)]
+        RenderText {#text} at (22,1) size 38x40
           text run at (22,1) width 38: "@"
-        RenderInline {SPAN} at (0,0) size 111x46
-          RenderText {#text} at (159,1) size 11x46
+        RenderInline {SPAN} at (0,0) size 111x40
+          RenderText {#text} at (159,1) size 11x40
             text run at (159,1) width 11: " "
-        RenderText {#text} at (169,1) size 14x46
+        RenderText {#text} at (169,1) size 14x40
           text run at (169,1) width 14: "!"

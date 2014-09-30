@@ -3,20 +3,20 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 757x36
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 757x32
           text run at (0,0) width 353: "This test verifies we can render bold Bengali properly. "
           text run at (352,0) width 405: "(This is complicated on Linux because it's typically covered by"
-          text run at (0,18) width 473: "fake-bolded FreeSans even though there's also a FreeSansBold available.)"
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 752x18
+          text run at (0,16) width 473: "fake-bolded FreeSans even though there's also a FreeSansBold available.)"
+      RenderBlock {P} at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 752x16
           text run at (0,0) width 488: "The test passes if the two words below look similar, but the top one is bold. "
           text run at (487,0) width 265: "There should be no missing-glyph boxes."
-      RenderBlock {P} at (0,86) size 784x18
-        RenderInline {B} at (0,0) size 63x18
-          RenderText {#text} at (0,0) size 63x18
+      RenderBlock {P} at (0,80) size 784x16
+        RenderInline {B} at (0,0) size 63x16
+          RenderText {#text} at (0,0) size 63x16
             text run at (0,0) width 63: "\x{9AC}\x{9BE}\x{982}\x{9B2}\x{9BE}"
-      RenderBlock {P} at (0,120) size 784x0
-      RenderBlock {P} at (0,120) size 784x18
-        RenderText {#text} at (0,0) size 58x18
+      RenderBlock {P} at (0,112) size 784x0
+      RenderBlock {P} at (0,112) size 784x16
+        RenderText {#text} at (0,0) size 58x16
           text run at (0,0) width 58: "\x{9AC}\x{9BE}\x{982}\x{9B2}\x{9BE}"

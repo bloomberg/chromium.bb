@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 177x18
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 177x16
           text run at (0,0) width 177: "This is a regression test for "
-        RenderInline {I} at (0,0) size 726x36
-          RenderInline {A} at (0,0) size 355x18 [color=#0000EE]
-            RenderText {#text} at (176,0) size 355x18
+        RenderInline {I} at (0,0) size 726x32
+          RenderInline {A} at (0,0) size 355x16 [color=#0000EE]
+            RenderText {#text} at (176,0) size 355x16
               text run at (176,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8485"
-          RenderText {#text} at (530,0) size 726x36
+          RenderText {#text} at (530,0) size 726x32
             text run at (530,0) width 5: " "
             text run at (534,0) width 192: "iExploder(#11705): Freeze in"
-            text run at (0,18) width 144: "RenderBlock::layout()"
-        RenderText {#text} at (143,18) size 5x18
-          text run at (143,18) width 5: "."
-      RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,62) size 30x276
-        RenderText {#text} at (0,0) size 87x276
+            text run at (0,16) width 144: "RenderBlock::layout()"
+        RenderText {#text} at (143,16) size 5x16
+          text run at (143,16) width 5: "."
+      RenderBlock {HR} at (0,48) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {DIV} at (0,58) size 30x240
+        RenderText {#text} at (0,0) size 87x240
           text run at (0,0) width 0: " "
-          text run at (0,138) width 87: "A"
+          text run at (0,120) width 87: "A"

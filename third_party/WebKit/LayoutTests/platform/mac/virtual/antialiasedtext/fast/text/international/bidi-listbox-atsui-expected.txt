@@ -3,57 +3,57 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 594x18
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 594x16
           text run at (0,0) width 594: "This tests that bidirectional text is correctly rendered when using ATSUI in list box controls."
-        RenderBR {BR} at (593,14) size 1x0
-        RenderText {#text} at (0,18) size 578x18
-          text run at (0,18) width 578: "The order of the text below each list box should match the order of the select's option text."
-      RenderBlock (anonymous) at (0,52) size 784x47
-        RenderText {#text} at (0,0) size 102x18
+        RenderBR {BR} at (593,12) size 1x0
+        RenderText {#text} at (0,16) size 578x16
+          text run at (0,16) width 578: "The order of the text below each list box should match the order of the select's option text."
+      RenderBlock (anonymous) at (0,48) size 784x45
+        RenderText {#text} at (0,0) size 102x16
           text run at (0,0) width 102: "1) direction: rtl;"
-        RenderBR {BR} at (101,14) size 1x0
-        RenderBR {BR} at (76,44) size 1x0
-      RenderBlock {DIV} at (0,99) size 100x19
-        RenderText {#text} at (18,1) size 82x18
-          text run at (18,1) width 60 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-          text run at (77,1) width 23: "a\x{300}bc"
-      RenderBlock (anonymous) at (0,118) size 784x65
-        RenderBR {BR} at (0,0) size 0x18
-        RenderText {#text} at (0,18) size 102x18
-          text run at (0,18) width 102: "2) direction: ltr;"
-        RenderBR {BR} at (101,32) size 1x0
-        RenderBR {BR} at (76,62) size 1x0
-      RenderBlock {DIV} at (0,183) size 100x19
-        RenderText {#text} at (0,1) size 82x18
-          text run at (0,1) width 23: "a\x{300}bc"
-          text run at (22,1) width 60 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-      RenderBlock (anonymous) at (0,202) size 784x65
-        RenderBR {BR} at (0,0) size 0x18
-        RenderText {#text} at (0,18) size 72x18
-          text run at (0,18) width 72: "3) No style"
-        RenderBR {BR} at (71,32) size 1x0
-        RenderBR {BR} at (76,62) size 1x0
-      RenderBlock {DIV} at (0,267) size 100x19
-        RenderText {#text} at (0,1) size 82x18
-          text run at (0,1) width 23: "a\x{300}bc"
-          text run at (22,1) width 60 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-      RenderBlock (anonymous) at (0,286) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
-layer at (8,78) size 77x30 clip at (20,79) size 64x28
-  RenderListBox {SELECT} at (0,17.63) size 76.50x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+        RenderBR {BR} at (101,12) size 1x0
+        RenderBR {BR} at (76,42) size 1x0
+      RenderBlock {DIV} at (0,93) size 100x19
+        RenderText {#text} at (18,3) size 82x16
+          text run at (18,3) width 60 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+          text run at (77,3) width 23: "a\x{300}bc"
+      RenderBlock (anonymous) at (0,112) size 784x61
+        RenderBR {BR} at (0,0) size 0x16
+        RenderText {#text} at (0,16) size 102x16
+          text run at (0,16) width 102: "2) direction: ltr;"
+        RenderBR {BR} at (101,28) size 1x0
+        RenderBR {BR} at (76,58) size 1x0
+      RenderBlock {DIV} at (0,173) size 100x19
+        RenderText {#text} at (0,3) size 82x16
+          text run at (0,3) width 23: "a\x{300}bc"
+          text run at (22,3) width 60 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+      RenderBlock (anonymous) at (0,192) size 784x61
+        RenderBR {BR} at (0,0) size 0x16
+        RenderText {#text} at (0,16) size 72x16
+          text run at (0,16) width 72: "3) No style"
+        RenderBR {BR} at (71,28) size 1x0
+        RenderBR {BR} at (76,58) size 1x0
+      RenderBlock {DIV} at (0,253) size 100x19
+        RenderText {#text} at (0,3) size 82x16
+          text run at (0,3) width 23: "a\x{300}bc"
+          text run at (22,3) width 60 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+      RenderBlock (anonymous) at (0,272) size 784x16
+        RenderBR {BR} at (0,0) size 0x16
+layer at (8,72) size 77x30 clip at (20,73) size 64x28
+  RenderListBox {SELECT} at (0,15.63) size 76.50x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 63.50x14.19
       RenderText {#text} at (2,0) size 60x13
         text run at (2,0) width 41 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         text run at (42,0) width 20: "a\x{300}bc"
-layer at (8,162) size 77x30 clip at (9,163) size 64x28
-  RenderListBox {SELECT} at (0,35.63) size 76.50x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (8,152) size 77x30 clip at (9,153) size 64x28
+  RenderListBox {SELECT} at (0,31.63) size 76.50x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 63.50x14.19
       RenderText {#text} at (2,0) size 60x13
         text run at (2,0) width 19: "a\x{300}bc"
         text run at (20,0) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-layer at (8,246) size 77x30 clip at (9,247) size 64x28
-  RenderListBox {SELECT} at (0,35.63) size 76.50x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (8,232) size 77x30 clip at (9,233) size 64x28
+  RenderListBox {SELECT} at (0,31.63) size 76.50x30.38 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 63.50x14.19
       RenderText {#text} at (2,0) size 60x13
         text run at (2,0) width 19: "a\x{300}bc"

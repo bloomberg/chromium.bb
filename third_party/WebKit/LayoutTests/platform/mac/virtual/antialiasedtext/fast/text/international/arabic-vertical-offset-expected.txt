@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 366x18
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 366x16
           text run at (0,0) width 366: "The square glyph should be located above the line glyph."
-      RenderBlock {DIV} at (0,34) size 784x54
-        RenderText {#text} at (0,3) size 128x48
-          text run at (0,3) width 128: "\x{606}\x{6E1}"
+      RenderBlock {DIV} at (0,32) size 784x54
+        RenderText {#text} at (0,3) size 64x48
+          text run at (0,3) width 64: "\x{606}\x{6E1}"

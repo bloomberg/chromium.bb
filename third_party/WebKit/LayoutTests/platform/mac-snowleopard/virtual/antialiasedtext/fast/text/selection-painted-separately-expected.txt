@@ -1,0 +1,17 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+layer at (8,8) size 100x108
+  RenderBlock {DIV} at (0,0) size 100x108 [color=#008000] [bgcolor=#FF0000]
+    RenderBlock {DIV} at (0,0) size 100x54
+      RenderText {#text} at (0,7) size 61x41
+        text run at (0,7) width 61: "xxxxx"
+        text run at (0,34) width 61: "xxxxx"
+    RenderBlock {DIV} at (0,54) size 100x54
+      RenderText {#text} at (0,7) size 61x41
+        text run at (0,7) width 61: "xxxxx"
+        text run at (0,34) width 61: "xxxxx"
+selection start: position 6 of child 0 {#text} of child 1 {DIV} of child 0 {DIV} of body
+selection end:   position 5 of child 0 {#text} of child 2 {DIV} of child 0 {DIV} of body
