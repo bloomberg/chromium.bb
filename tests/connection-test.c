@@ -57,6 +57,7 @@ TEST(connection_create)
 
 	connection = setup(s);
 	wl_connection_destroy(connection);
+	close(s[0]);
 	close(s[1]);
 }
 
@@ -74,6 +75,7 @@ TEST(connection_write)
 	assert(memcmp(message, buffer, sizeof message) == 0);
 
 	wl_connection_destroy(connection);
+	close(s[0]);
 	close(s[1]);
 }
 
@@ -92,6 +94,7 @@ TEST(connection_data)
 	wl_connection_consume(connection, sizeof message);
 
 	wl_connection_destroy(connection);
+	close(s[0]);
 	close(s[1]);
 }
 
@@ -117,6 +120,7 @@ TEST(connection_queue)
 	assert(memcmp(message, buffer + sizeof message, sizeof message) == 0);
 
 	wl_connection_destroy(connection);
+	close(s[0]);
 	close(s[1]);
 }
 
@@ -147,8 +151,8 @@ setup_marshal_data(struct marshal_data *data)
 static void
 release_marshal_data(struct marshal_data *data)
 {
-	wl_connection_destroy(data->read_connection);
-	wl_connection_destroy(data->write_connection);
+	close(wl_connection_destroy(data->read_connection));
+	close(wl_connection_destroy(data->write_connection));
 }
 
 static void

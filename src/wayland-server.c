@@ -670,7 +670,7 @@ wl_client_destroy(struct wl_client *client)
 	wl_map_for_each(&client->objects, destroy_resource, &serial);
 	wl_map_release(&client->objects);
 	wl_event_source_remove(client->source);
-	wl_connection_destroy(client->connection);
+	close(wl_connection_destroy(client->connection));
 	wl_list_remove(&client->link);
 	free(client);
 }
