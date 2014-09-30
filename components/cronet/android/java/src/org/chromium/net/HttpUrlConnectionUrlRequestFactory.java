@@ -6,6 +6,8 @@ package org.chromium.net;
 
 import android.content.Context;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 
@@ -44,5 +46,20 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
             HttpUrlRequestListener listener) {
         return new HttpUrlConnectionUrlRequest(mContext, url, requestPriority,
                 headers, channel, listener);
+    }
+
+    @Override
+    public void startNetLogToFile(String fileName) {
+        try {
+            PrintWriter out = new PrintWriter(fileName);
+            out.println("NetLog is not supported by " + getName());
+            out.close();
+        } catch (IOException e) {
+            // Ignore any exceptions.
+        }
+    }
+
+    @Override
+    public void stopNetLog() {
     }
 }

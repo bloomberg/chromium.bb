@@ -55,6 +55,16 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
                 headers, channel, listener);
     }
 
+    @Override
+    public void startNetLogToFile(String fileName) {
+        mRequestContext.startNetLogToFile(fileName);
+    }
+
+    @Override
+    public void stopNetLog() {
+        mRequestContext.stopNetLog();
+    }
+
     public ChromiumUrlRequestContext getRequestContext() {
         return mRequestContext;
     }

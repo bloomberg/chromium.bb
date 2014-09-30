@@ -84,11 +84,10 @@ public class CronetUrlTest extends CronetTestBase {
 
         waitForActiveShellToBeDoneLoading();
         File file = File.createTempFile("cronet", "json");
-        activity.mChromiumRequestFactory.getRequestContext().startNetLogToFile(
-                file.getPath());
+        activity.mRequestFactory.startNetLogToFile(file.getPath());
         activity.startWithURL(URL);
         Thread.sleep(5000);
-        activity.mChromiumRequestFactory.getRequestContext().stopNetLog();
+        activity.mRequestFactory.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertTrue(file.delete());

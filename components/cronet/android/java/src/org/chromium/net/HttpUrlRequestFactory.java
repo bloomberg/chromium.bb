@@ -59,6 +59,20 @@ public abstract class HttpUrlRequestFactory {
             int requestPriority, Map<String, String> headers,
             WritableByteChannel channel, HttpUrlRequestListener listener);
 
+    /**
+     * Starts NetLog logging to a file named |fileName| in the
+     * application temporary directory. |fileName| must not be empty. Log may
+     * contain user's personal information (PII). If the file exists it is
+     * truncated before starting. If actively logging the call is ignored.
+     */
+    public abstract void startNetLogToFile(String fileName);
+
+    /**
+     * Stops NetLog logging and flushes file to disk. If a logging session is
+     * not in progress this call is ignored.
+     */
+    public abstract void stopNetLog();
+
     private static HttpUrlRequestFactory createChromiumFactory(
             Context context, HttpUrlRequestFactoryConfig config) {
         HttpUrlRequestFactory factory = null;
