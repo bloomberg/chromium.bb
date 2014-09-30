@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -49,6 +50,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       int process_id,
       int provider_id,
       bool skip_service_worker,
+      FetchRequestMode request_mode,
       ResourceType resource_type,
       scoped_refptr<ResourceRequestBody> body);
 

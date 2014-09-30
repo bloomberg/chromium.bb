@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 
@@ -145,6 +146,7 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
 
 scoped_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
+    FetchRequestMode request_mode,
     ResourceType resource_type,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<ResourceRequestBody> body) {
@@ -156,8 +158,12 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
       controlling_version()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
-        new ServiceWorkerControlleeRequestHandler(
-            context_, AsWeakPtr(), blob_storage_context, resource_type, body));
+        new ServiceWorkerControlleeRequestHandler(context_,
+                                                  AsWeakPtr(),
+                                                  blob_storage_context,
+                                                  request_mode,
+                                                  resource_type,
+                                                  body));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();
 }

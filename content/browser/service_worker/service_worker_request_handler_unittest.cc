@@ -83,12 +83,14 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
         kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_, NULL);
     request->set_method(method);
+    FetchRequestMode request_mode = FETCH_REQUEST_MODE_NO_CORS;
     ServiceWorkerRequestHandler::InitializeHandler(request.get(),
                                                    context_wrapper(),
                                                    &blob_storage_context_,
                                                    kMockRenderProcessId,
                                                    kMockProviderId,
                                                    skip_service_worker,
+                                                   request_mode,
                                                    resource_type,
                                                    NULL);
     return ServiceWorkerRequestHandler::GetHandler(request.get()) != NULL;

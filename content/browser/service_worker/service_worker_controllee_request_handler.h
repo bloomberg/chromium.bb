@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace net {
 class NetworkDelegate;
@@ -29,6 +30,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+      FetchRequestMode request_mode,
       ResourceType resource_type,
       scoped_refptr<ResourceRequestBody> body);
   virtual ~ServiceWorkerControlleeRequestHandler();
@@ -64,6 +66,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   bool is_main_resource_load_;
   scoped_refptr<ServiceWorkerURLRequestJob> job_;
+  FetchRequestMode request_mode_;
   scoped_refptr<ResourceRequestBody> body_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 

@@ -62,6 +62,7 @@ class MockHttpProtocolHandler
                                        network_delegate,
                                        provider_host_,
                                        blob_storage_context_,
+                                       FETCH_REQUEST_MODE_NO_CORS,
                                        scoped_refptr<ResourceRequestBody>());
     job->ForwardToServiceWorker();
     return job;

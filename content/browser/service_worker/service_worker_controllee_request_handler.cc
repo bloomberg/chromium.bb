@@ -23,6 +23,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+    FetchRequestMode request_mode,
     ResourceType resource_type,
     scoped_refptr<ResourceRequestBody> body)
     : ServiceWorkerRequestHandler(context,
@@ -31,6 +32,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
                                   resource_type),
       is_main_resource_load_(
           ServiceWorkerUtils::IsMainResourceType(resource_type)),
+      request_mode_(request_mode),
       body_(body),
       weak_factory_(this) {
 }
@@ -76,8 +78,12 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   // It's for original request (A) or redirect case (B-a or B-b).
   DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
 
-  job_ = new ServiceWorkerURLRequestJob(
-      request, network_delegate, provider_host_, blob_storage_context_, body_);
+  job_ = new ServiceWorkerURLRequestJob(request,
+                                        network_delegate,
+                                        provider_host_,
+                                        blob_storage_context_,
+                                        request_mode_,
+                                        body_);
   if (is_main_resource_load_)
     PrepareForMainResource(request->url());
   else

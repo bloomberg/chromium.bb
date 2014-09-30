@@ -10,6 +10,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -77,6 +78,9 @@ struct CONTENT_EXPORT RequestInfo {
 
   // True if the request should not be handled by the ServiceWorker.
   bool skip_service_worker;
+
+  // The request mode passed to the ServiceWorker.
+  FetchRequestMode fetch_request_mode;
 
   // TODO(mmenke): Investigate if enable_load_timing is safe to remove.
   // True if load timing data should be collected for the request.

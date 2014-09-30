@@ -1206,6 +1206,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
       child_id,
       request_data.service_worker_provider_id,
       request_data.skip_service_worker || is_sync_load,
+      request_data.fetch_request_mode,
       request_data.resource_type,
       request_data.request_body);
 

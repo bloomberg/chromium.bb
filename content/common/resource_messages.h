@@ -11,6 +11,7 @@
 #include "base/process/process.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/resource_request_body.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
@@ -83,6 +84,9 @@ struct ParamTraits<scoped_refptr<content::ResourceRequestBody> > {
 IPC_ENUM_TRAITS_MAX_VALUE( \
     net::HttpResponseInfo::ConnectionInfo, \
     net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS - 1)
+
+IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRequestMode,
+                          content::FETCH_REQUEST_MODE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
 IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)
@@ -190,6 +194,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // True if the request should not be handled by the ServiceWorker.
   IPC_STRUCT_MEMBER(bool, skip_service_worker)
+
+  // The request mode passed to the ServiceWorker.
+  IPC_STRUCT_MEMBER(content::FetchRequestMode, fetch_request_mode)
 
   // Optional resource request body (may be null).
   IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,

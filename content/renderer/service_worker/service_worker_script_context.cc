@@ -34,6 +34,11 @@ void SendPostMessageToDocumentOnMainThread(
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
 }
 
+blink::WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
+    FetchRequestMode mode) {
+  return static_cast<blink::WebURLRequest::FetchRequestMode>(mode);
+}
+
 }  // namespace
 
 ServiceWorkerScriptContext::ServiceWorkerScriptContext(
@@ -177,6 +182,7 @@ void ServiceWorkerScriptContext::OnFetchEvent(
   }
   webRequest.setReferrer(blink::WebString::fromUTF8(request.referrer.spec()),
                          blink::WebReferrerPolicyDefault);
+  webRequest.setMode(GetBlinkFetchRequestMode(request.mode));
   webRequest.setIsReload(request.is_reload);
   fetch_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchFetchEvent(request_id, webRequest);

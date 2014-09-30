@@ -100,6 +100,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
           context()->AsWeakPtr(),
           provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
+          FETCH_REQUEST_MODE_NO_CORS,
           RESOURCE_TYPE_MAIN_FRAME,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =
@@ -150,6 +151,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
           context()->AsWeakPtr(),
           provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
+          FETCH_REQUEST_MODE_NO_CORS,
           RESOURCE_TYPE_MAIN_FRAME,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =

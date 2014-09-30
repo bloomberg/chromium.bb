@@ -35,12 +35,14 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::NetworkDelegate* network_delegate,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+    FetchRequestMode request_mode,
     scoped_refptr<ResourceRequestBody> body)
     : net::URLRequestJob(request, network_delegate),
       provider_host_(provider_host),
       response_type_(NOT_DETERMINED),
       is_started_(false),
       blob_storage_context_(blob_storage_context),
+      request_mode_(request_mode),
       body_(body),
       weak_factory_(this) {
 }
@@ -264,7 +266,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   CreateRequestBodyBlob(&blob_uuid, &blob_size);
   scoped_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest());
-
+  request->mode = request_mode_;
   request->url = request_->url();
   request->method = request_->method();
   const net::HttpRequestHeaders& headers = request_->extra_request_headers();

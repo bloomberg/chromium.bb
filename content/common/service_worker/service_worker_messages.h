@@ -32,6 +32,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
                           blink::WebServiceWorkerStateLast)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
+  IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(headers)

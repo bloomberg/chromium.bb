@@ -6,8 +6,9 @@
 
 namespace content {
 
-ServiceWorkerFetchRequest::ServiceWorkerFetchRequest() : blob_size(0),
-                                                         is_reload(false) {}
+ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
+    : mode(FETCH_REQUEST_MODE_NO_CORS), blob_size(0), is_reload(false) {
+}
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const GURL& url,
@@ -15,12 +16,14 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const ServiceWorkerHeaderMap& headers,
     const GURL& referrer,
     bool is_reload)
-    : url(url),
+    : mode(FETCH_REQUEST_MODE_NO_CORS),
+      url(url),
       method(method),
       headers(headers),
       blob_size(0),
       referrer(referrer),
-      is_reload(is_reload) {}
+      is_reload(is_reload) {
+}
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 

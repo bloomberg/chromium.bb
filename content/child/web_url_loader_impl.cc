@@ -22,6 +22,7 @@
 #include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/resource_request_body.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/request_peer.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
@@ -197,6 +198,25 @@ int GetInfoFromDataURL(const GURL& url,
   info->encoded_data_length = 0;
 
   return net::OK;
+}
+
+#define COMPILE_ASSERT_MATCHING_ENUMS(content_name, blink_name)       \
+  COMPILE_ASSERT(                                                     \
+      static_cast<int>(content_name) == static_cast<int>(blink_name), \
+      mismatching_enums)
+
+COMPILE_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_SAME_ORIGIN,
+                              WebURLRequest::FetchRequestModeSameOrigin);
+COMPILE_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_NO_CORS,
+                              WebURLRequest::FetchRequestModeNoCORS);
+COMPILE_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_CORS,
+                              WebURLRequest::FetchRequestModeCORS);
+COMPILE_ASSERT_MATCHING_ENUMS(
+    FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
+    WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
+
+FetchRequestMode GetFetchRequestMode(const WebURLRequest& request) {
+  return static_cast<FetchRequestMode>(request.fetchRequestMode());
 }
 
 }  // namespace
@@ -397,6 +417,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
   request_info.skip_service_worker = request.skipServiceWorker();
+  request_info.fetch_request_mode = GetFetchRequestMode(request);
   request_info.extra_data = request.extraData();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer_policy = request.referrerPolicy();

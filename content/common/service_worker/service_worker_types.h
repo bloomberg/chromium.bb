@@ -34,6 +34,14 @@ static const int64 kInvalidServiceWorkerResourceId = -1;
 static const int64 kInvalidServiceWorkerResponseId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
 
+enum FetchRequestMode {
+  FETCH_REQUEST_MODE_SAME_ORIGIN,
+  FETCH_REQUEST_MODE_NO_CORS,
+  FETCH_REQUEST_MODE_CORS,
+  FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
+  FETCH_REQUEST_MODE_LAST = FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT
+};
+
 // Indicates how the service worker handled a fetch event.
 enum ServiceWorkerFetchEventResult {
   // Browser should fallback to native fetch.
@@ -62,6 +70,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
                             bool is_reload);
   ~ServiceWorkerFetchRequest();
 
+  FetchRequestMode mode;
   GURL url;
   std::string method;
   ServiceWorkerHeaderMap headers;
