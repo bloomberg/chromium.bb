@@ -28,7 +28,7 @@ const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
-                                        const media::QueryParams& query_params,
+                                        const base::StringPairs& query_params,
                                         const std::string& expected_title,
                                         bool http) {
   GURL gurl;
@@ -94,7 +94,7 @@ class MediaTest : public testing::WithParamInterface<bool>,
   void PlayMedia(const std::string& tag,
                  const std::string& media_file,
                  bool http) {
-    media::QueryParams query_params;
+    base::StringPairs query_params;
     query_params.push_back(std::make_pair(tag, media_file));
     RunMediaTestPage("player.html", query_params, kEnded, http);
   }
@@ -104,7 +104,7 @@ class MediaTest : public testing::WithParamInterface<bool>,
     expected += base::IntToString(width);
     expected += " ";
     expected += base::IntToString(height);
-    media::QueryParams query_params;
+    base::StringPairs query_params;
     query_params.push_back(std::make_pair("video", media_file));
     RunMediaTestPage("player.html", query_params, expected, false);
   }

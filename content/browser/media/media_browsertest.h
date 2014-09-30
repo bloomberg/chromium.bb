@@ -29,7 +29,7 @@ class MediaBrowserTest : public ContentBrowserTest {
   // page, otherwise a local file URL is loaded inside the content shell.
   // It uses RunTest() to check for expected test output.
   void RunMediaTestPage(const std::string& html_page,
-                        const media::QueryParams& query_params,
+                        const base::StringPairs& query_params,
                         const std::string& expected,
                         bool http);
 

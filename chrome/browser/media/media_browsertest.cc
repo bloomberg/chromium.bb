@@ -28,7 +28,7 @@ MediaBrowserTest::~MediaBrowserTest() {
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
-                                        const media::QueryParams& query_params,
+                                        const base::StringPairs& query_params,
                                         const std::string& expected_title,
                                         bool http) {
   GURL gurl;

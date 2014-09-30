@@ -40,7 +40,7 @@ class MediaSourceTest : public content::MediaBrowserTest {
       return;
     }
 
-    media::QueryParams query_params;
+    base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
     RunMediaTestPage("media_source_player.html", query_params, expectation,
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
     return;
   }
   RunMediaTestPage("mse_config_change.html",
-                   media::QueryParams(),
+                   base::StringPairs(),
                    kEnded,
                    true);
 }

@@ -13,12 +13,11 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 
 namespace media {
 
 class DecoderBuffer;
-
-typedef std::vector<std::pair<std::string, std::string> > QueryParams;
 
 // Returns a file path for a file in the media/test/data directory.
 base::FilePath GetTestDataFilePath(const std::string& name);
@@ -28,7 +27,7 @@ base::FilePath GetTestDataPath();
 
 // Returns a string containing key value query params in the form of:
 // "key_1=value_1&key_2=value2"
-std::string GetURLQueryString(const QueryParams& query_params);
+std::string GetURLQueryString(const base::StringPairs& query_params);
 
 // Reads a test file from media/test/data directory and stores it in
 // a DecoderBuffer.  Use DecoderBuffer vs DataBuffer to ensure no matter

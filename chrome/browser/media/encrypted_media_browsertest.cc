@@ -118,9 +118,9 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   void RunEncryptedMediaTestPage(
       const std::string& html_page,
       const std::string& key_system,
-      const media::QueryParams& query_params,
+      base::StringPairs& query_params,
       const std::string& expected_title) {
-    media::QueryParams new_query_params = query_params;
+    base::StringPairs new_query_params = query_params;
     StartLicenseServerIfNeeded(key_system, &new_query_params);
     RunMediaTestPage(html_page, new_query_params, expected_title, true);
   }
@@ -146,7 +146,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       VLOG(0) << "Skipping test - MSE not supported.";
       return;
     }
-    media::QueryParams query_params;
+    base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
     query_params.push_back(std::make_pair("keySystem", key_system));
@@ -193,7 +193,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   // Starts a license server if available for the |key_system| and adds a
   // 'licenseServerURL' query parameter to |query_params|.
   void StartLicenseServerIfNeeded(const std::string& key_system,
-                                  media::QueryParams* query_params) {
+                                  base::StringPairs* query_params) {
     scoped_ptr<TestLicenseServerConfig> config = GetServerConfig(key_system);
     if (!config)
       return;
@@ -406,7 +406,7 @@ class EncryptedMediaTest
 
   void TestConfigChange() {
     DCHECK(IsMSESupported());
-    media::QueryParams query_params;
+    base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
     if (CurrentEmeVersion() == PREFIXED)
