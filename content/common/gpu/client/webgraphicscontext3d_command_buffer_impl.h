@@ -142,8 +142,7 @@ class WebGraphicsContext3DCommandBufferImpl
     return mem_limits_.mapped_memory_reclaim_limit;
   }
 
-  // WebGraphicsContext3DImpl methods
-  virtual bool InitializeOnCurrentThread() OVERRIDE;
+  CONTENT_EXPORT bool InitializeOnCurrentThread();
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods

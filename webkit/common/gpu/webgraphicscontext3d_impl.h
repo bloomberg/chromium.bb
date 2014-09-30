@@ -48,11 +48,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
  public:
   virtual ~WebGraphicsContext3DImpl();
 
-  // Must be called before any of the following methods. Permanently binds to
-  // the first calling thread. Returns false if the graphics context fails to
-  // initialize. Do not call from more than one thread.
-  virtual bool InitializeOnCurrentThread() = 0;
-
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 

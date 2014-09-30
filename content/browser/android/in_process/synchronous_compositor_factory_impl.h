@@ -44,7 +44,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
           const std::string& debug_name) OVERRIDE;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE;
-  virtual webkit::gpu::WebGraphicsContext3DImpl*
+  virtual webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl*
       CreateOffscreenGraphicsContext3D(
           const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
 

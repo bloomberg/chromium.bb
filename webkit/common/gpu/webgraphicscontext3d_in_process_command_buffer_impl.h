@@ -60,8 +60,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   size_t GetMappedMemoryLimit();
 
-  // WebGraphicsContext3DImpl methods
-  virtual bool InitializeOnCurrentThread() OVERRIDE;
+  bool InitializeOnCurrentThread();
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
