@@ -330,7 +330,7 @@ GLRenderer::GLRenderer(RendererClient* client,
   // The updater can access textures while the GLRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
 
-  capabilities_.using_map_image = context_caps.gpu.map_image;
+  capabilities_.using_image = context_caps.gpu.image;
 
   capabilities_.using_discard_framebuffer =
       context_caps.gpu.discard_framebuffer;

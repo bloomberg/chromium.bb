@@ -159,7 +159,7 @@ bool CommandBufferProxyImpl::Initialize() {
     return false;
   }
 
-  capabilities_.map_image = true;
+  capabilities_.image = true;
 
   return true;
 }

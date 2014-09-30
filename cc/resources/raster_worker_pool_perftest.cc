@@ -69,7 +69,7 @@ class PerfContextProvider : public ContextProvider {
   virtual bool BindToCurrentThread() OVERRIDE { return true; }
   virtual Capabilities ContextCapabilities() OVERRIDE {
     Capabilities capabilities;
-    capabilities.gpu.map_image = true;
+    capabilities.gpu.image = true;
     capabilities.gpu.sync_query = true;
     return capabilities;
   }

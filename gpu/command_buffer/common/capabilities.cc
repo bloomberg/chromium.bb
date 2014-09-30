@@ -18,7 +18,7 @@ Capabilities::Capabilities()
       texture_storage(false),
       discard_framebuffer(false),
       sync_query(false),
-      map_image(false),
+      image(false),
       future_sync_points(false) {
 }
 

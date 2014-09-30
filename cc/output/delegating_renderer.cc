@@ -45,7 +45,7 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
 
   if (!output_surface_->context_provider()) {
     capabilities_.using_shared_memory_resources = true;
-    capabilities_.using_map_image = true;
+    capabilities_.using_image = true;
   } else {
     const ContextProvider::Capabilities& caps =
         output_surface_->context_provider()->ContextCapabilities();
@@ -53,7 +53,7 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
     DCHECK(!caps.gpu.iosurface || caps.gpu.texture_rectangle);
 
     capabilities_.using_egl_image = caps.gpu.egl_image_external;
-    capabilities_.using_map_image = caps.gpu.map_image;
+    capabilities_.using_image = caps.gpu.image;
 
     capabilities_.allow_rasterize_on_demand = false;
   }

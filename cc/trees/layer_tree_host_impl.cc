@@ -2055,12 +2055,12 @@ bool LayerTreeHostImpl::UsePendingTreeForSync() const {
 }
 
 bool LayerTreeHostImpl::UseZeroCopyRasterizer() const {
-  return settings_.use_zero_copy && GetRendererCapabilities().using_map_image;
+  return settings_.use_zero_copy && GetRendererCapabilities().using_image;
 }
 
 bool LayerTreeHostImpl::UseOneCopyRasterizer() const {
   // Sync query support is required by one-copy rasterizer.
-  return settings_.use_one_copy && GetRendererCapabilities().using_map_image &&
+  return settings_.use_one_copy && GetRendererCapabilities().using_image &&
          resource_provider_->use_sync_query();
 }
 

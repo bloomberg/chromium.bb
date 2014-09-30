@@ -2210,9 +2210,9 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
             "GL_CHROMIUM_flipy "
             "GL_EXT_unpack_subimage "
             "GL_CHROMIUM_map_sub";
-        if (capabilities_.map_image) {
+        if (capabilities_.image) {
           // The first space character is intentional.
-          str += " GL_CHROMIUM_map_image";
+          str += " GL_CHROMIUM_image";
         }
         if (capabilities_.future_sync_points)
           str += " GL_CHROMIUM_future_sync_point";

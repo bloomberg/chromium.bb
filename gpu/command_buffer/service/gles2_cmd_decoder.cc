@@ -2756,7 +2756,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 #endif
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
-  caps.map_image = true;
+  caps.image = true;
 
   return caps;
 }
