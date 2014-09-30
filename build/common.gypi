@@ -2343,7 +2343,7 @@
     # This temporary variable lets us change the name of the gyp file
     # in blink and in chromium simultaneously. It should go away after
     # we're done changing the path.
-    'angle_gyp': 'build_angle.gyp',
+    'angle_gyp': 'angle.gyp',
 
     # List of default apps to install in new profiles.  The first list contains
     # the source files as found in svn.  The second list, used only for linux,

@@ -151,7 +151,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '<(angle_path)/src/build_angle.gyp:translator_static',
+        '<(angle_path)/src/angle.gyp:translator_static',
       ],
       'variables': {
         'ANGLE_DIR': '<(angle_path)',
@@ -181,7 +181,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '<(angle_path)/src/build_angle.gyp:translator',
+        '<(angle_path)/src/angle.gyp:translator',
         '../ui/gl/gl.gyp:gl',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -313,7 +313,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '<(angle_path)/src/build_angle.gyp:translator',
+        '<(angle_path)/src/angle.gyp:translator',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -368,8 +368,8 @@
         }],
         ['OS == "win"', {
           'dependencies': [
-            '../third_party/angle/src/build_angle.gyp:libEGL',
-            '../third_party/angle/src/build_angle.gyp:libGLESv2',
+            '../third_party/angle/src/angle.gyp:libEGL',
+            '../third_party/angle/src/angle.gyp:libGLESv2',
           ],
         }],
       ],
