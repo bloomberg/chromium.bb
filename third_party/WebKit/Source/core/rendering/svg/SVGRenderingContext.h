@@ -80,11 +80,6 @@ public:
     static FloatRect clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect);
     static void clear2DRotation(AffineTransform&);
 
-    static IntRect calculateImageBufferRect(const FloatRect& targetRect, const AffineTransform& absoluteTransform)
-    {
-        return enclosingIntRect(absoluteTransform.mapRect(targetRect));
-    }
-
     // Support for the buffered-rendering hint.
     bool bufferForeground(OwnPtr<ImageBuffer>&);
 

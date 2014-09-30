@@ -58,7 +58,6 @@ public:
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
 
     int offsetForPositionInFragment(const SVGTextFragment&, float position, bool includePartialGlyphs) const;
-    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, RenderStyle*);
 
 private:
     TextRun constructTextRun(RenderStyle*, const SVGTextFragment&) const;
@@ -75,6 +74,8 @@ private:
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&) OVERRIDE FINAL;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
+
+    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, RenderStyle*);
 
 private:
     float m_logicalHeight;

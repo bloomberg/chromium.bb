@@ -35,15 +35,10 @@ public:
     virtual ~RenderSVGContainer();
     virtual void trace(Visitor*) OVERRIDE;
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
-
     // If you have a RenderSVGContainer, use firstChild or lastChild instead.
     void slowFirstChild() const WTF_DELETED_FUNCTION;
     void slowLastChild() const WTF_DELETED_FUNCTION;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void setNeedsBoundariesUpdate() OVERRIDE FINAL { m_needsBoundariesUpdate = true; }
@@ -83,6 +78,12 @@ protected:
     void updateCachedBoundaries();
 
 private:
+    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+
+    const RenderObjectChildList* children() const { return &m_children; }
+    RenderObjectChildList* children() { return &m_children; }
+
     RenderObjectChildList m_children;
     FloatRect m_objectBoundingBox;
     bool m_objectBoundingBoxValid;

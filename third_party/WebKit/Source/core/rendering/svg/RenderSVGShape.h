@@ -43,7 +43,6 @@ class SVGGraphicsElement;
 class RenderSVGShape : public RenderSVGModelObject {
 public:
     explicit RenderSVGShape(SVGGraphicsElement*);
-    RenderSVGShape(SVGGraphicsElement*, Path*, bool);
     virtual ~RenderSVGShape();
 
     void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }

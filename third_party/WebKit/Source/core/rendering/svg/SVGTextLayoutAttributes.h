@@ -48,7 +48,6 @@ public:
     SVGTextLayoutAttributes(RenderSVGInlineText*);
 
     void clear();
-    void dump() const;
     static float emptyValue();
 
     RenderSVGInlineText* context() const { return m_context; }
