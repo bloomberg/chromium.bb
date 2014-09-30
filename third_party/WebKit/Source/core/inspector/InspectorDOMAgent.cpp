@@ -1564,7 +1564,6 @@ static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowR
 PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap)
 {
     int id = bind(node, nodesMap);
-    String nodeName;
     String localName;
     String nodeValue;
 
@@ -1577,13 +1576,10 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             nodeValue = nodeValue.left(maxTextSize) + ellipsisUChar;
         break;
     case Node::ATTRIBUTE_NODE:
-        localName = node->localName();
-        break;
     case Node::DOCUMENT_FRAGMENT_NODE:
     case Node::DOCUMENT_NODE:
     case Node::ELEMENT_NODE:
     default:
-        nodeName = node->nodeName();
         localName = node->localName();
         break;
     }
@@ -1591,7 +1587,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
     RefPtr<TypeBuilder::DOM::Node> value = TypeBuilder::DOM::Node::create()
         .setNodeId(id)
         .setNodeType(static_cast<int>(node->nodeType()))
-        .setNodeName(nodeName)
+        .setNodeName(node->nodeName())
         .setLocalName(localName)
         .setNodeValue(nodeValue);
 

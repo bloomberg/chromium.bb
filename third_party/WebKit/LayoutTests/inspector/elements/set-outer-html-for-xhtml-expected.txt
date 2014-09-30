@@ -12,7 +12,7 @@ Event AttrModified: div
 Event AttrModified: div
 Event AttrRemoved: div
 Event AttrRemoved: div
-Event CharacterDataModified: 
+Event CharacterDataModified: #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -24,7 +24,7 @@ Event CharacterDataModified:
 Bringing things back
 
 Wrapper identity: identity
-Event CharacterDataModified: 
+Event CharacterDataModified: #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -74,7 +74,7 @@ Running: testRemoveLastChild
 Replacing 'Getting involved' with ''
 
 Wrapper identity: identity
-Event NodeRemoved: 
+Event NodeRemoved: #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -86,7 +86,7 @@ Event NodeRemoved:
 Bringing things back
 
 Wrapper identity: identity
-Event NodeInserted: 
+Event NodeInserted: #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>

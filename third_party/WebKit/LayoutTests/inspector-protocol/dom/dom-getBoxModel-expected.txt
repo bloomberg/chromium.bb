@@ -2,13 +2,13 @@ Several
 Lines
 Of
 Text
- : Could not compute box model.
+ #text: Could not compute box model.
 BR: Could not compute box model.
-: Could not compute box model.
+#text: Could not compute box model.
 BR: Could not compute box model.
-: Could not compute box model.
+#text: Could not compute box model.
 BR: Could not compute box model.
-: Could not compute box model.
+#text: Could not compute box model.
 BR: Could not compute box model.
 DIV style,position:absolute;top:100;left:0;width:100;height:100;background:red [
     [0] : 0
