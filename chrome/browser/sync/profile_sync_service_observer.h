@@ -12,9 +12,12 @@ class ProfileSyncServiceObserver {
   // When one of the following events occurs, OnStateChanged() is called.
   // Observers should query the service to determine what happened.
   // - We initialized successfully.
-  // - There was an authentication error and the user needs to reauthenticate.
   // - The sync servers are unavailable at this time.
   // - Credentials are now in flight for authentication.
+  // - The data type configuration has started or ended.
+  // - Sync shut down.
+  // - Sync errors (passphrase, auth, unrecoverable, actionable, etc.).
+  // - Encryption changes.
   virtual void OnStateChanged() = 0;
 
   // If a client wishes to handle sync cycle completed events in a special way,

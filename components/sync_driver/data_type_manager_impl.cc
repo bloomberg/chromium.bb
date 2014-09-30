@@ -341,7 +341,6 @@ void DataTypeManagerImpl::ProcessReconfigure() {
 
 void DataTypeManagerImpl::OnDownloadRetry() {
   DCHECK(state_ == DOWNLOAD_PENDING || state_ == CONFIGURING);
-  observer_->OnConfigureRetry();
 }
 
 void DataTypeManagerImpl::DownloadReady(

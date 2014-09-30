@@ -548,15 +548,6 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   return !Intersection(preferred_types, encrypted_types).Empty();
 }
 
-void ProfileSyncService::OnSyncConfigureRetry() {
-  // Note: in order to handle auth failures that arise before the backend is
-  // initialized (e.g. from invalidation notifier, or downloading new control
-  // types), we have to gracefully handle configuration retries at all times.
-  // At this point an auth error badge should be shown, which once resolved
-  // will trigger a new sync cycle.
-  NotifyObservers();
-}
-
 void ProfileSyncService::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
   FOR_EACH_OBSERVER(browser_sync::ProtocolEventObserver,
@@ -694,8 +685,6 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   InitializeBackend(ShouldDeleteSyncFolder());
 
   UpdateFirstSyncTimePref();
-
-  NotifyObservers();
 }
 
 void ProfileSyncService::OnGetTokenSuccess(
@@ -965,7 +954,6 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   UMA_HISTOGRAM_ENUMERATION(kSyncUnrecoverableErrorHistogram,
                             unrecoverable_error_reason_,
                             ERROR_REASON_LIMIT);
-  NotifyObservers();
   std::string location;
   from_here.Write(true, true, &location);
   LOG(ERROR)
@@ -1568,14 +1556,6 @@ void ProfileSyncService::OnConfigureDone(
   }
 }
 
-void ProfileSyncService::OnConfigureRetry() {
-  // We should have cleared our cached passphrase before we get here (in
-  // OnBackendInitialized()).
-  DCHECK(cached_passphrase_.empty());
-
-  OnSyncConfigureRetry();
-}
-
 void ProfileSyncService::OnConfigureStart() {
   sync_configure_start_time_ = base::Time::Now();
   NotifyObservers();
@@ -1796,7 +1776,6 @@ void ProfileSyncService::OnUserChoseDatatypes(
     directory_data_type_manager_->ResetDataTypeErrors();
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
-  NotifyObservers();
 }
 
 void ProfileSyncService::ChangePreferredDataTypes(
@@ -2224,7 +2203,6 @@ syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
-  NotifyObservers();
   if (is_sync_managed) {
     DisableForUser();
   } else {

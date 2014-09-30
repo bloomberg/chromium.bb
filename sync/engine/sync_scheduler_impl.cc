@@ -96,7 +96,6 @@ ConfigurationParams::ConfigurationParams(
       ready_task(ready_task),
       retry_task(retry_task) {
   DCHECK(!ready_task.is_null());
-  DCHECK(!retry_task.is_null());
 }
 ConfigurationParams::~ConfigurationParams() {}
 

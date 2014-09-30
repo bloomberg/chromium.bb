@@ -135,11 +135,6 @@ void SyncBackendHostCore::DoRefreshTypes(syncer::ModelTypeSet types) {
   sync_manager_->RefreshTypes(types);
 }
 
-void SyncBackendHostCore::OnControlTypesDownloadRetry() {
-  host_.Call(FROM_HERE,
-             &SyncBackendHostImpl::HandleControlTypesDownloadRetry);
-}
-
 void SyncBackendHostCore::OnInitializationComplete(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -222,8 +217,7 @@ void SyncBackendHostCore::OnInitializationComplete(
       routing_info,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&SyncBackendHostCore::OnControlTypesDownloadRetry,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Closure());
 }
 
 void SyncBackendHostCore::OnConnectionStatusChange(

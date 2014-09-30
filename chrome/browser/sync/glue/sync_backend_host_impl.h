@@ -179,10 +179,6 @@ class SyncBackendHostImpl
       syncer::SyncContextProxy* sync_context_proxy,
       const std::string& cache_guid);
 
-  // Downloading of control types failed and will be retried. Invokes the
-  // frontend's sync configure retry method.
-  void HandleControlTypesDownloadRetry();
-
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
   // call to SetForwardProtocolEvents() explicitly requested that we start
   // forwarding these events.

@@ -168,10 +168,6 @@ class FakeDataTypeManagerObserver : public DataTypeManagerObserver {
     done_expectation_ = DataTypeManager::ConfigureResult();
   }
 
-  virtual void OnConfigureRetry() OVERRIDE{
-    // Not verified.
-  }
-
   virtual void OnConfigureStart() OVERRIDE {
     EXPECT_TRUE(start_expected_);
     start_expected_ = false;

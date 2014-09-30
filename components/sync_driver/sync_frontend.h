@@ -54,10 +54,6 @@ class SyncFrontend {
   // The backend queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
 
-  // Configure ran into some kind of error. But it is scheduled to be
-  // retried.
-  virtual void OnSyncConfigureRetry() = 0;
-
   // Informs the frontned of some network event.  These notifications are
   // disabled by default and must be enabled through an explicit request to the
   // SyncBackendHost.

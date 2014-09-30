@@ -411,7 +411,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnDirectoryTypeStatusCounterUpdated(
       syncer::ModelType type,
       const syncer::StatusCounters& counters) OVERRIDE;
-  virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) OVERRIDE;
   virtual void OnPassphraseRequired(
@@ -432,7 +431,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // DataTypeManagerObserver implementation.
   virtual void OnConfigureDone(
       const sync_driver::DataTypeManager::ConfigureResult& result) OVERRIDE;
-  virtual void OnConfigureRetry() OVERRIDE;
   virtual void OnConfigureStart() OVERRIDE;
 
   // DataTypeEncryptionHandler implementation.

@@ -626,14 +626,6 @@ void SyncBackendHostImpl::AddExperimentalTypes() {
     frontend_->OnExperimentsChanged(experiments);
 }
 
-void SyncBackendHostImpl::HandleControlTypesDownloadRetry() {
-  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
-  if (!frontend_)
-    return;
-
-  frontend_->OnSyncConfigureRetry();
-}
-
 void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>

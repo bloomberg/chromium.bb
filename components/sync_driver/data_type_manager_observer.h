@@ -15,7 +15,6 @@ class DataTypeManagerObserver {
  public:
   virtual void OnConfigureDone(
       const DataTypeManager::ConfigureResult& result) = 0;
-  virtual void OnConfigureRetry() = 0;
   virtual void OnConfigureStart() = 0;
 
  protected:
