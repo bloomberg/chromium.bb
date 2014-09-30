@@ -121,9 +121,22 @@ TEST(OpenFileNameTest, SetInitialSelection) {
   EXPECT_EQ(base::FilePath(), base::FilePath(ofn.GetOPENFILENAME()->lpstrFile));
 }
 
-TEST(OpenFileNameTest, GetSingleResult) {
-  const base::string16 kNull(L"\0", 1);
+TEST(OpenFileNameTest, GetSingleResultFromSingleSelect) {
   ui::win::OpenFileName ofn(kHwnd, kFlags);
+  base::FilePath result;
+
+  SetResult(L"C:\\dir\\file", &ofn);
+  result = ofn.GetSingleResult();
+  EXPECT_EQ(base::FilePath(L"C:\\dir\\file"), result);
+
+  SetResult(L"", &ofn);
+  result = ofn.GetSingleResult();
+  EXPECT_EQ(base::FilePath(), result);
+}
+
+TEST(OpenFileNameTest, GetSingleResultFromMultiSelect) {
+  const base::string16 kNull(L"\0", 1);
+  ui::win::OpenFileName ofn(kHwnd, kFlags | OFN_ALLOWMULTISELECT);
   base::FilePath result;
 
   SetResult(L"C:\\dir\\file" + kNull, &ofn);
@@ -146,7 +159,7 @@ TEST(OpenFileNameTest, GetSingleResult) {
 TEST(OpenFileNameTest, GetResult) {
   const base::string16 kNull(L"\0", 1);
 
-  ui::win::OpenFileName ofn(kHwnd, kFlags);
+  ui::win::OpenFileName ofn(kHwnd, kFlags | OFN_ALLOWMULTISELECT);
   base::FilePath directory;
   std::vector<base::FilePath> filenames;
 
