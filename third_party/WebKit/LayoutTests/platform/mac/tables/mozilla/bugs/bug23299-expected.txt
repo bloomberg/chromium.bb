@@ -1,0 +1,39 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (0,0) size 800x600
+      RenderTable {TABLE} at (0,0) size 111x32 [bgcolor=#0000FF]
+        RenderTableSection {TBODY} at (0,0) size 111x32
+          RenderTableRow {TR} at (0,0) size 111x32
+            RenderTableCell {TD} at (0,0) size 111x32 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 68x16
+                text run at (0,0) width 68: "Left Table"
+              RenderBR {BR} at (67,12) size 1x0
+              RenderText {#text} at (0,16) size 111x16
+                text run at (0,16) width 111: "ALIGN=\"LEFT\""
+              RenderBR {BR} at (110,28) size 1x0
+      RenderTable {TABLE} at (111,0) size 111x32 [bgcolor=#0000FF]
+        RenderTableSection {TBODY} at (0,0) size 111x32
+          RenderTableRow {TR} at (0,0) size 111x32
+            RenderTableCell {TD} at (0,0) size 111x32 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 84x16
+                text run at (0,0) width 84: "Center Table"
+              RenderBR {BR} at (83,12) size 1x0
+              RenderText {#text} at (0,16) size 111x16
+                text run at (0,16) width 111: "ALIGN=\"LEFT\""
+              RenderBR {BR} at (110,28) size 1x0
+      RenderTable {TABLE} at (222,0) size 111x32 [bgcolor=#0000FF]
+        RenderTableSection {TBODY} at (0,0) size 111x32
+          RenderTableRow {TR} at (0,0) size 111x32
+            RenderTableCell {TD} at (0,0) size 111x32 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (0,0) size 76x16
+                text run at (0,0) width 76: "Right Table"
+              RenderBR {BR} at (75,12) size 1x0
+              RenderText {#text} at (0,16) size 111x16
+                text run at (0,16) width 111: "ALIGN=\"LEFT\""
+              RenderBR {BR} at (110,28) size 1x0
+      RenderBR {BR} at (333,0) size 0x16
+      RenderBR {BR} at (0,32) size 0x16
+      RenderText {#text} at (0,48) size 494x16
+        text run at (0,48) width 494: "The three tables above should abut each other. (in NN3/4 and IE4/5 they do)."

@@ -1,27 +1,27 @@
-layer at (0,0) size 785x767
+layer at (0,0) size 785x749
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x767
-  RenderBlock {html} at (0,0) size 785x766.84
-    RenderBody {body} at (11.52,11.52) size 761.97x732.30
-      RenderBlock (anonymous) at (0,0) size 761.97x52
-        RenderText {#text} at (0,0) size 758x52
-          text run at (0,0) width 357: "The two blocks should look identical. "
-          text run at (357,0) width 401: "One uses an SVG, and the other just uses a"
-          text run at (0,26) width 179: "normal HTML div."
-      RenderBlock {p} at (0,75.03) size 761.97x26
-        RenderText {#text} at (0,0) size 524x26
-          text run at (0,0) width 524: "There should be a red, white and blue pattern below this"
-      RenderSVGRoot {svg} at (25,149) size 202x202
-        RenderSVGRect {rect} at (53,177) size 146x146 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-      RenderBlock {p} at (0,353.63) size 761.97x26
-        RenderText {#text} at (0,0) size 523x26
-          text run at (0,0) width 523: "There should be a red, white and blue pattern above this"
-      RenderBlock {hr} at (0,402.66) size 761.97x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {p} at (0,427.69) size 761.97x26
-        RenderText {#text} at (0,0) size 524x26
-          text run at (0,0) width 524: "There should be a red, white and blue pattern below this"
-      RenderBlock (floating) {div} at (14.39,491.11) size 200.80x200.80 [border: (14px solid #FF0000)]
+layer at (0,0) size 785x749
+  RenderBlock {html} at (0,0) size 785x748.84
+    RenderBody {body} at (11.52,11.52) size 761.97x714.30
+      RenderBlock (anonymous) at (0,0) size 761.97x46
+        RenderText {#text} at (0,0) size 749x46
+          text run at (0,0) width 353: "The two blocks should look identical. "
+          text run at (352,0) width 397: "One uses an SVG, and the other just uses a"
+          text run at (0,23) width 178: "normal HTML div."
+      RenderBlock {p} at (0,69.03) size 761.97x23
+        RenderText {#text} at (0,0) size 518x23
+          text run at (0,0) width 518: "There should be a red, white and blue pattern below this"
+      RenderSVGRoot {svg} at (25,140) size 202x202
+        RenderSVGRect {rect} at (53,168) size 146x146 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+      RenderBlock {p} at (0,344.63) size 761.97x23
+        RenderText {#text} at (0,0) size 517x23
+          text run at (0,0) width 517: "There should be a red, white and blue pattern above this"
+      RenderBlock {hr} at (0,390.66) size 761.97x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {p} at (0,415.69) size 761.97x23
+        RenderText {#text} at (0,0) size 518x23
+          text run at (0,0) width 518: "There should be a red, white and blue pattern below this"
+      RenderBlock (floating) {div} at (14.39,476.11) size 200.80x200.80 [border: (14px solid #FF0000)]
         RenderBlock {div} at (28.39,28.39) size 144x144 [bgcolor=#0000FF]
-      RenderBlock {p} at (0,706.30) size 761.97x26
-        RenderText {#text} at (0,0) size 523x26
-          text run at (0,0) width 523: "There should be a red, white and blue pattern above this"
+      RenderBlock {p} at (0,691.30) size 761.97x23
+        RenderText {#text} at (0,0) size 517x23
+          text run at (0,0) width 517: "There should be a red, white and blue pattern above this"

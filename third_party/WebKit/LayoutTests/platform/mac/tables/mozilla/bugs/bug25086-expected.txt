@@ -1,0 +1,39 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 367x16
+          text run at (0,0) width 367: "this table is regular html and the cell has a class attribute:"
+      RenderTable {TABLE} at (0,32) size 125x78 [border: (2px outset #808080)]
+        RenderTableSection {TBODY} at (2,2) size 121x74
+          RenderTableRow {TR} at (0,2) size 121x68
+            RenderTableCell {TD} at (2,2) size 117x68 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (26,26) size 65x16
+                text run at (26,26) width 65: "padding?"
+          RenderTableRow {TR} at (0,72) size 121x0
+      RenderBlock {P} at (0,126) size 784x32
+        RenderText {#text} at (0,0) size 768x32
+          text run at (0,0) width 500: "this table is partly created by javascript code and the cell has a class attribute. "
+          text run at (499,0) width 269: "this is where the text appears to the left of"
+          text run at (0,16) width 271: "the left margin created by the cellpadding:"
+      RenderTable {TABLE} at (0,174) size 125x78 [border: (2px outset #808080)]
+        RenderTableSection {TBODY} at (2,2) size 121x74
+          RenderTableRow {TR} at (0,2) size 121x68
+            RenderTableCell {TD} at (2,2) size 117x68 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (26,26) size 65x16
+                text run at (26,26) width 65: "padding?"
+          RenderTableRow {TR} at (0,72) size 121x0
+      RenderBlock {P} at (0,268) size 784x32
+        RenderText {#text} at (0,0) size 774x32
+          text run at (0,0) width 509: "this table is partly created by javascript code and the cell has no class attribute. "
+          text run at (508,0) width 266: "here the text obeys the cellpadding value,"
+          text run at (0,16) width 584: "although there is another problem with this table that i'm filing under a separate bug report:"
+      RenderTable {TABLE} at (0,316) size 119x78 [border: (2px outset #808080)]
+        RenderTableSection {TBODY} at (2,2) size 115x74
+          RenderTableRow {TR} at (0,2) size 115x68
+            RenderTableCell {TD} at (2,2) size 111x68 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (26,26) size 59x16
+                text run at (26,26) width 59: "padding?"
+          RenderTableRow {TR} at (0,72) size 115x0
