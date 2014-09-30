@@ -581,6 +581,11 @@ IPC_STRUCT_END()
 IPC_MESSAGE_ROUTED1(ViewMsg_Resize,
                     ViewMsg_Resize_Params /* params */)
 
+// Sent to inform the renderer of its screen device color profile. An empty
+// profile tells the renderer use the default sRGB color profile.
+IPC_MESSAGE_ROUTED1(ViewMsg_ColorProfile,
+                    std::vector<char> /* color profile */)
+
 // Tells the render view that the resize rect has changed.
 IPC_MESSAGE_ROUTED1(ViewMsg_ChangeResizeRect,
                     gfx::Rect /* resizer_rect */)
