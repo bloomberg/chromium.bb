@@ -144,6 +144,13 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
     return 1
   cmd = '%s %s ' % (cmd, chrome_classes)
 
+  print
+  print '*' * 80
+  print 'Command used to run findbugs:'
+  print cmd
+  print '*' * 80
+  print
+
   proc = subprocess.Popen(shlex.split(cmd),
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   out, _err = proc.communicate()
