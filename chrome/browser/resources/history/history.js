@@ -1737,18 +1737,18 @@ function PageState(model, view) {
 
   // TODO(glen): Replace this with a bound method so we don't need
   //     public model and view.
-  this.checker_ = window.setInterval(function(stateObj) {
-    var hashData = stateObj.getHashData();
+  this.checker_ = window.setInterval(function() {
+    var hashData = this.getHashData();
     var page = parseInt(hashData.page, 10);
     var range = parseInt(hashData.range, 10);
     var offset = parseInt(hashData.offset, 10);
-    if (hashData.q != stateObj.model.getSearchText() ||
-        page != stateObj.view.getPage() ||
-        range != stateObj.model.rangeInDays ||
-        offset != stateObj.model.offset) {
-      stateObj.view.setPageState(hashData.q, page, range, offset);
+    if (hashData.q != this.model.getSearchText() ||
+        page != this.view.getPage() ||
+        range != this.model.rangeInDays ||
+        offset != this.model.offset) {
+      this.view.setPageState(hashData.q, page, range, offset);
     }
-  }, 50, this);
+  }.bind(this), 50);
 }
 
 /**
