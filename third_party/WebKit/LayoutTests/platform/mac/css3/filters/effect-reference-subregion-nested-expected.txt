@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x266
-  RenderBlock {HTML} at (0,0) size 800x266
-    RenderBody {BODY} at (8,8) size 784x238
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderSVGRoot {svg} at (8,22) size 0x0
+layer at (0,0) size 800x264
+  RenderBlock {HTML} at (0,0) size 800x264
+    RenderBody {BODY} at (8,8) size 784x236
+      RenderBlock (anonymous) at (0,0) size 784x16
+        RenderSVGRoot {svg} at (8,20) size 0x0
           RenderSVGHiddenContainer {defs} at (0,0) size 0x0
             RenderSVGResourceFilter {filter} [id="merge"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
               [feMerge mergeNodes="2"]
@@ -15,5 +15,5 @@ layer at (0,0) size 800x266
                   [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 0.30 0.00"]
                     [SourceGraphic]
         RenderText {#text} at (0,0) size 0x0
-layer at (28,46) size 200x200
-  RenderBlock {DIV} at (20,38) size 200x200 [bgcolor=#008000]
+layer at (28,44) size 200x200
+  RenderBlock {DIV} at (20,36) size 200x200 [bgcolor=#008000]
