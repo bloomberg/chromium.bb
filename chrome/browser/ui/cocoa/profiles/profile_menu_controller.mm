@@ -70,7 +70,7 @@ class Observer : public chrome::BrowserListObserver,
     mainMenuItem_ = item;
 
     base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:
-        l10n_util::GetNSStringWithFixup(IDS_NEW_PROFILES_OPTIONS_GROUP_NAME)]);
+        l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME)]);
     [mainMenuItem_ setSubmenu:menu];
 
     // This object will be constructed as part of nib loading, which happens
@@ -111,7 +111,7 @@ class Observer : public chrome::BrowserListObserver,
 
   if (dock) {
     NSString* headerName =
-        l10n_util::GetNSStringWithFixup(IDS_NEW_PROFILES_OPTIONS_GROUP_NAME);
+        l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME);
     base::scoped_nsobject<NSMenuItem> header(
         [[NSMenuItem alloc] initWithTitle:headerName
                                    action:NULL
@@ -197,7 +197,7 @@ class Observer : public chrome::BrowserListObserver,
 
   [[self menu] addItem:[NSMenuItem separatorItem]];
   item = [self createItemWithTitle:l10n_util::GetNSStringWithFixup(
-      IDS_NEW_PROFILES_CREATE_NEW_PROFILE_OPTION)
+      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION)
                             action:@selector(newProfile:)];
   [[self menu] addItem:item];
 

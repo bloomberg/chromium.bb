@@ -97,16 +97,16 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesSupervisedSignInAgainLink",
         IDS_PROFILES_CREATE_SUPERVISED_SIGN_IN_AGAIN_LINK },
     { "manageProfilesConfirm", IDS_SAVE },
-    { "deleteProfileTitle", IDS_NEW_PROFILES_DELETE_TITLE },
-    { "deleteProfileOK", IDS_NEW_PROFILES_DELETE_OK_BUTTON_LABEL },
-    { "deleteProfileMessage", IDS_NEW_PROFILES_DELETE_MESSAGE },
+    { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
+    { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
+    { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
     { "deleteSupervisedProfileAddendum",
         IDS_PROFILES_DELETE_SUPERVISED_ADDENDUM },
     { "disconnectManagedProfileTitle",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE },
     { "disconnectManagedProfileOK",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL },
-    { "createProfileTitle", IDS_NEW_PROFILES_CREATE_TITLE },
+    { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_ADD },
     { "createProfileShortcutCheckbox", IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX },
@@ -117,10 +117,8 @@ void ManageProfileHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterTitle(localized_strings, "manageProfile",
-                IDS_NEW_PROFILES_MANAGE_TITLE);
-  RegisterTitle(localized_strings, "createProfile",
-                IDS_NEW_PROFILES_CREATE_TITLE);
+  RegisterTitle(localized_strings, "manageProfile", IDS_PROFILES_MANAGE_TITLE);
+  RegisterTitle(localized_strings, "createProfile", IDS_PROFILES_CREATE_TITLE);
 
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
