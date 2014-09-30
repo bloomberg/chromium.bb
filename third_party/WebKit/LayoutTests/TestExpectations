@@ -6597,3 +6597,8 @@ crbug.com/419041 [ Win ] virtual/deferred/inspector/tracing/timeline-receive-res
 crbug.com/419041 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
 
 
+crbug.com/418091 [ Mac ] editing/pasteboard/copy-crash.html [ Pass Timeout ]
+crbug.com/418091 [ Mac ] fast/events/event-view-toString.html [ Pass Timeout ]
+crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-http-equiv-refresh.html [ Pass Timeout ]
+crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-location-reload.html [ Pass Timeout ]
+
