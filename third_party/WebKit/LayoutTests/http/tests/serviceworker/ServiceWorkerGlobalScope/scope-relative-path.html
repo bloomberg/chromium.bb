@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<title>ServiceWorkerGlobalScope: scope property is a relative path</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<script src="resources/scope.js"></script>
+<script>
+async_test(function(t) {
+    scope_test(t, 'resources/scope-worker.js', '/a/b/c/');
+  }, 'Verify the scope property: relative path');
+</script>
