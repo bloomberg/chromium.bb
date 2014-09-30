@@ -4600,6 +4600,7 @@ crbug.com/418091 [ Mac ] editing/pasteboard/copy-crash.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] fast/events/event-view-toString.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-http-equiv-refresh.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-location-reload.html [ Pass Timeout ]
+crbug.com/418091 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
 
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
 
