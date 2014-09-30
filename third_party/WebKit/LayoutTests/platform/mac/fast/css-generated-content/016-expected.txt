@@ -1,40 +1,40 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x238
-  RenderBlock {HTML} at (0,0) size 800x238
-    RenderBody {BODY} at (8,16) size 784x206
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 458x18
-          text run at (0,0) width 458: "Each link below should display the text \"n(href=n)\" where n is a number"
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 323x18
-          text run at (0,0) width 323: "The href attribute of the last one is changed onload."
-      RenderBlock {HR} at (0,68) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,86) size 784x18
-        RenderInline {A} at (0,0) size 60x18 [color=#0000EE]
-          RenderText {#text} at (0,0) size 8x18
+layer at (0,0) size 800x226
+  RenderBlock {HTML} at (0,0) size 800x226
+    RenderBody {BODY} at (8,16) size 784x194
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 465x16
+          text run at (0,0) width 465: "Each link below should display the text \"n(href=n)\" where n is a number"
+      RenderBlock {P} at (0,32) size 784x16
+        RenderText {#text} at (0,0) size 330x16
+          text run at (0,0) width 330: "The href attribute of the last one is changed onload."
+      RenderBlock {HR} at (0,64) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,82) size 784x16
+        RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
+          RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "1"
-          RenderInline (pseudo:after) at (0,0) size 52x18
-            RenderTextFragment at (8,0) size 52x18
-              text run at (8,0) width 52: "(href=1)"
-      RenderBlock {P} at (0,120) size 784x18
-        RenderInline {A} at (0,0) size 60x18 [color=#0000EE]
-          RenderText {#text} at (0,0) size 8x18
+          RenderInline (pseudo:after) at (0,0) size 54x16
+            RenderTextFragment at (8,0) size 54x16
+              text run at (8,0) width 54: "(href=1)"
+      RenderBlock {P} at (0,114) size 784x16
+        RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
+          RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "2"
-          RenderInline (pseudo:after) at (0,0) size 52x18
-            RenderTextFragment at (8,0) size 52x18
-              text run at (8,0) width 52: "(href=2)"
-      RenderBlock {P} at (0,154) size 784x18
-        RenderInline {A} at (0,0) size 60x18 [color=#0000EE]
-          RenderText {#text} at (0,0) size 8x18
+          RenderInline (pseudo:after) at (0,0) size 54x16
+            RenderTextFragment at (8,0) size 54x16
+              text run at (8,0) width 54: "(href=2)"
+      RenderBlock {P} at (0,146) size 784x16
+        RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
+          RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "3"
-          RenderInline (pseudo:after) at (0,0) size 52x18
-            RenderTextFragment at (8,0) size 52x18
-              text run at (8,0) width 52: "(href=3)"
-      RenderBlock {P} at (0,188) size 784x18
-        RenderInline {A} at (0,0) size 60x18 [color=#0000EE]
-          RenderText {#text} at (0,0) size 8x18
+          RenderInline (pseudo:after) at (0,0) size 54x16
+            RenderTextFragment at (8,0) size 54x16
+              text run at (8,0) width 54: "(href=3)"
+      RenderBlock {P} at (0,178) size 784x16
+        RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
+          RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "4"
-          RenderInline (pseudo:after) at (0,0) size 52x18
-            RenderTextFragment at (8,0) size 52x18
-              text run at (8,0) width 52: "(href=4)"
+          RenderInline (pseudo:after) at (0,0) size 54x16
+            RenderTextFragment at (8,0) size 54x16
+              text run at (8,0) width 54: "(href=4)"

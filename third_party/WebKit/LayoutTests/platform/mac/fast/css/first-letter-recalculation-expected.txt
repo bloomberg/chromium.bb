@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x84
-  RenderBlock {HTML} at (0,0) size 800x84
-    RenderBody {BODY} at (8,16) size 784x52
-      RenderBlock {P} at (0,0) size 784x18
-        RenderInline {A} at (0,0) size 29x18 [color=#0000FF]
-          RenderInline (generated) at (0,0) size 10x18
-            RenderTextFragment {#text} at (0,0) size 10x18
+layer at (0,0) size 800x80
+  RenderBlock {HTML} at (0,0) size 800x80
+    RenderBody {BODY} at (8,16) size 784x48
+      RenderBlock {P} at (0,0) size 784x16
+        RenderInline {A} at (0,0) size 31x16 [color=#0000FF]
+          RenderInline (generated) at (0,0) size 10x16
+            RenderTextFragment {#text} at (0,0) size 10x16
               text run at (0,0) width 10: "F"
-          RenderTextFragment {#text} at (10,0) size 19x18
-            text run at (10,0) width 19: "irst"
-        RenderText {#text} at (29,0) size 190x18
-          text run at (29,0) width 190: " letter should be bold and blue"
-      RenderBlock {P} at (0,34) size 784x18
-        RenderInline (generated) at (0,0) size 12x18
-          RenderTextFragment {#text} at (0,0) size 12x18
-            text run at (0,0) width 12: "H"
-        RenderTextFragment {#text} at (12,0) size 616x18
-          text run at (12,0) width 616: "ere the first letter should be bold and black, but with Safari build 416.13 it is blue. See bug #6170."
+          RenderTextFragment {#text} at (9,0) size 22x16
+            text run at (9,0) width 22: "irst"
+        RenderText {#text} at (30,0) size 194x16
+          text run at (30,0) width 194: " letter should be bold and blue"
+      RenderBlock {P} at (0,32) size 784x16
+        RenderInline (generated) at (0,0) size 13x16
+          RenderTextFragment {#text} at (0,0) size 13x16
+            text run at (0,0) width 13: "H"
+        RenderTextFragment {#text} at (12,0) size 629x16
+          text run at (12,0) width 629: "ere the first letter should be bold and black, but with Safari build 416.13 it is blue. See bug #6170."

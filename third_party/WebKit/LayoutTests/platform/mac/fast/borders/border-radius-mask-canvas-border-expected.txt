@@ -1,26 +1,26 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x418
-  RenderBlock {HTML} at (0,0) size 800x418.44
-    RenderBody {BODY} at (8,18.72) size 784x391.72
-      RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 88x22
-          text run at (0,0) width 88: "It passes if:"
-      RenderBlock {UL} at (0,40.72) size 784x54
-        RenderListItem {LI} at (40,0) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 391x18
-            text run at (0,0) width 391: "the canvas content has rounded corners (top-left and top-right)"
-        RenderListItem {LI} at (40,18) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 351x18
-            text run at (0,0) width 351: "the 10px red border is visible around the canvas content"
-        RenderListItem {LI} at (40,36) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 156x18
-            text run at (0,0) width 156: "gray border is not visible"
-      RenderBlock (anonymous) at (0,110.72) size 784x281
+layer at (0,0) size 800x409
+  RenderBlock {HTML} at (0,0) size 800x409.44
+    RenderBody {BODY} at (8,18.72) size 784x382.72
+      RenderBlock {H3} at (0,0) size 784x19
+        RenderText {#text} at (0,0) size 91x19
+          text run at (0,0) width 91: "It passes if:"
+      RenderBlock {UL} at (0,37.72) size 784x48
+        RenderListItem {LI} at (40,0) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 400x16
+            text run at (0,0) width 400: "the canvas content has rounded corners (top-left and top-right)"
+        RenderListItem {LI} at (40,16) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 358x16
+            text run at (0,0) width 358: "the 10px red border is visible around the canvas content"
+        RenderListItem {LI} at (40,32) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 160x16
+            text run at (0,0) width 160: "gray border is not visible"
+      RenderBlock (anonymous) at (0,101.72) size 784x281
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (8,129) size 277x277
+layer at (8,120) size 277x277
   RenderHTMLCanvas {CANVAS} at (0,0) size 277x277 [bgcolor=#808080] [border: (10px solid #FF0000)]

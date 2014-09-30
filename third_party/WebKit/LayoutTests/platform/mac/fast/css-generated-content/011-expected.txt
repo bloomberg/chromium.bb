@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x572.09
-      RenderBlock {H2} at (0,0) size 784x62.50
-        RenderBlock (pseudo:before) at (0,0) size 784x15 [color=#D0D3DA]
-          RenderTextFragment at (381,0) size 22x15
+      RenderBlock {H2} at (0,0) size 784x56.50
+        RenderBlock (pseudo:before) at (0,0) size 784x13 [color=#D0D3DA]
+          RenderTextFragment at (381,0) size 22x13
             text run at (381,0) width 22: "\x{2022} \x{2022} \x{2022}"
-        RenderBlock (anonymous) at (0,34.50) size 784x28
-          RenderText {#text} at (0,0) size 127x28
-            text run at (0,0) width 127: "This is a test"
+        RenderBlock (anonymous) at (0,32.50) size 784x24
+          RenderText {#text} at (0,0) size 128x24
+            text run at (0,0) width 128: "This is a test"

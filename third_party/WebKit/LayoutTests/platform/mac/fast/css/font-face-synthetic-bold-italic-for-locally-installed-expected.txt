@@ -3,25 +3,27 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 769x18
-          text run at (0,0) width 769: "The following two lines should look differently. The first line is synthetic bold of normal face, the second line is bold face."
-      RenderBlock {DIV} at (0,34) size 784x23
-        RenderInline {SPAN} at (0,0) size 412x22
-          RenderText {#text} at (0,0) size 412x22
-            text run at (0,0) width 412: "The quick brown fox jumps over the lazy dog"
-      RenderBlock {DIV} at (0,57) size 784x23
-        RenderInline {SPAN} at (0,0) size 388x22
-          RenderText {#text} at (0,0) size 388x22
-            text run at (0,0) width 388: "The quick brown fox jumps over the lazy dog"
-      RenderBlock {P} at (0,96) size 784x18
-        RenderText {#text} at (0,0) size 773x18
-          text run at (0,0) width 773: "The following two lines should look differently. The first line is synthetic italic of normal face, the second line is italic face."
-      RenderBlock {DIV} at (0,130) size 784x23
-        RenderInline {SPAN} at (0,0) size 369x22
-          RenderText {#text} at (0,0) size 369x22
-            text run at (0,0) width 369: "The quick brown fox jumps over the lazy dog"
-      RenderBlock {DIV} at (0,153) size 784x23
-        RenderInline {SPAN} at (0,0) size 362x22
-          RenderText {#text} at (0,0) size 362x22
-            text run at (0,0) width 362: "The quick brown fox jumps over the lazy dog"
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 752x32
+          text run at (0,0) width 752: "The following two lines should look differently. The first line is synthetic bold of normal face, the second line is bold"
+          text run at (0,16) width 31: "face."
+      RenderBlock {DIV} at (0,48) size 784x23
+        RenderInline {SPAN} at (0,0) size 366x22
+          RenderText {#text} at (0,0) size 366x22
+            text run at (0,0) width 366: "The quick brown fox jumps over the lazy dog"
+      RenderBlock {DIV} at (0,71) size 784x23
+        RenderInline {SPAN} at (0,0) size 387x22
+          RenderText {#text} at (0,0) size 387x22
+            text run at (0,0) width 387: "The quick brown fox jumps over the lazy dog"
+      RenderBlock {P} at (0,110) size 784x32
+        RenderText {#text} at (0,0) size 759x32
+          text run at (0,0) width 759: "The following two lines should look differently. The first line is synthetic italic of normal face, the second line is italic"
+          text run at (0,16) width 31: "face."
+      RenderBlock {DIV} at (0,158) size 784x23
+        RenderInline {SPAN} at (0,0) size 366x22
+          RenderText {#text} at (0,0) size 366x22
+            text run at (0,0) width 366: "The quick brown fox jumps over the lazy dog"
+      RenderBlock {DIV} at (0,181) size 784x23
+        RenderInline {SPAN} at (0,0) size 359x22
+          RenderText {#text} at (0,0) size 359x22
+            text run at (0,0) width 359: "The quick brown fox jumps over the lazy dog"

@@ -3,26 +3,26 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderInline {SPAN} at (0,0) size 225x18 [color=#FF0000]
-          RenderText {#text} at (0,0) size 225x18
-            text run at (0,0) width 225: "This should turn red when hovered."
+      RenderBlock {DIV} at (0,0) size 784x16
+        RenderInline {SPAN} at (0,0) size 228x16 [color=#FF0000]
+          RenderText {#text} at (0,0) size 228x16
+            text run at (0,0) width 228: "This should turn red when hovered."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,44) size 784x36
-        RenderText {#text} at (0,0) size 53x18
-          text run at (0,0) width 53: "Test for "
-        RenderInline {I} at (0,0) size 779x36
-          RenderInline {A} at (0,0) size 348x18 [color=#0000EE]
-            RenderText {#text} at (53,0) size 348x18
-              text run at (53,0) width 348: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7327"
-          RenderText {#text} at (401,0) size 779x36
-            text run at (401,0) width 378: " REGRESSION (r12869): :hover subselector does not work"
-            text run at (0,18) width 94: "in quirks mode"
-        RenderText {#text} at (94,18) size 98x18
-          text run at (94,18) width 98: ". This tests that "
-        RenderInline {CODE} at (0,0) size 96x15
-          RenderText {#text} at (192,20) size 96x15
-            text run at (192,20) width 96: "span#t:hover"
-        RenderText {#text} at (288,18) size 170x18
-          text run at (288,18) width 170: " matches the hovered span."
+      RenderBlock {HR} at (0,24) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,42) size 784x32
+        RenderText {#text} at (0,0) size 55x16
+          text run at (0,0) width 55: "Test for "
+        RenderInline {I} at (0,0) size 753x32
+          RenderInline {A} at (0,0) size 354x16 [color=#0000EE]
+            RenderText {#text} at (54,0) size 354x16
+              text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7327"
+          RenderText {#text} at (407,0) size 753x32
+            text run at (407,0) width 346: " REGRESSION (r12869): :hover subselector does not"
+            text run at (0,16) width 132: "work in quirks mode"
+        RenderText {#text} at (131,16) size 101x16
+          text run at (131,16) width 101: ". This tests that "
+        RenderInline {CODE} at (0,0) size 95x13
+          RenderText {#text} at (231,18) size 95x13
+            text run at (231,18) width 95: "span#t:hover"
+        RenderText {#text} at (325,16) size 174x16
+          text run at (325,16) width 174: " matches the hovered span."

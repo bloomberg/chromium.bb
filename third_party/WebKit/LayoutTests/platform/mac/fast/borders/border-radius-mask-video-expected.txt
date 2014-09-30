@@ -1,26 +1,26 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x348
-  RenderBlock {HTML} at (0,0) size 800x348.44
-    RenderBody {BODY} at (8,18.72) size 784x321.72
-      RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 88x22
-          text run at (0,0) width 88: "It passes if:"
-      RenderBlock {UL} at (0,40.72) size 784x36
-        RenderListItem {LI} at (40,0) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 405x18
-            text run at (0,0) width 405: "the video content has rounded corners (top left and bottom right)"
-        RenderListItem {LI} at (40,18) size 744x18
-          RenderListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 190x18
-            text run at (0,0) width 190: "gray background is not visible"
-      RenderBlock (anonymous) at (0,92.72) size 784x229
+layer at (0,0) size 800x341
+  RenderBlock {HTML} at (0,0) size 800x341.44
+    RenderBody {BODY} at (8,18.72) size 784x314.72
+      RenderBlock {H3} at (0,0) size 784x19
+        RenderText {#text} at (0,0) size 91x19
+          text run at (0,0) width 91: "It passes if:"
+      RenderBlock {UL} at (0,37.72) size 784x32
+        RenderListItem {LI} at (40,0) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 415x16
+            text run at (0,0) width 415: "the video content has rounded corners (top left and bottom right)"
+        RenderListItem {LI} at (40,16) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 194x16
+            text run at (0,0) width 194: "gray background is not visible"
+      RenderBlock (anonymous) at (0,85.72) size 784x229
         RenderText {#text} at (0,0) size 0x0
-layer at (8,111) size 400x225
+layer at (8,104) size 400x225
   RenderVideo {VIDEO} at (0,0) size 400x225 [bgcolor=#808080]
-layer at (8,111) size 400x225
+layer at (8,104) size 400x225
   RenderFlexibleBox {DIV} at (0,0) size 400x225
     RenderBlock {DIV} at (0,190) size 400x35
-layer at (8,111) size 400x190
+layer at (8,104) size 400x190
   RenderFlexibleBox {DIV} at (0,0) size 400x190

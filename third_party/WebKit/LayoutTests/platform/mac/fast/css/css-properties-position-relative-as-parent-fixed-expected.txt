@@ -2,207 +2,207 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x0
   RenderBlock {HTML} at (0,0) size 800x0
-layer at (158,8) size 634x524
-  RenderBody {BODY} at (158,8) size 634x524.33
-    RenderBlock {H3} at (0,18.72) size 634x44
-      RenderText {#text} at (0,0) size 198x22
-        text run at (0,0) width 198: "Test for chromium bug : "
-      RenderInline {A} at (0,0) size 45x22 [color=#0000EE]
-        RenderText {#text} at (198,0) size 45x22
-          text run at (198,0) width 45: "31286"
-      RenderText {#text} at (243,0) size 612x44
-        text run at (243,0) width 369: ". css rendering bug : fixed-position-element and"
-        text run at (0,22) width 40: "'left'."
-    RenderBlock {H4} at (0,83.98) size 634x36
-      RenderText {#text} at (0,0) size 630x36
-        text run at (0,0) width 630: "If fixed position inline element does not have left and/or right position then it should render as"
-        text run at (0,18) width 86: "normal flow."
-    RenderBlock {H5} at (0,142.16) size 634x360
-      RenderBlock (anonymous) at (0,0) size 634x15
-        RenderText {#text} at (0,0) size 334x15
-          text run at (0,0) width 334: "Case 1 : fixed text box should be just after relative text box. "
-        RenderBR {BR} at (334,0) size 0x15
-      RenderBlock (anonymous) at (0,30) size 634x15
-        RenderText {#text} at (0,0) size 343x15
-          text run at (0,0) width 343: "Case 2 : fixed text box should be just before relative text box. "
-        RenderBR {BR} at (343,0) size 0x15
-      RenderBlock (anonymous) at (0,60) size 634x15
-        RenderText {#text} at (0,0) size 334x15
-          text run at (0,0) width 334: "Case 3 : fixed text box should be just after relative text box. "
-        RenderBR {BR} at (334,0) size 0x15
-      RenderBlock (anonymous) at (0,90) size 634x15
-        RenderText {#text} at (0,0) size 343x15
-          text run at (0,0) width 343: "Case 4 : fixed text box should be just before relative text box. "
-        RenderBR {BR} at (343,0) size 0x15
-      RenderBlock (anonymous) at (0,120) size 634x15
-        RenderText {#text} at (0,0) size 341x15
-          text run at (0,0) width 341: "Case 5 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (341,0) size 0x15
-      RenderBlock (anonymous) at (0,150) size 634x15
-        RenderText {#text} at (0,0) size 618x15
-          text run at (0,0) width 618: "Case 6 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
-        RenderBR {BR} at (618,0) size 0x15
-      RenderBlock (anonymous) at (0,180) size 634x15
-        RenderText {#text} at (0,0) size 341x15
-          text run at (0,0) width 341: "Case 7 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (341,0) size 0x15
-      RenderBlock (anonymous) at (0,210) size 634x15
-        RenderText {#text} at (0,0) size 422x15
-          text run at (0,0) width 422: "Case 8 : fixed text box should be before relative2 text box in some distance. "
-        RenderBR {BR} at (422,0) size 0x15
-      RenderBlock (anonymous) at (0,240) size 634x15
-        RenderText {#text} at (0,0) size 341x15
-          text run at (0,0) width 341: "Case 9 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (341,0) size 0x15
-      RenderBlock (anonymous) at (0,270) size 634x15
-        RenderText {#text} at (0,0) size 625x15
-          text run at (0,0) width 625: "Case 10 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
-        RenderBR {BR} at (625,0) size 0x15
-      RenderBlock (anonymous) at (0,300) size 634x15
-        RenderText {#text} at (0,0) size 348x15
-          text run at (0,0) width 348: "Case 11 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (348,0) size 0x15
-      RenderBlock (anonymous) at (0,330) size 634x15
-        RenderText {#text} at (0,0) size 429x15
-          text run at (0,0) width 429: "Case 12 : fixed text box should be before relative2 text box in some distance. "
-        RenderBR {BR} at (429,0) size 0x15
-layer at (258,165) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,15) size 400x15 [bgcolor=#008000]
-    RenderText {#text} at (0,0) size 44x15
-      text run at (0,0) width 44: "relative"
+layer at (158,8) size 634x466
+  RenderBody {BODY} at (158,8) size 634x466.33
+    RenderBlock {H3} at (0,18.72) size 634x38
+      RenderText {#text} at (0,0) size 202x19
+        text run at (0,0) width 202: "Test for chromium bug : "
+      RenderInline {A} at (0,0) size 47x19 [color=#0000EE]
+        RenderText {#text} at (201,0) size 47x19
+          text run at (201,0) width 47: "31286"
+      RenderText {#text} at (247,0) size 627x38
+        text run at (247,0) width 380: ". css rendering bug : fixed-position-element and"
+        text run at (0,19) width 42: "'left'."
+    RenderBlock {H4} at (0,77.98) size 634x32
+      RenderText {#text} at (0,0) size 623x32
+        text run at (0,0) width 623: "If fixed position inline element does not have left and/or right position then it should render"
+        text run at (0,16) width 106: "as normal flow."
+    RenderBlock {H5} at (0,132.16) size 634x312
+      RenderBlock (anonymous) at (0,0) size 634x13
+        RenderText {#text} at (0,0) size 340x13
+          text run at (0,0) width 340: "Case 1 : fixed text box should be just after relative text box. "
+        RenderBR {BR} at (339,0) size 1x13
+      RenderBlock (anonymous) at (0,26) size 634x13
+        RenderText {#text} at (0,0) size 349x13
+          text run at (0,0) width 349: "Case 2 : fixed text box should be just before relative text box. "
+        RenderBR {BR} at (348,0) size 1x13
+      RenderBlock (anonymous) at (0,52) size 634x13
+        RenderText {#text} at (0,0) size 340x13
+          text run at (0,0) width 340: "Case 3 : fixed text box should be just after relative text box. "
+        RenderBR {BR} at (339,0) size 1x13
+      RenderBlock (anonymous) at (0,78) size 634x13
+        RenderText {#text} at (0,0) size 349x13
+          text run at (0,0) width 349: "Case 4 : fixed text box should be just before relative text box. "
+        RenderBR {BR} at (348,0) size 1x13
+      RenderBlock (anonymous) at (0,104) size 634x13
+        RenderText {#text} at (0,0) size 346x13
+          text run at (0,0) width 346: "Case 5 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (345,0) size 1x13
+      RenderBlock (anonymous) at (0,130) size 634x13
+        RenderText {#text} at (0,0) size 625x13
+          text run at (0,0) width 625: "Case 6 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
+        RenderBR {BR} at (624,0) size 1x13
+      RenderBlock (anonymous) at (0,156) size 634x13
+        RenderText {#text} at (0,0) size 346x13
+          text run at (0,0) width 346: "Case 7 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (345,0) size 1x13
+      RenderBlock (anonymous) at (0,182) size 634x13
+        RenderText {#text} at (0,0) size 427x13
+          text run at (0,0) width 427: "Case 8 : fixed text box should be before relative2 text box in some distance. "
+        RenderBR {BR} at (426,0) size 1x13
+      RenderBlock (anonymous) at (0,208) size 634x13
+        RenderText {#text} at (0,0) size 346x13
+          text run at (0,0) width 346: "Case 9 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (345,0) size 1x13
+      RenderBlock (anonymous) at (0,234) size 634x13
+        RenderText {#text} at (0,0) size 631x13
+          text run at (0,0) width 631: "Case 10 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
+        RenderBR {BR} at (630,0) size 1x13
+      RenderBlock (anonymous) at (0,260) size 634x13
+        RenderText {#text} at (0,0) size 353x13
+          text run at (0,0) width 353: "Case 11 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (352,0) size 1x13
+      RenderBlock (anonymous) at (0,286) size 634x13
+        RenderText {#text} at (0,0) size 434x13
+          text run at (0,0) width 434: "Case 12 : fixed text box should be before relative2 text box in some distance. "
+        RenderBR {BR} at (433,0) size 1x13
+layer at (258,153) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,13) size 400x13 [bgcolor=#008000]
+    RenderText {#text} at (0,0) size 43x13
+      text run at (0,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (302,165) size 28x15
-  RenderBlock (positioned) {SPAN} at (302,165.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (258,195) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,45) size 400x15 [bgcolor=#008000]
-    RenderText {#text} at (356,0) size 44x15
-      text run at (356,0) width 44: "relative"
+layer at (301,153) size 28x13
+  RenderBlock (positioned) {SPAN} at (300.77,153.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (258,179) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,39) size 400x13 [bgcolor=#008000]
+    RenderText {#text} at (357,0) size 43x13
+      text run at (357,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (586,195) size 28x15
-  RenderBlock (positioned) {SPAN} at (586,195.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (58,225) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,75) size 400x15 [bgcolor=#008000]
-    RenderText {#text} at (0,0) size 44x15
-      text run at (0,0) width 44: "relative"
+layer at (587,179) size 28x13
+  RenderBlock (positioned) {SPAN} at (587.19,179.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (58,205) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,65) size 400x13 [bgcolor=#008000]
+    RenderText {#text} at (0,0) size 43x13
+      text run at (0,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (102,225) size 28x15
-  RenderBlock (positioned) {SPAN} at (102,225.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (58,255) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,105) size 400x15 [bgcolor=#008000]
-    RenderText {#text} at (356,0) size 44x15
-      text run at (356,0) width 44: "relative"
+layer at (101,205) size 28x13
+  RenderBlock (positioned) {SPAN} at (100.77,205.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (58,231) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,91) size 400x13 [bgcolor=#008000]
+    RenderText {#text} at (357,0) size 43x13
+      text run at (357,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (386,255) size 28x15
-  RenderBlock (positioned) {SPAN} at (386,255.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (258,285) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,135) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (0,0) size 47x15
+layer at (387,231) size 28x13
+  RenderBlock (positioned) {SPAN} at (387.19,231.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (258,257) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,117) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (0,0) size 47x13
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (358,285) size 51x15
-  RenderInline (relative positioned) {SPAN} at (0,0) size 51x15 [bgcolor=#008000]
-    RenderText {#text} at (47,0) size 51x15
-      text run at (47,0) width 51: "relative2"
-layer at (456,285) size 28x15
-  RenderBlock (positioned) {SPAN} at (456,285.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (258,315) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,165) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (302,0) size 47x15
-      text run at (302,0) width 47: "relative "
+layer at (358,257) size 50x13
+  RenderInline (relative positioned) {SPAN} at (0,0) size 50x13 [bgcolor=#008000]
+    RenderText {#text} at (46,0) size 50x13
+      text run at (46,0) width 50: "relative2"
+layer at (453,257) size 29x13
+  RenderBlock (positioned) {SPAN} at (453.48,257.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (258,283) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,143) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (304,0) size 47x13
+      text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (358,315) size 98x15
-  RenderInline (relative positioned) {SPAN} at (0,0) size 98x15 [bgcolor=#008000]
-    RenderText {#text} at (349,0) size 51x15
-      text run at (349,0) width 51: "relative2"
-layer at (632,315) size 28x15
-  RenderBlock (positioned) {SPAN} at (632,315.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (258,345) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,195) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (0,0) size 47x15
+layer at (358,283) size 96x13
+  RenderInline (relative positioned) {SPAN} at (0,0) size 96x13 [bgcolor=#008000]
+    RenderText {#text} at (350,0) size 50x13
+      text run at (350,0) width 50: "relative2"
+layer at (634,283) size 29x13
+  RenderBlock (positioned) {SPAN} at (634.47,283.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (258,309) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,169) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (0,0) size 47x13
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,345) size 51x15
-  RenderInline (relative positioned) {SPAN} at (0,0) size 51x15 [bgcolor=#008000]
-    RenderText {#text} at (47,0) size 51x15
-      text run at (47,0) width 51: "relative2"
-layer at (256,345) size 28x15
-  RenderBlock (positioned) {SPAN} at (256,345.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (258,375) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,225) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (302,0) size 47x15
-      text run at (302,0) width 47: "relative "
+layer at (158,309) size 50x13
+  RenderInline (relative positioned) {SPAN} at (0,0) size 50x13 [bgcolor=#008000]
+    RenderText {#text} at (46,0) size 50x13
+      text run at (46,0) width 50: "relative2"
+layer at (253,309) size 29x13
+  RenderBlock (positioned) {SPAN} at (253.48,309.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (258,335) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,195) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (304,0) size 47x13
+      text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,375) size 98x15
-  RenderInline (relative positioned) {SPAN} at (0,0) size 98x15 [bgcolor=#008000]
-    RenderText {#text} at (349,0) size 51x15
-      text run at (349,0) width 51: "relative2"
-layer at (432,375) size 28x15
-  RenderBlock (positioned) {SPAN} at (432,375.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (58,405) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,255) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (0,0) size 47x15
+layer at (158,335) size 96x13
+  RenderInline (relative positioned) {SPAN} at (0,0) size 96x13 [bgcolor=#008000]
+    RenderText {#text} at (350,0) size 50x13
+      text run at (350,0) width 50: "relative2"
+layer at (434,335) size 29x13
+  RenderBlock (positioned) {SPAN} at (434.47,335.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (58,361) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,221) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (0,0) size 47x13
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,405) size 51x15
-  RenderInline (relative positioned) {SPAN} at (0,0) size 51x15 [bgcolor=#008000]
-    RenderText {#text} at (47,0) size 51x15
-      text run at (47,0) width 51: "relative2"
-layer at (256,405) size 28x15
-  RenderBlock (positioned) {SPAN} at (256,405.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (58,435) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,285) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (302,0) size 47x15
-      text run at (302,0) width 47: "relative "
+layer at (158,361) size 50x13
+  RenderInline (relative positioned) {SPAN} at (0,0) size 50x13 [bgcolor=#008000]
+    RenderText {#text} at (46,0) size 50x13
+      text run at (46,0) width 50: "relative2"
+layer at (253,361) size 29x13
+  RenderBlock (positioned) {SPAN} at (253.48,361.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (58,387) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,247) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (304,0) size 47x13
+      text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,435) size 98x15
-  RenderInline (relative positioned) {SPAN} at (0,0) size 98x15 [bgcolor=#008000]
-    RenderText {#text} at (349,0) size 51x15
-      text run at (349,0) width 51: "relative2"
-layer at (432,435) size 28x15
-  RenderBlock (positioned) {SPAN} at (432,435.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (58,465) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,315) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (0,0) size 47x15
+layer at (158,387) size 96x13
+  RenderInline (relative positioned) {SPAN} at (0,0) size 96x13 [bgcolor=#008000]
+    RenderText {#text} at (350,0) size 50x13
+      text run at (350,0) width 50: "relative2"
+layer at (434,387) size 29x13
+  RenderBlock (positioned) {SPAN} at (434.47,387.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (58,413) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,273) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (0,0) size 47x13
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (-42,465) size 51x15 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderInline (relative positioned) {SPAN} at (0,0) size 51x15 [bgcolor=#008000]
-    RenderText {#text} at (47,0) size 51x15
-      text run at (47,0) width 51: "relative2"
-layer at (56,465) size 28x15
-  RenderBlock (positioned) {SPAN} at (56,465.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
-layer at (58,495) size 400x15
-  RenderBlock (relative positioned) {DIV} at (0,345) size 400x15 [bgcolor=#808080]
-    RenderText {#text} at (302,0) size 47x15
-      text run at (302,0) width 47: "relative "
+layer at (-42,413) size 50x13 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+  RenderInline (relative positioned) {SPAN} at (0,0) size 50x13 [bgcolor=#008000]
+    RenderText {#text} at (46,0) size 50x13
+      text run at (46,0) width 50: "relative2"
+layer at (53,413) size 29x13
+  RenderBlock (positioned) {SPAN} at (53.48,413.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"
+layer at (58,439) size 400x13
+  RenderBlock (relative positioned) {DIV} at (0,299) size 400x13 [bgcolor=#808080]
+    RenderText {#text} at (304,0) size 47x13
+      text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (-42,495) size 98x15 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  RenderInline (relative positioned) {SPAN} at (0,0) size 98x15 [bgcolor=#008000]
-    RenderText {#text} at (349,0) size 51x15
-      text run at (349,0) width 51: "relative2"
-layer at (232,495) size 28x15
-  RenderBlock (positioned) {SPAN} at (232,495.16) size 28x15 [bgcolor=#FF0000]
-    RenderText {#text} at (0,0) size 28x15
-      text run at (0,0) width 28: "fixed"
+layer at (-42,439) size 96x13 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+  RenderInline (relative positioned) {SPAN} at (0,0) size 96x13 [bgcolor=#008000]
+    RenderText {#text} at (350,0) size 50x13
+      text run at (350,0) width 50: "relative2"
+layer at (234,439) size 29x13
+  RenderBlock (positioned) {SPAN} at (234.47,439.16) size 28.05x13 [bgcolor=#FF0000]
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "fixed"

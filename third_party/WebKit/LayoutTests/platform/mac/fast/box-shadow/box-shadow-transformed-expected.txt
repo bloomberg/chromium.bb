@@ -1,0 +1,31 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x586
+  RenderBlock {HTML} at (0,0) size 800x586
+    RenderBody {BODY} at (8,16) size 784x562
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 422x16
+          text run at (0,0) width 422: "The shadow should look identical relative to the box in each case."
+      RenderBlock (anonymous) at (0,32) size 784x530
+        RenderBlock {DIV} at (20,20) size 300x150
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (340,133) size 4x16
+          text run at (340,133) width 4: " "
+        RenderBlock {DIV} at (364,20) size 300x150
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+        RenderBlock {DIV} at (20,210) size 300x300
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (340,398) size 4x16
+          text run at (340,398) width 4: " "
+        RenderBlock {DIV} at (364,210) size 300x300
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+layer at (128,93) size 100x100
+  RenderBlock (relative positioned) {DIV} at (100,25) size 100x100
+layer at (472,93) size 100x100
+  RenderBlock (relative positioned) {DIV} at (100,25) size 100x100
+layer at (128,358) size 100x100
+  RenderBlock (relative positioned) {DIV} at (100,100) size 100x100
+layer at (472,358) size 100x100
+  RenderBlock (relative positioned) {DIV} at (100,100) size 100x100
