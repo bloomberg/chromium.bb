@@ -34,6 +34,8 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/ImageBufferSurface.h"
 
+class SkImage;
+
 namespace blink {
 
 // This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted
@@ -64,6 +66,7 @@ public:
     virtual void setIsHidden(bool hidden) OVERRIDE { m_layerBridge->setIsHidden(hidden); }
     virtual void setImageBuffer(ImageBuffer* imageBuffer) OVERRIDE { m_layerBridge->setImageBuffer(imageBuffer); }
 
+    virtual PassRefPtr<SkImage> newImageSnapshot() const OVERRIDE { return m_layerBridge->newImageSnapshot(); }
 private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;
 };

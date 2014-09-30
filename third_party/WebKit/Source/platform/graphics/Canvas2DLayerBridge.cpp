@@ -30,6 +30,7 @@
 #include "GrContext.h"
 #include "SkDevice.h"
 #include "SkSurface.h"
+
 #include "platform/TraceEvent.h"
 #include "platform/graphics/Canvas2DLayerManager.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -581,6 +582,11 @@ Platform3DObject Canvas2DLayerBridge::getBackingTexture()
         return renderTarget->asTexture()->getTextureHandle();
     }
     return 0;
+}
+
+PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()
+{
+    return adoptRef(m_canvas->newImageSnapshot());
 }
 
 Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other) {

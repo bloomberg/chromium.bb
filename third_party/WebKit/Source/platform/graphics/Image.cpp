@@ -39,6 +39,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
@@ -242,6 +243,11 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
     RefPtr<Image> image(this);
 
     return image.release();
+}
+
+PassRefPtr<SkImage> Image::skImage()
+{
+    return nullptr;
 }
 
 } // namespace blink

@@ -250,6 +250,7 @@ void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
         setStrokeColor(Color::black);
         return;
     }
+
     mutableState()->setStrokePattern(pattern);
 }
 

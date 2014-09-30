@@ -47,6 +47,7 @@ public:
     virtual SkCanvas* canvas() const OVERRIDE;
     virtual bool isValid() const OVERRIDE;
 
+    virtual PassRefPtr<SkImage> newImageSnapshot() const OVERRIDE;
 private:
     RefPtr<SkSurface> m_surface;
 };

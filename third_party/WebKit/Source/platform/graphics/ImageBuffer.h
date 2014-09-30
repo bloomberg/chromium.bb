@@ -124,6 +124,8 @@ public:
 
     void notifySurfaceInvalid();
 
+    PassRefPtr<SkImage> newImageSnapshot() const;
+
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 

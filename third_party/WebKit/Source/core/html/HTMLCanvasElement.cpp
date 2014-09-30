@@ -50,6 +50,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/WebGLImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
@@ -731,18 +732,17 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
         return nullptr;
     }
 
-    if (mode == CopySourceImageIfVolatile) {
-        *status = NormalSourceImageStatus;
-        return copiedImage();
-    }
-
     if (m_context && m_context->is3d()) {
         m_context->paintRenderingResultsToCanvas();
         *status = ExternalSourceImageStatus;
+
+        // can't create SkImage from WebGLImageBufferSurface (contains only SkBitmap)
+        return m_imageBuffer->copyImage(DontCopyBackingStore, Unscaled);
     } else {
         *status = NormalSourceImageStatus;
     }
-    return m_imageBuffer->copyImage(DontCopyBackingStore, Unscaled);
+
+    return StaticBitmapImage::create(m_imageBuffer->newImageSnapshot());
 }
 
 bool HTMLCanvasElement::wouldTaintOrigin(SecurityOrigin*) const

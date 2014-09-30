@@ -40,6 +40,7 @@
 
 class SkBitmap;
 class SkCanvas;
+class SkImage;
 class SkPicture;
 
 namespace blink {
@@ -56,7 +57,7 @@ enum OpacityMode {
 class PLATFORM_EXPORT ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(ImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~ImageBufferSurface() { }
+    virtual ~ImageBufferSurface();
 
     virtual SkCanvas* canvas() const = 0;
     virtual const SkBitmap& bitmap();
@@ -76,6 +77,8 @@ public:
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void didClearCanvas() { }
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
+
+    virtual PassRefPtr<SkImage> newImageSnapshot() const;
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

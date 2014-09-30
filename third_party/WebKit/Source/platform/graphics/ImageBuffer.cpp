@@ -138,6 +138,11 @@ void ImageBuffer::notifySurfaceInvalid()
         m_client->notifySurfaceInvalid();
 }
 
+PassRefPtr<SkImage> ImageBuffer::newImageSnapshot() const
+{
+    return m_surface->newImageSnapshot();
+}
+
 static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 {
     SkBitmap tmp;

@@ -35,6 +35,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -45,6 +46,8 @@ ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityM
 {
     setIsHidden(false);
 }
+
+ImageBufferSurface::~ImageBufferSurface() { }
 
 PassRefPtr<SkPicture> ImageBufferSurface::getPicture()
 {
@@ -76,6 +79,11 @@ const SkBitmap& ImageBufferSurface::cachedBitmap() const
 {
     DEFINE_STATIC_LOCAL(SkBitmap, nullBitmap, ());
     return nullBitmap;
+}
+
+PassRefPtr<SkImage> ImageBufferSurface::newImageSnapshot() const
+{
+    return nullptr;
 }
 
 } // namespace blink
