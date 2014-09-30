@@ -29,6 +29,7 @@ namespace blink {
 
 GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
     : m_compositingReasons(CompositingReasonNone)
+    , m_ownerNodeId(0)
 {
 }
 
