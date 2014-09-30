@@ -118,11 +118,19 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     std::string settings = "";
     std::string test_path = spec.substr(spec.find("/inspector/") + 11);
     size_t slash_index = test_path.find("/");
+    std::string test_path_setting = base::StringPrintf(
+        "\"testPath\":\"\\\"%s\\\"\"", spec.c_str());
+
+    // TODO(pfeldman): remove once migrated to testPath.
+    std::string last_active_panel;
     if (slash_index != std::string::npos) {
-      settings = base::StringPrintf("{\"lastActivePanel\":\"\\\"%s\\\"\"}",
-                                    test_path.substr(0, slash_index).c_str());
+      last_active_panel = base::StringPrintf(
+          ",\"lastActivePanel\":\"\\\"%s\\\"\"",
+          test_path.substr(0, slash_index).c_str());
     }
-    test_runner_->ShowDevTools(settings, std::string());
+
+    test_runner_->ShowDevTools(base::StringPrintf("{%s%s}",
+        test_path_setting.c_str(), last_active_panel.c_str()), std::string());
   }
   if (spec.find("/viewsource/") != std::string::npos) {
     test_runner_->setShouldEnableViewSource(true);
