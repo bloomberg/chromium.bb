@@ -24,6 +24,9 @@ class WebString;
 }  // namespace blink
 
 namespace content {
+
+struct Manifest;
+
 class PushMessagingDispatcher : public RenderFrameObserver,
                                 public blink::WebPushClient {
  public:
@@ -35,15 +38,15 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebPushClient implementation.
-  // TODO(mvanouwerkerk): Delete this method once its callers are gone and
-  // WebPushClient no longer defines it (as pure virtual).
-  virtual void registerPushMessaging(
-      const blink::WebString& sender_id,
-      blink::WebPushRegistrationCallbacks* callbacks);
   virtual void registerPushMessaging(
       const blink::WebString& sender_id,
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);
+
+  void DoRegister(const std::string& sender_id,
+                  blink::WebPushRegistrationCallbacks* callbacks,
+                  blink::WebServiceWorkerProvider* service_worker_provider,
+                  const Manifest& manifest);
 
   void OnRegisterSuccess(int32 callbacks_id,
                          const GURL& endpoint,

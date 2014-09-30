@@ -461,6 +461,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindServiceRegistry(
       mojo::ScopedMessagePipeHandle service_provider_handle);
 
+  ManifestManager* manifest_manager();
+
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 

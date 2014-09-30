@@ -4,8 +4,11 @@
 
 #include "content/renderer/push_messaging_dispatcher.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/push_messaging_messages.h"
+#include "content/renderer/manifest/manifest_manager.h"
+#include "content/renderer/render_frame_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
@@ -36,20 +39,21 @@ bool PushMessagingDispatcher::OnMessageReceived(const IPC::Message& message) {
 
 void PushMessagingDispatcher::registerPushMessaging(
     const WebString& sender_id,
-    blink::WebPushRegistrationCallbacks* callbacks) {
-  DCHECK(callbacks);
-  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
-      blink::WebPushError::ErrorTypeAbort,
-      WebString::fromUTF8(PushMessagingStatusToString(
-          PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_NO_SERVICE_WORKER))));
-  callbacks->onError(error.release());
-  delete callbacks;
-}
-
-void PushMessagingDispatcher::registerPushMessaging(
-    const WebString& sender_id,
     blink::WebPushRegistrationCallbacks* callbacks,
     blink::WebServiceWorkerProvider* service_worker_provider) {
+  RenderFrameImpl::FromRoutingID(routing_id())->manifest_manager()->GetManifest(
+      base::Bind(&PushMessagingDispatcher::DoRegister,
+                 base::Unretained(this),
+                 sender_id.utf8(),
+                 callbacks,
+                 service_worker_provider));
+}
+
+void PushMessagingDispatcher::DoRegister(
+    const std::string& sender_id,
+    blink::WebPushRegistrationCallbacks* callbacks,
+    blink::WebServiceWorkerProvider* service_worker_provider,
+    const Manifest& manifest) {
   DCHECK(callbacks);
   int callbacks_id = registration_callbacks_.Add(callbacks);
   int service_worker_provider_id = static_cast<WebServiceWorkerProviderImpl*>(
@@ -57,7 +61,9 @@ void PushMessagingDispatcher::registerPushMessaging(
   Send(new PushMessagingHostMsg_Register(
       routing_id(),
       callbacks_id,
-      sender_id.utf8(),
+      manifest.gcm_sender_id.is_null()
+          ? sender_id
+          : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       service_worker_provider_id));
 }

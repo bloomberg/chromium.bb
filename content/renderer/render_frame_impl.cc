@@ -1006,6 +1006,10 @@ void RenderFrameImpl::BindServiceRegistry(
   service_registry_.BindRemoteServiceProvider(service_provider_handle.Pass());
 }
 
+ManifestManager* RenderFrameImpl::manifest_manager() {
+  return manifest_manager_;
+}
+
 void RenderFrameImpl::OnBeforeUnload() {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnBeforeUnload",
                "id", routing_id_);
