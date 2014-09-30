@@ -24,23 +24,23 @@ using content::BrowserThread;
 
 namespace chromeos {
 
+bool IsExternalFileURLType(storage::FileSystemType type) {
+  return type == storage::kFileSystemTypeDrive ||
+         type == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
+         type == storage::kFileSystemTypeProvided;
+}
+
 GURL FileSystemURLToExternalFileURL(
     const storage::FileSystemURL& file_system_url) {
-  if (file_system_url.mount_type() != storage::kFileSystemTypeExternal)
+  if (file_system_url.mount_type() != storage::kFileSystemTypeExternal ||
+      !IsExternalFileURLType(file_system_url.type())) {
     return GURL();
-
-  switch (file_system_url.type()) {
-    case storage::kFileSystemTypeDrive:
-    case storage::kFileSystemTypeDeviceMediaAsFileStorage:
-    case storage::kFileSystemTypeProvided:
-      return GURL(base::StringPrintf(
-          "%s:%s",
-          chrome::kExternalFileScheme,
-          file_system_url.virtual_path().AsUTF8Unsafe().c_str()));
-
-    default:
-      return GURL();
   }
+
+  return GURL(base::StringPrintf(
+      "%s:%s",
+      chrome::kExternalFileScheme,
+      file_system_url.virtual_path().AsUTF8Unsafe().c_str()));
 }
 
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {

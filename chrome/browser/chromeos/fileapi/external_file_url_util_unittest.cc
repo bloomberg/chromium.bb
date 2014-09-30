@@ -80,15 +80,4 @@ TEST_F(ExternalFileURLUtilTest, FilePathToExternalFileURL) {
                 .AsUTF8Unsafe());
 }
 
-TEST_F(ExternalFileURLUtilTest, ParseFileURLWithExternalFileOrigin) {
-  // filesystem:externalfile:/xxx is used only internally. It should not parsed
-  // directly.
-  ASSERT_FALSE(storage::FileSystemURL::CreateForTest(
-                   GURL("filesystem:externalfile:/")).is_valid());
-  ASSERT_FALSE(storage::FileSystemURL::CreateForTest(
-                   GURL(
-                       "filesystem:externalfile:/external/drive-test-user-hash/"
-                       "file.txt")).is_valid());
-}
-
 }  // namespace chromeos

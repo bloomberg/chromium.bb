@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_UTIL_H_
 
+#include "storage/common/fileapi/file_system_types.h"
+
 class GURL;
 class Profile;
 
@@ -17,6 +19,9 @@ class FileSystemURL;
 }
 
 namespace chromeos {
+
+// Returns whether the external file URL is provided for the |type| or not.
+bool IsExternalFileURLType(storage::FileSystemType type);
 
 // Obtains the external file url formatted as "externalfile:<path>" from file
 // path. Returns empty URL if the file system does not provide the external file

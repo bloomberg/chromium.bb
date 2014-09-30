@@ -181,12 +181,6 @@ bool FileSystemBackend::IsAccessAllowed(
     return true;
   }
 
-  // Grant access for URL having "externalfile:" scheme. The URL
-  // filesystem:externalfile:/xxx cannot be parsed directly. The URL is created
-  // only by DriveURLRequestJob.
-  if (url.origin().scheme() == chrome::kExternalFileScheme)
-    return true;
-
   // Check first to make sure this extension has fileBrowserHander permissions.
   if (!special_storage_policy_.get() ||
       !special_storage_policy_->IsFileHandler(extension_id))

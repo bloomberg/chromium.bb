@@ -29,15 +29,29 @@ namespace chromeos {
 // requests for drive resources and FileSystem.  It exposes content URLs
 // formatted as drive:<drive-file-path>.
 // The methods should be run on IO thread.
+// TODO(hirono): After removing MHTML support, stop to use the special
+// externalfile: scheme and use filesystem: URL directly.  crbug.com/415455
 class ExternalFileURLRequestJob : public net::URLRequestJob {
  public:
+  // Scope of isolated file system.
+  class IsolatedFileSystemScope {
+   public:
+    explicit IsolatedFileSystemScope(const std::string& file_system_id);
+    ~IsolatedFileSystemScope();
+
+   private:
+    std::string file_system_id_;
+    DISALLOW_COPY_AND_ASSIGN(IsolatedFileSystemScope);
+  };
+
   // Callback to take results from an internal helper defined in
   // drive_url_request_job.cc.
-  typedef base::Callback<
-      void(net::Error,
-           const scoped_refptr<storage::FileSystemContext>& file_system_context,
-           const storage::FileSystemURL& file_system_url,
-           const std::string& mime_type)> HelperCallback;
+  typedef base::Callback<void(
+      net::Error,
+      const scoped_refptr<storage::FileSystemContext>& file_system_context,
+      scoped_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+      const storage::FileSystemURL& file_system_url,
+      const std::string& mime_type)> HelperCallback;
 
   ExternalFileURLRequestJob(void* profile_id,
                             net::URLRequest* request,
@@ -64,6 +78,7 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
   void OnHelperResultObtained(
       net::Error error,
       const scoped_refptr<storage::FileSystemContext>& file_system_context,
+      scoped_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
       const storage::FileSystemURL& file_system_url,
       const std::string& mime_type);
 
@@ -84,6 +99,7 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
   int64 remaining_bytes_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_ptr<IsolatedFileSystemScope> isolated_file_system_scope_;
   storage::FileSystemURL file_system_url_;
   std::string mime_type_;
   scoped_ptr<storage::FileStreamReader> stream_reader_;
