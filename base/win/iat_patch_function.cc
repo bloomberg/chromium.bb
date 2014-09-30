@@ -235,18 +235,33 @@ DWORD IATPatchFunction::Patch(const wchar_t* module,
                               const char* imported_from_module,
                               const char* function_name,
                               void* new_function) {
-  DCHECK_EQ(static_cast<void*>(NULL), original_function_);
-  DCHECK_EQ(static_cast<IMAGE_THUNK_DATA*>(NULL), iat_thunk_);
-  DCHECK_EQ(static_cast<void*>(NULL), intercept_function_);
-
   HMODULE module_handle = LoadLibraryW(module);
-
   if (module_handle == NULL) {
     NOTREACHED();
     return GetLastError();
   }
 
-  DWORD error = InterceptImportedFunction(module_handle,
+  DWORD error = PatchFromModule(module_handle, imported_from_module,
+                                function_name, new_function);
+  if (NO_ERROR == error) {
+    module_handle_ = module_handle;
+  } else {
+    FreeLibrary(module_handle);
+  }
+
+  return error;
+}
+
+DWORD IATPatchFunction::PatchFromModule(HMODULE module,
+                                        const char* imported_from_module,
+                                        const char* function_name,
+                                        void* new_function) {
+  DCHECK_EQ(static_cast<void*>(NULL), original_function_);
+  DCHECK_EQ(static_cast<IMAGE_THUNK_DATA*>(NULL), iat_thunk_);
+  DCHECK_EQ(static_cast<void*>(NULL), intercept_function_);
+  DCHECK(module);
+
+  DWORD error = InterceptImportedFunction(module,
                                           imported_from_module,
                                           function_name,
                                           new_function,
@@ -255,10 +270,7 @@ DWORD IATPatchFunction::Patch(const wchar_t* module,
 
   if (NO_ERROR == error) {
     DCHECK_NE(original_function_, intercept_function_);
-    module_handle_ = module_handle;
     intercept_function_ = new_function;
-  } else {
-    FreeLibrary(module_handle);
   }
 
   return error;

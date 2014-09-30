@@ -47,6 +47,12 @@ class BASE_EXPORT IATPatchFunction {
               const char* function_name,
               void* new_function);
 
+  // Same as Patch(), but uses a handle to a |module| instead of the DLL name.
+  DWORD PatchFromModule(HMODULE module,
+                        const char* imported_from_module,
+                        const char* function_name,
+                        void* new_function);
+
   // Unpatch the IAT entry using internally saved original
   // function.
   //

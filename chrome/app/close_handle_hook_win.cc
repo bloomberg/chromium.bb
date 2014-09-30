@@ -5,13 +5,13 @@
 #include "chrome/app/close_handle_hook_win.h"
 
 #include <Windows.h>
+#include <psapi.h>
 
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/strings/string16.h"
 #include "base/win/iat_patch_function.h"
+#include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_version_info.h"
 
@@ -28,13 +28,106 @@ BOOL WINAPI CloseHandleHook(HANDLE handle) {
   return g_close_function(handle);
 }
 
+// Provides a simple way to temporarily change the protection of a memory page.
+class AutoProtectMemory {
+ public:
+  AutoProtectMemory()
+      : changed_(false), address_(NULL), bytes_(0), old_protect_(0) {}
+
+  ~AutoProtectMemory() {
+    RevertProtection();
+  }
+
+  // Grants write access to a given memory range.
+  bool ChangeProtection(void* address, size_t bytes);
+
+  // Restores the original page protection.
+  void RevertProtection();
+
+ private:
+  bool changed_;
+  void* address_;
+  size_t bytes_;
+  DWORD old_protect_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoProtectMemory);
+};
+
+bool AutoProtectMemory::ChangeProtection(void* address, size_t bytes) {
+  DCHECK(!changed_);
+  DCHECK(address);
+
+  // Change the page protection so that we can write.
+  MEMORY_BASIC_INFORMATION memory_info;
+  if (!VirtualQuery(address, &memory_info, sizeof(memory_info)))
+    return false;
+
+  DWORD is_executable = (PAGE_EXECUTE | PAGE_EXECUTE_READ |
+                        PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY) &
+                        memory_info.Protect;
+
+  DWORD protect = is_executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
+  if (!VirtualProtect(address, bytes, protect, &old_protect_))
+    return false;
+
+  changed_ = true;
+  address_ = address;
+  bytes_ = bytes;
+  return true;
+}
+
+void AutoProtectMemory::RevertProtection() {
+  if (!changed_)
+    return;
+
+  DCHECK(address_);
+  DCHECK(bytes_);
+
+  VirtualProtect(address_, bytes_, old_protect_, &old_protect_);
+  changed_ = false;
+  address_ = NULL;
+  bytes_ = 0;
+  old_protect_ = 0;
+}
+
+// Performs an EAT interception.
+void EATPatch(HMODULE module, const char* function_name,
+              void* new_function, void** old_function) {
+  if (!module)
+    return;
+
+  base::win::PEImage pe(module);
+  if (!pe.VerifyMagic())
+    return;
+
+  DWORD* eat_entry = pe.GetExportEntry(function_name);
+  if (!eat_entry)
+    return;
+
+  if (!(*old_function))
+    *old_function = pe.RVAToAddr(*eat_entry);
+
+  AutoProtectMemory memory;
+  if (!memory.ChangeProtection(eat_entry, sizeof(DWORD)))
+    return;
+
+  // Perform the patch.
+#pragma warning(push)
+#pragma warning(disable: 4311)
+  // These casts generate warnings because they are 32 bit specific.
+  *eat_entry = reinterpret_cast<DWORD>(new_function) -
+               reinterpret_cast<DWORD>(module);
+#pragma warning(pop)
+}
+
 // Keeps track of all the hooks needed to intercept CloseHandle.
 class CloseHandleHooks {
  public:
   CloseHandleHooks() {}
   ~CloseHandleHooks() {}
 
-  void AddIATPatch(const base::string16& module);
+  void AddIATPatch(HMODULE module);
+  void AddEATPatch();
   void Unpatch();
 
  private:
@@ -43,12 +136,17 @@ class CloseHandleHooks {
 };
 base::LazyInstance<CloseHandleHooks> g_hooks = LAZY_INSTANCE_INITIALIZER;
 
-void CloseHandleHooks::AddIATPatch(const base::string16& module) {
-  if (module.empty())
+void CloseHandleHooks::AddIATPatch(HMODULE module) {
+  if (!module)
     return;
 
   base::win::IATPatchFunction* patch = new base::win::IATPatchFunction;
-  patch->Patch(module.c_str(), "kernel32.dll", "CloseHandle", CloseHandleHook);
+  if (patch->PatchFromModule(module, "kernel32.dll", "CloseHandle",
+                             CloseHandleHook)) {
+    delete patch;
+    return;
+  }
+
   hooks_.push_back(patch);
   if (!g_close_function) {
     // Things are probably messed up if each intercepted function points to
@@ -58,14 +156,24 @@ void CloseHandleHooks::AddIATPatch(const base::string16& module) {
   }
 }
 
+void CloseHandleHooks::AddEATPatch() {
+  // An attempt to restore the entry on the table at destruction is not safe.
+  EATPatch(GetModuleHandleA("kernel32.dll"), "CloseHandle",
+           &CloseHandleHook, reinterpret_cast<void**>(&g_close_function));
+}
+
 void CloseHandleHooks::Unpatch() {
   for (std::vector<base::win::IATPatchFunction*>::iterator it = hooks_.begin();
        it != hooks_.end(); ++it) {
     (*it)->Unpatch();
+    delete *it;
   }
 }
 
 bool UseHooks() {
+#if defined(ARCH_CPU_X86_64)
+  return false;
+#elif defined(NDEBUG)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
       channel == chrome::VersionInfo::CHANNEL_DEV) {
@@ -73,32 +181,25 @@ bool UseHooks() {
   }
 
   return false;
+#else  // NDEBUG
+  return true;
+#endif
 }
 
-base::string16 GetModuleName(HMODULE module) {
-  base::string16 name;
-  if (!module)
-    return name;
-  wchar_t buffer[MAX_PATH];
-  int rv = GetModuleFileName(module, buffer, MAX_PATH);
-  if (rv == MAX_PATH)
-    return name;
-
-  buffer[MAX_PATH - 1] = L'\0';
-  name.assign(buffer);
-  base::FilePath path(name);
-  return path.BaseName().AsUTF16Unsafe();
-}
-
-HMODULE GetChromeDLLModule() {
-  HMODULE module;
-  if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                             GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                         reinterpret_cast<wchar_t*>(&GetChromeDLLModule),
-                         &module)) {
-    return NULL;
+void PatchLoadedModules(CloseHandleHooks* hooks) {
+  const DWORD kSize = 256;
+  DWORD returned;
+  scoped_ptr<HMODULE[]> modules(new HMODULE[kSize]);
+  if (!EnumProcessModules(GetCurrentProcess(), modules.get(),
+                          kSize * sizeof(HMODULE), &returned)) {
+    return;
   }
-  return module;
+  returned /= sizeof(HMODULE);
+  returned = std::min(kSize, returned);
+
+  for (DWORD current = 0; current < returned; current++) {
+    hooks->AddIATPatch(modules[current]);
+  }
 }
 
 }  // namespace
@@ -106,8 +207,11 @@ HMODULE GetChromeDLLModule() {
 void InstallCloseHandleHooks() {
   if (UseHooks()) {
     CloseHandleHooks* hooks = g_hooks.Pointer();
-    hooks->AddIATPatch(L"chrome.exe");
-    hooks->AddIATPatch(GetModuleName(GetChromeDLLModule()));
+
+    // Performing EAT interception first is safer in the presence of other
+    // threads attempting to call CloseHandle.
+    hooks->AddEATPatch();
+    PatchLoadedModules(hooks);
   } else {
     base::win::DisableHandleVerifier();
   }
