@@ -13,14 +13,15 @@ cr.define('cr.ui', function() {
   /**
    * Helper function for ContextMenuButton to find the first ancestor of the
    * button that has a context menu.
-   * @param {!MenuButton} el The button to start the search from.
+   * @param {!cr.ui.MenuButton} button The button to start the search from.
    * @return {HTMLElement} The found element or null if not found.
    */
-  function getContextMenuTarget(el) {
+  function getContextMenuTarget(button) {
+    var el = button;
     do {
       el = el.parentNode;
     } while (el && !('contextMenu' in el));
-    return el;
+    return el ? assertInstanceof(el, HTMLElement) : null;
   }
 
   /**
@@ -28,7 +29,7 @@ cr.define('cr.ui', function() {
    * ancestor that has a {@code contextMenu} property.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {MenuButton}
+   * @extends {cr.ui.MenuButton}
    */
   var ContextMenuButton = cr.ui.define('button');
 
@@ -80,7 +81,7 @@ cr.define('cr.ui', function() {
       var self = this;
       window.setTimeout(function() {
         MenuButton.prototype.showMenu.call(self, shouldSetFocus);
-      });
+      }, 0);
     }
   };
 

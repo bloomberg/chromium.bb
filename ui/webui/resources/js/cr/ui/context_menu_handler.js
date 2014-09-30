@@ -11,7 +11,8 @@ cr.define('cr.ui', function() {
   /**
    * Handles context menus.
    * @constructor
-   * @extends {EventTarget}
+   * @extends {cr.EventTarget}
+   * @implements {EventListener}
    */
   function ContextMenuHandler() {
     this.showingEvents_ = new EventTracker();
@@ -36,6 +37,7 @@ cr.define('cr.ui', function() {
      * @param {!cr.ui.Menu} menu The menu to show.
      */
     showMenu: function(e, menu) {
+      e.currentTarget = assertInstanceof(e.currentTarget, Node);
       menu.updateCommands(e.currentTarget);
       if (!menu.hasVisibleItems())
         return;
@@ -67,7 +69,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Hide the currently shown menu.
-     * @param {HideType=} opt_hideType Type of hide.
+     * @param {cr.ui.HideType=} opt_hideType Type of hide.
      *     default: cr.ui.HideType.INSTANT.
      */
     hideMenu: function(opt_hideType) {
@@ -211,17 +213,17 @@ cr.define('cr.ui', function() {
 
     /**
      * Adds a contextMenu property to an element or element class.
-     * @param {!Element|!Function} element The element or class to add the
-     *     contextMenu property to.
+     * @param {!Element|!Function} elementOrClass The element or class to add
+     *     the contextMenu property to.
      */
-    addContextMenuProperty: function(element) {
-      if (typeof element == 'function')
-        element = element.prototype;
+    addContextMenuProperty: function(elementOrClass) {
+      var target = typeof elementOrClass == 'function' ?
+          elementOrClass.prototype : elementOrClass;
 
-      element.__defineGetter__('contextMenu', function() {
+      target.__defineGetter__('contextMenu', function() {
         return this.contextMenu_;
       });
-      element.__defineSetter__('contextMenu', function(menu) {
+      target.__defineSetter__('contextMenu', function(menu) {
         var oldContextMenu = this.contextMenu;
 
         if (typeof menu == 'string' && menu[0] == '#') {
@@ -251,12 +253,12 @@ cr.define('cr.ui', function() {
         cr.dispatchPropertyChange(this, 'contextMenu', menu, oldContextMenu);
       });
 
-      if (!element.getRectForContextMenu) {
+      if (!target.getRectForContextMenu) {
         /**
          * @return {!ClientRect} The rect to use for positioning the context
          *     menu when the context menu is not opened using a mouse position.
          */
-        element.getRectForContextMenu = function() {
+        target.getRectForContextMenu = function() {
           return this.getBoundingClientRect();
         };
       }

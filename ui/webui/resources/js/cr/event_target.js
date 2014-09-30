@@ -7,6 +7,11 @@
  * as defined by DOM Level 2 Events.
  */
 
+/**
+ * @typedef {EventListener|function(!Event):(boolean|undefined)}
+ */
+var EventListenerType;
+
 cr.define('cr', function() {
 
   /**
@@ -23,8 +28,8 @@ cr.define('cr', function() {
     /**
      * Adds an event listener to the target.
      * @param {string} type The name of the event.
-     * @param {!Function|{handleEvent:Function}} handler The handler for the
-     *     event. This is called when the event is dispatched.
+     * @param {EventListenerType} handler The handler for the event. This is
+     *     called when the event is dispatched.
      */
     addEventListener: function(type, handler) {
       if (!this.listeners_)
@@ -41,8 +46,7 @@ cr.define('cr', function() {
     /**
      * Removes an event listener from the target.
      * @param {string} type The name of the event.
-     * @param {!Function|{handleEvent:Function}} handler The handler for the
-     *     event.
+     * @param {EventListenerType} handler The handler for the event.
      */
     removeEventListener: function(type, handler) {
       if (!this.listeners_)

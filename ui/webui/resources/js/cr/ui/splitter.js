@@ -38,6 +38,7 @@ cr.define('cr.ui', function() {
    * not take the page zoom into account so it returns the physical pixels
    * instead of the logical pixel size.
    * @param {!Document} doc The document to get the page zoom factor for.
+   * @return {number} The zoom factor of the document.
    */
   function getZoomFactor(doc) {
     var dummyElement = doc.createElement('div');
@@ -129,10 +130,11 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles the mousedown event which starts the dragging of the splitter.
-     * @param {!MouseEvent} e The mouse event.
+     * @param {!Event} e The mouse event.
      * @private
      */
     handleMouseDown_: function(e) {
+      e = /** @type {!MouseEvent} */(e);
       this.startDrag(e.clientX, false);
       // Default action is to start selection and to move focus.
       e.preventDefault();
@@ -140,10 +142,11 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles the touchstart event which starts the dragging of the splitter.
-     * @param {!TouchEvent} e The touch event.
+     * @param {!Event} e The touch event.
      * @private
      */
     handleTouchStart_: function(e) {
+      e = /** @type {!TouchEvent} */(e);
       if (e.touches.length == 1) {
         this.startDrag(e.touches[0].clientX, true);
         e.preventDefault();

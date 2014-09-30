@@ -11,20 +11,19 @@
  * extensions API.
  */
 
+/**
+ * The kind of link open we want to perform.
+ * @enum {number}
+ */
+cr.LinkKind = {
+  FOREGROUND_TAB: 0,
+  BACKGROUND_TAB: 1,
+  WINDOW: 2,
+  SELF: 3,
+  INCOGNITO: 4
+};
+
 cr.define('cr', function() {
-
-  /**
-   * The kind of link open we want to perform.
-   * @enum {number}
-   */
-  var LinkKind = {
-    FOREGROUND_TAB: 0,
-    BACKGROUND_TAB: 1,
-    WINDOW: 2,
-    SELF: 3,
-    INCOGNITO: 4
-  };
-
   /**
    * This class is used to handle opening of links based on user actions. The
    * following actions are currently implemented:
@@ -42,7 +41,7 @@ cr.define('cr', function() {
    * On Mac, uses Command instead of Ctrl.
    * For keyboard support you need to use keydown.
    *
-   * @param {!LocalStrings} localStrings The local strings object which is used
+   * @param {!LoadTimeData} localStrings The local strings object which is used
    *     to localize the warning prompt in case the user tries to open a lot of
    *     links.
    * @constructor
@@ -68,11 +67,11 @@ cr.define('cr', function() {
     /**
      * This method is used for showing the warning confirm message when the
      * user is trying to open a lot of links.
-     * @param {number} The number of URLs to open.
+     * @param {number} count The number of URLs to open.
      * @return {string} The message to show the user.
      */
     getWarningMessage: function(count) {
-      return this.localStrings_.getStringF('should_open_all', count);
+      return this.localStrings_.getStringF('should_open_all', String(count));
     },
 
     /**
@@ -88,9 +87,10 @@ cr.define('cr', function() {
         var ctrl = cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey;
 
         if (e.button == 1 || ctrl) // middle, ctrl or keyboard
-          kind = e.shiftKey ? LinkKind.FOREGROUND_TAB : LinkKind.BACKGROUND_TAB;
+          kind = e.shiftKey ? cr.LinkKind.FOREGROUND_TAB :
+              cr.LinkKind.BACKGROUND_TAB;
         else // left or keyboard
-          kind = e.shiftKey ? LinkKind.WINDOW : LinkKind.SELF;
+          kind = e.shiftKey ? cr.LinkKind.WINDOW : cr.LinkKind.SELF;
 
         this.openUrls([url], kind);
       }
@@ -100,7 +100,7 @@ cr.define('cr', function() {
     /**
      * Opens a URL in a new tab, window or incognito window.
      * @param {string} url The URL to open.
-     * @param {LinkKind} kind The kind of open we want to do.
+     * @param {cr.LinkKind} kind The kind of open we want to do.
      */
     openUrl: function(url, kind) {
       this.openUrls([url], kind);
@@ -109,7 +109,7 @@ cr.define('cr', function() {
     /**
      * Opens URLs in new tab, window or incognito mode.
      * @param {!Array.<string>} urls The URLs to open.
-     * @param {LinkKind} kind The kind of open we want to do.
+     * @param {cr.LinkKind} kind The kind of open we want to do.
      */
     openUrls: function(urls, kind) {
       if (urls.length < 1)
@@ -127,18 +127,18 @@ cr.define('cr', function() {
         return url[0] == '#' ? base + url : url;
       });
 
-      var incognito = kind == LinkKind.INCOGNITO;
-      if (kind == LinkKind.WINDOW || incognito) {
+      var incognito = kind == cr.LinkKind.INCOGNITO;
+      if (kind == cr.LinkKind.WINDOW || incognito) {
         chrome.windows.create({
           url: urls,
           incognito: incognito
         });
-      } else if (kind == LinkKind.FOREGROUND_TAB ||
-                 kind == LinkKind.BACKGROUND_TAB) {
+      } else if (kind == cr.LinkKind.FOREGROUND_TAB ||
+                 kind == cr.LinkKind.BACKGROUND_TAB) {
         urls.forEach(function(url, i) {
           chrome.tabs.create({
             url: url,
-            selected: kind == LinkKind.FOREGROUND_TAB && !i
+            selected: kind == cr.LinkKind.FOREGROUND_TAB && !i
           });
         });
       } else {
@@ -150,6 +150,5 @@ cr.define('cr', function() {
   // Export
   return {
     LinkController: LinkController,
-    LinkKind: LinkKind
   };
 });

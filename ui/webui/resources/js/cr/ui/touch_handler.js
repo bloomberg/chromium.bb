@@ -130,6 +130,7 @@ cr.define('cr.ui', function() {
   /**
    * The type of event sent by TouchHandler
    * @constructor
+   * @extends {Event}
    * @param {string} type The type of event (one of cr.ui.Grabber.EventType).
    * @param {boolean} bubbles Whether or not the event should bubble.
    * @param {number} clientX The X location of the touch.
@@ -788,7 +789,8 @@ cr.define('cr.ui', function() {
 
       // Dispatch to the LONG_PRESS
       this.dispatchEventXY_(TouchHandler.EventType.LONG_PRESS, this.element_,
-          this.startTouchX_, this.startTouchY_);
+          /** @type {number} */(this.startTouchX_),
+          /** @type {number} */(this.startTouchY_));
     },
 
     /**
@@ -820,12 +822,13 @@ cr.define('cr.ui', function() {
       // since the common implementation of touch dragging relies on it). Since
       // touch is our primary scenario (which we want to emulate with mouse),
       // we'll treat both cases the same and not depend on the target.
+      /** @type {Element} */
       var touchedElement;
       if (eventType == TouchHandler.EventType.TOUCH_START) {
-        touchedElement = touch.target;
+        touchedElement = assertInstanceof(touch.target, Element);
       } else {
-        touchedElement = this.element_.ownerDocument.
-            elementFromPoint(touch.clientX, touch.clientY);
+        touchedElement = assert(this.element_.ownerDocument.
+            elementFromPoint(touch.clientX, touch.clientY));
       }
 
       return this.dispatchEventXY_(eventType, touchedElement, touch.clientX,
@@ -835,8 +838,9 @@ cr.define('cr.ui', function() {
     /**
      * Dispatch a TouchHandler event to the element
      * @param {string} eventType The event to dispatch.
-       @param {number} clientX The X location for the event.
-       @param {number} clientY The Y location for the event.
+     * @param {!Element} touchedElement
+     * @param {number} clientX The X location for the event.
+     * @param {number} clientY The Y location for the event.
      * @return {boolean|undefined} The value of enableDrag after dispatching
      *         the event.
      * @private

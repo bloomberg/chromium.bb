@@ -24,14 +24,14 @@ cr.define('cr.ui', function() {
 
   /**
    * Helper function that finds the first ancestor tree item.
-   * @param {!Element} el The element to start searching from.
+   * @param {Node} node The node to start searching from.
    * @return {cr.ui.TreeItem} The found tree item or null if not found.
    */
-  function findTreeItem(el) {
-    while (el && !(el instanceof TreeItem)) {
-      el = el.parentNode;
+  function findTreeItem(node) {
+    while (node && !(node instanceof TreeItem)) {
+      node = node.parentNode;
     }
-    return el;
+    return node;
   }
 
   /**
@@ -106,7 +106,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The click event object.
      */
     handleClick: function(e) {
-      var treeItem = findTreeItem(e.target);
+      var treeItem = findTreeItem(/** @type {!Node} */(e.target));
       if (treeItem)
         treeItem.handleClick(e);
     },
@@ -121,7 +121,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The dblclick event object.
      */
     handleDblClick: function(e) {
-      var treeItem = findTreeItem(e.target);
+      var treeItem = findTreeItem(/** @type {!Node} */(e.target));
       if (treeItem)
         treeItem.expanded = !treeItem.expanded;
     },
@@ -595,11 +595,11 @@ cr.define('cr.ui', function() {
 
         // Wait for the input element to recieve focus before sizing it.
         var rowElement = this.rowElement;
-        function onFocus() {
+        var onFocus = function() {
           input.removeEventListener('focus', onFocus);
           // 20 = the padding and border of the tree-row
           cr.ui.limitInputWidth(input, rowElement, 100);
-        }
+        };
         input.addEventListener('focus', onFocus);
         input.focus();
         input.select();
@@ -653,9 +653,8 @@ cr.define('cr.ui', function() {
       return null;
 
     var nextSibling = item.nextElementSibling;
-    if (nextSibling) {
-      return nextSibling;
-    }
+    if (nextSibling)
+      return assertInstanceof(nextSibling, cr.ui.TreeItem);
     return getNextHelper(item.parentItem);
   }
 
@@ -665,7 +664,8 @@ cr.define('cr.ui', function() {
    * @return {cr.ui.TreeItem} The found item or null.
    */
   function getPrevious(item) {
-    var previousSibling = item.previousElementSibling;
+    var previousSibling = assertInstanceof(item.previousElementSibling,
+                                           cr.ui.TreeItem);
     return previousSibling ? getLastHelper(previousSibling) : item.parentItem;
   }
 
