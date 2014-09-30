@@ -707,14 +707,23 @@ void MediaCaptureDevicesDispatcher::
   // MediaStreamDevicesController::Accept(). Move this code into a shared method
   // between the two classes.
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
   bool audio_allowed =
       request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
       extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kAudioCapture);
+          extensions::APIPermission::kAudioCapture) &&
+      GetDevicePolicy(profile, extension->url(),
+                      prefs::kAudioCaptureAllowed,
+                      prefs::kAudioCaptureAllowedUrls) != ALWAYS_DENY;
   bool video_allowed =
       request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
       extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kVideoCapture);
+          extensions::APIPermission::kVideoCapture) &&
+      GetDevicePolicy(profile, extension->url(),
+                      prefs::kVideoCaptureAllowed,
+                      prefs::kVideoCaptureAllowedUrls) != ALWAYS_DENY;
 
   bool get_default_audio_device = audio_allowed;
   bool get_default_video_device = video_allowed;
@@ -756,8 +765,6 @@ void MediaCaptureDevicesDispatcher::
   // If either or both audio and video devices were requested but not
   // specified by id, get the default devices.
   if (get_default_audio_device || get_default_video_device) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
     GetDefaultDevicesForProfile(profile,
                                 get_default_audio_device,
                                 get_default_video_device,
