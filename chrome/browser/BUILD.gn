@@ -681,10 +681,13 @@ action("about_credits") {
 }
 
 # GYP version: chrome/chrome_resource.gyp:chrome_internal_resources_gen
-# TODO(GYP) write internal action
-if (false) {  #if (is_chrome_branded) {
+if (is_chrome_branded) {
   action("chrome_internal_resources_gen") {
-    # TODO(GYP)
+    script = "internal/transform_additional_modules_list.py"
+    sources = [ "internal/resources/additional_modules_list.input" ]
+    outputs = [ additional_modules_list_file ]
+    args = rebase_path(sources, root_build_dir) +
+           rebase_path(outputs, root_build_dir)
   }
 } else {
   group("chrome_internal_resources_gen") {
