@@ -66,6 +66,12 @@ void CloseHandleHooks::Unpatch() {
 }
 
 bool UseHooks() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_DEV) {
+    return true;
+  }
+
   return false;
 }
 
