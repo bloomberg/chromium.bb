@@ -78,6 +78,20 @@ CONTROL_USB_CHARGING_COMMANDS = [
     'disable_command':
         'echo 1 > /sys/module/pm8921_charger/parameters/disabled',
   },
+  {
+    # Nexus 5
+    # Setting the HIZ bit of the bq24192 causes the charger to actually ignore
+    # energy coming from USB. Setting the power_supply offline just updates the
+    # Android system to reflect that.
+    'witness_file': '/sys/kernel/debug/bq24192/INPUT_SRC_CONT',
+    'enable_command': (
+        'echo 0x4A > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'echo 1 > /sys/class/power_supply/usb/online'),
+    'disable_command': (
+        'echo 0xCA > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'chmod 644 /sys/class/power_supply/usb/online && '
+        'echo 0 > /sys/class/power_supply/usb/online'),
+  },
 ]
 
 class DeviceTempFile(object):
