@@ -222,8 +222,7 @@ To run locally:
 REPRO_STEPS_TRYJOB = """
 To reproduce on a performance try bot:
  1. Edit run-perf-test.cfg
- 2. Upload your patch with: $ git cl upload --bypass-hooks
- 3. Send to the try server: $ git cl try -m tryserver.chromium.perf -b <bot>
+ 2. $ git try -b <bot> --svn_repo='svn://svn.chromium.org/chrome-try/try-perf'
 
 Notes:
  a) Follow the in-file instructions in run-perf-test.cfg.
@@ -247,21 +246,9 @@ https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots
 """
 
 RESULTS_THANKYOU = """
-===== THANK YOU FOR CHOOSING BISECT AIRLINES =====
-Visit http://www.chromium.org/developers/core-principles for Chrome's policy
-on perf regressions.
-Contact chrome-perf-dashboard-team with any questions or suggestions about
-bisecting.
-.                   .-----.
-.     .---.         \      \==)
-.     |PERF\         \       \\
-.     |     ---------'-------'-----------.
-.     .     0 0 0 0 0 0 0 0 0 0 0 0 0 0 |_`-.
-.      \_____________.-------._______________)
-.                   /       /
-.                  /      /
-.                 /     /==)
-.                ._____."""
+O O | Visit http://www.chromium.org/developers/core-principles for Chrome's
+ X  | policy on perf regressions. Contact chrome-perf-dashboard-team with any
+/ \ | questions or suggestions about bisecting. THANK YOU."""
 
 
 def _AddAdditionalDepotInfo(depot_info):

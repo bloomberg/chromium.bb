@@ -62,7 +62,7 @@ class TTestTest(unittest.TestCase):
     t, _, p = ttest.WelchsTTest(
         [100, 101, 100, 101, 100], [1, 2, 1, 2, 1, 2, 1, 2])
     self.assertGreaterEqual(t, 250)
-    self.assertLessEqual(0.01, p)
+    self.assertLessEqual(p, 0.01)
 
   def testTTestVariance(self):
     """Verifies that higher variance -> higher p value."""
@@ -87,6 +87,8 @@ class LookupTableTest(unittest.TestCase):
   """Tests for functionality related to lookup of p-values in a table."""
 
   def setUp(self):
+    self.original_TWO_TAIL = ttest.TWO_TAIL
+    self.original_TABLE = ttest.TABLE
     ttest.TWO_TAIL = [1, 0.2, 0.1, 0.05, 0.02, 0.01]
     ttest.TABLE = {
         1: [0, 6.314, 12.71, 31.82, 63.66, 318.31],
@@ -94,6 +96,10 @@ class LookupTableTest(unittest.TestCase):
         3: [0, 2.353, 3.182, 4.541, 5.841, 10.215],
         4: [0, 2.132, 2.776, 3.747, 4.604, 7.173],
     }
+
+  def tearDown(self):
+    ttest.TWO_TAIL = self.original_TWO_TAIL
+    ttest.TABLE = self.original_TABLE
 
   def testLookupExactMatch(self):
     """Tests a lookup when there is an exact match."""
