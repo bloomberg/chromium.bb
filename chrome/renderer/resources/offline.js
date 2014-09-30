@@ -19,6 +19,7 @@ function Runner(outerContainerId, opt_config) {
 
   this.outerContainerEl = document.querySelector(outerContainerId);
   this.containerEl = null;
+  this.detailsButton = this.outerContainerEl.querySelector('#details-button');
 
   this.config = opt_config || Runner.config;
 
@@ -578,22 +579,24 @@ Runner.prototype = {
    * @param {Event} e
    */
   onKeyDown: function(e) {
-    if (!this.crashed && (Runner.keycodes.JUMP[String(e.keyCode)] ||
-         e.type == Runner.events.TOUCHSTART)) {
-      if (!this.activated) {
-        this.loadSounds();
-        this.activated = true;
+    if (e.target != this.detailsButton) {
+      if (!this.crashed && (Runner.keycodes.JUMP[String(e.keyCode)] ||
+           e.type == Runner.events.TOUCHSTART)) {
+        if (!this.activated) {
+          this.loadSounds();
+          this.activated = true;
+        }
+
+        if (!this.tRex.jumping) {
+          this.playSound(this.soundFx.BUTTON_PRESS);
+          this.tRex.startJump();
+        }
       }
 
-      if (!this.tRex.jumping) {
-        this.playSound(this.soundFx.BUTTON_PRESS);
-        this.tRex.startJump();
+      if (this.crashed && e.type == Runner.events.TOUCHSTART &&
+          e.currentTarget == this.containerEl) {
+        this.restart();
       }
-    }
-
-    if (this.crashed && e.type == Runner.events.TOUCHSTART &&
-        e.currentTarget == this.containerEl) {
-      this.restart();
     }
 
     // Speed drop, activated only when jump key is not pressed.
@@ -1855,7 +1858,7 @@ function Cloud(canvas, cloudImg, containerWidth) {
  * @enum {number}
  */
 Cloud.config = {
-  HEIGHT: 13,
+  HEIGHT: 14,
   MAX_CLOUD_GAP: 400,
   MAX_SKY_LEVEL: 30,
   MIN_CLOUD_GAP: 100,
