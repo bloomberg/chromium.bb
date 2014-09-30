@@ -41,45 +41,45 @@ class CommandBufferClientImpl : public CommandBufferClient,
   virtual ~CommandBufferClientImpl();
 
   // CommandBuffer implementation:
-  virtual bool Initialize() OVERRIDE;
-  virtual State GetLastState() OVERRIDE;
-  virtual int32 GetLastToken() OVERRIDE;
-  virtual void Flush(int32 put_offset) OVERRIDE;
-  virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
-  virtual void SetGetBuffer(int32 shm_id) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual State GetLastState() override;
+  virtual int32 GetLastToken() override;
+  virtual void Flush(int32 put_offset) override;
+  virtual void WaitForTokenInRange(int32 start, int32 end) override;
+  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  virtual void SetGetBuffer(int32 shm_id) override;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                          int32* id) OVERRIDE;
-  virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
+                                                          int32* id) override;
+  virtual void DestroyTransferBuffer(int32 id) override;
 
   // gpu::GpuControl implementation:
-  virtual gpu::Capabilities GetCapabilities() OVERRIDE;
+  virtual gpu::Capabilities GetCapabilities() override;
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
                                                       size_t height,
                                                       unsigned internalformat,
                                                       unsigned usage,
-                                                      int32* id) OVERRIDE;
-  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
-  virtual uint32 InsertFutureSyncPoint() OVERRIDE;
-  virtual void RetireSyncPoint(uint32 sync_point) OVERRIDE;
+                                                      int32* id) override;
+  virtual void DestroyGpuMemoryBuffer(int32 id) override;
+  virtual uint32 InsertSyncPoint() override;
+  virtual uint32 InsertFutureSyncPoint() override;
+  virtual void RetireSyncPoint(uint32 sync_point) override;
   virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) OVERRIDE;
+                               const base::Closure& callback) override;
   virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) OVERRIDE;
-  virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void Echo(const base::Closure& callback) OVERRIDE;
-  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
+                           const base::Closure& callback) override;
+  virtual void SetSurfaceVisible(bool visible) override;
+  virtual void Echo(const base::Closure& callback) override;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) override;
 
  private:
   class SyncClientImpl;
 
   // CommandBufferClient implementation:
-  virtual void DidDestroy() OVERRIDE;
-  virtual void LostContext(int32_t lost_reason) OVERRIDE;
+  virtual void DidDestroy() override;
+  virtual void LostContext(int32_t lost_reason) override;
 
   // ErrorHandler implementation:
-  virtual void OnConnectionError() OVERRIDE;
+  virtual void OnConnectionError() override;
 
   void TryUpdateState();
   void MakeProgressAndUpdateState();

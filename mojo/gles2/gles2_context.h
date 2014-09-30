@@ -40,7 +40,7 @@ class GLES2Context : public CommandBufferDelegate,
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
 
  private:
-  virtual void ContextLost() OVERRIDE;
+  virtual void ContextLost() override;
 
   CommandBufferClientImpl command_buffer_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;

@@ -5,7 +5,7 @@
 #ifndef MOJO_APPS_JS_MOJO_RUNNER_DELEGATE_H_
 #define MOJO_APPS_JS_MOJO_RUNNER_DELEGATE_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "gin/modules/module_runner_delegate.h"
 #include "mojo/public/c/system/core.h"
 
@@ -22,7 +22,7 @@ class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
  private:
   // From ModuleRunnerDelegate:
   virtual void UnhandledException(gin::ShellRunner* runner,
-                                  gin::TryCatch& try_catch) OVERRIDE;
+                                  gin::TryCatch& try_catch) override;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRunnerDelegate);
 };

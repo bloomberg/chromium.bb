@@ -18,10 +18,10 @@ class TestSupportImpl : public TestSupport {
 
   virtual void LogPerfResult(const char* test_name,
                              double value,
-                             const char* units) OVERRIDE;
-  virtual FILE* OpenSourceRootRelativeFile(const char* relative_path) OVERRIDE;
+                             const char* units) override;
+  virtual FILE* OpenSourceRootRelativeFile(const char* relative_path) override;
   virtual char** EnumerateSourceRootRelativeDirectory(const char* relative_path)
-      OVERRIDE;
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSupportImpl);

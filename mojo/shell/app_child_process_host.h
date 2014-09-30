@@ -35,8 +35,8 @@ class AppChildProcessHost : public ChildProcessHost,
 
  private:
   // |ChildProcessHost::Delegate| methods:
-  virtual void WillStart() OVERRIDE;
-  virtual void DidStart(bool success) OVERRIDE;
+  virtual void WillStart() override;
+  virtual void DidStart(bool success) override;
 
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info);

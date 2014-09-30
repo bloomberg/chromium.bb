@@ -233,7 +233,7 @@ class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
 
  private:
   virtual mojo::ServiceProviderPtr OnConnectToClient(
-    const GURL& url, mojo::ServiceProviderPtr real_client) OVERRIDE {
+    const GURL& url, mojo::ServiceProviderPtr real_client) override {
       if (!MustIntercept(url))
         return real_client.Pass();
 

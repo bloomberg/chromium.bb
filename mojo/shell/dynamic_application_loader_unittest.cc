@@ -36,7 +36,7 @@ class TestDynamicServiceRunner : public DynamicServiceRunner {
   }
   virtual void Start(const base::FilePath& app_path,
                      ScopedMessagePipeHandle service_handle,
-                     const base::Closure& app_completed_callback) OVERRIDE {
+                     const base::Closure& app_completed_callback) override {
     state_->runner_was_started = true;
   }
 
@@ -48,7 +48,7 @@ class TestDynamicServiceRunnerFactory : public DynamicServiceRunnerFactory {
  public:
   explicit TestDynamicServiceRunnerFactory(TestState* state) : state_(state) {}
   virtual ~TestDynamicServiceRunnerFactory() {}
-  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) OVERRIDE {
+  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) override {
     return scoped_ptr<DynamicServiceRunner>(
         new TestDynamicServiceRunner(state_));
   }
@@ -63,7 +63,7 @@ class DynamicApplicationLoaderTest : public testing::Test {
  public:
   DynamicApplicationLoaderTest() {}
   virtual ~DynamicApplicationLoaderTest() {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     context_.Init();
     scoped_ptr<DynamicServiceRunnerFactory> factory(
         new TestDynamicServiceRunnerFactory(&state_));

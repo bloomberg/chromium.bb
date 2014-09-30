@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -220,28 +221,28 @@ class CppSideConnection : public js_to_cpp::CppSide {
   js_to_cpp::JsSide* js_side() { return js_side_; }
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() OVERRIDE {
+  virtual void StartTest() override {
     NOTREACHED();
   }
 
-  virtual void TestFinished() OVERRIDE {
+  virtual void TestFinished() override {
     NOTREACHED();
   }
 
-  virtual void PingResponse() OVERRIDE {
+  virtual void PingResponse() override {
     mishandled_messages_ += 1;
   }
 
-  virtual void EchoResponse(js_to_cpp::EchoArgsListPtr list) OVERRIDE {
+  virtual void EchoResponse(js_to_cpp::EchoArgsListPtr list) override {
     mishandled_messages_ += 1;
   }
 
-  virtual void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) OVERRIDE {
+  virtual void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
     mishandled_messages_ += 1;
   }
 
   virtual void BackPointerResponse(
-      js_to_cpp::EchoArgsListPtr list) OVERRIDE {
+      js_to_cpp::EchoArgsListPtr list) override {
     mishandled_messages_ += 1;
   }
 
@@ -261,11 +262,11 @@ class PingCppSideConnection : public CppSideConnection {
   virtual ~PingCppSideConnection() {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() OVERRIDE {
+  virtual void StartTest() override {
     js_side_->Ping();
   }
 
-  virtual void PingResponse() OVERRIDE {
+  virtual void PingResponse() override {
     got_message_ = true;
     run_loop()->Quit();
   }
@@ -289,11 +290,11 @@ class EchoCppSideConnection : public CppSideConnection {
   virtual ~EchoCppSideConnection() {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() OVERRIDE {
+  virtual void StartTest() override {
     js_side_->Echo(kExpectedMessageCount, BuildSampleEchoArgs());
   }
 
-  virtual void EchoResponse(js_to_cpp::EchoArgsListPtr list) OVERRIDE {
+  virtual void EchoResponse(js_to_cpp::EchoArgsListPtr list) override {
     const js_to_cpp::EchoArgsPtr& special_arg = list->item;
     message_count_ += 1;
     EXPECT_EQ(-1, special_arg->si64);
@@ -304,7 +305,7 @@ class EchoCppSideConnection : public CppSideConnection {
     CheckSampleEchoArgsList(list->next);
   }
 
-  virtual void TestFinished() OVERRIDE {
+  virtual void TestFinished() override {
     termination_seen_ = true;
     run_loop()->Quit();
   }
@@ -329,15 +330,15 @@ class BitFlipCppSideConnection : public CppSideConnection {
   virtual ~BitFlipCppSideConnection() {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() OVERRIDE {
+  virtual void StartTest() override {
     js_side_->BitFlip(BuildSampleEchoArgs());
   }
 
-  virtual void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) OVERRIDE {
+  virtual void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
     CheckCorruptedEchoArgsList(list);
   }
 
-  virtual void TestFinished() OVERRIDE {
+  virtual void TestFinished() override {
     termination_seen_ = true;
     run_loop()->Quit();
   }
@@ -358,16 +359,16 @@ class BackPointerCppSideConnection : public CppSideConnection {
   virtual ~BackPointerCppSideConnection() {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() OVERRIDE {
+  virtual void StartTest() override {
     js_side_->BackPointer(BuildSampleEchoArgs());
   }
 
   virtual void BackPointerResponse(
-      js_to_cpp::EchoArgsListPtr list) OVERRIDE {
+      js_to_cpp::EchoArgsListPtr list) override {
     CheckCorruptedEchoArgsList(list);
   }
 
-  virtual void TestFinished() OVERRIDE {
+  virtual void TestFinished() override {
     termination_seen_ = true;
     run_loop()->Quit();
   }

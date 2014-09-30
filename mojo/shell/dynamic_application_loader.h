@@ -40,9 +40,9 @@ class DynamicApplicationLoader : public ApplicationLoader {
   // ApplicationLoader methods:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
+                    scoped_refptr<LoadCallbacks> callbacks) override;
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE;
+                                  const GURL& url) override;
 
  private:
   class Loader;

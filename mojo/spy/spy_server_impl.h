@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/spy/public/spy.mojom.h"
@@ -25,17 +24,17 @@ class SpyServerImpl :
   virtual void StartSession(
       spy_api::VersionPtr version,
       const mojo::Callback<void(spy_api::Result,
-                                mojo::String)>& callback) OVERRIDE;
+                                mojo::String)>& callback) override;
 
   virtual void StopSession(
-      const mojo::Callback<void(spy_api::Result)>& callback) OVERRIDE;
+      const mojo::Callback<void(spy_api::Result)>& callback) override;
 
   virtual void TrackConnection(
       uint32_t id,
       spy_api::ConnectionOptions options,
-      const mojo::Callback<void(spy_api::Result)>& callback) OVERRIDE;
+      const mojo::Callback<void(spy_api::Result)>& callback) override;
 
-  virtual void OnConnectionError() OVERRIDE;
+  virtual void OnConnectionError() override;
 
   // SpyServerImpl own methods.
   void OnIntercept(const GURL& url);

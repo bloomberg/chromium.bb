@@ -18,7 +18,7 @@ class AppChildProcess : public ChildProcess {
   AppChildProcess();
   virtual ~AppChildProcess();
 
-  virtual void Main() OVERRIDE;
+  virtual void Main() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppChildProcess);

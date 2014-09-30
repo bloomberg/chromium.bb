@@ -20,6 +20,7 @@
 namespace mojo {
 namespace shell {
 namespace {
+
 // Delegate implementation that expects success.
 class TestDelegate : public IncomingConnectionListenerPosix::Delegate {
  public:
@@ -53,6 +54,7 @@ void OnConnect(base::Closure quit_callback, int rv) {
   EXPECT_EQ(net::OK, rv);
   base::MessageLoop::current()->PostTask(FROM_HERE, quit_callback);
 }
+
 }  // namespace
 
 class IncomingConnectionListenerTest : public testing::Test {
@@ -60,7 +62,7 @@ class IncomingConnectionListenerTest : public testing::Test {
   IncomingConnectionListenerTest() {}
   virtual ~IncomingConnectionListenerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("socket"));
   }

@@ -54,7 +54,7 @@ class ApplicationManager::LoadCallbacksImpl
   virtual ~LoadCallbacksImpl() {}
 
   // LoadCallbacks implementation
-  virtual ScopedMessagePipeHandle RegisterApplication() OVERRIDE {
+  virtual ScopedMessagePipeHandle RegisterApplication() override {
     ScopedMessagePipeHandle shell_handle;
     if (manager_) {
       manager_->RegisterLoadedApplication(requested_url_,
@@ -66,7 +66,7 @@ class ApplicationManager::LoadCallbacksImpl
   }
 
   virtual void LoadWithContentHandler(const GURL& content_handler_url,
-                                      URLResponsePtr url_response) OVERRIDE {
+                                      URLResponsePtr url_response) override {
     if (manager_) {
       manager_->LoadWithContentHandler(requested_url_,
                                        requestor_url_,
@@ -98,7 +98,7 @@ class ApplicationManager::ShellImpl : public InterfaceImpl<Shell> {
   // ServiceProvider implementation:
   virtual void ConnectToApplication(
       const String& app_url,
-      InterfaceRequest<ServiceProvider> in_service_provider) OVERRIDE {
+      InterfaceRequest<ServiceProvider> in_service_provider) override {
     ServiceProviderPtr out_service_provider;
     out_service_provider.Bind(in_service_provider.PassMessagePipe());
     manager_->ConnectToApplication(
@@ -108,7 +108,7 @@ class ApplicationManager::ShellImpl : public InterfaceImpl<Shell> {
   const GURL& url() const { return url_; }
 
  private:
-  virtual void OnConnectionError() OVERRIDE {
+  virtual void OnConnectionError() override {
     manager_->OnShellImplError(this);
   }
 

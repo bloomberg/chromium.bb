@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_UI_APPLICATION_LOADER_ANDROID_H_
 #define MOJO_SHELL_UI_APPLICATION_LOADER_ANDROID_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application_manager/application_loader.h"
 
@@ -28,9 +29,9 @@ class UIApplicationLoader : public ApplicationLoader {
   // ApplicationLoader overrides:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
+                    scoped_refptr<LoadCallbacks> callbacks) override;
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE;
+                                  const GURL& url) override;
 
  private:
   class UILoader;

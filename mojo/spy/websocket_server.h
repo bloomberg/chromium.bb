@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "mojo/spy/common.h"
 #include "mojo/spy/public/spy.mojom.h"
 #include "net/server/http_server.h"
@@ -38,26 +39,26 @@ class WebSocketServer : public net::HttpServer::Delegate,
 
  protected:
   // Overridden from net::HttpServer::Delegate.
-  virtual void OnConnect(int connection_id) OVERRIDE {}
+  virtual void OnConnect(int connection_id) override {}
   virtual void OnHttpRequest(
       int connection_id,
-      const net::HttpServerRequestInfo& info) OVERRIDE;
+      const net::HttpServerRequestInfo& info) override;
   virtual void OnWebSocketRequest(
       int connection_id,
-      const net::HttpServerRequestInfo& info) OVERRIDE;
+      const net::HttpServerRequestInfo& info) override;
   virtual void OnWebSocketMessage(
       int connection_id,
-      const std::string& data) OVERRIDE;
-  virtual void OnClose(int connection_id) OVERRIDE;
+      const std::string& data) override;
+  virtual void OnClose(int connection_id) override;
 
   // Overriden form spy_api::SpyClient.
-  virtual void OnFatalError(spy_api::Result result) OVERRIDE;
-  virtual void OnSessionEnd(spy_api::Result result) OVERRIDE;
+  virtual void OnFatalError(spy_api::Result result) override;
+  virtual void OnSessionEnd(spy_api::Result result) override;
   virtual void OnClientConnection(
       const mojo::String& name,
       uint32_t id,
-      spy_api::ConnectionOptions options) OVERRIDE;
-  virtual void OnMessage(spy_api::MessagePtr message) OVERRIDE;
+      spy_api::ConnectionOptions options) override;
+  virtual void OnMessage(spy_api::MessagePtr message) override;
 
   // Callbacks from calling spy_api::SpyServer.
   void OnStartSession(spy_api::Result, mojo::String);

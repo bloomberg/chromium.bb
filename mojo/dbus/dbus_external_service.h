@@ -75,11 +75,11 @@ class DBusExternalService
   }
 
  protected:
-  virtual void Connect(ScopedMessagePipeHandle client_handle) OVERRIDE {
+  virtual void Connect(ScopedMessagePipeHandle client_handle) override {
     external_service_.reset(BindToPipe(new Impl(this), client_handle.Pass()));
   }
 
-  virtual void Disconnect() OVERRIDE {
+  virtual void Disconnect() override {
     external_service_.reset();
   }
 
@@ -88,11 +88,11 @@ class DBusExternalService
    public:
     explicit Impl(DBusExternalService* service) : service_(service) {
     }
-    virtual void OnConnectionError() OVERRIDE {
+    virtual void OnConnectionError() override {
       service_->Disconnect();
     }
     virtual void Activate(ScopedMessagePipeHandle service_provider_handle)
-        OVERRIDE {
+        override {
       app_.reset(new ApplicationImpl(service_, service_provider_handle.Pass()));
     }
    private:

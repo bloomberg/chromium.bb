@@ -27,11 +27,11 @@ class InProcessDynamicServiceRunner
   // |DynamicServiceRunner| method:
   virtual void Start(const base::FilePath& app_path,
                      ScopedMessagePipeHandle service_handle,
-                     const base::Closure& app_completed_callback) OVERRIDE;
+                     const base::Closure& app_completed_callback) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   base::FilePath app_path_;
   ScopedMessagePipeHandle service_handle_;

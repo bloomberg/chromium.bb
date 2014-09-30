@@ -47,9 +47,9 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationLoader {
       : public LoadCallbacks {
    public:
     SimpleLoadCallbacks(ScopedMessagePipeHandle shell_handle);
-    virtual ScopedMessagePipeHandle RegisterApplication() OVERRIDE;
+    virtual ScopedMessagePipeHandle RegisterApplication() override;
     virtual void LoadWithContentHandler(const GURL& content_handler_url,
-                                        URLResponsePtr response) OVERRIDE;
+                                        URLResponsePtr response) override;
 
    private:
     ScopedMessagePipeHandle shell_handle_;

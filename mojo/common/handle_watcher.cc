@@ -79,8 +79,8 @@ class WatcherBackend : public MessagePumpMojoHandler {
   bool GetMojoHandleByWatcherID(WatcherID watcher_id, Handle* handle) const;
 
   // MessagePumpMojoHandler overrides:
-  virtual void OnHandleReady(const Handle& handle) OVERRIDE;
-  virtual void OnHandleError(const Handle& handle, MojoResult result) OVERRIDE;
+  virtual void OnHandleReady(const Handle& handle) override;
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override;
 
   // Maps from assigned id to WatchData.
   HandleToWatchDataMap handle_to_data_;
@@ -338,7 +338,7 @@ class HandleWatcher::StateBase : public base::MessageLoop::DestructionObserver {
   bool got_ready() const { return got_ready_; }
 
  private:
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE {
+  virtual void WillDestroyCurrentMessageLoop() override {
     // The current thread is exiting. Simulate a watch error.
     NotifyAndDestroy(MOJO_RESULT_ABORTED);
   }
@@ -385,11 +385,11 @@ class HandleWatcher::SameThreadWatchingState : public StateBase,
 
  private:
   // MessagePumpMojoHandler overrides:
-  virtual void OnHandleReady(const Handle& handle) OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) override {
     StopWatchingAndNotifyReady(handle, MOJO_RESULT_OK);
   }
 
-  virtual void OnHandleError(const Handle& handle, MojoResult result) OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
     StopWatchingAndNotifyReady(handle, result);
   }
 

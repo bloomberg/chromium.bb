@@ -80,7 +80,7 @@ class QuitMessageLoopErrorHandler : public ErrorHandler {
   virtual ~QuitMessageLoopErrorHandler() {}
 
   // |ErrorHandler| implementation:
-  virtual void OnConnectionError() OVERRIDE {
+  virtual void OnConnectionError() override {
     base::MessageLoop::current()->QuitWhenIdle();
   }
 

@@ -63,7 +63,7 @@ class ExternalApplicationListenerPosix
   // Errors are ignored.
   virtual void ListenInBackground(
       const base::FilePath& listen_socket_path,
-      const RegisterCallback& register_callback) OVERRIDE;
+      const RegisterCallback& register_callback) override;
 
   // Begin listening (on io_runner) to a socket at listen_socket_path.
   // Incoming registration requests will be forwarded to register_callback.
@@ -71,11 +71,11 @@ class ExternalApplicationListenerPosix
   virtual void ListenInBackgroundWithErrorCallback(
       const base::FilePath& listen_socket_path,
       const RegisterCallback& register_callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
 
   // Block the current thread until listening has started on io_runner.
   // If listening has already started, returns immediately.
-  virtual void WaitForListening() OVERRIDE;
+  virtual void WaitForListening() override;
 
  private:
   class RegistrarImpl;

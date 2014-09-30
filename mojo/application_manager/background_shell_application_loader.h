@@ -5,6 +5,7 @@
 #ifndef MOJO_APPLICATION_MANAGER_BACKGROUND_SHELL_APPLICATION_LOADER_H_
 #define MOJO_APPLICATION_MANAGER_BACKGROUND_SHELL_APPLICATION_LOADER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -28,15 +29,15 @@ class MOJO_APPLICATION_MANAGER_EXPORT BackgroundShellApplicationLoader
   // ApplicationLoader overrides:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
+                    scoped_refptr<LoadCallbacks> callbacks) override;
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE;
+                                  const GURL& url) override;
 
  private:
   class BackgroundLoader;
 
   // |base::DelegateSimpleThread::Delegate| method:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   // These functions are exected on the background thread. They call through
   // to |background_loader_| to do the actual loading.

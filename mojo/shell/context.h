@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "mojo/application_manager/application_manager.h"
 #include "mojo/shell/mojo_url_resolver.h"
 #include "mojo/shell/task_runners.h"
@@ -33,7 +34,7 @@ class Context : ApplicationManager::Delegate {
   void Init();
 
   // ApplicationManager::Delegate override.
-  virtual void OnApplicationError(const GURL& gurl) OVERRIDE;
+  virtual void OnApplicationError(const GURL& gurl) override;
 
   void Run(const GURL& url);
   ScopedMessagePipeHandle ConnectToServiceByName(

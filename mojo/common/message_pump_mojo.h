@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/synchronization/lock.h"
@@ -45,11 +46,11 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   void RemoveHandler(const Handle& handle);
 
   // MessagePump:
-  virtual void Run(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
-  virtual void ScheduleWork() OVERRIDE;
+  virtual void Run(Delegate* delegate) override;
+  virtual void Quit() override;
+  virtual void ScheduleWork() override;
   virtual void ScheduleDelayedWork(
-      const base::TimeTicks& delayed_work_time) OVERRIDE;
+      const base::TimeTicks& delayed_work_time) override;
 
  private:
   struct RunState;

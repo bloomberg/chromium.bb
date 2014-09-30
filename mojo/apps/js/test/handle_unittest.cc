@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "mojo/bindings/js/handle.h"
 #include "mojo/bindings/js/handle_close_observer.h"
 #include "mojo/public/cpp/system/core.h"
@@ -15,7 +16,7 @@ class HandleWrapperTest : public testing::Test,
  public:
   HandleWrapperTest() : closes_observed_(0) {}
 
-  virtual void OnWillCloseHandle() OVERRIDE { closes_observed_++; }
+  virtual void OnWillCloseHandle() override { closes_observed_++; }
 
  protected:
   int closes_observed_;

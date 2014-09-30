@@ -32,7 +32,7 @@ class ExternalApplicationRegistrarConnection : public ErrorHandler {
   virtual ~ExternalApplicationRegistrarConnection();
 
   // Implementation of ErrorHandler
-  virtual void OnConnectionError() OVERRIDE;
+  virtual void OnConnectionError() override;
 
   // Connects client_socket_ and binds it to registrar_.
   // Status code is passed to callback upon success or failure.

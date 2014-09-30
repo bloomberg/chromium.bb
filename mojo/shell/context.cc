@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_split.h"
@@ -125,18 +126,18 @@ class Context::NativeViewportApplicationLoader
   // ApplicationLoader implementation.
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
+                    scoped_refptr<LoadCallbacks> callbacks) override {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (shell_handle.is_valid())
       app_.reset(new ApplicationImpl(this, shell_handle.Pass()));
   }
 
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE {}
+                                  const GURL& url) override {}
 
   // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) OVERRIDE {
+      mojo::ApplicationConnection* connection) override {
     connection->AddService<NativeViewport>(this);
     connection->AddService<Gpu>(this);
     return true;
@@ -144,13 +145,13 @@ class Context::NativeViewportApplicationLoader
 
   // InterfaceFactory<NativeViewport> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<NativeViewport> request) OVERRIDE {
+                      InterfaceRequest<NativeViewport> request) override {
     BindToRequest(new NativeViewportImpl(app_.get(), false), &request);
   }
 
   // InterfaceFactory<Gpu> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Gpu> request) OVERRIDE {
+                      InterfaceRequest<Gpu> request) override {
     BindToRequest(new GpuImpl(share_group_.get(), mailbox_manager_.get()),
                   &request);
   }

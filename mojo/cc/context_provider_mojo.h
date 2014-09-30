@@ -5,6 +5,7 @@
 #ifndef MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
 #define MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
 
+#include "base/macros.h"
 #include "cc/output/context_provider.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
@@ -16,20 +17,20 @@ class ContextProviderMojo : public cc::ContextProvider {
   explicit ContextProviderMojo(ScopedMessagePipeHandle command_buffer_handle);
 
   // cc::ContextProvider implementation.
-  virtual bool BindToCurrentThread() OVERRIDE;
-  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
-  virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
-  virtual class GrContext* GrContext() OVERRIDE;
-  virtual Capabilities ContextCapabilities() OVERRIDE;
-  virtual bool IsContextLost() OVERRIDE;
-  virtual void VerifyContexts() OVERRIDE {}
-  virtual void DeleteCachedResources() OVERRIDE {}
-  virtual bool DestroyedOnMainThread() OVERRIDE;
+  virtual bool BindToCurrentThread() override;
+  virtual gpu::gles2::GLES2Interface* ContextGL() override;
+  virtual gpu::ContextSupport* ContextSupport() override;
+  virtual class GrContext* GrContext() override;
+  virtual Capabilities ContextCapabilities() override;
+  virtual bool IsContextLost() override;
+  virtual void VerifyContexts() override {}
+  virtual void DeleteCachedResources() override {}
+  virtual bool DestroyedOnMainThread() override;
   virtual void SetLostContextCallback(
-      const LostContextCallback& lost_context_callback) OVERRIDE {}
+      const LostContextCallback& lost_context_callback) override {}
   virtual void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
-      OVERRIDE {}
+      override {}
 
  protected:
   friend class base::RefCountedThreadSafe<ContextProviderMojo>;

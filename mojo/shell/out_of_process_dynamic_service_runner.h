@@ -27,11 +27,11 @@ class OutOfProcessDynamicServiceRunner
   // |DynamicServiceRunner| method:
   virtual void Start(const base::FilePath& app_path,
                      ScopedMessagePipeHandle service_handle,
-                     const base::Closure& app_completed_callback) OVERRIDE;
+                     const base::Closure& app_completed_callback) override;
 
  private:
   // |AppChildControllerClient| method:
-  virtual void AppCompleted(int32_t result) OVERRIDE;
+  virtual void AppCompleted(int32_t result) override;
 
   Context* const context_;
 

@@ -6,7 +6,6 @@
 #define MOJO_SHELL_DYNAMIC_SERVICE_RUNNER_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -45,7 +44,7 @@ class DynamicServiceRunnerFactoryImpl : public DynamicServiceRunnerFactory {
  public:
   DynamicServiceRunnerFactoryImpl() {}
   virtual ~DynamicServiceRunnerFactoryImpl() {}
-  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) OVERRIDE {
+  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) override {
     return scoped_ptr<DynamicServiceRunner>(
         new DynamicServiceRunnerImpl(context));
   }

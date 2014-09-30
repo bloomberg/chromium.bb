@@ -16,7 +16,7 @@ class TestChildProcess : public ChildProcess {
   TestChildProcess();
   virtual ~TestChildProcess();
 
-  virtual void Main() OVERRIDE;
+  virtual void Main() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestChildProcess);

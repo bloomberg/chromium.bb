@@ -18,15 +18,15 @@ namespace shell {
 class ExternalApplicationListenerStub : public ExternalApplicationListener {
  public:
   ExternalApplicationListenerStub();
-  virtual ~ExternalApplicationListenerStub() OVERRIDE;
+  virtual ~ExternalApplicationListenerStub() override;
 
   void ListenInBackground(const base::FilePath& listen_socket_path,
-                          const RegisterCallback& register_callback) OVERRIDE;
+                          const RegisterCallback& register_callback) override;
   void ListenInBackgroundWithErrorCallback(
       const base::FilePath& listen_socket_path,
       const RegisterCallback& register_callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  void WaitForListening() OVERRIDE;
+      const ErrorCallback& error_callback) override;
+  void WaitForListening() override;
 };
 
 }  // namespace shell

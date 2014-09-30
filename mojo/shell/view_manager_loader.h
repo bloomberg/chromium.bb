@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_VIEW_MANAGER_LOADER_H_
 #define MOJO_SHELL_VIEW_MANAGER_LOADER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/application_manager/application_loader.h"
@@ -31,18 +32,18 @@ class ViewManagerLoader : public ApplicationLoader,
   // ApplicationLoader overrides:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
+                    scoped_refptr<LoadCallbacks> callbacks) override;
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE;
+                                  const GURL& url) override;
 
   // ApplicationDelegate overrides.
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) OVERRIDE;
+      mojo::ApplicationConnection* connection) override;
 
   // InterfaceFactory<ViewManagerInitService> overrides.
   virtual void Create(
       ApplicationConnection* connection,
-      InterfaceRequest<ViewManagerInitService> request) OVERRIDE;
+      InterfaceRequest<ViewManagerInitService> request) override;
 
   ScopedVector<Application> apps_;
   service::ViewManagerInitServiceContext context_;

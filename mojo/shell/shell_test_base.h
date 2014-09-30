@@ -30,7 +30,7 @@ class ShellTestBase : public testing::Test {
   ShellTestBase();
   virtual ~ShellTestBase();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // |application_url| should typically be a mojo: URL (the origin will be set
   // to an "appropriate" file: URL).

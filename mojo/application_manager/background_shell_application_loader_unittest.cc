@@ -18,13 +18,13 @@ class DummyLoader : public ApplicationLoader {
   // ApplicationLoader overrides:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
+                    scoped_refptr<LoadCallbacks> callbacks) override {
     if (simulate_app_quit_)
       base::MessageLoop::current()->Quit();
   }
 
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE {}
+                                  const GURL& url) override {}
 
   void DontSimulateAppQuit() { simulate_app_quit_ = false; }
 

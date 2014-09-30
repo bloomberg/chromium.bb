@@ -55,7 +55,7 @@ class Context : public gin::Wrappable<Context> {
 
  private:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   explicit Context(v8::Isolate* isolate,
                    mojo::Handle handle,

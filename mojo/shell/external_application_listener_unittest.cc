@@ -30,7 +30,7 @@ class ExternalApplicationListenerTest : public testing::Test {
   ExternalApplicationListenerTest() : io_thread_("io thread") {}
   virtual ~ExternalApplicationListenerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
@@ -53,6 +53,7 @@ class ExternalApplicationListenerTest : public testing::Test {
 };
 
 namespace {
+
 class StubShellImpl : public InterfaceImpl<Shell> {
  private:
   virtual void ConnectToApplication(
@@ -81,6 +82,7 @@ void ConnectOnIOThread(const base::FilePath& socket_path,
   ExternalApplicationRegistrarConnection connection(socket_path);
   connection.Connect(base::Bind(&QuitLoopOnConnect, to_quit, quit_callback));
 }
+
 }  // namespace
 
 TEST_F(ExternalApplicationListenerTest, ConnectConnection) {
@@ -95,6 +97,7 @@ TEST_F(ExternalApplicationListenerTest, ConnectConnection) {
 }
 
 namespace {
+
 class QuitLoopOnConnectApplicationImpl : public InterfaceImpl<Application> {
  public:
   QuitLoopOnConnectApplicationImpl(const std::string& url,
@@ -190,6 +193,7 @@ void ConnectAndRegisterOnIOThread(const base::FilePath& socket_path,
 void DestroyOnIOThread(scoped_ptr<FakeExternalApplication> doomed1,
                        scoped_ptr<FakeExternalApplication> doomed2) {
 }
+
 }  // namespace
 
 // Create two external applications, have them discover and connect to
