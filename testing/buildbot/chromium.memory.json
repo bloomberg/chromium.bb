@@ -42,8 +42,7 @@
       {
         "test": "interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
+          "can_use_on_swarming_builders": true
         }
       },
       "ipc_tests",
@@ -97,8 +96,7 @@
       {
         "test": "interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
+          "can_use_on_swarming_builders": true
         }
       }
     ]
