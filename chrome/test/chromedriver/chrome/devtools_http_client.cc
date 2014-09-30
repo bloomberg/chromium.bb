@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -17,7 +15,6 @@
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -73,68 +70,17 @@ DevToolsHttpClient::~DevToolsHttpClient() {}
 
 Status DevToolsHttpClient::Init(const base::TimeDelta& timeout) {
   base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
-  std::string browser_version;
-  std::string blink_version;
+  std::string version_url = server_url_ + "/json/version";
+  std::string data;
 
-  while (true) {
-    Status status = GetVersion(&browser_version, &blink_version);
-    if (status.IsOk())
-      break;
-    if (status.code() != kChromeNotReachable ||
-        base::TimeTicks::Now() > deadline) {
-      return status;
-    }
+  while (!FetchUrlAndLog(version_url, context_getter_.get(), &data)
+      || data.empty()) {
+    if (base::TimeTicks::Now() > deadline)
+      return Status(kChromeNotReachable);
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
 
-  // |blink_version| is should look something like "537.36 (@159105)", and for
-  // this example |blink_revision| should be 159105
-  size_t before = blink_version.find('@');
-  size_t after = blink_version.find(')');
-  if (before == std::string::npos || after == std::string::npos) {
-    return Status(kUnknownError,
-                  "unrecognized Blink version: " + blink_version);
-  }
-
-  std::string blink_revision_string = blink_version.substr(before + 1,
-                                                           after - before - 1);
-  int blink_revision_int;
-  if (!base::StringToInt(blink_revision_string, &blink_revision_int)) {
-    return Status(kUnknownError,
-                  "unrecognized Blink revision: " + blink_revision_string);
-  }
-
-  browser_info_.blink_revision = blink_revision_int;
-
-  if (browser_version.empty()) {
-    browser_info_.browser_name = "content shell";
-    return Status(kOk);
-  }
-  if (browser_version.find("Version/") == 0u) {
-    browser_info_.browser_name = "webview";
-    return Status(kOk);
-  }
-  std::string prefix = "Chrome/";
-  if (browser_version.find(prefix) != 0u) {
-    return Status(kUnknownError,
-                  "unrecognized Chrome version: " + browser_version);
-  }
-
-  std::string stripped_version = browser_version.substr(prefix.length());
-  int temp_build_no;
-  std::vector<std::string> version_parts;
-  base::SplitString(stripped_version, '.', &version_parts);
-  if (version_parts.size() != 4 ||
-      !base::StringToInt(version_parts[2], &temp_build_no)) {
-    return Status(kUnknownError,
-                  "unrecognized Chrome version: " + browser_version);
-  }
-
-  browser_info_.browser_name = "chrome";
-  browser_info_.browser_version = stripped_version;
-  browser_info_.build_no = temp_build_no;
-
-  return Status(kOk);
+  return ParseBrowserInfo(data, &browser_info_);
 }
 
 Status DevToolsHttpClient::GetWebViewsInfo(WebViewsInfo* views_info) {
@@ -193,16 +139,6 @@ const BrowserInfo* DevToolsHttpClient::browser_info() {
 
 const DeviceMetrics* DevToolsHttpClient::device_metrics() {
   return device_metrics_.get();
-}
-
-Status DevToolsHttpClient::GetVersion(std::string* browser_version,
-                                      std::string* blink_version) {
-  std::string data;
-  if (!FetchUrlAndLog(
-          server_url_ + "/json/version", context_getter_.get(), &data))
-    return Status(kChromeNotReachable);
-
-  return internal::ParseVersionInfo(data, browser_version, blink_version);
 }
 
 Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
@@ -340,28 +276,6 @@ Status ParseWebViewsInfo(const std::string& data,
     temp_views_info.push_back(WebViewInfo(id, debugger_url, url, type));
   }
   *views_info = WebViewsInfo(temp_views_info);
-  return Status(kOk);
-}
-
-Status ParseVersionInfo(const std::string& data,
-                        std::string* browser_version,
-                        std::string* blink_version) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-  if (!value.get())
-    return Status(kUnknownError, "version info not in JSON");
-  base::DictionaryValue* dict;
-  if (!value->GetAsDictionary(&dict))
-    return Status(kUnknownError, "version info not a dictionary");
-  if (!dict->GetString("Browser", browser_version)) {
-    return Status(
-        kUnknownError,
-        "Chrome version must be >= " + GetMinimumSupportedChromeVersion(),
-        Status(kUnknownError, "version info doesn't include string 'Browser'"));
-  }
-  if (!dict->GetString("WebKit-Version", blink_version)) {
-    return Status(kUnknownError,
-                  "version info doesn't include string 'WebKit-Version'");
-  }
   return Status(kOk);
 }
 

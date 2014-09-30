@@ -622,6 +622,8 @@
         'test/chromedriver/basic_types.h',
         'test/chromedriver/capabilities.cc',
         'test/chromedriver/capabilities.h',
+        'test/chromedriver/chrome/browser_info.cc',
+        'test/chromedriver/chrome/browser_info.h',
         'test/chromedriver/chrome_launcher.cc',
         'test/chromedriver/chrome_launcher.h',
         'test/chromedriver/command_listener.h',
@@ -729,6 +731,7 @@
       ],
       'sources': [
         'test/chromedriver/capabilities_unittest.cc',
+        'test/chromedriver/chrome/browser_info_unittest.cc',
         'test/chromedriver/chrome/chrome_finder_unittest.cc',
         'test/chromedriver/chrome/console_logger_unittest.cc',
         'test/chromedriver/chrome/device_manager_unittest.cc',

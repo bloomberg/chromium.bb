@@ -6,9 +6,9 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 
 NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      const BrowserInfo* browser_info)

@@ -7,11 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
