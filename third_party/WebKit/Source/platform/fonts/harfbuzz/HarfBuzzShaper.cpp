@@ -278,7 +278,7 @@ inline void HarfBuzzShaper::HarfBuzzRun::setGlyphAndPositions(unsigned index, ui
 {
     m_glyphs[index] = glyphId;
     m_advances[index] = advance;
-    m_offsets[index] = FloatPoint(offsetX, offsetY);
+    m_offsets[index] = FloatSize(offsetX, offsetY);
 }
 
 int HarfBuzzShaper::HarfBuzzRun::characterIndexForXPosition(float targetX)
@@ -572,11 +572,6 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
         return false;
 
     return true;
-}
-
-FloatPoint HarfBuzzShaper::adjustStartPoint(const FloatPoint& point)
-{
-    return point + m_startOffset;
 }
 
 static inline int handleMultipleUChar(
@@ -953,29 +948,29 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
     m_totalWidth += currentRun->width();
 }
 
-void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer, HarfBuzzRun* currentRun, FloatPoint& firstOffsetOfNextRun)
+void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBufferWithOffsets* glyphBuffer, HarfBuzzRun* currentRun)
 {
-    FloatPoint* offsets = currentRun->offsets();
+    FloatSize* offsets = currentRun->offsets();
     uint16_t* glyphs = currentRun->glyphs();
     float* advances = currentRun->advances();
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
-    for (unsigned i = 0; i < numGlyphs; ++i) {
-        uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
-        FloatPoint& currentOffset = offsets[i];
-        FloatPoint& nextOffset = (i == numGlyphs - 1) ? firstOffsetOfNextRun : offsets[i + 1];
-        float glyphAdvanceX = advances[i] + nextOffset.x() - currentOffset.x();
-        float glyphAdvanceY = nextOffset.y() - currentOffset.y();
-        if (m_run.rtl()) {
+    float advanceSoFar = 0;
+    if (m_run.rtl()) {
+        for (unsigned i = 0; i < numGlyphs; ++i) {
+            uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
             if (currentCharacterIndex >= m_toIndex)
-                m_startOffset.move(glyphAdvanceX, glyphAdvanceY);
+                advanceSoFar += advances[i];
             else if (currentCharacterIndex >= m_fromIndex)
-                glyphBuffer->add(glyphs[i], currentRun->fontData(), FloatSize(glyphAdvanceX, glyphAdvanceY));
-        } else {
+                glyphBuffer->add(glyphs[i], currentRun->fontData(), offsets[i] + FloatSize(advanceSoFar, 0), advances[i]);
+        }
+    } else {
+        for (unsigned i = 0; i < numGlyphs; ++i) {
+            uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
             if (currentCharacterIndex < m_fromIndex)
-                m_startOffset.move(glyphAdvanceX, glyphAdvanceY);
+                advanceSoFar += advances[i];
             else if (currentCharacterIndex < m_toIndex)
-                glyphBuffer->add(glyphs[i], currentRun->fontData(), FloatSize(glyphAdvanceX, glyphAdvanceY));
+                glyphBuffer->add(glyphs[i], currentRun->fontData(), offsets[i] + FloatSize(advanceSoFar, 0), advances[i]);
         }
     }
 }
@@ -1038,32 +1033,36 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
 {
     unsigned numRuns = m_harfBuzzRuns.size();
     if (m_run.rtl()) {
-        m_startOffset = m_harfBuzzRuns.last()->offsets()[0];
         for (int runIndex = numRuns - 1; runIndex >= 0; --runIndex) {
             HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
             if (!currentRun->hasGlyphToCharacterIndexes()) {
                 // FIXME: bug 337886, 359664
                 continue;
             }
-            FloatPoint firstOffsetOfNextRun = !runIndex ? FloatPoint() : m_harfBuzzRuns[runIndex - 1]->offsets()[0];
-            if (m_forTextEmphasis == ForTextEmphasis)
+            if (m_forTextEmphasis == ForTextEmphasis) {
+                ASSERT(!glyphBuffer->hasOffsets());
                 fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
-            else
-                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, firstOffsetOfNextRun);
+            } else {
+                ASSERT(glyphBuffer->hasOffsets());
+                fillGlyphBufferFromHarfBuzzRun(
+                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun);
+            }
         }
     } else {
-        m_startOffset = m_harfBuzzRuns.first()->offsets()[0];
         for (unsigned runIndex = 0; runIndex < numRuns; ++runIndex) {
             HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
             if (!currentRun->hasGlyphToCharacterIndexes()) {
                 // FIXME: bug 337886, 359664
                 continue;
             }
-            FloatPoint firstOffsetOfNextRun = runIndex == numRuns - 1 ? FloatPoint() : m_harfBuzzRuns[runIndex + 1]->offsets()[0];
-            if (m_forTextEmphasis == ForTextEmphasis)
+            if (m_forTextEmphasis == ForTextEmphasis) {
+                ASSERT(!glyphBuffer->hasOffsets());
                 fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
-            else
-                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, firstOffsetOfNextRun);
+            } else {
+                ASSERT(glyphBuffer->hasOffsets());
+                fillGlyphBufferFromHarfBuzzRun(
+                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun);
+            }
         }
     }
     return glyphBuffer->size();

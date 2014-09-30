@@ -113,7 +113,7 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
         if (!glyph)
             continue;
 
-        float advance = glyphBuffer.advanceAt(from + i).width();
+        float advance = glyphBuffer.advanceAt(from + i);
         SVGGlyph svgGlyph = fontElement->svgGlyphForGlyph(glyph);
         ASSERT(!svgGlyph.isPartOfLigature);
         ASSERT(svgGlyph.tableEntry == glyph);

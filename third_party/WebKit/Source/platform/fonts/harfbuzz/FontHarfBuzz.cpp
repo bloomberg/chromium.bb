@@ -157,7 +157,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
                 pos[i].set(
                     x + SkIntToScalar(lroundf(translations[i].x())),
                     y + -SkIntToScalar(-lroundf(currentWidth - translations[i].y())));
-                currentWidth += glyphBuffer.advanceAt(from + glyphIndex).width();
+                currentWidth += glyphBuffer.advanceAt(from + glyphIndex);
             }
             horizontalOffset += currentWidth;
             paintGlyphs(gc, font, glyphs, chunkLength, pos, textRect);
@@ -167,35 +167,35 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         return;
     }
 
-    if (!glyphBuffer.hasVerticalAdvances()) {
+    if (!glyphBuffer.hasOffsets()) {
         SkAutoSTMalloc<64, SkScalar> storage(numGlyphs);
         SkScalar* xpos = storage.get();
-        const FloatSize* adv = glyphBuffer.advances(from);
+        const float* adv = glyphBuffer.advances(from);
         for (unsigned i = 0; i < numGlyphs; i++) {
             xpos[i] = x;
-            x += SkFloatToScalar(adv[i].width());
+            x += SkFloatToScalar(adv[i]);
         }
         const Glyph* glyphs = glyphBuffer.glyphs(from);
         paintGlyphsHorizontal(gc, font, glyphs, numGlyphs, xpos, SkFloatToScalar(y), textRect);
         return;
     }
 
-    // FIXME: text rendering speed:
-    // Android has code in their WebCore fork to special case when the
-    // GlyphBuffer has no advances other than the defaults. In that case the
-    // text drawing can proceed faster. However, it's unclear when those
-    // patches may be upstreamed to WebKit so we always use the slower path
-    // here.
+    ASSERT(glyphBuffer.hasOffsets());
+    const GlyphBufferWithOffsets& glyphBufferWithOffsets =
+        static_cast<const GlyphBufferWithOffsets&>(glyphBuffer);
     SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
     SkPoint* pos = storage.get();
-    const FloatSize* adv = glyphBuffer.advances(from);
+    const FloatSize* offsets = glyphBufferWithOffsets.offsets(from);
+    const float* advances = glyphBufferWithOffsets.advances(from);
+    SkScalar advanceSoFar = SkFloatToScalar(0);
     for (unsigned i = 0; i < numGlyphs; i++) {
-        pos[i].set(x, y);
-        x += SkFloatToScalar(adv[i].width());
-        y += SkFloatToScalar(adv[i].height());
+        pos[i].set(
+            x + SkFloatToScalar(offsets[i].width()) + advanceSoFar,
+            y + SkFloatToScalar(offsets[i].height()));
+        advanceSoFar += SkFloatToScalar(advances[i]);
     }
 
-    const Glyph* glyphs = glyphBuffer.glyphs(from);
+    const Glyph* glyphs = glyphBufferWithOffsets.glyphs(from);
     paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
 }
 
@@ -231,13 +231,12 @@ float Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo
     if (!fill && !stroke)
         return 0;
 
-    GlyphBuffer glyphBuffer;
+    GlyphBufferWithOffsets glyphBuffer;
     HarfBuzzShaper shaper(this, runInfo.run);
     shaper.setDrawRange(runInfo.from, runInfo.to);
     if (!shaper.shape(&glyphBuffer) || glyphBuffer.isEmpty())
         return 0;
-    FloatPoint adjustedPoint = shaper.adjustStartPoint(point);
-    return drawGlyphBuffer(gc, runInfo, glyphBuffer, adjustedPoint);
+    return drawGlyphBuffer(gc, runInfo, glyphBuffer, point);
 }
 
 void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
@@ -302,7 +301,7 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
 
     // FIXME: Except for setupPaint, this is not specific to FontHarfBuzz.
     // FIXME: Also implement the more general full-positioning path.
-    ASSERT(!glyphBuffer.hasVerticalAdvances());
+    ASSERT(!glyphBuffer.hasOffsets());
 
     SkTextBlobBuilder builder;
     SkScalar x = SkFloatToScalar(initialAdvance);
@@ -340,10 +339,10 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
         const uint16_t* glyphs = glyphBuffer.glyphs(start);
         std::copy(glyphs, glyphs + count, buffer.glyphs);
 
-        const FloatSize* advances = glyphBuffer.advances(start);
+        const float* advances = glyphBuffer.advances(start);
         for (unsigned j = 0; j < count; j++) {
             buffer.pos[j] = x;
-            x += SkFloatToScalar(advances[j].width());
+            x += SkFloatToScalar(advances[j]);
         }
     }
 

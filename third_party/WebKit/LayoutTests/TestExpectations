@@ -2768,6 +2768,9 @@ crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Fail
 
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
+crbug.com/418071 fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
+crbug.com/418071 virtual/antialiasedtext/fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
+
 crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]

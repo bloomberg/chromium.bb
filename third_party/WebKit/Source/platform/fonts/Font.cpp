@@ -227,7 +227,6 @@ PassTextBlobPtr Font::buildTextBlobForSimpleText(const TextRunPaintInfo& runInfo
 {
     GlyphBuffer glyphBuffer;
     float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
-    ASSERT(!glyphBuffer.hasVerticalAdvances());
 
     if (glyphBuffer.isEmpty())
         return nullptr;
@@ -694,7 +693,6 @@ float Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& run
     // This glyph buffer holds our glyphs+advances+font data for each glyph.
     GlyphBuffer glyphBuffer;
     float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
-    ASSERT(!glyphBuffer.hasVerticalAdvances());
 
     if (glyphBuffer.isEmpty())
         return 0;
@@ -732,15 +730,13 @@ float Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& ru
     // Draw each contiguous run of glyphs that use the same font data.
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
     FloatPoint startPoint(point);
-    FloatPoint nextPoint = startPoint + glyphBuffer.advanceAt(0);
+    float advanceSoFar = 0;
     unsigned lastFrom = 0;
-    unsigned nextGlyph = 1;
+    unsigned nextGlyph = 0;
 #if ENABLE(SVG_FONTS)
     TextRun::RenderingContext* renderingContext = runInfo.run.renderingContext();
 #endif
 
-    float widthSoFar = 0;
-    widthSoFar += glyphBuffer.advanceAt(0).width();
     while (nextGlyph < glyphBuffer.size()) {
         const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
 
@@ -754,10 +750,10 @@ float Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& ru
 
             lastFrom = nextGlyph;
             fontData = nextFontData;
-            startPoint = nextPoint;
+            startPoint += FloatSize(advanceSoFar, 0);
+            advanceSoFar = 0;
         }
-        nextPoint += glyphBuffer.advanceAt(nextGlyph);
-        widthSoFar += glyphBuffer.advanceAt(nextGlyph).width();
+        advanceSoFar += glyphBuffer.advanceAt(nextGlyph);
         nextGlyph++;
     }
 
@@ -767,7 +763,9 @@ float Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& ru
     else
 #endif
         drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint, runInfo.bounds);
-        return widthSoFar;
+
+    startPoint += FloatSize(advanceSoFar, 0);
+    return startPoint.x() - point.x();
 }
 
 inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph glyph)
@@ -782,7 +780,7 @@ inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph 
 
 inline static float offsetToMiddleOfAdvanceAtIndex(const GlyphBuffer& glyphBuffer, size_t i)
 {
-    return glyphBuffer.advanceAt(i).width() / 2;
+    return glyphBuffer.advanceAt(i) / 2;
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const AtomicString& mark, const FloatPoint& point) const
@@ -807,7 +805,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     GlyphBuffer markBuffer;
     for (unsigned i = 0; i + 1 < glyphBuffer.size(); ++i) {
         float middleOfNextGlyph = offsetToMiddleOfAdvanceAtIndex(glyphBuffer, i + 1);
-        float advance = glyphBuffer.advanceAt(i).width() - middleOfLastGlyph + middleOfNextGlyph;
+        float advance = glyphBuffer.advanceAt(i) - middleOfLastGlyph + middleOfNextGlyph;
         markBuffer.add(glyphBuffer.glyphAt(i) ? markGlyph : spaceGlyph, markFontData, advance);
         middleOfLastGlyph = middleOfNextGlyph;
     }

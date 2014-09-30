@@ -42,23 +42,19 @@ class SimpleFontData;
 class GlyphBuffer {
     STACK_ALLOCATED();
 public:
-    GlyphBuffer() : m_hasVerticalAdvances(false) { }
-
     bool isEmpty() const { return m_fontData.isEmpty(); }
+    virtual bool hasOffsets() const { return false; }
     unsigned size() const { return m_fontData.size(); }
-    bool hasVerticalAdvances() const { return m_hasVerticalAdvances; }
 
-    void clear()
+    virtual void clear()
     {
         m_fontData.clear();
         m_glyphs.clear();
         m_advances.clear();
-        m_hasVerticalAdvances = false;
     }
 
     const Glyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
-    const FloatSize* advances(unsigned from) const { return m_advances.data() + from; }
-
+    const float* advances(unsigned from) const { return m_advances.data() + from; }
     const SimpleFontData* fontDataAt(unsigned index) const { return m_fontData[index]; }
 
     Glyph glyphAt(unsigned index) const
@@ -66,7 +62,7 @@ public:
         return m_glyphs[index];
     }
 
-    FloatSize advanceAt(unsigned index) const
+    float advanceAt(unsigned index) const
     {
         return m_advances[index];
     }
@@ -75,42 +71,68 @@ public:
     {
         m_fontData.append(font);
         m_glyphs.append(glyph);
-        m_advances.append(FloatSize(width, 0));
+        m_advances.append(width);
     }
 
-    void add(Glyph glyph, const SimpleFontData* font, const FloatSize& advance)
-    {
-        m_fontData.append(font);
-        m_glyphs.append(glyph);
-        m_advances.append(advance);
-        if (advance.height())
-            m_hasVerticalAdvances = true;
-    }
-
-    void reverse()
+    virtual void reverse()
     {
         m_fontData.reverse();
         m_glyphs.reverse();
         m_advances.reverse();
     }
 
-    void setAdvanceWidth(unsigned index, float newWidth)
-    {
-        m_advances[index].setWidth(newWidth);
-    }
-
     void expandLastAdvance(float width)
     {
         ASSERT(!isEmpty());
-        FloatSize& lastAdvance = m_advances.last();
-        lastAdvance.setWidth(lastAdvance.width() + width);
+        float& lastAdvance = m_advances.last();
+        lastAdvance += width;
+    }
+
+protected:
+    Vector<const SimpleFontData*, 2048> m_fontData;
+    Vector<Glyph, 2048> m_glyphs;
+    Vector<float, 2048> m_advances;
+};
+
+
+class GlyphBufferWithOffsets : public GlyphBuffer {
+public:
+    virtual bool hasOffsets() const OVERRIDE { return true; }
+
+    virtual void clear() OVERRIDE
+    {
+        GlyphBuffer::clear();
+        m_offsets.clear();
+    }
+
+    const FloatSize* offsets(unsigned from) const { return m_offsets.data() + from; }
+
+    FloatSize offsetAt(unsigned index) const
+    {
+        return m_offsets[index];
+    }
+
+    void add(Glyph glyph, const SimpleFontData* font, const FloatSize& offset, float advance)
+    {
+        m_fontData.append(font);
+        m_glyphs.append(glyph);
+        m_offsets.append(offset);
+        m_advances.append(advance);
+    }
+
+    virtual void reverse() OVERRIDE
+    {
+        GlyphBuffer::reverse();
+        m_offsets.reverse();
     }
 
 private:
-    Vector<const SimpleFontData*, 2048> m_fontData;
-    Vector<Glyph, 2048> m_glyphs;
-    Vector<FloatSize, 2048> m_advances;
-    bool m_hasVerticalAdvances;
+    void add(Glyph glyph, const SimpleFontData* font, float width)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    Vector<FloatSize, 1024> m_offsets;
 };
 
 } // namespace blink
