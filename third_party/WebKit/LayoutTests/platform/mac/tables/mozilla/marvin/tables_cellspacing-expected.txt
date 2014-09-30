@@ -1,0 +1,62 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock (anonymous) at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 777x48
+          text run at (0,0) width 307: "CELLSPACING controls the distance in pixels "
+          text run at (306,0) width 437: "between each cell in the table. The first table has a cellspacing of 15"
+          text run at (0,16) width 303: "pixels; the second table isn't using cellspacing. "
+          text run at (302,16) width 475: "Notice the difference here. The first table should be rendered with a wider"
+          text run at (0,32) width 146: "gap between the cells. "
+        RenderBR {BR} at (0,0) size 0x0
+      RenderTable {TABLE} at (0,48) size 263x81
+        RenderTableSection {TBODY} at (0,0) size 263x81
+          RenderTableRow {TR} at (0,15) size 263x18
+            RenderTableCell {TD} at (15,15) size 68x18 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 64x16
+                text run at (1,1) width 64: "Navigator"
+            RenderTableCell {TD} at (98,15) size 72x18 [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 70x16
+                text run at (1,1) width 70: "Messenger"
+            RenderTableCell {TD} at (185,15) size 63x18 [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 56x16
+                text run at (1,1) width 56: "Collabra"
+          RenderTableRow {TR} at (0,48) size 263x18
+            RenderTableCell {TD} at (15,48) size 68x18 [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 66x16
+                text run at (1,1) width 66: "Composer"
+            RenderTableCell {TD} at (98,48) size 72x18 [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 58x16
+                text run at (1,1) width 58: "Calendar"
+            RenderTableCell {TD} at (185,48) size 63x18 [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 61x16
+                text run at (1,1) width 61: "Netcaster"
+      RenderBlock (anonymous) at (0,129) size 784x48
+        RenderBR {BR} at (0,0) size 0x16
+        RenderBR {BR} at (0,16) size 0x16
+        RenderText {#text} at (0,32) size 221x16
+          text run at (0,32) width 221: "This table contains no cellspacing."
+      RenderTable {TABLE} at (0,177) size 211x42
+        RenderTableSection {TBODY} at (0,0) size 211x42
+          RenderTableRow {TR} at (0,2) size 211x18
+            RenderTableCell {TD} at (2,2) size 68x18 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 64x16
+                text run at (1,1) width 64: "Navigator"
+            RenderTableCell {TD} at (72,2) size 72x18 [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 70x16
+                text run at (1,1) width 70: "Messenger"
+            RenderTableCell {TD} at (146,2) size 63x18 [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 56x16
+                text run at (1,1) width 56: "Collabra"
+          RenderTableRow {TR} at (0,22) size 211x18
+            RenderTableCell {TD} at (2,22) size 68x18 [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 66x16
+                text run at (1,1) width 66: "Composer"
+            RenderTableCell {TD} at (72,22) size 72x18 [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 58x16
+                text run at (1,1) width 58: "Calendar"
+            RenderTableCell {TD} at (146,22) size 63x18 [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 61x16
+                text run at (1,1) width 61: "Netcaster"

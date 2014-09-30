@@ -1,0 +1,35 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock (anonymous) at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 544x16
+          text run at (0,0) width 544: "The TH tag uses the WIDTH attribute. The first table's TH width is set to 500 pixels."
+        RenderBR {BR} at (543,12) size 1x0
+      RenderTable {TABLE} at (0,16) size 610x48 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 608x46
+          RenderTableRow {TR} at (0,2) size 608x20
+            RenderTableCell {TH} at (2,2) size 604x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (170,2) size 264x16
+                text run at (170,2) width 264: "Netscape Communicator Version 4.0.6"
+          RenderTableRow {TR} at (0,24) size 608x20
+            RenderTableCell {TD} at (2,24) size 604x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 63x16
+                text run at (2,2) width 63: "Platforms"
+      RenderBlock (anonymous) at (0,64) size 784x32
+        RenderBR {BR} at (0,0) size 0x16
+        RenderText {#text} at (0,16) size 314x16
+          text run at (0,16) width 314: "This second table's TH width is set to 200 pixels."
+        RenderBR {BR} at (313,28) size 1x0
+      RenderTable {TABLE} at (0,96) size 210x64 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 208x62
+          RenderTableRow {TR} at (0,2) size 208x36
+            RenderTableCell {TH} at (2,2) size 204x36 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (17,2) size 170x32
+                text run at (17,2) width 170: "Netscape Communicator"
+                text run at (57,18) width 90: "Version 4.0.6"
+          RenderTableRow {TR} at (0,40) size 208x20
+            RenderTableCell {TD} at (2,40) size 204x20 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 63x16
+                text run at (2,2) width 63: "Platforms"
