@@ -824,11 +824,6 @@ crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash 
 
 crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
 
-crbug.com/415087 fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
-crbug.com/415087 fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-crbug.com/415087 fast/writing-mode/text-orientation-basic.html [ NeedsRebaseline ]
-crbug.com/415087 fast/text/international/text-spliced-font.html [ NeedsRebaseline ]
-
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Added in r171958 and timing out on some platforms ever since.

@@ -45,10 +45,10 @@ layer at (0,0) size 800x704
             RenderText {#text} at (44,1) size 40x255
               text run at (44,1) width 255: "Hello world"
           RenderBR {BR} at (52,256) size 0x0
-          RenderInline {SPAN} at (0,0) size 36x196
-            RenderText {#text} at (94,1) size 36x196
-              text run at (94,1) width 196: "Hello world"
-          RenderBR {BR} at (112,196) size 0x1
+          RenderInline {SPAN} at (0,0) size 36x195
+            RenderText {#text} at (94,1) size 36x195
+              text run at (94,1) width 195: "Hello world"
+          RenderBR {BR} at (112,196) size 0x0
           RenderInline {SPAN} at (0,0) size 36x219
             RenderText {#text} at (148,1) size 36x219
               text run at (148,1) width 219: "Hello world"
