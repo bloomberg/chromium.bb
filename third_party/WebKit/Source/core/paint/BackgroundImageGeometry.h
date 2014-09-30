@@ -74,6 +74,6 @@ private:
     bool m_hasNonLocalGeometry; // Has background-attachment: fixed. Implies that we can't always cheaply compute destRect.
 };
 
-#endif // BackgroundImageGeometry_h
-
 } // namespace blink
+
+#endif // BackgroundImageGeometry_h
