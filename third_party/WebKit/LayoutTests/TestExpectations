@@ -1233,9 +1233,6 @@ crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-re
 crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure ]
 crbug.com/409755 http/tests/serviceworker/request.html [ Crash Pass Timeout ]
 
-crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
-crbug.com/397321 svg/custom/pattern-3-step-cycle.html [ Crash Pass ]
-crbug.com/397321 svg/filters/filter-refresh.svg [ Crash Pass ]
 crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/implsidepainting/inspector/tracing/update-layer-tree.html [ Failure Pass ]
