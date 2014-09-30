@@ -10,74 +10,74 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Testing bounds of word one in horizontalParagraph
 PASS axBounds.x is within 2 of 8
-PASS axBounds.y is within 2 of 9
+PASS axBounds.y is within 2 of 11
 PASS axBounds.width is within 2 of 23
-PASS axBounds.height is within 2 of 18
+PASS axBounds.height is within 2 of 16
 
 Testing bounds of word two in horizontalParagraph
 PASS axBounds.x is within 2 of 35
-PASS axBounds.y is within 2 of 9
+PASS axBounds.y is within 2 of 11
 PASS axBounds.width is within 2 of 24
-PASS axBounds.height is within 2 of 18
+PASS axBounds.height is within 2 of 16
 
 Testing bounds of word three in horizontalParagraph
 PASS axBounds.x is within 2 of 144
-PASS axBounds.y is within 2 of 9
-PASS axBounds.width is within 2 of 31
-PASS axBounds.height is within 2 of 18
+PASS axBounds.y is within 2 of 11
+PASS axBounds.width is within 2 of 32
+PASS axBounds.height is within 2 of 16
 
 Testing bounds of word four in horizontalParagraph
-PASS axBounds.x is within 2 of 179
-PASS axBounds.y is within 2 of 9
+PASS axBounds.x is within 2 of 180
+PASS axBounds.y is within 2 of 11
 PASS axBounds.width is within 2 of 26
-PASS axBounds.height is within 2 of 18
+PASS axBounds.height is within 2 of 16
 
 Testing bounds of word אחתשתיים in horizontalParagraph
-PASS axBounds.x is within 2 of 63
-PASS axBounds.y is within 2 of 9
+PASS axBounds.x is within 2 of 63.1015625
+PASS axBounds.y is within 2 of 11
 PASS axBounds.width is within 2 of 76.7421875
-PASS axBounds.height is within 2 of 18
+PASS axBounds.height is within 2 of 16
 
 Testing bounds of word שלושהארבעה in horizontalParagraph
-PASS axBounds.x is within 2 of 208.7421875
-PASS axBounds.y is within 2 of 9
+PASS axBounds.x is within 2 of 210.4765625
+PASS axBounds.y is within 2 of 11
 PASS axBounds.width is within 2 of 96.4453125
-PASS axBounds.height is within 2 of 18
+PASS axBounds.height is within 2 of 16
 
 Testing bounds of word one in verticalParagraph
-PASS axBounds.x is within 2 of 25
+PASS axBounds.x is within 2 of 27
 PASS axBounds.y is within 2 of 43
-PASS axBounds.width is within 2 of 18
+PASS axBounds.width is within 2 of 16
 PASS axBounds.height is within 2 of 23
 
 Testing bounds of word two in verticalParagraph
-PASS axBounds.x is within 2 of 25
+PASS axBounds.x is within 2 of 27
 PASS axBounds.y is within 2 of 70
-PASS axBounds.width is within 2 of 18
+PASS axBounds.width is within 2 of 16
 PASS axBounds.height is within 2 of 24
 
 Testing bounds of word three in verticalParagraph
-PASS axBounds.x is within 2 of 25
+PASS axBounds.x is within 2 of 27
 PASS axBounds.y is within 2 of 179
-PASS axBounds.width is within 2 of 18
-PASS axBounds.height is within 2 of 31
+PASS axBounds.width is within 2 of 16
+PASS axBounds.height is within 2 of 32
 
 Testing bounds of word four in verticalParagraph
-PASS axBounds.x is within 2 of 25
-PASS axBounds.y is within 2 of 214
-PASS axBounds.width is within 2 of 18
+PASS axBounds.x is within 2 of 27
+PASS axBounds.y is within 2 of 215
+PASS axBounds.width is within 2 of 16
 PASS axBounds.height is within 2 of 26
 
 Testing bounds of word אחתשתיים in verticalParagraph
-PASS axBounds.x is within 2 of 25
-PASS axBounds.y is within 2 of 98
-PASS axBounds.width is within 2 of 18
+PASS axBounds.x is within 2 of 27
+PASS axBounds.y is within 2 of 98.1015625
+PASS axBounds.width is within 2 of 16
 PASS axBounds.height is within 2 of 76.7421875
 
 Testing bounds of word שלושהארבעה in verticalParagraph
-PASS axBounds.x is within 2 of 25
-PASS axBounds.y is within 2 of 243.7421875
-PASS axBounds.width is within 2 of 18
+PASS axBounds.x is within 2 of 27
+PASS axBounds.y is within 2 of 245.4765625
+PASS axBounds.width is within 2 of 16
 PASS axBounds.height is within 2 of 96.4453125
 PASS successfullyParsed is true
 

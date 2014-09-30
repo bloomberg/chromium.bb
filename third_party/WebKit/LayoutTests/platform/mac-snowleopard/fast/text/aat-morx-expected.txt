@@ -1,0 +1,12 @@
+layer at (0,0) size 1008x585
+  RenderView at (0,0) size 800x585
+layer at (0,0) size 800x585
+  RenderBlock {HTML} at (0,0) size 800x585
+    RenderBody {BODY} at (8,8) size 784x569
+      RenderBlock (anonymous) at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 764x32
+          text run at (0,0) width 764: "You should see a black and white Chromium logo. This test requires the ChromiumAATTest font to be available in the"
+          text run at (0,16) width 486: "test runner, the test only works on Mac in order to verify AAT font support."
+      RenderBlock {DIV} at (0,32) size 784x250
+        RenderText {#text} at (0,0) size 1000x250
+          text run at (0,0) width 1000: "abcd"

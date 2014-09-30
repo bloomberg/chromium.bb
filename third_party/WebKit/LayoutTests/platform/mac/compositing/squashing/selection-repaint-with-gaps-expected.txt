@@ -19,8 +19,8 @@ lorem ipsumlorem ipsumlorem ipsum
               "bounds": [100, 210],
               "drawsContent": true,
               "repaintRects": [
-                [36, 80, 4, 18],
-                [0, 80, 38, 36]
+                [37, 80, 3, 16],
+                [0, 80, 40, 32]
               ]
             }
           ]
@@ -49,11 +49,11 @@ lorem ipsumlorem ipsumlorem ipsum
               "bounds": [100, 210],
               "drawsContent": true,
               "repaintRects": [
-                [36, 160, 4, 18],
-                [36, 80, 4, 36],
-                [0, 160, 38, 36],
+                [37, 160, 3, 16],
+                [37, 80, 3, 32],
+                [0, 160, 40, 32],
                 [0, 80, 100, 50],
-                [0, 80, 38, 36]
+                [0, 80, 40, 32]
               ]
             }
           ]

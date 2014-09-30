@@ -53,21 +53,21 @@ layer at (0,0) size 800x600
               [feOffset dx="15.00" dy="15.00"]
                 [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 0.30 0.00"]
                   [SourceGraphic]
-      RenderText {#text} at (0,96) size 4x18
-        text run at (0,96) width 4: " "
+      RenderText {#text} at (0,98) size 4x16
+        text run at (0,98) width 4: " "
       RenderText {#text} at (0,0) size 0x0
-      RenderText {#text} at (184,96) size 4x18
-        text run at (184,96) width 4: " "
-      RenderText {#text} at (368,96) size 4x18
-        text run at (368,96) width 4: " "
-      RenderText {#text} at (552,96) size 4x18
-        text run at (552,96) width 4: " "
-      RenderText {#text} at (736,96) size 4x18
-        text run at (736,96) width 4: " "
-      RenderText {#text} at (180,210) size 4x18
-        text run at (180,210) width 4: " "
-      RenderText {#text} at (364,210) size 4x18
-        text run at (364,210) width 4: " "
+      RenderText {#text} at (184,98) size 4x16
+        text run at (184,98) width 4: " "
+      RenderText {#text} at (368,98) size 4x16
+        text run at (368,98) width 4: " "
+      RenderText {#text} at (552,98) size 4x16
+        text run at (552,98) width 4: " "
+      RenderText {#text} at (736,98) size 4x16
+        text run at (736,98) width 4: " "
+      RenderText {#text} at (180,212) size 4x16
+        text run at (180,212) width 4: " "
+      RenderText {#text} at (364,212) size 4x16
+        text run at (364,212) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (22,18) size 160x90
   RenderImage {IMG} at (14,10) size 160x90

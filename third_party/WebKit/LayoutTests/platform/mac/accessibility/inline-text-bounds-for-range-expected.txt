@@ -13,25 +13,25 @@ Testing bounds of word: The
 PASS axBounds.x is within 1 of 8
 PASS axBounds.y is within 1 of 8
 PASS axBounds.width is within 1 of 25
-PASS axBounds.height is within 1 of 18
+PASS axBounds.height is within 1 of 16
 
 Testing bounds of word: Hitchhiker
 PASS axBounds.x is within 1 of 37
 PASS axBounds.y is within 1 of 8
-PASS axBounds.width is within 1 of 67
-PASS axBounds.height is within 1 of 18
+PASS axBounds.width is within 1 of 68
+PASS axBounds.height is within 1 of 16
 
 Testing bounds of word: Guide
-PASS axBounds.x is within 1 of 117
+PASS axBounds.x is within 1 of 118
 PASS axBounds.y is within 1 of 8
-PASS axBounds.width is within 1 of 39
-PASS axBounds.height is within 1 of 18
+PASS axBounds.width is within 1 of 40
+PASS axBounds.height is within 1 of 16
 
 Testing bounds of word: interstellar
-PASS axBounds.x is within 1 of 8
-PASS axBounds.y is within 1 of 44
-PASS axBounds.width is within 1 of 65
-PASS axBounds.height is within 1 of 18
+PASS axBounds.x is within 1 of 64
+PASS axBounds.y is within 1 of 40
+PASS axBounds.width is within 1 of 68
+PASS axBounds.height is within 1 of 16
 PASS successfullyParsed is true
 
 TEST COMPLETE

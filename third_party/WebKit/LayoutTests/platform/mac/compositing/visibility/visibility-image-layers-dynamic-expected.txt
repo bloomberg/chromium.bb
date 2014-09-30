@@ -4,10 +4,10 @@
 Initial
 
 {
-  "bounds": [785, 626],
+  "bounds": [785, 614],
   "children": [
     {
-      "bounds": [785, 626],
+      "bounds": [785, 614],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -33,10 +33,10 @@ Initial
 After step 1
 
 {
-  "bounds": [785, 1051],
+  "bounds": [785, 985],
   "children": [
     {
-      "bounds": [785, 1051],
+      "bounds": [785, 985],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -68,10 +68,10 @@ After step 1
 After step 2
 
 {
-  "bounds": [785, 1565],
+  "bounds": [785, 1433],
   "children": [
     {
-      "bounds": [785, 1565],
+      "bounds": [785, 1433],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [

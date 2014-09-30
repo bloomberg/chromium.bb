@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
 layer at (7,75) size 284x212
   RenderBlock (positioned) {DIV} at (7,75) size 284x212 [bgcolor=#000000D1]
 layer at (101,237) size 40x24 transparent
-  RenderBlock (positioned) {DIV} at (94,162) size 40x24 [color=#FFFFFF]
-    RenderBlock {DIV} at (0,0) size 40x24
+  RenderBlock (positioned) {DIV} at (94.22,162) size 39.78x24 [color=#FFFFFF]
+    RenderBlock {DIV} at (0,0) size 39.78x24
       RenderText {#text} at (0,4) size 40x15
         text run at (0,4) width 40: "Cancel"

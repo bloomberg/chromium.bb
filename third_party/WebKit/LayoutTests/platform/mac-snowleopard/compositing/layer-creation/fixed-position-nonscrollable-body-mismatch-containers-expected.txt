@@ -9,7 +9,7 @@ Even though the fixed-position element's container is nonscrollable, it should s
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 68],
+          "position": [8, 64],
           "bounds": [302, 302],
           "drawsContent": true,
           "children": [

@@ -29,10 +29,10 @@ Case: Displaying poster
 
 Case: Displaying movie
 {
-  "bounds": [785, 782],
+  "bounds": [785, 724],
   "children": [
     {
-      "bounds": [785, 782],
+      "bounds": [785, 724],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
