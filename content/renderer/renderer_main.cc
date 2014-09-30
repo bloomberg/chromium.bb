@@ -149,13 +149,12 @@ int RendererMain(const MainFunctionParams& parameters) {
   // needs to be backed by a Foundation-level loop to process NSTimers. See
   // http://crbug.com/306348#c24 for details.
   scoped_ptr<base::MessagePump> pump(new base::MessagePumpNSRunLoop());
-  scoped_ptr<base::MessageLoop> main_message_loop(
-      new base::MessageLoop(pump.Pass()));
+  base::MessageLoop main_message_loop(pump.Pass());
 #else
   // The main message loop of the renderer services doesn't have IO or UI tasks.
-  scoped_ptr<base::MessageLoop> main_message_loop(new base::MessageLoop());
+  base::MessageLoop main_message_loop;
 #endif
-  main_message_loop->AddTaskObserver(&task_observer);
+  main_message_loop.AddTaskObserver(&task_observer);
 
   base::PlatformThread::SetName("CrRendererMain");
 
@@ -199,7 +198,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
     RenderProcessImpl render_process;
-    new RenderThreadImpl(main_message_loop.Pass());
+    new RenderThreadImpl();
 #endif
     bool run_loop = true;
     if (!no_sandbox) {
@@ -215,7 +214,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
-    new RenderThreadImpl(main_message_loop.Pass());
+    new RenderThreadImpl();
 #endif
 
     base::HighResolutionTimerManager hi_res_timer_manager;

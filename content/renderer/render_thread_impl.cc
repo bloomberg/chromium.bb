@@ -401,13 +401,6 @@ RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
   Init();
 }
 
-RenderThreadImpl::RenderThreadImpl(
-    scoped_ptr<base::MessageLoop> main_message_loop)
-    : ChildThread(Options(ShouldUseMojoChannel())),
-      main_message_loop_(main_message_loop.Pass()) {
-  Init();
-}
-
 void RenderThreadImpl::Init() {
   TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
 
@@ -664,24 +657,16 @@ void RenderThreadImpl::Shutdown() {
 
   main_thread_compositor_task_runner_ = NULL;
 
-  gpu_channel_ = NULL;
+  if (webkit_platform_support_)
+    blink::shutdown();
+
+  lazy_tls.Pointer()->Set(NULL);
 
   // TODO(port)
 #if defined(OS_WIN)
   // Clean up plugin channels before this thread goes away.
   NPChannelBase::CleanupChannels();
 #endif
-
-  // Shut down the message loop before shutting down Blink.
-  // This prevents a scenario where a pending task in the message loop accesses
-  // Blink objects after Blink shuts down.
-  // This must be at the very end of the shutdown sequence. You must not touch
-  // the message loop after this.
-  main_message_loop_.reset();
-  if (webkit_platform_support_)
-    blink::shutdown();
-
-  lazy_tls.Pointer()->Set(NULL);
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
