@@ -36,7 +36,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/V8Document.h"
-#include "bindings/core/v8/V8GCForContextDispose.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8HiddenValue.h"
@@ -104,7 +103,7 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
     // It's likely that disposing the context has created a lot of
     // garbage. Notify V8 about this so it'll have a chance of cleaning
     // it up when idle.
-    V8GCForContextDispose::instanceTemplate().notifyContextDisposed(m_frame->isMainFrame());
+    V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification();
 }
 
 void WindowProxy::clearForClose()
