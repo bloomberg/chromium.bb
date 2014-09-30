@@ -26,7 +26,7 @@
   },
   'rules': [
     {
-      # GN version: //extensions/generated_extensions_api.gni
+      # GN version: json_schema_api.gni
       'rule_name': 'genapi',
       'msvs_external_rule': 1,
       'extension': 'json',

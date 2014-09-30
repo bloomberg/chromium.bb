@@ -49,7 +49,7 @@
 # The static library target also inherits the visibility and output_name
 # of its invoker.
 
-template("generated_extensions_api") {
+template("json_schema_api") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
   assert(defined(invoker.root_namespace),

@@ -35,7 +35,7 @@
   },
   'actions': [
     {
-      # GN version: //extensions/generated_extensions_api.gni
+      # GN version: json_schema_api.gni
       'action_name': 'genapi_bundle_registration',
       'inputs': [
         '<@(generator_files)',

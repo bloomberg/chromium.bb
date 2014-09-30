@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//extensions/generated_extensions_api.gni")
+import("//build/json_schema_api.gni")
 import("schemas.gni")
 
 # GYP version: extensions/common/api/api.gyp:extensions_api
-generated_extensions_api("api") {
+json_schema_api("api") {
   schemas = true
   bundle = true
 }
 
 # GYP version: extensions/browser/api/api_registration.gyp:extensions_api_registration
-generated_extensions_api("api_registration") {
+json_schema_api("api_registration") {
   impl_dir = "//extensions/browser/api"
   bundle_registration = true
 
