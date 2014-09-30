@@ -811,23 +811,9 @@ TEST_P(AudioAndroidInputTest,
   StartInputStreamCallbacks(params);
 }
 
-
-#if defined(__aarch64__)
-// Disable StartOutputStreamCallbacks and
-// StartOutputStreamCallbacksNonDefaultParameters on Arm64: crbug.com/418029
-#define MAYBE_StartOutputStreamCallbacks DISABLED_StartOutputStreamCallbacks
-#define MAYBE_StartOutputStreamCallbacksNonDefaultParameters  \
-    DISABLED_StartOutputStreamCallbacksNonDefaultParameters
-#else
-#define MAYBE_StartOutputStreamCallbacks StartOutputStreamCallbacks
-#define MAYBE_StartOutputStreamCallbacksNonDefaultParameters  \
-    StartOutputStreamCallbacksNonDefaultParameters
-#endif
-
-
 // Start output streaming using default output parameters and ensure that the
 // callback sequence is sane.
-TEST_F(AudioAndroidOutputTest, MAYBE_StartOutputStreamCallbacks) {
+TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacks) {
   GetDefaultOutputStreamParametersOnAudioThread();
   StartOutputStreamCallbacks(audio_output_parameters());
 }
@@ -837,8 +823,7 @@ TEST_F(AudioAndroidOutputTest, MAYBE_StartOutputStreamCallbacks) {
 // select a 10ms buffer size instead of the default size and to open up the
 // device in mono.
 // TODO(henrika): possibly add support for more variations.
-TEST_F(AudioAndroidOutputTest,
-       MAYBE_StartOutputStreamCallbacksNonDefaultParameters) {
+TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacksNonDefaultParameters) {
   GetDefaultOutputStreamParametersOnAudioThread();
   AudioParameters params(audio_output_parameters().format(),
                          CHANNEL_LAYOUT_MONO,
