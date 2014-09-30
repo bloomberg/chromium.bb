@@ -80,6 +80,12 @@ message SystemProfileProto {
 
     // The fingerprint of the build.  This field is used only on Android.
     optional string fingerprint = 3;
+
+    // Whether the version of iOS appears to be "jailbroken". This field is
+    // used only on iOS. Chrome for iOS detects whether device contains a
+    // DynamicLibraries/ directory. It's a necessary but insufficient indicator
+    // of whether the operating system has been jailbroken.
+    optional bool is_jailbroken = 4;
   }
   optional OS os = 5;
 
