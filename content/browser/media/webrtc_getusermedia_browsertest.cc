@@ -457,8 +457,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+#if defined(OS_WIN)
+// Flaky on Windows Debug: http://crbug.com/417756
+#define MAYBE_TwoGetUserMediaWithSecondVideoCropped \
+    DISABLED_TwoGetUserMediaWithSecondVideoCropped
+#else
+#define MAYBE_TwoGetUserMediaWithSecondVideoCropped \
+    TwoGetUserMediaWithSecondVideoCropped
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithSecondVideoCropped) {
+                       MAYBE_TwoGetUserMediaWithSecondVideoCropped) {
   std::string constraints1 = "{video: true}";
   std::string constraints2 = "{video: {mandatory: {maxHeight: 360}}}";
   std::string expected_result = "w=640:h=480-w=640:h=360";
