@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x51
-  RenderBlock {test} at (0,0) size 800x51
-    RenderBlock {p} at (0,16) size 800x19
-      RenderButton {button} at (0,1) size 491.58x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+layer at (0,0) size 800x50
+  RenderBlock {test} at (0,0) size 800x50
+    RenderBlock {p} at (0,16) size 800x18
+      RenderButton {button} at (0,0) size 491.58x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
         RenderBlock (anonymous) at (8,2) size 475.58x13
           RenderText {#text} at (0,0) size 476x13
             text run at (0,0) width 476: "Activating (e.g. holding the mouse button down on) this button should make it go green."

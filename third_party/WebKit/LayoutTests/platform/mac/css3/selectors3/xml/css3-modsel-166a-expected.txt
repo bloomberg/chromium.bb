@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x50
-  RenderBlock {test} at (0,0) size 800x50
-    RenderBlock {p} at (0,16) size 800x18
-      RenderInline (generated) at (0,0) size 10x18 [bgcolor=#00FF00]
-        RenderTextFragment {#text} at (0,0) size 10x18
+layer at (0,0) size 800x48
+  RenderBlock {test} at (0,0) size 800x48
+    RenderBlock {p} at (0,16) size 800x16
+      RenderInline (generated) at (0,0) size 10x16 [bgcolor=#00FF00]
+        RenderTextFragment {#text} at (0,0) size 10x16
           text run at (0,0) width 10: "T"
-      RenderTextFragment {#text} at (10,0) size 401x18
-        text run at (10,0) width 401: "he first letter of this paragraph should have a green background."
+      RenderTextFragment {#text} at (9,0) size 410x16
+        text run at (9,0) width 410: "he first letter of this paragraph should have a green background."
