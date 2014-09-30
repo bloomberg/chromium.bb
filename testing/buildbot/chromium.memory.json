@@ -3,12 +3,17 @@
     "gtest_tests": [
       "accessibility_unittests",
       "app_shell_browsertests",
-      "base_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 3
+          "shards": 5
         }
       },
       "cacheinvalidation_unittests",
@@ -37,13 +42,19 @@
       {
         "test": "interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       },
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      "net_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
@@ -74,7 +85,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 5
         }
       },
       {
@@ -86,7 +97,8 @@
       {
         "test": "interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       }
     ]
