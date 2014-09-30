@@ -8,7 +8,7 @@
 
   <!-- Whenever you roll this please also change frameworks/webview in DEPS to point to the
        same revision. -->
-  <project name="platform/frameworks/webview" path="frameworks/webview" revision="a1b0248c80f239e2f6476b9f395b27d0ba1eb3cd"/>
+  <project name="platform/frameworks/webview" path="frameworks/webview" revision="6ec46f2bd3243d042d9641d7f87863bc20f8c745"/>
 
   <project groups="device,flo" name="device/asus/deb" revision="0ce3a783d549d023ddc553a04fed717ffb2ff533"/>
   <project groups="device,flo" name="device/asus/flo" revision="55ea79b11f9f82b2aa03f44a3429112fc5c06d07"/>
