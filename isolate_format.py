@@ -81,18 +81,6 @@ def eval_variables(item, variables):
       for p in re.split(r'(<\(' + VALID_VARIABLE + '\))', item))
 
 
-def split_touched(files):
-  """Splits files that are touched vs files that are read."""
-  tracked = []
-  touched = []
-  for f in files:
-    if f.size:
-      tracked.append(f)
-    else:
-      touched.append(f)
-  return tracked, touched
-
-
 def pretty_print(variables, stdout):
   """Outputs a .isolate file from the decoded variables.
 
@@ -254,6 +242,7 @@ def verify_variables(variables):
     KEY_TRACKED,
     KEY_UNTRACKED,
     'command',
+    'files',
     'read_only',
   ]
   assert isinstance(variables, dict), variables
@@ -343,11 +332,10 @@ class ConfigSettings(object):
 
   The structure is immutable.
 
-  .touch, .tracked and .untracked are the list of dependencies. The items in
-      these lists use '/' as a path separator.
   .command and .isolate_dir describe how to run the command. .isolate_dir uses
       the OS' native path separator. It must be an absolute path, it's the path
       where to start the command from.
+  .files is the list of dependencies. The items use '/' as a path separator.
   .read_only describe how to map the files.
   """
   def __init__(self, values, isolate_dir):
@@ -358,9 +346,12 @@ class ConfigSettings(object):
     else:
       # Otherwise, the path must be absolute.
       assert os.path.isabs(isolate_dir), isolate_dir
-    self.touched = sorted(values.get(KEY_TOUCHED, []))
-    self.tracked = sorted(values.get(KEY_TRACKED, []))
-    self.untracked = sorted(values.get(KEY_UNTRACKED, []))
+
+    self.files = sorted(
+        values.get('files', []) +
+        values.get(KEY_TOUCHED, []) +
+        values.get(KEY_TRACKED, []) +
+        values.get(KEY_UNTRACKED, []))
     self.command = values.get('command', [])[:]
     self.isolate_dir = isolate_dir
     self.read_only = values.get('read_only')
@@ -393,7 +384,7 @@ class ConfigSettings(object):
       use_rhs = bool(not self.command and rhs.command)
     else:
       # If self doesn't define any file, use rhs.
-      use_rhs = not bool(self.touched or self.tracked or self.untracked)
+      use_rhs = not bool(self.files)
     if use_rhs:
       # Rebase files in rhs.
       l_rel_cwd, r_rel_cwd = r_rel_cwd, l_rel_cwd
@@ -412,10 +403,8 @@ class ConfigSettings(object):
       return sorted(l + map(rebase_item, r))
 
     var = {
-      KEY_TOUCHED: map_both(self.touched, rhs.touched),
-      KEY_TRACKED: map_both(self.tracked, rhs.tracked),
-      KEY_UNTRACKED: map_both(self.untracked, rhs.untracked),
       'command': self.command or rhs.command,
+      'files': map_both(self.files, rhs.files),
       'read_only': rhs.read_only if self.read_only is None else self.read_only,
     }
     return ConfigSettings(var, l_rel_cwd)
@@ -425,12 +414,8 @@ class ConfigSettings(object):
     out = {}
     if self.command:
       out['command'] = self.command
-    if self.touched:
-      out[KEY_TOUCHED] = self.touched
-    if self.tracked:
-      out[KEY_TRACKED] = self.tracked
-    if self.untracked:
-      out[KEY_UNTRACKED] = self.untracked
+    if self.files:
+      out['files'] = self.files
     if self.read_only is not None:
       out['read_only'] = self.read_only
     # TODO(maruel): Probably better to not output it if command is None?
@@ -440,8 +425,7 @@ class ConfigSettings(object):
 
   def __str__(self):
     """Returns a short representation useful for debugging."""
-    files = ''.join(
-        '\n    ' + f for f in (self.touched + self.tracked + self.untracked))
+    files = ''.join('\n    ' + f for f in self.files)
     return 'ConfigSettings(%s, %s, %s, %s)' % (
         self.command,
         self.isolate_dir,
@@ -591,10 +575,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
           'command': [
             ...
           ],
-          'isolate_dependency_tracked': [
-            ...
-          ],
-          'isolate_dependency_untracked': [
+          'files': [
             ...
           ],
           'read_only': 0,
@@ -661,7 +642,7 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   filtered for the specific OS.
 
   Returns:
-    tuple of command, dependencies, touched, read_only flag, isolate_dir.
+    tuple of command, dependencies, read_only flag, isolate_dir.
     The dependencies are fixed to use os.path.sep.
   """
   # Load the .isolate file, process its conditions, retrieve the command and
@@ -679,12 +660,5 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   # A configuration is to be created with all the combinations of free
   # variables.
   config = isolate.get_config(config_name)
-  # Merge tracked and untracked variables, isolate.py doesn't care about the
-  # trackability of the variables, only the build tool does.
-  dependencies = sorted(
-    f.replace('/', os.path.sep) for f in config.tracked + config.untracked
-  )
-  touched = sorted(f.replace('/', os.path.sep) for f in config.touched)
-  return (
-      config.command, dependencies, touched, config.read_only,
-      config.isolate_dir)
+  dependencies = [f.replace('/', os.path.sep) for f in config.files]
+  return config.command, dependencies, config.read_only, config.isolate_dir

@@ -238,7 +238,6 @@ class IsolateTempdir(unittest.TestCase):
         item['m'] = 288
       item['s'] = 0
       if with_time:
-        item['T'] = True
         item.pop('t', None)
     return files
 

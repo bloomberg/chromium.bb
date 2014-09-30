@@ -90,9 +90,6 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
       if not os.path.isdir(outsubdir):
         os.makedirs(outsubdir)
 
-    # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
-    # if metadata.get('T') == True:
-    #   open(outfile, 'ab').close()
     if 'l' in metadata:
       pointed = metadata['l']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
@@ -335,7 +332,7 @@ class SavedState(Flattenable):
     self.isolate_file = isolate_file
     self.path_variables.update(path_variables)
 
-  def update_isolated(self, command, infiles, touched, read_only, relative_cwd):
+  def update_isolated(self, command, infiles, read_only, relative_cwd):
     """Updates the saved state with data necessary to generate a .isolated file.
 
     The new files in |infiles| are added to self.files dict but their hash is
@@ -345,10 +342,8 @@ class SavedState(Flattenable):
     # Add new files.
     for f in infiles:
       self.files.setdefault(f, {})
-    for f in touched:
-      self.files.setdefault(f, {})['T'] = True
     # Prune extraneous files that are not a dependency anymore.
-    for f in set(self.files).difference(set(infiles).union(touched)):
+    for f in set(self.files).difference(set(infiles)):
       del self.files[f]
     if read_only is not None:
       self.read_only = read_only
@@ -489,7 +484,7 @@ class CompleteState(object):
     with open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
-      command, infiles, touched, read_only, isolate_cmd_dir = (
+      command, infiles, read_only, isolate_cmd_dir = (
           isolate_format.load_isolate_for_config(
               os.path.dirname(isolate_file), f.read(),
               self.saved_state.config_variables))
@@ -513,15 +508,11 @@ class CompleteState(object):
     infiles = [
         isolate_format.eval_variables(f, total_variables) for f in infiles
     ]
-    touched = [
-        isolate_format.eval_variables(f, total_variables) for f in touched
-    ]
     # root_dir is automatically determined by the deepest root accessed with the
     # form '../../foo/bar'. Note that path variables must be taken in account
     # too, add them as if they were input files.
     self.saved_state.root_dir = isolate_format.determine_root_dir(
-        isolate_cmd_dir, infiles + touched +
-        self.saved_state.path_variables.values())
+        isolate_cmd_dir, infiles + self.saved_state.path_variables.values())
     # The relative directory is automatically determined by the relative path
     # between root_dir and the directory containing the .isolate file,
     # isolate_base_dir.
@@ -543,15 +534,9 @@ class CompleteState(object):
           self.saved_state.root_dir)
       for f in infiles
     ]
-    touched = [
-      file_path.relpath(
-          file_path.normpath(os.path.join(isolate_cmd_dir, f)),
-          self.saved_state.root_dir)
-      for f in touched
-    ]
     follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
-    # os.path.sep must be kept. Do not expand 'touched'.
+    # os.path.sep must be kept.
     infiles = isolated_format.expand_directories_and_symlinks(
         self.saved_state.root_dir,
         infiles,
@@ -559,19 +544,9 @@ class CompleteState(object):
         follow_symlinks,
         ignore_broken_items)
 
-    # If we ignore broken items then remove any missing touched items.
-    if ignore_broken_items:
-      original_touched_count = len(touched)
-      touched = [touch for touch in touched if os.path.exists(touch)]
-
-      if len(touched) != original_touched_count:
-        logging.info('Removed %d invalid touched entries',
-                     len(touched) - original_touched_count)
-
     # Finally, update the new data to be able to generate the foo.isolated file,
     # the file that is used by run_isolated.py.
-    self.saved_state.update_isolated(
-        command, infiles, touched, read_only, relative_cwd)
+    self.saved_state.update_isolated(command, infiles, read_only, relative_cwd)
     logging.debug(self)
 
   def files_to_metadata(self, subdir):

@@ -106,32 +106,24 @@ class IsolateFormatTest(unittest.TestCase):
         'isolate_dir': FAKE_DIR,
       },
       ('amiga',): {
-        KEY_TOUCHED: ['touched', 'touched_e'],
-        KEY_TRACKED: ['a', 'e', 'g', 'x'],
-        KEY_UNTRACKED: ['b', 'f', 'h'],
+        'files': ['a', 'b', 'e', 'f', 'g', 'h', 'touched', 'touched_e', 'x'],
         'command': ['echo', 'You should get an Atari'],
         'isolate_dir': FAKE_DIR,
         'read_only': 1,
       },
       ('atari',): {
-        KEY_TOUCHED: ['touched', 'touched_a'],
-        KEY_TRACKED: ['a', 'c', 'x'],
-        KEY_UNTRACKED: ['b', 'd', 'h'],
+        'files': ['a', 'b', 'c', 'd', 'h', 'touched', 'touched_a', 'x'],
         'command': ['echo', 'Hello World'],
         'isolate_dir': FAKE_DIR,
         'read_only': 2,
       },
       ('coleco',): {
-        KEY_TOUCHED: ['touched', 'touched_e'],
-        KEY_TRACKED: ['a', 'e', 'x'],
-        KEY_UNTRACKED: ['b', 'f'],
+        'files': ['a', 'b', 'e', 'f', 'touched', 'touched_e', 'x'],
         'command': ['echo', 'You should get an Atari'],
         'isolate_dir': FAKE_DIR,
       },
       ('dendy',): {
-        KEY_TOUCHED: ['touched', 'touched_e'],
-        KEY_TRACKED: ['a', 'e', 'x'],
-        KEY_UNTRACKED: ['b', 'f', 'h'],
+        'files': ['a', 'b', 'e', 'f', 'h', 'touched', 'touched_e', 'x'],
         'command': ['echo', 'You should get an Atari'],
         'isolate_dir': FAKE_DIR,
       },
@@ -172,10 +164,8 @@ class IsolateFormatTest(unittest.TestCase):
     # The key is the empty tuple, since there is no variable to bind to.
     expected = {
       (): {
-        KEY_TRACKED: ['a'],
-        KEY_UNTRACKED: ['b'],
-        KEY_TOUCHED: ['touched'],
         'command': ['echo', 'You should get an Atari'],
+        'files': ['a', 'b', 'touched'],
         'isolate_dir': FAKE_DIR,
         'read_only': 1,
       },
@@ -227,11 +217,11 @@ class IsolateFormatTest(unittest.TestCase):
         'isolate_dir': FAKE_DIR,
       },
       ('linux',): {
-        'isolate_dependency_tracked': ['file_common', 'file_linux'],
+        'files': ['file_common', 'file_linux'],
         'isolate_dir': FAKE_DIR,
       },
       ('mac',): {
-        'isolate_dependency_tracked': ['file_common', 'file_mac'],
+        'files': ['file_common', 'file_mac'],
         'isolate_dir': FAKE_DIR,
       },
     }
@@ -285,15 +275,15 @@ class IsolateFormatTest(unittest.TestCase):
         'isolate_dir': FAKE_DIR,
       },
       ('linux', 1): {
-        'isolate_dependency_tracked': ['file_common', 'file_linux'],
+        'files': ['file_common', 'file_linux'],
         'isolate_dir': FAKE_DIR,
       },
       ('mac', 0): {
-        'isolate_dependency_tracked': ['file_common', 'file_mac'],
+        'files': ['file_common', 'file_mac'],
         'isolate_dir': FAKE_DIR,
       },
       ('win', 0): {
-        'isolate_dependency_tracked': ['file_common', 'file_win'],
+        'files': ['file_common', 'file_win'],
         'isolate_dir': FAKE_DIR,
       },
     }
@@ -403,7 +393,7 @@ class IsolateFormatTest(unittest.TestCase):
     rhs = isolate_format.ConfigSettings(rhs_values, '/src/base')
     out = lhs.union(rhs)
     expected = {
-      KEY_UNTRACKED: ['data/', 'test/data/'],
+      'files': ['data/', 'test/data/'],
       'isolate_dir': '/src/base',
     }
     self.assertEqual(expected, out.flatten())
@@ -589,27 +579,27 @@ class IsolateFormatTest(unittest.TestCase):
     }
     expected = {
       (None,): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_common',
         ],
         'isolate_dir': FAKE_DIR,
       },
       ('linux',): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_linux',
         ],
         'isolate_dir': FAKE_DIR,
         'read_only': 1,
       },
       ('mac',): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_non_linux',
         ],
         'isolate_dir': FAKE_DIR,
         'read_only': 0,
       },
       ('win',): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_non_linux',
         ],
         'isolate_dir': FAKE_DIR,
@@ -681,21 +671,21 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
 
     expected = {
       (None,): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_common',
           'file_less_common',
         ],
         'isolate_dir': self.tempdir,
       },
       ('linux',): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_linux',
         ],
         'isolate_dir': self.tempdir,
         'read_only': 1,
       },
       ('mac',): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_mac',
           'file_non_linux',
         ],
@@ -703,7 +693,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         'read_only': 2,
       },
       ('win',): {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_non_linux',
         ],
         'isolate_dir': self.tempdir,
@@ -807,7 +797,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       },
       ('amiga',): {
         'command': ['foo', 'amiga_or_win'],
-        'isolate_dependency_tracked': [
+        'files': [
           # Note that the file was rebased from isolate1. This is important,
           # isolate1 represent the canonical root path because it is the one
           # that defined the command.
@@ -820,7 +810,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         # it becomes the canonical root, so reference to file from isolate1 is
         # via '../../1'.
         'command': ['foo', 'linux_or_mac'],
-        'isolate_dependency_tracked': [
+        'files': [
           '../../1/file_linux',
           'other/file',
         ],
@@ -829,7 +819,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       ('mac',): {
         # command in isolate3 takes precedence over the ones included.
         'command': ['foo', 'mac'],
-        'isolate_dependency_tracked': [
+        'files': [
           '../1/file_non_linux',
           '2/other/file',
           'file_mac',
@@ -839,7 +829,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       ('win',): {
         # command comes from isolate1.
         'command': ['foo', 'amiga_or_win'],
-        'isolate_dependency_tracked': [
+        'files': [
           # While this may be surprising, this is because the command was
           # defined in isolate1, not isolate3.
           'file_non_linux',
@@ -942,7 +932,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       },
       ('amiga',): {
         'command': ['foo', 'amiga_or_win', '<(PATH)'],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PATH)/file_amiga',
         ],
         'isolate_dir': dir_1,
@@ -952,7 +942,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         # it becomes the canonical root, so reference to file from isolate1 is
         # via '../../1'.
         'command': ['foo', 'linux_or_mac', '<(PATH)'],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PATH)/file_linux',
           '<(PATH)/other/file',
         ],
@@ -960,7 +950,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       },
       ('mac',): {
         'command': ['foo', 'mac', '<(PATH)'],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PATH)/file_mac',
           '<(PATH)/file_non_linux',
           '<(PATH)/other/file',
@@ -970,7 +960,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       ('win',): {
         # command comes from isolate1.
         'command': ['foo', 'amiga_or_win', '<(PATH)'],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PATH)/file_non_linux',
         ],
         'isolate_dir': dir_1,
