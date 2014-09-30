@@ -89,8 +89,8 @@ CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                             'llvm-build', 'Release+Asserts', 'bin', 'clang')
 CHROME_CLANGXX = CHROME_CLANG + '++'
 
-ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
-              'x86-32-nonsfi', 'arm-nonsfi')
+TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
+                     'x86-32-nonsfi', 'arm-nonsfi')
 # MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
 BITCODE_BIASES = tuple(bias for bias in ('le32', 'x86-32', 'x86-64', 'arm'))
 
@@ -753,21 +753,21 @@ def GetUploadPackageTargets():
 
   common_packages = ['metadata']
 
-  # Target native libraries
-  for arch in ALL_ARCHES:
+  # Target translator libraries
+  for arch in TRANSLATOR_ARCHES:
     legal_arch = pynacl.gsd_storage.LegalizeName(arch)
-    common_packages.append('libs_support_native_%s' % legal_arch)
+    common_packages.append('libs_support_translator_%s' % legal_arch)
     common_packages.append('compiler_rt_%s' % legal_arch)
     if not 'nonsfi' in arch:
       common_packages.append('libgcc_eh_%s' % legal_arch)
 
-  # Target bitcode libraries
+  # Target libraries
   for bias in BITCODE_BIASES:
     legal_bias = pynacl.gsd_storage.LegalizeName(bias)
     common_packages.append('newlib_%s' % legal_bias)
     common_packages.append('libcxx_%s' % legal_bias)
     common_packages.append('libstdcxx_%s' % legal_bias)
-    common_packages.append('libs_support_bitcode_%s' % legal_bias)
+    common_packages.append('libs_support_%s' % legal_bias)
 
   # Host components
   host_packages = {}
@@ -871,9 +871,9 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.TargetLibsSrc(
         GetGitSyncCmdsCallback(rev)))
       for bias in BITCODE_BIASES:
-        packages.update(pnacl_targetlibs.BitcodeLibs(bias, is_canonical))
-      for arch in ALL_ARCHES:
-        packages.update(pnacl_targetlibs.NativeLibs(arch, is_canonical))
+        packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
+      for arch in TRANSLATOR_ARCHES:
+        packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical))
       packages.update(Metadata(rev))
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.UnsandboxedIRT(

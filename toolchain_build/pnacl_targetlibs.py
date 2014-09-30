@@ -57,25 +57,6 @@ def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
 
-# Copy the compiled bitcode archives used for linking C programs into the the
-# current working directory. This allows the driver in the working directory to
-# be used in cases which need the ability to link pexes (e.g. CMake
-# try-compiles, LLVM testsuite, or libc++ testsuite). For now this also requires
-# a build of libnacl however, which is driven by the buildbot script or
-# external test script. TODO(dschuff): add support to drive the LLVM and libcxx
-# test suites from toolchain_build rules.
-def CopyBitcodeCLibs(bias_arch):
-  return [
-      command.RemoveDirectory('usr'),
-      command.Mkdir('usr'),
-      command.Command('cp -r %(' +
-                      GSDJoin('abs_libs_support_bitcode', bias_arch) +
-                      ')s usr', shell=True),
-      command.Command('cp -r %(' + GSDJoin('abs_newlib', bias_arch) +
-                      ')s/* usr', shell=True),
-      ]
-
-
 def BiasedBitcodeTriple(bias_arch):
   return 'le32-nacl' if bias_arch == 'le32' else bias_arch + '_bc-nacl'
 
@@ -91,7 +72,7 @@ def BiasedBitcodeTargetFlag(arch):
   return ['--target=%s' % flagmap[arch][0]] + flagmap[arch][1]
 
 
-def TargetBCLibCflags(bias_arch):
+def TargetLibCflags(bias_arch):
   flags = '-g -O2 -mllvm -inline-threshold=5'
   if bias_arch != 'le32':
     flags += ' ' + ' '.join(BiasedBitcodeTargetFlag(bias_arch))
@@ -106,17 +87,17 @@ def NewlibIsystemCflags(bias_arch):
 def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
   # pthread otherwise.
-  return ' '.join([TargetBCLibCflags(bias_arch), NewlibIsystemCflags(bias_arch),
+  return ' '.join([TargetLibCflags(bias_arch), NewlibIsystemCflags(bias_arch),
                    '-DHAS_THREAD_LOCAL=1'])
 
 
 def LibStdcxxCflags(bias_arch):
-  return ' '.join([TargetBCLibCflags(bias_arch),
+  return ' '.join([TargetLibCflags(bias_arch),
                    NewlibIsystemCflags(bias_arch)])
 
 
-# Build a single object file as bitcode.
-def BuildTargetBitcodeCmd(source, output, bias_arch, output_dir='%(cwd)s'):
+# Build a single object file for the target.
+def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s'):
   flags = ['-Wall', '-Werror', '-O2', '-c']
   if bias_arch != 'le32':
     flags.extend(BiasedBitcodeTargetFlag(bias_arch))
@@ -127,9 +108,9 @@ def BuildTargetBitcodeCmd(source, output, bias_arch, output_dir='%(cwd)s'):
      '-o', command.path.join(output_dir, output)])
 
 
-# Build a single object file as native code.
-def BuildTargetNativeCmd(sourcefile, output, arch, extra_flags=[],
-                         source_dir='%(src)s', output_dir='%(cwd)s'):
+# Build a single object file as native code for the translator.
+def BuildTargetTranslatorCmd(sourcefile, output, arch, extra_flags=[],
+                             source_dir='%(src)s', output_dir='%(cwd)s'):
   return command.Command(
     [PnaclTool('clang', msys=False),
      '--pnacl-allow-native', '--pnacl-allow-translate', '-Wall', '-Werror',
@@ -237,22 +218,22 @@ def TargetLibsSrc(GitSyncCmds):
   return source
 
 
-def BitcodeLibs(bias_arch, is_canonical):
-  def B(component_name):
+def TargetLibs(bias_arch, is_canonical):
+  def T(component_name):
     return GSDJoin(component_name, bias_arch)
   bc_triple = BiasedBitcodeTriple(bias_arch)
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', bc_triple)
   libc_libdir = os.path.join('%(output)s', bc_triple, 'lib')
   libs = {
-      B('newlib'): {
+      T('newlib'): {
           'type': 'build' if is_canonical else 'work',
           'dependencies': [ 'newlib_src', 'target_lib_compiler'],
           'commands' : [
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
                   TARGET_TOOLS +
-                  ['CFLAGS_FOR_TARGET=' + TargetBCLibCflags(bias_arch) +
+                  ['CFLAGS_FOR_TARGET=' + TargetLibCflags(bias_arch) +
                    ' -allow-asm',
                   '--disable-multilib',
                   '--prefix=',
@@ -292,14 +273,13 @@ def BitcodeLibs(bias_arch, is_canonical):
                              run_cond = lambda x: bias_arch != 'le32'),
           ],
       },
-      B('libcxx'): {
+      T('libcxx'): {
           'type': 'build' if is_canonical else 'work',
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
-                           'target_lib_compiler', B('newlib'),
-                           B('libs_support_bitcode')],
+                           'target_lib_compiler', T('newlib'),
+                           T('libs_support')],
           'commands' :
-              CopyBitcodeCLibs(bias_arch) + [
-              command.SkipForIncrementalCommand(
+              [command.SkipForIncrementalCommand(
                   ['cmake', '-G', 'Unix Makefiles',
                    '-DCMAKE_C_COMPILER_WORKS=1',
                    '-DCMAKE_CXX_COMPILER_WORKS=1',
@@ -344,10 +324,10 @@ def BitcodeLibs(bias_arch, is_canonical):
                   'install']),
           ],
       },
-      B('libstdcxx'): {
+      T('libstdcxx'): {
           'type': 'build' if is_canonical else 'work',
           'dependencies': ['gcc_src', 'gcc_src', 'target_lib_compiler',
-                           B('newlib')],
+                           T('newlib')],
           'commands' : [
               command.SkipForIncrementalCommand([
                   'sh',
@@ -395,9 +375,9 @@ def BitcodeLibs(bias_arch, is_canonical):
                   os.path.join('%(output)s', bc_triple, 'lib', 'libstdc++.a')),
           ],
       },
-      B('libs_support_bitcode'): {
+      T('libs_support'): {
           'type': 'build' if is_canonical else 'work',
-          'dependencies': [ B('newlib'), 'target_lib_compiler'],
+          'dependencies': [ T('newlib'), 'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR,
                                           'pnacl', 'support', 'bitcode')},
           'commands': [
@@ -411,20 +391,20 @@ def BitcodeLibs(bias_arch, is_canonical):
               command.Copy(command.path.join('%(src)s', 'crt1_for_eh.x'),
                            command.path.join(libc_libdir, 'crt1_for_eh.x')),
               # Install crti.bc (empty _init/_fini)
-              BuildTargetBitcodeCmd('crti.c', 'crti.bc', bias_arch,
+              BuildTargetObjectCmd('crti.c', 'crti.bc', bias_arch,
                                     output_dir=libc_libdir),
               # Install crtbegin bitcode (__cxa_finalize for C++)
-              BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc', bias_arch,
+              BuildTargetObjectCmd('crtbegin.c', 'crtbegin.bc', bias_arch,
                                     output_dir=clang_libdir),
               # Stubs for _Unwind_* functions when libgcc_eh is not included in
               # the native link).
-              BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc',
+              BuildTargetObjectCmd('unwind_stubs.c', 'unwind_stubs.bc',
                                     bias_arch, output_dir=clang_libdir),
-              BuildTargetBitcodeCmd('sjlj_eh_redirect.cc',
+              BuildTargetObjectCmd('sjlj_eh_redirect.cc',
                                     'sjlj_eh_redirect.bc', bias_arch,
                                     output_dir=clang_libdir),
               # libpnaclmm.a (__atomic_* library functions).
-              BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc', bias_arch),
+              BuildTargetObjectCmd('pnaclmm.c', 'pnaclmm.bc', bias_arch),
               command.Command([
                   PnaclTool('ar'), 'rc',
                   command.path.join(clang_libdir, 'libpnaclmm.a'),
@@ -435,7 +415,7 @@ def BitcodeLibs(bias_arch, is_canonical):
   return libs
 
 
-def NativeLibs(arch, is_canonical):
+def TranslatorLibs(arch, is_canonical):
   setjmp_arch = arch
   if setjmp_arch.endswith('-nonsfi'):
     setjmp_arch = setjmp_arch[:-len('-nonsfi')]
@@ -443,23 +423,23 @@ def NativeLibs(arch, is_canonical):
   arch_cmds = []
   if arch == 'arm':
     arch_cmds.append(
-        BuildTargetNativeCmd('aeabi_read_tp.S', 'aeabi_read_tp.o', arch))
+        BuildTargetTranslatorCmd('aeabi_read_tp.S', 'aeabi_read_tp.o', arch))
   elif arch == 'x86-32-nonsfi':
     arch_cmds.extend(
-        [BuildTargetNativeCmd('entry_linux.c', 'entry_linux.o', arch),
-         BuildTargetNativeCmd('entry_linux_x86_32.S', 'entry_linux_asm.o',
-                              arch)])
+        [BuildTargetTranslatorCmd('entry_linux.c', 'entry_linux.o', arch),
+         BuildTargetTranslatorCmd('entry_linux_x86_32.S', 'entry_linux_asm.o',
+                                  arch)])
   elif arch == 'arm-nonsfi':
     arch_cmds.extend(
-        [BuildTargetNativeCmd('entry_linux.c', 'entry_linux.o', arch),
-         BuildTargetNativeCmd('entry_linux_arm.S', 'entry_linux_asm.o',
-                              arch)])
-  native_lib_dir = os.path.join('translator', arch, 'lib')
+        [BuildTargetTranslatorCmd('entry_linux.c', 'entry_linux.o', arch),
+         BuildTargetTranslatorCmd('entry_linux_arm.S', 'entry_linux_asm.o',
+                                  arch)])
+  translator_lib_dir = os.path.join('translator', arch, 'lib')
 
   libs = {
-      GSDJoin('libs_support_native', arch): {
+      GSDJoin('libs_support_translator', arch): {
           'type': 'build' if is_canonical else 'work',
-          'output_subdir': native_lib_dir,
+          'output_subdir': translator_lib_dir,
           'dependencies': [ 'newlib_src', 'newlib_le32',
                             'target_lib_compiler'],
           # These libs include
@@ -470,30 +450,30 @@ def NativeLibs(arch, is_canonical):
                           NACL_DIR, 'src', 'third_party',
                           'pnacl_native_newlib_subset')},
           'commands': [
-              BuildTargetNativeCmd('crtbegin.c', 'crtbegin.o', arch,
-                                   output_dir='%(output)s'),
-              BuildTargetNativeCmd('crtbegin.c', 'crtbegin_for_eh.o', arch,
-                                   ['-DLINKING_WITH_LIBGCC_EH'],
-                                   output_dir='%(output)s'),
-              BuildTargetNativeCmd('crtend.c', 'crtend.o', arch,
-                                   output_dir='%(output)s'),
+              BuildTargetTranslatorCmd('crtbegin.c', 'crtbegin.o', arch,
+                                       output_dir='%(output)s'),
+              BuildTargetTranslatorCmd('crtbegin.c', 'crtbegin_for_eh.o', arch,
+                                       ['-DLINKING_WITH_LIBGCC_EH'],
+                                       output_dir='%(output)s'),
+              BuildTargetTranslatorCmd('crtend.c', 'crtend.o', arch,
+                                       output_dir='%(output)s'),
               # libcrt_platform.a
-              BuildTargetNativeCmd('pnacl_irt.c', 'pnacl_irt.o', arch),
-              BuildTargetNativeCmd('relocate.c', 'relocate.o', arch),
-              BuildTargetNativeCmd(
+              BuildTargetTranslatorCmd('pnacl_irt.c', 'pnacl_irt.o', arch),
+              BuildTargetTranslatorCmd('relocate.c', 'relocate.o', arch),
+              BuildTargetTranslatorCmd(
                   'setjmp_%s.S' % setjmp_arch.replace('-', '_'),
                   'setjmp.o', arch),
-              BuildTargetNativeCmd('string.c', 'string.o', arch,
-                                   ['-std=c99'],
-                                   source_dir='%(newlib_subset)s'),
+              BuildTargetTranslatorCmd('string.c', 'string.o', arch,
+                                       ['-std=c99'],
+                                       source_dir='%(newlib_subset)s'),
               # Pull in non-errno __ieee754_fmod from newlib and rename it to
               # fmod. This is to support the LLVM frem instruction.
-              BuildTargetNativeCmd(
+              BuildTargetTranslatorCmd(
                   'e_fmod.c', 'e_fmod.o', arch,
                   ['-std=c99', '-I%(abs_newlib_src)s/newlib/libm/common/',
                    '-D__ieee754_fmod=fmod'],
                   source_dir='%(abs_newlib_src)s/newlib/libm/math'),
-              BuildTargetNativeCmd(
+              BuildTargetTranslatorCmd(
                   'ef_fmod.c', 'ef_fmod.o', arch,
                   ['-std=c99', '-I%(abs_newlib_src)s/newlib/libm/common/',
                    '-D__ieee754_fmodf=fmodf'],
@@ -504,8 +484,8 @@ def NativeLibs(arch, is_canonical):
                   command.path.join('%(output)s', 'libcrt_platform.a'),
                   '*.o']), shell=True),
               # Dummy IRT shim
-              BuildTargetNativeCmd('dummy_shim_entry.c', 'dummy_shim_entry.o',
-                                   arch),
+              BuildTargetTranslatorCmd(
+                  'dummy_shim_entry.c', 'dummy_shim_entry.o', arch),
               command.Command([PnaclTool('ar'), 'rc',
                                command.path.join('%(output)s',
                                                  'libpnacl_irt_shim_dummy.a'),
@@ -514,7 +494,7 @@ def NativeLibs(arch, is_canonical):
       },
       GSDJoin('compiler_rt', arch): {
           'type': 'build' if is_canonical else 'work',
-          'output_subdir': native_lib_dir,
+          'output_subdir': translator_lib_dir,
           'dependencies': ['compiler_rt_src', 'target_lib_compiler',
                            'newlib_le32'],
           'commands': [
@@ -537,7 +517,7 @@ def NativeLibs(arch, is_canonical):
     libs.update({
       GSDJoin('libgcc_eh', arch): {
           'type': 'build' if is_canonical else 'work',
-          'output_subdir': native_lib_dir,
+          'output_subdir': translator_lib_dir,
           'dependencies': [ 'gcc_src', 'target_lib_compiler'],
           'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
           'commands': [
