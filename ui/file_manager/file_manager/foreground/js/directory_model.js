@@ -468,8 +468,7 @@ DirectoryModel.prototype.partialUpdate_ =
                                        onPreviousScanCompleted);
       // Run the update asynchronously.
       Promise.resolve().then(function() {
-        if (!this.runningScan_)
-          this.partialUpdate_(changedEntries, removedUrls);
+        this.partialUpdate_(changedEntries, removedUrls);
       }.bind(this));
     }.bind(this);
     previousScan.addEventListener('scan-completed', onPreviousScanCompleted);
