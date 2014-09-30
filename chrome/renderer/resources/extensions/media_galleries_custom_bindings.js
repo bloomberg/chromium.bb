@@ -8,6 +8,7 @@ var binding = require('binding').Binding.create('mediaGalleries');
 var blobNatives = requireNative('blob_natives');
 var mediaGalleriesNatives = requireNative('mediaGalleries');
 
+var blobsAwaitingMetadata = {};
 var mediaGalleriesMetadata = {};
 
 function createFileSystemObjectsAndUpdateMetadata(response) {
@@ -101,6 +102,10 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   apiFunctions.setUpdateArgumentsPostValidate('getMetadata',
       function(mediaFile, options, callback) {
     var blobUuid = blobNatives.GetBlobUuid(mediaFile)
+    // Store the blob in a global object to keep its refcount nonzero -- this
+    // prevents the object from being garbage collected before any metadata
+    // parsing gets to occur (see crbug.com/415792).
+    blobsAwaitingMetadata[blobUuid] = mediaFile;
     return [blobUuid, options, callback];
   });
 
@@ -118,6 +123,11 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     if (request.callback)
       request.callback(response.metadata);
     request.callback = null;
+
+    // The UUID was in position 0 in the setUpdateArgumentsPostValidate
+    // function.
+    var uuid = request.args[0];
+    delete blobsAwaitingMetadata[uuid];
   });
 });
 
