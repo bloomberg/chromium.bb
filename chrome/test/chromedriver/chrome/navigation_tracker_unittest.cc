@@ -257,15 +257,27 @@ namespace {
 
 class FailToEvalScriptDevToolsClient : public StubDevToolsClient {
  public:
+  FailToEvalScriptDevToolsClient() : is_dom_getDocument_requested_(false) {}
+
   virtual ~FailToEvalScriptDevToolsClient() {}
 
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+    if (!is_dom_getDocument_requested_ && method == "DOM.getDocument") {
+      is_dom_getDocument_requested_ = true;
+      base::DictionaryValue result_dict;
+      result_dict.SetString("root.baseURL", "http://test");
+      result->reset(result_dict.DeepCopy());
+      return Status(kOk);
+    }
     EXPECT_STREQ("Runtime.evaluate", method.c_str());
     return Status(kUnknownError, "failed to eval script");
   }
+
+ private:
+  bool is_dom_getDocument_requested_;
 };
 
 }  // namespace
@@ -284,10 +296,12 @@ namespace {
 class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
  public:
   DeterminingLoadStateDevToolsClient(
+      bool has_empty_base_url,
       bool is_loading,
       const std::string& send_event_first,
       base::DictionaryValue* send_event_first_params)
-      : is_loading_(is_loading),
+      : has_empty_base_url_(has_empty_base_url),
+        is_loading_(is_loading),
         send_event_first_(send_event_first),
         send_event_first_params_(send_event_first_params) {}
 
@@ -297,6 +311,16 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+    if (method == "DOM.getDocument") {
+      base::DictionaryValue result_dict;
+      if (has_empty_base_url_)
+        result_dict.SetString("root.baseURL", std::string());
+      else
+        result_dict.SetString("root.baseURL", "http://test");
+      result->reset(result_dict.DeepCopy());
+      return Status(kOk);
+    }
+
     if (send_event_first_.length()) {
       Status status = listeners_.front()
           ->OnEvent(this, send_event_first_, *send_event_first_params_);
@@ -311,6 +335,7 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
   }
 
  private:
+  bool has_empty_base_url_;
   bool is_loading_;
   std::string send_event_first_;
   base::DictionaryValue* send_event_first_params_;
@@ -318,9 +343,19 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
 
 }  // namespace
 
+TEST(NavigationTracker, UnknownStatePageNotLoadAtAll) {
+  base::DictionaryValue params;
+  DeterminingLoadStateDevToolsClient client(
+      true, true, std::string(), &params);
+  BrowserInfo browser_info;
+  NavigationTracker tracker(&client, &browser_info);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+}
+
 TEST(NavigationTracker, UnknownStateForcesStart) {
   base::DictionaryValue params;
-  DeterminingLoadStateDevToolsClient client(true, std::string(), &params);
+  DeterminingLoadStateDevToolsClient client(
+      false, true, std::string(), &params);
   BrowserInfo browser_info;
   NavigationTracker tracker(&client, &browser_info);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
@@ -330,7 +365,7 @@ TEST(NavigationTracker, UnknownStateForcesStartReceivesStop) {
   base::DictionaryValue params;
   params.SetString("frameId", "f");
   DeterminingLoadStateDevToolsClient client(
-      true, "Page.frameStoppedLoading", &params);
+      false, true, "Page.frameStoppedLoading", &params);
   BrowserInfo browser_info;
   NavigationTracker tracker(&client, &browser_info);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
@@ -340,7 +375,7 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   base::DictionaryValue params;
   params.SetString("frameId", "f");
   DeterminingLoadStateDevToolsClient client(
-      true, "Page.frameStoppedLoading", &params);
+      false, true, "Page.frameStoppedLoading", &params);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
@@ -351,7 +386,8 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
 TEST(NavigationTracker, OnSuccessfulNavigateStillWaiting) {
   base::DictionaryValue params;
   params.SetString("frameId", "f");
-  DeterminingLoadStateDevToolsClient client(true, std::string(), &params);
+  DeterminingLoadStateDevToolsClient client(
+      false, true, std::string(), &params);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);

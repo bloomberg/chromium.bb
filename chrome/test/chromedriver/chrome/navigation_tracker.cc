@@ -32,6 +32,23 @@ NavigationTracker::~NavigationTracker() {}
 Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               bool* is_pending) {
   if (loading_state_ == kUnknown) {
+    scoped_ptr<base::DictionaryValue> result;
+
+    // In the case that a http request is sent to server to fetch the page
+    // content and the server hasn't responded at all, a dummy page is created
+    // for the new window. In such case, the baseURL will be empty.
+    base::DictionaryValue empty_params;
+    Status status = client_->SendCommandAndGetResult(
+        "DOM.getDocument", empty_params, &result);
+    std::string base_url;
+    if (status.IsError() || !result->GetString("root.baseURL", &base_url))
+      return Status(kUnknownError, "cannot determine loading status", status);
+    if (base_url.empty()) {
+      *is_pending = true;
+      loading_state_ = kLoading;
+      return Status(kOk);
+    }
+
     // If the loading state is unknown (which happens after first connecting),
     // force loading to start and set the state to loading. This will
     // cause a frame start event to be received, and the frame stop event
@@ -52,8 +69,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
        "}";
     base::DictionaryValue params;
     params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
-    scoped_ptr<base::DictionaryValue> result;
-    Status status = client_->SendCommandAndGetResult(
+    status = client_->SendCommandAndGetResult(
         "Runtime.evaluate", params, &result);
     if (status.IsError())
       return Status(kUnknownError, "cannot determine loading status", status);
@@ -66,10 +82,13 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       loading_state_ = kLoading;
   }
   *is_pending = loading_state_ == kLoading;
-  if (frame_id.empty())
+  if (frame_id.empty()) {
     *is_pending |= scheduled_frame_set_.size() > 0;
-  else
+    *is_pending |= pending_frame_set_.size() > 0;
+  } else {
     *is_pending |= scheduled_frame_set_.count(frame_id) > 0;
+    *is_pending |= pending_frame_set_.count(frame_id) > 0;
+  }
   return Status(kOk);
 }
 
