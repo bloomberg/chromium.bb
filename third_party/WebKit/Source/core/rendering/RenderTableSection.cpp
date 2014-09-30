@@ -99,6 +99,7 @@ RenderTableSection::RenderTableSection(Element* element)
     , m_outerBorderBefore(0)
     , m_outerBorderAfter(0)
     , m_needsCellRecalc(false)
+    , m_forceSlowPaintPathWithOverflowingCell(false)
     , m_hasMultipleCellLevels(false)
 {
     // init RenderObject attributes
