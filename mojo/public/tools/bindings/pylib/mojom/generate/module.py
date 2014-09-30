@@ -21,8 +21,8 @@ class Kind(object):
 
 class ReferenceKind(Kind):
   """ReferenceKind represents pointer types and handle types.
-     A type is nullable means that NULL (for pointer types) or invalid handle
-     (for handle types) is a legal value for the type.
+  A type is nullable if null (for pointer types) or invalid handle (for handle
+  types) is a legal value for the type.
   """
 
   def __init__(self, spec=None, is_nullable=False):

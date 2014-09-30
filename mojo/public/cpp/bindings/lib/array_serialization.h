@@ -244,7 +244,7 @@ inline void SerializeArray_(Array<E> input, internal::Buffer* buf,
     }
     *output = result;
   } else {
-    *output = NULL;
+    *output = nullptr;
   }
 }
 

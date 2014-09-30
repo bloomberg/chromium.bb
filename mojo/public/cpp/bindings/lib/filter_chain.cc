@@ -15,7 +15,7 @@ FilterChain::FilterChain(MessageReceiver* sink) : sink_(sink) {
 }
 
 FilterChain::FilterChain(RValue other) : sink_(other.object->sink_) {
-  other.object->sink_ = NULL;
+  other.object->sink_ = nullptr;
   filters_.swap(other.object->filters_);
 }
 

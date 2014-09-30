@@ -82,7 +82,7 @@ class ConnectorTest : public testing::Test {
   }
 
   virtual void SetUp() override {
-    CreateMessagePipe(NULL, &handle0_, &handle1_);
+    CreateMessagePipe(nullptr, &handle0_, &handle1_);
   }
 
   virtual void TearDown() override {}

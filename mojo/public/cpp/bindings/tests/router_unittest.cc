@@ -73,7 +73,7 @@ class ResponseGenerator : public MessageReceiverWithResponder {
 
 class LazyResponseGenerator : public ResponseGenerator {
  public:
-  LazyResponseGenerator() : responder_(NULL), name_(0), request_id_(0) {
+  LazyResponseGenerator() : responder_(nullptr), name_(0), request_id_(0) {
   }
 
   virtual ~LazyResponseGenerator() {
@@ -92,7 +92,7 @@ class LazyResponseGenerator : public ResponseGenerator {
 
   void Complete() {
     SendResponse(name_, request_id_, responder_);
-    responder_ = NULL;
+    responder_ = nullptr;
   }
 
  private:
@@ -107,7 +107,7 @@ class RouterTest : public testing::Test {
   }
 
   virtual void SetUp() override {
-    CreateMessagePipe(NULL, &handle0_, &handle1_);
+    CreateMessagePipe(nullptr, &handle0_, &handle1_);
   }
 
   virtual void TearDown() override {}

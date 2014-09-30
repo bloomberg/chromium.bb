@@ -45,7 +45,7 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
 {%- endfor %}
     *output = result;
   } else {
-    *output = NULL;
+    *output = nullptr;
   }
 }
 

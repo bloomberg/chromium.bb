@@ -20,7 +20,7 @@ class FilterChain {
  public:
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
-  explicit FilterChain(MessageReceiver* sink = NULL);
+  explicit FilterChain(MessageReceiver* sink = nullptr);
 
   // Move-only constructor and operator=.
   FilterChain(RValue other);

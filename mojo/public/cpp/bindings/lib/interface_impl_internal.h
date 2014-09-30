@@ -30,8 +30,8 @@ class InterfaceImplState : public ErrorHandler {
   typedef typename Interface::Client Client;
 
   explicit InterfaceImplState(InterfaceImplBase<Interface>* instance)
-      : router_(NULL),
-        proxy_(NULL),
+      : router_(nullptr),
+        proxy_(nullptr),
         instance_bound_to_pipe_(false)
 #ifndef NDEBUG
         ,
@@ -48,7 +48,7 @@ class InterfaceImplState : public ErrorHandler {
 #endif
     delete proxy_;
     if (router_) {
-      router_->set_error_handler(NULL);
+      router_->set_error_handler(nullptr);
       delete router_;
     }
   }

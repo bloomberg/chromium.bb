@@ -69,7 +69,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
 
     ScopedMessagePipeHandle pipe0;
     if (!text2.empty()) {
-      CreateMessagePipe(NULL, &pipe0, &pipe1_);
+      CreateMessagePipe(nullptr, &pipe0, &pipe1_);
       EXPECT_TRUE(WriteTextMessage(pipe1_.get(), text2));
     }
 
@@ -88,7 +88,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     ASSERT_TRUE(pipe.is_valid());
     uint32_t data_size = 0;
     ASSERT_EQ(MOJO_RESULT_OK,
-              ReadDataRaw(pipe.get(), NULL, &data_size,
+              ReadDataRaw(pipe.get(), nullptr, &data_size,
                           MOJO_READ_DATA_FLAG_QUERY));
     ASSERT_NE(0, static_cast<int>(data_size));
     char data[64];

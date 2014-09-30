@@ -23,7 +23,7 @@ void Serialize_(const String& input, internal::Buffer* buf,
       memcpy(result->storage(), input.data(), input.size());
     *output = result;
   } else {
-    *output = NULL;
+    *output = nullptr;
   }
 }
 

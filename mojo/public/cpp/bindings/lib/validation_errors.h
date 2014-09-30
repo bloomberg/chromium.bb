@@ -49,7 +49,7 @@ enum ValidationError {
 const char* ValidationErrorToString(ValidationError error);
 
 void ReportValidationError(ValidationError error,
-                           const char* description = NULL);
+                           const char* description = nullptr);
 
 // Only used by validation tests and when there is only one thread doing message
 // validation.

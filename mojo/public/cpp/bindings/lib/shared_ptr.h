@@ -42,7 +42,7 @@ class SharedPtr {
         delete ptr;
     }
 
-    Impl() : ptr(NULL) {
+    Impl() : ptr(nullptr) {
     }
 
     Impl(P* ptr) : ptr(ptr) {

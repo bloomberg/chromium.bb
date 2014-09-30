@@ -50,7 +50,7 @@ void EncodePointer(const void* ptr, uint64_t* offset) {
 
 const void* DecodePointerRaw(const uint64_t* offset) {
   if (!*offset)
-    return NULL;
+    return nullptr;
   return reinterpret_cast<const char*>(offset) + *offset;
 }
 

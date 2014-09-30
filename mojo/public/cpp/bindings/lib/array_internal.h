@@ -332,11 +332,11 @@ class Array_Data {
   typedef typename Traits::ConstRef ConstRef;
   typedef ArraySerializationHelper<T, IsHandle<T>::value> Helper;
 
-  // Returns NULL if |num_elements| or the corresponding storage size cannot be
+  // Returns null if |num_elements| or the corresponding storage size cannot be
   // stored in uint32_t.
   static Array_Data<T>* New(size_t num_elements, Buffer* buf) {
     if (num_elements > Traits::kMaxNumElements)
-      return NULL;
+      return nullptr;
 
     uint32_t num_bytes =
         Traits::GetStorageSize(static_cast<uint32_t>(num_elements));

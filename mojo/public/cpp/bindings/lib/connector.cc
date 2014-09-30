@@ -4,8 +4,6 @@
 
 #include "mojo/public/cpp/bindings/lib/connector.h"
 
-#include <stddef.h>
-
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/environment/logging.h"
 
@@ -16,15 +14,15 @@ namespace internal {
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      const MojoAsyncWaiter* waiter)
-    : error_handler_(NULL),
+    : error_handler_(nullptr),
       waiter_(waiter),
       message_pipe_(message_pipe.Pass()),
-      incoming_receiver_(NULL),
+      incoming_receiver_(nullptr),
       async_wait_id_(0),
       error_(false),
       drop_writes_(false),
       enforce_errors_from_incoming_receiver_(true),
-      destroyed_flag_(NULL) {
+      destroyed_flag_(nullptr) {
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
   WaitToReadMore();
@@ -75,7 +73,7 @@ bool Connector::Accept(Message* message) {
       message_pipe_.get(),
       message->data(),
       message->data_num_bytes(),
-      message->mutable_handles()->empty() ? NULL :
+      message->mutable_handles()->empty() ? nullptr :
           reinterpret_cast<const MojoHandle*>(
               &message->mutable_handles()->front()),
       static_cast<uint32_t>(message->mutable_handles()->size()),

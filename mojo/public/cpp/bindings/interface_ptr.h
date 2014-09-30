@@ -109,7 +109,8 @@ class InterfacePtr {
 
  public:
   operator Testable() const {
-    return internal_state_.is_bound() ? &InterfacePtr::internal_state_ : NULL;
+    return internal_state_.is_bound() ? &InterfacePtr::internal_state_
+                                      : nullptr;
   }
 
  private:

@@ -196,7 +196,7 @@ class ValidationTest : public testing::Test {
 
 class ValidationIntegrationTest : public ValidationTest {
  public:
-  ValidationIntegrationTest() : test_message_receiver_(NULL) {
+  ValidationIntegrationTest() : test_message_receiver_(nullptr) {
   }
 
   virtual ~ValidationIntegrationTest() {
@@ -205,14 +205,14 @@ class ValidationIntegrationTest : public ValidationTest {
   virtual void SetUp() override {
     ScopedMessagePipeHandle tester_endpoint;
     ASSERT_EQ(MOJO_RESULT_OK,
-              CreateMessagePipe(NULL, &tester_endpoint, &testee_endpoint_));
+              CreateMessagePipe(nullptr, &tester_endpoint, &testee_endpoint_));
     test_message_receiver_ =
         new TestMessageReceiver(this, tester_endpoint.Pass());
   }
 
   virtual void TearDown() override {
     delete test_message_receiver_;
-    test_message_receiver_ = NULL;
+    test_message_receiver_ = nullptr;
 
     // Make sure that the other end receives the OnConnectionError()
     // notification.
@@ -369,7 +369,7 @@ TEST_F(ValidationTest, InputParser) {
       "[dist4]a [dist4]a [anchr]a",
       "[dist4]a [anchr]a [dist4]a [anchr]a",
       "0 [handles]50",
-      NULL
+      nullptr
     };
 
     for (size_t i = 0; error_inputs[i]; ++i) {

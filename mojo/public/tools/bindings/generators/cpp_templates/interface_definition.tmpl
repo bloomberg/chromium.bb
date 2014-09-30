@@ -202,13 +202,13 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   // be good reason to close the connection. However, we don't have a way to do
   // that from here. We should add a way.
   delete responder_;
-  responder_ = NULL;
+  responder_ = nullptr;
 }
 {%-   endif -%}
 {%- endfor %}
 
 {{class_name}}Stub::{{class_name}}Stub()
-    : sink_(NULL) {
+    : sink_(nullptr) {
 }
 
 {#--- Stub definition #}

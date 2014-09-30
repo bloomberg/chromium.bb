@@ -20,7 +20,7 @@ namespace internal {
 template <typename Interface>
 class InterfacePtrState {
  public:
-  InterfacePtrState() : proxy_(NULL), router_(NULL), waiter_(NULL) {}
+  InterfacePtrState() : proxy_(nullptr), router_(nullptr), waiter_(nullptr) {}
 
   ~InterfacePtrState() {
     // Destruction order matters here. We delete |proxy_| first, even though
@@ -33,7 +33,7 @@ class InterfacePtrState {
   Interface* instance() {
     ConfigureProxyIfNecessary();
 
-    // This will be NULL if the object is not bound.
+    // This will be null if the object is not bound.
     return proxy_;
   }
 
@@ -65,7 +65,7 @@ class InterfacePtrState {
     if (router_)
       return router_->PassMessagePipe();
 
-    waiter_ = NULL;
+    waiter_ = nullptr;
     return handle_.Pass();
   }
 
@@ -125,7 +125,7 @@ class InterfacePtrState {
     filters.Append<typename Interface::ResponseValidator_>();
 
     router_ = new Router(handle_.Pass(), filters.Pass(), waiter_);
-    waiter_ = NULL;
+    waiter_ = nullptr;
 
     ProxyWithStub* proxy = new ProxyWithStub(router_);
     router_->set_incoming_receiver(&proxy->stub);

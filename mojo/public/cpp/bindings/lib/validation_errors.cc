@@ -10,8 +10,9 @@ namespace mojo {
 namespace internal {
 namespace {
 
-ValidationErrorObserverForTesting* g_validation_error_observer = NULL;
-SerializationWarningObserverForTesting* g_serialization_warning_observer = NULL;
+ValidationErrorObserverForTesting* g_validation_error_observer = nullptr;
+SerializationWarningObserverForTesting* g_serialization_warning_observer =
+    nullptr;
 
 }  // namespace
 
@@ -63,7 +64,7 @@ ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()
 
 ValidationErrorObserverForTesting::~ValidationErrorObserverForTesting() {
   MOJO_DCHECK(g_validation_error_observer == this);
-  g_validation_error_observer = NULL;
+  g_validation_error_observer = nullptr;
 }
 
 bool ReportSerializationWarning(ValidationError error) {
@@ -84,7 +85,7 @@ SerializationWarningObserverForTesting::SerializationWarningObserverForTesting()
 SerializationWarningObserverForTesting::
 ~SerializationWarningObserverForTesting() {
   MOJO_DCHECK(g_serialization_warning_observer == this);
-  g_serialization_warning_observer = NULL;
+  g_serialization_warning_observer = nullptr;
 }
 
 }  // namespace internal

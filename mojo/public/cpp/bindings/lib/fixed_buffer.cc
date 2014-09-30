@@ -15,7 +15,7 @@ namespace mojo {
 namespace internal {
 
 FixedBuffer::FixedBuffer(size_t size)
-    : ptr_(NULL),
+    : ptr_(nullptr),
       cursor_(0),
       size_(internal::Align(size)) {
   // calloc() required to zero memory and thus avoid info leaks.
@@ -31,7 +31,7 @@ void* FixedBuffer::Allocate(size_t delta) {
 
   if (delta == 0 || delta > size_ - cursor_) {
     MOJO_DCHECK(false) << "Not reached";
-    return NULL;
+    return nullptr;
   }
 
   char* result = ptr_ + cursor_;
@@ -42,7 +42,7 @@ void* FixedBuffer::Allocate(size_t delta) {
 
 void* FixedBuffer::Leak() {
   char* ptr = ptr_;
-  ptr_ = NULL;
+  ptr_ = nullptr;
   cursor_ = 0;
   size_ = 0;
   return ptr;

@@ -104,7 +104,7 @@ TEST(TypeConversionTest, String_Null) {
   EXPECT_TRUE(a.is_null());
   EXPECT_EQ(std::string(), a.To<std::string>());
 
-  String b = String::From(static_cast<const char*>(NULL));
+  String b = String::From(static_cast<const char*>(nullptr));
   EXPECT_TRUE(b.is_null());
 }
 

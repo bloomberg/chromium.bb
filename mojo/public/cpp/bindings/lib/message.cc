@@ -14,7 +14,7 @@ namespace mojo {
 
 Message::Message()
     : data_num_bytes_(0),
-      data_(NULL) {
+      data_(nullptr) {
 }
 
 Message::~Message() {
@@ -52,9 +52,9 @@ MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
 
   uint32_t num_bytes = 0, num_handles = 0;
   rv = ReadMessageRaw(handle,
-                      NULL,
+                      nullptr,
                       &num_bytes,
-                      NULL,
+                      nullptr,
                       &num_handles,
                       MOJO_READ_MESSAGE_FLAG_NONE);
   if (rv != MOJO_RESULT_RESOURCE_EXHAUSTED)
@@ -68,7 +68,7 @@ MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
                       message.mutable_data(),
                       &num_bytes,
                       message.mutable_handles()->empty()
-                          ? NULL
+                          ? nullptr
                           : reinterpret_cast<MojoHandle*>(
                                 &message.mutable_handles()->front()),
                       &num_handles,

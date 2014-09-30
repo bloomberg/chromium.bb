@@ -58,7 +58,7 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
       filters_(filters.Pass()),
       connector_(message_pipe.Pass(), waiter),
       weak_self_(this),
-      incoming_receiver_(NULL),
+      incoming_receiver_(nullptr),
       next_request_id_(0),
       testing_mode_(false) {
   filters_.SetSink(&thunk_);
@@ -66,7 +66,7 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
 }
 
 Router::~Router() {
-  weak_self_.set_value(NULL);
+  weak_self_.set_value(nullptr);
 
   for (ResponderMap::const_iterator i = responders_.begin();
        i != responders_.end(); ++i) {

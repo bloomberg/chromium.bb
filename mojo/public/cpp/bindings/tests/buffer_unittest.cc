@@ -41,8 +41,8 @@ TEST(FixedBufferTest, Alignment) {
 
 // Tests that FixedBuffer::Leak passes ownership to the caller.
 TEST(FixedBufferTest, Leak) {
-  void* ptr = NULL;
-  void* buf_ptr = NULL;
+  void* ptr = nullptr;
+  void* buf_ptr = nullptr;
   {
     internal::FixedBuffer buf(8);
     ASSERT_EQ(8u, buf.size());

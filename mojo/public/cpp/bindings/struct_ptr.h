@@ -28,12 +28,12 @@ class StructPtr {
  public:
   typedef typename Struct::Data_ Data_;
 
-  StructPtr() : ptr_(NULL) {}
+  StructPtr() : ptr_(nullptr) {}
   ~StructPtr() {
     delete ptr_;
   }
 
-  StructPtr(RValue other) : ptr_(NULL) { Take(other.object); }
+  StructPtr(RValue other) : ptr_(nullptr) { Take(other.object); }
   StructPtr& operator=(RValue other) {
     Take(other.object);
     return *this;
@@ -47,11 +47,11 @@ class StructPtr {
   void reset() {
     if (ptr_) {
       delete ptr_;
-      ptr_ = NULL;
+      ptr_ = nullptr;
     }
   }
 
-  bool is_null() const { return ptr_ == NULL; }
+  bool is_null() const { return ptr_ == nullptr; }
 
   Struct& operator*() const {
     MOJO_DCHECK(ptr_);

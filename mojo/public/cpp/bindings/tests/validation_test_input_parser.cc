@@ -384,7 +384,7 @@ bool ValidationTestInputParser::StartsWith(const Range& range,
 bool ValidationTestInputParser::ConvertToUnsignedInteger(
     const std::string& value_string,
     unsigned long long int* value) {
-  const char* format = NULL;
+  const char* format = nullptr;
   if (value_string.find_first_of("xX") != std::string::npos)
     format = "%llx";
   else
