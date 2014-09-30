@@ -566,7 +566,10 @@ class DepGraphGenerator(object):
         Unsanitized digraph.
       """
       binpkg_phases = set(["setup", "preinst", "postinst"])
-      needed_dep_types = set(["blocker", "buildtime", "runtime"])
+      needed_dep_types = set(["blocker", "buildtime", "buildtime_slot_op",
+                              "runtime", "runtime_slot_op"])
+      ignored_dep_types = set(["ignored", "optional", "runtime_post", "soft"])
+      all_dep_types = ignored_dep_types | needed_dep_types
       for pkg in packages:
 
         # Create an entry for the package
@@ -602,6 +605,13 @@ class DepGraphGenerator(object):
           if needed_dep_types.intersection(dep_types):
             deps_map[dep]["provides"].add(pkg)
             this_pkg["needs"][dep] = "/".join(dep_types)
+
+          # Verify we processed all appropriate dependency types.
+          unknown_dep_types = set(dep_types) - all_dep_types
+          if unknown_dep_types:
+            print("Unknown dependency types found:")
+            print("  %s -> %s (%s)" % (pkg, dep, "/".join(unknown_dep_types)))
+            sys.exit(1)
 
           # If there's a blocker, Portage may need to move files from one
           # package to another, which requires editing the CONTENTS files of
