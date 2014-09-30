@@ -2,15 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_EME_CODEC_H_
-#define CONTENT_PUBLIC_COMMON_EME_CODEC_H_
+#ifndef CONTENT_PUBLIC_COMMON_EME_CONSTANTS_H_
+#define CONTENT_PUBLIC_COMMON_EME_CONSTANTS_H_
+
+#include <stdint.h>
 
 namespace content {
+
+// Defines bitmask values that specify registered initialization data types used
+// in Encrypted Media Extensions (EME).
+// The mask values are stored in a SupportedInitDataTypes.
+enum EmeInitDataType {
+  EME_INIT_DATA_TYPE_NONE = 0,
+  EME_INIT_DATA_TYPE_WEBM = 1 << 0,
+#if defined(USE_PROPRIETARY_CODECS)
+  EME_INIT_DATA_TYPE_CENC = 1 << 1,
+#endif  // defined(USE_PROPRIETARY_CODECS)
+};
 
 // Defines bitmask values that specify codecs used in Encrypted Media Extension
 // (EME). Each value represents a codec within a specific container.
 // The mask values are stored in a SupportedCodecs.
 enum EmeCodec {
+  // *_ALL values should only be used for masking, do not use them to specify
+  // codec support because they may be extended to include more codecs.
   EME_CODEC_NONE = 0,
   EME_CODEC_WEBM_VORBIS = 1 << 0,
   EME_CODEC_WEBM_AUDIO_ALL = EME_CODEC_WEBM_VORBIS,
@@ -30,8 +45,9 @@ enum EmeCodec {
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
-typedef uint32 SupportedCodecs;
+typedef uint32_t SupportedInitDataTypes;
+typedef uint32_t SupportedCodecs;
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_EME_CODEC_H_
+#endif  // CONTENT_PUBLIC_COMMON_EME_CONSTANTS_H_

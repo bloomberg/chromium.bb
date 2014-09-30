@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "content/public/common/eme_codec.h"
+#include "content/public/common/eme_constants.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START EncryptedMediaMsgStart

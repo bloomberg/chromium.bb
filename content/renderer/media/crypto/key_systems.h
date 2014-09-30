@@ -24,6 +24,24 @@ std::string GetUnprefixedKeySystemName(const std::string& key_system);
 // Gets the prefixed key system name for |key_system|.
 std::string GetPrefixedKeySystemName(const std::string& key_system);
 
+// Returns false if a container-specific |init_data_type| is specified with an
+// inappropriate container.
+// TODO(sandersd): Remove this essentially internal detail if the spec is
+// updated to not convolve the two in a single method call.
+// TODO(sandersd): Use enum values instead of strings. http://crbug.com/417440
+bool IsSaneInitDataTypeWithContainer(
+    const std::string& init_data_type,
+    const std::string& container);
+
+// Note: Shouldn't be used for prefixed API as the original
+// IsSupportedKeySystemWithMediaMimeType() path reports UMAs, but this path does
+// not.
+bool IsSupportedKeySystem(const std::string& key_system);
+
+bool IsSupportedKeySystemWithInitDataType(
+    const std::string& key_system,
+    const std::string& init_data_type);
+
 // Returns whether |key_system| is a real supported key system that can be
 // instantiated.
 // Abstract parent |key_system| strings will return false.

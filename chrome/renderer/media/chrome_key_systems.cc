@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
+#include "content/public/common/eme_constants.h"
 #include "content/public/renderer/render_thread.h"
 
 #if defined(OS_ANDROID)
@@ -74,8 +75,10 @@ static void AddExternalClearKey(
   KeySystemInfo info(kExternalClearKeyKeySystem);
 
   info.supported_codecs = content::EME_CODEC_WEBM_ALL;
+  info.supported_init_data_types = content::EME_INIT_DATA_TYPE_WEBM;
 #if defined(USE_PROPRIETARY_CODECS)
   info.supported_codecs |= content::EME_CODEC_MP4_ALL;
+  info.supported_init_data_types |= content::EME_INIT_DATA_TYPE_CENC;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.pepper_type = kExternalClearKeyPepperType;

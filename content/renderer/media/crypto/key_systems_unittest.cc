@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "content/public/common/content_client.h"
+#include "content/public/common/eme_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/key_system_info.h"
 #include "content/renderer/media/crypto/key_systems.h"
@@ -100,12 +101,14 @@ void TestContentRendererClient::AddKeySystems(
   KeySystemInfo aes(kUsesAes);
   aes.supported_codecs = EME_CODEC_WEBM_ALL;
   aes.supported_codecs |= TEST_CODEC_FOO_ALL;
+  aes.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
   aes.use_aes_decryptor = true;
   key_systems->push_back(aes);
 
   KeySystemInfo ext(kExternal);
   ext.supported_codecs = EME_CODEC_WEBM_ALL;
   ext.supported_codecs |= TEST_CODEC_FOO_ALL;
+  ext.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
   ext.parent_key_system = kExternalParent;
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
@@ -113,6 +116,7 @@ void TestContentRendererClient::AddKeySystems(
   key_systems->push_back(ext);
 }
 
+// TODO(sandersd): Refactor. http://crbug.com/417444
 class KeySystemsTest : public testing::Test {
  protected:
   KeySystemsTest() {

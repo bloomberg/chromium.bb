@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "components/cdm/common/cdm_messages_android.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
+#include "content/public/common/eme_constants.h"
 #include "content/public/renderer/render_thread.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -65,6 +66,15 @@ void AddAndroidPlatformKeySystems(
     if (response.compositing_codecs != content::EME_CODEC_NONE) {
       KeySystemInfo info(*it);
       info.supported_codecs = response.compositing_codecs;
+      // Here we assume that support for a container implies support for the
+      // associated initialization data type. KeySystems handles validating
+      // |init_data_type| x |container| pairings.
+      if (response.compositing_codecs & content::EME_CODEC_WEBM_ALL)
+        info.supported_init_data_types |= content::EME_INIT_DATA_TYPE_WEBM;
+#if defined(USE_PROPRIETARY_CODECS)
+      if (response.compositing_codecs & content::EME_CODEC_MP4_ALL)
+        info.supported_init_data_types |= content::EME_INIT_DATA_TYPE_CENC;
+#endif  // defined(USE_PROPRIETARY_CODECS)
       concrete_key_systems->push_back(info);
     }
   }

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "content/common/content_export.h"
-#include "content/public/common/eme_codec.h"
+#include "content/public/common/eme_constants.h"
 
 // Definitions:
 // * Key system
@@ -37,6 +37,9 @@ struct CONTENT_EXPORT KeySystemInfo {
   ~KeySystemInfo();
 
   std::string key_system;
+
+  // Specifies registered initialization data types supported by |key_system|.
+  SupportedInitDataTypes supported_init_data_types;
 
   // Specifies codecs supported by |key_system|.
   SupportedCodecs supported_codecs;
