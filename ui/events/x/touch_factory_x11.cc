@@ -28,7 +28,6 @@ namespace ui {
 
 TouchFactory::TouchFactory()
     : pointer_device_lookup_(),
-      touch_device_available_(false),
       touch_events_disabled_(false),
       touch_device_list_(),
       max_touch_points_(-1),
@@ -81,7 +80,6 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
 
 void TouchFactory::UpdateDeviceList(Display* display) {
   // Detect touch devices.
-  touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
   touchscreen_ids_.clear();
@@ -101,7 +99,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
     if (dev_list[i].type == xi_touchscreen) {
       touch_device_lookup_[dev_list[i].id] = true;
       touch_device_list_[dev_list[i].id] = false;
-      touch_device_available_ = true;
     }
   }
 #endif
@@ -137,7 +134,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
           if (tci->mode == XIDirectTouch) {
             touch_device_lookup_[devinfo->deviceid] = true;
             touch_device_list_[devinfo->deviceid] = true;
-            touch_device_available_ = true;
             if (tci->num_touches > 0 && tci->num_touches > max_touch_points_)
               max_touch_points_ = tci->num_touches;
           }
@@ -277,7 +273,7 @@ void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
-  return !touch_events_disabled_ && touch_device_available_;
+  return !touch_events_disabled_ && touch_device_lookup_.any();
 }
 
 int TouchFactory::GetMaxTouchPoints() const {
@@ -287,7 +283,6 @@ int TouchFactory::GetMaxTouchPoints() const {
 void TouchFactory::ResetForTest() {
   pointer_device_lookup_.reset();
   touch_device_lookup_.reset();
-  touch_device_available_ = false;
   touch_events_disabled_ = false;
   touch_device_list_.clear();
   touchscreen_ids_.clear();
@@ -306,7 +301,6 @@ void TouchFactory::SetTouchDeviceForTest(
     touch_device_lookup_[*iter] = true;
     touch_device_list_[*iter] = true;
   }
-  touch_device_available_ = true;
   touch_events_disabled_ = false;
 }
 
