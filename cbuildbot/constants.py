@@ -42,11 +42,17 @@ CIDB_PROD_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
 CIDB_DEBUG_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
                                     'debug_cidb_bot')
 
-CIDB_KNOWN_WATERFALLS = ('chromeos',
-                         'chromiumos',
-                         'chromiumos.tryserver',
-                         'chromeos_release',
-                         'chromeos.branch')
+WATERFALL_INTERNAL = 'chromeos'
+WATERFALL_EXTERNAL = 'chromiumos'
+WATERFALL_TRYBOT = 'chromiumos.tryserver'
+WATERFALL_RELEASE = 'chromeos_release'
+WATERFALL_BRANCH = 'chromeos.branch'
+
+CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
+                         WATERFALL_EXTERNAL,
+                         WATERFALL_TRYBOT,
+                         WATERFALL_RELEASE,
+                         WATERFALL_BRANCH)
 
 # TODO: Eliminate these or merge with manifest_version.py:STATUS_PASSED
 # crbug.com/318930
@@ -284,8 +290,11 @@ VALID_BUILD_TYPES = (
     PAYLOADS_TYPE,
 )
 
-# The name of the builder used to launch the pre-CQ.
-PRE_CQ_BUILDER_NAME = 'pre-cq-group'
+# The name of the standard pre-cq testing config.
+PRE_CQ_GROUP_CONFIG = 'pre-cq-group'
+
+# The name of the pre-cq launching config.
+PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
 
 # The name of the Pre-CQ launcher on the waterfall.
 PRE_CQ_LAUNCHER_NAME = 'Pre-CQ Launcher'

@@ -34,7 +34,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
-from chromite.lib import gs
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
@@ -54,6 +53,13 @@ except ImportError:
 
 PRE_CQ = constants.PRE_CQ
 CQ = constants.CQ
+
+CQ_CONFIG = constants.CQ_MASTER
+PRE_CQ_GROUP_CONFIG = constants.PRE_CQ_GROUP_CONFIG
+PRE_CQ_LAUNCHER_CONFIG = constants.PRE_CQ_LAUNCHER_CONFIG
+
+# Set of configs that can reject a CL from the pre-CQ / CQ pipeline.
+CQ_PIPELINE_CONFIGS = {CQ_CONFIG, PRE_CQ_GROUP_CONFIG, PRE_CQ_LAUNCHER_CONFIG}
 
 # The gerrit-on-borg team tells us that delays up to 2 minutes can be
 # normal.  Setting timeout to 3 minutes to be safe-ish.
@@ -1103,21 +1109,6 @@ class CalculateSuspects(object):
     return suspects
 
   @classmethod
-  def _FindPreviouslyFailedChanges(cls, candidates):
-    """Find what changes that have previously failed the CQ.
-
-    The first time a change is included in a build that fails due to a
-    flaky (or apparently unrelated) failure, we assume that it is innocent. If
-    this happens more than once, we kick out the CL.
-    """
-    suspects = set()
-    for change in candidates:
-      if ValidationPool.GetCLStatusCount(
-          CQ, change, ValidationPool.STATUS_FAILED):
-        suspects.add(change)
-    return suspects
-
-  @classmethod
   def FilterChromiteChanges(cls, changes):
     """Returns a list of chromite changes in |changes|."""
     return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
@@ -1356,8 +1347,25 @@ class ValidationPool(object):
   # errors.
   REJECTION_GRACE_PERIOD = 30 * 60
 
-  # Cache for the status of CLs.
-  _CL_STATUS_CACHE = {}
+  # Cache for the action history of CLs.
+  _CL_ACTION_HISTORY_CACHE = {}
+
+  # Bidirectional mapping between pre-cq status strings and CL action strings.
+  _PRECQ_STATUS_TO_ACTION = {
+      STATUS_INFLIGHT: constants.CL_ACTION_PRE_CQ_INFLIGHT,
+      STATUS_PASSED: constants.CL_ACTION_PRE_CQ_PASSED,
+      STATUS_FAILED: constants.CL_ACTION_PRE_CQ_FAILED,
+      STATUS_LAUNCHING: constants.CL_ACTION_PRE_CQ_LAUNCHING,
+      STATUS_WAITING: constants.CL_ACTION_PRE_CQ_WAITING,
+      STATUS_READY_TO_SUBMIT: constants.CL_ACTION_PRE_CQ_READY_TO_SUBMIT
+      }
+
+  _PRECQ_ACTION_TO_STATUS = dict(
+      (v, k) for k, v in _PRECQ_STATUS_TO_ACTION.items())
+
+  assert len(_PRECQ_STATUS_TO_ACTION) == len(_PRECQ_ACTION_TO_STATUS), \
+      '_PRECQ_STATUS_TO_ACTION values are not unique.'
+
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
@@ -1883,10 +1891,6 @@ class ValidationPool(object):
         if change.total_fail_count > change.fail_count:
           s += '(%d)' % (change.total_fail_count,)
 
-      # Add a note if the latest patchset has already passed the CQ.
-      if change.pass_count > 0:
-        s += ' | passed:%d' % change.pass_count
-
       cros_build_lib.PrintBuildbotLink(s, change.url)
 
   def ApplyPoolIntoRepo(self, manifest=None):
@@ -1926,15 +1930,14 @@ class ValidationPool(object):
         self._HandleApplyFailure(errors)
         raise
 
-      # Completely fill the status cache in parallel.
-      self.FillCLStatusCache(CQ, applied)
+      # Completely fill the action cache.
+      self._FillCLActionCache(applied)
       for change in applied:
-        change.total_fail_count = self.GetCLStatusCount(
-            CQ, change, self.STATUS_FAILED, latest_patchset_only=False)
-        change.fail_count = self.GetCLStatusCount(
-            CQ, change, self.STATUS_FAILED)
-        change.pass_count = self.GetCLStatusCount(
-            CQ, change, self.STATUS_PASSED)
+        change.total_fail_count = self.GetCLActionCount(
+            change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_KICKED_OUT,
+            latest_patchset_only=False)
+        change.fail_count = self.GetCLActionCount(
+            change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_KICKED_OUT)
 
     else:
       # Slaves do not need to create transactions and should simply
@@ -2142,15 +2145,22 @@ class ValidationPool(object):
 
     If self._metadata is None, then this function does nothing.
     """
-    if self._metadata:
-      timestamp = int(time.time())
-      build_id = self._metadata.GetValue('build_id')
-      for change in self.changes:
-        self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
-                                      timestamp)
-        # TODO(akeshet): If a separate query for each insert here becomes
-        # a performance issue, consider batch inserting all the cl actions
-        # with a single query.
+    if not self._metadata:
+      return
+
+    using_db = (cidb.CIDBConnectionFactory.IsCIDBSetup() and
+                cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder())
+
+    build_id = self._metadata.GetValue('build_id') if using_db else 0
+
+    timestamp = int(time.time())
+    for change in self.changes:
+      self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
+                                    timestamp)
+      # TODO(akeshet): If a separate query for each insert here becomes
+      # a performance issue, consider batch inserting all the cl actions
+      # with a single query.
+      if using_db:
         ValidationPool._InsertCLActionToDatabase(build_id, change,
                                                  constants.CL_ACTION_PICKED_UP)
 
@@ -2310,11 +2320,6 @@ class ValidationPool(object):
       FailedToSubmitAllChangesNonFatalException: if we can't submit a change
         due to non-fatal errors.
     """
-    # Mark all changes as successful.
-    inputs = [[self.bot, change, self.STATUS_PASSED, self.dryrun]
-              for change in self.changes]
-    parallel.RunTasksInProcessPool(self.UpdateCLStatus, inputs)
-
     # Note that SubmitChanges can throw an exception if it can't
     # submit all changes; in that particular case, don't mark the inflight
     # failures patches as failed in gerrit- some may apply next time we do
@@ -2476,18 +2481,12 @@ class ValidationPool(object):
     new_status = self.STATUS_READY_TO_SUBMIT if submit else self.STATUS_PASSED
     ok_statuses = (self.STATUS_PASSED, self.STATUS_READY_TO_SUBMIT)
 
-    def ProcessChange(change):
-      if self.GetCLStatus(self.bot, change) not in ok_statuses:
-        self.SendNotification(change, msg)
-        self.UpdateCLStatus(PRE_CQ, change, new_status, self.dryrun)
-        if self._metadata:
-          timestamp = int(time.time())
-          build_id = self._metadata.GetValue('build_id')
-          self._metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
-                                        timestamp)
-          ValidationPool._InsertCLActionToDatabase(build_id, change,
-                                                   constants.CL_ACTION_VERIFIED)
+    build_id = self._metadata.GetValue('build_id')
 
+    def ProcessChange(change):
+      if self.GetCLPreCQStatus(change) not in ok_statuses:
+        self.SendNotification(change, msg)
+        self.UpdateCLPreCQStatus(change, new_status, build_id)
 
     # Set the new statuses in parallel.
     inputs = [[change] for change in self.changes]
@@ -2620,11 +2619,6 @@ class ValidationPool(object):
       if change in suspects:
         self.RemoveCommitReady(change)
 
-      # Mark the change as failed. If the Ready bit is still set, the change
-      # will be retried automatically.
-      self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
-                          dry_run=self.dryrun)
-
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
                               no_stat=None):
     """Handles a list of validation failure messages from slave builders.
@@ -2653,7 +2647,7 @@ class ValidationPool(object):
     candidates = []
     for change in changes:
       # Pre-CQ ignores changes that were already verified.
-      if self.pre_cq and self.GetCLStatus(PRE_CQ, change) == self.STATUS_PASSED:
+      if self.pre_cq and self.GetCLPreCQStatus(change) == self.STATUS_PASSED:
         continue
       candidates.append(change)
 
@@ -2699,7 +2693,7 @@ class ValidationPool(object):
     self.RemoveCommitReady(change)
 
   def _HandleApplySuccess(self, change):
-    """Handler for when Paladin successfully applies a change.
+    """Handler for when Paladin successfully applies (picks up) a change.
 
     This handler notifies a developer that their change is being tried as
     part of a Paladin run defined by a build_log.
@@ -2708,73 +2702,49 @@ class ValidationPool(object):
       change: GerritPatch instance to operate upon.
     """
     if self.pre_cq:
-      status = self.GetCLStatus(self.bot, change)
+      status = self.GetCLPreCQStatus(change)
       if status == self.STATUS_PASSED:
         return
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
     self.SendNotification(change, msg)
-    if not self.pre_cq or status == self.STATUS_LAUNCHING:
-      self.UpdateCLStatus(self.bot, change, self.STATUS_INFLIGHT,
-                          dry_run=self.dryrun)
+
 
   @classmethod
-  def GetCLStatusURL(cls, bot, change, latest_patchset_only=True):
-    """Get the status URL for |change| on |bot|.
-
-    Args:
-      bot: Which bot to look at. Can be CQ or PRE_CQ.
-      change: GerritPatch instance to operate upon.
-      latest_patchset_only: If True, return the URL for tracking the latest
-        patchset. If False, return the URL for tracking all patchsets. Defaults
-        to True.
-
-    Returns:
-      The status URL, as a string.
-    """
-    internal = 'int' if change.internal else 'ext'
-    components = [constants.MANIFEST_VERSIONS_GS_URL, bot,
-                  internal, str(change.gerrit_number)]
-    if latest_patchset_only:
-      components.append(str(change.patch_number))
-    return '/'.join(components)
-
-  @classmethod
-  def GetCLStatus(cls, bot, change):
+  def GetCLPreCQStatus(cls, change):
     """Get the status for |change| on |bot|.
 
+    To ensure that the latest status is used, the action cache for |change|
+    will be filled.
+
     Args:
       change: GerritPatch instance to operate upon.
-      bot: Which bot to look at. Can be CQ or PRE_CQ.
 
     Returns:
-      The status, as a string.
+      The status, as a string, or None if there is no recorded pre-cq status.
     """
-    url = cls.GetCLStatusURL(bot, change)
-    ctx = gs.GSContext()
-    try:
-      return ctx.Cat('%s/status' % url)
-    except gs.GSNoSuchKey:
-      logging.debug('No status yet for %r', url)
+    # Always refresh the action cache, so we get the latest status.
+    cls._FillCLActionCache([change])
+
+    patch_number = int(change.patch_number)
+
+    # Filter out changes to other patch numbers.
+    actions_for_patch = [a for a in cls._CL_ACTION_HISTORY_CACHE[change]
+                         if a['patch_number'] == patch_number]
+
+    if not actions_for_patch:
+      logging.debug('No status yet for %s', change)
       return None
 
+    return cls._TranslatePreCQActionToStatus(actions_for_patch[-1]['action'])
+
+
   @classmethod
-  def UpdateCLStatus(cls, bot, change, status, dry_run, build_id=None):
-    """Update the |status| of |change| on |bot|.
+  def UpdateCLPreCQStatus(cls, change, status, build_id):
+    """Update the pre-CQ |status| of |change|."""
+    action = ValidationPool._TranslatePreCQStatusToAction(status)
+    ValidationPool._InsertCLActionToDatabase(build_id, change, action)
 
-    For the pre-cq-launcher bot, if |build_id| is specified, this also writes
-    a cl action indicating the status change to cidb (if cidb is in use).
-    """
-    for latest_patchset_only in (False, True):
-      url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
-      ctx = gs.GSContext(dry_run=dry_run)
-      ctx.Copy('-', '%s/status' % url, input=status)
-      ctx.Counter('%s/%s' % (url, status)).Increment()
-
-    # Currently only pre-cq status changes are translated into cl actions.
-    if bot == PRE_CQ and build_id is not None:
-      action = ValidationPool._TranslatePreCQStatusToAction(status)
-      ValidationPool._InsertCLActionToDatabase(build_id, change, action)
 
   @classmethod
   def _TranslatePreCQStatusToAction(cls, status):
@@ -2786,69 +2756,86 @@ class ValidationPool(object):
     Raises:
       KeyError if |status| is not a known pre-cq status.
     """
-    status_translation = {
-        cls.STATUS_INFLIGHT:  constants.CL_ACTION_PRE_CQ_INFLIGHT,
-        cls.STATUS_PASSED:    constants.CL_ACTION_PRE_CQ_PASSED,
-        cls.STATUS_FAILED:    constants.CL_ACTION_PRE_CQ_FAILED,
-        cls.STATUS_LAUNCHING: constants.CL_ACTION_PRE_CQ_LAUNCHING,
-        cls.STATUS_WAITING:   constants.CL_ACTION_PRE_CQ_WAITING,
-        cls.STATUS_READY_TO_SUBMIT: constants.CL_ACTION_PRE_CQ_READY_TO_SUBMIT
-        }
-    return status_translation[status]
+    return cls._PRECQ_STATUS_TO_ACTION[status]
 
 
   @classmethod
-  def GetCLStatusCount(cls, bot, change, status, latest_patchset_only=True):
-    """Return how many times |change| has been set to |status| on |bot|.
-
-    Args:
-      bot: Which bot to look at. Can be CQ or PRE_CQ.
-      change: GerritPatch instance to operate upon.
-      status: The status string to look for.
-      latest_patchset_only: If True, only how many times the latest patchset has
-        been set to |status|. If False, count how many times any patchset has
-        been set to |status|. Defaults to False.
+  def _TranslatePreCQActionToStatus(cls, action):
+    """Translate a cl |action| into a pre-cq status.
 
     Returns:
-      The number of times |change| has been set to |status| on |bot|, as an
-      integer.
+      A pre-cq status string corresponding to the given |action|.
+
+    Raises:
+      KeyError if |status| is not a known pre-cq status.
     """
-    cache_key = (bot, change, status, latest_patchset_only)
-    if cache_key not in cls._CL_STATUS_CACHE:
-      base_url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
-      url = '%s/%s' % (base_url, status)
-      cls._CL_STATUS_CACHE[cache_key] = gs.GSContext().Counter(url).Get()
-    return cls._CL_STATUS_CACHE[cache_key]
+    return cls._PRECQ_ACTION_TO_STATUS[action]
+
 
   @classmethod
-  def FillCLStatusCache(cls, bot, changes, statuses=None):
-    """Cache all of the stats about the given |changes| in parallel.
+  def GetCLActionCount(cls, change, configs, action, latest_patchset_only=True):
+    """Return how many times |action| has occured on |change|.
+
+    If |change|'s action history cache has not already been filled by a call
+    to _FillCLActionCache, it will be filled.
 
     Args:
-      bot: Bot to pull down stats for.
-      changes: Changes to cache.
-      statuses: Statuses to cache. By default, cache the PASSED and FAILED
-        counts.
+      configs: List or set of config names to consider.
+      change: GerritPatch instance to operate upon.
+      action: The action string to look for.
+      latest_patchset_only: If True, only count actions that occured to the
+        latest patch number. Note, this may be different than the patch
+        number specified in |change|. Default: True.
+
+    Returns:
+      The count of how many times |action| occured on |change| by the given
+      |config|.
     """
-    if statuses is None:
-      statuses = (cls.STATUS_PASSED, cls.STATUS_FAILED)
-    inputs = []
+    if change not in cls._CL_ACTION_HISTORY_CACHE:
+      cls._FillCLActionCache([change])
+
+    actions_for_change = cls._CL_ACTION_HISTORY_CACHE[change]
+
+    if actions_for_change and latest_patchset_only:
+      latest_patch_number = max(a['patch_number'] for a in actions_for_change)
+      actions_for_change = [a for a in actions_for_change
+                            if a['patch_number'] == latest_patch_number]
+
+    actions_for_change = [a for a in actions_for_change
+                          if (a['build_config'] in configs and
+                              a['action'] == action)]
+
+    return len(actions_for_change)
+
+
+  @classmethod
+  def _FillCLActionCache(cls, changes):
+    """Cache action history of |changes|.
+
+    If no cidb connection is set up, or a None connection has been set up,
+    pretend that all the |changes| have an empty list of actions.
+
+    Args:
+      changes: Changes to cache, of type GerritPatch.
+    """
+    if (not cidb.CIDBConnectionFactory.IsCIDBSetup() or
+        not cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()):
+      for c in changes:
+        cls._CL_ACTION_HISTORY_CACHE[c] = []
+      return
+
+    db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+    # Fetch action history for changes, serially. If this becomes a
+    # performance concern we can consider parallelizing.
     for change in changes:
-      for status in statuses:
-        for latest_patchset_only in (False, True):
-          cache_key = (bot, change, status, latest_patchset_only)
-          if cache_key not in cls._CL_STATUS_CACHE:
-            inputs.append(cache_key)
+      cls._CL_ACTION_HISTORY_CACHE[change] = db.GetActionsForChange(change)
 
-    with parallel.Manager() as manager:
-      # Grab the CL status of all of the CLs in the background, into a proxied
-      # dictionary.
-      cls._CL_STATUS_CACHE = manager.dict(cls._CL_STATUS_CACHE)
-      parallel.RunTasksInProcessPool(cls.GetCLStatusCount, inputs)
 
-      # Convert the cache back into a regular dictionary before we shut down
-      # the manager.
-      cls._CL_STATUS_CACHE = dict(cls._CL_STATUS_CACHE)
+  @classmethod
+  def ClearActionCache(cls):
+    """Clear action history cache."""
+    cls._CL_ACTION_HISTORY_CACHE = {}
+
 
   def CreateDisjointTransactions(self, manifest, max_txn_length=None):
     """Create a list of disjoint transactions from the changes in the pool.

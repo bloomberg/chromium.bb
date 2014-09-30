@@ -30,9 +30,11 @@ from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import fake_cidb
 from chromite.lib import gerrit
 from chromite.lib import gob_util
 from chromite.lib import gs
@@ -88,6 +90,11 @@ class Base(cros_test_lib.MockTestCase):
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.PatchObject(tree_status, 'WaitForTreeStatus',
                      return_value=constants.TREE_OPEN)
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
@@ -712,7 +719,7 @@ class ValidationFailureOrTimeout(MoxBase):
     self._pool = MakePool(changes=self._patches)
 
     self.PatchObject(
-        validation_pool.ValidationPool, 'GetCLStatus',
+        validation_pool.ValidationPool, 'GetCLPreCQStatus',
         return_value=validation_pool.ValidationPool.STATUS_PASSED)
     self.PatchObject(
         validation_pool.CalculateSuspects, 'FindSuspects',
@@ -722,7 +729,7 @@ class ValidationFailureOrTimeout(MoxBase):
         return_value=self._PATCH_MESSAGE)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
-    self.PatchObject(validation_pool.ValidationPool, 'UpdateCLStatus')
+    self.PatchObject(validation_pool.ValidationPool, 'UpdateCLPreCQStatus')
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      return_value=self._patches)
     self.PatchObject(validation_pool.CalculateSuspects, 'OnlyLabFailures',
@@ -1338,23 +1345,120 @@ class TestFindSuspects(MoxBase):
     self._AssertSuspects(changes, changes[1:], [self.kernel_pkg])
 
 
-class TestCLStatus(MoxBase):
-  """Tests methods that get the CL status."""
-
+class TestPrintLinks(MoxBase):
+  """Tests that change links can be printed."""
   def testPrintLinks(self):
     changes = self.GetPatches(3)
     with parallel_unittest.ParallelMock():
       validation_pool.ValidationPool.PrintLinksToChanges(changes)
 
-  def testStatusCache(self):
-    validation_pool.ValidationPool._CL_STATUS_CACHE = {}
-    changes = self.GetPatches(3)
-    with parallel_unittest.ParallelMock():
-      validation_pool.ValidationPool.FillCLStatusCache(validation_pool.CQ,
-                                                       changes)
-      self.assertEqual(len(validation_pool.ValidationPool._CL_STATUS_CACHE), 12)
-      validation_pool.ValidationPool.PrintLinksToChanges(changes)
-      self.assertEqual(len(validation_pool.ValidationPool._CL_STATUS_CACHE), 12)
+
+class TestCLPreCQStatus(MoxBase):
+  """Tests methods related to CL pre-CQ status."""
+  def testGetAndUpdateCLPreCQStatus(self):
+    change = self.GetPatches()
+    # Initial pre-CQ status of a change is None.
+    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
+                     None)
+
+    # Builders can update the CL's pre-CQ status.
+    build_id = self.fake_db.InsertBuild(constants.PRE_CQ_LAUNCHER_NAME,
+        constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
+        'bot-hostname')
+    validation_pool.ValidationPool.UpdateCLPreCQStatus(
+        change, validation_pool.ValidationPool.STATUS_WAITING, build_id)
+    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
+                     validation_pool.ValidationPool.STATUS_WAITING)
+
+    validation_pool.ValidationPool.UpdateCLPreCQStatus(
+        change, validation_pool.ValidationPool.STATUS_INFLIGHT, build_id)
+    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
+                     validation_pool.ValidationPool.STATUS_INFLIGHT)
+
+    # Updating to an invalid status should raise a KeyError, and leave status
+    # unaffected.
+    with self.assertRaises(KeyError):
+      validation_pool.ValidationPool.UpdateCLPreCQStatus(
+          change, 'invalid status', build_id)
+    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
+                     validation_pool.ValidationPool.STATUS_INFLIGHT)
+
+
+class TestCLStatusCounter(MoxBase):
+  """Tests that GetCLActionCount behaves as expected."""
+
+  def setUp(self):
+    validation_pool.ValidationPool.ClearActionCache()
+
+  def tearDown(self):
+    validation_pool.ValidationPool.ClearActionCache()
+
+  def testGetCLActionCount(self):
+    c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
+    c1p2 = metadata_lib.GerritPatchTuple(1, 2, False)
+    precq_build_id = self.fake_db.InsertBuild(constants.PRE_CQ_LAUNCHER_NAME,
+        constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
+        'bot-hostname')
+    melon_build_id = self.fake_db.InsertBuild('melon builder name',
+        constants.WATERFALL_INTERNAL, 1, 'melon-config-name',
+        'grape-bot-hostname')
+
+    # Count should be zero before any actions are recorded.
+    self.assertEqual(
+        0,
+        validation_pool.ValidationPool.GetCLActionCount(
+            c1p1, validation_pool.CQ_PIPELINE_CONFIGS,
+            constants.CL_ACTION_KICKED_OUT))
+
+    # Record 3 failures for c1p1, and some other actions. Only count the
+    # actions from builders in validation_pool.CQ_PIPELINE_CONFIGS.
+    self.fake_db.InsertCLActions(
+        precq_build_id,
+        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_KICKED_OUT)])
+    self.fake_db.InsertCLActions(
+        precq_build_id,
+        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_PICKED_UP)])
+    self.fake_db.InsertCLActions(
+        precq_build_id,
+        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_KICKED_OUT)])
+    self.fake_db.InsertCLActions(
+        melon_build_id,
+        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_KICKED_OUT)])
+
+    # Clear action cache so that it gets refilled.
+    validation_pool.ValidationPool.ClearActionCache()
+
+    self.assertEqual(
+        2,
+        validation_pool.ValidationPool.GetCLActionCount(
+            c1p1, validation_pool.CQ_PIPELINE_CONFIGS,
+            constants.CL_ACTION_KICKED_OUT))
+
+    # Record a failure for c1p2. Now the latest patches failure count should be
+    # 1 (true weather we pass c1p1 or c1p2), whereas the total failure count
+    # should be 3.
+    self.fake_db.InsertCLActions(
+        precq_build_id,
+        [metadata_lib.GetCLActionTuple(c1p2, constants.CL_ACTION_KICKED_OUT)])
+
+    validation_pool.ValidationPool.ClearActionCache()
+
+    self.assertEqual(
+        1,
+        validation_pool.ValidationPool.GetCLActionCount(
+            c1p1, validation_pool.CQ_PIPELINE_CONFIGS,
+            constants.CL_ACTION_KICKED_OUT))
+    self.assertEqual(
+        1,
+        validation_pool.ValidationPool.GetCLActionCount(
+            c1p2, validation_pool.CQ_PIPELINE_CONFIGS,
+            constants.CL_ACTION_KICKED_OUT))
+    self.assertEqual(
+        3,
+        validation_pool.ValidationPool.GetCLActionCount(
+            c1p2, validation_pool.CQ_PIPELINE_CONFIGS,
+            constants.CL_ACTION_KICKED_OUT,
+            latest_patchset_only=False))
 
 
 class TestCreateValidationFailureMessage(Base):

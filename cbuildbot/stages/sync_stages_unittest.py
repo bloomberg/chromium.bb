@@ -26,11 +26,12 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import cidb
+from chromite.lib import fake_cidb
 from chromite.lib import gerrit
 from chromite.lib import git_unittest
 from chromite.lib import gob_util
 from chromite.lib import osutils
-from chromite.lib import partial_mock
 from chromite.lib import timeout_util
 
 
@@ -127,7 +128,6 @@ class MockPatch(mock.MagicMock):
 
 class BaseCQTestCase(generic_stages_unittest.StageTest):
   """Helper class for testing the CommitQueueSync stage"""
-  PALADIN_BOT_ID = None
   MANIFEST_CONTENTS = '<manifest/>'
 
   def setUp(self):
@@ -160,8 +160,15 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      side_effect=lambda x: x)
 
+    # Create and set up a fake cidb instance.
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+
     self.sync_stage = None
     self._Prepare()
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(BaseCQTestCase, self)._Prepare(bot_id, **kwargs)
@@ -185,6 +192,9 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
       runs: The maximum number of times to allow validation_pool.AcquirePool
             to wait for additional changes. runs=0 means never wait for
             additional changes. Default: 0.
+
+    Returns:
+      A list of MockPatch objects which were created and used in PerformSync.
     """
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
     my_patches = [p] * num_patches
@@ -206,6 +216,8 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',
                      side_effect=exit_it)
     self.sync_stage.PerformStage()
+
+    return my_patches
 
   def ReloadPool(self):
     """Save the pool to disk and reload it."""
@@ -243,24 +255,40 @@ class MasterCQSyncTestCase(BaseCQTestCase):
                      return_value=self.manifest_path, autospec=True)
 
   def _testCommitNonManifestChange(self, **kwargs):
-    """Test the commit of a non-manifest change."""
+    """Test the commit of a non-manifest change.
+
+    Returns:
+      List of MockPatch objects that were used in PerformSync
+    """
     # Setting tracking_branch=foo makes this a non-manifest change.
     kwargs.setdefault('committed', True)
-    self.PerformSync(tracking_branch='foo', **kwargs)
+    return self.PerformSync(tracking_branch='foo', **kwargs)
 
   def _testFailedCommitOfNonManifestChange(self):
-    """Test that the commit of a non-manifest change fails."""
-    self._testCommitNonManifestChange(committed=False)
+    """Test that the commit of a non-manifest change fails.
+
+    Returns:
+      List of MockPatch objects that were used in PerformSync
+    """
+    return self._testCommitNonManifestChange(committed=False)
 
   def _testCommitManifestChange(self, **kwargs):
-    """Test committing a change to a project that's part of the manifest."""
+    """Test committing a change to a project that's part of the manifest.
+
+    Returns:
+      List of MockPatch objects that were used in PerformSync
+    """
     self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
                      side_effect=lambda x, _: (x, []))
-    self.PerformSync(**kwargs)
+    return self.PerformSync(**kwargs)
 
   def _testDefaultSync(self):
-    """Test basic ability to sync with standard options."""
-    self.PerformSync()
+    """Test basic ability to sync with standard options.
+
+    Returns:
+      List of MockPatch objects that were used in PerformSync
+    """
+    return self.PerformSync()
 
 
 class MasterCQSyncTest(MasterCQSyncTestCase):
@@ -268,19 +296,19 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
 
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""
-    self._testCommitNonManifestChange()
+    return self._testCommitNonManifestChange()
 
   def testFailedCommitOfNonManifestChange(self):
     """See MasterCQSyncTestCase"""
-    self._testFailedCommitOfNonManifestChange()
+    return self._testFailedCommitOfNonManifestChange()
 
   def testCommitManifestChange(self):
     """See MasterCQSyncTestCase"""
-    self._testCommitManifestChange()
+    return self._testCommitManifestChange()
 
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
-    self._testDefaultSync()
+    return self._testDefaultSync()
 
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
@@ -300,99 +328,85 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
         mock.ANY, constants.THROTTLED_CQ_READY_QUERY,
         sort='lastUpdated')
 
-
-class CLStatusMock(partial_mock.PartialMock):
-  """Partial mock for CLStatus methods in ValidationPool."""
-
-  TARGET = 'chromite.cbuildbot.validation_pool.ValidationPool'
-  ATTRS = ('GetCLStatus', 'GetCLStatusCount', 'UpdateCLStatus',)
-
-  def __init__(self, treat_launching_as_inflight=False):
-    """CLStatusMock constructor.
-
-    Args:
-      treat_launching_as_inflight: When getting a CL's status via
-        GetCLStatus, treat any change with status LAUNCHING as if
-        it has status INFLIGHT. This simulates pre-cq tryjobs getting
-        immediately launched. Default: False.
-    """
-    partial_mock.PartialMock.__init__(self)
-    self.calls = {}
-    self.status = {}
-    self.status_count = {}
-    self._treat_launching_as_inflight = treat_launching_as_inflight
-
-  def GetCLStatus(self, _bot, change):
-    status = self.status.get(change)
-    if (self._treat_launching_as_inflight and
-        status == validation_pool.ValidationPool.STATUS_LAUNCHING):
-      return validation_pool.ValidationPool.STATUS_INFLIGHT
-    return status
-
-  def GetCLStatusCount(self, _bot, change, count, latest_patchset_only=True):
-    # pylint: disable=W0613
-    return self.status_count.get(change, 0)
-
-  def UpdateCLStatus(self, _bot, change, status, dry_run, build_id=None):
-    # pylint: disable=W0613
-    self.calls[status] = self.calls.get(status, 0) + 1
-    self.status[change] = status
-    self.status_count[change] = self.status_count.get(change, 0) + 1
-
-
 class PreCQLauncherStageTest(MasterCQSyncTestCase):
   """Tests for the PreCQLauncherStage."""
 
-  BOT_ID = 'pre-cq-launcher'
+  BOT_ID = constants.PRE_CQ_LAUNCHER_CONFIG
   STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
   STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
   STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
   STATUS_READY_TO_SUBMIT = validation_pool.ValidationPool.STATUS_READY_TO_SUBMIT
+  STATUS_INFLIGHT = validation_pool.ValidationPool.STATUS_INFLIGHT
 
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)
 
-  def _PrepareValidationPoolMock(self, auto_launch=False):
-    # pylint: disable-msg=W0201
-    self.pre_cq = CLStatusMock(treat_launching_as_inflight=auto_launch)
-    self.StartPatcher(self.pre_cq)
+  def _PrepareAutoLaunch(self):
+    """Cause CLs with launching status to be automatically launched."""
+    # Mock out UpdateCLPreCQStatus so that when a "Launching" action is
+    # recorded, automatically pretend to start a new build which records
+    # an "Inflight" action for the same change.
+    original_method = validation_pool.ValidationPool.UpdateCLPreCQStatus
+
+    def new_method(change, status, build_id):
+      original_method(change, status, build_id)
+      if (status == self.STATUS_LAUNCHING):
+        new_build_id = self.fake_db.InsertBuild('Pre cq group',
+                                                constants.WATERFALL_TRYBOT,
+                                                1,
+                                                constants.PRE_CQ_GROUP_CONFIG,
+                                                'bot-hostname')
+        original_method(change, self.STATUS_INFLIGHT,
+                        new_build_id)
+
+    self.PatchObject(validation_pool.ValidationPool, 'UpdateCLPreCQStatus',
+                     side_effect=new_method)
+
 
   def _Prepare(self, bot_id=None, **kwargs):
-    super(PreCQLauncherStageTest, self)._Prepare(bot_id, **kwargs)
+    build_id = self.fake_db.InsertBuild(
+        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
+
+    super(PreCQLauncherStageTest, self)._Prepare(
+        bot_id, build_id=build_id, **kwargs)
 
     self.sync_stage = sync_stages.PreCQLauncherStage(self._run)
 
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""
-    self._PrepareValidationPoolMock()
     self._testCommitNonManifestChange()
 
   def testFailedCommitOfNonManifestChange(self):
     """See MasterCQSyncTestCase"""
-    self._PrepareValidationPoolMock()
     self._testFailedCommitOfNonManifestChange()
 
   def testCommitManifestChange(self):
     """See MasterCQSyncTestCase"""
-    self._PrepareValidationPoolMock()
     self._testCommitManifestChange()
 
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
-    self._PrepareValidationPoolMock()
     self._testDefaultSync()
 
   def testTreeClosureIsOK(self):
     """Test that tree closures block commits."""
-    self._PrepareValidationPoolMock()
     self._testCommitNonManifestChange(tree_open=False)
 
   def testLaunchTrybot(self):
     """Test launching a trybot."""
-    self._PrepareValidationPoolMock()
-    self._testCommitManifestChange()
-    self.assertEqual(self.pre_cq.status.values(), [self.STATUS_LAUNCHING])
-    self.assertEqual(self.pre_cq.calls.keys(), [self.STATUS_LAUNCHING])
+    change = self._testCommitManifestChange()[0]
+
+    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
+                     self.STATUS_LAUNCHING)
+
+  def testLaunchTrybotWithAutolaunch(self):
+    """Test launching a trybot with auto-launch."""
+    self._PrepareAutoLaunch()
+    change = self._testCommitManifestChange()[0]
+
+    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
+                     self.STATUS_INFLIGHT)
 
   def runTrybotTest(self, launching=0, waiting=0, failed=0, runs=0):
     """Helper function for testing PreCQLauncher.
@@ -402,16 +416,24 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     LAUNCHING, WAITING, and FAILED |launching|, |waiting|, and |failed| times
     respectively.
     """
-    self._testCommitManifestChange(runs=runs)
-    self.assertEqual(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0), launching)
-    self.assertEqual(self.pre_cq.calls.get(self.STATUS_WAITING, 0), waiting)
-    self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), failed)
-    self.assertEqual(sum(self.pre_cq.calls.values()),
-                     launching + waiting + failed)
+    change = self._testCommitManifestChange(runs=runs)[0]
+    # Count the number of recorded actions corresponding to launching, watiting,
+    # and failed, and ensure they are correct.
+    validation_pool.ValidationPool.ClearActionCache()
+
+    expected = (launching, waiting, failed)
+    actions = (constants.CL_ACTION_PRE_CQ_LAUNCHING,
+               constants.CL_ACTION_PRE_CQ_WAITING,
+               constants.CL_ACTION_PRE_CQ_FAILED)
+
+    for exp, action in zip(expected, actions):
+      self.assertEqual(
+          exp,
+          validation_pool.ValidationPool.GetCLActionCount(
+              change, [constants.PRE_CQ_LAUNCHER_CONFIG], action))
 
   def testLaunchTrybotTimesOutOnce(self):
     """Test what happens when a trybot launch times out."""
-    self._PrepareValidationPoolMock()
     it = itertools.chain([True], itertools.repeat(False))
     self.PatchObject(sync_stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      side_effect=it)
@@ -419,14 +441,13 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testLaunchTrybotTimesOutTwice(self):
     """Test what happens when a trybot launch times out."""
-    self._PrepareValidationPoolMock()
     self.PatchObject(sync_stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      return_value=True)
     self.runTrybotTest(launching=2, waiting=1, failed=1, runs=3)
 
   def testInflightTrybotTimesOutOnce(self):
     """Test what happens when an inflight trybot times out."""
-    self._PrepareValidationPoolMock(auto_launch=True)
+    self._PrepareAutoLaunch()
     it = itertools.chain([True], itertools.repeat(False))
     self.PatchObject(sync_stages.PreCQLauncherStage, '_HasInflightTimedOut',
                      side_effect=it)
@@ -434,8 +455,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testSubmit(self):
     """Test submission of patches."""
-    self._PrepareValidationPoolMock()
-    self.PatchObject(validation_pool.ValidationPool, 'GetCLStatus',
+    self.PatchObject(validation_pool.ValidationPool, 'GetCLPreCQStatus',
                      return_value=self.STATUS_READY_TO_SUBMIT)
     m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
     self.runTrybotTest(runs=1)

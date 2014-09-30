@@ -110,8 +110,6 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
 
     self.StartPatcher(BuilderRunMock())
-    self.cq = sync_stages_unittest.CLStatusMock()
-    self.StartPatcher(self.cq)
     self.sync_stage = None
 
     # Set up a general purpose cidb mock. Tests with more specific
