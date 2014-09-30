@@ -21,7 +21,7 @@ SourceFileType GetSourceFileType(const SourceFile& file) {
     return SOURCE_MM;
   if (extension == "rc")
     return SOURCE_RC;
-  if (extension == "S" || extension == "s")
+  if (extension == "S" || extension == "s" || extension == "asm")
     return SOURCE_S;
   if (extension == "o" || extension == "obj")
     return SOURCE_O;

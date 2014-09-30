@@ -14,7 +14,6 @@ config("protobuf_config") {
     config_h_dir,
   ]
   defines = [
-    "PROTOBUF_USE_DLLS",
     "GOOGLE_PROTOBUF_NO_RTTI",
     "GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
   ]
@@ -22,6 +21,12 @@ config("protobuf_config") {
   if (is_win) {
     # TODO(jschuh): http://crbug.com/167187 size_t -> int.
     cflags = [ "/wd4267" ]
+  }
+}
+
+if (component_mode == "shared_library") {
+  config("protobuf_use_dlls") {
+    defines = [ "PROTOBUF_USE_DLLS" ]
   }
 }
 
@@ -84,7 +89,7 @@ if (is_win) {
   ]
 }
 
-source_set("protobuf_lite") {
+component("protobuf_lite") {
   sources = protobuf_lite_sources
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -97,7 +102,10 @@ source_set("protobuf_lite") {
   cflags = protobuf_lite_cflags
 
   # Required for component builds. See http://crbug.com/172800.
-  defines = [ "LIBPROTOBUF_EXPORTS" ]
+  if (component_mode == "shared_library") {
+    public_configs += [ ":protobuf_use_dlls" ]
+    defines = [ "LIBPROTOBUF_EXPORTS" ]
+  }
 }
 
 # This is the full, heavy protobuf lib that's needed for c++ .protos that don't

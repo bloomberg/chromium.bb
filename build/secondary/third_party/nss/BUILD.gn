@@ -220,7 +220,7 @@ if (is_linux) {
 
     cflags = []
     defines = [
-      "_NSPR_BUILD",
+      "_NSPR_BUILD_",
       "FORCE_PR_LOG",
     ]
 
@@ -359,7 +359,9 @@ if (is_linux) {
         ldflags = [ "-all_load" ]
       } else if (is_win) {
         # Pass the def file to the linker.
-        ldflags = [ rebase_path("nss/exports_win.def", root_build_dir) ]
+        ldflags = [
+          "/DEF:" + rebase_path("nss/exports_win.def", root_build_dir)
+        ]
       }
     }
   }
@@ -474,6 +476,50 @@ if (is_linux) {
       "nss/lib/softoken",
       "nss/lib/util",
     ]
+  }
+
+  if (is_win && cpu_arch == "x86") {
+    source_set("nss_static_avx") {
+      sources = [
+        "nss/lib/freebl/intel-gcm-wrap.c",
+        "nss/lib/freebl/intel-gcm-x86-masm.asm",
+        "nss/lib/freebl/intel-gcm.h",
+      ]
+      defines = [
+        "_WINDOWS",
+        "_X86_",
+        "INTEL_GCM",
+        "MP_API_COMPATIBLE",
+        "MP_ASSEMBLY_DIV_2DX1D",
+        "MP_ASSEMBLY_MULTIPLY",
+        "MP_ASSEMBLY_SQUARE",
+        "MP_NO_MP_WORD",
+        "MP_USE_UINT_DIGIT",
+        "NSS_DISABLE_DBM",
+        "NSS_STATIC",
+        "NSS_USE_STATIC_LIBS",
+        "NSS_X86",
+        "NSS_X86_OR_X64",
+        "RIJNDAEL_INCLUDE_TABLES",
+        "SHLIB_PREFIX=\"\"",
+        "SHLIB_SUFFIX=\"dll\"",
+        "SHLIB_VERSION=\"3\"",
+        "SOFTOKEN_LIB_NAME=\"softokn3.dll\"",
+        "SOFTOKEN_SHLIB_VERSION=\"3\"",
+        "USE_HW_AES",
+        "USE_UTIL_DIRECTLY",
+        "WIN32",
+        "WIN95",
+        "XP_PC",
+      ]
+      include_dirs = [
+        "nspr/pr/include",
+        "nspr/lib/ds",
+        "nspr/lib/libc/include",
+        "nss/lib/freebl/ecl",
+        "nss/lib/util",
+      ]
+    }
   }
 
   source_set("nss_static") {
@@ -599,6 +645,8 @@ if (is_linux) {
       "nss/lib/freebl/ecl/ec_naf.c",
       "nss/lib/freebl/gcm.c",
       "nss/lib/freebl/gcm.h",
+      "nss/lib/freebl/intel-aes-x86-masm.asm",
+      "nss/lib/freebl/intel-aes.h",
       "nss/lib/freebl/hmacct.c",
       "nss/lib/freebl/hmacct.h",
       "nss/lib/freebl/jpake.c",
@@ -1152,6 +1200,10 @@ if (is_linux) {
       ":nspr",
       "//third_party/sqlite",
     ]
+
+    if (is_win && cpu_arch == "x86") {
+      deps += [ ":nss_static_avx" ]
+    }
   }
 }  # Windows/Mac/iOS.
 

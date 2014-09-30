@@ -48,6 +48,9 @@ source_set("config") {
     "//ui/gl",
   ]
 
+  # Prefer mesa GL headers to system headers, which cause problems on Win.
+  include_dirs = [ "//third_party/mesa/src/include" ]
+
   if (is_win) {
     deps += [ "//third_party/libxml" ]
     libs = [ "dxguid.lib", "setupapi.lib" ]

@@ -113,6 +113,9 @@ source_set("simd") {
     sources = [
       "simd/jsimd_i386.c",
     ]
+    if (is_win) {
+      cflags = [ "/wd4245" ]
+    }
   } else if (cpu_arch == "x64") {
     deps = [ ":simd_asm" ]
     sources = [

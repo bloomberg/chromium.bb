@@ -76,7 +76,9 @@ component("libssl") {
       "unix_err.c",
       "unix_err.h",
     ]
-    sources += [ "exports_win.def" ]
+    if (component_mode == "shared_library") {
+      ldflags = [ "/DEF:" + rebase_path("exports_win.def", root_build_dir) ]
+    }
   } else if (is_linux) {
     if (component_mode == "shared_library") {
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
