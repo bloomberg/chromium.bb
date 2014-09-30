@@ -26,8 +26,17 @@ AudioPowerMonitor::~AudioPowerMonitor() {
 }
 
 void AudioPowerMonitor::Reset() {
-  power_reading_ = average_power_ = 0.0f;
-  clipped_reading_ = has_clipped_ = false;
+  // These are only read/written by Scan(), but Scan() should not be running
+  // when Reset() is called.
+  average_power_ = 0.0f;
+  has_clipped_ = false;
+
+  // These are the copies read by ReadCurrentPowerAndClip().  The lock here is
+  // not necessary, as racey writes/reads are acceptable, but this prevents
+  // quality-enhancement tools like TSAN from complaining.
+  base::AutoLock for_reset(reading_lock_);
+  power_reading_ = 0.0f;
+  clipped_reading_ = false;
 }
 
 void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
