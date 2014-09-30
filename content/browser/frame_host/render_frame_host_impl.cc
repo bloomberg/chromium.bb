@@ -1282,6 +1282,10 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   Navigate(params);
 }
 
+void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params) {
+  OnOpenURL(params);
+}
+
 void RenderFrameHostImpl::Stop() {
   Send(new FrameMsg_Stop(routing_id_));
 }

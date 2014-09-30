@@ -115,7 +115,12 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   if (render_frame_host_.get())
     return render_frame_host_->OnMessageReceived(msg);
 
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 bool RenderFrameProxyHost::InitRenderFrameProxy() {
@@ -147,6 +152,11 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 
 void RenderFrameProxyHost::DisownOpener() {
   Send(new FrameMsg_DisownOpener(GetRoutingID()));
+}
+
+void RenderFrameProxyHost::OnOpenURL(
+    const FrameHostMsg_OpenURL_Params& params) {
+  frame_tree_node_->current_frame_host()->OpenURL(params);
 }
 
 }  // namespace content

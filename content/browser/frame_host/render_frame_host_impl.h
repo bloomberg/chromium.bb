@@ -255,6 +255,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
 
+  // Treat this prospective navigation as thought it originated from the
+  // frame. Used, e.g., for a navigation request that originated from
+  // a RemoteFrame.
+  void OpenURL(const FrameHostMsg_OpenURL_Params& params);
+
   // Stop the load in progress.
   void Stop();
 

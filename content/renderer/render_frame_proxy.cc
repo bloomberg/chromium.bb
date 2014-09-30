@@ -16,6 +16,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
@@ -276,6 +277,21 @@ void RenderFrameProxy::initializeChildFrame(
     float scale_factor) {
   Send(new FrameHostMsg_InitializeChildFrame(
       routing_id_, frame_rect, scale_factor));
+}
+
+void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
+                                bool should_replace_current_entry) {
+  FrameHostMsg_OpenURL_Params params;
+  params.url = request.url();
+  params.referrer = Referrer(
+      GURL(request.httpHeaderField(blink::WebString::fromUTF8("Referer"))),
+      request.referrerPolicy());
+  params.disposition = CURRENT_TAB;
+  params.should_replace_current_entry = should_replace_current_entry;
+  params.user_gesture =
+      blink::WebUserGestureIndicator::isProcessingUserGesture();
+  blink::WebUserGestureIndicator::consumeUserGesture();
+  Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 
 }  // namespace

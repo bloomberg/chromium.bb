@@ -299,6 +299,78 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 }
 
+// It fails on ChromeOS and Android, so disabled while investigating.
+// http://crbug.com/399775
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#define MAYBE_NavigateRemoteFrame DISABLED_NavigateRemoteFrame
+#else
+#define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  SitePerProcessWebContentsObserver observer(shell()->web_contents());
+
+  // Load same-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
+  GURL http_url(test_server()->GetURL("files/title1.html"));
+  NavigateFrameToURL(child, http_url);
+  EXPECT_EQ(http_url, observer.navigation_url());
+  EXPECT_TRUE(observer.navigation_succeeded());
+
+  // These must stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  std::string foo_com("foo.com");
+
+  // Load cross-site page into iframe.
+  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
+  replace_host.SetHostStr(foo_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_EQ(cross_site_url, observer.navigation_url());
+  EXPECT_TRUE(observer.navigation_succeeded());
+
+  // Ensure that we have created a new process for the subframe.
+  ASSERT_EQ(1U, root->child_count());
+  SiteInstance* site_instance = child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site_instance);
+
+  // Emulate the main frame changing the src of the iframe such that it
+  // navigates cross-site.
+  cross_site_url = test_server()->GetURL("files/title3.html");
+  std::string bar_com("bar.com");
+  replace_host.SetHostStr(bar_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  NavigateIframeToURL(shell(), cross_site_url, "test");
+  EXPECT_EQ(cross_site_url, observer.navigation_url());
+  EXPECT_TRUE(observer.navigation_succeeded());
+
+  // Check again that a new process is created and is different from the
+  // top level one and the previous one.
+  ASSERT_EQ(1U, root->child_count());
+  child = root->child_at(0);
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(site_instance,
+            child->current_frame_host()->GetSiteInstance());
+
+  // TODO(japhet): This currently causes an assertion in the renderer process.
+  // Enable when the assertion is fixed.
+  //NavigateFrameToURL(child, http_url);
+  //EXPECT_EQ(http_url, observer.navigation_url());
+  //EXPECT_TRUE(observer.navigation_succeeded());
+  //EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+  //          child->current_frame_host()->GetSiteInstance());
+}
+
 // Crash a subframe and ensures its children are cleared from the FrameTree.
 // See http://crbug.com/338508.
 // TODO(creis): Disabled for flakiness; see http://crbug.com/405582.

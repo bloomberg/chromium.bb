@@ -107,6 +107,9 @@ class RenderFrameProxyHost
   void DisownOpener();
 
  private:
+  // IPC Message handlers.
+  void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
+
   // This RenderFrameProxyHost's routing id.
   int routing_id_;
 

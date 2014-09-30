@@ -102,6 +102,8 @@ class CONTENT_EXPORT RenderFrameProxy
   virtual void initializeChildFrame(
       const blink::WebRect& frame_rect,
       float scale_factor);
+  virtual void navigate(const blink::WebURLRequest& request,
+                        bool should_replace_current_entry);
 
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
