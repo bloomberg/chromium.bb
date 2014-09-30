@@ -47,6 +47,10 @@ class Callback<void()> {
     return !sink_.get();
   }
 
+  void reset() {
+    sink_.reset();
+  }
+
  private:
   template <typename Sink>
   struct Adapter : public Runnable {
@@ -84,6 +88,10 @@ class Callback<void(A1)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:
@@ -131,6 +139,10 @@ class Callback<void(A1, A2)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:
@@ -185,6 +197,10 @@ class Callback<void(A1, A2, A3)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:
@@ -244,6 +260,10 @@ class Callback<void(A1, A2, A3, A4)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:
@@ -308,6 +328,10 @@ class Callback<void(A1, A2, A3, A4, A5)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:
@@ -378,6 +402,10 @@ class Callback<void(A1, A2, A3, A4, A5, A6)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:
@@ -453,6 +481,10 @@ class Callback<void(A1, A2, A3, A4, A5, A6, A7)> {
 
   bool is_null() const {
     return !sink_.get();
+  }
+
+  void reset() {
+    sink_.reset();
   }
 
  private:

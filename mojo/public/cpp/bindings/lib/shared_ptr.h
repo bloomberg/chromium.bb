@@ -31,6 +31,10 @@ class SharedPtr {
     return impl_.value().ptr;
   }
 
+  void reset() {
+    impl_.reset();
+  }
+
   P* operator->() { return get(); }
   const P* operator->() const { return get(); }
 

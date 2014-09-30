@@ -46,6 +46,8 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   void AckEvent();
 
  private:
+  void ProcessOnBoundsChanged();
+
   bool is_headless_;
   scoped_ptr<PlatformViewport> platform_viewport_;
   scoped_ptr<ViewportSurface> viewport_surface_;

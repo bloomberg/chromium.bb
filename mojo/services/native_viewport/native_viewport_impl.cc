@@ -4,6 +4,7 @@
 
 #include "mojo/services/native_viewport/native_viewport_impl.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -48,13 +49,12 @@ NativeViewportImpl::~NativeViewportImpl() {
 void NativeViewportImpl::Create(SizePtr size,
                                 const Callback<void(uint64_t)>& callback) {
   create_callback_ = callback;
+  size_ = size.To<gfx::Size>();
   if (is_headless_)
     platform_viewport_ = PlatformViewportHeadless::Create(this);
   else
     platform_viewport_ = PlatformViewport::Create(this);
-  const gfx::Rect bounds(gfx::Rect(size.To<gfx::Size>()));
-  platform_viewport_->Init(bounds);
-  OnBoundsChanged(bounds);
+  platform_viewport_->Init(gfx::Rect(size.To<gfx::Size>()));
 }
 
 void NativeViewportImpl::Show() {
@@ -94,10 +94,14 @@ void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
 }
 
 void NativeViewportImpl::OnBoundsChanged(const gfx::Rect& bounds) {
+  if (size_ == bounds.size())
+    return;
+
   size_ = bounds.size();
-  client()->OnSizeChanged(Size::From(size_));
-  if (viewport_surface_)
-    viewport_surface_->SetSize(size_);
+
+  // Wait for the accelerated widget before telling the client of the bounds.
+  if (create_callback_.is_null())
+    ProcessOnBoundsChanged();
 }
 
 void NativeViewportImpl::OnAcceleratedWidgetAvailable(
@@ -105,6 +109,10 @@ void NativeViewportImpl::OnAcceleratedWidgetAvailable(
   widget_id_ = static_cast<uint64_t>(bit_cast<uintptr_t>(widget));
   // TODO(jamesr): Remove once everything is converted to surfaces.
   create_callback_.Run(widget_id_);
+  create_callback_.reset();
+  // Immediately tell the client of the size. The size may be wrong, if so we'll
+  // get the right one in the next OnBoundsChanged() call.
+  ProcessOnBoundsChanged();
   if (viewport_surface_)
     viewport_surface_->SetWidgetId(widget_id_);
 }
@@ -140,6 +148,12 @@ void NativeViewportImpl::OnDestroyed() {
 
 void NativeViewportImpl::AckEvent() {
   waiting_for_event_ack_ = false;
+}
+
+void NativeViewportImpl::ProcessOnBoundsChanged() {
+  client()->OnSizeChanged(Size::From(size_));
+  if (viewport_surface_)
+    viewport_surface_->SetSize(size_);
 }
 
 }  // namespace mojo

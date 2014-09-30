@@ -63,6 +63,10 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
     return !sink_.get();
   }
 
+  void reset() {
+    sink_.reset();
+  }
+
  private:
   template <typename Sink>
   struct Adapter : public Runnable {
