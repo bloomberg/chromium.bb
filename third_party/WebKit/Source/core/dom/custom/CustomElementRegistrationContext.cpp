@@ -64,8 +64,8 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
     if (!upgradeCandidates)
         return;
 
-    for (CustomElementUpgradeCandidateMap::ElementSet::const_iterator it = upgradeCandidates->begin(); it != upgradeCandidates->end(); ++it)
-        CustomElement::define(*it, definition);
+    for (const auto& candidate : *upgradeCandidates)
+        CustomElement::define(candidate, definition);
 }
 
 PassRefPtrWillBeRawPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)

@@ -71,10 +71,10 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     m_phase = Resolving;
 
     m_phase = DispatchingCallbacks;
-    for (WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> >::iterator it = m_elements.begin(); it != m_elements.end(); ++it) {
+    for (const auto& element : m_elements) {
         // Created callback may enqueue an attached callback.
         CustomElementProcessingStack::CallbackDeliveryScope scope;
-        (*it)->processInElementQueue(kMicrotaskQueueId);
+        element->processInElementQueue(kMicrotaskQueueId);
     }
 
     m_elements.clear();
