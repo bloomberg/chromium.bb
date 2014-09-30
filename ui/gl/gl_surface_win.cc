@@ -118,6 +118,8 @@ class WinVSyncProvider : public VSyncProvider {
     BOOL result = GetMonitorInfo(monitor, &monitor_info);
     if (result) {
       DEVMODE display_info;
+      display_info.dmSize = sizeof(DEVMODE);
+      display_info.dmDriverExtra = 0;
       result = EnumDisplaySettings(monitor_info.szDevice, ENUM_CURRENT_SETTINGS,
           &display_info);
       if (result && display_info.dmDisplayFrequency > 1) {
