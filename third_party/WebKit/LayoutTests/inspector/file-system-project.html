@@ -7,6 +7,8 @@
 <script>
 function test()
 {
+    WebInspector.inspectorView._showPanel("sources");
+
     function dumpUISourceCodes(uiSourceCodes, next)
     {
         innerDumpUISourceCodes(uiSourceCodes, 0, next);

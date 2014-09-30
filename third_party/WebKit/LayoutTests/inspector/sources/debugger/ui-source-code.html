@@ -22,14 +22,14 @@ function test()
             function didRequestContent(callNumber, content)
             {
                 InspectorTest.addResult("Callback " + callNumber + " is invoked.");
-                InspectorTest.assertEquals("text/javascript", uiSourceCode.highlighterType());
+                InspectorTest.assertEquals("text/javascript", WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
                 InspectorTest.assertEquals("var x = 0;", content);
 
                 if (callNumber === 3) {
                     // Check that sourceCodeProvider.requestContent won't be called anymore.
                     uiSourceCode.requestContent(function(content)
                     {
-                        InspectorTest.assertEquals("text/javascript", uiSourceCode.highlighterType());
+                        InspectorTest.assertEquals("text/javascript", WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
                         InspectorTest.assertEquals("var x = 0;", content);
                         next();
                     });

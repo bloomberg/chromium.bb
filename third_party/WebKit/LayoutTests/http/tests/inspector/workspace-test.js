@@ -73,7 +73,7 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
 
     function didRequestContent(content, contentEncoded)
     {
-        InspectorTest.addResult("Highlighter type: " + uiSourceCode.highlighterType());
+        InspectorTest.addResult("Highlighter type: " + WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
         InspectorTest.addResult("UISourceCode content: " + content);
         callback();
     }

@@ -13,7 +13,7 @@ function test()
             continue;
         if (uiSourceCode.project().type() !== WebInspector.projectTypes.Network)
             continue;
-        InspectorTest.addResult("Highlight mimeType: " + uiSourceCode.highlighterType());
+        InspectorTest.addResult("Highlight mimeType: " + WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
         InspectorTest.completeTest();
         return;
     }
