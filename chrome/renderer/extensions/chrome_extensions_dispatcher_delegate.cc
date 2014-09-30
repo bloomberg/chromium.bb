@@ -239,6 +239,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);
   source_map->RegisterSource("chromeWebViewExperimental",
                              IDR_CHROME_WEB_VIEW_EXPERIMENTAL_JS);
+  source_map->RegisterSource("webViewRequest",
+                             IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("denyAppView", IDR_APP_VIEW_DENY_JS);
   source_map->RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }

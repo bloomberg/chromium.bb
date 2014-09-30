@@ -95,10 +95,8 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     scoped_refptr<ContentRulesRegistry> content_rules_registry =
         ExtensionsAPIClient::Get()->CreateContentRulesRegistry(
             browser_context_, content_rules_cache_delegate);
-    if (content_rules_registry.get() != nullptr) {
-      RegisterRulesRegistry(content_rules_registry);
-      content_rules_registry_ = content_rules_registry.get();
-    }
+    RegisterRulesRegistry(content_rules_registry);
+    content_rules_registry_ = content_rules_registry.get();
   }
 }
 

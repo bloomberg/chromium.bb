@@ -31,7 +31,6 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_view/web_view_internal_api.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
@@ -131,19 +130,6 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
     *storage_partition_id = partition_str;
     *persist_storage = false;
   }
-}
-
-void RemoveWebViewEventListenersOnIOThread(
-    void* profile,
-    const std::string& extension_id,
-    int embedder_process_id,
-    int view_instance_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
-      profile,
-      extension_id,
-      embedder_process_id,
-      view_instance_id);
 }
 
 }  // namespace
@@ -350,15 +336,8 @@ void WebViewGuest::DidStopLoading() {
 }
 
 void WebViewGuest::EmbedderDestroyed() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &RemoveWebViewEventListenersOnIOThread,
-          browser_context(),
-          embedder_extension_id(),
-          embedder_render_process_id(),
-          view_instance_id()));
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnEmbedderDestroyed();
 }
 
 void WebViewGuest::GuestDestroyed() {

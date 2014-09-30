@@ -34,6 +34,10 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   virtual WebViewPermissionHelperDelegate*
       CreateWebViewPermissionHelperDelegate(
           WebViewPermissionHelper* web_view_permission_helper) const OVERRIDE;
+  virtual scoped_refptr<RulesRegistry> GetRulesRegistry(
+      content::BrowserContext* browser_context,
+      const RulesRegistry::WebViewKey& webview_key,
+      const std::string& event_name) OVERRIDE;
   virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
       const OVERRIDE;
   virtual scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(

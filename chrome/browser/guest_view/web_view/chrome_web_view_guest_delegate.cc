@@ -26,6 +26,19 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
+void RemoveWebViewEventListenersOnIOThread(
+    void* profile,
+    const std::string& extension_id,
+    int embedder_process_id,
+    int view_instance_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
+      profile,
+      extension_id,
+      embedder_process_id,
+      view_instance_id);
+}
+
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     extensions::WebViewGuest* web_view_guest)
     : pending_context_menu_request_id_(0),
@@ -89,6 +102,25 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
       contents,
       scoped_ptr<pdf::PDFWebContentsHelperClient>(
           new ChromePDFWebContentsHelperClient()));
+}
+
+void ChromeWebViewGuestDelegate::OnEmbedderDestroyed() {
+  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
+  // reparenting of a <webview> within a single embedder. Right now, we keep
+  // around the browser state for the listener for the lifetime of the embedder.
+  // Ideally, the lifetime of the listeners should match the lifetime of the
+  // <webview> DOM node. Once http://crbug.com/156219 is resolved we can move
+  // the call to RemoveWebViewEventListenersOnIOThread back to
+  // WebViewGuest::WebContentsDestroyed.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &RemoveWebViewEventListenersOnIOThread,
+          web_view_guest()->browser_context(),
+          web_view_guest()->embedder_extension_id(),
+          web_view_guest()->embedder_render_process_id(),
+          web_view_guest()->view_instance_id()));
 }
 
 void ChromeWebViewGuestDelegate::OnDidAttachToEmbedder() {

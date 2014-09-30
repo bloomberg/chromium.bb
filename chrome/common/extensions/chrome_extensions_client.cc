@@ -267,6 +267,8 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
   api->RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);
   api->RegisterSchemaResource("declarativeContent",
                               IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
+  api->RegisterSchemaResource("declarativeWebRequest",
+                              IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
   api->RegisterSchemaResource("fileBrowserHandler",
                               IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
   api->RegisterSchemaResource("inputMethodPrivate",
@@ -283,6 +285,8 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
   api->RegisterSchemaResource("types.private",
                               IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
   api->RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
+  api->RegisterSchemaResource("webViewRequest",
+                              IDR_EXTENSION_API_JSON_WEB_VIEW_REQUEST);
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 

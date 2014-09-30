@@ -32,6 +32,7 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate,
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void OnAttachWebViewHelpers(content::WebContents* contents) OVERRIDE;
+  virtual void OnEmbedderDestroyed() OVERRIDE;
   virtual void OnDidAttachToEmbedder() OVERRIDE;
   virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) OVERRIDE;
   virtual void OnDidInitialize() OVERRIDE;
