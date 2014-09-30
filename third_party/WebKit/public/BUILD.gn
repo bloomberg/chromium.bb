@@ -52,6 +52,12 @@ config("blink_headers_config") {
   include_dirs = [ ".." ]
 }
 
+config("debug_devtools") {
+  if (debug_devtools) {
+    defines = [ "DEBUG_DEVTOOLS=1" ]
+  }
+}
+
 # Depend on this target to use public blink API headers for things like enums
 # and public structures without actually linking against any Blink libraries.
 source_set("blink_headers") {
