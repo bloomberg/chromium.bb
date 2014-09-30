@@ -94,9 +94,7 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/pdf_metafile_skia.h"
-#include "printing/units.h"
 #include "skia/ext/platform_canvas.h"
-#include "skia/ext/platform_device.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -120,13 +118,9 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_CHROMEOS)
@@ -137,8 +131,6 @@
 #include "base/metrics/histogram.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/gdi_util.h"
 #endif
 
 using base::StringPrintf;
@@ -185,35 +177,6 @@ using blink::WebUserGestureToken;
 using blink::WebView;
 
 namespace content {
-
-#if defined(OS_WIN)
-// Exported by pdf.dll
-typedef bool (*RenderPDFPageToDCProc)(const unsigned char* pdf_buffer,
-                                      int buffer_size,
-                                      int page_number,
-                                      HDC dc,
-                                      int dpi_x,
-                                      int dpi_y,
-                                      int bounds_origin_x,
-                                      int bounds_origin_y,
-                                      int bounds_width,
-                                      int bounds_height,
-                                      bool fit_to_bounds,
-                                      bool stretch_to_bounds,
-                                      bool keep_aspect_ratio,
-                                      bool center_in_bounds,
-                                      bool autorotate);
-
-void DrawEmptyRectangle(HDC dc) {
-  // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
-  // to the EMF, the EnumEnhMetaFile call fails in the browser
-  // process. The failure also happens if we output nothing here.
-  // We need to investigate the reason for this failure and fix it.
-  // In the meantime this temporary hack of drawing an empty
-  // rectangle in the DC gets us by.
-  Rectangle(dc, 0, 0, 0, 0);
-}
-#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -1787,7 +1750,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
 
 bool PepperPluginInstanceImpl::PrintPage(int page_number,
                                          blink::WebCanvas* canvas) {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
@@ -1804,7 +1767,7 @@ bool PepperPluginInstanceImpl::PrintPage(int page_number,
   } else {
     return PrintPageHelper(&page_range, 1, canvas);
   }
-#else  // defined(ENABLED_PRINTING)
+#else  // ENABLE_PRINTING
   return false;
 #endif
 }
@@ -1971,7 +1934,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
 
 bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
                                               blink::WebCanvas* canvas) {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINTING)
   ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
   if (enter.failed())
     return false;
@@ -1981,91 +1944,15 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
     NOTREACHED();
     return false;
   }
-#if defined(OS_WIN)
-  // For Windows, we need the PDF DLL to render the output PDF to a DC.
-  HMODULE pdf_module = GetModuleHandle(L"pdf.dll");
-  if (!pdf_module)
-    return false;
-  RenderPDFPageToDCProc render_proc = reinterpret_cast<RenderPDFPageToDCProc>(
-      GetProcAddress(pdf_module, "RenderPDFPageToDC"));
-  if (!render_proc)
-    return false;
-#endif  // defined(OS_WIN)
 
-  bool ret = false;
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
   printing::PdfMetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
-  DCHECK(metafile != NULL);
   if (metafile)
-    ret = metafile->InitFromData(mapper.data(), mapper.size());
-#elif defined(OS_WIN)
-  printing::PdfMetafileSkia* metafile =
-      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
-  if (metafile) {
-    // We only have a metafile when doing print preview, so we just want to
-    // pass the PDF off to preview.
-    ret = metafile->InitFromData(mapper.data(), mapper.size());
-  } else {
-    // On Windows, we now need to render the PDF to the DC that backs the
-    // supplied canvas.
-    HDC dc = skia::BeginPlatformPaint(canvas);
-    DrawEmptyRectangle(dc);
-    gfx::Size size_in_pixels;
-    size_in_pixels.set_width(
-        printing::ConvertUnit(current_print_settings_.printable_area.size.width,
-                              static_cast<int>(printing::kPointsPerInch),
-                              current_print_settings_.dpi));
-    size_in_pixels.set_height(printing::ConvertUnit(
-        current_print_settings_.printable_area.size.height,
-        static_cast<int>(printing::kPointsPerInch),
-        current_print_settings_.dpi));
-    // We need to scale down DC to fit an entire page into DC available area.
-    // First, we'll try to use default scaling based on the 72dpi that is
-    // used in webkit for printing.
-    // If default scaling is not enough to fit the entire PDF without
-    // Current metafile is based on screen DC and have current screen size.
-    // Writing outside of those boundaries will result in the cut-off output.
-    // On metafiles (this is the case here), scaling down will still record
-    // original coordinates and we'll be able to print in full resolution.
-    // Before playback we'll need to counter the scaling up that will happen
-    // in the browser (printed_document_win.cc).
-    double dynamic_scale = gfx::CalculatePageScale(
-        dc, size_in_pixels.width(), size_in_pixels.height());
-    double page_scale = static_cast<double>(printing::kPointsPerInch) /
-                        static_cast<double>(current_print_settings_.dpi);
+    return metafile->InitFromData(mapper.data(), mapper.size());
 
-    if (dynamic_scale < page_scale) {
-      page_scale = dynamic_scale;
-      printing::MetafileSkiaWrapper::SetCustomScaleOnCanvas(*canvas,
-                                                            page_scale);
-    }
-
-    gfx::ScaleDC(dc, page_scale);
-
-    ret = render_proc(static_cast<unsigned char*>(mapper.data()),
-                      mapper.size(),
-                      0,
-                      dc,
-                      current_print_settings_.dpi,
-                      current_print_settings_.dpi,
-                      0,
-                      0,
-                      size_in_pixels.width(),
-                      size_in_pixels.height(),
-                      true,
-                      false,
-                      true,
-                      true,
-                      true);
-    skia::EndPlatformPaint(canvas);
-  }
-#endif  // defined(OS_WIN)
-
-  return ret;
-#else  // defined(ENABLE_FULL_PRINTING)
+  NOTREACHED();
+#endif  // ENABLE_PRINTING
   return false;
-#endif
 }
 
 void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
