@@ -41,12 +41,18 @@ void ContextMenuHelper::ShowContextMenu(
   if (!content_view_core)
     return;
 
+  base::android::ScopedJavaLocalRef<jobject> jcontent_view_core(
+      content_view_core->GetJavaObject());
+
+  if (jcontent_view_core.is_null())
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   context_menu_params_ = params;
   Java_ContextMenuHelper_showContextMenu(
       env,
       java_obj_.obj(),
-      content_view_core->GetJavaObject().obj(),
+      jcontent_view_core.obj(),
       ContextMenuHelper::CreateJavaContextMenuParams(params).obj());
 }
 
