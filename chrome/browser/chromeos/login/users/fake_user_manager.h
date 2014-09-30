@@ -49,7 +49,7 @@ class FakeUserManager : public ChromeUserManager {
 
   // UserManager overrides.
   virtual const user_manager::UserList& GetUsers() const OVERRIDE;
-  virtual user_manager::UserList GetUsersAdmittedForMultiProfile()
+  virtual user_manager::UserList GetUsersAllowedForMultiProfile()
       const OVERRIDE;
   virtual const user_manager::UserList& GetLoggedInUsers() const OVERRIDE;
 

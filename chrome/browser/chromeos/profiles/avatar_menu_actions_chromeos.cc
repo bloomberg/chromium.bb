@@ -40,7 +40,7 @@ bool AvatarMenuActionsChromeOS::ShouldShowAddNewProfileLink() const {
   // |browser_| can be NULL in unit_tests.
   return (!browser_ || !browser_->profile()->IsSupervised()) &&
          user_manager::UserManager::Get()
-             ->GetUsersAdmittedForMultiProfile()
+             ->GetUsersAllowedForMultiProfile()
              .size();
 }
 

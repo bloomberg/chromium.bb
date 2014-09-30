@@ -560,7 +560,7 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
 
   // Launch sign in screen to add another user to current session.
   if (user_manager::UserManager::Get()
-          ->GetUsersAdmittedForMultiProfile()
+          ->GetUsersAllowedForMultiProfile()
           .size()) {
     // Don't show dialog if any logged in user in multi-profiles session
     // dismissed it.

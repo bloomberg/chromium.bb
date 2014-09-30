@@ -192,7 +192,7 @@ SupervisedUserManager* ChromeUserManagerImpl::GetSupervisedUserManager() {
   return supervised_user_manager_.get();
 }
 
-user_manager::UserList ChromeUserManagerImpl::GetUsersAdmittedForMultiProfile()
+user_manager::UserList ChromeUserManagerImpl::GetUsersAllowedForMultiProfile()
     const {
   // Supervised users are not allowed to use multi-profiles.
   if (GetLoggedInUsers().size() == 1 &&
@@ -1028,7 +1028,7 @@ void ChromeUserManagerImpl::UpdateNumberOfUsers() {
   size_t users = GetLoggedInUsers().size();
   if (users) {
     // Write the user number as UMA stat when a multi user session is possible.
-    if ((users + GetUsersAdmittedForMultiProfile().size()) > 1)
+    if ((users + GetUsersAllowedForMultiProfile().size()) > 1)
       ash::MultiProfileUMA::RecordUserCount(users);
   }
 

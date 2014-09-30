@@ -86,7 +86,7 @@ int SessionStateDelegateChromeos::NumberOfLoggedInUsers() const {
 bool SessionStateDelegateChromeos::CanAddUserToMultiProfile(
     AddUserError* error) const {
   if (user_manager::UserManager::Get()
-          ->GetUsersAdmittedForMultiProfile()
+          ->GetUsersAllowedForMultiProfile()
           .size() == 0) {
     if (error)
       *error = ADD_USER_ERROR_OUT_OF_USERS;

@@ -50,9 +50,8 @@ bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
   // simultaneous users to allow this feature.
   if (!user_manager::UserManager::IsInitialized())
     return false;
-  size_t admitted_users_to_be_added = user_manager::UserManager::Get()
-                                          ->GetUsersAdmittedForMultiProfile()
-                                          .size();
+  size_t admitted_users_to_be_added =
+      user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile().size();
   size_t logged_in_users =
       user_manager::UserManager::Get()->GetLoggedInUsers().size();
   if (!logged_in_users) {

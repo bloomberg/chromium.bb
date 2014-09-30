@@ -584,7 +584,7 @@ void LoginDisplayHostImpl::StartUserAdding(
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
   SetStatusAreaVisible(true);
   sign_in_controller_->Init(
-      user_manager::UserManager::Get()->GetUsersAdmittedForMultiProfile());
+      user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
   CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(LoginScreenContext(),
                                 webui_login_display_,

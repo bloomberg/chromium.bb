@@ -76,7 +76,7 @@ class ChromeUserManagerImpl
 
   // UserManager implementation:
   virtual void Shutdown() OVERRIDE;
-  virtual user_manager::UserList GetUsersAdmittedForMultiProfile()
+  virtual user_manager::UserList GetUsersAllowedForMultiProfile()
       const OVERRIDE;
   virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
   virtual void SessionStarted() OVERRIDE;

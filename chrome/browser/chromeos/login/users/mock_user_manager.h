@@ -26,7 +26,7 @@ class MockUserManager : public ChromeUserManager {
   virtual ~MockUserManager();
 
   MOCK_METHOD0(Shutdown, void(void));
-  MOCK_CONST_METHOD0(GetUsersAdmittedForMultiProfile,
+  MOCK_CONST_METHOD0(GetUsersAllowedForMultiProfile,
                      user_manager::UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const user_manager::UserList&(void));
   MOCK_CONST_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));

@@ -101,8 +101,7 @@ const user_manager::UserList& FakeUserManager::GetUsers() const {
   return user_list_;
 }
 
-user_manager::UserList FakeUserManager::GetUsersAdmittedForMultiProfile()
-    const {
+user_manager::UserList FakeUserManager::GetUsersAllowedForMultiProfile() const {
   user_manager::UserList result;
   for (user_manager::UserList::const_iterator it = user_list_.begin();
        it != user_list_.end();
