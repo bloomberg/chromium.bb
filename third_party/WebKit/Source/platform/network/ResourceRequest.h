@@ -191,6 +191,15 @@ public:
     blink::WebURLRequest::FrameType frameType() const { return m_frameType; }
     void setFrameType(blink::WebURLRequest::FrameType frameType) { m_frameType = frameType; }
 
+    blink::WebURLRequest::FetchRequestMode fetchRequestMode() const
+    {
+        return m_fetchRequestMode;
+    }
+    void setFetchRequestMode(blink::WebURLRequest::FetchRequestMode mode)
+    {
+        m_fetchRequestMode = mode;
+    }
+
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
     bool hasCacheValidatorFields() const;
@@ -226,6 +235,7 @@ private:
     RefPtr<ExtraData> m_extraData;
     blink::WebURLRequest::RequestContext m_requestContext;
     blink::WebURLRequest::FrameType m_frameType;
+    blink::WebURLRequest::FetchRequestMode m_fetchRequestMode;
     ReferrerPolicy m_referrerPolicy;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
@@ -263,6 +273,7 @@ public:
     int m_appCacheHostID;
     blink::WebURLRequest::RequestContext m_requestContext;
     blink::WebURLRequest::FrameType m_frameType;
+    blink::WebURLRequest::FetchRequestMode m_fetchRequestMode;
     ReferrerPolicy m_referrerPolicy;
 };
 

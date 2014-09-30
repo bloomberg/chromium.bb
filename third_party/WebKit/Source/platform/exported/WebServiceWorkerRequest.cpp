@@ -14,12 +14,16 @@ namespace blink {
 class WebServiceWorkerRequestPrivate : public RefCounted<WebServiceWorkerRequestPrivate> {
 public:
     WebServiceWorkerRequestPrivate()
-        : m_isReload(false) { }
+        : m_mode(WebURLRequest::FetchRequestModeNoCORS)
+        , m_isReload(false)
+    {
+    }
     WebURL m_url;
     WebString m_method;
     HTTPHeaderMap m_headers;
     RefPtr<BlobDataHandle> blobDataHandle;
     Referrer m_referrer;
+    WebURLRequest::FetchRequestMode m_mode;
     bool m_isReload;
 };
 
@@ -113,6 +117,16 @@ WebReferrerPolicy WebServiceWorkerRequest::referrerPolicy() const
 const Referrer& WebServiceWorkerRequest::referrer() const
 {
     return m_private->m_referrer;
+}
+
+void WebServiceWorkerRequest::setMode(WebURLRequest::FetchRequestMode mode)
+{
+    m_private->m_mode = mode;
+}
+
+WebURLRequest::FetchRequestMode WebServiceWorkerRequest::mode() const
+{
+    return m_private->m_mode;
 }
 
 void WebServiceWorkerRequest::setIsReload(bool isReload)

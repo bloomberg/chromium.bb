@@ -36,6 +36,8 @@ public:
     // immutable to the user after Response creation. Headers are copied.
     static Response* create(const Response&);
 
+    const FetchResponseData* response() const { return m_response; }
+
     String type() const;
     String url() const;
     unsigned short status() const;

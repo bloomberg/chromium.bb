@@ -312,6 +312,16 @@ void WebURLRequest::setSkipServiceWorker(bool skipServiceWorker)
     m_private->m_resourceRequest->setSkipServiceWorker(skipServiceWorker);
 }
 
+WebURLRequest::FetchRequestMode WebURLRequest::fetchRequestMode() const
+{
+    return m_private->m_resourceRequest->fetchRequestMode();
+}
+
+void WebURLRequest::setFetchRequestMode(WebURLRequest::FetchRequestMode mode)
+{
+    return m_private->m_resourceRequest->setFetchRequestMode(mode);
+}
+
 WebURLRequest::ExtraData* WebURLRequest::extraData() const
 {
     RefPtr<ResourceRequest::ExtraData> data = m_private->m_resourceRequest->extraData();

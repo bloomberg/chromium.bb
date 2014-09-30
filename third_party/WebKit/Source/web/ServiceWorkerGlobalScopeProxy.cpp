@@ -84,7 +84,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
     ASSERT(m_workerGlobalScope);
-    RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
+    RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID, webRequest.mode());
     if (!RuntimeEnabledFeatures::serviceWorkerOnFetchEnabled()) {
         observer->didDispatchEvent();
         return;

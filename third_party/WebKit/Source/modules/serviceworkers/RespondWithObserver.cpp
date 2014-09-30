@@ -63,9 +63,9 @@ private:
     ResolveType m_resolveType;
 };
 
-RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID)
+RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode)
 {
-    return new RespondWithObserver(context, eventID);
+    return new RespondWithObserver(context, eventID, requestMode);
 }
 
 void RespondWithObserver::contextDestroyed()
@@ -114,15 +114,24 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         responseWasRejected();
         return;
     }
+    Response* response = V8Response::toImplWithTypeCheck(toIsolate(executionContext()), value.v8Value());
+    // "If either |response|'s type is |opaque| and |request|'s mode is not
+    // |no CORS| or |response|'s type is |error|, return a network error."
+    const FetchResponseData::Type responseType = response->response()->type();
+    if ((responseType == FetchResponseData::OpaqueType && m_requestMode != WebURLRequest::FetchRequestModeNoCORS) || responseType == FetchResponseData::ErrorType) {
+        responseWasRejected();
+        return;
+    }
     WebServiceWorkerResponse webResponse;
-    V8Response::toImplWithTypeCheck(toIsolate(executionContext()), value.v8Value())->populateWebServiceWorkerResponse(webResponse);
+    response->populateWebServiceWorkerResponse(webResponse);
     ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
     m_state = Done;
 }
 
-RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID)
+RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode)
     : ContextLifecycleObserver(context)
     , m_eventID(eventID)
+    , m_requestMode(requestMode)
     , m_state(Initial)
 {
 }

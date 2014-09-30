@@ -7,6 +7,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -22,7 +23,7 @@ class ScriptValue;
 // notifies the client.
 class RespondWithObserver FINAL : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
 public:
-    static RespondWithObserver* create(ExecutionContext*, int eventID);
+    static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode);
 
     virtual void contextDestroyed() OVERRIDE;
 
@@ -40,9 +41,10 @@ public:
 private:
     class ThenFunction;
 
-    RespondWithObserver(ExecutionContext*, int eventID);
+    RespondWithObserver(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode);
 
     int m_eventID;
+    WebURLRequest::FetchRequestMode m_requestMode;
 
     enum State { Initial, Pending, Done };
     State m_state;

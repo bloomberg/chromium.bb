@@ -56,6 +56,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setAppCacheHostID(data->m_appCacheHostID);
     request->setRequestContext(data->m_requestContext);
     request->setFrameType(data->m_frameType);
+    request->setFetchRequestMode(data->m_fetchRequestMode);
     request->m_referrerPolicy = data->m_referrerPolicy;
     return request.release();
 }
@@ -84,6 +85,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_appCacheHostID = m_appCacheHostID;
     data->m_requestContext = m_requestContext;
     data->m_frameType = m_frameType;
+    data->m_fetchRequestMode = m_fetchRequestMode;
     data->m_referrerPolicy = m_referrerPolicy;
     return data.release();
 }
@@ -405,6 +407,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_appCacheHostID = 0;
     m_requestContext = blink::WebURLRequest::RequestContextUnspecified;
     m_frameType = blink::WebURLRequest::FrameTypeNone;
+    m_fetchRequestMode = blink::WebURLRequest::FetchRequestModeNoCORS;
     m_referrerPolicy = ReferrerPolicyDefault;
 }
 
