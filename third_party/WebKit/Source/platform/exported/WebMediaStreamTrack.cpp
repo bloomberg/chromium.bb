@@ -86,6 +86,12 @@ bool WebMediaStreamTrack::isEnabled() const
     return m_private->enabled();
 }
 
+bool WebMediaStreamTrack::isMuted() const
+{
+    ASSERT(!m_private.isNull());
+    return m_private->muted();
+}
+
 WebString WebMediaStreamTrack::id() const
 {
     ASSERT(!m_private.isNull());

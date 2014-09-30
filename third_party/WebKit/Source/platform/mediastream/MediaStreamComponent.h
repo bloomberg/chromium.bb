@@ -60,6 +60,7 @@ public:
     bool enabled() const { return m_enabled; }
     void setEnabled(bool enabled) { m_enabled = enabled; }
     bool muted() const { return m_muted; }
+    void setMuted(bool muted) { m_muted = muted; }
 
 #if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }

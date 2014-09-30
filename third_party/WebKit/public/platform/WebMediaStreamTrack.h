@@ -66,6 +66,7 @@ public:
 
     BLINK_PLATFORM_EXPORT WebMediaStreamSource source() const;
     BLINK_PLATFORM_EXPORT bool isEnabled() const;
+    BLINK_PLATFORM_EXPORT bool isMuted() const;
 
     // Extra data associated with this WebMediaStream.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
