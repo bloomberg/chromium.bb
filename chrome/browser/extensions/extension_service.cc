@@ -1008,7 +1008,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // TODO(kalman): Convert ExtensionSpecialStoragePolicy to a
   // BrowserContextKeyedService and use ExtensionRegistryObserver.
   profile_->GetExtensionSpecialStoragePolicy()->
-      GrantRightsForExtension(extension);
+      GrantRightsForExtension(extension, profile_);
 
   // TODO(kalman): This is broken. The crash reporter is process-wide so doesn't
   // work properly multi-profile. Besides which, it should be using
