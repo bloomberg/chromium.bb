@@ -51,12 +51,12 @@ ServiceWorkerClients::ServiceWorkerClients()
 {
 }
 
-ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const ServiceWorkerClientQueryParams& options)
+ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const ServiceWorkerClientQueryOptions& options)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    if (options.hasIncludeUncontrolled() && options.includeUncontrolled()) {
+    if (options.includeUncontrolled()) {
         // FIXME: Currently we don't support includeUncontrolled=true.
         resolver->reject(DOMException::create(NotSupportedError, "includeUncontrolled parameter of getAll is not supported."));
         return promise;

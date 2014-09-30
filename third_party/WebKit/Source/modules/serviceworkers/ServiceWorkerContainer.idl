@@ -36,6 +36,6 @@
     [Unforgeable] readonly attribute ServiceWorker? controller;
     [CallWith=ScriptState] readonly attribute Promise ready;
 
-    [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(ScalarValueString url, optional RegistrationOptionList options);
+    [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(ScalarValueString url, optional RegistrationOptions options);
     [CallWith=ScriptState] Promise getRegistration(optional ScalarValueString documentURL = "");
 };

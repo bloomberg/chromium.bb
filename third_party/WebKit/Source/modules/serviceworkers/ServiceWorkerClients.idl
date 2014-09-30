@@ -8,5 +8,5 @@
     RuntimeEnabled=ServiceWorker,
     GarbageCollected,
 ] interface ServiceWorkerClients {
-    [CallWith=ScriptState] Promise getAll(optional ServiceWorkerClientQueryParams options);
+    [CallWith=ScriptState] Promise getAll(optional ServiceWorkerClientQueryOptions options);
 };

@@ -177,7 +177,7 @@ protected:
 
         ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
         ScriptState::Scope scriptScope(scriptState());
-        RegistrationOptionList* options = RegistrationOptionList::create();
+        RegistrationOptions* options = RegistrationOptions::create();
         options->setScope(scope);
         ScriptPromise promise = container->registerServiceWorker(scriptState(), scriptURL, *options);
         expectRejected(scriptState(), promise, valueTest);
@@ -318,7 +318,7 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
     // register
     {
         ScriptState::Scope scriptScope(scriptState());
-        RegistrationOptionList* options = RegistrationOptionList::create();
+        RegistrationOptions* options = RegistrationOptions::create();
         options->setScope("y/");
         container->registerServiceWorker(scriptState(), "/z/worker.js", *options);
 

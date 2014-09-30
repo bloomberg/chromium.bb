@@ -5,7 +5,6 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#serviceworker-client-query-params-dictionary
 [
     GarbageCollected
-] dictionary ServiceWorkerClientQueryParams {
-    // FIXME: Specify defaults. https://github.com/slightlyoff/ServiceWorker/issues/466
-    boolean includeUncontrolled;
+] dictionary ServiceWorkerClientQueryOptions {
+    boolean includeUncontrolled = false;
 };

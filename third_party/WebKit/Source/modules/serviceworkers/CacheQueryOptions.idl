@@ -5,11 +5,10 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache
 [
     GarbageCollected
-] dictionary QueryParams {
-    // FIXME: Specify defaults. https://github.com/slightlyoff/ServiceWorker/issues/466
-    boolean ignoreSearch;
-    boolean ignoreMethod;
-    boolean ignoreVary;
-    boolean prefixMatch;
+] dictionary CacheQueryOptions {
+    boolean ignoreSearch = false;
+    boolean ignoreMethod = false;
+    boolean ignoreVary = false;
+    boolean prefixMatch = false;
     DOMString cacheName;
 };

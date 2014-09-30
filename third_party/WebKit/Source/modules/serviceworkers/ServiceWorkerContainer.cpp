@@ -100,7 +100,7 @@ void ServiceWorkerContainer::trace(Visitor* visitor)
     visitor->trace(m_ready);
 }
 
-ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptionList& options)
+ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptions& options)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

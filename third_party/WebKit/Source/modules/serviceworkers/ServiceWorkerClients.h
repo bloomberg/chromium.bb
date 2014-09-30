@@ -6,7 +6,7 @@
 #define ServiceWorkerClients_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/ServiceWorkerClientQueryParams.h"
+#include "modules/serviceworkers/ServiceWorkerClientQueryOptions.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "wtf/Forward.h"
@@ -24,7 +24,7 @@ public:
     static ServiceWorkerClients* create();
 
     // ServiceWorkerClients.idl
-    ScriptPromise getAll(ScriptState*, const ServiceWorkerClientQueryParams&);
+    ScriptPromise getAll(ScriptState*, const ServiceWorkerClientQueryOptions&);
 
     void trace(Visitor*) { }
 

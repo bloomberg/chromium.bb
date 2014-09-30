@@ -11,13 +11,13 @@
 ] interface Cache {
   // FIXME: Blink doesn't support union types, we use overrides instead. See http://crbug.com/240176
 
-  // [CallWith=ScriptState] Promise match((Request or ScalarValueString) request, optional QueryParams queryParams);
-  [CallWith=ScriptState] Promise match(Request request, optional QueryParams queryParams);
-  [CallWith=ScriptState] Promise match(ScalarValueString request, optional QueryParams queryParams);
+  // [CallWith=ScriptState] Promise match((Request or ScalarValueString) request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise match(Request request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise match(ScalarValueString request, optional CacheQueryOptions options);
 
-  // [CallWith=ScriptState] Promise matchAll((Request or ScalarValueString) request, optional QueryParams queryParams);
-  [CallWith=ScriptState] Promise matchAll(Request request, optional QueryParams queryParams);
-  [CallWith=ScriptState] Promise matchAll(ScalarValueString request, optional QueryParams queryParams);
+  // [CallWith=ScriptState] Promise matchAll((Request or ScalarValueString) request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise matchAll(Request request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise matchAll(ScalarValueString request, optional CacheQueryOptions options);
 
   // [CallWith=ScriptState] Promise add((Request or ScalarValueString) request);
   [CallWith=ScriptState] Promise add(Request request);
@@ -32,11 +32,11 @@
   [CallWith=ScriptState] Promise put(Request request, Response response);
   [CallWith=ScriptState] Promise put(ScalarValueString request, Response response);
 
-  // [CallWith=ScriptState] Promise delete((Request or ScalarValueString) request, optional QueryParams queryParams);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(Request request, optional QueryParams queryParams);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString request, optional QueryParams queryParams);
+  // [CallWith=ScriptState] Promise delete((Request or ScalarValueString) request, optional CacheQueryOptions options);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(Request request, optional CacheQueryOptions options);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString request, optional CacheQueryOptions options);
 
-  // [CallWith=ScriptState] Promise keys(optional (Request or ScalarValueString) request, optional QueryParams queryParams);
-  [CallWith=ScriptState] Promise keys(optional Request request, optional QueryParams queryParams);
-  [CallWith=ScriptState] Promise keys(ScalarValueString request, optional QueryParams queryParams);
+  // [CallWith=ScriptState] Promise keys(optional (Request or ScalarValueString) request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise keys(optional Request request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise keys(ScalarValueString request, optional CacheQueryOptions options);
 };
