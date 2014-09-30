@@ -56,6 +56,20 @@ td:hover .note{
 .test-skip {
     background-color:rgb(255,255,255);
 }
+.test-run {
+    background-color:rgb(255,252,108);
+}
+.log {
+    font-family: "Courier New"
+}
+.stdio-href {
+    color: grey;
+    font-weight: bold;
+    text-decoration: underline;
+}
+.stdio-href:hover {
+    color:black;
+}
 </style>
 <script>
 var g_state;
@@ -137,8 +151,29 @@ function getTests()
 function rerun()
 {
     var log = document.getElementById('log');
-    log.innerHTML = 'Re running tests again';
-    var testList = getTests()
+    var testList = JSON.stringify(getTests());
+    var logText = document.createElement('p');
+    logText.innerHTML = 'Re running the tests';
+    logText.className = 'test-run';
+    var stdioIframe = document.createElement("IFRAME");
+    stdioIframe.style.display = 'none';
+    stdioIframe.width = window.innerWidth;
+    stdioIframe.onload = function () {
+            stdioIframe.contentWindow.scrollTo(0,stdioIframe.contentWindow.document.body.scrollHeight);
+    }
+    var stdio = document.createElement("a");
+    stdio.innerHTML = '<p>stdio<p>';
+    stdio.className = 'stdio-href';
+    stdio.onclick = function() {
+        if(stdioIframe.style.display == 'none')
+            stdioIframe.style.display = 'block';
+        else
+            stdioIframe.style.display = 'none';
+
+    };
+    log.appendChild(logText);
+    log.appendChild(stdio);
+    log.appendChild(stdioIframe);
     if (testList == '')
         alert('Please select atlest one Test');
     else {
@@ -146,14 +181,22 @@ function rerun()
         var url ='http://localhost:9630/';
         xmlhttp.open('POST', url, true);
         xmlhttp.onerror = function() {
+            logText.innerHTML = 'Please run the server using "webkit-patch layout-test-server"';
+            logText.className = 'test-fail';
             alert('Server offline');
         }
         xmlhttp.setRequestHeader("Content-type", "application/json");
         xmlhttp.onreadystatechange = function() {
-            if(xmlhttp.readyState > 0)
-                document.body.innerHTML = xmlhttp.responseText;
+            if(xmlhttp.readyState > 0) {
+                stdioIframe.srcdoc = xmlhttp.responseText;
+            }
+            if(xmlhttp.readyState == 4) {
+                logText.innerHTML = 'Tests Re-run done Reloading this page';
+                logText.className = 'test-pass';
+                location.reload();
+            }
         }
-        xmlhttp.send(JSON.stringify(getTests()));
+        xmlhttp.send(testList);
     }
 }
 function checkalltests()
@@ -188,7 +231,7 @@ function generatePage()
 <script src="resources/archived-results-dashboard-test.js"></script>
 <body onload="generatePage()">
     <h1>Dashboard</h1>
-    <p id=log></p>
+    <div id=log class="log"></div>
     <p><button onclick="rerun()">Re Run Tests</button></p>
 </body>
 </html>
