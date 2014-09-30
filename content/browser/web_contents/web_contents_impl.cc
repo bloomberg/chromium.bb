@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -3630,42 +3629,8 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 }
 
 void WebContentsImpl::UpdateState(RenderViewHost* rvh,
-                                  int32 rvh_page_id,
                                   int32 page_id,
                                   const PageState& page_state) {
-  if (rvh_page_id != page_id) {
-    base::debug::SetCrashKeyValue("renderer_page_id",
-                                  base::IntToString(page_id));
-    base::debug::SetCrashKeyValue("browser_page_id",
-                                  base::IntToString(rvh_page_id));
-    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-        controller_.GetLastCommittedEntry());
-    // The question being answered here is: when there is a page id mismatch
-    // between the renderer and the browser, which value (if either) matches
-    // that of the last committed entry?
-    if (entry) {
-      if (entry->site_instance() == rvh->GetSiteInstance()) {
-        base::debug::SetCrashKeyValue("last_committed_page_id",
-                                      base::IntToString(entry->GetPageID()));
-      } else {
-        base::debug::SetCrashKeyValue("last_committed_page_id",
-                                      "site instance mismatch");
-      }
-    } else {
-      base::debug::SetCrashKeyValue("last_committed_page_id", "no entry");
-    }
-    // The question being answered here is: when there is a page id mismatch
-    // between the renderer and the browser, was the WebContents going to throw
-    // out the message anyway?
-    if (rvh != GetRenderViewHost() &&
-        !GetRenderManager()->IsRVHOnSwappedOutList(
-            static_cast<RenderViewHostImpl*>(rvh))) {
-      base::debug::SetCrashKeyValue("quick_discard", "yes");
-    } else {
-      base::debug::SetCrashKeyValue("quick_discard", "no");
-    }
-    CHECK(false);
-  }
   // Ensure that this state update comes from either the active RVH or one of
   // the swapped out RVHs.  We don't expect to hear from any other RVHs.
   // TODO(nasko): This should go through RenderFrameHost.
