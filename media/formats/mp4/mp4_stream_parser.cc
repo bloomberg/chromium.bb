@@ -22,8 +22,7 @@
 namespace media {
 namespace mp4 {
 
-// TODO(xhwang): Figure out the init data type appropriately once it's spec'ed.
-static const char kMp4InitDataType[] = "video/mp4";
+static const char kCencInitDataType[] = "cenc";
 
 MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
                                  bool has_sbr)
@@ -354,7 +353,7 @@ void MP4StreamParser::EmitNeedKeyIfNecessary(
            headers[i].raw_box.size());
     pos += headers[i].raw_box.size();
   }
-  need_key_cb_.Run(kMp4InitDataType, init_data);
+  need_key_cb_.Run(kCencInitDataType, init_data);
 }
 
 bool MP4StreamParser::PrepareAVCBuffer(

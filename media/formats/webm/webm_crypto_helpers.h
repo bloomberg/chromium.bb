@@ -11,10 +11,7 @@
 
 namespace media {
 
-// TODO(xhwang): Figure out the init data type appropriately once it's spec'ed.
-// See https://www.w3.org/Bugs/Public/show_bug.cgi?id=19096 for more
-// information.
-const char kWebMEncryptInitDataType[] = "video/webm";
+const char kWebMEncryptInitDataType[] = "webm";
 
 // Fills an initialized DecryptConfig, which can be sent to the Decryptor if
 // the stream has potentially encrypted frames. Also sets |data_offset| which

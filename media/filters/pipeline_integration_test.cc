@@ -29,6 +29,7 @@ using testing::SaveArg;
 namespace media {
 
 const char kSourceId[] = "SourceId";
+const char kCencInitDataType[] = "cenc";
 const uint8 kInitData[] = { 0x69, 0x6e, 0x69, 0x74 };
 
 const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
@@ -36,8 +37,6 @@ const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
 const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
 const char kOpusAudioOnlyWebM[] = "video/webm; codecs=\"opus\"";
 const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
-const char kMP4VideoType[] = "video/mp4";
-const char kMP4AudioType[] = "audio/mp4";
 #if defined(USE_PROPRIETARY_CODECS)
 const char kADTS[] = "audio/aac";
 const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
@@ -267,7 +266,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     // correct key ID.
     const uint8* key_id = init_data.empty() ? NULL : &init_data[0];
     size_t key_id_length = init_data.size();
-    if (type == kMP4AudioType || type == kMP4VideoType) {
+    if (type == kCencInitDataType) {
       key_id = kKeyId;
       key_id_length = arraysize(kKeyId);
     }

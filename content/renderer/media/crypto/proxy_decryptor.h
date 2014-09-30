@@ -72,7 +72,7 @@ class ProxyDecryptor {
                      const GURL& security_origin);
 
   // May only be called after InitializeCDM() succeeds.
-  bool GenerateKeyRequest(const std::string& type,
+  bool GenerateKeyRequest(const std::string& init_data_type,
                           const uint8* init_data,
                           int init_data_length);
   void AddKey(const uint8* key, int key_length,
