@@ -11,6 +11,8 @@ import re
 import subprocess
 import sys
 import tempfile
+
+import build.inputs
 import processor
 
 
@@ -168,7 +170,7 @@ class Checker(object):
             and its output (as a string).
     """
     depends = depends or []
-    externs = externs or []
+    externs = externs or set()
 
     if not self._check_java_path():
       return 1, ""
@@ -233,7 +235,11 @@ if __name__ == "__main__":
 
   checker = Checker(verbose=opts.verbose)
   for source in opts.sources:
-    exit, _ = checker.check(source, depends=opts.depends, externs=opts.externs)
+    depends, externs = build.inputs.resolve_recursive_dependencies(
+        source,
+        opts.depends,
+        opts.externs)
+    exit, _ = checker.check(source, depends=depends, externs=externs)
     if exit != 0:
       sys.exit(exit)
 

@@ -8,7 +8,7 @@
       'variables': {
         'depends': [
           '../../../../ui/webui/resources/js/cr.js',
-          '../../../../ui/webui/resources/js/load_time_data.js',
+          '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/util.js',
         ],
         'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
@@ -20,7 +20,7 @@
       'variables': {
         'depends': [
           '../../../../ui/webui/resources/js/cr.js',
-          '../../../../ui/webui/resources/js/load_time_data.js',
+          '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/util.js',
           'uber_utils.js',
         ],

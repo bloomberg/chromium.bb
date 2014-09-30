@@ -8,7 +8,7 @@
       'variables': {
         'depends': [
           '../cr.js',
-          '../load_time_data.js'
+          '../compiled_resources.gyp:load_time_data',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
