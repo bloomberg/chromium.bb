@@ -5,7 +5,9 @@
 
 # This script does some preparations before build of instrumented libasound2.
 
-libtoolize --force --copy
+# Instructions from the INSTALL file.
+libtoolize --force --copy --automake
 aclocal
+autoheader
 autoconf
-automake
+automake --foreign --copy --add-missing
