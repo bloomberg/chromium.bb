@@ -242,14 +242,10 @@ nacl_exception_context_get_portable(struct NaClExceptionContext *context) {
 typedef void (*nacl_exception_handler_t)(struct NaClExceptionContext *context);
 
 /*
- * The following functions return 0 on success or an errno value on
- * failure.
- */
-
-/*
  * Set the exception handler function.  This applies to all threads in
  * the process.  In this regard, this API is similar to signal() or
  * sigaction() in POSIX.
+ * @return 0 on success. A positive errno value on error.
  */
 int nacl_exception_set_handler(nacl_exception_handler_t handler);
 
@@ -257,6 +253,7 @@ int nacl_exception_set_handler(nacl_exception_handler_t handler);
  * Set the stack that the exception handler will run on.  This applies
  * to the current thread only.  This API is similar to sigaltstack()
  * in POSIX.
+ * @return 0 on success. A positive errno value on error.
  */
 int nacl_exception_set_stack(void *stack, size_t size);
 
@@ -272,6 +269,7 @@ int nacl_exception_set_stack(void *stack, size_t size);
  *
  * The exception flag is similar to signal masks in POSIX.
  * nacl_exception_clear_flag() is similar to sigprocmask() in POSIX.
+ * @return 0 on success. A positive errno value on error.
  */
 int nacl_exception_clear_flag(void);
 
