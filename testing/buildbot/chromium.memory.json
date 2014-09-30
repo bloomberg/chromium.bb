@@ -1,54 +1,94 @@
 {
   "Linux ASan LSan Tests (1)": {
     "gtest_tests": [
+      "accessibility_unittests",
+      "app_shell_browsertests",
       "base_unittests",
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        }
+      },
       "cacheinvalidation_unittests",
+      "cast_unittests",
+      "cc_unittests",
+      "components_unittests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "device_unittests",
+      "display_unittests",
       "gcm_unit_tests",
+      "gfx_unittests",
+      "google_apis_unittests",
       "gpu_unittests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "ipc_tests",
       "jingle_unittests",
+      "media_unittests",
       "net_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
       "sandbox_linux_unittests",
-      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_unittests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "url_unittests"
     ]
   },
   "Linux ASan LSan Tests (2)": {
     "gtest_tests": [
-      "accessibility_unittests",
-      "app_shell_browsertests",
-      "cast_unittests",
-      "content_unittests",
-      "display_unittests",
-      "gfx_unittests",
-      "google_apis_unittests",
-      "ipc_tests",
-      "media_unittests",
-      "ppapi_unittests",
-      "printing_unittests",
-      "remoting_unittests",
-      "sql_unittests",
-      "sync_unit_tests",
-      "ui_unittests",
-      "unit_tests",
-      "url_unittests",
-      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
   "Linux ASan LSan Tests (3)": {
     "gtest_tests": [
-      "cc_unittests",
-      "components_unittests",
-      "content_browsertests",
-      "interactive_ui_tests",
-      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
   "Linux ASan Tests (sandboxed)": {
     "gtest_tests": [
-      "browser_tests",
-      "content_browsertests",
-      "interactive_ui_tests"
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        }
+      },
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      }
     ]
   }
 }
