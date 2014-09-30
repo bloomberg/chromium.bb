@@ -299,8 +299,24 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     m_webView->setMainFrame(m_mainFrame);
     m_webView->setDevToolsAgentClient(this);
 
-    WebLocalFrameImpl* webFrame = toWebLocalFrameImpl(m_webView->mainFrame());
+    // If we were asked to wait for debugger then it is the good time to do that.
+    // However if we are updating service worker version (m_pauseAfterDownloadState is set)
+    // Then we need to load the worker script to check the version, so in this case we wait for debugger
+    // later in ::resumeAfterDownload().
+    if (m_pauseAfterDownloadState != DoPauseAfterDownload) {
+        m_workerContextClient->workerReadyForInspection();
+        if (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger) {
+            m_waitingForDebuggerState = WaitingForDebuggerBeforeLoadingScript;
+            return;
+        }
+    }
 
+    loadShadowPage();
+}
+
+void WebEmbeddedWorkerImpl::loadShadowPage()
+{
+    WebLocalFrameImpl* webFrame = toWebLocalFrameImpl(m_webView->mainFrame());
     // Construct substitute data source for the 'shadow page'. We only need it
     // to have same origin as the worker so the loading checks work correctly.
     CString content("");
@@ -319,18 +335,16 @@ void WebEmbeddedWorkerImpl::willSendRequest(
 
 void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
 {
-    // If we were asked to wait for debugger then it is the good time to do that.
-    // However if we are updating service worker version (m_pauseAfterDownloadState is set)
-    // Then we need to load the worker script to check the version, so in this case we wait for debugger
-    // later in ::resumeAfterDownload().
-    if (m_pauseAfterDownloadState != DoPauseAfterDownload) {
-        m_workerContextClient->workerReadyForInspection();
-        if (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger) {
-            m_waitingForDebuggerState = WaitingForDebuggerBeforeLoadingScript;
-            return;
-        }
-    }
-    startScriptLoader(frame);
+    ASSERT(!m_mainScriptLoader);
+    ASSERT(!m_networkProvider);
+    ASSERT(m_mainFrame);
+    ASSERT(m_workerContextClient);
+    m_networkProvider = adoptPtr(m_workerContextClient->createServiceWorkerNetworkProvider(frame->dataSource()));
+    m_mainScriptLoader = Loader::create();
+    m_mainScriptLoader->load(
+        toWebLocalFrameImpl(m_mainFrame)->frame()->document(),
+        m_workerStartData.scriptURL,
+        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
 }
 
 void WebEmbeddedWorkerImpl::sendMessageToInspectorFrontend(const WebString& message)
@@ -343,7 +357,7 @@ void WebEmbeddedWorkerImpl::resumeStartup()
     WaitingForDebuggerState waitingForDebuggerState = m_waitingForDebuggerState;
     m_waitingForDebuggerState = NotWaitingForDebugger;
     if (waitingForDebuggerState == WaitingForDebuggerBeforeLoadingScript)
-        startScriptLoader(toWebLocalFrameImpl(m_mainFrame));
+        loadShadowPage();
     else if (waitingForDebuggerState == WaitingForDebuggerAfterScriptLoaded)
         startWorkerThread();
 }
@@ -351,20 +365,6 @@ void WebEmbeddedWorkerImpl::resumeStartup()
 void WebEmbeddedWorkerImpl::saveAgentRuntimeState(const WebString& inspectorState)
 {
     m_workerContextClient->saveDevToolsAgentState(inspectorState);
-}
-
-void WebEmbeddedWorkerImpl::startScriptLoader(WebLocalFrame* frame)
-{
-    ASSERT(!m_mainScriptLoader);
-    ASSERT(!m_networkProvider);
-    ASSERT(m_mainFrame);
-    ASSERT(m_workerContextClient);
-    m_networkProvider = adoptPtr(m_workerContextClient->createServiceWorkerNetworkProvider(frame->dataSource()));
-    m_mainScriptLoader = Loader::create();
-    m_mainScriptLoader->load(
-        toWebLocalFrameImpl(m_mainFrame)->frame()->document(),
-        m_workerStartData.scriptURL,
-        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
 }
 
 void WebEmbeddedWorkerImpl::onScriptLoaderFinished()

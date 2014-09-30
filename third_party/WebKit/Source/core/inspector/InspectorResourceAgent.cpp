@@ -318,6 +318,8 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     // Ignore the request initiated internally.
     if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
+    if (loader && loader->substituteData().isValid())
+        return;
 
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
@@ -374,6 +376,9 @@ bool isResponseEmpty(PassRefPtr<TypeBuilder::Network::Response> response)
 
 void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
+    if (loader && loader->substituteData().isValid())
+        return;
+
     String requestId = IdentifiersFactory::requestId(identifier);
     RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response, loader);
 

@@ -79,6 +79,7 @@ private:
     class LoaderProxy;
 
     void prepareShadowPageForLoader();
+    void loadShadowPage();
 
     // WebFrameClient overrides.
     virtual void willSendRequest(
@@ -91,7 +92,6 @@ private:
     virtual void saveAgentRuntimeState(const WebString&) OVERRIDE;
     virtual void resumeStartup() OVERRIDE;
 
-    void startScriptLoader(WebLocalFrame*);
     void onScriptLoaderFinished();
     void startWorkerThread();
 

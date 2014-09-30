@@ -125,9 +125,9 @@ private:
     void stopWorkerThread();
 
     // Creates the shadow loader used for worker network requests.
-    void initializeLoader(const WebURL&);
+    void initializeLoader();
 
-    void startScriptLoader(WebLocalFrame*);
+    void loadShadowPage();
     void didReceiveScriptLoaderResponse();
     void onScriptLoaderFinished();
 
