@@ -14,10 +14,18 @@ struct WebCredentialManagerError {
     // list as the API evolves.
     enum ErrorType {
         ErrorTypeDisabled = 0,
+        ErrorTypePendingRequest,
+        ErrorTypePasswordStoreUnavailable,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };
 
+    explicit WebCredentialManagerError(ErrorType type)
+        : errorType(type)
+    {
+    }
+
+    // This constructor is deprecated, and will be removed.
     WebCredentialManagerError(ErrorType type, WebString message)
         : errorType(type)
         , errorMessage(message)
