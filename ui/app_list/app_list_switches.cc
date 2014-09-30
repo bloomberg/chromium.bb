@@ -9,6 +9,10 @@
 namespace app_list {
 namespace switches {
 
+// Specifies the chrome-extension:// URL for the contents of an additional page
+// added to the experimental app launcher.
+const char kCustomLauncherPage[] = "custom-launcher-page";
+
 // If set, the app info context menu item is not available in the app list UI.
 const char kDisableAppInfo[] = "disable-app-list-app-info";
 

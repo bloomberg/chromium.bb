@@ -116,9 +116,9 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
   // First, check the command line.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (app_list::switches::IsExperimentalAppListEnabled() &&
-      command_line->HasSwitch(switches::kCustomLauncherPage)) {
-    GURL custom_launcher_page_url(
-        command_line->GetSwitchValueASCII(switches::kCustomLauncherPage));
+      command_line->HasSwitch(app_list::switches::kCustomLauncherPage)) {
+    GURL custom_launcher_page_url(command_line->GetSwitchValueASCII(
+        app_list::switches::kCustomLauncherPage));
 
     if (custom_launcher_page_url.SchemeIs(extensions::kExtensionScheme)) {
       urls->push_back(custom_launcher_page_url);
