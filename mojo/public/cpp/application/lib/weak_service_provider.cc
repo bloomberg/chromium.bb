@@ -21,8 +21,8 @@ WeakServiceProvider::~WeakServiceProvider() {
 }
 
 void WeakServiceProvider::Clear() {
-  creator_ = NULL;
-  service_provider_ = NULL;
+  creator_ = nullptr;
+  service_provider_ = nullptr;
 }
 
 void WeakServiceProvider::ConnectToService(

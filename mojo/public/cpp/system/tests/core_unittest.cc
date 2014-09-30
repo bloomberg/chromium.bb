@@ -124,25 +124,25 @@ TEST(CoreCppTest, Basic) {
     EXPECT_FALSE(h_invalid.is_valid());
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               WriteMessageRaw(h_invalid,
-                              NULL, 0,
-                              NULL, 0,
+                              nullptr, 0,
+                              nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     char buffer[10] = { 0 };
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               WriteMessageRaw(h_invalid,
                               buffer, sizeof(buffer),
-                              NULL, 0,
+                              nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               ReadMessageRaw(h_invalid,
-                             NULL, NULL,
-                             NULL, NULL,
+                             nullptr, nullptr,
+                             nullptr, nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
     uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               ReadMessageRaw(h_invalid,
                              buffer, &buffer_size,
-                             NULL, NULL,
+                             nullptr, nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Basic tests of waiting and closing.
@@ -153,7 +153,7 @@ TEST(CoreCppTest, Basic) {
       EXPECT_FALSE(h0.get().is_valid());
       EXPECT_FALSE(h1.get().is_valid());
 
-      CreateMessagePipe(NULL, &h0, &h1);
+      CreateMessagePipe(nullptr, &h0, &h1);
       EXPECT_TRUE(h0.get().is_valid());
       EXPECT_TRUE(h1.get().is_valid());
       EXPECT_NE(h0.get().value(), h1.get().value());
@@ -193,14 +193,14 @@ TEST(CoreCppTest, Basic) {
     {
       ScopedMessagePipeHandle h0;
       ScopedMessagePipeHandle h1;
-      CreateMessagePipe(NULL, &h0, &h1);
+      CreateMessagePipe(nullptr, &h0, &h1);
 
       const char kHello[] = "hello";
       const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
       EXPECT_EQ(MOJO_RESULT_OK,
                 WriteMessageRaw(h0.get(),
                                 kHello, kHelloSize,
-                                NULL, 0,
+                                nullptr, 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
       EXPECT_EQ(MOJO_RESULT_OK,
                 Wait(h1.get(), MOJO_HANDLE_SIGNAL_READABLE,
@@ -210,7 +210,7 @@ TEST(CoreCppTest, Basic) {
       EXPECT_EQ(MOJO_RESULT_OK,
                 ReadMessageRaw(h1.get(),
                                buffer, &buffer_size,
-                               NULL, NULL,
+                               nullptr, nullptr,
                                MOJO_READ_MESSAGE_FLAG_NONE));
       EXPECT_EQ(kHelloSize, buffer_size);
       EXPECT_STREQ(kHello, buffer);
@@ -226,7 +226,7 @@ TEST(CoreCppTest, Basic) {
       EXPECT_EQ(MOJO_RESULT_OK,
                 WriteMessageRaw(mp.handle0.get(),
                                 kWorld, kWorldSize,
-                                NULL, 0,
+                                nullptr, 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
 
       // Send |mp.handle1| over |h1| to |h0|.
@@ -296,12 +296,12 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   {
     ScopedMessagePipeHandle h0;
     ScopedMessagePipeHandle h1;
-    CreateMessagePipe(NULL, &h0, &h1);
+    CreateMessagePipe(nullptr, &h0, &h1);
 
     // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
-    CreateMessagePipe(NULL, &h2, &h3);
+    CreateMessagePipe(nullptr, &h2, &h3);
 
     // Write a message to |h2|, before we send |h3|.
     const char kWorld[] = "world!";
@@ -309,13 +309,13 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_EQ(MOJO_RESULT_OK,
               WriteMessageRaw(h2.get(),
                               kWorld, kWorldSize,
-                              NULL, 0,
+                              nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // And also a message to |h3|.
     EXPECT_EQ(MOJO_RESULT_OK,
               WriteMessageRaw(h3.get(),
                               kWorld, kWorldSize,
-                              NULL, 0,
+                              nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Send |h3| over |h1| to |h0|.
@@ -343,12 +343,12 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   {
     ScopedMessagePipeHandle h0;
     ScopedMessagePipeHandle h1;
-    CreateMessagePipe(NULL, &h0, &h1);
+    CreateMessagePipe(nullptr, &h0, &h1);
 
     // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
-    CreateMessagePipe(NULL, &h2, &h3);
+    CreateMessagePipe(nullptr, &h2, &h3);
 
     // Write a message to |h2|, before we send |h3|.
     const char kWorld[] = "world!";
@@ -356,13 +356,13 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_EQ(MOJO_RESULT_OK,
               WriteMessageRaw(h2.get(),
                               kWorld, kWorldSize,
-                              NULL, 0,
+                              nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // And also a message to |h3|.
     EXPECT_EQ(MOJO_RESULT_OK,
               WriteMessageRaw(h3.get(),
                               kWorld, kWorldSize,
-                              NULL, 0,
+                              nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Send |h3| over |h1| to |h0|.
@@ -388,11 +388,11 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
 
 TEST(CoreCppTest, ScopedHandleMoveCtor) {
   ScopedSharedBufferHandle buffer1;
-  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(NULL, 1024, &buffer1));
+  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(nullptr, 1024, &buffer1));
   EXPECT_TRUE(buffer1.is_valid());
 
   ScopedSharedBufferHandle buffer2;
-  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(NULL, 1024, &buffer2));
+  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(nullptr, 1024, &buffer2));
   EXPECT_TRUE(buffer2.is_valid());
 
   // If this fails to close buffer1, ScopedHandleBase::CloseIfNecessary() will
@@ -405,7 +405,7 @@ TEST(CoreCppTest, ScopedHandleMoveCtor) {
 
 TEST(CoreCppTest, ScopedHandleMoveCtorSelf) {
   ScopedSharedBufferHandle buffer1;
-  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(NULL, 1024, &buffer1));
+  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(nullptr, 1024, &buffer1));
   EXPECT_TRUE(buffer1.is_valid());
 
   buffer1 = buffer1.Pass();

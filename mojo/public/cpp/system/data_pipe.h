@@ -120,7 +120,7 @@ class DataPipe {
 
 inline DataPipe::DataPipe() {
   MojoResult result MOJO_ALLOW_UNUSED =
-      CreateDataPipe(NULL, &producer_handle, &consumer_handle);
+      CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
   assert(result == MOJO_RESULT_OK);
 }
 

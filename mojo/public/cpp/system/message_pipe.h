@@ -85,7 +85,7 @@ class MessagePipe {
 
 inline MessagePipe::MessagePipe() {
   MojoResult result MOJO_ALLOW_UNUSED =
-      CreateMessagePipe(NULL, &handle0, &handle1);
+      CreateMessagePipe(nullptr, &handle0, &handle1);
   assert(result == MOJO_RESULT_OK);
 }
 

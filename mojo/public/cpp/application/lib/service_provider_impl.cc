@@ -10,7 +10,7 @@
 
 namespace mojo {
 
-ServiceProviderImpl::ServiceProviderImpl() : remote_(NULL) {
+ServiceProviderImpl::ServiceProviderImpl() : remote_(nullptr) {
 }
 
 ServiceProviderImpl::~ServiceProviderImpl() {
@@ -46,7 +46,7 @@ void ServiceProviderImpl::AddServiceConnector(
   RemoveServiceConnector(service_connector);
   service_connectors_[service_connector->name()] = service_connector;
   // TODO(beng): perhaps take app connection thru ctor??
-  service_connector->set_application_connection(NULL);
+  service_connector->set_application_connection(nullptr);
 }
 
 void ServiceProviderImpl::RemoveServiceConnector(
@@ -62,7 +62,7 @@ void ServiceProviderImpl::RemoveServiceConnector(
 void ServiceProviderImpl::ClearRemote() {
   if (remote_) {
     remote_->Clear();
-    remote_ = NULL;
+    remote_ = nullptr;
   }
 }
 

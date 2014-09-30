@@ -14,7 +14,7 @@ std::vector<std::string> EnumerateSourceRootRelativeDirectory(
   char** names = MojoTestSupportEnumerateSourceRootRelativeDirectory(
       relative_path.c_str());
   std::vector<std::string> results;
-  for (char** ptr = names; *ptr != NULL; ++ptr) {
+  for (char** ptr = names; *ptr != nullptr; ++ptr) {
     results.push_back(*ptr);
     free(*ptr);
   }

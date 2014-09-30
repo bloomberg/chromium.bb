@@ -214,7 +214,7 @@ inline MojoResult WaitMany(const HandleVectorType& handles,
     return MOJO_RESULT_OUT_OF_RANGE;
 
   if (handles.size() == 0)
-    return MojoWaitMany(NULL, NULL, 0, deadline);
+    return MojoWaitMany(nullptr, nullptr, 0, deadline);
 
   const Handle& first_handle = handles[0];
   const MojoHandleSignals& first_signals = signals[0];

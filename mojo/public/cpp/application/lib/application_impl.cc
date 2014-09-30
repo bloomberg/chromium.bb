@@ -27,13 +27,13 @@ class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  ScopedMessagePipeHandle shell_handle)
-    : initialized_(false), delegate_(delegate), shell_watch_(NULL) {
+    : initialized_(false), delegate_(delegate), shell_watch_(nullptr) {
   BindShell(shell_handle.Pass());
 }
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  MojoHandle shell_handle)
-    : initialized_(false), delegate_(delegate), shell_watch_(NULL) {
+    : initialized_(false), delegate_(delegate), shell_watch_(nullptr) {
   BindShell(MakeScopedHandle(MessagePipeHandle(shell_handle)));
 }
 
@@ -71,7 +71,7 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
       out_service_provider.Pass());
   if (!delegate_->ConfigureOutgoingConnection(registry)) {
     delete registry;
-    return NULL;
+    return nullptr;
   }
   outgoing_service_registries_.push_back(registry);
   return registry;

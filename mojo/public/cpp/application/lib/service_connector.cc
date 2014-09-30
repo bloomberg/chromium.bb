@@ -9,7 +9,7 @@ namespace internal {
 
 ServiceConnectorBase::ServiceConnectorBase(const std::string& name)
     : name_(name),
-      application_connection_(NULL) {
+      application_connection_(nullptr) {
 }
 
 ServiceConnectorBase::~ServiceConnectorBase() {}

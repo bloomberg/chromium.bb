@@ -20,7 +20,7 @@ ServiceRegistry::ServiceRegistry(ApplicationImpl* application_impl,
   remote_service_provider_.set_client(this);
 }
 
-ServiceRegistry::ServiceRegistry() : application_impl_(NULL) {}
+ServiceRegistry::ServiceRegistry() : application_impl_(nullptr) {}
 
 ServiceRegistry::~ServiceRegistry() {
   for (NameToServiceConnectorMap::iterator i =

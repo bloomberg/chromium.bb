@@ -15,7 +15,7 @@ bool WriteTextMessage(const MessagePipeHandle& handle,
   MojoResult rv = WriteMessageRaw(handle,
                                   text.data(),
                                   static_cast<uint32_t>(text.size()),
-                                  NULL,
+                                  nullptr,
                                   0,
                                   MOJO_WRITE_MESSAGE_FLAG_NONE);
   return rv == MOJO_RESULT_OK;
@@ -28,9 +28,9 @@ bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
   uint32_t num_bytes = 0, num_handles = 0;
   for (;;) {
     rv = ReadMessageRaw(handle,
-                        NULL,
+                        nullptr,
                         &num_bytes,
-                        NULL,
+                        nullptr,
                         &num_handles,
                         MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
@@ -52,14 +52,14 @@ bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
   rv = ReadMessageRaw(handle,
                       &text->at(0),
                       &num_bytes,
-                      NULL,
+                      nullptr,
                       &num_handles,
                       MOJO_READ_MESSAGE_FLAG_NONE);
   return rv == MOJO_RESULT_OK;
 }
 
 bool DiscardMessage(const MessagePipeHandle& handle) {
-  MojoResult rv = ReadMessageRaw(handle, NULL, NULL, NULL, NULL,
+  MojoResult rv = ReadMessageRaw(handle, nullptr, nullptr, nullptr, nullptr,
                                  MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
   return rv == MOJO_RESULT_OK;
 }

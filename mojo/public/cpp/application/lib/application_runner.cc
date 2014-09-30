@@ -30,7 +30,7 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_handle) {
   }
 
   delete delegate_;
-  delegate_ = NULL;
+  delegate_ = nullptr;
   return MOJO_RESULT_OK;
 }
 

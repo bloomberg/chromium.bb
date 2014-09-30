@@ -93,7 +93,7 @@ class SharedBuffer {
 
 inline SharedBuffer::SharedBuffer(uint64_t num_bytes) {
   MojoResult result MOJO_ALLOW_UNUSED =
-      CreateSharedBuffer(NULL, num_bytes, &handle);
+      CreateSharedBuffer(nullptr, num_bytes, &handle);
   assert(result == MOJO_RESULT_OK);
 }
 
