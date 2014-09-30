@@ -47,7 +47,7 @@ bool MojoApplicationHost::Init() {
   return true;
 }
 
-bool MojoApplicationHost::Activate(IPC::Sender* sender,
+void MojoApplicationHost::Activate(IPC::Sender* sender,
                                    base::ProcessHandle process_handle) {
   DCHECK(!did_activate_);
   DCHECK(client_handle_.is_valid());
@@ -56,7 +56,6 @@ bool MojoApplicationHost::Activate(IPC::Sender* sender,
       PlatformFileFromScopedPlatformHandle(client_handle_.Pass());
   did_activate_ = sender->Send(new MojoMsg_Activate(
       IPC::GetFileHandleForProcess(client_file, process_handle, true)));
-  return did_activate_;
 }
 
 void MojoApplicationHost::WillDestroySoon() {
