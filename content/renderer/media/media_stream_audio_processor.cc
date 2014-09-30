@@ -49,6 +49,7 @@ AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
   }
 }
 
+// This is only used for playout data where only max two channels is supported.
 AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
   switch (num_channels) {
     case 1:
@@ -113,20 +114,33 @@ class MediaStreamAudioBus {
 
 // Wraps AudioFifo to provide a cleaner interface to MediaStreamAudioProcessor.
 // It avoids the FIFO when the source and destination frames match. All methods
-// are called on one of the capture or render audio threads exclusively.
+// are called on one of the capture or render audio threads exclusively. If
+// |source_channels| is larger than |destination_channels|, only the first
+// |destination_channels| are kept from the source.
 class MediaStreamAudioFifo {
  public:
-  MediaStreamAudioFifo(int channels, int source_frames,
+  MediaStreamAudioFifo(int source_channels,
+                       int destination_channels,
+                       int source_frames,
                        int destination_frames)
-     : source_frames_(source_frames),
-       destination_(new MediaStreamAudioBus(channels, destination_frames)),
+     : source_channels_(source_channels),
+       source_frames_(source_frames),
+       destination_(
+           new MediaStreamAudioBus(destination_channels, destination_frames)),
        data_available_(false) {
+    DCHECK_GE(source_channels, destination_channels);
+
+    if (source_channels > destination_channels) {
+      audio_source_intermediate_ =
+          media::AudioBus::CreateWrapper(destination_channels);
+    }
+
     if (source_frames != destination_frames) {
       // Since we require every Push to be followed by as many Consumes as
       // possible, twice the larger of the two is a (probably) loose upper bound
       // on the FIFO size.
       const int fifo_frames = 2 * std::max(source_frames, destination_frames);
-      fifo_.reset(new media::AudioFifo(channels, fifo_frames));
+      fifo_.reset(new media::AudioFifo(destination_channels, fifo_frames));
     }
 
     // May be created in the main render thread and used in the audio threads.
@@ -135,13 +149,25 @@ class MediaStreamAudioFifo {
 
   void Push(const media::AudioBus* source) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK_EQ(source->channels(), destination_->bus()->channels());
+    DCHECK_EQ(source->channels(), source_channels_);
     DCHECK_EQ(source->frames(), source_frames_);
 
+    const media::AudioBus* source_to_push = source;
+
+    if (audio_source_intermediate_) {
+      for (int i = 0; i < destination_->bus()->channels(); ++i) {
+        audio_source_intermediate_->SetChannelData(
+            i,
+            const_cast<float*>(source->channel(i)));
+      }
+      audio_source_intermediate_->set_frames(source->frames());
+      source_to_push = audio_source_intermediate_.get();
+    }
+
     if (fifo_) {
-      fifo_->Push(source);
+      fifo_->Push(source_to_push);
     } else {
-      source->CopyTo(destination_->bus());
+      source_to_push->CopyTo(destination_->bus());
       data_available_ = true;
     }
   }
@@ -170,7 +196,9 @@ class MediaStreamAudioFifo {
 
  private:
   base::ThreadChecker thread_checker_;
+  const int source_channels_;  // For a DCHECK.
   const int source_frames_;  // For a DCHECK.
+  scoped_ptr<media::AudioBus> audio_source_intermediate_;
   scoped_ptr<MediaStreamAudioBus> destination_;
   scoped_ptr<media::AudioFifo> fifo_;
   // Only used when the FIFO is disabled;
@@ -465,9 +493,23 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // format it would prefer.
   const int output_sample_rate = audio_processing_ ?
       kAudioProcessingSampleRate : input_format.sample_rate();
-  const media::ChannelLayout output_channel_layout = audio_processing_ ?
+  media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
       input_format.channel_layout();
+
+  // The output channels from the fifo is normally the same as input.
+  int fifo_output_channels = input_format.channels();
+
+  // Special case for if we have a keyboard mic channel on the input and no
+  // audio processing is used. We will then have the fifo strip away that
+  // channel. So we use stereo as output layout, and also change the output
+  // channels for the fifo.
+  if (input_format.channel_layout() ==
+          media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC &&
+      !audio_processing_) {
+    output_channel_layout = media::CHANNEL_LAYOUT_STEREO;
+    fifo_output_channels = ChannelLayoutToChannelCount(output_channel_layout);
+  }
 
   // webrtc::AudioProcessing requires a 10 ms chunk size. We use this native
   // size when processing is enabled. When disabled we use the same size as
@@ -495,6 +537,7 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
 
   capture_fifo_.reset(
       new MediaStreamAudioFifo(input_format.channels(),
+                               fifo_output_channels,
                                input_format.frames_per_buffer(),
                                processing_frames));
 
@@ -527,6 +570,7 @@ void MediaStreamAudioProcessor::InitializeRenderFifoIfNeeded(
   const int analysis_frames = sample_rate / 100;  // 10 ms chunks.
   render_fifo_.reset(
       new MediaStreamAudioFifo(number_of_channels,
+                               number_of_channels,
                                frames_per_buffer,
                                analysis_frames));
 }

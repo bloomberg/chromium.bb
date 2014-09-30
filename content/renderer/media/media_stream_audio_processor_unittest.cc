@@ -40,6 +40,8 @@ const int kAudioProcessingNumberOfChannel = 1;
 // The number of packers used for testing.
 const int kNumberOfPacketsForTest = 100;
 
+const int kMaxNumberOfPlayoutDataChannels = 2;
+
 void ReadDataFromSpeechFile(char* data, int length) {
   base::FilePath file;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file));
@@ -79,6 +81,19 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     const int16* data_ptr = reinterpret_cast<const int16*>(capture_data.get());
     scoped_ptr<media::AudioBus> data_bus = media::AudioBus::Create(
         params.channels(), params.frames_per_buffer());
+
+    // |data_bus_playout| is used if the number of capture channels is larger
+    // that max allowed playout channels. |data_bus_playout_to_use| points to
+    // the AudioBus to use, either |data_bus| or |data_bus_playout|.
+    scoped_ptr<media::AudioBus> data_bus_playout;
+    media::AudioBus* data_bus_playout_to_use = data_bus.get();
+    if (params.channels() > kMaxNumberOfPlayoutDataChannels) {
+      data_bus_playout =
+          media::AudioBus::CreateWrapper(kMaxNumberOfPlayoutDataChannels);
+      data_bus_playout->set_frames(params.frames_per_buffer());
+      data_bus_playout_to_use = data_bus_playout.get();
+    }
+
     for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
       data_bus->FromInterleaved(data_ptr, data_bus->frames(), 2);
       audio_processor->PushCaptureData(data_bus.get());
@@ -94,8 +109,14 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       const bool is_aec_enabled = ap && ap->echo_cancellation()->is_enabled();
 #endif
       if (is_aec_enabled) {
-        audio_processor->OnPlayoutData(data_bus.get(), params.sample_rate(),
-                                       10);
+        if (params.channels() > kMaxNumberOfPlayoutDataChannels) {
+          for (int i = 0; i < kMaxNumberOfPlayoutDataChannels; ++i) {
+            data_bus_playout->SetChannelData(
+                i, const_cast<float*>(data_bus->channel(i)));
+          }
+        }
+        audio_processor->OnPlayoutData(data_bus_playout_to_use,
+                                       params.sample_rate(), 10);
       }
 
       int16* output = NULL;
@@ -464,6 +485,61 @@ TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
     EXPECT_NE(output_bus->channel(1)[0], 0);
   }
 
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
+  // |audio_processor|.
+  audio_processor = NULL;
+}
+
+TEST_F(MediaStreamAudioProcessorTest, TestWithKeyboardMicChannel) {
+  MockMediaConstraintFactory constraint_factory;
+  constraint_factory.AddMandatory(
+      MediaAudioConstraints::kGoogExperimentalNoiseSuppression, true);
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), 0,
+          webrtc_audio_device.get()));
+  EXPECT_TRUE(audio_processor->has_audio_processing());
+
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC,
+                                48000, 16, 512);
+  audio_processor->OnCaptureFormatChanged(params);
+
+  ProcessDataAndVerifyFormat(audio_processor.get(),
+                             kAudioProcessingSampleRate,
+                             kAudioProcessingNumberOfChannel,
+                             kAudioProcessingSampleRate / 100);
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
+  // |audio_processor|.
+  audio_processor = NULL;
+}
+
+TEST_F(MediaStreamAudioProcessorTest,
+       TestWithKeyboardMicChannelWithoutProcessing) {
+  // Setup the audio processor with disabled flag on.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableAudioTrackProcessing);
+  MockMediaConstraintFactory constraint_factory;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), 0,
+          webrtc_audio_device.get()));
+  EXPECT_FALSE(audio_processor->has_audio_processing());
+
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC,
+                                48000, 16, 512);
+  audio_processor->OnCaptureFormatChanged(params);
+
+  ProcessDataAndVerifyFormat(
+      audio_processor.get(),
+      params.sample_rate(),
+      media::ChannelLayoutToChannelCount(media::CHANNEL_LAYOUT_STEREO),
+      params.sample_rate() / 100);
   // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
   // |audio_processor|.
   audio_processor = NULL;
