@@ -21,8 +21,9 @@ namespace shell {
 
 namespace {
 
-// Default background color to set for WebViews
-const blink::WebColor kColorBlack = 0x000000FF;
+// Default background color to set for WebViews. WebColor is in ARGB format
+// though the comment of WebColor says it is in RGBA.
+const blink::WebColor kColorBlack = 0xFF000000;
 
 }  // namespace
 
