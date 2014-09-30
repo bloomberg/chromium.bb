@@ -51,7 +51,7 @@ $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/SelectionEventType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content_public/common/ScreenOrientationValues.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/media/ImageFormat.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/media/AndroidImageFormat.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyStatusAndroid.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/NetError.java \

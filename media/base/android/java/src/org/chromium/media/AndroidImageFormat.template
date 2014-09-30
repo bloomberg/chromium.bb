@@ -4,7 +4,7 @@
 
 package org.chromium.media;
 
-class AndroidImageFormatList {
+class AndroidImageFormat {
 #define DEFINE_ANDROID_IMAGEFORMAT(name, value) \
     static final int name = value;
 #include "media/video/capture/android/imageformat_list.h"

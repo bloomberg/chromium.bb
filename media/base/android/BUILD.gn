@@ -94,7 +94,7 @@ generate_jni("video_capture_jni_headers") {
 java_cpp_template("media_android_imageformat_list") {
   package_name = "org/chromium/media"
   sources = [
-    "java/src/org/chromium/media/ImageFormat.template",
+    "java/src/org/chromium/media/AndroidImageFormat.template",
   ]
   inputs = [
     "//media/video/capture/android/imageformat_list.h"

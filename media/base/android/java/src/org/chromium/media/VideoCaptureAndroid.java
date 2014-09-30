@@ -105,10 +105,9 @@ public class VideoCaptureAndroid extends VideoCapture {
             pixelFormats.add(ImageFormat.UNKNOWN);
         }
         for (Integer previewFormat : pixelFormats) {
-            int pixelFormat =
-                    AndroidImageFormatList.ANDROID_IMAGEFORMAT_UNKNOWN;
+            int pixelFormat = AndroidImageFormat.ANDROID_IMAGEFORMAT_UNKNOWN;
             if (previewFormat == ImageFormat.YV12) {
-                pixelFormat = AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
+                pixelFormat = AndroidImageFormat.ANDROID_IMAGEFORMAT_YV12;
             } else if (previewFormat == ImageFormat.NV21) {
                 continue;
             }

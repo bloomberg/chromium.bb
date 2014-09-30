@@ -1822,7 +1822,7 @@
           'target_name': 'media_android_imageformat_list',
           'type': 'none',
           'sources': [
-            'base/android/java/src/org/chromium/media/ImageFormat.template',
+            'base/android/java/src/org/chromium/media/AndroidImageFormat.template',
           ],
           'variables': {
             'package_name': 'org/chromium/media',

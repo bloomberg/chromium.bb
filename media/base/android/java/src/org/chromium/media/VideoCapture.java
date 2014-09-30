@@ -315,12 +315,12 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
     public int getColorspace() {
         switch (mCaptureFormat.mPixelFormat) {
             case ImageFormat.YV12:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
+                return AndroidImageFormat.ANDROID_IMAGEFORMAT_YV12;
             case ImageFormat.NV21:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV21;
+                return AndroidImageFormat.ANDROID_IMAGEFORMAT_NV21;
             case ImageFormat.UNKNOWN:
             default:
-                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_UNKNOWN;
+                return AndroidImageFormat.ANDROID_IMAGEFORMAT_UNKNOWN;
         }
     }
 
