@@ -2074,6 +2074,13 @@ internal_notest_paladin.add_config('storm-paladin',
   paladin_builder_name='storm paladin',
 )
 
+internal_notest_paladin.add_config('urara-paladin',
+  brillo_non_testable,
+  boards=['urara'],
+  paladin_builder_name='urara paladin',
+  important=False,
+)
+
 internal_notest_paladin.add_config('veyron_pinky-paladin',
   boards=['veyron_pinky'],
   paladin_builder_name='veyron_pinky paladin',
@@ -2458,24 +2465,31 @@ _brillo_release.add_config('panther_embedded-minimal-release',
   signer_tests=False,
 )
 
-_arm_brillo_release = _brillo_release.derive(non_testable_builder)
+_non_testable_brillo_release = _brillo_release.derive(non_testable_builder)
 
-_arm_brillo_release.add_config('kayle-release',
+_non_testable_brillo_release.add_config('kayle-release',
   boards=['kayle'],
   manifest='kayle.xml',
   paygen=False,
   important=False,
 )
 
-_arm_brillo_release.add_config('storm-release',
+_non_testable_brillo_release.add_config('storm-release',
   boards=['storm'],
 
-  # Hw Lab can't test duck, yet.
+  # Hw Lab can't test storm, yet.
   paygen_skip_testing=True,
   important=True,
 )
 
-_beaglebone_release = _arm_brillo_release.derive(beaglebone)
+_non_testable_brillo_release.add_config('urara-release',
+  boards=['urara'],
+  paygen=False,
+  signer_tests=False,
+  important=False,
+)
+
+_beaglebone_release = _non_testable_brillo_release.derive(beaglebone)
 
 _config.add_group('beaglebone-release-group',
   _beaglebone_release.add_config('beaglebone-release',
