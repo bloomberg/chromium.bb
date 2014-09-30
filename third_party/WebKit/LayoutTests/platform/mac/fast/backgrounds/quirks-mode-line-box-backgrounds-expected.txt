@@ -1,0 +1,25 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock (anonymous) at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 619x16
+          text run at (0,0) width 619: "The following two lines should be visible without the white background clipping any of the text:"
+      RenderBlock {P} at (0,32) size 784x26
+        RenderInline {SPAN} at (0,0) size 79x33 [bgcolor=#FFFFFF]
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {SPAN} at (0,0) size 79x26
+            RenderText {#text} at (0,0) size 79x13
+              text run at (0,0) width 79: "FOOBARBAZ"
+            RenderBR {BR} at (78,10) size 1x0
+            RenderText {#text} at (0,13) size 79x13
+              text run at (0,13) width 79: "BAZBARFOO"
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock (anonymous) at (0,74) size 784x16
+        RenderText {#text} at (0,0) size 421x16
+          text run at (0,0) width 421: "The background below should be 10x10 and snugly fit the image:"
+      RenderBlock {P} at (0,106) size 784x10
+        RenderInline {SPAN} at (0,0) size 10x40 [bgcolor=#FF0000]
+          RenderImage {IMG} at (0,0) size 10x10
+        RenderText {#text} at (0,0) size 0x0

@@ -1,0 +1,55 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x312
+  RenderBlock {HTML} at (0,0) size 800x312
+    RenderBody {BODY} at (8,8) size 784x268
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (16,16) size 348x16
+          text run at (16,16) width 348: "\"ONE\" and \"TWO\" below should be on the same line."
+      RenderBlock (floating) {UL} at (0,48) size 186x20 [border: (2px solid #0000FF)]
+        RenderBlock (floating) {LI} at (2,2) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 33x16
+              text run at (0,0) width 33: "ONE"
+        RenderBlock (floating) {LI} at (93,2) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 37x16
+              text run at (0,0) width 37: "TWO"
+        RenderBlock {DIV} at (2,2) size 182x0
+      RenderBlock {P} at (0,68) size 784x48
+        RenderText {#text} at (16,16) size 353x16
+          text run at (16,16) width 353: "\"ONE\" and \"TWO\" below should be on different lines."
+      RenderBlock (floating) {UL} at (0,116) size 95x36 [border: (2px solid #0000FF)]
+        RenderBlock (floating) {LI} at (2,2) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 33x16
+              text run at (0,0) width 33: "ONE"
+        RenderBlock (floating) {LI} at (2,18) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 37x16
+              text run at (0,0) width 37: "TWO"
+        RenderBlock {DIV} at (2,2) size 91x0
+      RenderBlock {P} at (0,152) size 784x48
+        RenderText {#text} at (16,16) size 348x16
+          text run at (16,16) width 348: "\"ONE\" and \"TWO\" below should be on the same line."
+      RenderBlock (floating) {UL} at (0,200) size 186x20 [border: (2px solid #0000FF)]
+        RenderBlock (floating) {LI} at (2,2) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 33x16
+              text run at (0,0) width 33: "ONE"
+        RenderBlock (floating) {LI} at (93,2) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 37x16
+              text run at (0,0) width 37: "TWO"
+      RenderBlock {P} at (0,220) size 784x48
+        RenderText {#text} at (16,16) size 353x16
+          text run at (16,16) width 353: "\"ONE\" and \"TWO\" below should be on different lines."
+      RenderBlock (floating) {UL} at (0,268) size 95x36 [border: (2px solid #0000FF)]
+        RenderBlock (floating) {LI} at (2,2) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 33x16
+              text run at (0,0) width 33: "ONE"
+        RenderBlock (floating) {LI} at (2,18) size 91x16
+          RenderBlock {SPAN} at (0,0) size 91x16 [bgcolor=#EEEEEE]
+            RenderText {#text} at (0,0) size 37x16
+              text run at (0,0) width 37: "TWO"

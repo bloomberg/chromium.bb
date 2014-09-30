@@ -1,0 +1,26 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x76 [border: (2px solid #0000FF)]
+        RenderText {#text} at (14,14) size 721x48
+          text run at (14,14) width 715: "Should see \"foo\" centered in its own red box, followed by left-aligned two"
+          text run at (728,14) width 7: " "
+          text run at (14,38) width 420: "lines, \"bar\" and \"baz\", in their own red box."
+      RenderBlock {DIV} at (0,100) size 784x100
+        RenderBlock {DIV} at (0,0) size 784x100 [border: (2px solid #FF0000)]
+          RenderBlock {DIV} at (14,14) size 756x24
+            RenderText {#text} at (362,0) size 32x24
+              text run at (362,0) width 32: "foo"
+          RenderBlock (anonymous) at (14,38) size 756x48
+            RenderText {#text} at (0,0) size 31x24
+              text run at (0,0) width 31: "bar"
+            RenderBR {BR} at (30,18) size 1x0
+            RenderText {#text} at (0,24) size 34x24
+              text run at (0,24) width 34: "baz"
+caret: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 3 {DIV} of body

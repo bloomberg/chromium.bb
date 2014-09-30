@@ -1,0 +1,73 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x202 [border: (4px solid #0000FF)]
+        RenderBlock {DIV} at (20,20) size 744x62
+          RenderText {#text} at (0,0) size 68x24
+            text run at (0,0) width 68: "Tests: "
+          RenderBR {BR} at (0,0) size 0x0
+          RenderText {#text} at (0,24) size 656x19
+            text run at (0,24) width 656: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well. "
+          RenderBR {BR} at (655,38) size 1x0
+          RenderInline {I} at (0,0) size 98x19
+            RenderText {#text} at (0,43) size 98x19
+              text run at (0,43) width 98: "For this test: "
+          RenderText {#text} at (97,43) size 220x19
+            text run at (97,43) width 220: "Test typing at the end of a list."
+        RenderBlock (anonymous) at (20,82) size 744x19
+          RenderBR {BR} at (0,0) size 0x19
+        RenderBlock {DIV} at (20,101) size 744x81
+          RenderText {#text} at (0,0) size 190x24
+            text run at (0,0) width 190: "Expected Results: "
+          RenderBR {BR} at (189,18) size 1x0
+          RenderText {#text} at (0,24) size 700x38
+            text run at (0,24) width 700: "The content in the red box must exactly match the content in the green box (except for the border"
+            text run at (0,43) width 52: "color). "
+          RenderBR {BR} at (51,57) size 1x0
+          RenderInline {I} at (0,0) size 98x19
+            RenderText {#text} at (0,62) size 98x19
+              text run at (0,62) width 98: "For this test: "
+          RenderText {#text} at (97,62) size 419x19
+            text run at (97,62) width 419: "Typed text should appear after (on the line below) the list."
+      RenderBlock {DIV} at (0,212) size 784x124 [border: (2px solid #008000)]
+        RenderBlock {UL} at (2,26) size 780x72
+          RenderListItem {LI} at (40,0) size 740x24
+            RenderListMarker at (-20,0) size 8x24: bullet
+            RenderText {#text} at (0,0) size 77x24
+              text run at (0,0) width 77: "line one"
+          RenderListItem {LI} at (40,24) size 740x24
+            RenderListMarker at (-20,0) size 8x24: bullet
+            RenderText {#text} at (0,0) size 78x24
+              text run at (0,0) width 78: "line two"
+          RenderListItem {LI} at (40,48) size 740x24
+            RenderListMarker at (-20,0) size 8x24: bullet
+            RenderText {#text} at (0,0) size 126x24
+              text run at (0,0) width 126: "line threexxx"
+      RenderBlock {DIV} at (0,346) size 784x124
+        RenderBlock {DIV} at (0,0) size 784x124 [border: (2px solid #FF0000)]
+          RenderBlock {UL} at (2,26) size 780x72
+            RenderListItem {LI} at (40,0) size 740x24
+              RenderListMarker at (-20,0) size 8x24: bullet
+              RenderText {#text} at (0,0) size 77x24
+                text run at (0,0) width 77: "line one"
+            RenderListItem {LI} at (40,24) size 740x24
+              RenderListMarker at (-20,0) size 8x24: bullet
+              RenderText {#text} at (0,0) size 78x24
+                text run at (0,0) width 78: "line two"
+            RenderListItem {LI} at (40,48) size 740x24
+              RenderListMarker at (-20,0) size 8x24: bullet
+              RenderText {#text} at (0,0) size 126x24
+                text run at (0,0) width 126: "line threexxx"
+caret: position 13 of child 0 {#text} of child 5 {LI} of child 1 {UL} of child 1 {DIV} of child 5 {DIV} of body

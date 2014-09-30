@@ -1,0 +1,32 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 258x16
+          text run at (0,0) width 258: "Text should not overlap the blue square."
+      RenderBlock {DIV} at (0,32) size 406x170 [border: (3px solid #800000)]
+        RenderText {#text} at (5,5) size 394x80
+          text run at (5,5) width 367: "Fusce at ante. In hac habitasse platea dictumst. Maecenas"
+          text run at (371,5) width 5: " "
+          text run at (5,21) width 390: "iaculis nonummy magna. Vivamus a tortor vitae enim ornare"
+          text run at (394,21) width 5: " "
+          text run at (5,37) width 354: "consectetuer. Lorem ipsum dolor sit amet, consectetuer"
+          text run at (358,37) width 5: " "
+          text run at (5,53) width 370: "adipiscing elit. Etiam et ipsum. Nam consectetuer mi eget"
+          text run at (374,53) width 5: " "
+          text run at (5,69) width 37: "velit. "
+        RenderBlock (floating) {DIV} at (337,69) size 64x64 [bgcolor=#ADD8E6]
+        RenderText {#text} at (41,69) size 348x96
+          text run at (41,69) width 256: "Sed nec risus vitae felis auctor ultricies."
+          text run at (296,69) width 5: " "
+          text run at (5,85) width 332: "Pellentesque aliquet quam ac lorem. Duis interdum,"
+          text run at (336,85) width 1: " "
+          text run at (5,101) width 324: "elit in ultricies auctor, erat pede sollicitudin libero,"
+          text run at (328,101) width 5: " "
+          text run at (5,117) width 265: "non ultrices odio elit in augue. Ut egestas"
+          text run at (269,117) width 5: " "
+          text run at (5,133) width 344: "bibendum lectus. Class aptent taciti sociosqu ad litora"
+          text run at (348,133) width 5: " "
+          text run at (5,149) width 342: "torquent per conubia nostra, per inceptos hymenaeos."

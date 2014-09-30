@@ -1,0 +1,43 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x164 [border: (2px solid #0000FF)]
+        RenderBlock {DIV} at (14,14) size 756x72
+          RenderText {#text} at (0,0) size 68x24
+            text run at (0,0) width 68: "Tests: "
+          RenderBR {BR} at (0,0) size 0x0
+          RenderText {#text} at (0,24) size 113x24
+            text run at (0,24) width 113: "Bug fix for "
+          RenderInline {A} at (0,0) size 258x24 [color=#0000EE]
+            RenderText {#text} at (112,24) size 258x24
+              text run at (112,24) width 258: "<rdar://problem/3998892>"
+          RenderText {#text} at (369,24) size 693x48
+            text run at (369,24) width 324: " REGRESSION (Mail): bolding a"
+            text run at (0,48) width 92: "selection "
+            text run at (91,48) width 545: "from end of line changes unselected text on starting line."
+        RenderBlock {DIV} at (14,102) size 756x48
+          RenderText {#text} at (0,0) size 190x24
+            text run at (0,0) width 190: "Expected Results: "
+          RenderBR {BR} at (189,18) size 1x0
+          RenderText {#text} at (0,24) size 599x24
+            text run at (0,24) width 599: "Should see first line (\"foo\") not bold; second line (\"bar\") bold."
+      RenderBlock {DIV} at (0,188) size 784x52
+        RenderBlock {DIV} at (0,0) size 784x52 [border: (2px solid #FF0000)]
+          RenderBlock {DIV} at (2,2) size 780x24
+            RenderText {#text} at (0,0) size 32x24
+              text run at (0,0) width 32: "foo"
+          RenderBlock {DIV} at (2,26) size 780x24
+            RenderInline {B} at (0,0) size 36x24
+              RenderText {#text} at (0,0) size 36x24
+                text run at (0,0) width 36: "bar"
+selection start: position 3 of child 0 {#text} of child 1 {DIV} of child 1 {DIV} of child 3 {DIV} of body
+selection end:   position 3 of child 0 {#text} of child 0 {B} of child 3 {DIV} of child 1 {DIV} of child 3 {DIV} of body

@@ -1,0 +1,30 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 179x452 [border: (1px solid #000000)]
+        RenderInline {SPAN} at (0,0) size 177x404 [bgcolor=#808080] [border: (2px solid #000000)]
+          RenderText {#text} at (3,26) size 50x100
+            text run at (3,26) width 50: "  "
+          RenderBR {BR} at (53,101) size 0x0
+          RenderText {#text} at (1,176) size 125x100
+            text run at (1,176) width 125: "     "
+          RenderBR {BR} at (126,251) size 0x0
+          RenderText {#text} at (1,326) size 175x100
+            text run at (1,326) width 175: "       "
+        RenderText {#text} at (0,0) size 0x0
+      RenderText {#text} at (179,389) size 4x16
+        text run at (179,389) width 4: " "
+      RenderBlock {DIV} at (183,222) size 452x179 [border: (1px solid #000000)]
+        RenderInline {SPAN} at (0,0) size 404x177 [bgcolor=#808080] [border: (2px solid #000000)]
+          RenderText {#text} at (26,3) size 100x50
+            text run at (26,3) width 50: "  "
+          RenderBR {BR} at (101,53) size 0x0
+          RenderText {#text} at (176,1) size 100x125
+            text run at (176,1) width 125: "     "
+          RenderBR {BR} at (251,126) size 0x0
+          RenderText {#text} at (326,1) size 100x175
+            text run at (326,1) width 175: "       "
+        RenderText {#text} at (0,0) size 0x0
+      RenderText {#text} at (0,0) size 0x0

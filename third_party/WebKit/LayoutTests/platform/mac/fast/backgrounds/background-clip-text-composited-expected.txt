@@ -5,104 +5,104 @@ layer at (0,0) size 800x590
     RenderBody {BODY} at (8,8) size 784x574
       RenderBlock {DIV} at (0,0) size 302x574
         RenderBlock {DIV} at (0,0) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (53,0) size 194x23
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (53,0) size 194x20
               text run at (53,0) width 194: "unclipped background"
         RenderBlock {DIV} at (0,82) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (135,0) size 30x23
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (135,0) size 30x20
               text run at (135,0) width 30: "xor"
         RenderBlock {DIV} at (0,164) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (99,0) size 102x23
-              text run at (99,0) width 102: "plus-lighter"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (100,0) size 100x20
+              text run at (100,0) width 100: "plus-lighter"
         RenderBlock {DIV} at (0,246) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (99,0) size 102x23
-              text run at (99,0) width 102: "source-over"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (100,0) size 100x20
+              text run at (100,0) width 100: "source-over"
         RenderBlock {DIV} at (0,328) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (99,0) size 102x23
-              text run at (99,0) width 102: "source-atop"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (100,0) size 100x20
+              text run at (100,0) width 100: "source-atop"
         RenderBlock {DIV} at (0,410) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (110,0) size 80x23
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (110,0) size 80x20
               text run at (110,0) width 80: "source-in"
         RenderBlock {DIV} at (0,492) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (104,0) size 92x23
-              text run at (104,0) width 92: "source-out"
-      RenderText {#text} at (302,556) size 4x18
-        text run at (302,556) width 4: " "
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (105,0) size 90x20
+              text run at (105,0) width 90: "source-out"
+      RenderText {#text} at (302,547) size 4x16
+        text run at (302,547) width 4: " "
       RenderBlock {DIV} at (306,0) size 302x574
         RenderBlock {DIV} at (0,0) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (128,0) size 44x23
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (128,0) size 44x20
               text run at (128,0) width 44: "clear"
         RenderBlock {DIV} at (0,82) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (130,0) size 40x23
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (130,0) size 40x20
               text run at (130,0) width 40: "copy"
         RenderBlock {DIV} at (0,164) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (99,0) size 102x23
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (99,0) size 102x20
               text run at (99,0) width 102: "plus-darker"
         RenderBlock {DIV} at (0,246) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (79,0) size 142x23
-              text run at (79,0) width 142: "destination-over"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (80,0) size 140x20
+              text run at (80,0) width 140: "destination-over"
         RenderBlock {DIV} at (0,328) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (79,0) size 142x23
-              text run at (79,0) width 142: "destination-atop"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (80,0) size 140x20
+              text run at (80,0) width 140: "destination-atop"
         RenderBlock {DIV} at (0,410) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (90,0) size 120x23
-              text run at (90,0) width 120: "destination-in"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (91,0) size 118x20
+              text run at (91,0) width 118: "destination-in"
         RenderBlock {DIV} at (0,492) size 302x82 [color=#00000000] [bgcolor=#00FF007F] [border: (1px solid #000000)]
-          RenderBlock (anonymous) at (1,1) size 300x59
-            RenderText {#text} at (18,0) size 264x59
+          RenderBlock (anonymous) at (1,1) size 300x51
+            RenderText {#text} at (18,0) size 264x51
               text run at (18,0) width 264: "01234 56789"
-          RenderBlock {DIV} at (1,60) size 300x23 [color=#000000]
-            RenderText {#text} at (84,0) size 132x23
-              text run at (84,0) width 132: "destination-out"
+          RenderBlock {DIV} at (1,52) size 300x20 [color=#000000]
+            RenderText {#text} at (85,0) size 130x20
+              text run at (85,0) width 130: "destination-out"
       RenderText {#text} at (0,0) size 0x0

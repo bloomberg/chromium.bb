@@ -1,0 +1,73 @@
+layer at (0,0) size 785x1496
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x1496
+  RenderBlock {HTML} at (0,0) size 785x1496
+    RenderBody {BODY} at (8,8) size 769x1456
+      RenderBlock (anonymous) at (0,0) size 769x16
+        RenderText {#text} at (0,0) size 264x16
+          text run at (0,0) width 264: "All of these blocks should look the same."
+layer at (8,56) size 320x256
+  RenderBlock {DIV} at (0,48) size 320x256 [bgcolor=#00FF00]
+    RenderInline {SPAN} at (0,0) size 320x64 [color=#008000]
+      RenderText {#text} at (0,32) size 320x64
+        text run at (0,32) width 320: "xxxxx"
+    RenderBR {BR} at (320,32) size 0x64
+    RenderBlock {DIV} at (0,160) size 256x64 [color=#008000]
+      RenderText {#text} at (0,0) size 256x64
+        text run at (0,0) width 256: "xxxx"
+    RenderInline {SPAN} at (0,0) size 64x64 [color=#008000]
+      RenderText {#text} at (256,160) size 64x64
+        text run at (256,160) width 64: "x"
+    RenderText {#text} at (0,0) size 0x0
+layer at (8,344) size 320x256
+  RenderBlock {DIV} at (0,336) size 320x256 [bgcolor=#00FF00]
+    RenderInline {SPAN} at (0,0) size 320x64 [color=#008000]
+      RenderText {#text} at (0,32) size 320x64
+        text run at (0,32) width 320: "xxxxx"
+    RenderBR {BR} at (320,32) size 0x64
+    RenderBlock {DIV} at (0,160) size 256x64 [color=#008000]
+      RenderText {#text} at (0,0) size 256x64
+        text run at (0,0) width 256: "xxxx"
+    RenderInline {SPAN} at (0,0) size 64x64 [color=#008000]
+      RenderText {#text} at (256,160) size 64x64
+        text run at (256,160) width 64: "x"
+    RenderText {#text} at (0,0) size 0x0
+layer at (8,632) size 320x256
+  RenderBlock {DIV} at (0,624) size 320x256 [bgcolor=#00FF00]
+    RenderInline {SPAN} at (0,0) size 320x64 [color=#008000]
+      RenderText {#text} at (0,32) size 320x64
+        text run at (0,32) width 320: "xxxxx"
+    RenderBR {BR} at (320,32) size 0x64
+    RenderBlock {DIV} at (0,160) size 256x64 [color=#008000]
+      RenderText {#text} at (0,0) size 256x64
+        text run at (0,0) width 256: "xxxx"
+    RenderInline {SPAN} at (0,0) size 64x64 [color=#008000]
+      RenderText {#text} at (256,160) size 64x64
+        text run at (256,160) width 64: "x"
+    RenderText {#text} at (0,0) size 0x0
+layer at (8,920) size 320x256
+  RenderBlock {DIV} at (0,912) size 320x256 [bgcolor=#00FF00]
+    RenderInline {SPAN} at (0,0) size 320x64 [color=#008000]
+      RenderText {#text} at (0,32) size 320x64
+        text run at (0,32) width 320: "xxxxx"
+    RenderBR {BR} at (320,32) size 0x64
+    RenderBlock {DIV} at (0,160) size 256x64 [color=#008000]
+      RenderText {#text} at (0,0) size 256x64
+        text run at (0,0) width 256: "xxxx"
+    RenderInline {SPAN} at (0,0) size 64x64 [color=#008000]
+      RenderText {#text} at (256,160) size 64x64
+        text run at (256,160) width 64: "x"
+    RenderText {#text} at (0,0) size 0x0
+layer at (8,1208) size 320x256
+  RenderBlock {DIV} at (0,1200) size 320x256 [bgcolor=#00FF00]
+    RenderInline {SPAN} at (0,0) size 320x64 [color=#008000]
+      RenderText {#text} at (0,32) size 320x64
+        text run at (0,32) width 320: "xxxxx"
+    RenderBR {BR} at (320,32) size 0x64
+    RenderBlock {DIV} at (0,160) size 256x64 [color=#008000]
+      RenderText {#text} at (0,0) size 256x64
+        text run at (0,0) width 256: "xxxx"
+    RenderInline {SPAN} at (0,0) size 64x64 [color=#008000]
+      RenderText {#text} at (256,160) size 64x64
+        text run at (256,160) width 64: "x"
+    RenderText {#text} at (0,0) size 0x0

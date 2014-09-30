@@ -1,158 +1,158 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x405
-  RenderBlock {HTML} at (0,0) size 800x405.19
-    RenderBody {BODY} at (8,16) size 784x18
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 500x18
-          text run at (0,0) width 500: "In all the following boxes, the fuchsia diamond should be surrounded by a ring."
-      RenderBlock (floating) {DIV} at (1.80,35.80) size 81x56 [border: (3px solid #000000)]
+layer at (0,0) size 800x403
+  RenderBlock {HTML} at (0,0) size 800x403.19
+    RenderBody {BODY} at (8,16) size 784x16
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 509x16
+          text run at (0,0) width 509: "In all the following boxes, the fuchsia diamond should be surrounded by a ring."
+      RenderBlock (floating) {DIV} at (1.80,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (86.39,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (86.39,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (170.98,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (170.98,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (255.58,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (255.58,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (340.17,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (340.17,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (424.77,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (424.77,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (509.36,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (509.36,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (593.95,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (593.95,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (678.55,35.80) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (678.55,33.80) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (1.80,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (1.80,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (86.39,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (86.39,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (170.98,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (170.98,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (255.58,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (255.58,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (340.17,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (340.17,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (424.77,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (424.77,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (509.36,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (509.36,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (593.95,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (593.95,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (678.55,95.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (678.55,93.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (1.80,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (1.80,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (86.39,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (86.39,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (170.98,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (170.98,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (255.58,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (255.58,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (340.17,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (340.17,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (424.77,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (424.77,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (509.36,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (509.36,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (593.95,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (593.95,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (678.55,154.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (678.55,152.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (1.80,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (1.80,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (86.39,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (86.39,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (170.98,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (170.98,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (255.58,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (255.58,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (340.17,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (340.17,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (424.77,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (424.77,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (509.36,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (509.36,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (593.95,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (593.95,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (678.55,213.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (678.55,211.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (1.80,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (1.80,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (86.39,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (86.39,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (170.98,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (170.98,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (255.58,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (255.58,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (340.17,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (340.17,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (424.77,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (424.77,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (509.36,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (509.36,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (593.95,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (593.95,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (678.55,272.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (678.55,270.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (1.80,331.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (1.80,329.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (86.39,331.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (86.39,329.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (170.98,331.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (170.98,329.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (255.58,331.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (255.58,329.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
-      RenderBlock (floating) {DIV} at (340.17,331.39) size 81x56 [border: (3px solid #000000)]
+      RenderBlock (floating) {DIV} at (340.17,329.39) size 81x56 [border: (3px solid #000000)]
         RenderBlock {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           RenderBlock {DIV} at (8,8) size 59x34
