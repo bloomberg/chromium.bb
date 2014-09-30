@@ -7,6 +7,32 @@ import("//build/config/ui.gni")
 import("//content/common/common.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
+if (is_chromeos && use_x11 && cpu_arch != "arm") {
+  action("libva_generate_stubs") {
+    extra_header = "gpu/media/va_stub_header.fragment"
+
+    script = "../../tools/generate_stubs/generate_stubs.py"
+    sources = [ "gpu/media/va.sigs" ]
+    source_prereqs = [ extra_header ]
+    stubs_filename_root = "va_stubs"
+
+    outputs = [
+      "$target_gen_dir/gpu/media/$stubs_filename_root.cc",
+      "$target_gen_dir/gpu/media/$stubs_filename_root.h",
+    ]
+    args = [
+      "-i", rebase_path("$target_gen_dir/gpu/media", root_build_dir),
+      "-o", rebase_path("$target_gen_dir/gpu/media", root_build_dir),
+      "-t", "posix_stubs",
+      "-e", rebase_path(extra_header, root_build_dir),
+      "-s", stubs_filename_root,
+      "-p", "content/common/gpu/media",
+    ]
+
+    args += rebase_path(sources, root_build_dir)
+  }
+}
+
 source_set("common") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
@@ -228,7 +254,15 @@ source_set("common") {
         "gpu/media/vaapi_wrapper.cc",
         "gpu/media/vaapi_wrapper.h",
       ]
-      assert(false, "Implement generate_stubs for libva")
+      configs += [
+        "//third_party/libva:libva_config",
+        "//third_party/libyuv:libyuv_config",
+      ]
+      deps += [
+        ":libva_generate_stubs",
+        "//media",
+        "//third_party/libyuv",
+      ]
     }
   }
 
