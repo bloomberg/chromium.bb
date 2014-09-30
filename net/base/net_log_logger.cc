@@ -57,7 +57,9 @@ namespace net {
 static const int kLogFormatVersion = 1;
 
 NetLogLogger::NetLogLogger(FILE* file, const base::Value& constants)
-    : file_(file), log_level_(NetLog::LOG_ALL_BUT_BYTES), added_events_(false) {
+    : file_(file),
+      log_level_(NetLog::LOG_STRIP_PRIVATE_DATA),
+      added_events_(false) {
   DCHECK(file);
 
   // Write constants to the output file.  This allows loading files that have

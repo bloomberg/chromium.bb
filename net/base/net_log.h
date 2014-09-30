@@ -300,10 +300,6 @@ class NET_EXPORT NetLog {
   static ParametersCallback StringCallback(const char* name,
                                            const base::string16* value);
 
- protected:
-  // Set the lowest allowed log level, regardless of any Observers.
-  void SetBaseLogLevel(LogLevel log_level);
-
  private:
   friend class BoundNetLog;
 
@@ -321,10 +317,6 @@ class NET_EXPORT NetLog {
 
   // Last assigned source ID.  Incremented to get the next one.
   base::subtle::Atomic32 last_id_;
-
-  // The lowest allowed log level, regardless of any Observers.
-  // Normally defaults to LOG_NONE, but can be changed with SetBaseLogLevel
-  LogLevel base_log_level_;
 
   // The current log level.
   base::subtle::Atomic32 effective_log_level_;

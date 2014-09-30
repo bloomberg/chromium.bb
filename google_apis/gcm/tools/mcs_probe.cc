@@ -162,15 +162,6 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
   scoped_ptr<MyTestURLRequestContext> context_;
 };
 
-// A net log that logs all events by default.
-class MyTestNetLog : public net::NetLog {
- public:
-  MyTestNetLog() {
-    SetBaseLogLevel(LOG_ALL);
-  }
-  virtual ~MyTestNetLog() {}
-};
-
 // A cert verifier that access all certificates.
 class MyTestCertVerifier : public net::CertVerifier {
  public:
@@ -229,9 +220,8 @@ class MCSProbe {
 
   // Network state.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  MyTestNetLog net_log_;
+  net::NetLog net_log_;
   scoped_ptr<net::NetLogLogger> logger_;
-  scoped_ptr<base::Value> net_constants_;
   scoped_ptr<net::HostResolver> host_resolver_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_ptr<net::ChannelIDService> system_channel_id_service_;
@@ -364,9 +354,10 @@ void MCSProbe::InitializeNetworkState() {
     log_file = fopen(log_path.value().c_str(), "w");
 #endif
   }
-  net_constants_.reset(net::NetLogLogger::GetConstants());
   if (log_file != NULL) {
-    logger_.reset(new net::NetLogLogger(log_file, *net_constants_));
+    scoped_ptr<base::Value> net_constants(net::NetLogLogger::GetConstants());
+    logger_.reset(new net::NetLogLogger(log_file, *net_constants));
+    logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
     logger_->StartObserving(&net_log_);
   }
 

@@ -176,6 +176,22 @@ class NetLogTempFileTest : public ::testing::Test {
     VerifyNetExportLog();
   }
 
+  // Make sure the export file has been successfully initialized.
+  void VerifyFileAndStateAfterDoStopWithStripPrivateData() {
+    EXPECT_EQ("NOT_LOGGING", GetStateString());
+    EXPECT_EQ(NetLogTempFile::STATE_NOT_LOGGING, net_log_temp_file_->state());
+    EXPECT_EQ("STRIP_PRIVATE_DATA", GetLogTypeString());
+    EXPECT_EQ(NetLogTempFile::LOG_TYPE_STRIP_PRIVATE_DATA,
+              net_log_temp_file_->log_type());
+
+    base::FilePath net_export_file_path;
+    EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
+    EXPECT_TRUE(base::PathExists(net_export_file_path));
+    EXPECT_EQ(net_export_log_, net_export_file_path);
+
+    VerifyNetExportLog();
+  }
+
   scoped_ptr<ChromeNetLog> net_log_;
   // |net_log_temp_file_| is initialized after |net_log_| so that it can stop
   // obvserving on destruction.
@@ -242,6 +258,25 @@ TEST_F(NetLogTempFileTest, ProcessCommandDoStartAndStop) {
   // Calling DO_STOP second time should be a no-op.
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
   VerifyFileAndStateAfterDoStop();
+}
+
+TEST_F(NetLogTempFileTest,
+       ProcessCommandDoStartAndStopWithPrivateDataStripping) {
+  net_log_temp_file_->ProcessCommand(
+      NetLogTempFile::DO_START_STRIP_PRIVATE_DATA);
+  VerifyFileAndStateAfterDoStartStripPrivateData();
+
+  // Calling DO_START_STRIP_PRIVATE_DATA second time should be a no-op.
+  net_log_temp_file_->ProcessCommand(
+      NetLogTempFile::DO_START_STRIP_PRIVATE_DATA);
+  VerifyFileAndStateAfterDoStartStripPrivateData();
+
+  net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
+  VerifyFileAndStateAfterDoStopWithStripPrivateData();
+
+  // Calling DO_STOP second time should be a no-op.
+  net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
+  VerifyFileAndStateAfterDoStopWithStripPrivateData();
 }
 
 TEST_F(NetLogTempFileTest, DoStartClearsFile) {

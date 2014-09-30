@@ -124,6 +124,7 @@ void NetLogTempFile::StartNetLog(bool strip_private_data) {
     net_log_logger_->set_log_level(net::NetLog::LOG_STRIP_PRIVATE_DATA);
     log_type_ = LOG_TYPE_STRIP_PRIVATE_DATA;
   } else {
+    net_log_logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
     log_type_ = LOG_TYPE_NORMAL;
   }
   net_log_logger_->StartObserving(chrome_net_log_);
