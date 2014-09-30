@@ -146,12 +146,7 @@ public:
     {
         ASSERT(Heap::heapDoesNotContainCacheIsEmpty());
 #if OS(POSIX)
-        int err = mprotect(m_base, m_size, PROT_READ | PROT_WRITE);
-        if (!err) {
-            madvise(m_base, m_size, MADV_NORMAL);
-            return true;
-        }
-        return false;
+        return !mprotect(m_base, m_size, PROT_READ | PROT_WRITE);
 #else
         void* result = VirtualAlloc(m_base, m_size, MEM_COMMIT, PAGE_READWRITE);
         return !!result;
