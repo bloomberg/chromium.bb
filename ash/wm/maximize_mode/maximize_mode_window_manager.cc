@@ -81,6 +81,7 @@ void MaximizeModeWindowManager::OnOverviewModeStarting() {
     return;
 
   EnableBackdropBehindTopWindowOnEachDisplay(false);
+  SetDeferBoundsUpdates(true);
   backdrops_hidden_ = true;
 }
 
@@ -90,6 +91,7 @@ void MaximizeModeWindowManager::OnOverviewModeEnding() {
 
   backdrops_hidden_ = false;
   EnableBackdropBehindTopWindowOnEachDisplay(true);
+  SetDeferBoundsUpdates(false);
 }
 
 void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
@@ -192,6 +194,15 @@ void MaximizeModeWindowManager::MaximizeAllWindows() {
 void MaximizeModeWindowManager::RestoreAllWindows() {
   while (window_state_map_.size())
     ForgetWindow(window_state_map_.begin()->first);
+}
+
+void MaximizeModeWindowManager::SetDeferBoundsUpdates(
+    bool defer_bounds_updates) {
+  for (WindowToState::iterator it = window_state_map_.begin();
+       it != window_state_map_.end();
+       ++it) {
+    it->second->SetDeferBoundsUpdates(defer_bounds_updates);
+  }
 }
 
 void MaximizeModeWindowManager::MaximizeAndTrackWindow(

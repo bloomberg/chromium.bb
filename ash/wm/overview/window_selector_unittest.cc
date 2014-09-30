@@ -17,6 +17,7 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
@@ -432,6 +433,46 @@ TEST_F(WindowSelectorTest, OverviewUndimsShelf) {
   EXPECT_FALSE(shelf->GetDimsShelf());
   ToggleOverview();
   EXPECT_TRUE(shelf->GetDimsShelf());
+}
+
+// Tests that entering overview when a fullscreen window is active in maximized
+// mode correctly applies the transformations to the window and correctly
+// updates the window bounds on exiting overview mode: http://crbug.com/401664.
+TEST_F(WindowSelectorTest, FullscreenWindowMaximizeMode) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  gfx::Rect normal_window_bounds(window1->bounds());
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window1.get())->OnWMEvent(&toggle_fullscreen_event);
+  gfx::Rect fullscreen_window_bounds(window1->bounds());
+  EXPECT_NE(normal_window_bounds.ToString(),
+            fullscreen_window_bounds.ToString());
+  EXPECT_EQ(fullscreen_window_bounds.ToString(),
+            window2->GetTargetBounds().ToString());
+  ToggleOverview();
+  // Window 2 would normally resize to normal window bounds on showing the shelf
+  // for overview but this is deferred until overview is exited.
+  EXPECT_EQ(fullscreen_window_bounds.ToString(),
+            window2->GetTargetBounds().ToString());
+  EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
+  ToggleOverview();
+
+  // Since the fullscreen window is still active, window2 will still have the
+  // larger bounds.
+  EXPECT_EQ(fullscreen_window_bounds.ToString(),
+            window2->GetTargetBounds().ToString());
+
+  // Enter overview again and select window 2. Selecting window 2 should show
+  // the shelf bringing window2 back to the normal bounds.
+  ToggleOverview();
+  ClickWindow(window2.get());
+  EXPECT_EQ(normal_window_bounds.ToString(),
+            window2->GetTargetBounds().ToString());
 }
 
 // Tests that beginning window selection hides the app list.

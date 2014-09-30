@@ -86,6 +86,10 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Restore all windows to their previous state.
   void RestoreAllWindows();
 
+  // Set whether to defer bounds updates on all tracked windows. When set to
+  // false bounds will be updated as they may be stale.
+  void SetDeferBoundsUpdates(bool defer_bounds_updates);
+
   // If the given window should be handled by us, this function will maximize it
   // and add it to the list of known windows (remembering the initial show
   // state).

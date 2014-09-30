@@ -308,6 +308,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   friend class ash::MaximizeModeWindowState;
   friend ASH_EXPORT WindowState* GetWindowState(aura::Window*);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
+  FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
+                           CrossFadeToBoundsFromTransform);
 
   explicit WindowState(aura::Window* window);
 

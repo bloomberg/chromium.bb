@@ -31,6 +31,10 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   // Leaves the maximize mode by reverting to previous state object.
   void LeaveMaximizeMode(wm::WindowState* window_state);
 
+  // Sets whether to ignore bounds updates. If set to false, immediately does a
+  // bounds update as the current window bounds may no longer be correct.
+  void SetDeferBoundsUpdates(bool defer_bounds_updates);
+
   // WindowState::State overrides:
   virtual void OnWMEvent(wm::WindowState* window_state,
                          const wm::WMEvent* event) OVERRIDE;
@@ -70,6 +74,9 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
   wm::WindowStateType current_state_type_;
+
+  // If true, do not update bounds.
+  bool defer_bounds_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowState);
 };

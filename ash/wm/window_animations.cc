@@ -67,12 +67,12 @@ int64 Round64(float f) {
 }
 
 base::TimeDelta GetCrossFadeDuration(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
+                                     const gfx::RectF& old_bounds,
                                      const gfx::Rect& new_bounds) {
   if (::wm::WindowAnimationsDisabled(window))
     return base::TimeDelta();
 
-  int old_area = old_bounds.width() * old_bounds.height();
+  int old_area = static_cast<int>(old_bounds.width() * old_bounds.height());
   int new_area = new_bounds.width() * new_bounds.height();
   int max_area = std::max(old_area, new_area);
   // Avoid divide by zero.
@@ -327,17 +327,25 @@ base::TimeDelta CrossFadeAnimation(
     gfx::Tween::Type tween_type) {
   DCHECK(old_layer_owner->root());
   const gfx::Rect old_bounds(old_layer_owner->root()->bounds());
+  gfx::RectF old_transformed_bounds(old_bounds);
+  gfx::Transform old_transform(old_layer_owner->root()->transform());
+  gfx::Transform old_transform_in_root;
+  old_transform_in_root.Translate(old_bounds.x(), old_bounds.y());
+  old_transform_in_root.PreconcatTransform(old_transform);
+  old_transform_in_root.Translate(-old_bounds.x(), -old_bounds.y());
+  old_transform_in_root.TransformRect(&old_transformed_bounds);
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
 
   // Shorten the animation if there's not much visual movement.
   const base::TimeDelta duration = GetCrossFadeDuration(window,
-                                                        old_bounds, new_bounds);
+      old_transformed_bounds, new_bounds);
 
   // Scale up the old layer while translating to new position.
   {
     ui::Layer* old_layer = old_layer_owner->root();
     old_layer->GetAnimator()->StopAnimating();
+    old_layer->SetTransform(old_transform);
     ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
 
     // Animation observer owns the old layer and deletes itself.
@@ -365,12 +373,12 @@ base::TimeDelta CrossFadeAnimation(
   // Set the new layer's current transform, such that the user sees a scaled
   // version of the window with the original bounds at the original position.
   gfx::Transform in_transform;
-  const float scale_x = static_cast<float>(old_bounds.width()) /
+  const float scale_x = old_transformed_bounds.width() /
       static_cast<float>(new_bounds.width());
-  const float scale_y = static_cast<float>(old_bounds.height()) /
+  const float scale_y = old_transformed_bounds.height() /
       static_cast<float>(new_bounds.height());
-  in_transform.Translate(old_bounds.x() - new_bounds.x(),
-                               old_bounds.y() - new_bounds.y());
+  in_transform.Translate(old_transformed_bounds.x() - new_bounds.x(),
+                         old_transformed_bounds.y() - new_bounds.y());
   in_transform.Scale(scale_x, scale_y);
   window->layer()->SetTransform(in_transform);
   if (!old_on_top) {
