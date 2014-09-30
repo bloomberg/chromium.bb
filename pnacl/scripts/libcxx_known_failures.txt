@@ -49,7 +49,6 @@ libc++::thread/futures/futures.unique_future/copy_assign.fail.cpp
 libc++::utilities/memory/unique.ptr/unique.ptr.runtime/unique.ptr.runtime.ctor/pointer_deleter04.fail.cpp
 libc++::utilities/memory/unique.ptr/unique.ptr.single/unique.ptr.single.asgn/move_convert13.fail.cpp
 libc++::utilities/memory/unique.ptr/unique.ptr.single/unique.ptr.single.ctor/pointer_deleter04.fail.cpp
-libc++::utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp
 
 # There are currently issues with atomics:
 #  - atomic_init of aggregates is broken.
@@ -100,8 +99,6 @@ libc++::localization/locale.categories/category.collate/locale.collate.byname/ty
 libc++::localization/locale.categories/category.ctype/locale.codecvt.byname/ctor_wchar_t.pass.cpp
 libc++::localization/locale.categories/category.ctype/locale.ctype.byname/is_1.pass.cpp
 libc++::localization/locale.categories/category.ctype/locale.ctype.byname/is_many.pass.cpp
-libc++::localization/locale.categories/category.ctype/locale.ctype.byname/narrow_1.pass.cpp
-libc++::localization/locale.categories/category.ctype/locale.ctype.byname/narrow_many.pass.cpp
 libc++::localization/locale.categories/category.ctype/locale.ctype.byname/scan_is.pass.cpp
 libc++::localization/locale.categories/category.ctype/locale.ctype.byname/scan_not.pass.cpp
 libc++::localization/locale.categories/category.ctype/locale.ctype.byname/tolower_1.pass.cpp
@@ -161,18 +158,34 @@ libc++::localization/locales/locale/locale.members/name.pass.cpp
 libc++::localization/locales/locale/locale.operators/eq.pass.cpp
 libc++::localization/locales/locale/locale.statics/classic.pass.cpp
 libc++::localization/locales/locale/locale.statics/global.pass.cpp
-libc++::re/re.alg/re.alg.match/basic.pass.cpp
-libc++::re/re.alg/re.alg.match/ecma.pass.cpp
-libc++::re/re.alg/re.alg.match/extended.pass.cpp
-libc++::re/re.alg/re.alg.search/awk.pass.cpp
-libc++::re/re.alg/re.alg.search/basic.pass.cpp
-libc++::re/re.alg/re.alg.search/ecma.pass.cpp
-libc++::re/re.alg/re.alg.search/extended.pass.cpp
 libc++::re/re.regex/re.regex.locale/imbue.pass.cpp
 libc++::re/re.traits/default.pass.cpp
 libc++::re/re.traits/getloc.pass.cpp
 libc++::re/re.traits/imbue.pass.cpp
-libc++::re/re.traits/lookup_collatename.pass.cpp
-libc++::re/re.traits/transform.pass.cpp
-libc++::re/re.traits/transform_primary.pass.cpp
 libc++::re/re.traits/translate_nocase.pass.cpp
+
+
+# Functions with exception specification for bad_alloc fail ABI verification
+# https://code.google.com/p/nativeclient/issues/detail?id=3962
+libc++::language.support/support.dynamic/new.delete/new.delete.single/new_replace.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_assign.pass.cpp
+libc++::test/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_function.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_rfunction.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_assign.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t_assign.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.mod/swap.pass.cpp
+libc++::utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/make_shared.pass.cpp
+# These also have symbol "has no initializer" ABI verifier fails and may be related
+libc++::input.output/iostream.objects/narrow.stream.objects/cout.pass.cpp
+libc++::input.output/iostream.objects/wide.stream.objects/wcout.pass.cpp
+libc++::input.output/iostream.objects/wide.stream.objects/wclog.pass.cpp
+libc++::input.output/iostream.objects/narrow.stream.objects/clog.pass.cpp
+
+# These are new since the merge to 3.5
+# TODO(jfb): Check them again after the merge
+libc++::thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
+libc++::experimental/string.view/string.view.access/at.pass.cpp
+libc++::atomics/atomics.types.generic/trivially_copyable.pass.cpp
