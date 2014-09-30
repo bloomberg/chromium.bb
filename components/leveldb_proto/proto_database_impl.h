@@ -16,12 +16,13 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
+#include "base/strings/string_split.h"
 #include "components/leveldb_proto/leveldb_database.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace leveldb_proto {
 
-typedef std::vector<std::pair<std::string, std::string> > KeyValueVector;
+typedef base::StringPairs KeyValueVector;
 typedef std::vector<std::string> KeyVector;
 
 // When the ProtoDatabaseImpl instance is deleted, in-progress asynchronous

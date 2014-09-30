@@ -359,7 +359,7 @@ class QueryParams {
   }
 
  private:
-  typedef std::vector<std::pair<std::string, std::string> > ParamMap;
+  typedef base::StringPairs ParamMap;
   ParamMap params_;
 };
 

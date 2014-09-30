@@ -15,10 +15,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_split.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "policy/proto/device_management_backend.pb.h"
+
 
 namespace net {
 class URLRequestContextGetter;
@@ -73,7 +75,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   void Start(const Callback& callback);
 
  protected:
-  typedef std::vector<std::pair<std::string, std::string> > ParameterMap;
+  typedef base::StringPairs ParameterMap;
 
   DeviceManagementRequestJob(JobType type,
                              const std::string& agent_parameter,

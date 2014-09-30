@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 
 namespace chrome {
 
@@ -23,7 +24,7 @@ bool IsInstantExtendedAPIEnabled();
 uint64 EmbeddedSearchPageVersion();
 
 // Type for a collection of experiment configuration parameters.
-typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
+typedef base::StringPairs FieldTrialFlags;
 
 // Finds the active field trial group name and parses out the configuration
 // flags. On success, |flags| will be filled with the field trial flags. |flags|
