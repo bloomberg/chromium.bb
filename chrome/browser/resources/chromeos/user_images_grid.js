@@ -246,6 +246,7 @@ cr.define('options', function() {
      *     |true|, capture is started immediately.
      * @param {!MediaStream} stream Stream object as returned by getUserMedia.
      * @private
+     * @suppress {deprecated}
      */
     handleCameraAvailable_: function(onAvailable, stream) {
       if (this.cameraStartInProgress_ && onAvailable()) {

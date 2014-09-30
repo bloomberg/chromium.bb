@@ -11,7 +11,7 @@
 cr.exportPath('cr.onc');
 
 /**
- * @typedef {(Object|Array|string|undefined)}
+ * @typedef {(Object|Array|string|number|undefined)}
  */
 cr.onc.OncValue;
 
@@ -154,6 +154,7 @@ cr.define('cr.onc', function() {
       var source = this.getActiveValue('Source');
       if (source == undefined)
         return 'None';
+      assert(typeof source == 'string');
       return source;
     },
 
@@ -165,6 +166,7 @@ cr.define('cr.onc', function() {
       var security = this.getActiveValue('WiFi.Security');
       if (security == undefined)
         return 'None';
+      assert(typeof security == 'string');
       return security;
     },
 

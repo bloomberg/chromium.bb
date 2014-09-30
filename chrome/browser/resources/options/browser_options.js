@@ -12,7 +12,6 @@ cr.exportPath('options');
  *            setupCompleted: (boolean|undefined),
  *            setupInProgress: (boolean|undefined),
  *            signedIn: (boolean|undefined),
- *            signinAllowed: (boolean|undefined),
  *            signinAllowed: boolean,
  *            signoutAllowed: (boolean|undefined),
  *            statusText: (string|undefined),
@@ -20,6 +19,11 @@ cr.exportPath('options');
  * @see chrome/browser/ui/webui/options/browser_options_handler.cc
  */
 options.SyncStatus;
+
+/**
+ * @typedef {{id: string, name: string}}
+ */
+options.ExtensionData;
 
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
@@ -1791,8 +1795,12 @@ cr.define('options', function() {
     /**
      * Toggles the warning boxes that show which extension is controlling
      * various settings of Chrome.
-     * @param {object} details A dictionary of ID+name pairs for each of the
-     *     settings controlled by an extension.
+     * @param {{searchEngine: options.ExtensionData,
+     *          homePage: options.ExtensionData,
+     *          startUpPage: options.ExtensionData,
+     *          newTabPage: options.ExtensionData,
+     *          proxy: options.ExtensionData}} details A dictionary of ID+name
+     *     pairs for each of the settings controlled by an extension.
      * @private
      */
     toggleExtensionIndicators_: function(details) {

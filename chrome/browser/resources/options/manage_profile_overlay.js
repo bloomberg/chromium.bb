@@ -418,7 +418,7 @@ cr.define('options', function() {
      * @private
      */
     onSigninError_: function() {
-      this.updateSignedInStatus_(this.signedInEmail_, true);
+      this.updateSignedInStatus(this.signedInEmail_, true);
     },
 
     /**
@@ -461,8 +461,15 @@ cr.define('options', function() {
         options.SupervisedUserListData.resetPromise();
     },
 
-    /** @private */
-    updateSignedInStatus_: assertNotReached,
+    /**
+     * Abstract method. Should be overriden in subclasses.
+     * @param {string} email
+     * @param {boolean} hasError
+     * @protected
+     */
+    updateSignedInStatus: function(email, hasError) {
+      assertNotReached();
+    },
 
     /**
      * Called when the user clicks "OK" or hits enter. Creates the profile
@@ -766,6 +773,15 @@ cr.define('options', function() {
         PageManager.showPageByName('supervisedUserCreateConfirm', false);
         BrowserOptions.updateManagesSupervisedUsers(true);
       }
+    },
+
+    /**
+     * @param {string} email
+     * @param {boolean} hasError
+     * @override
+     */
+    updateSignedInStatus: function(email, hasError) {
+      this.updateSignedInStatus_(email, hasError);
     },
 
     /**

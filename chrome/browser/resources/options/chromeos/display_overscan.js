@@ -24,7 +24,7 @@ cr.define('options', function() {
 
     /**
      * The ID of the target display.
-     * @private
+     * @private {?string}
      */
     id_: null,
 

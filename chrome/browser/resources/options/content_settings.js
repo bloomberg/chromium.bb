@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('options');
+
+/**
+ * @typedef {{appId: string,
+ *            appName: (string|undefined),
+ *            embeddingOrigin: (string|undefined),
+ *            origin: string,
+ *            setting: string,
+ *            source: string,
+ *            video: (string|undefined)}}
+ */
+options.Exception;
+
 cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
@@ -118,8 +131,8 @@ cr.define('options', function() {
 
   /**
    * Sets the values for all the content settings radios and labels.
-   * @param {Object} dict A mapping from radio groups to the checked value for
-   *     that group.
+   * @param {Object.<string, {managedBy: string, value: string}>} dict A mapping
+   *     from radio groups to the checked value for that group.
    */
   ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {
@@ -205,9 +218,9 @@ cr.define('options', function() {
   /**
    * Initializes an exceptions list.
    * @param {string} type The content type that we are setting exceptions for.
-   * @param {Array} exceptions An array of pairs, where the first element of
-   *     each pair is the filter string, and the second is the setting
-   *     (allow/block).
+   * @param {Array.<options.Exception>} exceptions An array of pairs, where the
+   *     first element of each pair is the filter string, and the second is the
+   *     setting (allow/block).
    */
   ContentSettings.setExceptions = function(type, exceptions) {
     this.getExceptionsList(type, 'normal').setExceptions(exceptions);

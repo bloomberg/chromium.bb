@@ -509,8 +509,8 @@ cr.define('options.contentSettings', function() {
     /**
      * Sets the exceptions in the js model.
      *
-     * @param {Object} entries A list of dictionaries of values, each dictionary
-     *     represents an exception.
+     * @param {Array.<options.Exception>} entries A list of dictionaries of
+     *     values, each dictionary represents an exception.
      */
     setExceptions: function(entries) {
       var deleteCount = this.dataModel.length;

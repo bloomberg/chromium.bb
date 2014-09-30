@@ -179,7 +179,7 @@ cr.define('options', function() {
             // a handler is installed by policy, removeHandler does nothing.
             delegate.setDefault(data.handlers[0]);
             for (var i = 0; i < data.handlers.length; ++i) {
-              delegate.removeHandler(value, data.handlers[i]);
+              delegate.removeHandler(i, data.handlers[i]);
             }
           };
         } else {

@@ -1294,7 +1294,9 @@ cr.define('options.internet', function() {
     }
     var savedPrefix = onc.getActiveValue('SavedIPConfig.RoutingPrefix');
     if (savedPrefix != undefined) {
-      var savedNetmask = prefixLengthToNetmask(savedPrefix);
+      assert(typeof savedPrefix == 'number');
+      var savedNetmask = prefixLengthToNetmask(
+          /** @type {number} */(savedPrefix));
       inetNetmask.automatic = savedNetmask;
       inetNetmask.value = savedNetmask;
     }
@@ -1320,7 +1322,9 @@ cr.define('options.internet', function() {
     }
     var staticPrefix = onc.getActiveValue('StaticIPConfig.RoutingPrefix');
     if (staticPrefix != undefined) {
-      var staticNetmask = prefixLengthToNetmask(staticPrefix);
+      assert(typeof staticPrefix == 'number');
+      var staticNetmask = prefixLengthToNetmask(
+          /** @type {number} */(staticPrefix));
       inetNetmask.user = staticNetmask;
       inetNetmask.value = staticNetmask;
     }

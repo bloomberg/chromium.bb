@@ -236,11 +236,13 @@ cr.define('cr.ui', function() {
      * Handles focus changes on the document.
      * @param {Event} e The focus event object.
      * @private
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove the suppression.
      */
     handleFocus_: function(e) {
       var target = e.target;
 
-      // Ignore focus on a menu button or command item
+      // Ignore focus on a menu button or command item.
       if (target.menu || target.command)
         return;
 
