@@ -604,17 +604,8 @@
       # Platform sends memory pressure signals natively.
       'native_memory_pressure_signals%': 0,
 
-      'data_reduction_fallback_host%' : '',
-      'data_reduction_dev_host%' : '',
-      'data_reduction_dev_fallback_host%' : '',
-      'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
-      'data_reduction_proxy_probe_url%' : '',
-      'data_reduction_proxy_warmup_url%' : '',
-      'data_reduction_proxy_ssl_origin%' : '',
-      'data_reduction_proxy_alt_origin%' : '',
-      'data_reduction_proxy_alt_fallback_origin%' : '',
       'enable_mdns%' : 0,
       'enable_service_discovery%': 0,
       'enable_wifi_bootstrapping%': 0,
@@ -977,20 +968,8 @@
         # Set the data reduction proxy origin for Android Webview.
         ['android_webview_build==0 and android_webview_telemetry_build==0 and chromecast==0', {
           'icu_use_data_file_flag%' : 1,
-          'spdy_proxy_auth_origin%': '',
-          'data_reduction_proxy_probe_url%': '',
-          'data_reduction_proxy_warmup_url%': '',
-          'data_reduction_dev_host%': '',
-          'data_reduction_dev_fallback_host%': '',
-          'data_reduction_fallback_host%': '',
         }, {
           'icu_use_data_file_flag%' : 0,
-          'spdy_proxy_auth_origin%': 'https://proxy.googlezip.net:443/',
-          'data_reduction_proxy_probe_url%': 'http://check.googlezip.net/connect',
-          'data_reduction_proxy_warmup_url%': 'http://www.gstatic.com/generate_204',
-          'data_reduction_dev_host%': 'https://proxy-dev.googlezip.net:443/',
-          'data_reduction_dev_fallback_host%': 'http://proxy-dev.googlezip.net:80/',
-          'data_reduction_fallback_host%': 'http://compress.googlezip.net:80/',
         }],
         ['OS=="win" or OS=="mac"', {
             'enable_wifi_bootstrapping%' : 1,
@@ -1190,17 +1169,8 @@
     'enable_managed_users%': '<(enable_managed_users)',
     'native_discardable_memory%': '<(native_discardable_memory)',
     'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
-    'data_reduction_fallback_host%': '<(data_reduction_fallback_host)',
-    'data_reduction_dev_host%': '<(data_reduction_dev_host)',
-    'data_reduction_dev_fallback_host%': '<(data_reduction_dev_fallback_host)',
-    'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
-    'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
-    'data_reduction_proxy_warmup_url%': '<(data_reduction_proxy_warmup_url)',
-    'data_reduction_proxy_ssl_origin%' : '<(data_reduction_proxy_ssl_origin)',
-    'data_reduction_proxy_alt_origin%' : '<(data_reduction_proxy_alt_origin)',
-    'data_reduction_proxy_alt_fallback_origin%' : '<(data_reduction_proxy_alt_fallback_origin)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_service_discovery%' : '<(enable_service_discovery)',
     'enable_wifi_bootstrapping%': '<(enable_wifi_bootstrapping)',
@@ -2911,46 +2881,11 @@
       ['enable_managed_users==1', {
         'defines': ['ENABLE_MANAGED_USERS=1'],
       }],
-      ['data_reduction_fallback_host != ""', {
-        'defines': [
-          'DATA_REDUCTION_FALLBACK_HOST="<(data_reduction_fallback_host)"'],
-      }],
-      ['data_reduction_dev_host != ""', {
-        'defines': [
-          'DATA_REDUCTION_DEV_HOST="<(data_reduction_dev_host)"'],
-      }],
-      ['data_reduction_dev_fallback_host != ""', {
-        'defines': [
-          'DATA_REDUCTION_DEV_FALLBACK_HOST="<(data_reduction_dev_fallback_host)"'],
-      }],
-      ['spdy_proxy_auth_origin != ""', {
-        'defines': ['SPDY_PROXY_AUTH_ORIGIN="<(spdy_proxy_auth_origin)"'],
-      }],
       ['spdy_proxy_auth_property != ""', {
         'defines': ['SPDY_PROXY_AUTH_PROPERTY="<(spdy_proxy_auth_property)"'],
       }],
       ['spdy_proxy_auth_value != ""', {
         'defines': ['SPDY_PROXY_AUTH_VALUE="<(spdy_proxy_auth_value)"'],
-      }],
-      ['data_reduction_proxy_probe_url != ""', {
-        'defines': [
-          'DATA_REDUCTION_PROXY_PROBE_URL="<(data_reduction_proxy_probe_url)"'],
-      }],
-      ['data_reduction_proxy_warmup_url != ""', {
-        'defines': [
-          'DATA_REDUCTION_PROXY_WARMUP_URL="<(data_reduction_proxy_warmup_url)"'],
-      }],
-      ['data_reduction_proxy_ssl_origin != ""', {
-        'defines': [
-          'DATA_REDUCTION_PROXY_SSL_ORIGIN="<(data_reduction_proxy_ssl_origin)"'],
-      }],
-      ['data_reduction_proxy_alt_origin != ""', {
-        'defines': [
-          'DATA_REDUCTION_PROXY_ALT_ORIGIN="<(data_reduction_proxy_alt_origin)"'],
-      }],
-      ['data_reduction_proxy_alt_fallback_origin != ""', {
-        'defines': [
-          'DATA_REDUCTION_PROXY_ALT_FALLBACK_ORIGIN="<(data_reduction_proxy_alt_fallback_origin)"'],
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],
