@@ -6792,3 +6792,8 @@ crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [
 
 crbug.com/340522 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.html [ Pass ImageOnlyFailure ]
 
+crbug.com/419041 [ Win ] inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
+crbug.com/419041 [ Win ] virtual/deferred/inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
+crbug.com/419041 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
+
+
