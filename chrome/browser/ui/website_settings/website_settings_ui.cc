@@ -273,6 +273,9 @@ int WebsiteSettingsUI::GetIdentityIconID(
     case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       resource_id = IDR_PAGEINFO_ENTERPRISE_MANAGED;
       break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
+      resource_id = IDR_PAGEINFO_WARNING_MINOR;
+      break;
     default:
       NOTREACHED();
       break;

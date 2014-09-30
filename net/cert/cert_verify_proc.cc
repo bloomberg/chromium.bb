@@ -262,6 +262,9 @@ int CertVerifyProc::Verify(X509Certificate* cert,
       rv = MapCertStatusToNetError(verify_result->cert_status);
   }
 
+  if (verify_result->has_sha1)
+    verify_result->cert_status |= CERT_STATUS_SHA1_SIGNATURE_PRESENT;
+
   // Flag certificates from publicly-trusted CAs that are issued to intranet
   // hosts. While the CA/Browser Forum Baseline Requirements (v1.1) permit
   // these to be issued until 1 November 2015, they represent a real risk for

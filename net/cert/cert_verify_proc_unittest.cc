@@ -644,7 +644,7 @@ TEST_F(CertVerifyProcTest, TestKnownRoot) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
 }
 
@@ -678,7 +678,7 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
   ASSERT_LE(2U, verify_result.public_key_hashes.size());
 
   HashValueVector sha1_hashes;
@@ -1076,7 +1076,7 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
 
   // Attempt to verify with the first known cross-certified intermediate
   // provided.
@@ -1099,7 +1099,7 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
                  empty_cert_list_,
                  &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
 
   // Attempt to verify with the second known cross-certified intermediate
   // provided.
@@ -1122,7 +1122,7 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
                  empty_cert_list_,
                  &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
 
   // Attempt to verify when both a cross-certified intermediate AND
   // the legacy GTE root are provided.
@@ -1142,7 +1142,7 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
                  empty_cert_list_,
                  &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
 
   TestRootCerts::GetInstance()->Clear();
   EXPECT_TRUE(TestRootCerts::GetInstance()->IsEmpty());
@@ -1240,7 +1240,7 @@ TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
 
   // Test revocation by serial number of a certificate not under the root.
   scoped_refptr<CRLSet> crl_set;

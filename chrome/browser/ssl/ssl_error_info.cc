@@ -150,6 +150,7 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE);
       short_description = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_DETAILS_PINNING_FAILURE);
+      break;
     case UNKNOWN:
       details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
       short_description =

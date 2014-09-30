@@ -138,6 +138,60 @@ const double kMaxRequestsPerProcessRatio = 0.45;
 // same resource (see bugs 46104 and 31014).
 const int kDefaultDetachableCancelDelayMs = 30000;
 
+enum SHA1HistogramTypes {
+  // SHA-1 is not present in the certificate chain.
+  SHA1_NOT_PRESENT = 0,
+  // SHA-1 is present in the certificate chain, and the leaf expires on or
+  // after January 1, 2017.
+  SHA1_EXPIRES_AFTER_JANUARY_2017 = 1,
+  // SHA-1 is present in the certificate chain, and the leaf expires on or
+  // after June 1, 2016.
+  SHA1_EXPIRES_AFTER_JUNE_2016 = 2,
+  // SHA-1 is present in the certificate chain, and the leaf expires on or
+  // after January 1, 2016.
+  SHA1_EXPIRES_AFTER_JANUARY_2016 = 3,
+  // SHA-1 is present in the certificate chain, but the leaf expires before
+  // January 1, 2016
+  SHA1_PRESENT = 4,
+  // Always keep this at the end.
+  SHA1_HISTOGRAM_TYPES_MAX,
+};
+
+void RecordCertificateHistograms(const net::SSLInfo& ssl_info,
+                                 ResourceType resource_type) {
+  // The internal representation of the dates for UI treatment of SHA-1.
+  // See http://crbug.com/401365 for details
+  static const int64_t kJanuary2017 = INT64_C(13127702400000000);
+  static const int64_t kJune2016 = INT64_C(13109213000000000);
+  static const int64_t kJanuary2016 = INT64_C(13096080000000000);
+
+  SHA1HistogramTypes sha1_histogram = SHA1_NOT_PRESENT;
+  if (ssl_info.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) {
+    DCHECK(ssl_info.cert.get());
+    if (ssl_info.cert->valid_expiry() >=
+        base::Time::FromInternalValue(kJanuary2017)) {
+      sha1_histogram = SHA1_EXPIRES_AFTER_JANUARY_2017;
+    } else if (ssl_info.cert->valid_expiry() >=
+               base::Time::FromInternalValue(kJune2016)) {
+      sha1_histogram = SHA1_EXPIRES_AFTER_JUNE_2016;
+    } else if (ssl_info.cert->valid_expiry() >=
+               base::Time::FromInternalValue(kJanuary2016)) {
+      sha1_histogram = SHA1_EXPIRES_AFTER_JANUARY_2016;
+    } else {
+      sha1_histogram = SHA1_PRESENT;
+    }
+  }
+  if (resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+    UMA_HISTOGRAM_ENUMERATION("Net.Certificate.SHA1.MainFrame",
+                              sha1_histogram,
+                              SHA1_HISTOGRAM_TYPES_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Net.Certificate.SHA1.Subresource",
+                              sha1_histogram,
+                              SHA1_HISTOGRAM_TYPES_MAX);
+  }
+}
+
 bool IsDetachableResourceType(ResourceType type) {
   switch (type) {
     case RESOURCE_TYPE_PREFETCH:
@@ -799,6 +853,11 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.ErrorCodesForSubresources2",
         -loader->request()->status().error());
+  }
+
+  if (loader->request()->url().SchemeIsSecure()) {
+    RecordCertificateHistograms(loader->request()->ssl_info(),
+                                info->GetResourceType());
   }
 
   if (delegate_)

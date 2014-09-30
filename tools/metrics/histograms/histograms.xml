@@ -14554,6 +14554,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.Certificate.SHA1.MainFrame" enum="SHA1Status">
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether or not SHA-1 was present in a resource fetched for the main frame,
+    and if so, what its maximum validity period was.
+  </summary>
+</histogram>
+
+<histogram name="Net.Certificate.SHA1.Subresource" enum="SHA1Status">
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether or not SHA-1 was present in a subresource fetch, and if so, what its
+    maximum validity period was.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificatePinSuccess" enum="BooleanSuccess">
   <obsolete>
     Renamed to Net.PublicKeyPinSuccess 28 Oct 2011.
@@ -50655,6 +50671,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Total Fail">
     Failed to open the database and also failed to delete and start over.
   </int>
+</enum>
+
+<enum name="SHA1Status" type="int">
+  <summary>
+    Whether or not SHA-1 was present in a certificate chain and, if it was, when
+    the leaf certificate expired.
+  </summary>
+  <int value="0" label="Not present"/>
+  <int value="1" label="Expires after Jan 1, 2017"/>
+  <int value="2" label="Expires between Jun 1, 2016 and Jan 1, 2017"/>
+  <int value="3" label="Expires between Jan 1, 2016 and Jun 1, 2016"/>
+  <int value="4" label="Expires before Jan 1, 2016"/>
 </enum>
 
 <enum name="ShelfAlignmentValue" type="int">

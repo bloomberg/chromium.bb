@@ -66,6 +66,9 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     // The profile has accessed data using an administrator-provided
     // certificate, so the site might be able to intercept data.
     SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT,
+    // The website provided a valid certificate, but the certificate or chain
+    // is using a deprecated signature algorithm.
+    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
   };
 
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
