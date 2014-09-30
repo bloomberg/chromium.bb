@@ -123,8 +123,8 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
 
         Node property = call.getChildAtIndex(2);
 
-        Node getPropNode = NodeUtil.newQualifiedNameNode(compiler.getCodingConvention(),
-                target + "." + property.getString()).srcrefTree(call);
+        Node getPropNode = NodeUtil.newQName(
+                compiler, target + "." + property.getString()).srcrefTree(call);
 
         if (callee.matchesQualifiedName(CR_DEFINE_PROPERTY)) {
             setJsDocWithType(getPropNode, getTypeByCrPropertyKind(call.getChildAtIndex(3)));
@@ -233,8 +233,7 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
         if (field.endsWith("_")) {
             String publicName = field.substring(0, field.length() - 1);
             if (publicAPIStrings.contains(publicName)) {
-                Node methodDeclaration = NodeUtil.newQualifiedNameNode(
-                        compiler.getCodingConvention(), className + "." + publicName);
+                Node methodDeclaration = NodeUtil.newQName(compiler, className + "." + publicName);
                 if (jsDocSourceNode.getJSDocInfo() != null) {
                     methodDeclaration.setJSDocInfo(jsDocSourceNode.getJSDocInfo());
                     scope.addChildBefore(
@@ -448,8 +447,8 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
 
         private Node buildQualifiedName(Node internalName) {
             String externalName = this.exports.get(internalName.getString());
-            return NodeUtil.newQualifiedNameNode(compiler.getCodingConvention(),
-                    this.namespaceName + "." + externalName).srcrefTree(internalName);
+            return NodeUtil.newQName(compiler, this.namespaceName + "." + externalName).srcrefTree(
+                    internalName);
         }
     }
 }
