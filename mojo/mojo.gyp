@@ -611,6 +611,7 @@
             'public/python/mojo/bindings/__init__.py',
             'public/python/mojo/bindings/descriptor.py',
             'public/python/mojo/bindings/messaging.py',
+            'public/python/mojo/bindings/promise.py',
             'public/python/mojo/bindings/reflection.py',
             'public/python/mojo/bindings/serialization.py',
           ],
