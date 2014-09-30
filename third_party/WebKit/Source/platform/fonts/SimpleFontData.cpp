@@ -101,7 +101,6 @@ void SimpleFontData::platformGlyphInit()
 {
     GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
     if (!glyphPageZero) {
-        WTF_LOG_ERROR("Failed to get glyph page zero.");
         m_spaceGlyph = 0;
         m_spaceWidth = 0;
         m_zeroGlyph = 0;

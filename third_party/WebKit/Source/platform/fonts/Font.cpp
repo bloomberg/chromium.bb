@@ -292,6 +292,12 @@ CodePath Font::codePath(const TextRun& run) const
     if (run.length() > 1 && fontDescription().typesettingFeatures())
         return ComplexPath;
 
+    // FIXME: This really shouldn't be needed but for some reason the
+    // TextRendering setting doesn't propagate to typesettingFeatures in time
+    // for the prefs width calculation.
+    if (fontDescription().textRendering() == OptimizeLegibility || fontDescription().textRendering() == GeometricPrecision)
+        return ComplexPath;
+
     if (!run.characterScanForCodePath())
         return SimplePath;
 
