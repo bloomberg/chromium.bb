@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.8",
+  "version": "9.9",
   "entries": [
     {
       "id": 1,
@@ -1122,6 +1122,19 @@ LONG_STRING_CONST(
       "machine_model_name": ["SM-.*"],
       "features": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 102,
+      "description": "Accelerated 2D canvas and Ganesh broken on Galaxy Tab 2",
+      "cr_bugs": [416910],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "PowerVR SGX 540",
+      "features": [
+        "accelerated_2d_canvas",
+        "gpu_rasterization"
       ]
     }
   ]
