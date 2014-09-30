@@ -301,8 +301,8 @@ base::string16 InputMethodUtil::GetInputMethodMediumName(
   return GetInputMethodShortName(input_method);
 }
 
-base::string16 InputMethodUtil::GetInputMethodLongName(
-    const InputMethodDescriptor& input_method) const {
+base::string16 InputMethodUtil::GetInputMethodLongNameInternal(
+    const InputMethodDescriptor& input_method, bool short_name) const {
   if (!input_method.name().empty() && !IsKeyboardLayout(input_method.id())) {
     // If the descriptor has a name, use it.
     return base::UTF8ToUTF16(input_method.name());
@@ -310,30 +310,34 @@ base::string16 InputMethodUtil::GetInputMethodLongName(
 
   // We don't show language here.  Name of keyboard layout or input method
   // usually imply (or explicitly include) its language.
-
   // Special case for German, French and Dutch: these languages have multiple
   // keyboard layouts and share the same layout of keyboard (Belgian). We need
-  // to show explicitly the language for the layout. For Arabic, Amharic, and
-  // Indic languages: they share "Standard Input Method".
-  const base::string16 standard_input_method_text =
-      delegate_->GetLocalizedString(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
+  // to show explicitly the language for the layout.
   DCHECK(!input_method.language_codes().empty());
   const std::string language_code = input_method.language_codes().at(0);
 
-  base::string16 text = TranslateString(input_method.id());
-  if (text == standard_input_method_text ||
-             language_code == "de" ||
-             language_code == "fr" ||
-             language_code == "nl") {
+  base::string16 text = (short_name || input_method.name().empty())
+      ? TranslateString(input_method.id())
+      : base::UTF8ToUTF16(input_method.name());
+  if (language_code == "de" || language_code == "fr" || language_code == "nl") {
     const base::string16 language_name = delegate_->GetDisplayLanguageName(
         language_code);
-
     text = language_name + base::UTF8ToUTF16(" - ") + text;
   }
 
   DCHECK(!text.empty());
   return text;
+}
+
+
+base::string16 InputMethodUtil::GetInputMethodLongNameStripped(
+    const InputMethodDescriptor& input_method) const {
+  return GetInputMethodLongNameInternal(input_method, true /* short_name */);
+}
+
+base::string16 InputMethodUtil::GetInputMethodLongName(
+    const InputMethodDescriptor& input_method) const {
+  return GetInputMethodLongNameInternal(input_method, false /* short_name */);
 }
 
 const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromId(

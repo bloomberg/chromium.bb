@@ -57,6 +57,8 @@ class InputMethodUtil {
       const InputMethodDescriptor& input_method) const;
   base::string16 GetInputMethodMediumName(
       const InputMethodDescriptor& input_method) const;
+  base::string16 GetInputMethodLongNameStripped(
+      const InputMethodDescriptor& input_method) const;
   base::string16 GetInputMethodLongName(
       const InputMethodDescriptor& input_method) const;
 
@@ -176,6 +178,12 @@ class InputMethodUtil {
  private:
   bool TranslateStringInternal(const std::string& english_string,
                                base::string16 *out_string) const;
+
+  // Get long name of the given input method. |short_name| is to specify whether
+  // to get the long name for OOBE screen, because OOBE screen displays shorter
+  // name (e.g. 'US' instead of 'US keyboard').
+  base::string16 GetInputMethodLongNameInternal(
+      const InputMethodDescriptor& input_method, bool short_name) const;
 
   // Map from language code to associated input method IDs, etc.
   typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;

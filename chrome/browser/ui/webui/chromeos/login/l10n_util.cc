@@ -47,7 +47,8 @@ scoped_ptr<base::DictionaryValue> CreateInputMethodsEntry(
   const std::string& ime_id = method.id();
   scoped_ptr<base::DictionaryValue> input_method(new base::DictionaryValue);
   input_method->SetString("value", ime_id);
-  input_method->SetString("title", util->GetInputMethodLongName(method));
+  input_method->SetString(
+      "title", util->GetInputMethodLongNameStripped(method));
   input_method->SetBoolean("selected", ime_id == selected);
   return input_method.Pass();
 }
