@@ -11,7 +11,7 @@ var SSL_CMD_HELP = 4;
 var SSL_CMD_CLOCK = 5;
 
 function setupSSLDebuggingInfo() {
-  if (!loadTimeData.getString('type') == 'SSL')
+  if (loadTimeData.getString('type') != 'SSL')
     return;
 
   // The titles are not internationalized because this is debugging information
