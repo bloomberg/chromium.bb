@@ -56,8 +56,6 @@
     'ext/lazy_pixel_ref.h',
     'ext/opacity_draw_filter.cc',
     'ext/opacity_draw_filter.h',
-    'ext/paint_simplifier.cc',
-    'ext/paint_simplifier.h',
     'ext/pixel_ref_utils.cc',
     'ext/pixel_ref_utils.h',
     'ext/platform_canvas.cc',
