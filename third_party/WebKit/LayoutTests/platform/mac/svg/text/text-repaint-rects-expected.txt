@@ -1,0 +1,58 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x147
+  RenderBlock {html} at (0,0) size 800x147
+    RenderBody {body} at (8,16) size 784x115
+      RenderBlock {p} at (0,0) size 784x115
+        RenderText {#text} at (0,35) size 226x16
+          text run at (0,35) width 226: "The alphabet A through M is here: "
+        RenderSVGRoot {svg} at (233,25) size 501x38
+          RenderSVGContainer {g} at (233,25) size 501x38 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,47.00)}]
+            RenderSVGText {text} at (0,-38) size 37x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 37x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "A"
+            RenderSVGText {text} at (0,-38) size 34x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 34x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 33.35: "B"
+            RenderSVGText {text} at (0,-38) size 34x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 34x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 33.35: "C"
+            RenderSVGText {text} at (0,-38) size 37x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 37x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "D"
+            RenderSVGText {text} at (0,-38) size 31x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 31x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 30.54: "E"
+            RenderSVGText {text} at (0,-38) size 28x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 28x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 27.81: "F"
+            RenderSVGText {text} at (0,-38) size 37x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 37x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "G"
+            RenderSVGText {text} at (0,-38) size 37x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 37x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "H"
+            RenderSVGText {text} at (0,-38) size 17x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 17x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 16.65: "I"
+            RenderSVGText {text} at (0,-38) size 20x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 20x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 19.46: "J"
+            RenderSVGText {text} at (0,-38) size 37x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 37x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "K"
+            RenderSVGText {text} at (0,-38) size 31x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 31x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 30.54: "L"
+            RenderSVGText {text} at (0,-38) size 45x51 contains 1 chunk(s)
+              RenderSVGInlineText {#text} at (0,0) size 45x51
+                chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 44.46: "M"
+        RenderText {#text} at (725,35) size 779x80
+          text run at (725,35) width 5: " "
+          text run at (729,35) width 50: "this test"
+          text run at (0,51) width 771: "case is specially constructed so that when the view is sized to 800x600 (the default for DumpRenderTree) the text wraps"
+          text run at (0,67) width 340: "and not all of the text in the SVG is drawn correctly. "
+          text run at (339,67) width 320: "You should see all of A-L (and half of M) above. "
+          text run at (658,67) width 89: "The code was"
+          text run at (0,83) width 742: "incorrectly calculating the PaintInfo::rect (damage rect) when passing it through RenderBlock and render block was"
+          text run at (0,99) width 379: "(correctly) clipping out some of the lineboxes during paint."

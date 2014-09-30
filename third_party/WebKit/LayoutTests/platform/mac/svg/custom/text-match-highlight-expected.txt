@@ -1,88 +1,88 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x410
-  RenderBlock {HTML} at (0,0) size 800x410
-    RenderBody {BODY} at (8,8) size 784x394
-      RenderText {#text} at (0,0) size 450x18
-        text run at (0,0) width 450: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
-      RenderInline {SPAN} at (0,0) size 44x18
-        RenderText {#text} at (450,0) size 44x18
-          text run at (450,0) width 44: "findme"
-      RenderText {#text} at (494,0) size 745x36
-        text run at (494,0) width 135: "\". The 6th higlighted "
-        text run at (629,0) width 116: "instance should be"
-        text run at (0,18) width 41: "active."
-      RenderBR {BR} at (41,18) size 0x18
-      RenderBR {BR} at (0,36) size 0x18
-      RenderText {#text} at (0,54) size 89x18
-        text run at (0,54) width 89: "Lorum ipsum "
-      RenderInline {SPAN} at (0,0) size 44x18
-        RenderText {#text} at (89,54) size 44x18
-          text run at (89,54) width 44: "findme"
-      RenderText {#text} at (133,54) size 87x18
-        text run at (133,54) width 87: " lorum ipsum "
-      RenderInline {SPAN} at (0,0) size 44x18
-        RenderText {#text} at (220,54) size 44x18
-          text run at (220,54) width 44: "findme"
-      RenderInline {SPAN} at (0,0) size 44x18
-        RenderText {#text} at (264,54) size 44x18
-          text run at (264,54) width 44: "findme"
-      RenderText {#text} at (308,54) size 45x18
-        text run at (308,54) width 45: " lorum."
-      RenderBR {BR} at (353,54) size 0x18
-      RenderText {#text} at (0,72) size 51x18
-        text run at (0,72) width 51: "longtext"
-      RenderInline {SPAN} at (0,0) size 44x18
-        RenderText {#text} at (51,72) size 44x18
-          text run at (51,72) width 44: "findme"
-      RenderText {#text} at (95,72) size 44x18
-        text run at (95,72) width 44: "noyou."
-      RenderBR {BR} at (139,72) size 0x18
-      RenderSVGRoot {svg} at (18,134) size 223x160
+layer at (0,0) size 800x400
+  RenderBlock {HTML} at (0,0) size 800x400
+    RenderBody {BODY} at (8,8) size 784x384
+      RenderText {#text} at (0,0) size 458x16
+        text run at (0,0) width 458: "Test for crbug.com/56580: There should be 9 highlighted instances of \""
+      RenderInline {SPAN} at (0,0) size 46x16
+        RenderText {#text} at (457,0) size 46x16
+          text run at (457,0) width 46: "findme"
+      RenderText {#text} at (502,0) size 758x32
+        text run at (502,0) width 138: "\". The 6th higlighted "
+        text run at (639,0) width 119: "instance should be"
+        text run at (0,16) width 43: "active."
+      RenderBR {BR} at (42,16) size 1x16
+      RenderBR {BR} at (0,32) size 0x16
+      RenderText {#text} at (0,48) size 91x16
+        text run at (0,48) width 91: "Lorum ipsum "
+      RenderInline {SPAN} at (0,0) size 46x16
+        RenderText {#text} at (90,48) size 46x16
+          text run at (90,48) width 46: "findme"
+      RenderText {#text} at (135,48) size 91x16
+        text run at (135,48) width 91: " lorum ipsum "
+      RenderInline {SPAN} at (0,0) size 46x16
+        RenderText {#text} at (225,48) size 46x16
+          text run at (225,48) width 46: "findme"
+      RenderInline {SPAN} at (0,0) size 46x16
+        RenderText {#text} at (270,48) size 46x16
+          text run at (270,48) width 46: "findme"
+      RenderText {#text} at (315,48) size 48x16
+        text run at (315,48) width 48: " lorum."
+      RenderBR {BR} at (362,48) size 1x16
+      RenderText {#text} at (0,64) size 53x16
+        text run at (0,64) width 53: "longtext"
+      RenderInline {SPAN} at (0,0) size 46x16
+        RenderText {#text} at (52,64) size 46x16
+          text run at (52,64) width 46: "findme"
+      RenderText {#text} at (97,64) size 45x16
+        text run at (97,64) width 45: "noyou."
+      RenderBR {BR} at (141,64) size 1x16
+      RenderSVGRoot {svg} at (18,126) size 228x158
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
-          RenderSVGPath {path} at (108,98) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
-        RenderSVGText {text} at (10,36) size 223x18 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 223x18
-            chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 35 width 223.00: "Can you findme in this boring text?"
-        RenderSVGText {text} at (10,90) size 138x13 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 138x12
-            chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.00: "Findme in a typewriter!"
-        RenderSVGContainer {g} at (28,222) size 197x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
-          RenderSVGText {text} at (69,15) size 654x236 contains 1 chunk(s)
-            RenderSVGTextPath {textPath} at (0,0) size 653x236
-              RenderSVGInlineText {#text} at (0,0) size 653x236
-                chunk 1 text run 1 at (108.29,191.71) startOffset 0 endOffset 1 width 23.33: "F"
-                chunk 1 text run 2 at (120.14,179.93) startOffset 1 endOffset 2 width 10.00: "i"
-                chunk 1 text run 3 at (133.16,167.11) startOffset 2 endOffset 3 width 26.67: "n"
-                chunk 1 text run 4 at (152.41,148.66) startOffset 3 endOffset 4 width 26.67: "d"
-                chunk 1 text run 5 at (177.11,126.28) startOffset 4 endOffset 5 width 40.00: "m"
-                chunk 1 text run 6 at (202.97,105.12) startOffset 5 endOffset 6 width 26.67: "e"
-                chunk 1 text run 7 at (219.16,93.38) startOffset 6 endOffset 7 width 13.33: " "
-                chunk 1 text run 8 at (236.00,82.63) startOffset 7 endOffset 8 width 26.67: "o"
-                chunk 1 text run 9 at (259.75,70.45) startOffset 8 endOffset 9 width 26.67: "n"
-                chunk 1 text run 10 at (278.52,63.62) startOffset 9 endOffset 10 width 13.33: " "
-                chunk 1 text run 11 at (297.98,59.50) startOffset 10 endOffset 11 width 26.67: "a"
-                chunk 1 text run 12 at (317.94,58.74) startOffset 11 endOffset 12 width 13.33: " "
-                chunk 1 text run 13 at (337.66,61.77) startOffset 12 endOffset 13 width 26.67: "p"
-                chunk 1 text run 14 at (362.47,71.47) startOffset 13 endOffset 14 width 26.67: "a"
-                chunk 1 text run 15 at (380.70,83.13) startOffset 14 endOffset 15 width 16.67: "t"
-                chunk 1 text run 16 at (397.11,97.16) startOffset 15 endOffset 16 width 26.67: "h"
-                chunk 1 text run 17 at (412.58,112.56) startOffset 16 endOffset 17 width 16.67: "!"
-                chunk 1 text run 18 at (423.24,123.14) startOffset 17 endOffset 18 width 13.33: " "
-                chunk 1 text run 19 at (439.86,139.40) startOffset 18 endOffset 19 width 33.33: "D"
-                chunk 1 text run 20 at (455.57,154.30) startOffset 19 endOffset 20 width 10.00: "i"
-                chunk 1 text run 21 at (469.16,166.71) startOffset 20 endOffset 21 width 26.67: "d"
-                chunk 1 text run 22 at (484.28,179.84) startOffset 21 endOffset 22 width 13.33: " "
-                chunk 1 text run 23 at (499.81,192.45) startOffset 22 endOffset 23 width 26.67: "y"
-                chunk 1 text run 24 at (521.40,208.15) startOffset 23 endOffset 24 width 26.67: "o"
-                chunk 1 text run 25 at (544.18,221.98) startOffset 24 endOffset 25 width 26.67: "u"
-                chunk 1 text run 26 at (562.22,230.60) startOffset 25 endOffset 26 width 13.33: " "
-                chunk 1 text run 27 at (574.71,235.21) startOffset 26 endOffset 27 width 13.33: "f"
-                chunk 1 text run 28 at (585.90,238.31) startOffset 27 endOffset 28 width 10.00: "i"
-                chunk 1 text run 29 at (603.99,241.11) startOffset 28 endOffset 29 width 26.67: "n"
-                chunk 1 text run 30 at (630.53,239.78) startOffset 29 endOffset 30 width 26.67: "d"
-                chunk 1 text run 31 at (661.90,228.83) startOffset 30 endOffset 31 width 40.00: "m"
-                chunk 1 text run 32 at (689.27,209.97) startOffset 31 endOffset 32 width 26.67: "e"
-                chunk 1 text run 33 at (707.58,192.61) startOffset 32 endOffset 33 width 23.33: "?"
+          RenderSVGPath {path} at (108,88) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
+        RenderSVGText {text} at (10,38) size 228x16 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 228x16
+            chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 35 width 227.52: "Can you findme in this boring text?"
+        RenderSVGText {text} at (10,92) size 139x10 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 139x10
+            chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.02: "Findme in a typewriter!"
+        RenderSVGContainer {g} at (28,212) size 200x72 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
+          RenderSVGText {text} at (69,14) size 663x238 contains 1 chunk(s)
+            RenderSVGTextPath {textPath} at (0,0) size 662x238
+              RenderSVGInlineText {#text} at (0,0) size 662x238
+                chunk 1 text run 1 at (108.68,191.33) startOffset 0 endOffset 1 width 24.43: "F"
+                chunk 1 text run 2 at (121.50,178.57) startOffset 1 endOffset 2 width 11.66: "i"
+                chunk 1 text run 3 at (135.20,165.12) startOffset 2 endOffset 3 width 26.89: "n"
+                chunk 1 text run 4 at (154.50,146.70) startOffset 3 endOffset 4 width 26.48: "d"
+                chunk 1 text run 5 at (179.76,124.00) startOffset 4 endOffset 5 width 41.34: "m"
+                chunk 1 text run 6 at (205.72,103.04) startOffset 5 endOffset 6 width 25.32: "e"
+                chunk 1 text run 7 at (222.14,91.36) startOffset 6 endOffset 7 width 14.94: " "
+                chunk 1 text run 8 at (239.46,80.63) startOffset 7 endOffset 8 width 25.79: "o"
+                chunk 1 text run 9 at (263.08,69.05) startOffset 8 endOffset 9 width 26.89: "n"
+                chunk 1 text run 10 at (282.88,62.43) startOffset 9 endOffset 10 width 14.94: " "
+                chunk 1 text run 11 at (302.75,58.99) startOffset 10 endOffset 11 width 25.52: "a"
+                chunk 1 text run 12 at (322.94,59.14) startOffset 11 endOffset 12 width 14.94: " "
+                chunk 1 text run 13 at (343.19,63.35) startOffset 12 endOffset 13 width 26.48: "p"
+                chunk 1 text run 14 at (366.84,73.90) startOffset 13 endOffset 14 width 25.52: "a"
+                chunk 1 text run 15 at (384.24,85.86) startOffset 14 endOffset 15 width 16.75: "t"
+                chunk 1 text run 16 at (400.51,100.51) startOffset 15 endOffset 16 width 26.89: "h"
+                chunk 1 text run 17 at (416.01,115.98) startOffset 16 endOffset 17 width 16.73: "!"
+                chunk 1 text run 18 at (427.26,127.11) startOffset 17 endOffset 18 width 14.94: " "
+                chunk 1 text run 19 at (444.34,143.69) startOffset 18 endOffset 19 width 32.75: "D"
+                chunk 1 text run 20 at (460.53,158.89) startOffset 19 endOffset 20 width 11.66: "i"
+                chunk 1 text run 21 at (474.68,171.60) startOffset 20 endOffset 21 width 26.48: "d"
+                chunk 1 text run 22 at (490.52,185.03) startOffset 21 endOffset 22 width 14.94: " "
+                chunk 1 text run 23 at (506.34,197.43) startOffset 22 endOffset 23 width 25.15: "y"
+                chunk 1 text run 24 at (527.23,211.97) startOffset 23 endOffset 24 width 25.79: "o"
+                chunk 1 text run 25 at (550.02,225.01) startOffset 24 endOffset 25 width 26.89: "u"
+                chunk 1 text run 26 at (569.22,233.33) startOffset 25 endOffset 26 width 14.94: " "
+                chunk 1 text run 27 at (583.55,237.74) startOffset 26 endOffset 27 width 14.94: "f"
+                chunk 1 text run 28 at (596.55,240.30) startOffset 27 endOffset 28 width 11.66: "i"
+                chunk 1 text run 29 at (615.77,241.36) startOffset 28 endOffset 29 width 26.89: "n"
+                chunk 1 text run 30 at (642.02,237.01) startOffset 29 endOffset 30 width 26.48: "d"
+                chunk 1 text run 31 at (672.58,222.56) startOffset 30 endOffset 31 width 41.34: "m"
+                chunk 1 text run 32 at (698.38,201.60) startOffset 31 endOffset 32 width 25.32: "e"
+                chunk 1 text run 33 at (716.05,184.78) startOffset 32 endOffset 33 width 23.18: "?"
             RenderSVGInlineText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0

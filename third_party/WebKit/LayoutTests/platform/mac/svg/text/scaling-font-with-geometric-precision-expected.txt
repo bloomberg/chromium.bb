@@ -4,162 +4,162 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
 layer at (8,8) size 275x560
-  RenderSVGRoot {svg} at (8,8) size 257x462
-    RenderSVGText {text} at (0,-2) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,5.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,3) size 59x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 59x9
-        chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 32 width 58.18: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,8) size 80x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 80x9
-        chunk 1 text run 1 at (0.00,15.00) startOffset 0 endOffset 32 width 80.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,12) size 74x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 74x10
-        chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 32 width 73.85: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,17) size 69x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 69x10
-        chunk 1 text run 1 at (0.00,25.00) startOffset 0 endOffset 32 width 68.57: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,22) size 64x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x10
-        chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,27) size 80x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 80x10
-        chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 32 width 80.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,32) size 76x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 76x10
-        chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 32 width 75.29: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,37) size 72x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 72x10
-        chunk 1 text run 1 at (0.00,45.00) startOffset 0 endOffset 32 width 71.11: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,42) size 68x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 68x10
-        chunk 1 text run 1 at (0.00,50.00) startOffset 0 endOffset 32 width 67.37: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,48) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,55.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,52) size 77x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 77x10
-        chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 32 width 76.19: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,57) size 73x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 73x10
-        chunk 1 text run 1 at (0.00,65.00) startOffset 0 endOffset 32 width 72.73: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,62) size 70x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 70x10
-        chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 32 width 69.57: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,67) size 67x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 67x10
-        chunk 1 text run 1 at (0.00,75.00) startOffset 0 endOffset 32 width 66.67: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,72) size 77x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 77x10
-        chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 32 width 76.80: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,77) size 74x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 74x10
-        chunk 1 text run 1 at (0.00,85.00) startOffset 0 endOffset 32 width 73.85: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,82) size 72x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 72x10
-        chunk 1 text run 1 at (0.00,90.00) startOffset 0 endOffset 32 width 71.11: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,87) size 69x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 69x10
-        chunk 1 text run 1 at (0.00,95.00) startOffset 0 endOffset 32 width 68.57: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,92) size 67x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 67x10
-        chunk 1 text run 1 at (0.00,100.00) startOffset 0 endOffset 32 width 66.21: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,97) size 75x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 75x10
-        chunk 1 text run 1 at (0.00,105.00) startOffset 0 endOffset 32 width 74.67: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,102) size 73x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 73x10
-        chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 32 width 72.26: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,107) size 70x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 70x10
-        chunk 1 text run 1 at (0.00,115.00) startOffset 0 endOffset 32 width 70.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,112) size 68x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 68x10
-        chunk 1 text run 1 at (0.00,120.00) startOffset 0 endOffset 32 width 67.88: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,117) size 76x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 76x10
-        chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 32 width 75.29: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,122) size 74x10 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 74x10
-        chunk 1 text run 1 at (0.00,130.00) startOffset 0 endOffset 32 width 73.14: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+  RenderSVGRoot {svg} at (8,8) size 249x462
+    RenderSVGText {text} at (0,-1) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,5.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,3) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,9) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,15.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,13) size 72x10 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,19) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,25.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,24) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,28) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,34) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,38) size 72x10 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,45.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,44) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,50.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,49) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,55.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,53) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 32 width 71.08: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,59) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,65.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,63) size 72x10 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,69) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,75.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,74) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,78) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,85.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,84) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,90.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,88) size 72x10 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,95.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,94) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,100.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,99) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,105.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,103) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,109) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,115.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,113) size 72x10 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x9
+        chunk 1 text run 1 at (0.00,120.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,119) size 72x9 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 32 width 71.12: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,124) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,130.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
 layer at (275,8) size 275x560
-  RenderSVGRoot {svg} at (275,8) size 224x462
-    RenderSVGText {text} at (0,-2) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,5.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,3) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,8) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,15.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,13) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,18) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,25.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,23) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,28) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,33) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,38) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,45.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,43) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,50.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,48) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,55.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,53) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,58) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,65.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,63) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,68) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,75.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,73) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,78) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,85.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,83) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,90.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,88) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,95.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,93) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,100.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,98) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,105.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,103) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,108) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,115.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,113) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,120.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,118) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-    RenderSVGText {text} at (0,123) size 64x9 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 64x9
-        chunk 1 text run 1 at (0.00,130.00) startOffset 0 endOffset 32 width 64.00: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+  RenderSVGRoot {svg} at (275,8) size 249x462
+    RenderSVGText {text} at (0,-1) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,5.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,4) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,9) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,15.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,14) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,19) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,25.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,24) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,29) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,34) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,39) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,45.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,44) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,50.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,49) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,55.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,54) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,59) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,65.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,64) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,69) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,75.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,74) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,79) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,85.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,84) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,90.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,89) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,95.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,94) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,100.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,99) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,105.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,104) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,109) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,115.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,114) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,120.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,119) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+    RenderSVGText {text} at (0,124) size 72x8 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 72x8
+        chunk 1 text run 1 at (0.00,130.00) startOffset 0 endOffset 32 width 71.13: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
