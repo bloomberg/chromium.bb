@@ -101,12 +101,20 @@ CastDevToolsDelegate::~CastDevToolsDelegate() {
 }
 
 std::string CastDevToolsDelegate::GetDiscoveryPageHTML() {
+#if defined(OS_ANDROID)
+  return std::string();
+#else
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_CAST_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
+#endif  // defined(OS_ANDROID)
 }
 
 bool CastDevToolsDelegate::BundlesFrontendResources() {
+#if defined(OS_ANDROID)
+  return false;
+#else
   return true;
+#endif  // defined(OS_ANDROID)
 }
 
 base::FilePath CastDevToolsDelegate::GetDebugFrontendDir() {

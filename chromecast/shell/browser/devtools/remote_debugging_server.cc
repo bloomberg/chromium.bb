@@ -29,6 +29,10 @@ namespace shell {
 
 namespace {
 
+#if defined(OS_ANDROID)
+const char kFrontEndURL[] =
+    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
+#endif  // defined(OS_ANDROID)
 const int kDefaultRemoteDebuggingPort = 9222;
 
 #if defined(OS_ANDROID)
@@ -85,6 +89,14 @@ CreateSocketFactory(int port) {
 #endif
 }
 
+std::string GetFrontendUrl() {
+#if defined(OS_ANDROID)
+  return base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str());
+#else
+  return std::string();
+#endif  // defined(OS_ANDROID)
+}
+
 }  // namespace
 
 RemoteDebuggingServer::RemoteDebuggingServer()
@@ -132,7 +144,7 @@ void RemoteDebuggingServer::OnPortChanged() {
   if (port_ > 0) {
     devtools_http_handler_ = content::DevToolsHttpHandler::Start(
         CreateSocketFactory(port_),
-        std::string(),
+        GetFrontendUrl(),
         new CastDevToolsDelegate(),
         base::FilePath());
     LOG(INFO) << "Devtools started: port=" << port_;
