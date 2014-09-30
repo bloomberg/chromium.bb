@@ -67,6 +67,10 @@
         'geometry/vector3d_f.cc',
         'geometry/vector3d_f.h',
       ],
+      # TODO(jdduke): Revisit optimization after gauging benefit, crbug/419051.
+      'includes': [
+        '../../build/android/increase_size_for_speed.gypi',
+      ],
     },
     {
       'target_name': 'gfx',
@@ -306,6 +310,9 @@
         'win/singleton_hwnd.h',
         'win/window_impl.cc',
         'win/window_impl.h',
+      ],
+      'includes': [
+        '../../build/android/increase_size_for_speed.gypi',
       ],
       'conditions': [
         ['OS=="ios"', {

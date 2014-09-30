@@ -290,6 +290,12 @@ component("gfx") {
     #  deps += [ "//base:base_java" ]
     #}
 
+    # TODO(jdduke): Revisit optimization after gauging benefit, crbug/419051.
+    if (!is_debug) {
+      configs -= [ "//build/config/compiler:optimize" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
     deps += [ ":gfx_jni_headers" ]
     libs = [
       "android",

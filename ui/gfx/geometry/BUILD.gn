@@ -62,4 +62,10 @@ component("geometry") {
     "//base",
     "//ui/gfx:gfx_export",
   ]
+
+  # TODO(jdduke): Revisit optimization after gauging benefit, crbug/419051.
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
