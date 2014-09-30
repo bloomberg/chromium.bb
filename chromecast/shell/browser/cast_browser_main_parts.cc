@@ -113,7 +113,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetCastService(CastService::Create(
       cast_browser_process_->browser_context(),
       url_request_context_factory_->GetSystemGetter(),
-      url_request_context_factory_->app_network_delegate(),
       base::Bind(
           &metrics::CastMetricsServiceClient::EnableMetricsService,
           base::Unretained(cast_browser_process_->metrics_service_client()))));
