@@ -55,8 +55,12 @@ chrome.runtime = {
     /** @type {string} */
     message: ''
   },
-  /** @return {{version: string, app: {background: Object}}} */
+  /** @type {string} */
+  id: '',
+  /** @return {{name: string, version: string, app: {background: Object}}} */
   getManifest: function() {},
+  /** @param {function(Window):void} callback */
+  getBackgroundPage: function(callback) {},
   /** @type {chrome.Event} */
   onSuspend: null,
   /** @type {chrome.Event} */
@@ -144,6 +148,11 @@ chrome.i18n = {};
  * @return {string}
  */
 chrome.i18n.getMessage = function(messageName, opt_args) {};
+
+/**
+ * @return {string}
+ */
+chrome.i18n.getUILanguage = function() {};
 
 
 /** @type {Object} */
@@ -359,10 +368,13 @@ var AppWindow = function() {
 
 AppWindow.prototype.close = function() {};
 AppWindow.prototype.drawAttention = function() {};
+AppWindow.prototype.focus = function() {};
 AppWindow.prototype.maximize = function() {};
 AppWindow.prototype.minimize = function() {};
 AppWindow.prototype.restore = function() {};
 AppWindow.prototype.show = function() {};
+/** @return {boolean} */
+AppWindow.prototype.isMinimized = function() {};
 AppWindow.prototype.fullscreen = function() {};
 /** @return {boolean} */
 AppWindow.prototype.isFullscreen = function() {};

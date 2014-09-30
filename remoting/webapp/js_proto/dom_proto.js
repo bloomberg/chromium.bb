@@ -229,6 +229,11 @@ Promise.reject = function (reason) {};
 Promise.resolve = function (value) {};
 
 /**
+ * @type {DataTransfer}
+ */
+Event.prototype.dataTransfer = null;
+
+/**
  * @param {string} type
  * @param {boolean} canBubble
  * @param {boolean} cancelable
