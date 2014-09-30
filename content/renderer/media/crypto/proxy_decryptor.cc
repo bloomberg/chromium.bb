@@ -95,7 +95,7 @@ bool HasHeader(const uint8* data, int data_length, const std::string& header) {
          std::equal(data, data + header.size(), header.begin());
 }
 
-bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
+bool ProxyDecryptor::GenerateKeyRequest(const std::string& content_type,
                                         const uint8* init_data,
                                         int init_data_length) {
   DVLOG(1) << "GenerateKeyRequest()";
@@ -133,6 +133,17 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
       session_creation_type == PersistentSession
           ? media::MediaKeys::PERSISTENT_SESSION
           : media::MediaKeys::TEMPORARY_SESSION;
+
+  // Convert MIME types used in the prefixed implementation.
+  std::string init_data_type;
+  if (content_type == "audio/mp4" || content_type == "video/mp4") {
+    init_data_type = "cenc";
+  } else if (content_type == "audio/webm" || content_type == "video/webm") {
+    init_data_type = "webm";
+  } else {
+    NOTREACHED();
+    init_data_type = content_type;
+  }
 
   media_keys_->CreateSession(init_data_type, init_data, init_data_length,
                              session_type, promise.Pass());

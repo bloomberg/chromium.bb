@@ -117,11 +117,11 @@ static void ReportMediaKeyExceptionToUMA(const std::string& method,
 // so we keep it as simple as possible without breaking major use cases.
 static std::string GuessInitDataType(const unsigned char* init_data,
                                      unsigned init_data_length) {
-  // Most WebM files use KeyId of 16 bytes. CENC init data is always >16 bytes.
+  // Most WebM files use KeyId of 16 bytes. MP4 init data are always >16 bytes.
   if (init_data_length == 16)
-    return "webm";
+    return "video/webm";
 
-  return "cenc";
+  return "video/mp4";
 }
 
 scoped_ptr<media::EncryptedMediaPlayerSupport>
