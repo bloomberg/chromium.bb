@@ -73,6 +73,8 @@ p {
   }
   &.caption {
     text-align: left;
+    margin-top: 9px;
+    font-weight: bold;
     .lightbox & {
       color: $white;
     }
