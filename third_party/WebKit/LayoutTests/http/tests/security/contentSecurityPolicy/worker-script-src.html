@@ -6,14 +6,13 @@
 if (window.testRunner) {
     testRunner.dumpAsText();
 }
-if (window.internals)
-    internals.settings.setExperimentalContentSecurityPolicyFeaturesEnabled(false);
 </script>
 </head>
 <body>
 <script>
 try {
-    var foo = new Worker('http://127.0.0.1:8000/security/contentSecurityPolicy/resources/alert-fail.js');
+    var foo = new Worker('http://127.0.0.1:8000/security/contentSecurityPolicy/resources/alert-pass.js');
+    alert("PASS");
 } catch (e) {
    alert(e);
 }

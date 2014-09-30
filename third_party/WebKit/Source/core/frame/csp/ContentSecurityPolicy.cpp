@@ -528,9 +528,7 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(const KURL& url, Conten
             UseCounter::count(*document, UseCounter::WorkerAllowedByChildBlockedByScript);
     }
 
-    return experimentalFeaturesEnabled() ?
-        isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus) :
-        isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, reportingStatus);
+    return isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus);
 }
 
 bool ContentSecurityPolicy::isActive() const
@@ -655,8 +653,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     SecurityPolicyViolationEventInit violationData;
     gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header);
 
-    if (experimentalFeaturesEnabled())
-        frame->domWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
+    frame->domWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
 
     if (reportEndpoints.isEmpty())
         return;
@@ -675,8 +672,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     cspReport->setString("document-uri", violationData.documentURI);
     cspReport->setString("referrer", violationData.referrer);
     cspReport->setString("violated-directive", violationData.violatedDirective);
-    if (experimentalFeaturesEnabled())
-        cspReport->setString("effective-directive", violationData.effectiveDirective);
+    cspReport->setString("effective-directive", violationData.effectiveDirective);
     cspReport->setString("original-policy", violationData.originalPolicy);
     cspReport->setString("blocked-uri", violationData.blockedURI);
     if (!violationData.sourceFile.isEmpty() && violationData.lineNumber) {
