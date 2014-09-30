@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -21,6 +20,7 @@
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/session_id.h"
 #include "components/sync_driver/device_info.h"
+#include "components/sync_driver/local_device_info_provider_mock.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -37,6 +37,7 @@ using sessions::SerializedNavigationEntry;
 using sessions::SerializedNavigationEntryTestHelper;
 using sync_driver::DeviceInfo;
 using sync_driver::LocalDeviceInfoProvider;
+using sync_driver::LocalDeviceInfoProviderMock;
 using syncer::SyncChange;
 using syncer::SyncData;
 

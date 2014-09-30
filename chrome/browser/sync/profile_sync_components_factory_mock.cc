@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "components/sync_driver/change_processor.h"
+#include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/model_associator.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/attachments/fake_attachment_store.h"
@@ -18,14 +18,14 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 
 ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock()
-    : local_device_(new browser_sync::LocalDeviceInfoProviderMock()) {
+    : local_device_(new sync_driver::LocalDeviceInfoProviderMock()) {
 }
 
 ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
     AssociatorInterface* model_associator, ChangeProcessor* change_processor)
     : model_associator_(model_associator),
       change_processor_(change_processor),
-      local_device_(new browser_sync::LocalDeviceInfoProviderMock()) {
+      local_device_(new sync_driver::LocalDeviceInfoProviderMock()) {
   ON_CALL(*this, CreateBookmarkSyncComponents(_, _)).
       WillByDefault(
           InvokeWithoutArgs(

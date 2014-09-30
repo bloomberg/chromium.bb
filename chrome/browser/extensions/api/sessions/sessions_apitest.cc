@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -22,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -126,7 +126,7 @@ KeyedService* ExtensionSessionsTest::BuildProfileSyncService(
 
   factory->SetLocalDeviceInfoProvider(
       scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
-          new browser_sync::LocalDeviceInfoProviderMock(
+          new sync_driver::LocalDeviceInfoProviderMock(
               kSessionTags[0],
               "machine name",
               "Chromium 10k",

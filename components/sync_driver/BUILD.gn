@@ -83,6 +83,8 @@ static_library("test_support") {
     "fake_data_type_controller.h",
     "fake_generic_change_processor.cc",
     "fake_generic_change_processor.h",
+    "local_device_info_provider_mock.cc",
+    "local_device_info_provider_mock.h",
     "model_associator_mock.cc",
     "model_associator_mock.h",
     "non_ui_data_type_controller_mock.cc",

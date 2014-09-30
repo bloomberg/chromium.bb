@@ -5,25 +5,22 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "components/sync_driver/device_info_data_type_controller.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/sync_driver/local_device_info_provider_mock.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_driver::DataTypeController;
-using sync_driver::DeviceInfoDataTypeController;
-
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
-class DeviceInfoDataTypeControllerTest : public testing::Test {
+class DeviceInfoDataTypeControllerTest : public testing::Test,
+                                         public SyncApiComponentFactory {
  public:
   DeviceInfoDataTypeControllerTest()
       : load_finished_(false),
-        thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         weak_ptr_factory_(this),
         last_type_(syncer::UNSPECIFIED) {}
   virtual ~DeviceInfoDataTypeControllerTest() {}
@@ -40,7 +37,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
     controller_ = new DeviceInfoDataTypeController(
         base::MessageLoopProxy::current(),
         base::Closure(),
-        &profile_sync_factory_,
+        this,
         local_device_.get());
 
     load_finished_ = false;
@@ -57,6 +54,22 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
     controller_->LoadModels(
         base::Bind(&DeviceInfoDataTypeControllerTest::OnLoadFinished,
                    weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) OVERRIDE {
+    // Shouldn't be called for this test.
+    NOTREACHED();
+    return base::WeakPtr<syncer::SyncableService>();
+  }
+
+  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store,
+      const syncer::UserShare& user_share,
+      syncer::AttachmentService::Delegate* delegate) OVERRIDE {
+    // Shouldn't be called for this test.
+    NOTREACHED();
+    return scoped_ptr<syncer::AttachmentService>();
   }
 
   void OnLoadFinished(syncer::ModelType type, syncer::SyncError error) {
@@ -91,8 +104,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
   bool load_finished_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  ProfileSyncComponentsFactoryMock profile_sync_factory_;
+  base::MessageLoopForUI message_loop_;
   base::WeakPtrFactory<DeviceInfoDataTypeControllerTest> weak_ptr_factory_;
   syncer::ModelType last_type_;
   syncer::SyncError last_error_;
@@ -117,4 +129,4 @@ TEST_F(DeviceInfoDataTypeControllerTest, StartModelsDelayedByLocalDevice) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

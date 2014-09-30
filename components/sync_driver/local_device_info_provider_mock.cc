@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
+#include "components/sync_driver/local_device_info_provider_mock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock()
   : is_initialized_(false) {}
@@ -18,7 +18,7 @@ LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock(
     const std::string& signin_scoped_device_id)
   : is_initialized_(true) {
   local_device_info_.reset(
-      new sync_driver::DeviceInfo(
+      new DeviceInfo(
           guid,
           client_name,
           chrome_version,
@@ -29,8 +29,7 @@ LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock(
 
 LocalDeviceInfoProviderMock::~LocalDeviceInfoProviderMock() {}
 
-const sync_driver::DeviceInfo*
-LocalDeviceInfoProviderMock::GetLocalDeviceInfo() const {
+const DeviceInfo* LocalDeviceInfoProviderMock::GetLocalDeviceInfo() const {
   return is_initialized_ ? local_device_info_.get() : NULL;
 }
 
@@ -43,7 +42,7 @@ void LocalDeviceInfoProviderMock::Initialize(
   // Ignored for the mock provider.
 }
 
-scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
+scoped_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderMock::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(!is_initialized_);
@@ -57,5 +56,5 @@ void LocalDeviceInfoProviderMock::SetInitialized(bool is_initialized) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 

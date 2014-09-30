@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "components/sync_driver/device_info_sync_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
@@ -14,8 +13,6 @@
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_driver::DeviceInfoSyncService;
-using sync_driver::DeviceInfoTracker;
 using syncer::AttachmentIdList;
 using syncer::AttachmentServiceProxyForTest;
 using syncer::ModelType;
@@ -30,7 +27,7 @@ using syncer::SyncErrorFactory;
 using syncer::SyncErrorFactoryMock;
 using syncer::SyncMergeResult;
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -159,7 +156,7 @@ class DeviceInfoSyncServiceTest : public testing::Test,
   scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
   scoped_ptr<DeviceInfoSyncService> sync_service_;
   scoped_ptr<TestChangeProcessor> sync_processor_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForUI message_loop_;
 };
 
 // Sync with empty initial data.
@@ -556,4 +553,4 @@ TEST_F(DeviceInfoSyncServiceTest,
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

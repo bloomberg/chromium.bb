@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
-#define CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
+#ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
+#define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
 
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/local_device_info_provider.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class LocalDeviceInfoProviderMock
     : public sync_driver::LocalDeviceInfoProvider {
@@ -25,7 +25,7 @@ class LocalDeviceInfoProviderMock
       const std::string& signin_scoped_device_id);
   virtual ~LocalDeviceInfoProviderMock();
 
-  virtual const sync_driver::DeviceInfo* GetLocalDeviceInfo() const OVERRIDE;
+  virtual const DeviceInfo* GetLocalDeviceInfo() const OVERRIDE;
   virtual std::string GetLocalSyncCacheGUID() const OVERRIDE;
   virtual void Initialize(
       const std::string& cache_guid,
@@ -38,10 +38,10 @@ class LocalDeviceInfoProviderMock
  private:
   bool is_initialized_;
 
-  scoped_ptr<sync_driver::DeviceInfo> local_device_info_;
+  scoped_ptr<DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
+#endif  // COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
