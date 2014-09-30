@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Saglabāt attēlu</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
 <translation id="4996978546172906250">Kopīgošanas veids:</translation>
+<translation id="346339498574870680">Kopēt attēla URL</translation>
+<translation id="6657585470893396449">Parole</translation>
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="7644305409888602715">Notiek lapas tulkošana <ph name="SOURCE_LANGUAGE"/> valodā...</translation>
@@ -33,7 +35,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="4250680216510889253">Nē</translation>
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
 <translation id="552553974213252141">Vai iegūtais teksts bija pareizs?</translation>
-<translation id="8730621377337864115">Pabeigts</translation>
+<translation id="8730621377337864115">Gatavs</translation>
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="8627706565932943526">Sinhronizācijas kļūda.</translation>
@@ -42,6 +44,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="656628257199996201">Vienmēr tulkot no šādas valodas: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="5684874026226664614">Hmm... Šo lapu nevarēja iztulkot.</translation>
+<translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="4619298195800598081">Atvērt oriģinālu jaunā cilnē</translation>
 <translation id="907015151729920253">Viedkarte</translation>
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>

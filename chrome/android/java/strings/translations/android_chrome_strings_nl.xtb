@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Afbeelding opslaan</translation>
 <translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
 <translation id="4996978546172906250">Delen via</translation>
+<translation id="346339498574870680">Afbeeldings-URL kopiëren</translation>
+<translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE"/> naar afbeelding</translation>
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="7644305409888602715">Pagina vertalen naar het <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -33,7 +35,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="4250680216510889253">Nee</translation>
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="552553974213252141">Is de tekst correct geëxtraheerd?</translation>
-<translation id="8730621377337864115">Klaar</translation>
+<translation id="8730621377337864115">Gereed</translation>
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="473775607612524610">Bijwerken</translation>
 <translation id="8627706565932943526">Synchronisatiefout</translation>
@@ -42,6 +44,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="656628257199996201">Altijd <ph name="SOURCE_LANGUAGE"/> vertalen</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
+<translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="4619298195800598081">Origineel op nieuw tabblad</translation>
 <translation id="907015151729920253">Smartcard</translation>
 <translation id="3063601790762993062">Video opslaan</translation>

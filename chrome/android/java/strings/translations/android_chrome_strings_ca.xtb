@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Desa la imatge</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
+<translation id="346339498574870680">Copia l'URL de la imatge</translation>
+<translation id="6657585470893396449">Contrasenya</translation>
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="7644305409888602715">La pàgina s'està traduint a <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -33,7 +35,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="4250680216510889253">No</translation>
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
-<translation id="8730621377337864115">Finalitzat</translation>
+<translation id="8730621377337864115">Fet</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="473775607612524610">Actualitza</translation>
 <translation id="8627706565932943526">Error de sincronització</translation>
@@ -42,6 +44,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="656628257199996201">Tradueix sempre: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
+<translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="4619298195800598081">Obre imatge orig. a pest. nova</translation>
 <translation id="907015151729920253">Targeta intel·ligent</translation>
 <translation id="3063601790762993062">Desa el vídeo</translation>

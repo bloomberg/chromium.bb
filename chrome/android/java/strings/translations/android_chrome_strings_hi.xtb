@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">चित्र सहेजें</translation>
 <translation id="7998918019931843664">बंद टैब पुनः खोलें</translation>
 <translation id="4996978546172906250">इसके द्वारा साझा करें</translation>
+<translation id="346339498574870680">चित्र URL की प्रतिलिपि बनाएं</translation>
+<translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="5578795271662203820">इस चित्र के लिए <ph name="SEARCH_ENGINE"/> खोजें</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="7644305409888602715">पृष्ठ का अनुवाद <ph name="SOURCE_LANGUAGE"/> में किया जा रहा है...</translation>
@@ -13,7 +15,7 @@
 <translation id="641643625718530986">प्रिंट करें…</translation>
 <translation id="5763382633136178763">गुप्त टैब</translation>
 <translation id="5210365745912300556">टैब बंद करें</translation>
-<translation id="7658239707568436148">रद्द करें</translation>
+<translation id="7658239707568436148">रहने दें</translation>
 <translation id="6458785801851713928">आपके डोमेन के लिए समन्‍वयन उपलब्‍ध नहीं है.</translation>
 <translation id="2731700343119398978">कृपया प्रतीक्षा करें...</translation>
 <translation id="6846298663435243399">लोड हो रहा है...</translation>
@@ -32,7 +34,7 @@
 <translation id="8583805026567836021">खाते का डेटा साफ़ हो रहा है</translation>
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
-<translation id="552553974213252141">क्या पाठ सही तरीके से निकाला गया था?</translation>
+<translation id="552553974213252141">क्या लेख सही तरीके से निकाला गया था?</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
@@ -42,6 +44,7 @@
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> का हमेशा अनुवाद करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="5684874026226664614">ओह. इस पृष्ठ का अनुवाद नहीं किया जा सका.</translation>
+<translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
 <translation id="4619298195800598081">मूल चित्र नए टैब में खोलें</translation>
 <translation id="907015151729920253">स्मार्ट कार्ड</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
@@ -58,7 +61,7 @@
 <translation id="8909135823018751308">साझा करें…</translation>
 <translation id="4269820728363426813">लिंक पते की प्रतिलिपि बनाएं</translation>
 <translation id="4510973599275542560">पुनः लोड न करें</translation>
-<translation id="1206892813135768548">लिंक पाठ की प्रतिलिपि बनाएं</translation>
+<translation id="1206892813135768548">लिंक लेख की प्रतिलिपि बनाएं</translation>
 <translation id="9154176715500758432">इस पृष्ठ पर बनें रहें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="4271185234001491831">कभी भी <ph name="LANGUAGE"/> का अनुवाद न करें</translation>

@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Enregistrer l'image</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
 <translation id="4996978546172906250">Partager via</translation>
+<translation id="346339498574870680">Copier l'URL de l'image</translation>
+<translation id="6657585470893396449">Mot de passe</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="7644305409888602715">Traduction de la page en <ph name="SOURCE_LANGUAGE"/> en cours…</translation>
@@ -42,6 +44,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="656628257199996201">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
+<translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="4619298195800598081">Ouvrir original autre onglet</translation>
 <translation id="907015151729920253">Carte à puce</translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>

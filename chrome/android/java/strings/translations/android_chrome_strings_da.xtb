@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Gem billede</translation>
 <translation id="7998918019931843664">Åbn lukket fane igen</translation>
 <translation id="4996978546172906250">Del via</translation>
+<translation id="346339498574870680">Kopiér billedwebadresse</translation>
+<translation id="6657585470893396449">Adgangskode</translation>
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="7644305409888602715">Oversætter siden til <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -33,7 +35,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="4250680216510889253">Nej</translation>
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
-<translation id="8730621377337864115">Udfør</translation>
+<translation id="8730621377337864115">Fuldført</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="8627706565932943526">Synkroniseringsfejl</translation>
@@ -42,6 +44,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
+<translation id="8503813439785031346">Brugernavn</translation>
 <translation id="4619298195800598081">Åbn originalbillede på ny fane</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Gem video</translation>

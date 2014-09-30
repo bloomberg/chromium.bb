@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Resmi kaydet</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
+<translation id="346339498574870680">Resmin URL'sini kopyala</translation>
+<translation id="6657585470893396449">Şifre</translation>
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE"/> üzerinde ara</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="7644305409888602715">Sayfa <ph name="SOURCE_LANGUAGE"/> diline çevriliyor...</translation>
@@ -42,6 +44,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> dilini her zaman çevir</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
+<translation id="8503813439785031346">Kullanıcı adı</translation>
 <translation id="4619298195800598081">Orijinal resmi yeni sekmede aç</translation>
 <translation id="907015151729920253">Akıllı kart</translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>

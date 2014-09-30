@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Spara bild</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="4996978546172906250">Dela via</translation>
+<translation id="346339498574870680">Kopiera bildwebbadress</translation>
+<translation id="6657585470893396449">Lösenord</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="7644305409888602715">Översätter sidan till <ph name="SOURCE_LANGUAGE"/> ...</translation>
@@ -42,6 +44,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="656628257199996201">Översätt alltid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
+<translation id="8503813439785031346">Användarnamn</translation>
 <translation id="4619298195800598081">Öppna original i ny flik</translation>
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="3063601790762993062">Spara video</translation>

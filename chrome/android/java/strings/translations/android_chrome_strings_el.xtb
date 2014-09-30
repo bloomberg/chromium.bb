@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Αποθήκευση εικόνας</translation>
 <translation id="7998918019931843664">Εκ νέου άνοιγμα κλειστής καρτέλας</translation>
 <translation id="4996978546172906250">Κοινή χρήση μέσω</translation>
+<translation id="346339498574870680">Αντιγραφή URL εικόνας</translation>
+<translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE"/> για την εικόνα</translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
 <translation id="7644305409888602715">Μετάφραση σελίδας στα <ph name="SOURCE_LANGUAGE"/>…</translation>
@@ -33,7 +35,7 @@
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="8073388330009372546">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
 <translation id="552553974213252141">Έγινε σωστή εξαγωγή του κειμένου;</translation>
-<translation id="8730621377337864115">Τέλος</translation>
+<translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="473775607612524610">Ενημέρωση</translation>
 <translation id="8627706565932943526">Σφάλμα συγχρονισμού</translation>
@@ -42,6 +44,7 @@
 <translation id="656628257199996201">Να γίνεται πάντα μετάφραση των <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
 <translation id="5684874026226664614">Ωχ. Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας.</translation>
+<translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="4619298195800598081">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Αποθήκευση βίντεο</translation>

@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Tallenna kuva</translation>
 <translation id="7998918019931843664">Avaa suljettu välilehti uudelleen</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
+<translation id="346339498574870680">Kopioi kuvan URL-osoite</translation>
+<translation id="6657585470893396449">Salasana</translation>
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Käännä</translation>
 <translation id="7644305409888602715">Käännetään sivua kielelle <ph name="SOURCE_LANGUAGE"/>…</translation>
@@ -42,6 +44,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="656628257199996201">Käännä aina <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
+<translation id="8503813439785031346">Käyttäjänimi</translation>
 <translation id="4619298195800598081">Avaa alkup. uudella välilehd.</translation>
 <translation id="907015151729920253">Älykortti</translation>
 <translation id="3063601790762993062">Tallenna video</translation>

@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Guardar imagen</translation>
 <translation id="7998918019931843664">Volver a abrir la pestaña cerrada</translation>
 <translation id="4996978546172906250">Compartir mediante</translation>
+<translation id="346339498574870680">Copiar URL de imagen</translation>
+<translation id="6657585470893396449">Contraseña</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="7644305409888602715">Traduciendo página al <ph name="SOURCE_LANGUAGE"/>…</translation>
@@ -33,7 +35,7 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="4250680216510889253">No</translation>
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="552553974213252141">¿Se extrajo el texto correctamente?</translation>
-<translation id="8730621377337864115">Finalizado</translation>
+<translation id="8730621377337864115">Listo</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="8627706565932943526">Error al sincronizar</translation>
@@ -42,6 +44,7 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="656628257199996201">Traducir siempre el texto en <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
+<translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="4619298195800598081">Abrir original en pest. nueva</translation>
 <translation id="907015151729920253">Tarjeta inteligente</translation>
 <translation id="3063601790762993062">Guardar video</translation>

@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Сохранить изображение</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
 <translation id="4996978546172906250">Поделиться через</translation>
+<translation id="346339498574870680">Скопировать URL изображения</translation>
+<translation id="6657585470893396449">Пароль</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="7644305409888602715">Выполняется перевод на <ph name="SOURCE_LANGUAGE"/>…</translation>
@@ -42,6 +44,7 @@
 <translation id="656628257199996201">Всегда переводить <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="5684874026226664614">Не удалось перевести страницу</translation>
+<translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="4619298195800598081">Оригинал в новой вкладке</translation>
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
@@ -55,7 +58,7 @@
 <translation id="651048280540227067">Закрыть меню</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
-<translation id="8909135823018751308">Отправка…</translation>
+<translation id="8909135823018751308">Поделиться...</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
 <translation id="4510973599275542560">Отмена</translation>
 <translation id="1206892813135768548">Копировать текст ссылки</translation>

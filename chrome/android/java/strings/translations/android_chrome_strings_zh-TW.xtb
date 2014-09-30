@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">儲存圖片</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="4996978546172906250">分享方式：</translation>
+<translation id="346339498574870680">複製圖片網址</translation>
+<translation id="6657585470893396449">密碼</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE"/> 搜尋這張圖片</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="7644305409888602715">正在將網頁內容翻譯成<ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -42,6 +44,7 @@
 <translation id="656628257199996201">一律翻譯<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
+<translation id="8503813439785031346">使用者名稱</translation>
 <translation id="4619298195800598081">在新分頁中開啟原始圖片</translation>
 <translation id="907015151729920253">智慧卡</translation>
 <translation id="3063601790762993062">儲存影片</translation>

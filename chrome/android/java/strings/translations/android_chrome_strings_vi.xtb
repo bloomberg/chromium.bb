@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Lưu ảnh</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
+<translation id="346339498574870680">Sao chép URL hình ảnh</translation>
+<translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="7644305409888602715">Đang dịch trang từ <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -20,7 +22,7 @@
 <translation id="7378627244592794276">Không</translation>
 <translation id="3358663646935160692">Tài khoản này được quản lý bởi <ph name="DOMAIN_NAME"/>.
 
-Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với hồ sơ trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome cục bộ.</translation>
+Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với hồ sơ trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome trên máy.</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
 <translation id="1426410128494586442">Có</translation>
@@ -42,6 +44,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="656628257199996201">Luôn dịch <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
+<translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="4619298195800598081">Mở ảnh gốc trong tab mới</translation>
 <translation id="907015151729920253">Thẻ thông minh</translation>
 <translation id="3063601790762993062">Lưu video</translation>

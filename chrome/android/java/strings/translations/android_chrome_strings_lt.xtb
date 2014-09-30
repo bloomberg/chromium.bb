@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Išsaugoti vaizdą</translation>
 <translation id="7998918019931843664">Iš naujo atidarykite uždarytą skirtuko lapą</translation>
 <translation id="4996978546172906250">Bendrinti per</translation>
+<translation id="346339498574870680">Kopijuoti vaizdo URL</translation>
+<translation id="6657585470893396449">Slaptažodis</translation>
 <translation id="5578795271662203820">Ieškoti „<ph name="SEARCH_ENGINE"/>“ šio vaizdo</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
 <translation id="7644305409888602715">Puslapis verčiamas į <ph name="SOURCE_LANGUAGE"/> k...</translation>
@@ -33,7 +35,7 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="4250680216510889253">Ne</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="552553974213252141">Ar tekstas tinkamai ištrauktas?</translation>
-<translation id="8730621377337864115">Viskas</translation>
+<translation id="8730621377337864115">Atlikta</translation>
 <translation id="4170011742729630528">Paslauga nepasiekiama; vėliau bandykite dar kartą.</translation>
 <translation id="473775607612524610">Atnaujinti</translation>
 <translation id="8627706565932943526">Sinchronizavimo klaida</translation>
@@ -42,6 +44,7 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="656628257199996201">Visada versti iš <ph name="SOURCE_LANGUAGE"/> k.</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
+<translation id="8503813439785031346">Vartotojo vardas</translation>
 <translation id="4619298195800598081">At. orig. vaiz. nauj. sk. lap.</translation>
 <translation id="907015151729920253">Išmanioji kortelė</translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>

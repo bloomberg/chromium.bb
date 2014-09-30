@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Save image</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="4996978546172906250">Share via</translation>
+<translation id="346339498574870680">Copy image URL</translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE"/> for this image</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="7644305409888602715">Translating page to <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -33,7 +35,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="4250680216510889253">No</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="552553974213252141">Was the text extracted correctly?</translation>
-<translation id="8730621377337864115">Done</translation>
+<translation id="8730621377337864115">Finished</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="8627706565932943526">Sync error</translation>
@@ -42,6 +44,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="656628257199996201">Always translate <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="5684874026226664614">Oops. This page could not be translated.</translation>
+<translation id="8503813439785031346">Username</translation>
 <translation id="4619298195800598081">Open original image in new tab</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Save video</translation>

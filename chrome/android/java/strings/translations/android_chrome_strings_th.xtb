@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">บันทึกภาพ</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="4996978546172906250">แชร์ผ่าน</translation>
+<translation id="346339498574870680">คัดลอก URL รูปภาพ</translation>
+<translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="7644305409888602715">กำลังแปลหน้านี้เป็น <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -42,6 +44,7 @@
 <translation id="656628257199996201">แปลภาษา<ph name="SOURCE_LANGUAGE"/>เสมอ</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
+<translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="4619298195800598081">เปิดภาพต้นฉบับในแท็บใหม่</translation>
 <translation id="907015151729920253">สมาร์ทการ์ด</translation>
 <translation id="3063601790762993062">บันทึกวิดีโอ</translation>

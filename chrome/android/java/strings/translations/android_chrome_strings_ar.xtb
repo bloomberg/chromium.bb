@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">حفظ الصورة</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
+<translation id="346339498574870680">‏نسخ عنوان URL للصورة</translation>
+<translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE"/> عن هذه الصورة</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="7644305409888602715">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -31,7 +33,7 @@
 <translation id="4250680216510889253">لا</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
-<translation id="8730621377337864115">انتهى</translation>
+<translation id="8730621377337864115">تم</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="8627706565932943526">حدث خطأ أثناء المزامنة</translation>
@@ -40,6 +42,7 @@
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE"/> دائمًا</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
+<translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="4619298195800598081">فتح الصورة الأصلية بتبويب جديد</translation>
 <translation id="907015151729920253">البطاقة الذكية</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>

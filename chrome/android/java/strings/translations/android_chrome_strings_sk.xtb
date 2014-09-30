@@ -4,6 +4,8 @@
 <translation id="8588878054171169263">Uložiť obrázok</translation>
 <translation id="7998918019931843664">Znova otvoriť zavretú kartu</translation>
 <translation id="4996978546172906250">Zdieľať prostredníctvom</translation>
+<translation id="346339498574870680">Kopírovať adresu URL obrázka</translation>
+<translation id="6657585470893396449">Heslo</translation>
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Preložiť</translation>
 <translation id="7644305409888602715">Prebieha preklad stránky do jazyka <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -42,6 +44,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="656628257199996201">Vždy prekladať jazyk <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
+<translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="4619298195800598081">Pôv. obrázok na novej karte</translation>
 <translation id="907015151729920253">Karta Smart card</translation>
 <translation id="3063601790762993062">Uložiť video</translation>
