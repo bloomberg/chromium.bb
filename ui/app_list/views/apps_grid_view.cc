@@ -465,7 +465,7 @@ void AppsGridView::SetItemList(AppListItemList* item_list) {
   Update();
 }
 
-void AppsGridView::SetSelectedView(views::View* view) {
+void AppsGridView::SetSelectedView(AppListItemView* view) {
   if (IsSelectedView(view) || IsDraggedView(view))
     return;
 
@@ -474,7 +474,7 @@ void AppsGridView::SetSelectedView(views::View* view) {
     SetSelectedItemByIndex(index);
 }
 
-void AppsGridView::ClearSelectedView(views::View* view) {
+void AppsGridView::ClearSelectedView(AppListItemView* view) {
   if (view && IsSelectedView(view)) {
     selected_view_->SchedulePaint();
     selected_view_ = NULL;
@@ -488,11 +488,11 @@ void AppsGridView::ClearAnySelectedView() {
   }
 }
 
-bool AppsGridView::IsSelectedView(const views::View* view) const {
+bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
   return selected_view_ == view;
 }
 
-void AppsGridView::EnsureViewVisible(const views::View* view) {
+void AppsGridView::EnsureViewVisible(const AppListItemView* view) {
   if (pagination_model_.has_transition())
     return;
 
@@ -762,7 +762,6 @@ void AppsGridView::StopPageFlipTimer() {
 }
 
 AppListItemView* AppsGridView::GetItemViewAt(int index) const {
-  DCHECK(index >= 0 && index < view_model_.view_size());
   return static_cast<AppListItemView*>(view_model_.view_at(index));
 }
 
@@ -842,7 +841,7 @@ void AppsGridView::UpdateDragFromReparentItem(Pointer pointer,
   UpdateDrag(pointer, drag_point);
 }
 
-bool AppsGridView::IsDraggedView(const views::View* view) const {
+bool AppsGridView::IsDraggedView(const AppListItemView* view) const {
   return drag_view_ == view;
 }
 
@@ -884,13 +883,11 @@ void AppsGridView::Prerender() {
   int start = std::max(0, (selected_page - kPrerenderPages) * tiles_per_page());
   int end = std::min(view_model_.view_size(),
                      (selected_page + 1 + kPrerenderPages) * tiles_per_page());
-  for (int i = start; i < end; i++) {
-    AppListItemView* v = static_cast<AppListItemView*>(view_model_.view_at(i));
-    v->Prerender();
-  }
+  for (int i = start; i < end; i++)
+    GetItemViewAt(i)->Prerender();
 }
 
-bool AppsGridView::IsAnimatingView(views::View* view) {
+bool AppsGridView::IsAnimatingView(AppListItemView* view) {
   return bounds_animator_.IsAnimating(view);
 }
 
@@ -926,7 +923,7 @@ void AppsGridView::Layout() {
 
   CalculateIdealBounds();
   for (int i = 0; i < view_model_.view_size(); ++i) {
-    views::View* view = view_model_.view_at(i);
+    AppListItemView* view = GetItemViewAt(i);
     if (view != drag_view_)
       view->SetBoundsRect(view_model_.ideal_bounds(i));
   }
@@ -945,7 +942,7 @@ void AppsGridView::Layout() {
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   bool handled = false;
   if (selected_view_)
-    handled = selected_view_->OnKeyPressed(event);
+    handled = static_cast<views::View*>(selected_view_)->OnKeyPressed(event);
 
   if (!handled) {
     const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
@@ -1031,7 +1028,7 @@ void AppsGridView::Update() {
   if (!item_list_ || !item_list_->item_count())
     return;
   for (size_t i = 0; i < item_list_->item_count(); ++i) {
-    views::View* view = CreateViewForItemAtIndex(i);
+    AppListItemView* view = CreateViewForItemAtIndex(i);
     view_model_.Add(view, i);
     AddChildView(view);
   }
@@ -1060,19 +1057,23 @@ void AppsGridView::UpdatePulsingBlockViews() {
     return;
 
   while (pulsing_blocks_model_.view_size() > desired) {
-    views::View* view = pulsing_blocks_model_.view_at(0);
+    PulsingBlockView* view = GetPulsingBlockViewAt(0);
     pulsing_blocks_model_.Remove(0);
     delete view;
   }
 
   while (pulsing_blocks_model_.view_size() < desired) {
-    views::View* view = new PulsingBlockView(GetTotalTileSize(), true);
+    PulsingBlockView* view = new PulsingBlockView(GetTotalTileSize(), true);
     pulsing_blocks_model_.Add(view, 0);
     AddChildView(view);
   }
 }
 
-views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
+PulsingBlockView* AppsGridView::GetPulsingBlockViewAt(int index) const {
+  return static_cast<PulsingBlockView*>(pulsing_blocks_model_.view_at(index));
+}
+
+AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   // The drag_view_ might be pending for deletion, therefore view_model_
   // may have one more item than item_list_.
   DCHECK_LE(index, item_list_->item_count());
@@ -1096,7 +1097,7 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
   if (GetIndexOfView(selected_view_) == index)
     return;
 
-  views::View* new_selection = GetViewAtIndex(index);
+  AppListItemView* new_selection = GetViewAtIndex(index);
   if (!new_selection)
     return;  // Keep current selection.
 
@@ -1117,7 +1118,7 @@ bool AppsGridView::IsValidIndex(const Index& index) const {
 }
 
 AppsGridView::Index AppsGridView::GetIndexOfView(
-    const views::View* view) const {
+    const AppListItemView* view) const {
   const int model_index = view_model_.GetIndexOfView(view);
   if (model_index == -1)
     return Index();
@@ -1125,12 +1126,12 @@ AppsGridView::Index AppsGridView::GetIndexOfView(
   return GetIndexFromModelIndex(model_index);
 }
 
-views::View* AppsGridView::GetViewAtIndex(const Index& index) const {
+AppListItemView* AppsGridView::GetViewAtIndex(const Index& index) const {
   if (!IsValidIndex(index))
     return NULL;
 
   const int model_index = GetModelIndexFromIndex(index);
-  return view_model_.view_at(model_index);
+  return GetItemViewAt(model_index);
 }
 
 AppsGridView::Index AppsGridView::GetLastViewIndex() const {
@@ -1264,7 +1265,7 @@ void AppsGridView::AnimateToIdealBounds() {
 
   CalculateIdealBounds();
   for (int i = 0; i < view_model_.view_size(); ++i) {
-    views::View* view = view_model_.view_at(i);
+    AppListItemView* view = GetItemViewAt(i);
     if (view == drag_view_)
       continue;
 
@@ -1296,7 +1297,7 @@ void AppsGridView::AnimateToIdealBounds() {
   }
 }
 
-void AppsGridView::AnimationBetweenRows(views::View* view,
+void AppsGridView::AnimationBetweenRows(AppListItemView* view,
                                         bool animate_current,
                                         const gfx::Rect& current,
                                         bool animate_target,
@@ -1717,7 +1718,7 @@ void AppsGridView::OnPageFlipTimer() {
   pagination_model_.SelectPage(page_flip_target_, true);
 }
 
-void AppsGridView::MoveItemInModel(views::View* item_view,
+void AppsGridView::MoveItemInModel(AppListItemView* item_view,
                                    const Index& target) {
   int current_model_index = view_model_.GetIndexOfView(item_view);
   DCHECK_GE(current_model_index, 0);
@@ -1735,13 +1736,12 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
     pagination_model_.SelectPage(target.page, false);
 }
 
-void AppsGridView::MoveItemToFolder(views::View* item_view,
+void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
                                     const Index& target) {
-  const std::string& source_item_id =
-      static_cast<AppListItemView*>(item_view)->item()->id();
+  const std::string& source_item_id = item_view->item()->id();
   AppListItemView* target_view =
-      static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
-  const std::string&  target_view_item_id = target_view->item()->id();
+      GetViewDisplayedAtSlotOnCurrentPage(target.slot);
+  const std::string& target_view_item_id = target_view->item()->id();
 
   // Make change to data model.
   item_list_->RemoveObserver(this);
@@ -1760,7 +1760,7 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
       int target_view_index = view_model_.GetIndexOfView(target_view);
       gfx::Rect target_view_bounds = target_view->bounds();
       DeleteItemViewAtIndex(target_view_index);
-      views::View* target_folder_view =
+      AppListItemView* target_folder_view =
           CreateViewForItemAtIndex(folder_item_index);
       target_folder_view->SetBoundsRect(target_view_bounds);
       view_model_.Add(target_folder_view, target_view_index);
@@ -1781,12 +1781,12 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
   UpdatePaging();
 }
 
-void AppsGridView::ReparentItemForReorder(views::View* item_view,
+void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
                                           const Index& target) {
   item_list_->RemoveObserver(this);
   model_->RemoveObserver(this);
 
-  AppListItem* reparent_item = static_cast<AppListItemView*>(item_view)->item();
+  AppListItem* reparent_item = item_view->item();
   DCHECK(reparent_item->IsInFolder());
   const std::string source_folder_id = reparent_item->folder_id();
   AppListFolderItem* source_folder =
@@ -1823,19 +1823,19 @@ void AppsGridView::ReparentItemForReorder(views::View* item_view,
   UpdatePaging();
 }
 
-void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
+void AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
                                                const Index& target) {
   DCHECK(IsDraggingForReparentInRootLevelGridView());
 
   AppListItemView* target_view =
-      static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
+      GetViewDisplayedAtSlotOnCurrentPage(target.slot);
   if (!target_view)
     return;
 
   // Make change to data model.
   item_list_->RemoveObserver(this);
 
-  AppListItem* reparent_item = static_cast<AppListItemView*>(item_view)->item();
+  AppListItem* reparent_item = item_view->item();
   DCHECK(reparent_item->IsInFolder());
   const std::string source_folder_id = reparent_item->folder_id();
   AppListFolderItem* source_folder =
@@ -1867,7 +1867,7 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
     if (item_list_->FindItemIndex(new_folder_id, &new_folder_index)) {
       int target_view_index = view_model_.GetIndexOfView(target_view);
       DeleteItemViewAtIndex(target_view_index);
-      views::View* new_folder_view =
+      AppListItemView* new_folder_view =
           CreateViewForItemAtIndex(new_folder_index);
       view_model_.Add(new_folder_view, target_view_index);
       AddChildView(new_folder_view);
@@ -1917,7 +1917,7 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
     NOTREACHED();
     return;
   }
-  views::View* last_item_view = CreateViewForItemAtIndex(last_item_index);
+  AppListItemView* last_item_view = CreateViewForItemAtIndex(last_item_index);
   view_model_.Add(last_item_view, last_item_index);
   AddChildView(last_item_view);
 }
@@ -1946,15 +1946,12 @@ void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
 void AppsGridView::CancelContextMenusOnCurrentPage() {
   int start = pagination_model_.selected_page() * tiles_per_page();
   int end = std::min(view_model_.view_size(), start + tiles_per_page());
-  for (int i = start; i < end; ++i) {
-    AppListItemView* view =
-        static_cast<AppListItemView*>(view_model_.view_at(i));
-    view->CancelContextMenu();
-  }
+  for (int i = start; i < end; ++i)
+    GetItemViewAt(i)->CancelContextMenu();
 }
 
 void AppsGridView::DeleteItemViewAtIndex(int index) {
-  views::View* item_view = view_model_.view_at(index);
+  AppListItemView* item_view = GetItemViewAt(index);
   view_model_.Remove(index);
   if (item_view == drag_view_)
     drag_view_ = NULL;
@@ -1974,6 +1971,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
 
   if (strcmp(sender->GetClassName(), AppListItemView::kViewClassName))
     return;
+  AppListItemView* pressed_item_view = static_cast<AppListItemView*>(sender);
 
   if (delegate_) {
     // Always set the previous activated_folder_item_view_ to be visible. This
@@ -1983,22 +1981,19 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     if (!folder_delegate_) {
       if (activated_folder_item_view_)
         activated_folder_item_view_->SetVisible(true);
-      AppListItemView* pressed_item_view =
-          static_cast<AppListItemView*>(sender);
       if (IsFolderItem(pressed_item_view->item()))
         activated_folder_item_view_ = pressed_item_view;
       else
         activated_folder_item_view_ = NULL;
     }
-    delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->item(),
-                           event.flags());
+    delegate_->ActivateApp(pressed_item_view->item(), event.flags());
   }
 }
 
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   EndDrag(true);
 
-  views::View* view = CreateViewForItemAtIndex(index);
+  AppListItemView* view = CreateViewForItemAtIndex(index);
   view_model_.Add(view, index);
   AddChildView(view);
 
@@ -2062,7 +2057,9 @@ void AppsGridView::OnAppListModelStatusChanged() {
   SchedulePaint();
 }
 
-void AppsGridView::SetViewHidden(views::View* view, bool hide, bool immediate) {
+void AppsGridView::SetViewHidden(AppListItemView* view,
+                                 bool hide,
+                                 bool immediate) {
   ui::ScopedLayerAnimationSettings animator(view->layer()->GetAnimator());
   animator.SetPreemptionStrategy(
       immediate ? ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET :
@@ -2082,12 +2079,11 @@ bool AppsGridView::EnableFolderDragDropUI() {
 }
 
 bool AppsGridView::CanDropIntoTarget(const Index& drop_target) const {
-  views::View* target_view = GetViewAtIndex(drop_target);
+  AppListItemView* target_view = GetViewAtIndex(drop_target);
   if (!target_view)
     return false;
 
-  AppListItem* target_item =
-      static_cast<AppListItemView*>(target_view)->item();
+  AppListItem* target_item = target_view->item();
   // Items can be dropped into non-folders (which have no children) or folders
   // that have fewer than the max allowed items.
   // OEM folder does not allow to drag/drop other items in it.
@@ -2130,7 +2126,7 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(int row, int col) const {
   return tile_bounds;
 }
 
-views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
+AppListItemView* AppsGridView::GetViewDisplayedAtSlotOnCurrentPage(int slot) {
   if (slot < 0)
     return NULL;
 
@@ -2140,7 +2136,7 @@ views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
   gfx::Rect tile_rect = GetExpectedTileBounds(row, col);
 
   for (int i = 0; i < view_model_.view_size(); ++i) {
-    views::View* view = view_model_.view_at(i);
+    AppListItemView* view = GetItemViewAt(i);
     if (view->bounds() == tile_rect && view != drag_view_)
       return view;
   }
@@ -2150,8 +2146,7 @@ views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
 void AppsGridView::SetAsFolderDroppingTarget(const Index& target_index,
                                              bool is_target_folder) {
   AppListItemView* target_view =
-      static_cast<AppListItemView*>(
-          GetViewAtSlotOnCurrentPage(target_index.slot));
+      GetViewDisplayedAtSlotOnCurrentPage(target_index.slot);
   if (target_view)
     target_view->SetAsAttemptedFolderTarget(is_target_folder);
 }

@@ -51,6 +51,7 @@ class AppsGridViewDelegate;
 class AppsGridViewFolderDelegate;
 class PageSwitcher;
 class PaginationController;
+class PulsingBlockView;
 
 // AppsGridView displays a grid for AppListItemList sub model.
 class APP_LIST_EXPORT AppsGridView : public views::View,
@@ -88,14 +89,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // |item_list|.
   void SetItemList(AppListItemList* item_list);
 
-  void SetSelectedView(views::View* view);
-  void ClearSelectedView(views::View* view);
+  void SetSelectedView(AppListItemView* view);
+  void ClearSelectedView(AppListItemView* view);
   void ClearAnySelectedView();
-  bool IsSelectedView(const views::View* view) const;
+  bool IsSelectedView(const AppListItemView* view) const;
 
   // Ensures the view is visible. Note that if there is a running page
   // transition, this does nothing.
-  void EnsureViewVisible(const views::View* view);
+  void EnsureViewVisible(const AppListItemView* view);
 
   void InitiateDrag(AppListItemView* view,
                     Pointer pointer,
@@ -109,7 +110,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // coordinates.
   void UpdateDrag(Pointer pointer, const gfx::Point& point);
   void EndDrag(bool cancel);
-  bool IsDraggedView(const views::View* view) const;
+  bool IsDraggedView(const AppListItemView* view) const;
   void ClearDragState();
   void SetDragViewVisible(bool visible);
 
@@ -121,7 +122,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void Prerender();
 
   // Return true if the |bounds_animator_| is animating |view|.
-  bool IsAnimatingView(views::View* view);
+  bool IsAnimatingView(AppListItemView* view);
 
   bool has_dragged_view() const { return drag_view_ != NULL; }
   bool dragging() const { return drag_pointer_ != NONE; }
@@ -258,7 +259,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // number of apps.
   void UpdatePulsingBlockViews();
 
-  views::View* CreateViewForItemAtIndex(size_t index);
+  // Returns the pulsing block view of the item at |index| in the pulsing block
+  // model.
+  PulsingBlockView* GetPulsingBlockViewAt(int index) const;
+
+  AppListItemView* CreateViewForItemAtIndex(size_t index);
 
   // Convert between the model index and the visual index. The model index
   // is the index of the item in AppListModel. The visual index is the Index
@@ -269,8 +274,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void SetSelectedItemByIndex(const Index& index);
   bool IsValidIndex(const Index& index) const;
 
-  Index GetIndexOfView(const views::View* view) const;
-  views::View* GetViewAtIndex(const Index& index) const;
+  Index GetIndexOfView(const AppListItemView* view) const;
+  AppListItemView* GetViewAtIndex(const Index& index) const;
 
   // Gets the index of the AppListItemView at the end of the view model.
   Index GetLastViewIndex() const;
@@ -287,7 +292,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // to succeeding slot of |current|. |animate_current| controls whether to run
   // fading out animation from |current|. |animate_target| controls whether to
   // run fading in animation to |target|.
-  void AnimationBetweenRows(views::View* view,
+  void AnimationBetweenRows(AppListItemView* view,
                             bool animate_current,
                             const gfx::Rect& current,
                             bool animate_target,
@@ -327,20 +332,21 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnPageFlipTimer();
 
   // Updates |model_| to move item represented by |item_view| to |target| slot.
-  void MoveItemInModel(views::View* item_view, const Index& target);
+  void MoveItemInModel(AppListItemView* item_view, const Index& target);
 
   // Updates |model_| to move item represented by |item_view| into a folder
   // containing item located at |target| slot, also update |view_model_| for
   // the related view changes.
-  void MoveItemToFolder(views::View* item_view, const Index& target);
+  void MoveItemToFolder(AppListItemView* item_view, const Index& target);
 
   // Updates both data model and view_model_ for re-parenting a folder item to a
   // new position in top level item list.
-  void ReparentItemForReorder(views::View* item_view, const Index& target);
+  void ReparentItemForReorder(AppListItemView* item_view, const Index& target);
 
   // Updates both data model and view_model_ for re-parenting a folder item
   // to anther folder target.
-  void ReparentItemToAnotherFolder(views::View* item_view, const Index& target);
+  void ReparentItemToAnotherFolder(AppListItemView* item_view,
+                                   const Index& target);
 
   // If there is only 1 item left in the source folder after reparenting an item
   // from it, updates both data model and view_model_ for removing last item
@@ -390,7 +396,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // changing the size of it. If |immediate| is set the change will be
   // immediately applied - otherwise it will change gradually.
   // If |hide| is set the view will get hidden, otherwise it gets shown.
-  void SetViewHidden(views::View* view, bool hide, bool immediate);
+  void SetViewHidden(AppListItemView* view, bool hide, bool immediate);
 
   // Whether the folder drag-and-drop UI should be enabled.
   bool EnableFolderDragDropUI();
@@ -412,9 +418,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Gets the bounds of the tile located at |row| and |col| on the current page.
   gfx::Rect GetExpectedTileBounds(int row, int col) const;
 
-  // Gets the item view located at |slot| on the current page. If there is
-  // no item located at |slot|, returns NULL.
-  views::View* GetViewAtSlotOnCurrentPage(int slot);
+  // Gets the item view currently displayed at |slot| on the current page. If
+  // there is no item displayed at |slot|, returns NULL. Note that this finds an
+  // item *displayed* at a slot, which may differ from the item's location in
+  // the model (as it may have been temporarily moved during a drag operation).
+  AppListItemView* GetViewDisplayedAtSlotOnCurrentPage(int slot);
 
   // Sets state of the view with |target_index| to |is_target_folder| for
   // dropping |drag_view_|.
@@ -474,13 +482,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int cols_;
   int rows_per_page_;
 
-  // Tracks app item views. There is a view per item in |model_|.
+  // List of AppListItemViews. There is a view per item in |model_|.
   views::ViewModel view_model_;
 
-  // Tracks pulsing block views.
+  // List of PulsingBlockViews.
   views::ViewModel pulsing_blocks_model_;
 
-  views::View* selected_view_;
+  AppListItemView* selected_view_;
 
   AppListItemView* drag_view_;
 
