@@ -34,7 +34,7 @@ readonly QEMU_TOOL="$(pwd)/toolchain/linux_x86/arm_trusted/run_under_qemu_arm"
 
 # Note: the tool for updating the canned nexes lives at:
 #        tools/canned_nexe_tool.sh
-readonly CANNED_NEXE_REV=1001
+readonly CANNED_NEXE_REV=1002
 
 # If true, terminate script when first error is encountered.
 readonly FAIL_FAST=${FAIL_FAST:-false}
@@ -182,7 +182,7 @@ download-validator-test-nexes() {
       "${arch}_giant" giant_nexe.tar.bz2
   # This generates "CannedNexes/" in the current directory
   rm -rf CannedNexes
-  tar jxf  giant_nexe.tar.bz2
+  tar jxf giant_nexe.tar.bz2
 }
 
 get-validator() {
