@@ -4,13 +4,16 @@
 
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 
+#include "base/time/time.h"
 #include "content/common/device_sensors/device_light_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 
 namespace {
-// Default delay between subsequent firing of DeviceLight events.
-const int kDefaultLightPumpDelayMillis = 200;
+// Default rate for firing of DeviceLight events.
+const int kDefaultLightPumpFrequencyHz = 5;
+const int kDefaultLightPumpDelayMicroseconds =
+    base::Time::kMicrosecondsPerSecond / kDefaultLightPumpFrequencyHz;
 }  // namespace
 
 namespace content {
@@ -18,7 +21,7 @@ namespace content {
 DeviceLightEventPump::DeviceLightEventPump(RenderThread* thread)
     : DeviceSensorEventPump<blink::WebDeviceLightListener>(thread),
       last_seen_data_(-1) {
-  pump_delay_millis_ = kDefaultLightPumpDelayMillis;
+  pump_delay_microseconds_ = kDefaultLightPumpDelayMicroseconds;
 }
 
 DeviceLightEventPump::~DeviceLightEventPump() {

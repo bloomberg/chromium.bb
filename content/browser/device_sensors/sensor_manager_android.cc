@@ -150,14 +150,14 @@ void SensorManagerAndroid::GotLight(JNIEnv*, jobject, double value) {
 
 bool SensorManagerAndroid::Start(EventType event_type) {
   DCHECK(!device_sensors_.is_null());
-  int rate_in_milliseconds = (event_type == kTypeLight)
-                                 ? kLightSensorIntervalMillis
-                                 : kInertialSensorIntervalMillis;
+  int rate_in_microseconds = (event_type == kTypeLight)
+                                 ? kLightSensorIntervalMicroseconds
+                                 : kInertialSensorIntervalMicroseconds;
   return Java_DeviceSensors_start(AttachCurrentThread(),
                                   device_sensors_.obj(),
                                   reinterpret_cast<intptr_t>(this),
                                   static_cast<jint>(event_type),
-                                  rate_in_milliseconds);
+                                  rate_in_microseconds);
 }
 
 void SensorManagerAndroid::Stop(EventType event_type) {
@@ -250,7 +250,8 @@ void SensorManagerAndroid::CheckMotionBufferReadyToRead() {
       received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] ==
       number_active_device_motion_sensors_) {
     device_motion_buffer_->seqlock.WriteBegin();
-    device_motion_buffer_->data.interval = kInertialSensorIntervalMillis;
+    device_motion_buffer_->data.interval =
+        kInertialSensorIntervalMicroseconds / 1000.;
     device_motion_buffer_->seqlock.WriteEnd();
     SetMotionBufferReadyStatus(true);
 

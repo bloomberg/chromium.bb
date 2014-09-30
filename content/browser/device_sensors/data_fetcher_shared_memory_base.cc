@@ -207,7 +207,7 @@ DataFetcherSharedMemoryBase::GetType() const {
 }
 
 base::TimeDelta DataFetcherSharedMemoryBase::GetInterval() const {
-  return base::TimeDelta::FromMilliseconds(kInertialSensorIntervalMillis);
+  return base::TimeDelta::FromMicroseconds(kInertialSensorIntervalMicroseconds);
 }
 
 base::SharedMemory* DataFetcherSharedMemoryBase::GetSharedMemory(

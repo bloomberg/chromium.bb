@@ -92,26 +92,27 @@ class DeviceSensors implements SensorEventListener {
      * for events, the old callback is unregistered first.
      *
      * @param nativePtr Value to pass to nativeGotOrientation() for each event.
-     * @param rateInMilliseconds Requested callback rate in milliseconds. The
+     * @param rateInMicroseconds Requested callback rate in microseconds. The
      *            actual rate may be higher. Unwanted events should be ignored.
      * @param eventType Type of event to listen to, can be either DEVICE_ORIENTATION or
      *                  DEVICE_MOTION or DEVICE_LIGHT.
      * @return True on success.
      */
     @CalledByNative
-    public boolean start(long nativePtr, int eventType, int rateInMilliseconds) {
+    public boolean start(long nativePtr, int eventType, int rateInMicroseconds) {
         boolean success = false;
         synchronized (mNativePtrLock) {
             switch (eventType) {
                 case DEVICE_ORIENTATION:
-                    success = registerSensors(DEVICE_ORIENTATION_SENSORS, rateInMilliseconds, true);
+                    success = registerSensors(DEVICE_ORIENTATION_SENSORS, rateInMicroseconds,
+                        true);
                     break;
                 case DEVICE_MOTION:
                     // note: device motion spec does not require all sensors to be available
-                    success = registerSensors(DEVICE_MOTION_SENSORS, rateInMilliseconds, false);
+                    success = registerSensors(DEVICE_MOTION_SENSORS, rateInMicroseconds, false);
                     break;
                 case DEVICE_LIGHT:
-                    success = registerSensors(DEVICE_LIGHT_SENSORS, rateInMilliseconds, true);
+                    success = registerSensors(DEVICE_LIGHT_SENSORS, rateInMicroseconds, true);
                     break;
                 default:
                     Log.e(TAG, "Unknown event type: " + eventType);
@@ -376,19 +377,19 @@ class DeviceSensors implements SensorEventListener {
 
     /**
      * @param sensorTypes List of sensors to activate.
-     * @param rateInMilliseconds Intended delay (in milliseconds) between sensor readings.
+     * @param rateInMicroseconds Intended delay (in microseconds) between sensor readings.
      * @param failOnMissingSensor If true the method returns true only if all sensors could be
      *                            activated. When false the method return true if at least one
      *                            sensor in sensorTypes could be activated.
      */
-    private boolean registerSensors(Set<Integer> sensorTypes, int rateInMilliseconds,
+    private boolean registerSensors(Set<Integer> sensorTypes, int rateInMicroseconds,
             boolean failOnMissingSensor) {
         Set<Integer> sensorsToActivate = new HashSet<Integer>(sensorTypes);
         sensorsToActivate.removeAll(mActiveSensors);
         boolean success = false;
 
         for (Integer sensorType : sensorsToActivate) {
-            boolean result = registerForSensorType(sensorType, rateInMilliseconds);
+            boolean result = registerForSensorType(sensorType, rateInMicroseconds);
             if (!result && failOnMissingSensor) {
                 // restore the previous state upon failure
                 unregisterSensors(sensorsToActivate);
@@ -411,12 +412,11 @@ class DeviceSensors implements SensorEventListener {
         }
     }
 
-    private boolean registerForSensorType(int type, int rateInMilliseconds) {
+    private boolean registerForSensorType(int type, int rateInMicroseconds) {
         SensorManagerProxy sensorManager = getSensorManagerProxy();
         if (sensorManager == null) {
             return false;
         }
-        final int rateInMicroseconds = 1000 * rateInMilliseconds;
         return sensorManager.registerListener(this, type, rateInMicroseconds, getHandler());
     }
 

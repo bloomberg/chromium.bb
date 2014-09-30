@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_
 
 #include "base/memory/shared_memory.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/platform_event_observer.h"
 
@@ -15,8 +16,10 @@ template <typename ListenerType>
 class CONTENT_EXPORT DeviceSensorEventPump
     : NON_EXPORTED_BASE(public PlatformEventObserver<ListenerType>) {
  public:
-  // Default delay between subsequent firing of events.
-  static const int kDefaultPumpDelayMillis = 50;
+  // Default rate for firing events.
+  static const int kDefaultPumpFrequencyHz = 60;
+  static const int kDefaultPumpDelayMicroseconds =
+      base::Time::kMicrosecondsPerSecond / kDefaultPumpFrequencyHz;
 
   // PlatformEventObserver
   virtual void Start(blink::WebPlatformEventListener* listener) OVERRIDE {
@@ -49,9 +52,8 @@ class CONTENT_EXPORT DeviceSensorEventPump
  protected:
   explicit DeviceSensorEventPump(RenderThread* thread)
       : PlatformEventObserver<ListenerType>(thread),
-        pump_delay_millis_(kDefaultPumpDelayMillis),
-        state_(STOPPED) {
-  }
+        pump_delay_microseconds_(kDefaultPumpDelayMicroseconds),
+        state_(STOPPED) {}
 
   virtual ~DeviceSensorEventPump() {
   }
@@ -77,8 +79,9 @@ class CONTENT_EXPORT DeviceSensorEventPump
 
     if (InitializeReader(handle)) {
       timer_.Start(FROM_HERE,
-                   base::TimeDelta::FromMilliseconds(pump_delay_millis_),
-                   this, &DeviceSensorEventPump::FireEvent);
+                   base::TimeDelta::FromMicroseconds(pump_delay_microseconds_),
+                   this,
+                   &DeviceSensorEventPump::FireEvent);
       state_ = RUNNING;
     }
   }
@@ -86,7 +89,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
   virtual void FireEvent() = 0;
   virtual bool InitializeReader(base::SharedMemoryHandle handle) = 0;
 
-  int pump_delay_millis_;
+  int pump_delay_microseconds_;
   PumpState state_;
   base::RepeatingTimer<DeviceSensorEventPump> timer_;
 

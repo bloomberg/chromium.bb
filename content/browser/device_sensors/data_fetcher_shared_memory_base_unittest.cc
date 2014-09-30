@@ -67,7 +67,7 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     DeviceMotionHardwareBuffer* buffer = GetMotionBuffer();
     ASSERT_TRUE(buffer);
     buffer->seqlock.WriteBegin();
-    buffer->data.interval = kInertialSensorIntervalMillis;
+    buffer->data.interval = kInertialSensorIntervalMicroseconds / 1000.;
     buffer->seqlock.WriteEnd();
     updated_motion_.Signal();
   }
@@ -343,8 +343,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
 
-  EXPECT_EQ(kInertialSensorIntervalMillis,
-      fake_data_fetcher.GetMotionBuffer()->data.interval);
+  EXPECT_EQ(kInertialSensorIntervalMicroseconds / 1000.,
+            fake_data_fetcher.GetMotionBuffer()->data.interval);
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_MOTION);
@@ -388,8 +388,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
   fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_MOTION);
 
-  EXPECT_EQ(kInertialSensorIntervalMillis,
-      fake_data_fetcher.GetMotionBuffer()->data.interval);
+  EXPECT_EQ(kInertialSensorIntervalMicroseconds / 1000.,
+            fake_data_fetcher.GetMotionBuffer()->data.interval);
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_MOTION);
@@ -452,8 +452,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
   fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_MOTION);
 
   EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
-  EXPECT_EQ(kInertialSensorIntervalMillis,
-      fake_data_fetcher.GetMotionBuffer()->data.interval);
+  EXPECT_EQ(kInertialSensorIntervalMicroseconds / 1000.,
+            fake_data_fetcher.GetMotionBuffer()->data.interval);
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
