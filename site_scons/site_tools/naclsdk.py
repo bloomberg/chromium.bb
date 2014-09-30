@@ -303,6 +303,8 @@ def PNaClForceNative(env):
   env.Replace(OBJSUFFIX='.o',
               SHLIBSUFFIX='.so')
   arch_flag = ' -arch ${TARGET_FULLARCH}'
+  if env.Bit('nonsfi_nacl'):
+    arch_flag += '-nonsfi'
   cc_flags = ' --pnacl-allow-native --pnacl-allow-translate'
   env.Append(CC=arch_flag + cc_flags,
              CXX=arch_flag + cc_flags,
