@@ -934,7 +934,7 @@ public class Tab implements NavigationClient {
 
     /**
      * Loads the tab if it's not loaded (e.g. because it was killed in background).
-     * @return true iff tab load was triggered
+     * @return true iff the Tab handled the request.
      */
     @CalledByNative
     public boolean loadIfNeeded() {

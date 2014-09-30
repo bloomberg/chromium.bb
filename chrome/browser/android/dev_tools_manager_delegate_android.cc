@@ -140,7 +140,9 @@ class TabTarget : public TargetBase {
       if (!tab)
         return NULL;
 
-      tab->LoadIfNeeded();
+      if (!tab->LoadIfNeeded())
+        return NULL;
+
       web_contents = model->GetWebContentsAt(index);
       if (!web_contents)
         return NULL;
