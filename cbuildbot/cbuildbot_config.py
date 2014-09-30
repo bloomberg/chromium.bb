@@ -2480,6 +2480,7 @@ _non_testable_brillo_release.add_config('storm-release',
   # Hw Lab can't test storm, yet.
   paygen_skip_testing=True,
   important=True,
+  signer_tests=False
 )
 
 _non_testable_brillo_release.add_config('urara-release',
