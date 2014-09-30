@@ -90,6 +90,8 @@ static const NaClMnemonic kNaClIllegalOp[] = {
    */
   InstUd2,
   InstXlat,  /* ISE reviewers suggested this omision */
+  /* https://code.google.com/p/nativeclient/issues/detail?id=3944 */
+  InstClflush
 };
 
 static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {

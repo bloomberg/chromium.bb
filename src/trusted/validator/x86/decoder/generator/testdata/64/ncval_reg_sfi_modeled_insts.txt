@@ -2506,9 +2506,8 @@ Target: x86-64 bit mode
   0f ae / 7 / 5               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
   0f ae / 7 / 6               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
   0f ae / 7 / 7               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
-  0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
-    [P] DontCare $Mb (u)
-      Mb_Operand              OpUse
+  0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   --- af ---
   0f af                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     [P] DontCare $Gv (suz), $Ev (u)

@@ -186,7 +186,9 @@ clc, 0xf8
 ######## CLD ###################################################################
 cld, 0xfc
 ######## CLFLUSH ###############################################################
-clflush Mb, 0x0f 0xae /7, CPUFeature_CLFLUSH
+# clflush disabled because it is unused and may potentially be unsafe.
+# see: https://code.google.com/p/nativeclient/issues/detail?id=3944
+clflush Mb, 0x0f 0xae /7, CPUFeature_CLFLUSH nacl-forbidden
 ######## CMC ###################################################################
 cmc, 0xf5
 ######## CMOVCC ################################################################

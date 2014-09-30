@@ -2782,7 +2782,7 @@ Target: x86-64 bit mode
   0f ae / 7 / 5               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
   0f ae / 7 / 6               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
   0f ae / 7 / 7               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
-  0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+  0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
     Clflush $Mb
       Mb_Operand              OpUse
   --- af ---

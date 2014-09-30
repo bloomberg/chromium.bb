@@ -2910,7 +2910,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 0f ae 38                                     clflush [%rax]
-  0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+  0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
     Clflush $Mb
       Mb_Operand              OpUse
 NaClExpVector[6] = {

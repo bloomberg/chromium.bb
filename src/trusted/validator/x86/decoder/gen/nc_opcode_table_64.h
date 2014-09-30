@@ -3072,7 +3072,7 @@ static const NaClInst g_Opcodes[1344] = {
     InstShrd, 0x00, 3, 398, NACL_OPCODE_NULL_OFFSET  },
   /* 580 */
   { NACLi_SFENCE_CLFLUSH,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
     InstClflush, 0x07, 1, 278, NACL_OPCODE_NULL_OFFSET  },
   /* 581 */
   { NACLi_INVALID,
