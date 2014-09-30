@@ -122,6 +122,37 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScriptFail) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged) {
+  RunTest("testExecuteScriptIsAbortedWhenWebViewSourceIsChanged",
+          "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestFindAPI) {
+  RunTest("testFindAPI", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestFindAPI_findupdate) {
+  RunTest("testFindAPI_findupdate", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestGetProcessId) {
+  RunTest("testGetProcessId", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestHiddenBeforeNavigation) {
+  RunTest("testHiddenBeforeNavigation", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestInlineScriptFromAccessibleResources) {
+  RunTest("testInlineScriptFromAccessibleResources", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestInvalidChromeExtensionURL) {
+  RunTest("testInvalidChromeExtensionURL", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
                        TestLoadAbortChromeExtensionURLWrongPartition) {
   RunTest("testLoadAbortChromeExtensionURLWrongPartition", "web_view/apitest");
 }

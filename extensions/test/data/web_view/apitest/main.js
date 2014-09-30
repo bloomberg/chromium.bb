@@ -537,6 +537,247 @@ function testExecuteScriptFail() {
   }
 }
 
+// This test verifies that the call of executeScript will fail and return null
+// if the webview has been navigated to another source.
+function testExecuteScriptIsAbortedWhenWebViewSourceIsChanged() {
+  var webview = document.createElement('webview');
+  var initial = true;
+  var navigationOccur = false;
+  var newSrc = 'data:text/html,trigger navigation';
+  webview.addEventListener('loadstart', function() {
+    if (initial) {
+      webview.setAttribute('src', newSrc);
+      navigationOccur = true;
+    }
+    initial = false;
+  });
+  webview.addEventListener('loadstop', function() {
+    webview.executeScript(
+      {code:'document.body.style.backgroundColor = "red";'},
+      function(results) {
+        if (navigationOccur) {
+          // Expect a null results because the executeScript failed;
+          // return "red", otherwise.
+          embedder.test.assertEq(null, results);
+          embedder.test.succeed();
+        }
+        navigationOccur = false;
+      }
+    );
+  });
+  webview.setAttribute('src', "about:blank");
+  document.body.appendChild(webview);
+}
+
+function testFindAPI() {
+  var webview = new WebView();
+  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+      '<a href="about:blank">Click here!</a>';
+
+  var loadstopListener2 = function(e) {
+    embedder.test.assertEq(webview.src, "about:blank");
+    embedder.test.succeed();
+  }
+
+  var loadstopListener1 = function(e) {
+    // Test find results.
+    webview.find("dog", {}, function(results) {
+      callbackTest = true;
+      embedder.test.assertEq(results.numberOfMatches, 100);
+      embedder.test.assertTrue(results.selectionRect.width > 0);
+      embedder.test.assertTrue(results.selectionRect.height > 0);
+
+      // Test finding next active matches.
+      webview.find("dog");
+      webview.find("dog");
+      webview.find("dog");
+      webview.find("dog");
+      webview.find("dog", {}, function(results) {
+        embedder.test.assertEq(results.activeMatchOrdinal, 6);
+        webview.find("dog", {backward: true});
+        webview.find("dog", {backward: true}, function(results) {
+          // Test the |backward| find option.
+          embedder.test.assertEq(results.activeMatchOrdinal, 4);
+
+          // Test the |matchCase| find option.
+          webview.find("Dog", {matchCase: true}, function(results) {
+            embedder.test.assertEq(results.numberOfMatches, 40);
+
+            // Test canceling find requests.
+            webview.find("dog");
+            webview.stopFinding();
+            webview.find("dog");
+            webview.find("cat");
+
+            // Test find results when looking for something that isn't there.
+            webview.find("fish", {}, function(results) {
+              embedder.test.assertEq(results.numberOfMatches, 0);
+              embedder.test.assertEq(results.activeMatchOrdinal, 0);
+              embedder.test.assertEq(results.selectionRect.left, 0);
+              embedder.test.assertEq(results.selectionRect.top, 0);
+              embedder.test.assertEq(results.selectionRect.width, 0);
+              embedder.test.assertEq(results.selectionRect.height, 0);
+
+              // Test following a link with stopFinding().
+              webview.removeEventListener('loadstop', loadstopListener1);
+              webview.addEventListener('loadstop', loadstopListener2);
+              webview.find("click here!", {}, function() {
+                webview.stopFinding("activate");
+              });
+            });
+          });
+        });
+      });
+    });
+  };
+
+  webview.addEventListener('loadstop', loadstopListener1);
+  document.body.appendChild(webview);
+};
+
+function testFindAPI_findupdate() {
+  var webview = new WebView();
+  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+      '<a href="about:blank">Click here!</a>';
+  var canceledTest = false;
+  webview.addEventListener('loadstop', function(e) {
+    // Test the |findupdate| event.
+    webview.addEventListener('findupdate', function(e) {
+      if (e.activeMatchOrdinal > 0) {
+        // embedder.test.assertTrue(e.numberOfMatches >= e.activeMatchOrdinal)
+        // This currently fails because of http://crbug.com/342445 .
+        embedder.test.assertTrue(e.selectionRect.width > 0);
+        embedder.test.assertTrue(e.selectionRect.height > 0);
+      }
+
+      if (e.finalUpdate) {
+        if (e.canceled) {
+          canceledTest = true;
+        } else {
+          embedder.test.assertEq(e.searchText, "dog");
+          embedder.test.assertEq(e.numberOfMatches, 100);
+          embedder.test.assertEq(e.activeMatchOrdinal, 1);
+          embedder.test.assertTrue(canceledTest);
+          embedder.test.succeed();
+        }
+      }
+    });
+    wv.find("dog");
+    wv.find("cat");
+    wv.find("dog");
+  });
+
+  document.body.appendChild(webview);
+};
+
+// This test verifies that getProcessId is defined and returns a non-zero
+// value corresponding to the processId of the guest process.
+function testGetProcessId() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  var firstLoad = function() {
+    webview.removeEventListener('loadstop', firstLoad);
+    embedder.test.assertTrue(webview.getProcessId() > 0);
+    embedder.test.succeed();
+  };
+  webview.addEventListener('loadstop', firstLoad);
+  document.body.appendChild(webview);
+}
+
+function testHiddenBeforeNavigation() {
+  var webview = document.createElement('webview');
+  webview.style.visibility = 'hidden';
+
+  var postMessageHandler = function(e) {
+    var data = JSON.parse(e.data);
+    window.removeEventListener('message', postMessageHandler);
+    if (data[0] == 'visibilityState-response') {
+      embedder.test.assertEq('hidden', data[1]);
+      embedder.test.succeed();
+    } else {
+      window.console.warn('Unexpected message: ' + data);
+      embedder.test.fail();
+    }
+  };
+
+  webview.addEventListener('loadstop', function(e) {
+    window.console.warn('webview.loadstop');
+    window.addEventListener('message', postMessageHandler);
+    webview.addEventListener('consolemessage', function(e) {
+      window.console.warn('g: ' + e.message);
+    });
+
+    webview.executeScript(
+      {file: 'inject_hidden_test.js'},
+      function(results) {
+        if (!results || !results.length) {
+          window.console.warn('Failed to inject script: inject_hidden_test.js');
+          embedder.test.fail();
+          return;
+        }
+
+        window.console.warn('script injection success');
+        webview.contentWindow.postMessage(
+            JSON.stringify(['visibilityState-request']), '*');
+      });
+  });
+
+  webview.setAttribute('src', 'data:text/html,<html><body></body></html>');
+  document.body.appendChild(webview);
+}
+
+// Makes sure inline scripts works inside guest that was loaded from
+// accessible_resources.
+function testInlineScriptFromAccessibleResources() {
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('consolemessage', function(e) {
+    window.console.log('consolemessage: ' + e.message);
+    if (e.message == 'guest_with_inline_script.html: Inline script ran') {
+      embedder.test.succeed();
+    }
+  });
+  webview.setAttribute('src', 'guest_with_inline_script.html');
+  document.body.appendChild(webview);
+}
+
+// This tests verifies that webview fires a loadabort event instead of crashing
+// the browser if we attempt to navigate to a chrome-extension: URL with an
+// extension ID that does not exist.
+function testInvalidChromeExtensionURL() {
+  var invalidResource = 'chrome-extension://abc123/guest.html';
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', invalidResource);
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the loadabort event fires when loading a webview
 // accessible resource from a partition that is not privileged.
 function testLoadAbortChromeExtensionURLWrongPartition() {
@@ -662,6 +903,15 @@ embedder.test.testList = {
   'testDisplayNoneWebviewRemoveChild': testDisplayNoneWebviewRemoveChild,
   'testExecuteScript': testExecuteScript,
   'testExecuteScriptFail': testExecuteScriptFail,
+  'testExecuteScriptIsAbortedWhenWebViewSourceIsChanged':
+      testExecuteScriptIsAbortedWhenWebViewSourceIsChanged,
+  'testFindAPI': testFindAPI,
+  'testFindAPI_findupdate': testFindAPI,
+  'testGetProcessId': testGetProcessId,
+  'testHiddenBeforeNavigation': testHiddenBeforeNavigation,
+  'testInlineScriptFromAccessibleResources':
+      testInlineScriptFromAccessibleResources,
+  'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,
   'testLoadAbortChromeExtensionURLWrongPartition':
       testLoadAbortChromeExtensionURLWrongPartition,
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,

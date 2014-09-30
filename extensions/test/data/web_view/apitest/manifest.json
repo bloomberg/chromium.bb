@@ -9,5 +9,15 @@
     "background": {
       "scripts": ["test.js"]
     }
+  },
+  "webview": {
+    "partitions": [
+      {
+        "name": "foobar",
+        "accessible_resources": [
+          "guest_with_inline_script.html"
+        ]
+      }
+    ]
   }
 }
