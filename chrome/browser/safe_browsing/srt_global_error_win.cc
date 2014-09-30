@@ -107,6 +107,10 @@ void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
   DismissGlobalError();
 }
 
+bool SRTGlobalError::ShouldCloseOnDeactivate() const {
+  return false;
+}
+
 void SRTGlobalError::DismissGlobalError() {
   global_error_service_->RemoveGlobalError(this);
   delete this;

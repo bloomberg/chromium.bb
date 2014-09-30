@@ -38,6 +38,7 @@ class SRTGlobalError : public GlobalErrorWithStandardBubble,
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
+  virtual bool ShouldCloseOnDeactivate() const OVERRIDE;
 
  private:
   // When the user took action, the GlobalError can be dismissed.
