@@ -169,6 +169,12 @@ class BrowserActionView : public views::MenuButton,
   virtual void OnPopupShown(bool grant_tab_permissions) OVERRIDE;
   virtual void CleanupPopup() OVERRIDE;
 
+  // A lock to keep the MenuButton pressed when a menu or popup is visible.
+  // This needs to be destroyed after |view_controller_|, because
+  // |view_controller_|'s destructor can call CleanupPopup(), which uses this
+  // object.
+  scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
+
   // The controller for this ExtensionAction view.
   scoped_ptr<ExtensionActionViewController> view_controller_;
 
@@ -183,9 +189,6 @@ class BrowserActionView : public views::MenuButton,
   // The observer that we need to notify when the icon of the button has been
   // updated.
   IconObserver* icon_observer_;
-
-  // A lock to keep the MenuButton pressed when a menu or popup is visible.
-  scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
 };
