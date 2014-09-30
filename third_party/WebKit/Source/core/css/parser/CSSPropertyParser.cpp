@@ -474,7 +474,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
 
     if (isKeywordPropertyID(propId)) {
-        if (!isValidKeywordPropertyAndValue(propId, id, m_context))
+        if (!isValidKeywordPropertyAndValue(propId, id))
             return false;
         if (m_valueList->next() && !inShorthand())
             return false;
@@ -4412,7 +4412,7 @@ bool CSSPropertyParser::parseFont(bool important)
     bool fontStretchParsed = false;
     CSSParserValue* value = m_valueList->current();
     for (; value; value = m_valueList->next()) {
-        if (!fontStyleParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStyle, value->id, m_context)) {
+        if (!fontStyleParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStyle, value->id)) {
             addProperty(CSSPropertyFontStyle, cssValuePool().createIdentifierValue(value->id), important);
             fontStyleParsed = true;
         } else if (!fontVariantParsed && (value->id == CSSValueNormal || value->id == CSSValueSmallCaps)) {
@@ -4421,7 +4421,7 @@ bool CSSPropertyParser::parseFont(bool important)
             fontVariantParsed = true;
         } else if (!fontWeightParsed && parseFontWeight(important)) {
             fontWeightParsed = true;
-        } else if (!fontStretchParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStretch, value->id, m_context)) {
+        } else if (!fontStretchParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStretch, value->id)) {
             addProperty(CSSPropertyFontStretch, cssValuePool().createIdentifierValue(value->id), important);
             fontStretchParsed = true;
         } else {

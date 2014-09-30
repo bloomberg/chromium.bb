@@ -384,7 +384,7 @@ CSSPropertyID cssPropertyID(const String&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 
 bool isKeywordPropertyID(CSSPropertyID);
-bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID, const CSSParserContext&);
+bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
 
 } // namespace blink
 

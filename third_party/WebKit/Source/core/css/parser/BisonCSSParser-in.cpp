@@ -355,7 +355,7 @@ static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSProp
     return true;
 }
 
-bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID, const CSSParserContext& parserContext)
+bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID)
 {
     if (valueID == CSSValueInvalid)
         return false;
@@ -671,7 +671,7 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, const CSSParserContext& parserContext)
+static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important)
 {
     ASSERT(!string.isEmpty());
 
@@ -698,7 +698,7 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
         value = cssValuePool().createInheritedValue();
     else if (valueID == CSSValueInitial)
         value = cssValuePool().createExplicitInitialValue();
-    else if (isValidKeywordPropertyAndValue(propertyId, valueID, parserContext))
+    else if (isValidKeywordPropertyAndValue(propertyId, valueID))
         value = cssValuePool().createIdentifierValue(valueID);
     else
         return false;
@@ -885,7 +885,7 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
         return true;
     if (parseColorValue(declaration, propertyID, string, important, context.mode()))
         return true;
-    if (parseKeywordValue(declaration, propertyID, string, important, context))
+    if (parseKeywordValue(declaration, propertyID, string, important))
         return true;
 
     BisonCSSParser parser(context);
@@ -899,18 +899,16 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
         return true;
     if (parseColorValue(declaration, propertyID, string, important, cssParserMode))
         return true;
+    if (parseKeywordValue(declaration, propertyID, string, important))
+        return true;
+    if (parseSimpleTransform(declaration, propertyID, string, important))
+        return true;
 
     CSSParserContext context(cssParserMode, 0);
     if (contextStyleSheet) {
         context = contextStyleSheet->parserContext();
         context.setMode(cssParserMode);
     }
-
-    if (parseKeywordValue(declaration, propertyID, string, important, context))
-        return true;
-    if (parseSimpleTransform(declaration, propertyID, string, important))
-        return true;
-
     BisonCSSParser parser(context);
     return parser.parseValue(declaration, propertyID, string, important, contextStyleSheet);
 }
