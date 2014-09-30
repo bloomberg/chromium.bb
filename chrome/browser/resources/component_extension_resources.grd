@@ -85,6 +85,7 @@
 
         <!-- (Experimental) hotword triggering extension -->
         <include name="IDR_HOTWORD_CONSTANTS_JS" file="hotword/constants.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_LOGGING_JS" file="hotword/logging.js" type="BINDATA" />
         <include name="IDR_HOTWORD_MANAGER_JS" file="hotword/manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_NACL_MANAGER_JS" file="hotword/nacl_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_STATE_MANAGER_JS" file="hotword/state_manager.js" type="BINDATA" />

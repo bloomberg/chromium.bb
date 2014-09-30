@@ -86,6 +86,7 @@ cr.define('hotword', function() {
      * @private
      */
     handleStatus_: function(status) {
+      hotword.debug('New hotword status', status);
       this.hotwordStatus_ = status;
       this.updateStateFromStatus_();
     },
@@ -234,6 +235,7 @@ cr.define('hotword', function() {
      * @private
      */
     onTrigger_: function() {
+      hotword.debug('Hotword triggered!');
       assert(this.pluginManager_);
       // Detector implicitly stops when the hotword is detected.
       this.state_ = State_.STOPPED;
@@ -257,6 +259,7 @@ cr.define('hotword', function() {
      *     been started successfully.
      */
     startSession: function(source, startedCb) {
+      hotword.debug('Starting session for source: ' + source);
       this.sessionSource_ = source;
       this.sessionStartedCb_ = startedCb;
       this.updateStateFromStatus_();
@@ -268,6 +271,7 @@ cr.define('hotword', function() {
      *     session request.
      */
     stopSession: function(source) {
+      hotword.debug('Stopping session for source: ' + source);
       this.sessionSource_ = null;
       this.sessionStartedCb_ = null;
       this.updateStateFromStatus_();
