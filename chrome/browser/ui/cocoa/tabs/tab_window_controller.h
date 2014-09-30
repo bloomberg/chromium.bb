@@ -24,6 +24,7 @@
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
   base::scoped_nsobject<FastResizeView> tabContentArea_;
+  base::scoped_nsobject<NSView> tabStripBackgroundView_;
   base::scoped_nsobject<TabStripView> tabStripView_;
 
   // The child window used during dragging to achieve the opacity tricks.
@@ -36,6 +37,7 @@
   base::scoped_nsobject<FocusTracker> focusBeforeOverlay_;
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
+@property(readonly, nonatomic) NSView* tabStripBackgroundView;
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
 

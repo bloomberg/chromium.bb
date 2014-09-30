@@ -28,8 +28,6 @@
 
 namespace {
 
-const CGFloat kBrowserFrameViewPaintHeight = 60.0;
-
 // Size of the gradient. Empirically determined so that the gradient looks
 // like what the heuristic does when there are just a few tabs.
 const CGFloat kWindowGradientHeight = 24.0;
@@ -312,68 +310,6 @@ const CGFloat kWindowGradientHeight = 24.0;
   }
 
   return origin;
-}
-
-- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view {
-  // WARNING: There is an obvious optimization opportunity here that you DO NOT
-  // want to take. To save painting cycles, you might think it would be a good
-  // idea to call out to the default implementation only if no theme were
-  // drawn. In reality, however, if you fail to call the default
-  // implementation, or if you call it after a clipping path is set, the
-  // rounded corners at the top of the window will not draw properly. Do not
-  // try to be smart here.
-
-  // Only paint the top of the window.
-  NSRect windowRect = [view convertRect:[self frame] fromView:nil];
-  windowRect.origin = NSZeroPoint;
-
-  NSRect paintRect = windowRect;
-  paintRect.origin.y = NSMaxY(paintRect) - kBrowserFrameViewPaintHeight;
-  paintRect.size.height = kBrowserFrameViewPaintHeight;
-  rect = NSIntersectionRect(paintRect, rect);
-  [super drawCustomFrameRect:rect forView:view];
-
-  // Set up our clip.
-  float cornerRadius = 4.0;
-  if ([view respondsToSelector:@selector(roundedCornerRadius)])
-    cornerRadius = [view roundedCornerRadius];
-  [[NSBezierPath bezierPathWithRoundedRect:windowRect
-                                   xRadius:cornerRadius
-                                   yRadius:cornerRadius] addClip];
-  [[NSBezierPath bezierPathWithRect:rect] addClip];
-
-  // Do the theming.
-  BOOL themed = [FramedBrowserWindow
-      drawWindowThemeInDirtyRect:rect
-                         forView:view
-                          bounds:windowRect
-            forceBlackBackground:NO];
-
-  // If the window needs a title and we painted over the title as drawn by the
-  // default window paint, paint it ourselves.
-  if (themed && [view respondsToSelector:@selector(_titlebarTitleRect)] &&
-      [view respondsToSelector:@selector(_drawTitleStringIn:withColor:)] &&
-      ![self _isTitleHidden]) {
-    [view _drawTitleStringIn:[view _titlebarTitleRect]
-                   withColor:[self titleColor]];
-  }
-
-  // Pinstripe the top.
-  if (themed) {
-    CGFloat lineWidth = [view cr_lineWidth];
-
-    windowRect = [view convertRect:[self frame] fromView:nil];
-    windowRect.origin = NSZeroPoint;
-    windowRect.origin.y -= 0.5 * lineWidth;
-    windowRect.origin.x -= 0.5 * lineWidth;
-    windowRect.size.width += lineWidth;
-    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.5] set];
-    NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:windowRect
-                                                         xRadius:cornerRadius
-                                                         yRadius:cornerRadius];
-    [path setLineWidth:lineWidth];
-    [path stroke];
-  }
 }
 
 + (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect

@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/version_independent_window.h"
@@ -52,7 +53,6 @@
   base::scoped_nsobject<FramedBrowserWindow> window(
       [[FramedBrowserWindow alloc] initWithContentRect:contentRect
                                            hasTabStrip:hasTabStrip]);
-  [self moveContentViewToBack:[window contentView]];
   [window setReleasedWhenClosed:YES];
   [window setAutorecalculatesKeyViewLoop:YES];
 
@@ -65,6 +65,25 @@
                                          NSViewHeightSizable];
     [[[self window] contentView] addSubview:tabContentArea_];
 
+    // tabStripBackgroundView_ draws the theme image behind the tab strip area.
+    // When making a tab dragging window (setUseOverlay:), this view stays in
+    // the parent window so that it can be translucent, while the tab strip view
+    // moves to the child window and stays opaque.
+    NSView* windowView = [window cr_windowView];
+    tabStripBackgroundView_.reset([[TabStripBackgroundView alloc]
+        initWithFrame:NSMakeRect(0,
+                                 NSMaxY([windowView bounds]) -
+                                     kBrowserFrameViewPaintHeight,
+                                 NSWidth([windowView bounds]),
+                                 kBrowserFrameViewPaintHeight)]);
+    [tabStripBackgroundView_
+        setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
+    [windowView addSubview:tabStripBackgroundView_
+                positioned:NSWindowBelow
+                relativeTo:nil];
+
+    [self moveContentViewToBack:[window contentView]];
+
     tabStripView_.reset([[TabStripView alloc]
         initWithFrame:NSMakeRect(0, 0, 750, chrome::kTabStripHeight)]);
     [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
@@ -73,6 +92,10 @@
       [self insertTabStripView:tabStripView_ intoWindow:[self window]];
   }
   return self;
+}
+
+- (NSView*)tabStripBackgroundView {
+  return tabStripBackgroundView_;
 }
 
 - (TabStripView*)tabStripView {
@@ -289,7 +312,14 @@
   base::scoped_nsobject<NSView> contentView([cv retain]);
   NSView* superview = [contentView superview];
   [contentView removeFromSuperview];
-  [superview addSubview:contentView positioned:NSWindowBelow relativeTo:nil];
+  DCHECK(tabStripBackgroundView_);
+  if (superview == [tabStripBackgroundView_ superview]) {
+    [superview addSubview:contentView
+               positioned:NSWindowAbove
+               relativeTo:tabStripBackgroundView_];
+  } else {
+    [superview addSubview:contentView positioned:NSWindowBelow relativeTo:nil];
+  }
 }
 
 - (void)insertTabStripView:(NSView*)tabStripView intoWindow:(NSWindow*)window {

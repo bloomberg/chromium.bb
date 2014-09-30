@@ -705,6 +705,8 @@
       'browser/ui/cocoa/tabs/media_indicator_view.mm',
       'browser/ui/cocoa/tabs/tab_controller.h',
       'browser/ui/cocoa/tabs/tab_controller.mm',
+      'browser/ui/cocoa/tabs/tab_strip_background_view.h',
+      'browser/ui/cocoa/tabs/tab_strip_background_view.mm',
       'browser/ui/cocoa/tabs/tab_strip_controller.h',
       'browser/ui/cocoa/tabs/tab_strip_controller.mm',
       'browser/ui/cocoa/tabs/tab_strip_drag_controller.h',
