@@ -29766,12 +29766,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Settings.StartupURLsMigration" enum="StartupURLsMigration">
-  <owner>csharp@chromium.org</owner>
+  <owner>mad@chromium.org</owner>
   <summary>The startup URLs pref migration steps.</summary>
 </histogram>
 
 <histogram name="Settings.StartupURLsResetTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mad@chromium.org</owner>
   <summary>
     The time elapsed in milliseconds in between startup URLs pref migration. A
     value of 0 indicates that the last migration time was in the future due to
@@ -29917,7 +29917,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SettingsResetBubble.NumNoThanksPerReset">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mad@chromium.org</owner>
   <summary>
     Counts the number of times the user clicked on the No Thanks button of the
     settings reset bubble before clicking on the Reset button in the same Chrome
