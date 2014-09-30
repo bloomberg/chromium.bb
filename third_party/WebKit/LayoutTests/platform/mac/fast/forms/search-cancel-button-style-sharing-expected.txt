@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 385x18
-          text run at (0,0) width 385: "Only the second search field should have a cancel button (\x{D7})."
-      RenderBlock (anonymous) at (0,34) size 784x19
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 392x16
+          text run at (0,0) width 392: "Only the second search field should have a cancel button (\x{D7})."
+      RenderBlock (anonymous) at (0,32) size 784x19
         RenderTextControl {INPUT} at (0,0) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-        RenderText {#text} at (125,0) size 4x18
-          text run at (125,0) width 4: " "
+        RenderText {#text} at (125,2) size 4x16
+          text run at (125,2) width 4: " "
         RenderTextControl {INPUT} at (129,0) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
@@ -20,12 +20,12 @@ layer at (0,0) size 800x600
             RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (17,45) size 100x13
+layer at (17,43) size 100x13
   RenderBlock {DIV} at (0,0) size 100x13
-layer at (146,45) size 100x13
+layer at (146,43) size 100x13
   RenderBlock {DIV} at (0,0) size 100x13
     RenderText {#text} at (0,0) size 43x13
       text run at (0,0) width 43: "this one"
-layer at (118,46) size 11x11 transparent
+layer at (118,44) size 11x11 transparent
   RenderBlock {DIV} at (106,1) size 11x11
 caret: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 4 {INPUT} of body

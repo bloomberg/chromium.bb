@@ -3,19 +3,19 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 293x18
-        text run at (0,0) width 293: "This tests that text fields get the right baseline. "
-      RenderBR {BR} at (293,14) size 0x0
-      RenderBR {BR} at (0,18) size 0x18
-      RenderTextControl {INPUT} at (0,36) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (123,36) size 424x18
-        text run at (123,36) width 424: "This text should line up with the bottom of the text in the text field. "
-      RenderBR {BR} at (547,50) size 0x0
-      RenderBR {BR} at (0,55) size 0x18
-      RenderTextControl {INPUT} at (0,73) size 123x131 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (123,165) size 420x18
-        text run at (123,165) width 420: "This text should line up with the bottom of the text in the text field."
-layer at (11,47) size 117x13
+      RenderText {#text} at (0,0) size 303x16
+        text run at (0,0) width 303: "This tests that text fields get the right baseline. "
+      RenderBR {BR} at (302,12) size 1x0
+      RenderBR {BR} at (0,16) size 0x16
+      RenderTextControl {INPUT} at (0,32) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (123,34) size 435x16
+        text run at (123,34) width 435: "This text should line up with the bottom of the text in the text field. "
+      RenderBR {BR} at (557,46) size 1x0
+      RenderBR {BR} at (0,51) size 0x16
+      RenderTextControl {INPUT} at (0,67) size 123x131 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (123,161) size 431x16
+        text run at (123,161) width 431: "This text should line up with the bottom of the text in the text field."
+layer at (11,43) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (11,84) size 117x125
+layer at (11,78) size 117x125
   RenderBlock {DIV} at (3,3) size 117x125

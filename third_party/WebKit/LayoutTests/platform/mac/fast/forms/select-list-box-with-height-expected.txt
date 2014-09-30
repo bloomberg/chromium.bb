@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 365x18
-          text run at (0,0) width 365: "The select below has a size of 3, but a much larger height."
-      RenderBlock (anonymous) at (0,34) size 784x250
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 372x16
+          text run at (0,0) width 372: "The select below has a size of 3, but a much larger height."
+      RenderBlock (anonymous) at (0,32) size 784x250
         RenderText {#text} at (0,0) size 0x0
-layer at (8,42) size 59x250 clip at (9,43) size 46x248
+layer at (8,40) size 59x250 clip at (9,41) size 46x248
   RenderListBox {SELECT} at (0,0) size 58.83x250 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 45.83x14.19
       RenderText {#text} at (2,0) size 20x13

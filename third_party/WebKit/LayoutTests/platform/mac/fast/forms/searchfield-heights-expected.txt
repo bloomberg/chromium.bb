@@ -3,41 +3,41 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 368x18
-        text run at (0,0) width 368: "This tests that aqua-style search fields do not honor height."
-      RenderBR {BR} at (368,14) size 0x0
-      RenderTextControl {INPUT} at (0,23) size 100x15 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (0,0) size 377x16
+        text run at (0,0) width 377: "This tests that aqua-style search fields do not honor height."
+      RenderBR {BR} at (376,12) size 1x0
+      RenderTextControl {INPUT} at (0,21) size 100x15 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (3,2) size 94x11
           RenderBlock {DIV} at (0,0) size 14x11
           RenderBlock {DIV} at (14,0) size 70x11
-      RenderText {#text} at (100,20) size 4x18
+      RenderText {#text} at (100,20) size 4x16
         text run at (100,20) width 4: " "
-      RenderTextControl {INPUT} at (104,20) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderTextControl {INPUT} at (104,18) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (4,3) size 117x13
           RenderBlock {DIV} at (0,0) size 16x13
           RenderBlock {DIV} at (16,0) size 89x13
-      RenderText {#text} at (229,20) size 4x18
+      RenderText {#text} at (229,20) size 4x16
         text run at (229,20) width 4: " "
-      RenderTextControl {INPUT} at (233,18) size 150x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderTextControl {INPUT} at (233,16) size 150x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (5,3) size 140x16
           RenderBlock {DIV} at (0,1) size 15x14
           RenderBlock {DIV} at (15,0) size 110x16
       RenderText {#text} at (0,0) size 0x0
-layer at (25,33) size 70x11
+layer at (25,31) size 70x11
   RenderBlock {DIV} at (0,0) size 70x11
     RenderText {#text} at (0,0) size 20x11
       text run at (0,0) width 20: "mini"
-layer at (132,31) size 89x13
+layer at (132,29) size 89x13
   RenderBlock {DIV} at (0,0) size 89x13
     RenderText {#text} at (0,0) size 29x13
       text run at (0,0) width 29: "small"
-layer at (261,29) size 110x16
+layer at (261,27) size 110x16
   RenderBlock {DIV} at (0,0) size 110x16
     RenderText {#text} at (0,0) size 45x16
       text run at (0,0) width 45: "regular"
-layer at (96,34) size 9x9 transparent
+layer at (96,32) size 9x9 transparent
   RenderBlock {DIV} at (85,1) size 9x9
-layer at (222,32) size 11x11 transparent
+layer at (222,30) size 11x11 transparent
   RenderBlock {DIV} at (106,1) size 11x11
-layer at (372,30) size 14x14 transparent
+layer at (372,28) size 14x14 transparent
   RenderBlock {DIV} at (126,1) size 14x14

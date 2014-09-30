@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 539x18
-          text run at (0,0) width 539: "This tests that backgrounds for list box items draw correctly when a list box is a block"
-        RenderBR {BR} at (539,14) size 0x0
-layer at (8,26) size 48x59 clip at (9,27) size 35x57 scrollHeight 56
-  RenderListBox {SELECT} at (0,18) size 47.64x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+      RenderBlock (anonymous) at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 551x16
+          text run at (0,0) width 551: "This tests that backgrounds for list box items draw correctly when a list box is a block"
+        RenderBR {BR} at (551,12) size 0x0
+layer at (8,24) size 48x59 clip at (9,25) size 35x57 scrollHeight 56
+  RenderListBox {SELECT} at (0,16) size 47.64x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 34.64x14.19 [bgcolor=#D4D4D4]
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "Item1"

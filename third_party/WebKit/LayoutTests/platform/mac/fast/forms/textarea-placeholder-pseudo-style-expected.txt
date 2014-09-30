@@ -3,36 +3,36 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 328x18
-        text run at (0,0) width 328: "This tests that you can set the placeholder text color."
-      RenderBR {BR} at (328,14) size 0x0
-      RenderText {#text} at (161,36) size 4x18
+      RenderText {#text} at (0,0) size 336x16
+        text run at (0,0) width 336: "This tests that you can set the placeholder text color."
+      RenderBR {BR} at (335,12) size 1x0
+      RenderText {#text} at (161,36) size 4x16
         text run at (161,36) width 4: " "
-      RenderText {#text} at (326,36) size 4x18
+      RenderText {#text} at (326,36) size 4x16
         text run at (326,36) width 4: " "
-      RenderText {#text} at (491,36) size 4x18
+      RenderText {#text} at (491,36) size 4x16
         text run at (491,36) width 4: " "
       RenderText {#text} at (0,0) size 0x0
-layer at (8,26) size 161x32 clip at (9,27) size 159x30
-  RenderTextControl {TEXTAREA} at (0,18) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (8,24) size 161x32 clip at (9,25) size 159x30
+  RenderTextControl {TEXTAREA} at (0,16) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 155x13 [color=#640000]
       RenderText {#text} at (0,0) size 22x13
         text run at (0,0) width 22: "text"
     RenderBlock {DIV} at (3,3) size 155x13
-layer at (173,26) size 161x32 clip at (174,27) size 159x30
-  RenderTextControl {TEXTAREA} at (165,18) size 161x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
+layer at (173,24) size 161x32 clip at (174,25) size 159x30
+  RenderTextControl {TEXTAREA} at (165,16) size 161x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
     RenderBlock {DIV} at (3,3) size 155x13 [color=#640000]
       RenderText {#text} at (0,0) size 70x13
         text run at (0,0) width 70: "disabled text"
     RenderBlock {DIV} at (3,3) size 155x13
-layer at (338,26) size 161x32 clip at (339,27) size 159x30
-  RenderTextControl {TEXTAREA} at (330,18) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (338,24) size 161x32 clip at (339,25) size 159x30
+  RenderTextControl {TEXTAREA} at (330,16) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 155x13 [color=#A9A9A9]
       RenderText {#text} at (0,0) size 38x13
         text run at (0,0) width 38: "default"
     RenderBlock {DIV} at (3,3) size 155x13
-layer at (503,26) size 161x32 clip at (504,27) size 159x30
-  RenderTextControl {TEXTAREA} at (495,18) size 161x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
+layer at (503,24) size 161x32 clip at (504,25) size 159x30
+  RenderTextControl {TEXTAREA} at (495,16) size 161x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
     RenderBlock {DIV} at (3,3) size 155x13 [color=#A9A9A9]
       RenderText {#text} at (0,0) size 86x13
         text run at (0,0) width 86: "default disabled"

@@ -3,25 +3,25 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 53x18
-          text run at (0,0) width 53: "Test for "
-        RenderInline {A} at (0,0) size 68x18 [color=#0000EE]
-          RenderText {#text} at (53,0) size 68x18
-            text run at (53,0) width 68: "bug 11534"
-        RenderText {#text} at (121,0) size 4x18
-          text run at (121,0) width 4: "."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 351x18
-          text run at (0,0) width 351: "Readonly text fields don't scroll when selecting content."
-      RenderBlock (anonymous) at (0,68) size 784x19
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 55x16
+          text run at (0,0) width 55: "Test for "
+        RenderInline {A} at (0,0) size 69x16 [color=#0000EE]
+          RenderText {#text} at (54,0) size 69x16
+            text run at (54,0) width 69: "bug 11534"
+        RenderText {#text} at (122,0) size 5x16
+          text run at (122,0) width 5: "."
+      RenderBlock {P} at (0,32) size 784x16
+        RenderText {#text} at (0,0) size 359x16
+          text run at (0,0) width 359: "Readonly text fields don't scroll when selecting content."
+      RenderBlock (anonymous) at (0,64) size 784x19
         RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,87) size 784x18
-        RenderText {#text} at (0,0) size 87x18
-          text run at (0,0) width 87: "ScrollLeft: 40"
-        RenderBR {BR} at (87,14) size 0x0
-layer at (11,79) size 117x13 scrollX 40 scrollWidth 157
+      RenderBlock {DIV} at (0,83) size 784x16
+        RenderText {#text} at (0,0) size 90x16
+          text run at (0,0) width 90: "ScrollLeft: 40"
+        RenderBR {BR} at (89,12) size 1x0
+layer at (11,75) size 117x13 scrollX 40 scrollWidth 157
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 158x13
       text run at (0,0) width 158: "abcdefghijklmnopqrstuvwxyz"

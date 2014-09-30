@@ -3,34 +3,34 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 344x18
-        text run at (0,0) width 344: "This tests that the new text fields use the correct width."
-      RenderBR {BR} at (344,14) size 0x0
-      RenderTextControl {INPUT} at (0,18) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (123,32) size 0x0
-      RenderTextControl {INPUT} at (0,37) size 200x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (200,51) size 0x0
-      RenderTextControl {INPUT} at (0,56) size 273x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (273,70) size 0x0
-      RenderTextControl {INPUT} at (0,75) size 200x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (200,89) size 0x0
-      RenderTextControl {INPUT} at (0,94) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (73,108) size 0x0
-layer at (11,29) size 117x13
+      RenderText {#text} at (0,0) size 353x16
+        text run at (0,0) width 353: "This tests that the new text fields use the correct width."
+      RenderBR {BR} at (352,12) size 1x0
+      RenderTextControl {INPUT} at (0,16) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (123,30) size 0x0
+      RenderTextControl {INPUT} at (0,35) size 200x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (200,49) size 0x0
+      RenderTextControl {INPUT} at (0,54) size 273x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (273,68) size 0x0
+      RenderTextControl {INPUT} at (0,73) size 200x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (200,87) size 0x0
+      RenderTextControl {INPUT} at (0,92) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (73,106) size 0x0
+layer at (11,27) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (11,48) size 194x13
+layer at (11,46) size 194x13
   RenderBlock {DIV} at (3,3) size 194x13
     RenderText {#text} at (0,0) size 103x13
       text run at (0,0) width 103: "styled width 200px"
-layer at (11,67) size 267x13
+layer at (11,65) size 267x13
   RenderBlock {DIV} at (3,3) size 267x13
     RenderText {#text} at (0,0) size 39x13
       text run at (0,0) width 39: "size 50"
-layer at (11,86) size 194x13
+layer at (11,84) size 194x13
   RenderBlock {DIV} at (3,3) size 194x13
     RenderText {#text} at (0,0) size 162x13
       text run at (0,0) width 162: "styled width 200px & size=10"
-layer at (11,105) size 67x13
+layer at (11,103) size 67x13
   RenderBlock {DIV} at (3,3) size 67x13
     RenderText {#text} at (0,0) size 39x13
       text run at (0,0) width 39: "size 10"

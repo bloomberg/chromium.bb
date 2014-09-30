@@ -5,17 +5,17 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
       RenderBlock (anonymous) at (0,0) size 784x19
         RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (123,0) size 4x18
-          text run at (123,0) width 4: " "
+        RenderText {#text} at (123,2) size 4x16
+          text run at (123,2) width 4: " "
         RenderTextControl {INPUT} at (127,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (250,0) size 4x18
-          text run at (250,0) width 4: " "
+        RenderText {#text} at (250,2) size 4x16
+          text run at (250,2) width 4: " "
         RenderTextControl {INPUT} at (254,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,35) size 784x36
-        RenderText {#text} at (0,0) size 784x36
-          text run at (0,0) width 784: "Tests scrolling back to the beginning when a text field blurs. The first field should be scrolled to the left, the second and third"
-          text run at (0,18) width 125: "scrolled to the right."
+      RenderBlock {P} at (0,35) size 784x32
+        RenderText {#text} at (0,0) size 768x32
+          text run at (0,0) width 768: "Tests scrolling back to the beginning when a text field blurs. The first field should be scrolled to the left, the second and"
+          text run at (0,16) width 164: "third scrolled to the right."
 layer at (11,11) size 117x13 scrollWidth 317
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 317x13

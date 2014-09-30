@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x320
-  RenderBlock {HTML} at (0,0) size 800x320
-    RenderBody {BODY} at (8,8) size 784x304
-      RenderBlock {FORM} at (0,0) size 784x304
-        RenderText {#text} at (69,267) size 5x18
-          text run at (69,267) width 5: " "
-        RenderBR {BR} at (73,267) size 1x18
-        RenderMenuList {SELECT} at (0,286) size 76x18 [bgcolor=#F8F8F8]
+layer at (0,0) size 800x319
+  RenderBlock {HTML} at (0,0) size 800x319
+    RenderBody {BODY} at (8,8) size 784x303
+      RenderBlock {FORM} at (0,0) size 784x303
+        RenderText {#text} at (69,269) size 5x16
+          text run at (69,269) width 5: " "
+        RenderBR {BR} at (73,269) size 1x16
+        RenderMenuList {SELECT} at (0,285) size 76x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 76x18
             RenderText at (8,2) size 31x13
               text run at (8,2) width 31: "Three"

@@ -27,21 +27,21 @@ layer at (0,0) size 800x600
       RenderTextControl {INPUT} at (5,191) size 174x30 [bgcolor=#FFFFFF] [border: (5px solid #000000)]
       RenderBR {BR} at (184,212) size 0x0
       RenderTextControl {INPUT} at (0,226) size 123x31 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (123,232) size 4x18
-        text run at (123,232) width 4: " "
+      RenderText {#text} at (123,234) size 4x16
+        text run at (123,234) width 4: " "
       RenderTextControl {INPUT} at (127,226) size 123x31 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (250,232) size 4x18
-        text run at (250,232) width 4: " "
+      RenderText {#text} at (250,234) size 4x16
+        text run at (250,234) width 4: " "
       RenderBR {BR} at (254,246) size 0x0
       RenderTextControl {INPUT} at (0,257) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (123,257) size 4x18
-        text run at (123,257) width 4: " "
+      RenderText {#text} at (123,259) size 4x16
+        text run at (123,259) width 4: " "
       RenderTextControl {INPUT} at (127,257) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (250,257) size 4x18
-        text run at (250,257) width 4: " "
+      RenderText {#text} at (250,259) size 4x16
+        text run at (250,259) width 4: " "
       RenderTextControl {INPUT} at (254,257) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (377,257) size 4x18
-        text run at (377,257) width 4: " "
+      RenderText {#text} at (377,259) size 4x16
+        text run at (377,259) width 4: " "
       RenderBR {BR} at (381,271) size 0x0
       RenderBR {BR} at (123,304) size 0x0
 layer at (17,11) size 100x13

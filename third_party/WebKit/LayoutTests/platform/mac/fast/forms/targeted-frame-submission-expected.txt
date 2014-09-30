@@ -9,21 +9,21 @@ layer at (0,0) size 800x600
             RenderText {#text} at (0,0) size 26x13
               text run at (0,0) width 26: "form"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,34) size 784x36
-        RenderText {#text} at (0,0) size 765x36
-          text run at (0,0) width 288: "This tests Targetted frame submission works. "
-          text run at (288,0) width 477: "If the test is successful, the text \"SUCCESS\" should be shown in the iframe"
-          text run at (0,18) width 43: "below."
-      RenderBlock (anonymous) at (0,70) size 784x154
+      RenderBlock {DIV} at (0,34) size 784x32
+        RenderText {#text} at (0,0) size 779x32
+          text run at (0,0) width 295: "This tests Targetted frame submission works. "
+          text run at (294,0) width 485: "If the test is successful, the text \"SUCCESS\" should be shown in the iframe"
+          text run at (0,16) width 44: "below."
+      RenderBlock (anonymous) at (0,66) size 784x154
         RenderText {#text} at (0,0) size 0x0
-layer at (8,78) size 304x154
+layer at (8,74) size 304x154
   RenderPartObject {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150
       RenderBlock {HTML} at (0,0) size 300x150
         RenderBody {BODY} at (8,8) size 284x129
-          RenderBlock {PRE} at (0,0) size 284x15
-            RenderText {#text} at (0,0) size 56x15
-              text run at (0,0) width 56: "SUCCESS"
-              text run at (56,0) width 0: " "
+          RenderBlock {PRE} at (0,0) size 284x13
+            RenderText {#text} at (0,0) size 55x13
+              text run at (0,0) width 55: "SUCCESS"
+              text run at (54,0) width 1: " "

@@ -3,26 +3,26 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 442x18
-        text run at (0,0) width 442: "This tests that you can tab out of a text field if an iframe comes after it."
-      RenderBR {BR} at (442,14) size 0x0
-      RenderTextControl {INPUT} at (0,156) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (123,156) size 4x18
+      RenderText {#text} at (0,0) size 455x16
+        text run at (0,0) width 455: "This tests that you can tab out of a text field if an iframe comes after it."
+      RenderBR {BR} at (454,12) size 1x0
+      RenderTextControl {INPUT} at (0,154) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (123,156) size 4x16
         text run at (123,156) width 4: " "
-      RenderText {#text} at (429,156) size 4x18
+      RenderText {#text} at (429,156) size 4x16
         text run at (429,156) width 4: " "
-      RenderTextControl {INPUT} at (433,156) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderTextControl {INPUT} at (433,154) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (0,0) size 0x0
-layer at (11,167) size 117x13
+layer at (11,165) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (135,26) size 302x152
-  RenderPartObject {IFRAME} at (127,18) size 302x152 [border: (1px solid #000000)]
+layer at (135,24) size 302x152
+  RenderPartObject {IFRAME} at (127,16) size 302x152 [border: (1px solid #000000)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150
       RenderBlock {HTML} at (0,0) size 300x150
         RenderBody {BODY} at (8,8) size 284x134
-layer at (444,167) size 117x13 scrollWidth 124
+layer at (444,165) size 117x13 scrollWidth 124
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 123x13
       text run at (0,0) width 123: "This should have focus"

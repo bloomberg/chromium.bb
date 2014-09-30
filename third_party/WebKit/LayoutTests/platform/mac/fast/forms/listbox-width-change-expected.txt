@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (0,0) size 650x18
-        text run at (0,0) width 650: "This tests that when a list box's options get updated, the list box will recalculate its width, and relayout. "
+      RenderText {#text} at (0,0) size 665x16
+        text run at (0,0) width 665: "This tests that when a list box's options get updated, the list box will recalculate its width, and relayout. "
       RenderBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
-layer at (8,25) size 196x59 clip at (9,26) size 183x57 scrollHeight 56
-  RenderListBox {SELECT} at (0,17.25) size 196.08x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (8,23) size 196x59 clip at (9,24) size 183x57 scrollHeight 56
+  RenderListBox {SELECT} at (0,15.25) size 196.08x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 183.08x14.19
       RenderText {#text} at (2,0) size 180x13
         text run at (2,0) width 180: "This text should fit in the list box"

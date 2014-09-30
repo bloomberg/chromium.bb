@@ -5,15 +5,15 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (9.59,9.59) size 780.81x580.81
       RenderBlock (anonymous) at (0,0) size 780.81x162
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,162) size 780.81x66
-        RenderText {#text} at (0,0) size 61x22
-          text run at (0,0) width 61: "Results:"
-        RenderBR {BR} at (61,17) size 0x0
-        RenderText {#text} at (0,22) size 106x22
-          text run at (0,22) width 106: "Test 1 Passed"
-        RenderBR {BR} at (106,39) size 0x0
-        RenderText {#text} at (0,44) size 106x22
-          text run at (0,44) width 106: "Test 2 Passed"
+      RenderBlock {DIV} at (0,162) size 780.81x57
+        RenderText {#text} at (0,0) size 62x19
+          text run at (0,0) width 62: "Results:"
+        RenderBR {BR} at (61,14) size 1x0
+        RenderText {#text} at (0,19) size 105x19
+          text run at (0,19) width 105: "Test 1 Passed"
+        RenderBR {BR} at (104,33) size 1x0
+        RenderText {#text} at (0,38) size 105x19
+          text run at (0,38) width 105: "Test 2 Passed"
 layer at (10,10) size 128x162 clip at (22,22) size 93x138 scrollY 6 scrollHeight 316
   RenderListBox {SELECT} at (0,0) size 128.09x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
     RenderBlock {OPTION} at (24,24) size 69.09x17.19

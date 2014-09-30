@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x402
-  RenderBlock {HTML} at (0,0) size 800x402
-    RenderBody {BODY} at (8,8) size 784x386
-      RenderBlock (anonymous) at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 597x18
-          text run at (0,0) width 597: "This test verifies the visual alignment of items in a select element while changing text direction."
-        RenderBR {BR} at (597,0) size 0x18
-        RenderText {#text} at (0,18) size 426x18
-          text run at (0,18) width 426: "All the items in the following select elements should be left-aligned."
-      RenderTable {TABLE} at (0,36) size 650x98
+layer at (0,0) size 800x392
+  RenderBlock {HTML} at (0,0) size 800x392
+    RenderBody {BODY} at (8,8) size 784x376
+      RenderBlock (anonymous) at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 615x16
+          text run at (0,0) width 615: "This test verifies the visual alignment of items in a select element while changing text direction."
+        RenderBR {BR} at (614,0) size 1x16
+        RenderText {#text} at (0,16) size 438x16
+          text run at (0,16) width 438: "All the items in the following select elements should be left-aligned."
+      RenderTable {TABLE} at (0,32) size 650x98
         RenderTableSection {TBODY} at (0,0) size 650x98
           RenderTableRow {TR} at (0,2) size 650x46
             RenderTableCell {TD} at (2,2) size 156x46 [r=0 c=0 rs=1 cs=1]
@@ -19,10 +19,10 @@ layer at (0,0) size 800x402
           RenderTableRow {TR} at (0,50) size 650x46
             RenderTableCell {TD} at (2,50) size 156x46 [r=1 c=0 rs=1 cs=1]
             RenderTableCell {TD} at (160,50) size 164x46 [r=1 c=1 rs=1 cs=1]
-      RenderBlock (anonymous) at (0,134) size 784x18
-        RenderText {#text} at (0,0) size 435x18
-          text run at (0,0) width 435: "All the items in the following select elements should be right-aligned."
-      RenderTable {TABLE} at (0,152) size 644x98
+      RenderBlock (anonymous) at (0,130) size 784x16
+        RenderText {#text} at (0,0) size 447x16
+          text run at (0,0) width 447: "All the items in the following select elements should be right-aligned."
+      RenderTable {TABLE} at (0,146) size 644x98
         RenderTableSection {TBODY} at (0,0) size 644x98
           RenderTableRow {TR} at (0,2) size 644x46
             RenderTableCell {TD} at (2,2) size 164x46 [r=0 c=0 rs=1 cs=1]
@@ -32,27 +32,27 @@ layer at (0,0) size 800x402
           RenderTableRow {TR} at (0,50) size 644x46
             RenderTableCell {TD} at (2,50) size 164x46 [r=1 c=0 rs=1 cs=1]
             RenderTableCell {TD} at (168,50) size 153x46 [r=1 c=1 rs=1 cs=1]
-      RenderBlock (anonymous) at (0,250) size 784x18
-        RenderText {#text} at (0,0) size 444x18
-          text run at (0,0) width 444: "All the items in the following select elements should be center-aligned."
-      RenderTable {TABLE} at (0,268) size 680x50
+      RenderBlock (anonymous) at (0,244) size 784x16
+        RenderText {#text} at (0,0) size 456x16
+          text run at (0,0) width 456: "All the items in the following select elements should be center-aligned."
+      RenderTable {TABLE} at (0,260) size 680x50
         RenderTableSection {TBODY} at (0,0) size 680x50
           RenderTableRow {TR} at (0,2) size 680x46
             RenderTableCell {TD} at (2,2) size 172x46 [r=0 c=0 rs=1 cs=1]
             RenderTableCell {TD} at (176,2) size 163x46 [r=0 c=1 rs=1 cs=1]
             RenderTableCell {TD} at (341,2) size 172x46 [r=0 c=2 rs=1 cs=1]
             RenderTableCell {TD} at (515,2) size 163x46 [r=0 c=3 rs=1 cs=1]
-      RenderBlock (anonymous) at (0,318) size 784x18
-        RenderText {#text} at (0,0) size 290x18
-          text run at (0,0) width 290: "The following tables check mixed alignments."
-      RenderTable {TABLE} at (0,336) size 728x50
+      RenderBlock (anonymous) at (0,310) size 784x16
+        RenderText {#text} at (0,0) size 296x16
+          text run at (0,0) width 296: "The following tables check mixed alignments."
+      RenderTable {TABLE} at (0,326) size 728x50
         RenderTableSection {TBODY} at (0,0) size 728x50
           RenderTableRow {TR} at (0,2) size 728x46
             RenderTableCell {TD} at (2,2) size 170x46 [r=0 c=0 rs=1 cs=1]
             RenderTableCell {TD} at (174,2) size 170x46 [r=0 c=1 rs=1 cs=1]
             RenderTableCell {TD} at (346,2) size 189x46 [r=0 c=2 rs=1 cs=1]
             RenderTableCell {TD} at (537,2) size 189x46 [r=0 c=3 rs=1 cs=1]
-layer at (11,46) size 154x45 clip at (12,47) size 141x43 scrollHeight 42
+layer at (11,42) size 154x45 clip at (12,43) size 141x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 140.88x14.19
       RenderText {#text} at (2,0) size 118x13
@@ -63,7 +63,7 @@ layer at (11,46) size 154x45 clip at (12,47) size 141x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 140.88x14.19
       RenderText {#text} at (2,0) size 85x13
         text run at (2,0) width 85: "Some more text"
-layer at (169,46) size 161x45 clip at (170,47) size 148x43 scrollHeight 42
+layer at (169,42) size 161x45 clip at (170,43) size 148x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 148.36x14.19
       RenderText {#text} at (2,0) size 84x13
@@ -74,7 +74,7 @@ layer at (169,46) size 161x45 clip at (170,47) size 148x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 148.36x14.19
       RenderText {#text} at (2,0) size 78x13
         text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (335,46) size 154x45 clip at (347,47) size 141x43 scrollHeight 42
+layer at (335,42) size 154x45 clip at (347,43) size 141x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 140.88x14.19
       RenderText {#text} at (2,0) size 118x13
@@ -85,7 +85,7 @@ layer at (335,46) size 154x45 clip at (347,47) size 141x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 140.88x14.19
       RenderText {#text} at (2,0) size 85x13
         text run at (2,0) width 85: "Some more text"
-layer at (493,46) size 161x45 clip at (505,47) size 148x43 scrollHeight 42
+layer at (493,42) size 161x45 clip at (505,43) size 148x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 148.36x14.19
       RenderText {#text} at (2,0) size 84x13
@@ -96,7 +96,7 @@ layer at (493,46) size 161x45 clip at (505,47) size 148x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 148.36x14.19
       RenderText {#text} at (2,0) size 78x13
         text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (11,94) size 154x45 clip at (12,95) size 141x43 scrollHeight 42
+layer at (11,90) size 154x45 clip at (12,91) size 141x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 140.88x14.19
       RenderText {#text} at (2,0) size 118x13
@@ -107,7 +107,7 @@ layer at (11,94) size 154x45 clip at (12,95) size 141x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 140.88x14.19
       RenderText {#text} at (2,0) size 85x13
         text run at (2,0) width 85: "Some more text"
-layer at (169,94) size 161x45 clip at (170,95) size 148x43 scrollHeight 42
+layer at (169,90) size 161x45 clip at (170,91) size 148x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 148.36x14.19
       RenderText {#text} at (2,0) size 84x13
@@ -118,7 +118,7 @@ layer at (169,94) size 161x45 clip at (170,95) size 148x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 148.36x14.19
       RenderText {#text} at (2,0) size 78x13
         text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (11,162) size 162x45 clip at (23,163) size 149x43 scrollHeight 42
+layer at (11,156) size 162x45 clip at (23,157) size 149x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 148.88x14.19
       RenderText {#text} at (29,0) size 118x13
@@ -129,7 +129,7 @@ layer at (11,162) size 162x45 clip at (23,163) size 149x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 148.88x14.19
       RenderText {#text} at (62,0) size 85x13
         text run at (62,0) width 85: "Some more text"
-layer at (177,162) size 151x45 clip at (189,163) size 138x43 scrollHeight 42
+layer at (177,156) size 151x45 clip at (189,157) size 138x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 137.94x14.19
       RenderText {#text} at (52,0) size 84x13
@@ -140,7 +140,7 @@ layer at (177,162) size 151x45 clip at (189,163) size 138x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 137.94x14.19
       RenderText {#text} at (58,0) size 78x13
         text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (332,162) size 162x45 clip at (344,163) size 149x43 scrollHeight 42
+layer at (332,156) size 162x45 clip at (344,157) size 149x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 148.88x14.19
       RenderText {#text} at (29,0) size 118x13
@@ -151,7 +151,7 @@ layer at (332,162) size 162x45 clip at (344,163) size 149x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 148.88x14.19
       RenderText {#text} at (62,0) size 85x13
         text run at (62,0) width 85: "Some more text"
-layer at (498,162) size 151x45 clip at (510,163) size 138x43 scrollHeight 42
+layer at (498,156) size 151x45 clip at (510,157) size 138x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 137.94x14.19
       RenderText {#text} at (52,0) size 84x13
@@ -162,7 +162,7 @@ layer at (498,162) size 151x45 clip at (510,163) size 138x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 137.94x14.19
       RenderText {#text} at (58,0) size 78x13
         text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (11,210) size 162x45 clip at (12,211) size 149x43 scrollHeight 42
+layer at (11,204) size 162x45 clip at (12,205) size 149x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 148.88x14.19
       RenderText {#text} at (29,0) size 118x13
@@ -173,7 +173,7 @@ layer at (11,210) size 162x45 clip at (12,211) size 149x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 148.88x14.19
       RenderText {#text} at (62,0) size 85x13
         text run at (62,0) width 85: "Some more text"
-layer at (177,210) size 151x45 clip at (178,211) size 138x43 scrollHeight 42
+layer at (177,204) size 151x45 clip at (178,205) size 138x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 137.94x14.19
       RenderText {#text} at (52,0) size 84x13
@@ -184,7 +184,7 @@ layer at (177,210) size 151x45 clip at (178,211) size 138x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 137.94x14.19
       RenderText {#text} at (58,0) size 78x13
         text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (11,278) size 170x45 clip at (23,279) size 157x43 scrollHeight 42
+layer at (11,270) size 170x45 clip at (23,271) size 157x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 169.73x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 156.73x14.19
       RenderText {#text} at (19,0) size 119x13
@@ -195,7 +195,7 @@ layer at (11,278) size 170x45 clip at (23,279) size 157x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 156.73x14.19
       RenderText {#text} at (35,0) size 86x13
         text run at (35,0) width 86: "Some more text"
-layer at (185,278) size 161x45 clip at (197,279) size 148x43 scrollHeight 42
+layer at (185,270) size 161x45 clip at (197,271) size 148x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 160.55x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 147.55x14.19
       RenderText {#text} at (32,0) size 84x13
@@ -206,7 +206,7 @@ layer at (185,278) size 161x45 clip at (197,279) size 148x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 147.55x14.19
       RenderText {#text} at (35,0) size 78x13
         text run at (35,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (350,278) size 170x45 clip at (351,279) size 157x43 scrollHeight 42
+layer at (350,270) size 170x45 clip at (351,271) size 157x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 169.73x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 156.73x14.19
       RenderText {#text} at (19,0) size 119x13
@@ -217,7 +217,7 @@ layer at (350,278) size 170x45 clip at (351,279) size 157x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 156.73x14.19
       RenderText {#text} at (35,0) size 86x13
         text run at (35,0) width 86: "Some more text"
-layer at (524,278) size 161x45 clip at (525,279) size 148x43 scrollHeight 42
+layer at (524,270) size 161x45 clip at (525,271) size 148x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 160.55x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 147.55x14.19
       RenderText {#text} at (32,0) size 84x13
@@ -228,7 +228,7 @@ layer at (524,278) size 161x45 clip at (525,279) size 148x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 147.55x14.19
       RenderText {#text} at (35,0) size 78x13
         text run at (35,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (11,346) size 167x45 clip at (23,347) size 154x43 scrollHeight 42
+layer at (11,336) size 167x45 clip at (23,337) size 154x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 167.33x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 154.33x14.19
       RenderText {#text} at (2,0) size 151x13
@@ -239,7 +239,7 @@ layer at (11,346) size 167x45 clip at (23,347) size 154x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 154.33x14.19
       RenderText {#text} at (38,0) size 79x13
         text run at (38,0) width 79: "Center aligned"
-layer at (183,346) size 167x45 clip at (184,347) size 154x43 scrollHeight 42
+layer at (183,336) size 167x45 clip at (184,337) size 154x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 167.33x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 154.33x14.19
       RenderText {#text} at (2,0) size 143x13
@@ -250,7 +250,7 @@ layer at (183,346) size 167x45 clip at (184,347) size 154x43 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 154.33x14.19
       RenderText {#text} at (38,0) size 79x13
         text run at (38,0) width 79: "Center aligned"
-layer at (355,346) size 187x45 clip at (367,347) size 174x43 scrollHeight 42
+layer at (355,336) size 187x45 clip at (367,337) size 174x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 186.78x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (12,1) size 173.78x14.19
       RenderText {#text} at (12,0) size 160x13
@@ -261,7 +261,7 @@ layer at (355,346) size 187x45 clip at (367,347) size 174x43 scrollHeight 42
     RenderBlock {OPTION} at (12,29.38) size 173.78x14.19
       RenderText {#text} at (53,0) size 68x13
         text run at (53,0) width 68 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5DE}\x{5DE}\x{5D5}\x{5E8}\x{5DB}\x{5D6}"
-layer at (546,346) size 187x45 clip at (547,347) size 174x43 scrollHeight 42
+layer at (546,336) size 187x45 clip at (547,337) size 174x43 scrollHeight 42
   RenderListBox {SELECT} at (1,0.44) size 186.78x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 173.78x14.19
       RenderText {#text} at (2,0) size 170x13
