@@ -40,17 +40,16 @@
 <translation id="473775607612524610">更新</translation>
 <translation id="8627706565932943526">同步處理發生錯誤</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
-<translation id="4043215103217793252">編輯書籤網頁</translation>
 <translation id="656628257199996201">一律翻譯<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
 <translation id="4619298195800598081">在新分頁中開啟原始圖片</translation>
+<translation id="3254409185687681395">把此頁加入書籤</translation>
 <translation id="907015151729920253">智慧卡</translation>
 <translation id="3063601790762993062">儲存影片</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
 <translation id="7267430310003164111">提示從 Google Play 商店取得應用程式。應用程式名稱：<ph name="APP_NAME"/>。應用程式平均評分：<ph name="APP_RATING"/>。</translation>
-<translation id="303955801043931176">已關閉分頁</translation>
 <translation id="4148957013307229264">安裝中...</translation>
 <translation id="3992315671621218278">儲存連結</translation>
 <translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">透過 <ph name="APPLICATION"/> 分享</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="969096075394517431">變更語言</translation>
-<translation id="5556459405103347317">重新載入</translation>
 <translation id="5032574515228824816">提示</translation>
-<translation id="4847896847259487518">將網頁加入書籤</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="8310344678080805313">標準分頁</translation>
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>

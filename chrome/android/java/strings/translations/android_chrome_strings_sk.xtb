@@ -40,17 +40,16 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="8627706565932943526">Chyba synchronizácie</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>
-<translation id="4043215103217793252">Upraviť stránku záložky</translation>
 <translation id="656628257199996201">Vždy prekladať jazyk <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="4619298195800598081">Pôv. obrázok na novej karte</translation>
+<translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
 <translation id="907015151729920253">Karta Smart card</translation>
 <translation id="3063601790762993062">Uložiť video</translation>
 <translation id="6042308850641462728">Viac</translation>
 <translation id="7267430310003164111">Výzva na získanie aplikácie z Obchodu Google Play. Názov aplikácie: <ph name="APP_NAME"/>. Priemerné hodnotenie aplikácie: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Karta bola zatvorená</translation>
 <translation id="4148957013307229264">Inštaluje sa...</translation>
 <translation id="3992315671621218278">Uložiť odkaz</translation>
 <translation id="8034522405403831421">Táto stránka je v jazyku <ph name="SOURCE_LANGUAGE"/>. Chcete ju preložiť do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="6333140779060797560">Zdieľať prostredníctvom aplikácie <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="969096075394517431">Zmeniť jazyky</translation>
-<translation id="5556459405103347317">Obnoviť</translation>
 <translation id="5032574515228824816">Výzva</translation>
-<translation id="4847896847259487518">Pridať stránku medzi záložky</translation>
 <translation id="497421865427891073">Ďalej</translation>
 <translation id="8310344678080805313">Štandardné karty</translation>
 <translation id="6277522088822131679">Pri tlačení stránky sa vyskytol problém. Skúste to znova.</translation>

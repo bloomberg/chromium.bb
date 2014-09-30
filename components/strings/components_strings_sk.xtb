@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Odporúčané</translation>
 <translation id="4058922952496707368">Kľúč <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
+<translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">Preložiť</translation>
 <translation id="1228893227497259893">Nesprávny identifikátor entity</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Oblasť</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
+<translation id="8940229512486821554">Spustiť príkaz rozšírenia <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Neznáma chyba</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
 <translation id="3452404311384756672">Interval načítania:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Pravidlo sa nenašlo</translation>
 <translation id="3150653042067488994">Dočasná chyba servera</translation>
 <translation id="7087282848513945231">Grófstvo</translation>
+<translation id="1132774398110320017">Nastavenia Automatického dopĺňania prehliadača Chrome...</translation>
 <translation id="6458467102616083041">Ignorované, pretože predvolený vyhľadávač je podľa pravidla zakázaný.</translation>
 <translation id="1227224963052638717">Neznáme pravidlo.</translation>
 <translation id="9207861905230894330">Článok sa nepodarilo pridať.</translation>
 <translation id="337363190475750230">Odstránené</translation>
 <translation id="2367567093518048410">Úroveň</translation>
+<translation id="7977590112176369853">&lt;zadajte dotaz&gt;</translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE"/>) presahuje povolený rozsah.</translation>
 <translation id="370665806235115550">Načítava sa...</translation>
 <translation id="2096368010154057602">Správna oblasť</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="5439770059721715174">Pri overení schémy sa vyskytla chyba na mieste <ph name="ERROR_PATH"/>: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Panel so záložkami</translation>
+<translation id="7208899522964477531">Na stránke <ph name="SITE_NAME"/> hľadať text <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Záložky v mobile</translation>
 <translation id="5089810972385038852">Štát</translation>
 <translation id="647261751007945333">Pravidlá zariadenia</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="1640180200866533862">Pravidlá pre používateľa</translation>
 <translation id="375403751935624634">Preklad zlyhal v dôsledku chyby servera.</translation>
+<translation id="2597378329261239068">Tento dokument je chránený heslom. Zadajte heslo.</translation>
 <translation id="5629630648637658800">Nastavenia pravidla sa nepodarilo načítať</translation>
 <translation id="2354001756790975382">Iné záložky</translation>
 <translation id="3650584904733503804">Overenie bolo úspešné</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Zariadenie</translation>
 <translation id="8249320324621329438">Naposledy načítané:</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
+<translation id="1344588688991793829">Nastavenia Automatického dopĺňania prehliadača Chromium...</translation>
 <translation id="6282194474023008486">Poštový kód</translation>
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
 <translation id="3623476034248543066">Zobraziť hodnotu</translation>
 <translation id="9020542370529661692">Táto stránka bola preložená do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Neplatný token správy zariadenia</translation>
 <translation id="560412284261940334">Správa nie je podporovaná</translation>
+<translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Chyba siete</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Stav:</translation>
 <translation id="1832546148887467272">Prepnúť na doménu <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincia</translation>
-<translation id="1847321074516120686">Nastavenia Automatického dopĺňania prehliadača Chrome</translation>
+<translation id="3934680773876859118">Načítanie dokumentu PDF zlyhalo</translation>
 <translation id="1152021252151287493">Nesprávny podpis overenia.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Žiadosť bola úspešná</translation>

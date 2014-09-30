@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">ശുപാർശചെയ്യുന്നത്</translation>
 <translation id="4058922952496707368">കീ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> തിരയല്‍</translation>
 <translation id="6831043979455480757">വിവര്‍‌ത്തനം ചെയ്യുക</translation>
 <translation id="1228893227497259893">തെറ്റായ എന്റിറ്റി ഐഡന്റിഫയർ</translation>
 <translation id="6337534724793800597">പേരിന്റെ ക്രമത്തിൽ നയങ്ങൾ ഫിൽട്ടർ ചെയ്യുക</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">ഏരിയ</translation>
 <translation id="1871208020102129563">സ്ഥിരമായ പ്രോക്‌സി സെർവറുകൾ ഉപയോഗിക്കുന്നതിനായി പ്രോക്‌സി സജ്ജീകരിച്ചിരിക്കുന്നു, ഒരു .pac സ്‌ക്രിപ്റ്റ് URL ഉപയോഗിക്കുന്നതിനല്ല.</translation>
+<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> കമാന്‍റ്:<ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">അജ്ഞാതമായ പിശക്</translation>
 <translation id="112840717907525620">നയ കാഷെ ശരി</translation>
 <translation id="3452404311384756672">ഇടവേള ലഭ്യമാക്കുക:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">നയം കണ്ടെത്തിയില്ല</translation>
 <translation id="3150653042067488994">താൽക്കാലികമായ സെർവർ പിശക്</translation>
 <translation id="7087282848513945231">രാജ്യം</translation>
+<translation id="1132774398110320017">Chrome ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
 <translation id="6458467102616083041">സ്ഥിരസ്ഥിതി തിരയൽ നയ പ്രകാരം ദൃശ്യമായതിനാൽ അവഗണിക്കപ്പെട്ടു.</translation>
 <translation id="1227224963052638717">അറിയപ്പെടാത്ത നയം.</translation>
 <translation id="9207861905230894330">ലേഖനം ചേർക്കുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="337363190475750230">ഡിപ്രൊവിഷൻ ചെയ്‌തു</translation>
 <translation id="2367567093518048410">നില</translation>
+<translation id="7977590112176369853">&lt;ചോദ്യം നല്‍കുക&gt;</translation>
 <translation id="7610193165460212391">മൂല്യം പരിധിക്ക് പുറത്താണ് <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">ലോഡ്ചെയ്യുന്നു...</translation>
 <translation id="2096368010154057602">വകുപ്പ്</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">നയ ക്രമീകരണങ്ങൾ സംഭരിക്കുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; എന്നതിൽ സ്‌കീമ മൂല്ല്യനിർണ്ണയ പിശക്: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">ബുക്മാര്‍ക്ക് ബാര്‍</translation>
+<translation id="7208899522964477531"><ph name="SEARCH_TERMS"/> നായി <ph name="SITE_NAME"/> തിരയുക</translation>
 <translation id="7956713633345437162">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="5089810972385038852">സ്റ്റേറ്റ്</translation>
 <translation id="647261751007945333">ഉപകരണ നയങ്ങൾ</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">അഭ്യർത്ഥന അല്ലെങ്കിൽ അഭ്യർത്ഥന പാരാമീറ്ററുകൾ അസാധുവാണ്</translation>
 <translation id="1640180200866533862">ഉപയോക്തൃ നയങ്ങൾ</translation>
 <translation id="375403751935624634">ഒരു സെര്‍വര്‍ പിശക് കാരണം വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
+<translation id="2597378329261239068">ഈ പ്രമാണം പാസ്‌വേഡ് പരിരക്ഷിതമാണ്.  ദയവായി ഒരു പാസ്‌വേഡ് നല്‍‌കുക.</translation>
 <translation id="5629630648637658800">നയ ക്രമീകരണങ്ങൾ ലോഡുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="2354001756790975382">മറ്റ് ബുക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="3650584904733503804">മൂല്യനിർണ്ണയം വിജയകരം</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">ഉപാധി</translation>
 <translation id="8249320324621329438">അവസാനം ലഭ്യമായത്:</translation>
 <translation id="1285320974508926690">ഈ സൈറ്റ് ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
+<translation id="1344588688991793829">Chromium ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
 <translation id="6282194474023008486">തപാല്‍ കോഡ്</translation>
 <translation id="443673843213245140">പ്രോക്‌സി ഉപയോഗം അപ്രാപ്‌തമാക്കി പക്ഷെ ഒരു വ്യക്തമായ പ്രോക്‌സി കോൺഫിഗറേഷൻ നിർദ്ദേശിച്ചു.</translation>
 <translation id="3623476034248543066">മൂല്യം കാണിക്കുക</translation>
 <translation id="9020542370529661692">ഈ പേജ് <ph name="TARGET_LANGUAGE"/>-ലേക്ക് വിവർത്തനം ചെയ്‌തു</translation>
 <translation id="5631439013527180824">ഉപകരണ മാനേജുമെന്റ് ടോക്കൺ അസാധുവാണ്</translation>
 <translation id="560412284261940334">മാനേജുമെന്റ് പിന്തുണയ്‌ക്കുന്നില്ല</translation>
+<translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">ഈ പേജിനെ അറിയപ്പെടാത്ത ഒരു ഭാഷയില്‍‌ നിന്നും <ph name="LANGUAGE_LANGUAGE"/> എന്നതിലേക്ക് വിവര്‍‌ത്തനം ചെയ്തു</translation>
 <translation id="4813512666221746211">നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">നില:</translation>
 <translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/>-ലേക്ക് സ്വിച്ച് ചെയ്യുക</translation>
 <translation id="5095208057601539847">പ്രവിശ്യ</translation>
-<translation id="1847321074516120686">Chrome ഓട്ടോഫിൽ ക്രമീകരണം</translation>
+<translation id="3934680773876859118">PDF പ്രമാണം ലോഡുചെയ്യുന്നത് പരാജയപ്പെട്ടു</translation>
 <translation id="1152021252151287493">മോശം പരിശോധിച്ചുറപ്പിക്കൽ സിഗ്‌നേച്ചർ.</translation>
 <translation id="6965382102122355670">ശരി</translation>
 <translation id="2721148159707890343">അഭ്യർത്ഥന വിജയിച്ചു</translation>

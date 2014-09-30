@@ -40,17 +40,16 @@
 <translation id="473775607612524610">Обновление</translation>
 <translation id="8627706565932943526">Ошибка синхронизации</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
-<translation id="4043215103217793252">Изменить закладку</translation>
 <translation id="656628257199996201">Всегда переводить <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="5684874026226664614">Не удалось перевести страницу</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="4619298195800598081">Оригинал в новой вкладке</translation>
+<translation id="3254409185687681395">Создать закладку для этой страницы</translation>
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
 <translation id="7267430310003164111">Ссылка на приложение в Google Play Маркете. Название приложения: <ph name="APP_NAME"/>.  Средняя оценка: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Вкладка закрыта</translation>
 <translation id="4148957013307229264">Установка...</translation>
 <translation id="3992315671621218278">Сохранить ссылку</translation>
 <translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">Отправить с помощью <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="969096075394517431">Изменить языки</translation>
-<translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5032574515228824816">Запрос</translation>
-<translation id="4847896847259487518">Добавить в закладки</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="8310344678080805313">Обычные вкладки</translation>
 <translation id="6277522088822131679">Не удалось распечатать страницу. Повторите попытку.</translation>

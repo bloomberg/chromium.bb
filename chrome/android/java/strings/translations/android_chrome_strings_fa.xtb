@@ -38,17 +38,16 @@
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="8627706565932943526">خطای همگام‌سازی</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
-<translation id="4043215103217793252">صفحه ویرایش نشانک</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> همیشه ترجمه شود</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="4619298195800598081">باز کردن تصویر اصلی در برگه جدید</translation>
+<translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="907015151729920253">کارت هوشمند</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="7267430310003164111">‏سؤال برای دریافت برنامه از فروشگاه Google Play. نام برنامه: <ph name="APP_NAME"/>. رتبه متوسط برنامه: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">برگه بسته شد</translation>
 <translation id="4148957013307229264">در حال نصب...</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. مایلید آن را به <ph name="TARGET_LANGUAGE"/> ترجمه کنید؟</translation>
@@ -75,9 +74,7 @@
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
-<translation id="5556459405103347317">تازه سازی</translation>
 <translation id="5032574515228824816">فرمان</translation>
-<translation id="4847896847259487518">نشانک‌گذاری صفحه</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>

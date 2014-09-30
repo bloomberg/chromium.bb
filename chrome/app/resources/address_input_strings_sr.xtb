@@ -28,11 +28,12 @@
 <translation id="43113324827158664">Ово поље не може да буде празно.</translation>
 <translation id="3050787670591910834">Морате да наведете поштански кôд, на пример <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Поштански број</translation>
+<translation id="5937097533660449554">Област</translation>
 <translation id="4376888869070172068">Формат поштанског броја није препознат.</translation>
 <translation id="8446364922515257065">До/Си</translation>
 <translation id="4518701284698680367">Морате да наведете поштански број, на пример <ph name="EXAMPLE"/>. Не знате поштански број? Пронађите га <ph name="BEGIN_LINK"/>овде<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Овај формат поштанског кода није препознат. Пример важећег поштанског кода: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Изгледа да се поштански број не подудара са остатком ове адресе.</translation>
 <translation id="5095208057601539847">Провинција</translation>
-<translation id="5327248766486351172">Име</translation>
+<translation id="5327248766486351172">Назив</translation>
 </translationbundle>

@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">Afegeix un compte per a <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Rotació activada (toqueu aquí per canviar)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">Estat del portal</translation>
 <translation id="30155388420722288">Botó de desbordament</translation>
+<translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">S'ha activat el Bluetooth</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> s'ha canviat a <ph name="ROTATION"/></translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">La sol·licitud HTTP ha fallat</translation>
 <translation id="2297568595583585744">Safata d'estat</translation>
 <translation id="1661867754829461514">Falta el PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: s'està connectant...</translation>
 <translation id="2248649616066688669">Podeu continuar utilitzant el dispositiu Chromebook mentre estigui connectat a una pantalla externa, encara que la tapa estigui tancada.</translation>
 <translation id="40400351611212369">Error d'activació de xarxa</translation>
 <translation id="4237016987259239829">Error de connexió a la xarxa</translation>
@@ -46,13 +45,11 @@
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
-<translation id="3846575436967432996">No hi ha informació de xarxa disponible</translation>
 <translation id="4625920103690741805">Rotació bloquejada (toqueu aquí per canviar)</translation>
 <translation id="3799026279081545374">Pot ser que el carregador s'hagi espatllat. Si residiu als EUA, truqueu al 866-628-1371 per rebre ajuda i un carregador de recanvi. Si residiu al Regne Unit, truqueu al 0800-026-0613. Si residiu a Irlanda, truqueu al 1-800-832-664. Si residiu al Canadà, truqueu al 866-628-1372. Si residiu a Austràlia, truqueu al 1-800-067-460.</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="5871632337994001636">Gestiona els dispositius...</translation>
 <translation id="785750925697875037">Mostra el compte mòbil</translation>
-<translation id="153454903766751181">S'està inicialitzant el mòdem mòbil...</translation>
 <translation id="4628814525959230255">Comparteix el control de la pantalla amb <ph name="HELPER_NAME"/> mitjançant Hangouts.</translation>
 <translation id="7864539943188674973">Desactiva el Bluetooth</translation>
 <translation id="939252827960237676">S'ha produït un error en desar la captura de pantalla.</translation>
@@ -60,8 +57,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
-<translation id="735745346212279324">VPN desconnectada</translation>
-<translation id="7320906967354320621">Inactiu</translation>
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="8190698733819146287">Personalitza els idiomes i l'entrada...</translation>
@@ -70,13 +65,12 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="8676770494376880701">S'ha connectat un carregador de baix consum</translation>
 <translation id="5238774010593222950">No es pot iniciar la sessió a un altre compte.</translation>
 <translation id="1723752762323179280">S'està tancant la sessió</translation>
+<translation id="1426410128494586442">Sí</translation>
 <translation id="7170041865419449892">Fora de l'interval</translation>
-<translation id="4804818685124855865">Desconnecta</translation>
 <translation id="2544853746127077729">La xarxa ha rebutjat el certificat d'autenticació</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">Configuració</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="4957722034734105353">Més informació...</translation>
 <translation id="2964193600955408481">Desactiva la Wi-Fi</translation>
@@ -85,7 +79,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="7823564328645135659">L'idioma ha canviat de &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot; després de sincronitzar la vostra configuració.</translation>
-<translation id="3368922792935385530">Connectat</translation>
 <translation id="3606978283550408104">S'ha connectat la pantalla Braille.</translation>
 <translation id="8654520615680304441">Activa la Wi-Fi...</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY"/>.</translation>
@@ -93,14 +86,13 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="5825747213122829519">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>.
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2562916301614567480">Xarxa privada</translation>
-<translation id="6549021752953852991">No hi ha cap xarxa mòbil disponible</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">No</translation>
 <translation id="4379753398862151997">Estimat monitor, això no funciona. (El monitor no és compatible)</translation>
 <translation id="6426039856985689743">Desactiva les dades mòbils</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3742055079367172538">Captura de pantalla feta</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
-<translation id="5271016907025319479">La VPN no està configurada.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">L'administrador ha desactivat l'opció per fer captures de pantalla.</translation>
 <translation id="372094107052732682">Premeu Ctrl+Maj+Q dues vegades per sortir.</translation>
@@ -118,10 +110,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2614835198358683673">És possible que el vostre Chromebook no es carregui mentre estigui encès. Proveu de fer servir un carregador oficial.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4442424173763614572">La cerca de DNS ha fallat</translation>
-<translation id="7874779702599364982">S'estan cercant xarxes mòbils...</translation>
-<translation id="583281660410589416">Desconegut</translation>
 <translation id="1383876407941801731">Cerca</translation>
-<translation id="3901991538546252627">S'està connectant amb <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Informació de la xarxa</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Surt de la sessió de convidat</translation>
@@ -131,7 +120,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1346748346194534595">A la dreta</translation>
 <translation id="1773212559869067373">S'ha rebutjat el certificat d'autenticació de manera local</translation>
 <translation id="8528322925433439945">Xarxes mòbils...</translation>
-<translation id="7049357003967926684">Associació</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="2372145515558759244">S'estan sincronitzant les aplicacions...</translation>
 <translation id="7256405249507348194">Error no reconegut: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="7925247922861151263">Error en la comprovació d'AAA</translation>
 <translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Error de xarxa desconegut</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830">S'està activant <ph name="NAME"/></translation>
 <translation id="4527045527269911712">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
@@ -153,24 +139,20 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
+<translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Bloqueja</translation>
 <translation id="2805756323405976993">Aplicacions</translation>
-<translation id="1512064327686280138">Error d'activació</translation>
 <translation id="5097002363526479830">S'ha produït un error en connectar amb la xarxa &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="3433830597744061105">Gestiona els comptes</translation>
 <translation id="2966449113954629791">És possible que hàgiu esgotat la quantitat assignada de dades mòbils. Visiteu el portal d'activació <ph name="NAME"/> per comprar més dades.</translation>
 <translation id="742594950370306541">La càmera s'està utilitzant.</translation>
-<translation id="8132793192354020517">Connectat a <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Estableix fons de pantalla...</translation>
-<translation id="8678698760965522072">Estat en línia</translation>
 <translation id="2532589005999780174">Mode de contrast elevat</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Error intern</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
-<translation id="7005812687360380971">Error</translation>
 <translation id="882279321799040148">Feu clic per visualitzar-la</translation>
 <translation id="1753067873202720523">Pot ser que el Chromebook no es carregui mentre estigui activat.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admet <ph name="SPECIFIED_RESOLUTION"/>. S'ha canviat la resolució per <ph name="FALLBACK_RESOLUTION"/>.</translation>
@@ -184,7 +166,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="225680501294068881">S'estan cercant dispositius...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">Micròfon (intern)</translation>
-<translation id="4448844063988177157">S'estan cercant xarxes Wi-Fi...</translation>
 <translation id="8401662262483418323">No s'ha pogut connectar amb &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
 Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
@@ -193,7 +174,6 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> és una sessió pública gestionada per <ph name="DOMAIN"/>.</translation>
 <translation id="9044646465488564462">S'ha produït un error en connectar amb la xarxa: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
-<translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE"/>%.</translation>
@@ -205,7 +185,6 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
 <translation id="6732801395666424405">Els certificats no s'han carregat.</translation>
 <translation id="7573962313813535744">Mode acoblat</translation>
-<translation id="8927026611342028580">S'ha sol·licitat la connexió</translation>
 <translation id="8300849813060516376">Error d'OTASP</translation>
 <translation id="2792498699870441125">Alt+Cerca</translation>
 <translation id="8660803626959853127">Fitxers que s'estan sincronitzant: <ph name="COUNT"/></translation>
@@ -214,7 +193,6 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="639644700271529076">Bloq Maj està desactivat</translation>
 <translation id="6248847161401822652">Premeu Control+Maj+Q dues vegades per sortir.</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE"/>% i s'està carregant.</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: s'està activant...</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="5947494881799873997">Reverteix</translation>
@@ -225,7 +203,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="158849752021629804">Es necessita una xarxa domèstica</translation>
 <translation id="1013923882670373915">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Introduïu aquest codi PIN al dispositiu: <ph name="PINCODE"/>.</translation>
-<translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Error en la cerca de DHCP</translation>
 <translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>
 <translation id="5507786745520522457">Configura les dades mòbils</translation>
@@ -234,7 +211,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">La càmera i el micròfon s'estan utilitzant.</translation>
 <translation id="8372369524088641025">Clau WEP no vàlida</translation>
-<translation id="6636709850131805001">Estat no reconegut</translation>
 <translation id="6406704438230478924">AltGr</translation>
 <translation id="3573179567135747900">Torna a canviar a &quot;<ph name="FROM_LOCALE"/>&quot; (requereix reiniciar)</translation>
 <translation id="8103386449138765447">Missatges SMS: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="5102001756192215136">Temps d'autonomia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="520760366042891468">Compartiu el control de la pantalla mitjançant Hangouts.</translation>
-<translation id="8000066093800657092">No hi ha xarxa</translation>
 <translation id="4015692727874266537">Inicia la sessió amb un altre compte...</translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="7297443947353982503">El nom d'usuari o la contrasenya és incorrecte o no s'ha pogut realitzar l'autorització d'EAP.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">Operador</translation>
 </translationbundle>

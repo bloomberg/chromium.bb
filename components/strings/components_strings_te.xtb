@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
 <translation id="4058922952496707368">కీ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> శోధన</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
 <translation id="1228893227497259893">ఎంటిటీ ఐడెంటిఫైయర్ చెల్లదు</translation>
 <translation id="6337534724793800597">పేరు ద్వారా విధానాలను ఫిల్టర్ చేయి</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">వీసా</translation>
 <translation id="6839929833149231406">ప్రాంతం</translation>
 <translation id="1871208020102129563">ప్రాక్సీ స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించడానికి సెట్ చేయబడింది, .pac స్క్రిప్ట్ URLను కాదు.</translation>
+<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> ఆదేశాన్ని అమలు చెయ్యి: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">తెలియని లోపం</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
 <translation id="3452404311384756672">విరామాన్ని పొందండి:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">విధానం కనుగొనబడలేదు</translation>
 <translation id="3150653042067488994">తాత్కాలిక సర్వర్ లోపం</translation>
 <translation id="7087282848513945231">కౌంటి</translation>
+<translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="6458467102616083041">విధానంచే డిపాల్ట్ శోధన ఆపివేయబడినందున విస్మరించబడింది.</translation>
 <translation id="1227224963052638717">తెలియని విధానం.</translation>
 <translation id="9207861905230894330">కథనాన్ని జోడించడంలో విఫలమైంది.</translation>
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
 <translation id="2367567093518048410">స్థాయి</translation>
+<translation id="7977590112176369853">&lt;ప్రశ్నను ఎంటర్ చెయ్యండి&gt;</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE"/> పరిధి వెలుపల ఉంది.</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="2096368010154057602">శాఖ</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">విధాన సెట్టింగ్‌లను నిల్వ చేయడంలో విఫలమైంది</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot;లో స్కీమా ప్రామాణీకరణ లోపం: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">బుక్‌మార్క్‌ల పట్టీ</translation>
+<translation id="7208899522964477531"><ph name="SITE_NAME"/> కోసం <ph name="SEARCH_TERMS"/> శోధించండి</translation>
 <translation id="7956713633345437162">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="5089810972385038852">రాష్ట్రం</translation>
 <translation id="647261751007945333">పరికర విధానాలు</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">చెల్లని అభ్యర్థన లేదా అభ్యర్థన పరామితులు</translation>
 <translation id="1640180200866533862">వినియోగదారు విధానాలు</translation>
 <translation id="375403751935624634">సర్వర్ లోపం వల్ల అనువాదం విఫలమైంది.</translation>
+<translation id="2597378329261239068">ఈ పత్రం అనుమతి పదంచే రక్షించబడింది. దయచేసి అనుమతి పదాన్ని నమోదు చేయండి.</translation>
 <translation id="5629630648637658800">విధాన సెట్టింగ్‌లను లోడ్ చేయడంలో విఫలమైంది</translation>
 <translation id="2354001756790975382">ఇతర బుక్‌మార్క్‌లు</translation>
 <translation id="3650584904733503804">ప్రామాణీకరణ విజయవంతం అయింది</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">పరికరం</translation>
 <translation id="8249320324621329438">చివరగా పొందబడినవి:</translation>
 <translation id="1285320974508926690">ఈ సైట్‌ను అనువదించవద్దు</translation>
+<translation id="1344588688991793829">Chromium స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="6282194474023008486">పోస్టల్ కోడ్</translation>
 <translation id="443673843213245140">ప్రాక్సీని ఉపయోగించడం ఆపివేయబడింది కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ పేర్కొనబడింది.</translation>
 <translation id="3623476034248543066">విలువను చూపండి</translation>
 <translation id="9020542370529661692">ఈ పేజీ <ph name="TARGET_LANGUAGE"/>కి అనువదించబడింది</translation>
 <translation id="5631439013527180824">చెల్లని పరికర నిర్వహణ టోకెన్</translation>
 <translation id="560412284261940334">నిర్వహణకు మద్దతు లేదు</translation>
+<translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="3169472444629675720">కనుగొను</translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
 <translation id="4813512666221746211">నెట్‌వర్క్ లోపం</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">స్థితి: </translation>
 <translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/>కి మారు</translation>
 <translation id="5095208057601539847">ప్రావిన్స్</translation>
-<translation id="1847321074516120686">Chrome స్వీయపూర్తి సెట్టింగ్‌లు</translation>
+<translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
 <translation id="1152021252151287493">చెల్లని ధృవీకరణ సంతకం.</translation>
 <translation id="6965382102122355670">సరే</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>

@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="8804398419035066391">Επικοινωνία με συνεργαζόμενους ιστότοπους</translation>
 <translation id="7809034755304591547">Το αναγνωριστικό <ph name="EXTENSION_NAME"/> (αναγνωριστικό επέκτασης &quot;<ph name="EXTENSION_ID"/>&quot;) έχει αποκλειστεί από τον διαχειριστή.</translation>
+<translation id="1005274289863221750">Χρήση του μικροφώνου και της κάμεράς σας</translation>
 <translation id="2857834222104759979">Το αρχείο δήλωσης δεν είναι έγκυρο.</translation>
-<translation id="8978038008714088448">Ανάγνωση και τροποποίηση των δεδομένων σας στον ιστότοπο <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">Ανάγνωση και τροποποίηση των δεδομένων σας στους ιστότοπους <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, και <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Πρόσβαση στη συσκευή USB</translation>
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">Αυτή η επέκταση επιβραδύνει το <ph name="PRODUCT_NAME"/>. Πρέπει να την απενεργοποιήσετε για να επαναφέρετε την απόδοση του <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
+<translation id="6241530762627360640">Πρόσβαση σε πληροφορίες σχετικά με τις συσκευές Bluetooth που βρίσκονται σε ζεύξη με το σύστημά σας και εντοπισμός κοντινών συσκευών Bluetooth.</translation>
 <translation id="5911798608827489036">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στο τοπικό δίκτυο ή το Διαδίκτυο</translation>
 <translation id="4719685943208231314">Πρόσβαση στη συσκευή USB από <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="9131487537093447019">Αποστολή και λήψη μηνυμάτων από συσκευές Bluetooth.</translation>
+<translation id="8198425243160395623">Πρόσβαση στις συσκευές USB</translation>
 <translation id="8597109877291678953">Ανταλλαγή δεδομένων με τον υπολογιστή με το όνομα <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Αυτή η επέκταση περιλαμβάνει το αρχείο κλειδιού &quot;<ph name="KEY_PATH"/>&quot;. Πιθανότατα δεν θέλετε να προβείτε σε αυτήν την ενέργεια.</translation>
 <translation id="2350172092385603347">Χρησιμοποιήθηκε τοπική προσαρμογή, όμως δεν καθορίστηκε η τιμή &quot;default_locale&quot; στη δήλωση.</translation>
+<translation id="3759933321830434300">Αποκλεισμός τμημάτων ιστοσελίδων</translation>
 <translation id="8058376558882514200">Πρόσβαση στη συσκευή USB <ph name="PRODUCT_NAME"/> από <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">Πρόσβαση σε συσκευές USB</translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης &quot;<ph name="ICON"/>&quot;.</translation>
+<translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="388442998277590542">Δεν ήταν δυνατή η φόρτωση της σελίδας επιλογών &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="6344170822609224263">Λίστα πρόσβασης για συνδέσεις δικτύου</translation>
+<translation id="2616366145935564096">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Ανταλλαγή δεδομένων με τους υπολογιστές με τα εξής ονόματα: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/>, στο <ph name="WEBSITE_2"/> και το <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στον τομέα <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">Πρόσβαση στις συσκευές εισόδου</translation>
+<translation id="8670869118777164560">Αυτή η επέκταση απέτυχε να ανακατευθύνει κάποιο αίτημα δικτύου στο <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) το ανακατεύθυνε στο <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="6840444547062817500">Αυτή η επέκταση επαναφορτώνεται πολύ συχνά.</translation>
+<translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) καθόρισε ένα διαφορετικό όνομα &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="4968399700653439437">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στους τομείς: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">όλους τους ιστότοπους <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Αλλαγή της αρχικής σελίδας σε: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">Ανάγνωση και τροποποίηση των δεδομένων σας σε <ph name="NUMBER_OF_WEBSITES"/> ιστότοπους</translation>
+<translation id="27822970480436970">Η επέκταση αυτή απέτυχε να τροποποιήσει ένα αίτημα δικτύου, επειδή η τροποποίηση ερχόταν σε σύγκρουση με μια άλλη προέκταση.</translation>
+<translation id="2241053333139545397">Διαβάστε και αλλάξτε τα δεδομένα σας σε διάφορους ιστότοπους</translation>
 <translation id="8602184400052594090">Το αρχείο δήλωσης λείπει ή δεν είναι δυνατή η ανάγνωσή του.</translation>
+<translation id="4883436287898674711">Όλοι οι ιστότοποι <ph name="WEBSITE_1"/></translation>
+<translation id="9111791539553342076">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα απόκρισης &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">Χρήση της κάμεράς σας</translation>
+<translation id="8341840687457896278">Αυτή η επέκταση απέτυχε να παράσχει διαπιστευτήρια σε κάποιο αίτημα δικτύου επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) παρέσχεσε διαφορετικά διαπιστευτήρια.</translation>
+<translation id="5627523580512561598">επέκταση <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Πρόσβασης στις φωτογραφίες, στη μουσική και στα άλλα μέσα από τον υπολογιστή σας</translation>
+<translation id="4761104368405085019">Χρήση του μικροφώνου σας</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
 <translation id="7154130902455071009">Αλλαγή της σελίδας έναρξης σε: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">Ανάγνωση και τροποποίηση των δεδομένων σας στους ιστότοπους <ph name="WEBSITE_1"/> και <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/> και το <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Δεν ήταν δυνατή η φόρτωση της σελίδας φόντου &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
-<translation id="8207052894957937969">Ανάγνωση και τροποποίηση των δεδομένων σας σε <ph name="NUMBER_OF_WEBSITES"/> ιστότοπους</translation>
 </translationbundle>

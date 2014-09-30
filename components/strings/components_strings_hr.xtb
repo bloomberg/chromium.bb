@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Preporučeno</translation>
 <translation id="4058922952496707368">Stavka &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> Pretraživanje</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="1228893227497259893">Pogrešan identifikator entiteta</translation>
 <translation id="6337534724793800597">Filtriranje pravila prema nazivu</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Područje</translation>
 <translation id="1871208020102129563">Proxy poslužitelj postavljen je na upotrebu fiksnih proxy poslužitelja, a ne URL .pac skripte.</translation>
+<translation id="8940229512486821554">Pokretanje proširenja <ph name="EXTENSION_NAME"/> za naredbu: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Nepoznata pogreška</translation>
 <translation id="112840717907525620">Predmemorija pravila ispravna je</translation>
 <translation id="3452404311384756672">Dohvati interval:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Pravilo nije pronađeno</translation>
 <translation id="3150653042067488994">Privremena pogreška poslužitelja</translation>
 <translation id="7087282848513945231">Županija</translation>
+<translation id="1132774398110320017">Postavke Automatskog popunjavanja u Chromeu...</translation>
 <translation id="6458467102616083041">Zanemareno jer je zadano pretraživanje onemogućeno pravilom.</translation>
 <translation id="1227224963052638717">Nepoznato pravilo.</translation>
 <translation id="9207861905230894330">Dodavanje članka nije uspjelo.</translation>
 <translation id="337363190475750230">Dodjela je uklonjena</translation>
 <translation id="2367567093518048410">Razina</translation>
+<translation id="7977590112176369853">&lt;unesite upit&gt;</translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Učitavanje...</translation>
 <translation id="2096368010154057602">Departman</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
 <translation id="5439770059721715174">Pogreška provjere sheme na lokaciji &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Traka oznaka</translation>
+<translation id="7208899522964477531">Pretraži <ph name="SITE_NAME"/> za <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Mobilne oznake</translation>
 <translation id="5089810972385038852">Država</translation>
 <translation id="647261751007945333">Pravila uređaja</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Nevažeći zahtjev ili parametri zahtjeva</translation>
 <translation id="1640180200866533862">Korisnička pravila</translation>
 <translation id="375403751935624634">Prijevod nije uspio zbog poslužiteljske pogreške.</translation>
+<translation id="2597378329261239068">Ovaj je dokument zaštićen zaporkom. Unesite zaporku.</translation>
 <translation id="5629630648637658800">Učitavanje postavki pravila nije uspjelo</translation>
 <translation id="2354001756790975382">Druge oznake</translation>
 <translation id="3650584904733503804">Valjanost je uspješna</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="8249320324621329438">Zadnje dohvaćanje:</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
+<translation id="1344588688991793829">Postavke automatskog popunjavanja u Chromiumu...</translation>
 <translation id="6282194474023008486">Poštanski broj</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
 <translation id="3623476034248543066">Prikaži vrijednost</translation>
 <translation id="9020542370529661692">Ova je stranica prevedena na <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Token za upravljanje uređajem nije važeći</translation>
 <translation id="560412284261940334">Upravljanje nije podržano</translation>
+<translation id="1639239467298939599">Učitavanje</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Ova je stranica prevedena s nepoznatog jezika na <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Pogreška mreže</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="1832546148887467272">Prebaci na: <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincija</translation>
-<translation id="1847321074516120686">Postavke automatskog popunjavanja za Chrome</translation>
+<translation id="3934680773876859118">Učitavanje dokumenta PDF nije uspjelo</translation>
 <translation id="1152021252151287493">Neispravan potpis za provjeru.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="2721148159707890343">Zahtjev je uspio</translation>

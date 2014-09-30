@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="8804398419035066391">ارتباط با وب‌سایت‌های همکار</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (شناسه فایل افزودنی &quot;<ph name="EXTENSION_ID"/>&quot;) توسط سرپرست مسدود شده است.</translation>
+<translation id="1005274289863221750">استفاده از میکروفون و دوربین خود</translation>
 <translation id="2857834222104759979">فایل اظهارنامه نامعتبر است.</translation>
-<translation id="8978038008714088448">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/>، ‏<ph name="WEBSITE_2"/> و <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">‏دسترسی به دستگاه USB</translation>
 <translation id="6384275966486438344">تغییر تنظیمات جستجویتان به: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">این برنامهٔ افزودنی سرعت <ph name="PRODUCT_NAME"/> را پایین می‌آورد. شما باید برای بازیابی عملکرد <ph name="PRODUCT_NAME"/> این برنامه را غیرفعال کنید.</translation>
+<translation id="1033780634303702874">دسترسی به دستگاه‌های سریال خودتان</translation>
+<translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="5911798608827489036">تبادل اطلاعات با هر رایانه‌ای بر روی شبکه محلی یا اینترنت</translation>
 <translation id="4719685943208231314">‏دسترسی به دستگاه USB از <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">بارگیری اسکریپت پس‌زمینه &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; ممکن نیست.</translation>
+<translation id="9131487537093447019">ارسال پیام‌ها به دستگاه‌های بلوتوث و دریافت پیام‌ها از آنها</translation>
+<translation id="8198425243160395623">‏دسترسی به دستگاه‌های USB خودتان</translation>
 <translation id="8597109877291678953">تبادل اطلاعات با رایانه‌ای به نام <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">این برنامهٔ افزودنی شامل فایل کلید «<ph name="KEY_PATH"/>» است. احتمالاً نمی‌خواهید این کار را انجام دهید.</translation>
 <translation id="2350172092385603347">‏بومی سازی استفاده شده است، اما default_locale در اظهارنامه مشخص نشده است.</translation>
+<translation id="3759933321830434300">مسدود کردن بخش‌هایی از صفحات وب</translation>
 <translation id="8058376558882514200">‏دسترسی به دستگاه USB <ph name="PRODUCT_NAME"/> از <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">‏دسترسی به دستگاه‌های USB</translation>
 <translation id="149347756975725155">بارکردن نماد پسوند &quot;<ph name="ICON"/>&quot; ممکن نیست.</translation>
+<translation id="8825366169884721447">این فایل افزودنی نتوانست عنوان درخواست «<ph name="HEADER_NAME"/>» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر (<ph name="EXTENSION_NAME"/>) تناقض داشت.</translation>
+<translation id="388442998277590542">صفحه گزینه‌ها &quot;<ph name="OPTIONS_PAGE"/>&quot; بارگیری نشد.</translation>
 <translation id="6344170822609224263">فهرست دسترسی از اتصالات شبکه</translation>
+<translation id="2616366145935564096">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">تبادل اطلاعات با رایانه‌هایی با نام‌های: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/>، ‏<ph name="WEBSITE_2"/> و <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">تبادل اطلاعات با هر رایانه‌ای در دامنه <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">دسترسی به دستگاه‌های ورودیتان</translation>
+<translation id="8670869118777164560">این فایل افزودنی نتوانست درخواست شبکه را به <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> مجدداً هدایت کند چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME"/>) آن را به <ph name="ACTUAL_REDIRECT_DESTINATION"/> مجدداً هدایت کرد.</translation>
+<translation id="6840444547062817500">این برنامه افزودنی بیش از حد خود را بارگیری مجدد می‌کند.</translation>
+<translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری دانلود «<ph name="ATTEMPTED_FILENAME"/>» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME"/>) نام فایل دیگری «<ph name="ACTUAL_FILENAME"/>» را تعیین کرد.</translation>
 <translation id="4968399700653439437">تبادل اطلاعات با هر رایانه‌ای در دامنه‌های: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">نمای وب: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">همه سایت‌های <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">تغییر صفحه اصلی شما به: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">خواندن و تغییر اطلاعات شما در <ph name="NUMBER_OF_WEBSITES"/> وب‌سایت</translation>
+<translation id="27822970480436970">این برنامهٔ افزودنی قادر به تغییر درخواست شبکه به دلیل تغییری متداخل با یک برنامهٔ افزودنی دیگر نیست.</translation>
+<translation id="2241053333139545397">خواندن و تغییر اطلاعات شما در تعدادی از وب‌سایت‌ها</translation>
 <translation id="8602184400052594090">فایل اظهارنامه وجود ندارد یا قابل خواندن نیست.</translation>
+<translation id="4883436287898674711">همه سایت‌های <ph name="WEBSITE_1"/></translation>
+<translation id="9111791539553342076">این فایل افزودنی نتوانست عنوان پاسخ «<ph name="HEADER_NAME"/>» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر نتاقض داشت (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">استفاده از دوربین خود</translation>
+<translation id="8341840687457896278">این فایل افزودنی نتوانست مدارک صلاحیت درخواست شبکه را ارائه دهد چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME"/>) مدارک صلاحیت دیگری را ارائه کرده است.</translation>
+<translation id="5627523580512561598">برنامهٔ افزودنی <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">دسترسی به عکس‌ها، موسیقی، و دیگر رسانه‌ها از رایانه شما</translation>
+<translation id="4761104368405085019">استفاده از میکروفون خود</translation>
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME"/> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
 <translation id="7154130902455071009">تغییر صفحه شروعتان به: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">بارگیری صفحه پس‌زمینه &quot;<ph name="BACKGROUND_PAGE"/>&quot; ممکن نیست.</translation>
-<translation id="8207052894957937969">خواندن و تغییر اطلاعات شما در <ph name="NUMBER_OF_WEBSITES"/> وب‌سایت</translation>
 </translationbundle>

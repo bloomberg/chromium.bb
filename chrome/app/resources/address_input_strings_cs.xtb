@@ -28,11 +28,12 @@
 <translation id="43113324827158664">Toto pole nesmí zůstat prázdné.</translation>
 <translation id="3050787670591910834">Je třeba zadat poštovní směrovací číslo, například <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">PSČ</translation>
+<translation id="5937097533660449554">Oblast</translation>
 <translation id="4376888869070172068">Tento formát poštovního kódu nebyl rozpoznán.</translation>
 <translation id="8446364922515257065">Do/Si (administrativní oblast Koreje)</translation>
 <translation id="4518701284698680367">Je třeba zadat kód ZIP, například <ph name="EXAMPLE"/>. Neznáte svůj kód ZIP? Vyhledejte ho <ph name="BEGIN_LINK"/>zde<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Tento formát poštovního směrovacího čísla není platný. Příklad platného poštovního směrovacího čísla: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Poštovní kód se zřejmě neshoduje se zbytkem adresy.</translation>
 <translation id="5095208057601539847">Provincie</translation>
-<translation id="5327248766486351172">Jméno</translation>
+<translation id="5327248766486351172">Název</translation>
 </translationbundle>

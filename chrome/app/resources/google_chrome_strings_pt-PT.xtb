@@ -1,20 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="2286950485307333924">Tem agora sessão iniciada no Chrome</translation>
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
-<translation id="8485767968786176057">Neste caso, o endereço indicado no certificado não corresponde ao endereço do Web site ao qual o seu navegador tentou aceder. Uma razão possível para tal é o facto de as suas comunicações estarem a ser intercetadas por um utilizador mal intencionado que esteja a apresentar um certificado para um Web site diferente, o que causaria uma não correspondência. Outra razão possível é o facto de o servidor estar configurado para devolver o mesmo certificado para vários Web sites, incluindo o que está a tentar visitar, mesmo que esse certificado não seja válido para todos os Web sites. O Google Chrome pode afirmar com certeza que acedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não pode confirmar que seja o mesmo site de &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ao qual pretende aceder. Se continuar, o Chrome não irá verificar se existem mais não correspondências de nomes.</translation>
+<translation id="1302523850133262269">Aguarde até que o Chrome instale as atualizações do sistema mais recentes.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">O SO Chrome não conseguiu sincronizar os dados. Atualize a sua frase de acesso de sincronização.</translation>
 <translation id="5430073640787465221">O ficheiro de preferências está danificado ou não é válido. O Google Chrome não consegue recuperar as suas definições.</translation>
 <translation id="6676384891291319759">Aceder à Internet</translation>
-<translation id="7952135150021331855">O Google Chrome está em execução em segundo plano.</translation>
 <translation id="345171907106878721">Adicionar-se ao Chrome</translation>
+<translation id="4921569541910214635">Partilha um computador? Agora pode configurar o Chrome exatamente como pretende.</translation>
 <translation id="6236285698028833233">O Google Chrome já não se atualiza nem suporta mais esta versão do seu sistema operativo.</translation>
 <translation id="5453904507266736060">Permitir que o Google Chrome seja executado em segundo plano</translation>
 <translation id="3454512769850953877">Sim, sair do Chrome</translation>
 <translation id="4167057906098955729">Pode ver aqui todas as suas notificações de aplicações, extensões e Websites do Chrome.</translation>
 <translation id="2704356438731803243">Se preferir manter os seus dados do Chrome existentes em separado, pode criar um novo utilizador do Chrome para <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Feche todas as janelas do Google Chrome e tente novamente.</translation>
+<translation id="3784527566857328444">Remover do Chrome</translation>
 <translation id="1225016890511909183">O Chrome armazenará as suas informações em segurança para que não necessite de as introduzir novamente, mas continuará a ser necessário confirmar o código de segurança do seu cartão para futuros pagamentos.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="8838365799985821335">Uma extensão alterou a página apresentada quando inicia o Chrome.</translation>
@@ -24,7 +26,6 @@
 <translation id="5251420635869119124">Os convidados podem utilizar o Chrome sem perder qualquer funcionalidade.</translation>
 <translation id="4891791193823137474">Permitir que o Google Chrome seja executado em segundo plano</translation>
 <translation id="110877069173485804">Este é o seu Chrome</translation>
-<translation id="1376881911183620035">Obrigado por experimentar o novo Chrome. É necessário reiniciar o Chrome para ter a certeza de que guardou todos os trabalhos abertos antes de continuar.</translation>
 <translation id="8406086379114794905">Ajude a melhorar o Chrome</translation>
 <translation id="2896252579017640304">Iniciar aplicações do Chrome</translation>
 <translation id="2721687379934343312">No Mac, as palavras-passe são guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta OS X.</translation>
@@ -42,6 +43,7 @@
 <translation id="4987308747895123092">Feche todas as janelas do Google Chrome (incluindo as que estiverem no modo Windows 8) e tente novamente.</translation>
 <translation id="568643307450491754">Encontre os seus marcadores no menu Chrome ou na barra de marcadores.</translation>
 <translation id="8556340503434111824">Está disponível uma nova versão do Google Chrome, mais rápida do que nunca.</translation>
+<translation id="8987477933582888019">Navegador de Internet</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver atualmente em execução, feche-o e tente de novo.</translation>
 <translation id="3080151273017101988">Continuar a executar aplicações em segundo plano quando o Google Chrome está fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira de novo o Google Chrome.</translation>
@@ -49,6 +51,7 @@
 <translation id="6989339256997917931">O Google Chrome foi atualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
 <translation id="7060865993964054389">Iniciador de Aplicações do Google Chrome</translation>
 <translation id="1682634494516646069">O Google Chrome não consegue ler e escrever no respetivo diretório de dados: <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="127345590676626841">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chrome irá reiniciar e o processo estará terminado.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>
 <translation id="1480489203462860648">Experimente, já está instalado</translation>
@@ -56,9 +59,10 @@
 <translation id="1393853151966637042">Obter ajuda para utilizar o Chrome</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS"/>. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="4513711165509885787">Os seus detalhes de faturação foram guardados no Chrome.</translation>
+<translation id="5253588388888612165">Se partilha este computador com <ph name="PROFILE_NAME"/>, adicione-se ao Chrome para navegar em separado. Caso contrário, desassocie a Conta Google do outro utilizador.</translation>
 <translation id="7098166902387133879">O Google Chrome está a utilizar o microfone.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
-<translation id="6423071462708908582">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado expirado.Não existem informações disponíveis que indiquem que o certificado foi comprometido desde a sua expiração. Isto significa que o Google Chrome não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o erro e atualizar esta página.</translation>
+<translation id="5298539825145851748">Remover do Chrome</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8286862437124483331">O Google Chrome está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
@@ -72,26 +76,28 @@
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
 <translation id="345168553362876363">O Google Chrome App Launcher é uma plataforma autónoma para aplicações do Chrome.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
-<translation id="8684521613357479262">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não existem informações disponíveis que indiquem que o certificado é de confiança. O Google Chrome não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o relógio do sistema e atualizar esta página.</translation>
+<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Aplicações do Chrome</translation>
+<translation id="7473136999113284234">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente.</translation>
 <translation id="7084448929020576097">O ficheiro <ph name="FILE_NAME"/> é malicioso e o Chrome bloqueou-o.</translation>
 <translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="7459554271817304652">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Google Chrome em qualquer computador.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>
+<translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="1195935957447623558">O Google Chrome não foi encerrado corretamente. Para abrir novamente as páginas que estavam abertas, clique em Restaurar.</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="4633000520311261472">Para tornar o Chrome mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
 <translation id="3656661827369545115">Iniciar automaticamente o Chromium quando o computador arranca</translation>
+<translation id="1763864636252898013">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome atualmente em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="8460191995881063249">Centro de Notificações do Chrome</translation>
 <translation id="1457721931618994305">A atualizar o Google Chrome...</translation>
 <translation id="2429317896000329049">O Google Chrome não conseguiu sincronizar os dados porque a Sincronização não está disponível para o seu domínio.</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
-<translation id="6557998774620459028">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade considerada não fidedigna pelo sistema operativo do seu computador. Isto pode significar que o servidor gerou as suas próprias credenciais de segurança, nas quais o Google Chrome não pode confiar para efeitos de informações de identidade, ou que um utilizador mal intencionado pode estar a tentar intercetar as suas comunicações.</translation>
 <translation id="5170938038195470297">O seu perfil não pode ser utilizado pois pertence a uma versão mais recente do Google Chrome. Algumas funcionalidades poderão estar indisponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Google Chrome.</translation>
 <translation id="7282192067747128786">Chrome – Notificações (<ph name="QUANTITY"/> não lidas)</translation>
 <translation id="6011049234605203654">Aceda ao
@@ -108,24 +114,24 @@
 <translation id="7908968924842975895">Este computador não receberá mais atualizações do Google Chrome porque o seu hardware já não é suportado.</translation>
 <translation id="2748463065602559597">Está a ver uma página segura do Google Chrome.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> foi adicionado ao Chrome.</translation>
-<translation id="1786477462680638703">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade considerada não fidedigna pelo Google Chrome. Isto pode significar que o servidor gerou as suas próprias credenciais de segurança, nas quais o Google Chrome não pode confiar para efeitos de informações de identidade, ou que um utilizador mal intencionado pode estar a tentar intercetar as suas comunicações.</translation>
 <translation id="7494905215383356681">Licenças de código aberto do Chrome</translation>
 <translation id="2346876346033403680">Anteriormente, alguém iniciou sessão no Chrome neste computador com a conta <ph name="ACCOUNT_EMAIL_LAST"/>. Se esta conta não for sua, crie um novo utilizador do Chrome para manter as informações em separado.
 
 Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, histórico e outras definições, fundir-se-ão com <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Aviso:<ph name="END_BOLD"/> o Google Chrome não consegue impedir que as extensões gravem o seu histórico de navegação. Para desativar esta extensão no modo de navegação anónima, desmarque esta opção.</translation>
+<translation id="7808348361785373670">Remover do Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2664962310688259219">Licenças de código aberto do SO Chrome</translation>
 <translation id="2290014774651636340">As chaves da API do Google estão em falta. Algumas funcionalidades do Google Chrome serão desativadas.</translation>
 <translation id="4794050651896644714">Guardar os detalhes no Chrome</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
-<translation id="2036562258783619899">Pré-visualizar o novo Chrome</translation>
 <translation id="5855036575689098185">O software em execução no seu computador é incompatível com o Google Chrome.</translation>
 <translation id="7164397146364144019">Pode contribuir para tornar o Chrome mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="2044287590254833138">Barra de ferramentas do Google Chrome</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
 <translation id="2874156562296220396">O Google Chrome foi concretizado graças ao projecto open source (código fonte aberto) <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, assim como a outro <ph name="BEGIN_LINK_OSS"/>software open source<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7191567847629796517">O SO Google Chrome não suporta iniciar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="3847841918622877581">O Google Chrome pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7436949144778751379">O Google Chrome requer o Windows XP ou mais recente. Algumas funcionalidades poderão não funcionar.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
@@ -147,7 +153,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK"/> à Google</translation>
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
-<translation id="4864451188650489141">Pode adicionar outras Contas Google e bloquear o Chromium abaixo.</translation>
 <translation id="2669824781555328029">O ficheiro <ph name="FILE_NAME"/> pode prejudicar a sua experiência de navegação, pelo que foi bloqueado pelo Chrome.</translation>
 <translation id="5875635642195358109">Aceda ao
         menu Chrome &gt;
@@ -176,23 +181,19 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="163860049029591106">Introdução ao SO Chrome</translation>
 <translation id="1587223624401073077">O Google Chrome está a utilizar a câmara.</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver a funcionar, desinstale o Google Chrome e tente novamente.</translation>
-<translation id="576822117893741893">Mostrar o menu Chrome</translation>
 <translation id="3444832043240812445">Esta página mostra informações sobre falhas recentes apenas se <ph name="BEGIN_LINK"/>ativar relatórios de falha<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="2681064822612051220">Foi encontrada uma instalação do Google Chrome em conflito no sistema. Desinstale-a e tente novamente.</translation>
-<translation id="8209985377776300429">Está a pré-visualizar o novo Chrome.</translation>
 <translation id="6126631249883707068">Pretende que o Google Chrome guarde a sua palavra-passe?</translation>
 <translation id="7773845170078702898">Pretende que o Google Chrome guarde a sua palavra-passe para este Website?</translation>
 <translation id="4251615635259297716">Associar os seus dados do Chrome a esta conta?</translation>
 <translation id="7125719106133729027">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de reinstalar manualmente o Chrome.</translation>
 <translation id="5940385492829620908">A sua Web, os seus marcadores e os seus outros itens do Chrome estão aqui.</translation>
-<translation id="8865765905101981392">Browser da Internet</translation>
-<translation id="3039245375609697729">Experimente a nova forma de utilizar o Chrome com a sua Conta Google e em computadores partilhados.</translation>
+<translation id="629218512217695915">Utilizar palavra-passe gerada pelo Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">O Chrome está ainda melhor</translation>
 <translation id="174539241580958092">O Google Chrome não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="8255190535488645436">O Google Chrome está a utilizar a câmara e o microfone.</translation>
-<translation id="2189123953385179981">O Google ChromeOS não suporta a inicialização de uma aplicação externa para processar links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Permita que o Chrome aceda à rede nas definições da sua firewall ou antivírus.</translation>
 <translation id="9102715433345326100">Este ficheiro é malicioso e o Chrome bloqueou-o.</translation>
 <translation id="3170677364322086041">Este site utiliza o plug-in Google Chrome Frame descontinuado, que deixou de receber atualizações de segurança e estabilidade. Desinstale-o e atualize para um navegador moderno.</translation>
@@ -214,19 +215,21 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
           e desmarque &quot;Utilizar um servidor proxy para a rede local&quot;.</translation>
 <translation id="6598387184982954187">Está a utilizar <ph name="PROFILE_EMAIL"/> para sincronizar os seus conteúdos do Chrome. Para atualizar a preferência de sincronização ou utilizar o Chrome sem uma Conta Google, aceda a <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Ocorreu uma falha na instalação devido a um erro não especificado. Transfira novamente o Google Chrome.</translation>
+<translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>
 <translation id="8679801911857917785">Também controla a página apresentada quando inicia o Chrome.</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="4407807842708586359">SO do Google Chrome</translation>
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="4120075327926916474">Quer que o Chrome guarde estas informações de cartão de crédito para preenchimento de formulários Web?</translation>
+<translation id="3037838751736561277">O Google Chrome está no modo em segundo plano.</translation>
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
+<translation id="4692614041509923516">O computador está a executar uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste Website. Dado este problema, o Google Chrome não consegue determinar se o certificado é proveniente de <ph name="SITE"/> ou de alguém na sua rede a fazer-se passar por <ph name="SITE"/>. Atualize o computador para uma versão mais recente do Windows.</translation>
 <translation id="3360895254066713204">Ajudante do Chrome</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="6991142834212251086">Associar os meus dados do Chrome a esta conta</translation>
 <translation id="3451115285585441894">A adicionar ao Chrome...</translation>
-<translation id="6502165024350711060">Sugerida pelo Chrome</translation>
 <translation id="3047079729301751317">Desligar <ph name="USERNAME"/> irá limpar o seu histórico, os marcadores, as definições e outros dados do Chrome armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK"/>Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">O arquivo do programa de instalação está corrompido ou é inválido. Transfira de novo o Google Chrome.</translation>
 <translation id="2246246234298806438">O Google Chrome não pode mostrar a pré-visualização de impressão quando o visualizador de PDF incorporado está em falta.</translation>
@@ -239,7 +242,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="853189717709780425">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições ficarão permanentemente associados a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google mas não poderá associar estes dados a outra conta.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome neste sistema, disponível para todos os utilizadores. O Google Chrome ao nível do sistema substituirá a instalação ao nível do utilizador.</translation>
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
-<translation id="4338032231047635328">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode utilizar um certificado com erros nem pode validar a identidade do site ao qual tentou estabelecer ligação.</translation>
+<translation id="7408085963519505752">Termos do SO Chrome</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Está quase atualizado! Reinicie o Google Chrome para concluir a atualização.</translation>
 <translation id="884296878221830158">Também controla a página apresentada quando inicia o Chrome ou clica no botão Página Inicial.</translation>

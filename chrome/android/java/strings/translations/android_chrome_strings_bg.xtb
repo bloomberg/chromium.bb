@@ -40,17 +40,16 @@
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="8627706565932943526">Грешка при синхронизирането</translation>
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>
-<translation id="4043215103217793252">Редактиране на отметката за страницата</translation>
 <translation id="656628257199996201">Винаги да се превежда от <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="5684874026226664614">Ами сега! Тази страница не можа да се преведе.</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="4619298195800598081">Оригинал: Отв. в нов раздел</translation>
+<translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
 <translation id="907015151729920253">Смарткарта</translation>
 <translation id="3063601790762993062">Запазване на видеоклипа</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="7267430310003164111">Подкана за изтегляне на приложението от Google Play Магазин.  Име на приложението: <ph name="APP_NAME"/>.  Средна оценка на приложението: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Затворихте раздела</translation>
 <translation id="4148957013307229264">Инсталира се...</translation>
 <translation id="3992315671621218278">Запазване на връзката</translation>
 <translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">Споделяне чрез <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="969096075394517431">Промяна на езиците</translation>
-<translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5032574515228824816">Подкана</translation>
-<translation id="4847896847259487518">Запазване на отметка към страницата</translation>
 <translation id="497421865427891073">Преминаване напред</translation>
 <translation id="8310344678080805313">Стандартни раздели</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>

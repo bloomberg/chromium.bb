@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Recommended</translation>
 <translation id="4058922952496707368">Key &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> Search</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="1228893227497259893">Wrong entity identifier</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
+<translation id="8940229512486821554">Run <ph name="EXTENSION_NAME"/> command: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Unknown error</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
 <translation id="3452404311384756672">Fetch interval:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Policy not found</translation>
 <translation id="3150653042067488994">Temporary server error</translation>
 <translation id="7087282848513945231">County</translation>
+<translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
 <translation id="6458467102616083041">Ignored because default search is disabled by policy.</translation>
 <translation id="1227224963052638717">Unknown policy.</translation>
 <translation id="9207861905230894330">Failed to add article.</translation>
 <translation id="337363190475750230">Deprovisioned</translation>
 <translation id="2367567093518048410">Level</translation>
+<translation id="7977590112176369853">&lt;enter query&gt;</translation>
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="2096368010154057602">Department</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5439770059721715174">Schema validation error at &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
+<translation id="7208899522964477531">Search <ph name="SITE_NAME"/> for <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Mobile bookmarks</translation>
 <translation id="5089810972385038852">County</translation>
 <translation id="647261751007945333">Device policies</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="375403751935624634">The translation failed because of a server error.</translation>
+<translation id="2597378329261239068">This document is password-protected.  Please enter a password.</translation>
 <translation id="5629630648637658800">Failed to load policy settings</translation>
 <translation id="2354001756790975382">Other bookmarks</translation>
 <translation id="3650584904733503804">Validation successful</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="8249320324621329438">Last fetched:</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
+<translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
 <translation id="3623476034248543066">Show value</translation>
 <translation id="9020542370529661692">This page has been translated to <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Invalid device management token</translation>
 <translation id="560412284261940334">Management not supported</translation>
+<translation id="1639239467298939599">Loading</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Network error</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="1832546148887467272">Switch to <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Province</translation>
-<translation id="1847321074516120686">Chrome Auto-fill settings</translation>
+<translation id="3934680773876859118">Failed to load PDF document</translation>
 <translation id="1152021252151287493">Bad verification signature.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Request succeeded</translation>

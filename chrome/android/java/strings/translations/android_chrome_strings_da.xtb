@@ -40,17 +40,16 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="473775607612524610">Opdater</translation>
 <translation id="8627706565932943526">Synkroniseringsfejl</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
-<translation id="4043215103217793252">Rediger bogmærke for denne side</translation>
 <translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="4619298195800598081">Åbn originalbillede på ny fane</translation>
+<translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Gem video</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="7267430310003164111">Meddelelse om at hente appen fra Google Play Butik. Appnavn: <ph name="APP_NAME"/>. Appens gennemsnitlige bedømmelse: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Fanen er lukket</translation>
 <translation id="4148957013307229264">Installerer...</translation>
 <translation id="3992315671621218278">Gem link</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversætte den til <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="969096075394517431">Skift sprog</translation>
-<translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5032574515228824816">Meddelelse</translation>
-<translation id="4847896847259487518">Tilføj siden som bogmærke</translation>
 <translation id="497421865427891073">Gå fremad</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
 <translation id="6277522088822131679">Der opstod et problem med udskrivning af siden. Prøv igen.</translation>

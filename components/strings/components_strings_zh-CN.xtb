@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">推荐</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY"/>”键：<ph name="ERROR"/></translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> 搜索</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="1228893227497259893">实体标识符有误</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
@@ -37,8 +38,9 @@
 <translation id="4850886885716139402">视图</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">区</translation>
+<translation id="6839929833149231406">地域</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
+<translation id="8940229512486821554">运行 <ph name="EXTENSION_NAME"/> 命令：<ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">未知错误</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="3452404311384756672">抓取时间间隔：</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">找不到策略</translation>
 <translation id="3150653042067488994">服务器临时错误</translation>
 <translation id="7087282848513945231">县/郡</translation>
+<translation id="1132774398110320017">Chrome自动填充设置…</translation>
 <translation id="6458467102616083041">由于默认搜索被政策停用，政策值已被忽略。</translation>
 <translation id="1227224963052638717">未知政策。</translation>
 <translation id="9207861905230894330">无法添加文章。</translation>
 <translation id="337363190475750230">已取消配置</translation>
 <translation id="2367567093518048410">级别</translation>
+<translation id="7977590112176369853">&lt;输入查询&gt;</translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE"/>)。</translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="2096368010154057602">省</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="5439770059721715174">“<ph name="ERROR_PATH"/>”中存在模式验证错误：<ph name="ERROR"/></translation>
 <translation id="8349305172487531364">书签栏</translation>
+<translation id="7208899522964477531">用 <ph name="SITE_NAME"/> 搜索“<ph name="SEARCH_TERMS"/>”</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="647261751007945333">设备政策</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
+<translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="5629630648637658800">无法加载策略设置</translation>
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="3650584904733503804">验证成功</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">设备</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="1344588688991793829">Chromium自动填充设置…</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="3623476034248543066">显示值</translation>
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
 <translation id="560412284261940334">不支持管理</translation>
+<translation id="1639239467298939599">正在加载</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE"/>。</translation>
 <translation id="4813512666221746211">网络错误</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">状态：</translation>
 <translation id="1832546148887467272">切换到 <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">省</translation>
-<translation id="1847321074516120686">Chrome 浏览器自动填充设置</translation>
+<translation id="3934680773876859118">无法加载 PDF 文档</translation>
 <translation id="1152021252151287493">验证签名无效。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="2721148159707890343">请求成功</translation>

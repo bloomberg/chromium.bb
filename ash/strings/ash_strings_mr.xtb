@@ -5,8 +5,8 @@
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> सीठी खाते जोडा</translation>
 <translation id="1057289296854808272">फिरवणे चालू (बदलण्यासाठी येथे टॅप करा)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> आणि <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">पोर्टल राज्य</translation>
 <translation id="30155388420722288">ओव्हरफ्लो बटण</translation>
+<translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth सक्षम</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> <ph name="ROTATION"/> वर फिरविले होते</translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">HTTP अयशस्वी झाले</translation>
 <translation id="2297568595583585744">स्थिती ट्रे</translation>
 <translation id="1661867754829461514">PIN गहाळ आहे </translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: कनेक्ट करत आहे...</translation>
 <translation id="2248649616066688669">आपण Chromebook बाह्य प्रदर्शनाशी कनेक्ट केलेले असताना आणि बंद असलेल्या लीडसह देखील वापरणे सुरु ठेवू शकता.</translation>
 <translation id="40400351611212369">नेटवर्क सक्रियण त्रुटी</translation>
 <translation id="4237016987259239829">नेटवर्क कनेक्शन त्रुटी</translation>
@@ -46,13 +45,11 @@
 स्‍विच करण्‍यासाठी Shift + Alt दाबा.</translation>
 <translation id="6043994281159824495">आता साइन आउट करा</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
-<translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
 <translation id="4625920103690741805">फिरवणे लॉक केले (बदलण्यासाठी येथे टॅप करा)</translation>
 <translation id="3799026279081545374">आपल्याकडे खराब चार्जर असू शकतो. आपण यूएस मध्ये रहात असल्यास, कृपया मदत आणि दुसरा चार्जर प्राप्त करण्यासाठी 866-628-1371 वर कॉल करा. आपण यूके मध्ये रहात असल्यास, कृपया 0800-026-0613 वर कॉल करा. आपण आयर्लंडमध्ये रहात असल्यास, कृपया 1-800-832-664 वर कॉल करा. आपण कॅनडामध्ये रहात असल्यास, कृपया 866-628-1372 वर कॉल करा. आपण ऑस्ट्रेलियामध्ये रहात असल्यास, कृपया 1-800-067-460 वर कॉल करा.</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
 <translation id="5871632337994001636">डिव्हाइस व्यवस्थापित करा...</translation>
 <translation id="785750925697875037">मोबाइल खाते पहा</translation>
-<translation id="153454903766751181">सेल्युलर मोडेम आरंभ करत आहे...</translation>
 <translation id="4628814525959230255">Hangouts द्वारे <ph name="HELPER_NAME"/> सह आपल्या स्क्रीनचे सामायिकरण नियंत्रण.</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करा</translation>
 <translation id="939252827960237676">स्क्रीनशॉट जतन करण्यात अयशस्वी</translation>
@@ -60,8 +57,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">अद्यतनासाठी पुनर्प्रारंभ करा</translation>
 <translation id="2268813581635650749">सर्व साइन आउट करा</translation>
-<translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
-<translation id="7320906967354320621">निष्क्रिय</translation>
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="3294437725009624529">अतिथी</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट सानुकूलित करा...</translation>
@@ -70,13 +65,12 @@
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>
 <translation id="5238774010593222950">दुसर्‍या खात्यावर साइन इन करू शकत नाही.</translation>
 <translation id="1723752762323179280">सत्रातून निर्गमन करत आहे</translation>
+<translation id="1426410128494586442">होय</translation>
 <translation id="7170041865419449892">परिक्षेत्राबाहेर</translation>
-<translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
 <translation id="2544853746127077729">प्रमाणीकरण प्रमाणपत्र नेटवर्कद्वारे नाकारले</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">कॉन्फिगरेशन</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="4957722034734105353">अधिक जाणून घ्या...</translation>
 <translation id="2964193600955408481">Wi-Fi अक्षम करा</translation>
@@ -85,7 +79,6 @@
 <translation id="2509468283778169019">CAPS LOCK सुरु आहे</translation>
 <translation id="3892641579809465218">अंतर्गत डिस्प्ले</translation>
 <translation id="7823564328645135659">आपली सेटिंग्ज समक्रमित केल्यानंतर भाषा &quot;<ph name="FROM_LOCALE"/>&quot; मधून &quot;<ph name="TO_LOCALE"/>&quot; मध्ये बदलली आहे.</translation>
-<translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="3606978283550408104">ब्रेल प्रदर्शन कनेक्ट केले.</translation>
 <translation id="8654520615680304441">Wi-Fi चालू करा...</translation>
 <translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@
 <translation id="5825747213122829519">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID"/> मध्ये बदलली आहे.
 स्विच करण्यासाठी Shift + Alt दाबा.</translation>
 <translation id="2562916301614567480">खाजगी नेटवर्क</translation>
-<translation id="6549021752953852991">कोणतेही सेल्युलर नेटवर्क उपलब्ध नाही</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">नाही</translation>
 <translation id="4379753398862151997">प्रिय मॉनिटर, हे आपल्या दरम्यान कार्य करत नाही. (तो मॉनिटर समर्थित नाही)</translation>
 <translation id="6426039856985689743">मोबाइल डेटा अक्षम करा</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट घेतला</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
-<translation id="5271016907025319479">VPN कॉन्फिगर केलेले नाही.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">स्क्रीनशॉट घेण्याची क्षमता आपल्या प्रशासकाद्वारे अक्षम केली गेली आहे.</translation>
 <translation id="372094107052732682">बाहेर पडण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
@@ -118,10 +110,7 @@
 <translation id="2614835198358683673">आपले Chromebook चालू असताना ते चार्ज होऊ शकत नाही. अधिकृत चार्जर वापरण्याचा विचार करा.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4442424173763614572">DNS लुकअप अयश्सवी</translation>
-<translation id="7874779702599364982">सेल्यूलर नेटवर्कसाठी शोधत आहे...</translation>
-<translation id="583281660410589416">अज्ञात</translation>
 <translation id="1383876407941801731">शोधा</translation>
-<translation id="3901991538546252627"><ph name="NAME"/> वर कनेक्ट करीत आहे</translation>
 <translation id="2204305834655267233">नेटवर्क माहिती</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">अतिथी निर्गमन करा</translation>
@@ -131,7 +120,6 @@
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र स्थानिकपणे नाकारले</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>
-<translation id="7049357003967926684">संघटना</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="2372145515558759244">अ‍ॅप्स समक्रमित करत आहे...</translation>
 <translation id="7256405249507348194">अपरिचित त्रुटी: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@
 <translation id="2894654529758326923">माहिती</translation>
 <translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> बाकी पूर्ण होण्यात</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
 <translation id="6312403991423642364">अज्ञात नेटवर्क त्रुटी</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> सक्रिय करत आहे</translation>
 <translation id="4527045527269911712">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
@@ -153,24 +139,20 @@
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> वर मिरर करत आहे</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
+<translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">लॉक करा</translation>
 <translation id="2805756323405976993">अनुप्रयोग</translation>
-<translation id="1512064327686280138">सक्रियन अयशस्वी</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>': नेटवर्कशी कनेक्ट करण्यात अयशस्वी. <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi बंद आहे.</translation>
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="3433830597744061105">खाती व्यवस्थापित करा</translation>
 <translation id="2966449113954629791">आपण आपली मोबाईल डेटा सूट वापरली असू शकते. अधिक डेटा विकत घेण्यासाठी <ph name="NAME"/> सक्रियकरण पोर्टलला भेट द्या.</translation>
 <translation id="742594950370306541">कॅमेरा वापरात आहे.</translation>
-<translation id="8132793192354020517"><ph name="NAME"/> शी कनेक्ट केलेले</translation>
 <translation id="7052914147756339792">वॉलपेपर सेट करा...</translation>
-<translation id="8678698760965522072">ऑनलाइन राज्य</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">अंतर्गत त्रुटी</translation>
 <translation id="3019353588588144572">बॅटरी पूर्णपणे चार्ज होईपर्यंत उर्वरित वेळ, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
-<translation id="7005812687360380971">अयशस्वी</translation>
 <translation id="882279321799040148">पाहण्यासाठी क्लिक करा</translation>
 <translation id="1753067873202720523">आपले Chromebook चालू असताना ते शुल्क आकारु शकत नाही.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> <ph name="SPECIFIED_RESOLUTION"/> ला समर्थन देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION"/> मध्ये बदलले</translation>
@@ -184,7 +166,6 @@
 <translation id="225680501294068881">डिव्हाइसेससाठी स्कॅन करत आहे...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">मायक्रोफोन (अंतर्गत)</translation>
-<translation id="4448844063988177157">Wi-Fi नेटवर्कचा शोधत आहे...</translation>
 <translation id="8401662262483418323">'<ph name="NAME"/>' शी कनेक्ट करण्यात अयशस्वी: <ph name="DETAILS"/>
 सर्व्हर संदेश: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">एक त्रुटी आली आहे</translation>
@@ -193,7 +174,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> हे <ph name="DOMAIN"/> द्वारे व्यवस्थापित कलेले एक सावर्जनिक सत्र आहे</translation>
 <translation id="9044646465488564462">नेटवर्कशी कनेक्ट करण्यात अयशस्वी: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
-<translation id="8454013096329229812">Wi-Fi चालू आहे.</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
 <translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शविली असल्याची पुष्टी करा: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे.</translation>
@@ -205,7 +185,6 @@
 <translation id="112308213915226829">शेल्फ स्वयं लपवा</translation>
 <translation id="6732801395666424405">लोड न झालेली प्रमाणपत्रे</translation>
 <translation id="7573962313813535744">डॉक केलेला मोड</translation>
-<translation id="8927026611342028580">विनंती केलेले कनेक्ट करा</translation>
 <translation id="8300849813060516376">OTASP बिघडले</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> फाईल(ली) समक्रमित करीत आहे</translation>
@@ -214,7 +193,6 @@
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
 <translation id="6248847161401822652">बाहेर पडण्यासाठी Control Shift Q दोनदा दाबा.</translation>
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे आणि चार्ज होत आहे.</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: सक्रिय करत आहे...</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="5947494881799873997">परत करा</translation>
@@ -225,7 +203,6 @@
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="158849752021629804">मुख्यपृष्ठ नेटवर्क आवश्यक</translation>
 <translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर हा पिन प्रविष्ट करा: <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP लुकअप अयशस्वी</translation>
 <translation id="2819276065543622893">आता आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="5507786745520522457">मोबाइल डेटा सेट करा</translation>
@@ -234,7 +211,6 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
 <translation id="8372369524088641025">खराब WEP की</translation>
-<translation id="6636709850131805001">अपरिचित राज्य</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT"/></translation>
@@ -247,7 +223,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> शिल्‍लक</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="520760366042891468">Hangouts द्वारे आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
-<translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
 <translation id="4015692727874266537">दुसऱ्या खात्यात साइन इन करा...</translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -256,5 +231,4 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">वापरकर्तानाव/संकेतशब्द चुकीचा किंवा EAP-प्रमाणीकरण अयशस्वी</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> कडून SMS</translation>
-<translation id="1244147615850840081">कॅरियर</translation>
 </translationbundle>

@@ -40,17 +40,16 @@
 <translation id="473775607612524610">업데이트</translation>
 <translation id="8627706565932943526">동기화 오류</translation>
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
-<translation id="4043215103217793252">북마크 페이지 수정</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> 항상 번역</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="8503813439785031346">사용자이름</translation>
 <translation id="4619298195800598081">새 탭에서 원본 이미지 열기</translation>
+<translation id="3254409185687681395">페이지 북마크</translation>
 <translation id="907015151729920253">스마트 카드</translation>
 <translation id="3063601790762993062">동영상 저장</translation>
 <translation id="6042308850641462728">더보기</translation>
 <translation id="7267430310003164111">Google Play 스토어에서 앱을 다운로드할지 묻습니다. 앱 이름: <ph name="APP_NAME"/>, 앱 평점: <ph name="APP_RATING"/></translation>
-<translation id="303955801043931176">탭 닫음</translation>
 <translation id="4148957013307229264">설치 중...</translation>
 <translation id="3992315671621218278">링크 저장</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE"/>로 되어 있습니다. <ph name="TARGET_LANGUAGE"/>로 번역하시겠습니까?</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">공유 방법: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="969096075394517431">언어 변경</translation>
-<translation id="5556459405103347317">새로고침</translation>
 <translation id="5032574515228824816">프롬프트</translation>
-<translation id="4847896847259487518">북마크 페이지</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="8310344678080805313">일반 탭</translation>
 <translation id="6277522088822131679">페이지를 인쇄하는 중에 문제가 발생했습니다. 다시 시도해 주세요.</translation>

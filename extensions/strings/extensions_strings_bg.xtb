@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="8804398419035066391">Комуникация със съдействащи уебсайтове</translation>
 <translation id="7809034755304591547">Разширението <ph name="EXTENSION_NAME"/> (идентификационен номер „<ph name="EXTENSION_ID"/>“) е блокирано от администратора.</translation>
+<translation id="1005274289863221750">Използване на микрофона и камерата ви</translation>
 <translation id="2857834222104759979">Файлът на манифеста е невалиден.</translation>
-<translation id="8978038008714088448">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Достъп до USB устройството</translation>
 <translation id="6384275966486438344">Променете настройките си за търсене на: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">Това разширение забавя работата на <ph name="PRODUCT_NAME"/>. Трябва да деактивирате <ph name="PRODUCT_NAME"/>, за да възстановите ефективността на браузъра.</translation>
+<translation id="1033780634303702874">Достъп до серийните ви устройства</translation>
+<translation id="6241530762627360640">Да осъществява достъп до информацията за сдвоените със системата ви устройства с Bluetooth и да открива тези, които са наблизо.</translation>
 <translation id="5911798608827489036">Обмен на данни с всеки компютър в локалната мрежа или интернет</translation>
 <translation id="4719685943208231314">Достъп до USB устройството от <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не можа да се зареди фоновият скрипт „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
+<translation id="9131487537093447019">Да обменя съобщения с устройства с Bluetooth.</translation>
+<translation id="8198425243160395623">Достъп до USB устройствата ви</translation>
 <translation id="8597109877291678953">Обмен на данни с компютъра с име <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Разширението включва файла с ключ „<ph name="KEY_PATH"/>“. Вероятно не искате да направите това.</translation>
 <translation id="2350172092385603347">Беше използвана локализация, но променливата „default_locale“ не беше посочена в манифеста.</translation>
+<translation id="3759933321830434300">Блокиране на части от уеб страници</translation>
 <translation id="8058376558882514200">Достъп до USB устройството <ph name="PRODUCT_NAME"/> от <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">Достъп до USB устройства</translation>
 <translation id="149347756975725155">Не можа да се зареди иконата на разширението „<ph name="ICON"/>“.</translation>
+<translation id="8825366169884721447">Това разширение не успя да промени заглавката „<ph name="HEADER_NAME"/>“ на заявка от мрежата, защото промяната влезе в конфликт с друго разширение (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="388442998277590542">Страницата за опции „<ph name="OPTIONS_PAGE"/>“ не можа да се зареди.</translation>
 <translation id="6344170822609224263">Достъп до списъка с мрежови връзки</translation>
+<translation id="2616366145935564096">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Обмен на данни с компютрите с име: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Обмен на данни с всеки компютър в домейна <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">Достъп до входните ви устройства</translation>
+<translation id="8670869118777164560">Това разширение не успя да пренасочи заявка от мрежата към <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, защото друго разширение (<ph name="EXTENSION_NAME"/>) я пренасочи към <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="6840444547062817500">Това разширение се презарежда твърде често.</translation>
+<translation id="8047248493720652249">Това разширение не успя да наименува изтеглянето „<ph name="ATTEMPTED_FILENAME"/>“, защото друго разширение (<ph name="EXTENSION_NAME"/>) определи различно файлово име – „<ph name="ACTUAL_FILENAME"/>“.</translation>
 <translation id="4968399700653439437">Обмен на данни с всеки компютър в домейните: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">Изглед в мрежата: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">всички <ph name="WEBSITE_1"/> сайта</translation>
 <translation id="8662911384982557515">Промяна на началната ви страница на <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
+<translation id="27822970480436970">Това разширение не успя да промени заявка от мрежата, защото промяната влезе в конфликт с друго разширение.</translation>
+<translation id="2241053333139545397">Четене и промяна на данните ви в няколко уебсайта.</translation>
 <translation id="8602184400052594090">Файлът на манифеста липсва или не може да бъде прочетен.</translation>
+<translation id="4883436287898674711">Всички <ph name="WEBSITE_1"/> сайта</translation>
+<translation id="9111791539553342076">Това разширение не успя да промени заглавката на отговор „<ph name="HEADER_NAME"/>“ на заявка от мрежата, защото промяната влезе в конфликт с друго разширение (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">Използване на камерата ви</translation>
+<translation id="8341840687457896278">Това разширение не успя да предостави идентификационни данни за заявка от мрежата, защото друго разширение (<ph name="EXTENSION_NAME"/>) посочи различни данни.</translation>
+<translation id="5627523580512561598">разширението „<ph name="EXTENSION_NAME"/>“</translation>
 <translation id="7893008570150657497">Да осъществява достъп до снимки, музика и друга медия от компютъра ви.</translation>
+<translation id="4761104368405085019">Използване на микрофона ви</translation>
 <translation id="7217838517480956708">Администраторът на тази машина изисква разширението <ph name="EXTENSION_NAME"/> да е инсталирано. То не може да бъде премахнато или променено.</translation>
 <translation id="7154130902455071009">Промяна на началната ви страница на <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Не можа да се зареди фоновата страница „<ph name="BACKGROUND_PAGE"/>“.</translation>
-<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

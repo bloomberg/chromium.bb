@@ -915,7 +915,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="1305864769064309495">En ordliste som tildeler nettadresser boolske merker som spesifiserer om tilgang til verten skal tillates («true») eller blokkeres («false»).
 
           Denne regelen er bare for intern bruk i Chrome.</translation>
-<translation id="5586942249556966598">Ikke gjør noe</translation>
+<translation id="5586942249556966598">Gjør ingenting</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>

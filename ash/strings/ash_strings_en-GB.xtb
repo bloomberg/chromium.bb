@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">Add an account for <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Rotation on (Tap here to change)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> and <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">Portal state</translation>
 <translation id="30155388420722288">Overflow Button</translation>
+<translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth enabled</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> was rotated to <ph name="ROTATION"/></translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">HTTP get failed</translation>
 <translation id="2297568595583585744">Status tray</translation>
 <translation id="1661867754829461514">PIN missing</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Connecting...</translation>
 <translation id="2248649616066688669">You can keep using your Chromebook while it's connected to an external display, even with the lid closed.</translation>
 <translation id="40400351611212369">Network Activation Error</translation>
 <translation id="4237016987259239829">Network Connection Error</translation>
@@ -46,13 +45,11 @@
 Press Shift + Alt to switch.</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
-<translation id="3846575436967432996">No network information available</translation>
 <translation id="4625920103690741805">Rotation locked (Tap here to change)</translation>
 <translation id="3799026279081545374">You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.</translation>
 <translation id="3891340733213178823">Press Ctrl+Shift+Q twice to sign out.</translation>
 <translation id="5871632337994001636">Manage devices...</translation>
 <translation id="785750925697875037">View mobile account</translation>
-<translation id="153454903766751181">Initialising mobile modem...</translation>
 <translation id="4628814525959230255">Sharing control of your screen with <ph name="HELPER_NAME"/> via Hangouts.</translation>
 <translation id="7864539943188674973">Disable Bluetooth</translation>
 <translation id="939252827960237676">Failed to save screenshot</translation>
@@ -60,8 +57,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Restart to update</translation>
 <translation id="2268813581635650749">Sign out all</translation>
-<translation id="735745346212279324">VPN disconnected</translation>
-<translation id="7320906967354320621">Idle</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
@@ -70,13 +65,12 @@ Press Shift + Alt to switch.</translation>
 <translation id="8676770494376880701">Low-power charger connected</translation>
 <translation id="5238774010593222950">Can't sign in to another account.</translation>
 <translation id="1723752762323179280">Exiting Session</translation>
+<translation id="1426410128494586442">Yes</translation>
 <translation id="7170041865419449892">Out of range</translation>
-<translation id="4804818685124855865">Disconnect</translation>
 <translation id="2544853746127077729">Authentication certificate rejected by network</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">Configuration</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="4957722034734105353">Learn more...</translation>
 <translation id="2964193600955408481">Disable Wi-Fi</translation>
@@ -85,7 +79,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="7823564328645135659">The language has changed from &quot;<ph name="FROM_LOCALE"/>&quot; to &quot;<ph name="TO_LOCALE"/>&quot; after syncing your settings.</translation>
-<translation id="3368922792935385530">Connected</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="8654520615680304441">Turn Wi-Fi on...</translation>
 <translation id="6650933572246256093">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@ Press Shift + Alt to switch.</translation>
 <translation id="5825747213122829519">Your input method has changed to <ph name="INPUT_METHOD_ID"/>.
 Press Shift + Alt to switch.</translation>
 <translation id="2562916301614567480">Private Network</translation>
-<translation id="6549021752953852991">No mobile network available</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">No</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us. (That monitor is not supported)</translation>
 <translation id="6426039856985689743">Disable mobile data</translation>
 <translation id="3087734570205094154">Bottom</translation>
 <translation id="3742055079367172538">Screenshot taken</translation>
 <translation id="8878886163241303700">Extending screen</translation>
-<translation id="5271016907025319479">VPN is not configured.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">The ability to take screenshots has been disabled by your administrator.</translation>
 <translation id="372094107052732682">Press Ctrl+Shift+Q twice to exit.</translation>
@@ -118,10 +110,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="2614835198358683673">Your Chromebook may not charge while it is turned on. Consider using the official charger.</translation>
 <translation id="4430019312045809116">volume</translation>
 <translation id="4442424173763614572">DNS lookup failed</translation>
-<translation id="7874779702599364982">Searching for cellular networks...</translation>
-<translation id="583281660410589416">Unknown</translation>
 <translation id="1383876407941801731">Search</translation>
-<translation id="3901991538546252627">Connecting to <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Network Info</translation>
 <translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Exit guest</translation>
@@ -131,7 +120,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1773212559869067373">Authentication certificate rejected locally</translation>
 <translation id="8528322925433439945">Mobile ...</translation>
-<translation id="7049357003967926684">Association</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="2372145515558759244">Syncing apps...</translation>
 <translation id="7256405249507348194">Unrecognised error: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@ Press Shift + Alt to switch.</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="7925247922861151263">AAA check failed</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> until full</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Unknown network error</translation>
 <translation id="1467432559032391204">Left</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830">Activating <ph name="NAME"/></translation>
 <translation id="4527045527269911712">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
@@ -153,24 +139,20 @@ Press Shift + Alt to switch.</translation>
 <translation id="252373100621549798">Unknown Display</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
+<translation id="2761704814324807722">Status tray, time <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lock</translation>
 <translation id="2805756323405976993">Apps</translation>
-<translation id="1512064327686280138">Activation failure</translation>
 <translation id="5097002363526479830">Failed to connect to the network '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi is turned off.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3433830597744061105">Manage accounts</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME"/> activation portal to buy more data.</translation>
 <translation id="742594950370306541">Camera is in use.</translation>
-<translation id="8132793192354020517">Connected to <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Set wallpaper...</translation>
-<translation id="8678698760965522072">Online state</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Internal error</translation>
 <translation id="3019353588588144572">Time remaining until battery is fully charged, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
-<translation id="7005812687360380971">Failure</translation>
 <translation id="882279321799040148">Click to view</translation>
 <translation id="1753067873202720523">Your Chromebook may not charge while it is turned on.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> doesn't support <ph name="SPECIFIED_RESOLUTION"/>. The resolution was changed to <ph name="FALLBACK_RESOLUTION"/></translation>
@@ -184,7 +166,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="225680501294068881">Scanning for devices...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">Microphone (Internal)</translation>
-<translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
 <translation id="8401662262483418323">Failed to connect to '<ph name="NAME"/>': <ph name="DETAILS"/>
 Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">An error occurred</translation>
@@ -193,7 +174,6 @@ Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> is a public session managed by <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Failed to connect to network: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Exit session</translation>
-<translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
 <translation id="2429753432712299108">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE"/>% full.</translation>
@@ -205,7 +185,6 @@ Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="112308213915226829">Autohide shelf</translation>
 <translation id="6732801395666424405">Certificates not loaded</translation>
 <translation id="7573962313813535744">Docked mode</translation>
-<translation id="8927026611342028580">Connect Requested</translation>
 <translation id="8300849813060516376">OTASP failed</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="8660803626959853127">Syncing <ph name="COUNT"/> file(s)</translation>
@@ -214,7 +193,6 @@ Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="639644700271529076">CAPS LOCK is off</translation>
 <translation id="6248847161401822652">Press Control Shift Q twice to exit.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE"/>% full and charging.</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Activating...</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
 <translation id="615957422585914272">Show on-screen keyboard</translation>
 <translation id="5947494881799873997">Revert</translation>
@@ -225,7 +203,6 @@ Press Search or Shift to cancel.</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="158849752021629804">Need home network</translation>
 <translation id="1013923882670373915">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP look-up failed</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
 <translation id="5507786745520522457">Set up mobile data</translation>
@@ -234,7 +211,6 @@ Press Search or Shift to cancel.</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
-<translation id="6636709850131805001">Unrecognised state</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Change back to &quot;<ph name="FROM_LOCALE"/>&quot; (requires restart)</translation>
 <translation id="8103386449138765447">SMS messages: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> left</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="520760366042891468">Sharing control of your screen via Hangouts.</translation>
-<translation id="8000066093800657092">No network</translation>
 <translation id="4015692727874266537">Sign in another account...</translation>
 <translation id="6911468394164995108">Join other ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
 <translation id="6359806961507272919">SMS from <ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">Operator</translation>
 </translationbundle>

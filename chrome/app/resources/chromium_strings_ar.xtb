@@ -9,6 +9,7 @@
 <translation id="2615699638672665509">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Chromium نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="1550579416447684632">‏تشغيل تطبيقات Chromium</translation>
+<translation id="2732467638532545152">‏يشغل جهاز الكمبيوتر إصدارًا قديمًا من Microsoft Windows لا يمكنها معالجة شهادة أمان موقع الويب. وبسبب هذه المشكلة، لا يمكن لـ Chromium أن يخبر ما إذا كانت الشهادة جاءت من <ph name="SITE"/> أو من شخص ما على الشبكة يتظاهر بأنه <ph name="SITE"/>. يُرجى تحديث جهاز الكمبيوتر إلى الإصدار الأكثر حداثة من Windows.</translation>
 <translation id="4267347018362241535">‏مشغل تطبيقات Chromium عبارة عن نظام أساسي مستقل لتطبيقات Chromium.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="6613594504749178791">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Chromium.</translation>
@@ -19,7 +20,6 @@
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
 <translation id="1881322772814446296">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME"/>. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chromium بشكل مستقل. <ph name="LEARN_MORE"/></translation>
-<translation id="455521026202544465">‏نشكرك لتجربة Chromium الجديد. يحتاج Chromium إلى إعادة التشغيل لضمان أنك قمت بحفظ أي أعمال مفتوحة قبل الاستمرار.</translation>
 <translation id="731644333568559921">‏تحديث ن&amp;ظام التشغيل Chromium</translation>
 <translation id="7421823331379285070">‏يتطلب Chromium نظام التشغيل Windows XP أو نظام تشغيل أحدث. قد لا تعمل بعض الميزات.</translation>
 <translation id="7023267510504981715">‏يتعيّن عليك ترقية Chromium حتى يتسنى لك استخدام محفظة Google [<ph name="ERROR_CODE"/>].</translation>
@@ -27,11 +27,13 @@
 <translation id="7419987137528340081">‏إذا كنت تفضل الإبقاء على بيانات Chromium الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chromium جديد للمستخدم <ph name="USER_NAME"/>.</translation>
 <translation id="5427571867875391349">‏تعيين Chromium المتصفح الافتراضي</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME"/>...</translation>
+<translation id="3883381313049582448">‏استخدام كلمة المرور التي تم إنشاؤها بواسطة Chromium</translation>
 <translation id="3549345495227188780">‏البدء في استخدام نظام التشغيل Chromium</translation>
 <translation id="1668054258064581266">‏بعد إزالة حسابك من Chromium، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
 <translation id="6953661834318318668">‏شريط أدوات Chromium</translation>
 <translation id="4285930937574705105">‏أخفقت عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
+<translation id="8987477933582888019">متصفح الويب</translation>
 <translation id="2886012850691518054">‏اختياري: ساعد في تحسين Chromium عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="580822234363523061">‏انتقل إلى
           قائمة Chromium &gt;
@@ -43,12 +45,12 @@
           وتأكد من ضبط التهيئة على &quot;بلا خادم وكيل&quot; أو &quot;مباشر.&quot;</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">‏تعذر على Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
-<translation id="1989424089625731201">‏لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الشهادة التي قدمها الخادم تحتوي على أخطاء. يتعذر على Chromium استخدام شهادة تحتوي على أخطاء، ويتعذر عليه التحقق من هوية الموقع الذي حاولت الاتصال به.</translation>
 <translation id="3103660991484857065">‏أخفقت أداة التثبيت في فك ضغط الأرشيف. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="7064610482057367130">‏لم يتم العثور على تثبيت Chromium لإجراء التحديث.</translation>
 <translation id="872034308864968620">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="459535195905078186">‏تطبيقات Chromium</translation>
 <translation id="5109068449432240255">‏نعم، الخروج من Chromium</translation>
+<translation id="8134284582177628525">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME"/>، فأضف نفسك إلى Chromium للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
 <translation id="1480489203462860648">يمكنك تجريبه، إنه مثبت من قبل</translation>
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
 <translation id="4831257561365056138">‏إلغاء تثبيت مشغل تطبيقات Chromium</translation>
@@ -57,13 +59,12 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
 <translation id="7138853919861947730">‏قد يستخدم Chromium خدمات الويب لتحسين تجربة التصفح لديك.</translation>
-<translation id="934663725767849097">‏جرب الطريقة الجديدة لاستخدام Chromium مع حسابك في Google وعلى أجهزة الكمبيوتر المشتركة.</translation>
 <translation id="3849925841547750267">‏عذرًا، فإن إعدادات موزيلا فَيَرفُكس غير متاحة أثناء تشغيل هذا المتصفح. لاستيراد هذه الإعدادات إلى Chromium، قم بحفظ عملك وإغلاق جميع نوافذ فَيَرفُكس. بعد ذلك انقر على &quot;استمرار&quot;.</translation>
-<translation id="7771626876550251690">‏في هذه الحالة، يكون العنوان الوارد في الشهادة لا يطابق عنوان موقع الويب الذي يحاول المتصفح الانتقال إليه. ويكون أحد الأسباب المحتملة لذلك أن تكون اتصالاتك يتم اعتراضها بواسطة أحد المخترقين والذي يقدم شهادة لموقع ويب مختلف، والتي قد تتسبب في عدم التطابق. وأحد الأسباب المحتملة الأخرى أن يكون تم إعداد الخادم ليعرض الشهادة ذاتها لعدة مواقع ويب، بما في ذلك موقع الويب الذي تحاول الانتقال إليه، برغم أن الشهادة غير صالحة لمواقع الويب هذه. يمكن أن يذكر Chromium أنك قد وصلت إلى &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; بالتأكيد، ولكنه لا يمكنه التأكد أنه هو الموقع ذاته &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; والذي تقصد الوصول إليه. في حالة المتابعة، فإن Chromium لن يتحقق من أية أخطاء إضافية في الأسماء.</translation>
 <translation id="7027298027173928763">‏تعذر تحديث Chromium إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك إعادة تثبيت Chromium يدويًا.</translation>
 <translation id="8897323336392112261">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو النقر على زر الصفحة الرئيسية.</translation>
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
 <translation id="3190315855212034486">‏للأسف! تعطل Chromium. هل تريد إعادة التشغيل الآن؟</translation>
+<translation id="8843170958047978824">‏إزالة من Chromium</translation>
 <translation id="3068515742935458733">‏يمكنك المساعدة في تحسين Chromium عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK"/> إلى Google</translation>
 <translation id="734373864078049451">‏الويب والإشارات المرجعية وغيرها من عناصر Chromium توجد هنا.</translation>
 <translation id="3197823471738295152">جهازك محدّث.</translation>
@@ -81,6 +82,7 @@
 <translation id="7463979740390522693">‏Chromium - الإشعارات (<ph name="QUANTITY"/> غير مقروءة)</translation>
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="5823381412099532241">‏تعذر تحديث Chromium إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chromium.</translation>
+<translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="9191268552238695869">‏ثبّت أحد المشرفين Chromium على هذا النظام، وهو متاح لجميع المستخدمين. سيحل تثبيت Chromium على مستوى النظام محل التثبيت على مستوى المستخدم الآن.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">‏الرجاء إغلاق جميع نوافذ Chromium وإعادة المحاولة.</translation>
@@ -90,13 +92,14 @@
 <translation id="750717762378961310">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chromium حظره.</translation>
 <translation id="6944967875980567883">‏الوحدات المحملة في Chromium</translation>
 <translation id="6899795326977034905">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chromium الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
-<translation id="118298050220780080">‏لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ولكن الخادم قدم شهادة تم إصدارها بواسطة كيان غير موثوق فيه من قِبل نظام تشغيل الكمبيوتر. قد يعني ذلك أن الخادم قد أنشأ بيانات اعتماد الأمان الخاصة به، والتي لا يمكن لـ Chromium الاعتماد عليها للحصول على معلومات الهوية أو ربما أن أحد المخترقين يحاول اعتراض اتصالاتك.</translation>
 <translation id="3046695367536568084">‏يجب أن تسجّل الدخول إلى Chromium لاستخدام التطبيقات. ويتيح هذا مزامنة Chromium لتطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك، فضلاً عن الإعدادات الأخرى عبر الأجهزة.</translation>
 <translation id="3296368748942286671">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Chromium</translation>
 <translation id="473775607612524610">تحديث</translation>
+<translation id="5466153949126434691">‏يجري تحديث Chromium تلقائيًا بحيث يكون لديك أحدث إصدار. عند اكتمال هذا التحميل، ستتم إعادة تشغيل Chromium وستبدأ العمل.</translation>
 <translation id="7707841053049645517">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="3656661827369545115">‏تشغيل Chromium تلقائيًا عندما يتم تشغيل جهاز الكمبيوتر</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
+<translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN"/>؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="6055895534982063517">‏يتوفر إصدار جديد من Chromium، وهو أسرع بكثير من ذي قبل.</translation>
 <translation id="8821041990367117597">‏تعذر على Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="4677944499843243528">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Chromium (<ph name="PROCESS_ID"/>) على جهاز كمبيوتر آخر (<ph name="HOST_NAME"/>). وقد تمّ قفل الملف الشخصي من جانب Chromium لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chromium مجددًا.</translation>
@@ -108,6 +111,7 @@
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="1869480248812203386">‏يمكنك المساعدة في جعل Chromium أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
+<translation id="5094747076828555589">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN"/>؛ بل إنه شهادة أمان غير موثوقة من قبل Chromium. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>
@@ -131,6 +135,7 @@
 <translation id="3487263810738775861">‏غيّرت إحدى الإضافات الصفحة التي تظهر عند تشغيل Chromium.</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="6248213926982192922">‏جعل Chromium المتصفح الافتراضي</translation>
+<translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="6309712487085796862">‏يستخدم Chromium الكاميرا.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
@@ -138,20 +143,18 @@
 <translation id="1745962126679160932">‏سيخزن Chromium معلوماتك في مكان آمن ولذلك لن تحتاج إلى كتابتها مرة أخرى، ولكن سيظل يلزمك التحقق من رمز الأمان في بطاقتك لإجراء عمليات دفع مستقبلية.</translation>
 <translation id="275588974610408078">‏تقارير الأعطال غير متاحة في Chromium.</translation>
 <translation id="5909170354645388250">‏لا يتم استخدامها في Chromium. عنصر نائب للاحتفاظ بخرائط الموارد في المزامنة. إنها تتوقع وسيطة واحدة: $1.</translation>
-<translation id="5805689092869152320">‏يتم تشغيل Chromium في الخلفية.</translation>
 <translation id="7937630085815544518">‏تم تسجيل دخولك إلى Chromium باعتبارك <ph name="USER_EMAIL_ADDRESS"/>. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
 <translation id="2685838254101182273">‏توقف تحديث Chromium ولم يعد متوافقًا مع هذا الإصدار من نظام التشغيل.</translation>
-<translation id="3223794808658970984">‏معاينة Chromium الجديد</translation>
 <translation id="3582788516608077514">‏جارٍ تحديث Chromium...</translation>
 <translation id="7223968959479464213">‏إدارة المهام - Chromium</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="6638567566961868659">‏ابحث عن الإشارات المرجعية في قائمة Chromium أو على شريط الإشارات المرجعية.</translation>
 <translation id="2673087257647337101">‏أوشك الانتهاء من التحديث! إعادة تشغيل Chromium لإنهاء التحديث.</translation>
-<translation id="4864451188650489141">‏يمكنك إضافة حسابات Google الأخرى وقفل Chromium أدناه.</translation>
 <translation id="1293235220023151515">‏تم العثور على عملية تثبيت متعارضة لـ Chromium على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="5398878173008909840">‏يتوفر إصدار جديد من Chromium.</translation>
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="5942520288919337908">‏تمت إضافة <ph name="EXTENSION_NAME"/> إلى Chromium.</translation>
+<translation id="549669000822060376">‏الرجاء الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
 <translation id="4559775032954821361">‏انتقل إلى
           قائمة Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -167,6 +170,7 @@
 
 قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chromium.</translation>
 <translation id="8907580949721785412">‏يحاول Chromium عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
+<translation id="1174473354587728743">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chromium بالطريقة التي تعجبك تمامًا.</translation>
 <translation id="9013087743919948559">‏إضافة إلى Chromium</translation>
 <translation id="6334986366598267305">‏الآن أصبح استخدام Chromium مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، فالرجاء إزالة Chromium وإعادة المحاولة.</translation>
@@ -179,17 +183,15 @@
 <translation id="130631256467250065">تسري التغييرات في المرة التالية التي تعيد فيها تشغيل الجهاز.</translation>
 <translation id="3244477511402911926">‏مركز إشعارات Chromium</translation>
 <translation id="1105130903706696483">‏لم يتم إيقاف تشغيل Chromium بشكل صحيح. لإعادة فتح الصفحات التي كانت مفتوحة، انقر على &quot;استعادة&quot;.</translation>
-<translation id="9214519575840037443">‏مقترحة من خلال Chromium</translation>
+<translation id="9197815481970649201">‏تم تسجيل دخولك الآن إلى Chromium</translation>
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
 <translation id="2966088006374919794">‏يحتاج Chromium إلى تشغيل تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. والرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">‏هل تريد من Chromium حفظ كلمة المرور؟</translation>
-<translation id="1231416733874080281">‏إظهار قائمة Chromium</translation>
 <translation id="6485906693002546646">‏أنت تستخدم <ph name="PROFILE_EMAIL"/> لمزامنة عناصرك في Chromium. لتحديث تفضيل المزامنة أو استخدام Chromium بدون حساب Google، يُرجى الانتقال إلى <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="5772805321386874569">‏(<ph name="BEGIN_BUTTON"/>إعادة تشغيل<ph name="END_BUTTON"/> Chromium مطلوبة)</translation>
 <translation id="1688750314291223739">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Chromium على أي كمبيوتر.</translation>
-<translation id="8865765905101981392">متصفح الإنترنت</translation>
 <translation id="8610831143142469229">‏اسمح للمتصفح Chromium بالدخول إلى الشبكة من خلال إعدادات الجدار الناري أو
         برنامج مكافحة الفيروسات.</translation>
 <translation id="6424492062988593837">‏لقد أصبح Chromium أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
@@ -198,13 +200,14 @@
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
 <translation id="3130323860337406239">‏يستخدم Chromium الميكروفون.</translation>
-<translation id="3249425904492147663">‏لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ولكن الخادم قدم شهادة منتهية الصلاحية. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة تم اختراقها منذ انتهاء صلاحيتها. يعني هذا أن Chromium لا يمكنه ضمان اتصالك بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="457845228957001925">‏معلومات مهمة بخصوص بياناتك في Chromium</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS"/>. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="7483335560992089831">‏لا يمكن تثبيت إصدار Chromium ذاته الذي يتم تشغيله حاليًا. الرجاء إغلاق Chromium وإعادة المحاولة.</translation>
+<translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN"/>؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="7641113255207688324">‏ليس Chromium متصفحك الافتراضي.</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
+<translation id="2847479871509788944">‏إزالة من Chromium</translation>
 <translation id="761356813943268536">‏يستخدم Chromium الكاميرا والميكروفون.</translation>
 <translation id="805745970029938373">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chromium والإضافات ومواقع الويب هنا.</translation>
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
@@ -221,22 +224,21 @@
 <translation id="2739631515503418643">‏هناك تنزيلات قيد التقدم حاليًا. هل تريد الخروج من Chromium وإلغاء التنزيلات؟</translation>
 <translation id="9013262824292842194">‏يتطلب Chromium نظام التشغيل Windows Vista أو Windows XP المزود بحزمة الخدمة SP2 أو الإصدارات الأحدث.</translation>
 <translation id="1967743265616885482">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Chromium.</translation>
+<translation id="7962572577636132072">‏يجري تحديث Chromium تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>
 <translation id="4224199872375172890">‏Chromium محدّث.</translation>
 <translation id="374481098568514319">‏يوجد على هذا الكمبيوتر إصدارًا أحدث من مكونات Chromium. الرجاء استخدام أداة تثبيت أحدث.</translation>
-<translation id="6240281849816458190">‏لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الخادم قدم شهادة لا تُعد صالحة حتى الآن. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة يمكن الوثوق بها أم لا. لا يمكن أن يضمن Chromium على نحو موثوق أنك تتصل بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;  وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="7318036098707714271">‏ملف التفضيلات تالف أو غير صالح.
 
 يتعذر على Chromium استعادة إعداداتك.</translation>
-<translation id="473845343586694349">‏أنت تعاين Chromium الجديد.</translation>
 <translation id="918373042641772655">‏سيؤدي فصل <ph name="USERNAME"/>إلى مسح السجّل والإشارات المرجعية والإعدادات و بيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK"/>لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">‏ إن Chromium هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة مذهلة. إنه سريع وثابت وسهل الاستخدام. يمكنك تصفح الويب بشكل أكثر أمانًا من خلال ميزات الحماية من البرامج الضارة والتصيّد الاحتيالي المدمجة في Chromium.</translation>
-<translation id="4019464536895378627">‏لقد حاولت الوصول إلى <ph name="DOMAIN"/> لكن الخادم قدم شهادة تم إصدارها بواسطة كيان غير موثوق فيه من قِبل Chromium. قد يعني ذلك أن الخادم قد أنشأ بيانات اعتماد الأمان الخاصة به، والتي لا يمكن لـ Chromium الاعتماد عليها للحصول على معلومات الهوية أو ربما أن أحد المخترقين يحاول اعتراض اتصالاتك.</translation>
 <translation id="4230135487732243613">‏هل ترغب في ربط بياناتك في Chromium بهذا الحساب؟</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>
 <translation id="7617377681829253106">‏Chromium أصبح أفضل</translation>
+<translation id="352783484088404971">‏إزالة من Chromium</translation>
 <translation id="442817494342774222">‏تمت تهيئة Chromium لتشغيله تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="8974095189086268230">‏أصبح نظام التشغيل Chromium متاحًا من خلال المزيد من <ph name="BEGIN_LINK_CROS_OSS"/>البرامج مفتوحة المصدر<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="313551035350905294">‏أنت تسجل الدخول بحساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME"/>. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر.</translation>
@@ -246,4 +248,5 @@
 <translation id="328888136576916638">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Chromium عن العمل.</translation>
 <translation id="2602806952220118310">‏Chromium - الإشعارات</translation>
 <translation id="5032989939245619637">‏حفظ التفاصيل في Chromium</translation>
+<translation id="8803635938069941624">‏بنود نظام تشغيل Chromium</translation>
 </translationbundle>

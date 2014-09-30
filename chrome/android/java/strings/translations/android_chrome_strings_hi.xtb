@@ -40,17 +40,16 @@
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="8627706565932943526">समन्वयन त्रुटि</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए संस्करण से अपडेट करना होगा.</translation>
-<translation id="4043215103217793252">बुकमार्क पृष्ठ संपादित करें</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> का हमेशा अनुवाद करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="5684874026226664614">ओह. इस पृष्ठ का अनुवाद नहीं किया जा सका.</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
 <translation id="4619298195800598081">मूल चित्र नए टैब में खोलें</translation>
+<translation id="3254409185687681395">इस पृष्ठ को बुकमार्क करें</translation>
 <translation id="907015151729920253">स्मार्ट कार्ड</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="7267430310003164111">Google Play स्टोर से ऐप्स प्राप्त करने का संकेत.  ऐप्स नाम: <ph name="APP_NAME"/>.  ऐप्स औसत रेटिंग: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">टैब बंद किया गया</translation>
 <translation id="4148957013307229264">इंस्‍टॉल हो रहा है...</translation>
 <translation id="3992315671621218278">लिंक सहेजें</translation>
 <translation id="8034522405403831421">यह पृष्ठ <ph name="SOURCE_LANGUAGE"/> में है. इसका <ph name="TARGET_LANGUAGE"/> में अनुवाद करें?</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560"><ph name="APPLICATION"/> के द्वारा साझा करें</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="969096075394517431">भाषाएं बदलें</translation>
-<translation id="5556459405103347317">पुन: लोड करें</translation>
 <translation id="5032574515228824816">शीघ्र</translation>
-<translation id="4847896847259487518">पृष्ठ को बुकमार्क करें</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
 <translation id="6277522088822131679">पृष्ठ को प्रिंट करने में समस्या थी. कृपया पुनः प्रयास करें.</translation>

@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">Føj en konto til <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Rotation er slået til (tryk her for at ændre indstillingen)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">Tilstand for portal</translation>
 <translation id="30155388420722288">Knappen Overflow</translation>
+<translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> er roteret til <ph name="ROTATION"/></translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">Det lykkedes ikke at hente HTTP</translation>
 <translation id="2297568595583585744">Statusbakke</translation>
 <translation id="1661867754829461514">Pinkode mangler</translation>
-<translation id="4508225577814909926"><ph name="NAME"/> : Opretter forbindelse...</translation>
 <translation id="2248649616066688669">Du kan fortsætte med at bruge din Chromebook, mens den er sluttet til en ekstern skærm, også selvom låget er klappet ned.</translation>
 <translation id="40400351611212369">Fejl under aktivering af netværk</translation>
 <translation id="4237016987259239829">Netværkforbindelsesfejl</translation>
@@ -46,13 +45,11 @@
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6043994281159824495">Log ud nu</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
-<translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
 <translation id="4625920103690741805">Rotation er låst (tryk her for at ændre indstillingen)</translation>
 <translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="5871632337994001636">Administrer enheder...</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
-<translation id="153454903766751181">Initialiserer mobilmodem...</translation>
 <translation id="4628814525959230255">Deler kontrollen over din skærm med <ph name="HELPER_NAME"/> via Hangouts.</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
@@ -60,8 +57,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
-<translation id="735745346212279324">VPN afbrudt</translation>
-<translation id="7320906967354320621">Ikke aktiv</translation>
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
@@ -70,13 +65,12 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
 <translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
 <translation id="1723752762323179280">Afslutter session</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="7170041865419449892">Intet signal</translation>
-<translation id="4804818685124855865">Afbryd</translation>
 <translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">Konfiguration</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="4957722034734105353">Flere oplysninger...</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
@@ -85,7 +79,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
 <translation id="3892641579809465218">Intern skærm</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
-<translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
 <translation id="6650933572246256093">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
-<translation id="6549021752953852991">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">Nej</translation>
 <translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
 <translation id="3087734570205094154">Bund</translation>
 <translation id="3742055079367172538">Skærmbilledet blev taget</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
-<translation id="5271016907025319479">VPN er ikke konfigureret.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Din administrator har deaktiveret muligheden for at tage skærmbilleder.</translation>
 <translation id="372094107052732682">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
@@ -118,10 +110,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2614835198358683673">Din Chromebook oplades muligvis ikke, når den er tændt. Anvend eventuelt den officielle oplader.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4442424173763614572">DNS-opslag mislykkedes</translation>
-<translation id="7874779702599364982">Søger efter mobilnetværk...</translation>
-<translation id="583281660410589416">Ukendt</translation>
 <translation id="1383876407941801731">Søg</translation>
-<translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Netværksoplysninger</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Afslut gæstesession</translation>
@@ -131,7 +120,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="1773212559869067373">Godkendelsescertifikatet blev afvist lokalt</translation>
 <translation id="8528322925433439945">Mobil...</translation>
-<translation id="7049357003967926684">Tilknytning</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="2372145515558759244">Synkroniserer apps...</translation>
 <translation id="7256405249507348194">Ukendt fejl: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2894654529758326923">Oplysninger</translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Ukendt netværksfejl</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="5543001071567407895">sms</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
 <translation id="4527045527269911712">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
@@ -153,24 +139,20 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
+<translation id="2761704814324807722">Statusbakke, tid <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="2805756323405976993">Apps</translation>
-<translation id="1512064327686280138">Aktiveringsfejl:</translation>
 <translation id="5097002363526479830">Der kunne ikke oprettes forbindelse til netværket &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="3433830597744061105">Administrer konti</translation>
 <translation id="2966449113954629791">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME"/> for at købe mere data.</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
-<translation id="8132793192354020517">Forbundet til <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Angiv baggrundsbillede...</translation>
-<translation id="8678698760965522072">Onlinetilstand</translation>
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Intern fejl</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
-<translation id="7005812687360380971">Fejl</translation>
 <translation id="882279321799040148">Klik for at se det</translation>
 <translation id="1753067873202720523">Din Chromebook oplades muligvis ikke, når den er tændt.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> understøtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION"/></translation>
@@ -184,7 +166,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
 <translation id="737451040872859086">Mikrofon (indbygget)</translation>
-<translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
 <translation id="8401662262483418323">Der kunne ikke oprettes forbindelse til &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
 Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
@@ -193,7 +174,6 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Det var ikke muligt at oprette forbindelse til netværket: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
-<translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="4872237917498892622">Alt+Søg eller Shift</translation>
 <translation id="2429753432712299108">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
@@ -205,7 +185,6 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
 <translation id="6732801395666424405">Certifikaterne blev ikke indlæst</translation>
 <translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
-<translation id="8927026611342028580">Der er anmodet om forbindelse</translation>
 <translation id="8300849813060516376">OTASP mislykkedes</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
@@ -214,7 +193,6 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6248847161401822652">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % opladet og oplades nu.</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Aktiverer...</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="5947494881799873997">Fortryd</translation>
@@ -225,7 +203,6 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="1013923882670373915">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
 <translation id="5507786745520522457">Konfigurer mobildata</translation>
@@ -234,7 +211,6 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
 <translation id="8372369524088641025">Ugyldig WEP-nøgle</translation>
-<translation id="6636709850131805001">Tilstanden genkendes ikke</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="520760366042891468">Deler kontrollen over din skærm via Hangouts.</translation>
-<translation id="8000066093800657092">Intet netværk</translation>
 <translation id="4015692727874266537">Log ind på en anden konto...</translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Brugernavn/adgangskode er forkert, eller også mislykkedes EAP-godkendelsen</translation>
 <translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">Mobilselskab</translation>
 </translationbundle>

@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
-<translation id="3884278016824448484">विरोधाभासी उपकरण पहचानकर्ता</translation>
+<translation id="3884278016824448484">विरोधाभासी डिवाइस पहचानकर्ता</translation>
 <translation id="6779575937362063477">कार्ड का यह प्रकार Google वॉलेट द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
@@ -10,9 +10,10 @@
 <translation id="7600965453749440009">कभी भी <ph name="LANGUAGE"/> का अनुवाद न करें</translation>
 <translation id="2262243747453050782">HTTP त्रुटि</translation>
 <translation id="1339601241726513588">नामांकन डोमेन:</translation>
-<translation id="7298195798382681320">अनुशंसित</translation>
+<translation id="7298195798382681320">सुझाए गए</translation>
 <translation id="4058922952496707368">कुंजी &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">नीति पार्स करने में त्रुटि</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> खोज</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="1228893227497259893">गलत इकाई पहचानकर्ता</translation>
 <translation id="6337534724793800597">नाम के अनुसार नीतियां फ़िल्टर करें</translation>
@@ -22,7 +23,7 @@
 <translation id="7537536606612762813">आवश्यक</translation>
 <translation id="2958431318199492670">नेटवर्क कॉन्फ़िगरेशन ONC मानक का पालन नहीं करता. कॉन्फ़िगरेशन के कुछ भाग आयात नहीं किए जा सकते हैं.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">उपकरण का रिकॉर्ड लापता है</translation>
+<translation id="277499241957683684">डिवाइस का रिकॉर्ड लापता है</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पृष्ठ की भाषा निर्धारित नहीं की जा सकी.</translation>
 <translation id="7935318582918952113">DOM डिस्टिलर</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> का हमेशा अनुवाद करें</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="1871208020102129563">प्रॉक्‍सी को फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर का उपयोग करने के लिए सेट किया गया है, .pac स्‍क्रिप्‍ट फ़ाइल का उपयोग करने के लिए नहीं.</translation>
+<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> आदेश चलाएं: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">अज्ञात त्रुटि</translation>
 <translation id="112840717907525620">नीति संचय ठीक है</translation>
 <translation id="3452404311384756672">प्राप्ति अंतराल:</translation>
@@ -46,7 +48,7 @@
 <translation id="3885155851504623709">पैरिश</translation>
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही निर्दिष्ट हैं.</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> में अनुवाद विफल रहा.</translation>
-<translation id="4103249731201008433">उपकरण की क्रम संख्या अमान्य है</translation>
+<translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
 <translation id="3667681724235208644">मौलिक देखें</translation>
 <translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट URL का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
 <translation id="5540224163453853">अनुरोध किया गया लेख नहीं ढूंढा जा सका.</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">नीति नहीं मिली</translation>
 <translation id="3150653042067488994">अस्थायी सर्वर त्रुटि</translation>
 <translation id="7087282848513945231">काउंटी</translation>
+<translation id="1132774398110320017">Chrome स्‍वत:-भरण सेटिंग...</translation>
 <translation id="6458467102616083041">नीति के द्वारा डिफ़ॉल्‍ट खोज अक्षम कर दिए जाने के कारण उपेक्षित.</translation>
 <translation id="1227224963052638717">अज्ञात नीति.</translation>
 <translation id="9207861905230894330">लेख जोड़ने में विफल रहा.</translation>
 <translation id="337363190475750230">प्रावधान रद्द</translation>
 <translation id="2367567093518048410">स्तर</translation>
+<translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करें&gt;</translation>
 <translation id="7610193165460212391"><ph name="VALUE"/> मान सीमा से बाहर है.</translation>
 <translation id="370665806235115550">लोड हो रहा है...</translation>
 <translation id="2096368010154057602">विभाग</translation>
@@ -100,9 +104,10 @@
 <translation id="536296301121032821">नीति सेटिंग संग्रहीत करने में विफल</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; पर स्कीमा सत्यापन त्रुटि: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
+<translation id="7208899522964477531"><ph name="SITE_NAME"/> पर <ph name="SEARCH_TERMS"/>के लिए खोजें</translation>
 <translation id="7956713633345437162">मोबाइल बुकमार्क</translation>
 <translation id="5089810972385038852">राज्य</translation>
-<translation id="647261751007945333">उपकरण नीतियां</translation>
+<translation id="647261751007945333">डिवाइस नीतियां</translation>
 <translation id="678528074488531090">मान्यकरण त्रुटि: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">मोबाइल बुकमार्क</translation>
 <translation id="8571890674111243710">पृष्ठ का अनुवाद <ph name="LANGUAGE"/> में कर रहा है...</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">अमान्य अनुरोध या अनुरोध पैरामीटर</translation>
 <translation id="1640180200866533862">उपयोगकर्ता नीतियां</translation>
 <translation id="375403751935624634">सर्वर त्रुटि के कारण अनुवाद विफल.</translation>
+<translation id="2597378329261239068">यह दस्तावेज़ पासवर्ड सुरक्षित है.  कृपया पासवर्ड डालें.</translation>
 <translation id="5629630648637658800">नीति सेटिंग लोड करने में विफल</translation>
 <translation id="2354001756790975382">अन्य बुकमार्क</translation>
 <translation id="3650584904733503804">मान्यकरण सफल</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">डिवाइस</translation>
 <translation id="8249320324621329438">पिछली बार प्राप्त किया गया:</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
+<translation id="1344588688991793829">क्रोमियम स्वत: भरण सेटिंग...</translation>
 <translation id="6282194474023008486">डाक कोड</translation>
 <translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन निर्दिष्ट किया गया है.</translation>
 <translation id="3623476034248543066">मान दिखाएं</translation>
 <translation id="9020542370529661692">इस पृष्ठ का <ph name="TARGET_LANGUAGE"/> में अनुवाद कर दिया गया है</translation>
-<translation id="5631439013527180824">अमान्य उपकरण प्रबंधन टोकन</translation>
+<translation id="5631439013527180824">अमान्य डिवाइस प्रबंधन टोकन</translation>
 <translation id="560412284261940334">प्रबंधन समर्थित नहीं</translation>
+<translation id="1639239467298939599">लोड हो रहा है</translation>
 <translation id="3169472444629675720">तलाश करें</translation>
 <translation id="4923417429809017348">इस पृष्ठ का एक अज्ञात भाषा से <ph name="LANGUAGE_LANGUAGE"/> में अनुवाद किया गया है</translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटि</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">स्थिति:</translation>
 <translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/> पर स्विच करें</translation>
 <translation id="5095208057601539847">प्रांत</translation>
-<translation id="1847321074516120686">Chrome स्‍वत:-भरण सेटिंग</translation>
+<translation id="3934680773876859118">PDF दस्तावेज़ लोड करने में विफल</translation>
 <translation id="1152021252151287493">गलत सत्यापन हस्ताक्षर.</translation>
 <translation id="6965382102122355670">ठीक</translation>
 <translation id="2721148159707890343">अनुरोध सफल रहा</translation>

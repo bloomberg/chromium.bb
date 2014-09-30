@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY"/>»: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> Søk</translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="1228893227497259893">Feil enhetsidentifikator</translation>
 <translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
+<translation id="8940229512486821554">Kjør <ph name="EXTENSION_NAME"/>-kommando: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
 <translation id="3452404311384756672">Hentingsintervall:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Innstillingene ble ikke funnet</translation>
 <translation id="3150653042067488994">Midlertidig tjenerfeil</translation>
 <translation id="7087282848513945231">Fylke</translation>
+<translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
 <translation id="6458467102616083041">Ignorert fordi standardsøk er deaktivert i henhold til retningslinje.</translation>
 <translation id="1227224963052638717">Ukjent innstilling.</translation>
 <translation id="9207861905230894330">Kunne ikke legge til artikkelen.</translation>
 <translation id="337363190475750230">Godkjenningen er opphevet</translation>
 <translation id="2367567093518048410">Nivå</translation>
+<translation id="7977590112176369853">&lt;skriv inn søk&gt;</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Laster inn...</translation>
 <translation id="2096368010154057602">Avdeling</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
 <translation id="5439770059721715174">Skjemavalideringsfeil i «<ph name="ERROR_PATH"/>»: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>
+<translation id="7208899522964477531">Søk på <ph name="SITE_NAME"/> etter <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Bokmerker for mobil</translation>
 <translation id="5089810972385038852">Fylke / delstat</translation>
 <translation id="647261751007945333">Enhetsinnstillinger</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
 <translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
+<translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
 <translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
 <translation id="2354001756790975382">Andre bokmerker</translation>
 <translation id="3650584904733503804">Valideringen var vellykket</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="8249320324621329438">Sist hentet:</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
+<translation id="1344588688991793829">Innstillinger for autofyll i Chromium</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="3623476034248543066">Vis verdien</translation>
 <translation id="9020542370529661692">Denne siden har blitt oversatt til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Ugyldig token for enhetsadministrering</translation>
 <translation id="560412284261940334">Administrering støttes ikke</translation>
+<translation id="1639239467298939599">Laster inn</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE"/> fra et ukjent språk</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="1832546148887467272">Bytt til <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provins</translation>
-<translation id="1847321074516120686">Innstillinger for autofyll i Chrome</translation>
+<translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
 <translation id="1152021252151287493">Ugyldig bekreftelsessignatur</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>

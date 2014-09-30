@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="8804398419035066391">Makipag-ugnay sa mga nakikipagtulungang website</translation>
 <translation id="7809034755304591547">Ang <ph name="EXTENSION_NAME"/> (ID ng extension &quot;<ph name="EXTENSION_ID"/>&quot;) ay na-block ng administrator.</translation>
+<translation id="1005274289863221750">Gamitin ang iyong mikropono at camera</translation>
 <translation id="2857834222104759979">Di-wasto ang manifest file.</translation>
-<translation id="8978038008714088448">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> at <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">I-access ang USB device</translation>
 <translation id="6384275966486438344">Gawing ito ang iyong mga setting ng paghahanap: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">Pinapabagal ng extension na ito ang <ph name="PRODUCT_NAME"/>. Dapat mo itong huwag paganahin upang ipanumbalik ang pagganap ng <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1033780634303702874">I-access ang iyong mga serial device</translation>
+<translation id="6241530762627360640">Mag-access ng impormasyon tungkol sa mga Bluetooth device na nakapares sa iyong system at tumuklas ng mga kalapit na Bluetooth device.</translation>
 <translation id="5911798608827489036">Makipagpalitan ng data sa anumang computer sa lokal na network o internet</translation>
 <translation id="4719685943208231314">I-access ang USB device na mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Hindi ma-load ang script ng background na '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="9131487537093447019">Magpadala ng mga mensahe sa at makatanggap ng mga mensahe mula sa mga Bluetooth device.</translation>
+<translation id="8198425243160395623">I-access ang iyong mga USB device</translation>
 <translation id="8597109877291678953">Makipagpalitan ng data sa computer na may pangalang <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Kasama sa extension na ito ang key file na '<ph name="KEY_PATH"/>'. Malamang na hindi mo iyon gustong gawin.</translation>
 <translation id="2350172092385603347">Ginamit ang localization , subalit hindi natukoy ang default_locale sa manipesto.</translation>
+<translation id="3759933321830434300">Mag-block ng mga bahagi ng mga web page</translation>
 <translation id="8058376558882514200">I-access ang USB device na <ph name="PRODUCT_NAME"/> na mula sa <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">I-access ang mga USB device</translation>
 <translation id="149347756975725155">Maaaring hindi mai-load ang icon ng extension '<ph name="ICON"/>'.</translation>
+<translation id="8825366169884721447">Nabigo ang extension na ito na baguhin ang header ng kahilingan na &quot;<ph name="HEADER_NAME"/>&quot; ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="388442998277590542">Hindi ma-load ang pahina ng mga pagpipilian na '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="6344170822609224263">I-access ang listahan ng mga koneksyon sa network</translation>
+<translation id="2616366145935564096">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Makipagpalitan ng data sa mga computer na may pangalang: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> at <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Makipagpalitan ng data sa anumang computer sa domain na <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">I-access ang iyong mga input device</translation>
+<translation id="8670869118777164560">Nabigo ang extension na ito na mag-redirect ng kahilingan sa network sa <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> dahil may isa pang extension (<ph name="EXTENSION_NAME"/>) na nag-redirect nito sa <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="6840444547062817500">Masyadong madalas nag-reload ang extension na ito.</translation>
+<translation id="8047248493720652249">Nabigong pangalanan ng extension na ito ang download na &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; dahil nakatukoy ang isa pang extension (<ph name="EXTENSION_NAME"/>) ng ibang filename na &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="4968399700653439437">Makipagpalitan ng data sa anumang computer sa mga domain na: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">lahat ng site ng <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Baguhin ang iyong home page sa: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">Basahin at baguhin ang iyong data sa <ph name="NUMBER_OF_WEBSITES"/> (na) website</translation>
+<translation id="27822970480436970">Nabigong bawiin ng extension na ito ang isang kahilingan ng network dahil sumalungat ang pagbabago sa isa pang extension.</translation>
+<translation id="2241053333139545397">Basahin at baguhin ang iyong data sa ilang website</translation>
 <translation id="8602184400052594090">Nawawala o hindi mabasa ang manifest file.</translation>
+<translation id="4883436287898674711">Lahat ng site ng <ph name="WEBSITE_1"/></translation>
+<translation id="9111791539553342076">Nabigo ang extension na ito na baguhin ang header ng tugon na &quot;<ph name="HEADER_NAME"/>&quot; ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">Gamitin ang iyong camera</translation>
+<translation id="8341840687457896278">Nabigo ang extension na ito na magbigay ng mga kredensyal sa isang kahilingan sa network dahil may isa pang extension (<ph name="EXTENSION_NAME"/>) na nagbigay ng ibang mga kredensyal.</translation>
+<translation id="5627523580512561598">extension na <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Ma-access ang mga larawan, musika, at iba pang media mula sa iyong computer</translation>
+<translation id="4761104368405085019">Gamitin ang iyong mikropono</translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME"/>. Hindi ito maaaring alisin o baguhin.</translation>
 <translation id="7154130902455071009">Gawing ito ang iyong panimulang pahina: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Maaaring hindi mai-load ang pahina ng background '<ph name="BACKGROUND_PAGE"/>'.</translation>
-<translation id="8207052894957937969">Basahin at baguhin ang iyong data sa <ph name="NUMBER_OF_WEBSITES"/> (na) website</translation>
 </translationbundle>

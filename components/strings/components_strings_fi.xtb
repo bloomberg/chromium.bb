@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Suositus</translation>
 <translation id="4058922952496707368">Avain <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/>-haku</translation>
 <translation id="6831043979455480757">Käännä</translation>
 <translation id="1228893227497259893">Väärä entiteettitunnus</translation>
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Alue</translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
+<translation id="8940229512486821554">Suorita laajennuksessa <ph name="EXTENSION_NAME"/> komento: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Tuntematon virhe</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
 <translation id="3452404311384756672">Hakuväli:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Käytäntöä ei löydy</translation>
 <translation id="3150653042067488994">Tilapäinen palvelinvirhe</translation>
 <translation id="7087282848513945231">Kunta</translation>
+<translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
 <translation id="6458467102616083041">Ohitettu, koska oletushaku on poistettu käytöstä käytännön mukaan.</translation>
 <translation id="1227224963052638717">Tuntematon käytäntö.</translation>
 <translation id="9207861905230894330">Artikkelin lisääminen epäonnistui.</translation>
 <translation id="337363190475750230">Poistettu käytöstä</translation>
 <translation id="2367567093518048410">Taso</translation>
+<translation id="7977590112176369853">&lt;anna hakulauseke&gt;</translation>
 <translation id="7610193165460212391">Arvo on alueen ulkopuolella (<ph name="VALUE"/>).</translation>
 <translation id="370665806235115550">Ladataan...</translation>
 <translation id="2096368010154057602">Osasto</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
 <translation id="5439770059721715174">Mallin todennusvirhe kohdassa <ph name="ERROR_PATH"/>: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Kirjanmerkkipalkki</translation>
+<translation id="7208899522964477531">Haku sivustosta: <ph name="SITE_NAME"/> termillä: <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Mobiilikirjanmerkit</translation>
 <translation id="5089810972385038852">Osavaltio/alue</translation>
 <translation id="647261751007945333">Laitekäytännöt</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
 <translation id="1640180200866533862">Käyttäjäkäytännöt</translation>
 <translation id="375403751935624634">Käännös epäonnistui palvelinvirheen vuoksi.</translation>
+<translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
 <translation id="5629630648637658800">Käytännön asetuksien lataaminen epäonnistui</translation>
 <translation id="2354001756790975382">Muut kirjanmerkit</translation>
 <translation id="3650584904733503804">Todennus onnistui</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Laite</translation>
 <translation id="8249320324621329438">Viimeksi haettu:</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
+<translation id="1344588688991793829">Chromiumin automaattisen täytön asetukset…</translation>
 <translation id="6282194474023008486">Postinumero</translation>
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
 <translation id="3623476034248543066">Näytä arvo</translation>
 <translation id="9020542370529661692">Sivu on käännetty kielelle <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Laitteenhallintatunnus on virheellinen</translation>
 <translation id="560412284261940334">Hallintaa ei tueta</translation>
+<translation id="1639239467298939599">Ladataan</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Tämä sivu on käännetty tuntemattomasta kielestä kielelle <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Verkkovirhe</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Tila:</translation>
 <translation id="1832546148887467272">Vaihda verkkotunnukseen <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provinssi</translation>
-<translation id="1847321074516120686">Chromen automaattisen täytön asetukset</translation>
+<translation id="3934680773876859118">PDF-asiakirjan lataaminen epäonnistui</translation>
 <translation id="1152021252151287493">Virheellinen vahvistusallekirjoitus.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>

@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">Добавяне на профил за <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Завъртането е включено (докоснете тук за промяна)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> и <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">Състояние на портала</translation>
 <translation id="30155388420722288">Бутон „Препълване“</translation>
+<translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth е активиран</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME"/>“ на <ph name="ROTATION"/></translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">Получаването на HTTP не бе успешно</translation>
 <translation id="2297568595583585744">Област на състоянието</translation>
 <translation id="1661867754829461514">Липсва PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Установява се връзка...</translation>
 <translation id="2248649616066688669">Можете да продължите да използвате Chromebook, докато е свързан с външен дисплей, дори и със затворен капак.</translation>
 <translation id="40400351611212369">Грешка при активиране на мрежата</translation>
 <translation id="4237016987259239829">Грешка при свързване към мрежата</translation>
@@ -46,13 +45,11 @@
 Натиснете „Shift + Alt“, за да превключите.</translation>
 <translation id="6043994281159824495">Изход сега</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
-<translation id="3846575436967432996">Не е налице информация за мрежата</translation>
 <translation id="4625920103690741805">Завъртането е заключено (докоснете тук за промяна)</translation>
 <translation id="3799026279081545374">Възможно е зарядното ви устройство да е дефектно. За да получите помощ и да го замените, моля, обадете се на номера за държавата, в която живеете – 866-628-1371 за САЩ, 0800-026-0613 за Великобритания, 1-800-832-664 за Ирландия, 866-628-1372 за Канада и 1-800-067-460 за Австралия.</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="5871632337994001636">Управление на устройствата...</translation>
 <translation id="785750925697875037">Преглед на мобилния профил</translation>
-<translation id="153454903766751181">Клетъчният модем се подготвя за работа...</translation>
 <translation id="4628814525959230255">Контролът върху екрана ви се споделя с/ъс <ph name="HELPER_NAME"/> чрез Hangouts.</translation>
 <translation id="7864539943188674973">Деактивиране на Bluetooth</translation>
 <translation id="939252827960237676">Запазването на екранната снимка не бе успешно</translation>
@@ -60,8 +57,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
 <translation id="2268813581635650749">Изход за всички</translation>
-<translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
-<translation id="7320906967354320621">Неактивна</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
@@ -70,13 +65,12 @@
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="5238774010593222950">Не можете да влезете в друг профил</translation>
 <translation id="1723752762323179280">Излизане от сесията</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="7170041865419449892">Извън обхват</translation>
-<translation id="4804818685124855865">Изключване</translation>
 <translation id="2544853746127077729">Сертификатът за удостоверяване бе отхвърлен от мрежата</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">Конфигурация</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="4957722034734105353">Научете повече...</translation>
 <translation id="2964193600955408481">Деактивиране на Wi-Fi</translation>
@@ -85,7 +79,6 @@
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
 <translation id="3892641579809465218">Показване на вътрешна информация</translation>
 <translation id="7823564328645135659">Езикът се промени от „<ph name="FROM_LOCALE"/>“ на „<ph name="TO_LOCALE"/>“ след синхронизирането на настройките ви.</translation>
-<translation id="3368922792935385530">Установена е връзка</translation>
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="8654520615680304441">Включване на Wi-Fi...</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@
 <translation id="5825747213122829519">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>.
 Натиснете „Shift + Alt“, за да превключите.</translation>
 <translation id="2562916301614567480">Частна мрежа</translation>
-<translation id="6549021752953852991">Няма налична клетъчна мрежа</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">Не</translation>
 <translation id="4379753398862151997">Уважаеми мониторе, нещата между нас не се получават. (Този монитор не се поддържа)</translation>
 <translation id="6426039856985689743">Деактивиране на мобилните данни</translation>
 <translation id="3087734570205094154">Най-долу</translation>
 <translation id="3742055079367172538">Направена бе екранна снимка</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
-<translation id="5271016907025319479">Виртуалната частна мрежа (VPN) не е конфигурирана.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Възможността за правене на екранни снимки е деактивирана от администратора ви.</translation>
 <translation id="372094107052732682">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
@@ -118,10 +110,7 @@
 <translation id="2614835198358683673">Възможно е вашият Chromebook да не се зарежда, докато е включен. Помислете за използване на официалното зарядно устройство.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4442424173763614572">Търсенето в DNS не бе успешно</translation>
-<translation id="7874779702599364982">Търсят се мобилни мрежи...</translation>
-<translation id="583281660410589416">Неизвестно</translation>
 <translation id="1383876407941801731">Търсене</translation>
-<translation id="3901991538546252627">Установява се връзка със: <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Информация за мрежата</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Изход от сесията като гост</translation>
@@ -131,7 +120,6 @@
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1773212559869067373">Сертификатът за удостоверяване бе отхвърлен локално</translation>
 <translation id="8528322925433439945">Мобилни мрежи...</translation>
-<translation id="7049357003967926684">Връзка</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="2372145515558759244">Приложенията се синхронизират...</translation>
 <translation id="7256405249507348194">Неразпозната грешка: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@
 <translation id="2894654529758326923">Информация</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до пълно зареждане</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Неизвестна мрежова грешка</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830">„<ph name="NAME"/>“ се активира</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
@@ -153,24 +139,20 @@
 <translation id="252373100621549798">Неизвестен дисплей</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME"/>“</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
+<translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Заключване</translation>
 <translation id="2805756323405976993">Приложения</translation>
-<translation id="1512064327686280138">Неуспех при активирането</translation>
 <translation id="5097002363526479830">Свързването с мрежата „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi е изключен.</translation>
 <translation id="2872961005593481000">Изключване</translation>
 <translation id="3433830597744061105">Управление на профилите</translation>
 <translation id="2966449113954629791">Възможно е да сте изразходвали отпуснатите ви мобилни данни. Посетете портала за активиране „<ph name="NAME"/>“, за да купите още данни.</translation>
 <translation id="742594950370306541">Камерата се използва.</translation>
-<translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
-<translation id="8678698760965522072">Състояние: Онлайн</translation>
 <translation id="2532589005999780174">Режим на висок контраст</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Вътрешна грешка</translation>
 <translation id="3019353588588144572">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
-<translation id="7005812687360380971">Неуспех</translation>
 <translation id="882279321799040148">Кликнете, за да прегледате</translation>
 <translation id="1753067873202720523">Вашият Chromebook може да не се зарежда, докато е включен.</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME"/>“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION"/>. Тя бе променена на <ph name="FALLBACK_RESOLUTION"/></translation>
@@ -184,7 +166,6 @@
 <translation id="225680501294068881">Сканира се за устройства...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">Микрофон (вътрешен)</translation>
-<translation id="4448844063988177157">Търсят се Wi-Fi мрежи...</translation>
 <translation id="8401662262483418323">Свързването с/ъс „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/>
 Съобщение от сървъра: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Възникна грешка</translation>
@@ -193,7 +174,6 @@
 <translation id="2999742336789313416">„<ph name="DISPLAY_NAME"/>“ е обществена сесия, управлявана от <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Свързването с мрежата не бе успешно: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
-<translation id="8454013096329229812">Wi-Fi е включен.</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE"/>% пълна.</translation>
@@ -205,7 +185,6 @@
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="6732801395666424405">Сертификатите не са заредени</translation>
 <translation id="7573962313813535744">Режим с докинг станция</translation>
-<translation id="8927026611342028580">Заявено е свързване</translation>
 <translation id="8300849813060516376">Безжичното осигуряване на услуга не бе успешно</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
 <translation id="8660803626959853127">Синхронизира/т се <ph name="COUNT"/> файл/а</translation>
@@ -214,7 +193,6 @@
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
 <translation id="6248847161401822652">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE"/>% пълна и се зарежда.</translation>
-<translation id="6267036997247669271">„<ph name="NAME"/>“: Активира се...</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
@@ -225,7 +203,6 @@
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="158849752021629804">Необходима е собствена мрежа</translation>
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Търсенето на DHCP сървър не бе успешно</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="5507786745520522457">Настройване на мобилните данни</translation>
@@ -234,7 +211,6 @@
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
-<translation id="6636709850131805001">Неразпознато състояние</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE"/>“ (изисква рестартиране)</translation>
 <translation id="8103386449138765447">SMS съобщения: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@
 <translation id="5102001756192215136">Остава/т <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Изход</translation>
 <translation id="520760366042891468">Контролът върху екрана ви се споделя чрез Hangouts.</translation>
-<translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="4015692727874266537">Вход в друг профил...</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Потребителското име или паролата са неправилни или удостоверяването през EAP не бе успешно</translation>
 <translation id="6359806961507272919">SMS от <ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">Оператор</translation>
 </translationbundle>

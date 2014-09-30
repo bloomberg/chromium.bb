@@ -40,17 +40,16 @@
 <translation id="473775607612524610">Ενημέρωση</translation>
 <translation id="8627706565932943526">Σφάλμα συγχρονισμού</translation>
 <translation id="8374821112118309944">Θα πρέπει να ενημερώσετε το TalkBack σε νεότερη έκδοση.</translation>
-<translation id="4043215103217793252">Επεξεργασία σελιδοδείκτη σελίδας</translation>
 <translation id="656628257199996201">Να γίνεται πάντα μετάφραση των <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
 <translation id="5684874026226664614">Ωχ. Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας.</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="4619298195800598081">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
+<translation id="3254409185687681395">Προσθήκη αυτής της σελίδας στους σελιδοδείκτες</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Αποθήκευση βίντεο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="7267430310003164111">Ερώτηση για λήψη εφαρμογής από το Google Play Store.  Όνομα εφαρμογής: <ph name="APP_NAME"/>.  Μέση βαθμολογία εφαρμογής: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Η καρτέλα έκλεισε</translation>
 <translation id="4148957013307229264">Γίνεται εγκατάσταση...</translation>
 <translation id="3992315671621218278">Αποθήκευση συνδέσμου</translation>
 <translation id="8034522405403831421">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE"/>. Μετάφρασή της στα <ph name="TARGET_LANGUAGE"/>;</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">Κοινή χρήση μέσω <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="969096075394517431">Αλλαγή γλωσσών</translation>
-<translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5032574515228824816">Προτροπή</translation>
-<translation id="4847896847259487518">Σελίδα σελιδοδείκτη</translation>
 <translation id="497421865427891073">Μετάβαση προς τα εμπρός</translation>
 <translation id="8310344678080805313">Τυπικές καρτέλες</translation>
 <translation id="6277522088822131679">Παρουσιάστηκε ένα πρόβλημα κατά την εκτύπωση της σελίδας. Δοκιμάστε ξανά.</translation>

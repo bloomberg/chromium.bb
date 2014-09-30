@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="4058922952496707368">کلید &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
+<translation id="6628463337424475685">جستجوی <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
 <translation id="6337534724793800597">فیلتر کردن خط‌مشی‌ها بر اساس نام</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">ویزا</translation>
 <translation id="6839929833149231406">منطقه حکومتی</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
+<translation id="8940229512486821554">اجرای فرمان <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">خطای ناشناخته</translation>
 <translation id="112840717907525620">حافظه پنهان خط مشی مورد تأیید است</translation>
 <translation id="3452404311384756672">فاصله زمانی واکشی:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">خط مشی یافت نشد</translation>
 <translation id="3150653042067488994">خطای موقت سرور</translation>
 <translation id="7087282848513945231">شهرستان</translation>
+<translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
 <translation id="6458467102616083041">نادیده گرفته شد زیرا جستجوی پیش‌فرض توسط قانون غیرفعال شده است.</translation>
 <translation id="1227224963052638717">خط مشی ناشناخته.</translation>
 <translation id="9207861905230894330">افزودن مقاله ناموفق بود.</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
 <translation id="2367567093518048410">سطح</translation>
+<translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE"/> است.</translation>
 <translation id="370665806235115550">در حال بارگیری...</translation>
 <translation id="2096368010154057602">حوزه</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
 <translation id="5439770059721715174">خطای تأیید طرح در «<ph name="ERROR_PATH"/>»:‏ <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">نوار نشانک‌ها</translation>
+<translation id="7208899522964477531">جستجوی <ph name="SITE_NAME"/> برای <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="375403751935624634">بدلیل خطای سرور ترجمه انجام نشد.</translation>
+<translation id="2597378329261239068">این سند توسط رمز ورود محافظت می‌شود.  لطفاً یک رمز ورود وارد کنید.</translation>
 <translation id="5629630648637658800">تنظیمات خط مشی بارگیری نشد</translation>
 <translation id="2354001756790975382">نشانک‌های دیگر</translation>
 <translation id="3650584904733503804">ارزیابی موفق بود</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="8249320324621329438">آخرین واکشی شده:</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
+<translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
 <translation id="6282194474023008486">کد پستی</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="3623476034248543066">نشان دادن مقدار</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE"/> ترجمه شده است</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
 <translation id="560412284261940334">مدیریت پشتیبانی نمی‌شود</translation>
+<translation id="1639239467298939599">بارگیری</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE"/> ترجمه شده است.</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">وضعیت:</translation>
 <translation id="1832546148887467272">جابجایی به <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">استان</translation>
-<translation id="1847321074516120686">‏تنظیمات تکمیل خودکار Chrome</translation>
+<translation id="3934680773876859118">‏بارگیری سند PDF انجام نشد</translation>
 <translation id="1152021252151287493">امضای تأیید نامناسب.</translation>
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>

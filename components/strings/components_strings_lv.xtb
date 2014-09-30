@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Ieteicams</translation>
 <translation id="4058922952496707368">Atslēga <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> meklēšana</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="1228893227497259893">Nepareizs vienības identifikators</translation>
 <translation id="6337534724793800597">Filtrēt politikas pēc nosaukuma</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Apgabals</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
+<translation id="8940229512486821554">Izpildīt <ph name="EXTENSION_NAME"/> komandu: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Nezināma kļūda</translation>
 <translation id="112840717907525620">Politikas kešatmiņa ir labā stāvoklī.</translation>
 <translation id="3452404311384756672">Pirmsielādes intervāls:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Politika netika atrasta.</translation>
 <translation id="3150653042067488994">Īslaicīga servera kļūda</translation>
 <translation id="7087282848513945231">Grāfiste</translation>
+<translation id="1132774398110320017">Chrome automātiskās aizpildes iestatījumi...</translation>
 <translation id="6458467102616083041">Ignorēta, jo ar politiku ir atspējota noklusējuma meklēšana.</translation>
 <translation id="1227224963052638717">Nezināma politika.</translation>
 <translation id="9207861905230894330">Rakstu neizdevās pievienot.</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
 <translation id="2367567093518048410">Līmenis</translation>
+<translation id="7977590112176369853">&lt;ievadīt vaicājumu&gt;</translation>
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
 <translation id="2096368010154057602">Departaments</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Neizdevās saglabāt politikas iestatījumus.</translation>
 <translation id="5439770059721715174">Šeit tika atklāta shēmas validēšanas kļūda: <ph name="ERROR_PATH"/>. Kļūdas ziņojums: <ph name="ERROR"/>.</translation>
 <translation id="8349305172487531364">Grāmatzīmju josla</translation>
+<translation id="7208899522964477531">Meklēt<ph name="SITE_NAME"/> <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Mobilās grāmatzīmes</translation>
 <translation id="5089810972385038852">Štats</translation>
 <translation id="647261751007945333">Ierīces politikas</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Pieprasījums vai tā parametri nebija derīgi.</translation>
 <translation id="1640180200866533862">Lietotāja politikas</translation>
 <translation id="375403751935624634">Tulkojums neizdevās servera kļūdas dēļ.</translation>
+<translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
 <translation id="5629630648637658800">Neizdevās ielādēt politikas iestatījumus.</translation>
 <translation id="2354001756790975382">Citas grāmatzīmes</translation>
 <translation id="3650584904733503804">Validācija bija veiksmīga.</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Ierīce</translation>
 <translation id="8249320324621329438">Pēdējās pirmsielādes laiks:</translation>
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
+<translation id="1344588688991793829">Chromium automātiskās aizpildes iestatījumi...</translation>
 <translation id="6282194474023008486">Pasta indekss</translation>
 <translation id="443673843213245140">Starpniekservera lietošana ir atspējota, bet ir norādīta atklāta starpniekservera konfigurācija.</translation>
 <translation id="3623476034248543066">Rādīt vērtību</translation>
 <translation id="9020542370529661692">Šī lapa ir tulkota <ph name="TARGET_LANGUAGE"/> valodā.</translation>
 <translation id="5631439013527180824">Ierīces pārvaldības marķieris nav derīgs.</translation>
 <translation id="560412284261940334">Pārvaldīšana netiek atbalstīta.</translation>
+<translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Tīkla kļūda</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Statuss:</translation>
 <translation id="1832546148887467272">Pārslēgties uz <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Province</translation>
-<translation id="1847321074516120686">Chrome automātiskās aizpildes iestatījumi</translation>
+<translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
 <translation id="1152021252151287493">Verifikācijas paraksts nav derīgs.</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="2721148159707890343">Pieprasījums bija veiksmīgs.</translation>

@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="8804398419035066391">Berkomunikasi dengan situs web yang bekerja sama</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID ekstensi &quot;<ph name="EXTENSION_ID"/>&quot;) dicekal oleh administrator.</translation>
+<translation id="1005274289863221750">Menggunakan mikrofon dan kamera Anda</translation>
 <translation id="2857834222104759979">File manifes tidak valid.</translation>
-<translation id="8978038008714088448">Membaca dan memodifikasi data Anda di <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">Membaca dan memodifikasi data Anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, dan <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Mengakses perangkat USB</translation>
 <translation id="6384275966486438344">Ubah setelan penelusuran Anda menjadi: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">Ekstensi ini memperlambat <ph name="PRODUCT_NAME"/>. Anda harus menonaktifkannya agar dapat memulihkan kinerja <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1033780634303702874">Mengakses perangkat seri Anda</translation>
+<translation id="6241530762627360640">Mengakses informasi tentang perangkat Bluetooth yang disandingkan dengan sistem Anda dan menemukan perangkat Bluetooth di sekitarnya.</translation>
 <translation id="5911798608827489036">Tukar data dengan komputer mana saja di jaringan lokal atau internet</translation>
 <translation id="4719685943208231314">Mengakses perangkat USB dari <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="9131487537093447019">Kirim pesan ke dan terima pesan dari perangkat Bluetooth.</translation>
+<translation id="8198425243160395623">Mengakses perangkat USB Anda</translation>
 <translation id="8597109877291678953">Tukar data dengan komputer yang bernama <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Ekstensi ini termasuk file kunci '<ph name="KEY_PATH"/>'. Anda mungkin tidak ingin melakukannya.</translation>
 <translation id="2350172092385603347">Lokalisasi digunakan, tetapi default_locale tidak ditentukan dalam manifes.</translation>
+<translation id="3759933321830434300">Blokir bagian laman web</translation>
 <translation id="8058376558882514200">Mengakses perangkat USB <ph name="PRODUCT_NAME"/> dari <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">Akses perangkat USB</translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON"/>'.</translation>
+<translation id="8825366169884721447">Ekstensi ini gagal memodifikasi tajuk permintaan &quot;<ph name="HEADER_NAME"/>&quot; dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="388442998277590542">Tidak dapat memuat laman opsi '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="6344170822609224263">Mengakses daftar sambungan jaringan</translation>
+<translation id="2616366145935564096">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Tukar data dengan komputer yang bernama: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, dan <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Tukar data dengan komputer mana saja di domain <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">Mengakses perangkat masukan Anda</translation>
+<translation id="8670869118777164560">Ekstensi ini gagal mengalihkan permintaan jaringan ke <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> karena ekstensi lain (<ph name="EXTENSION_NAME"/>) mengalihkannya ke <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="6840444547062817500">Ekstensi ini terlalu sering memuat ulang sendiri.</translation>
+<translation id="8047248493720652249">Ekstensi ini gagal memberi nama unduhan &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; karena ekstensi lain (<ph name="EXTENSION_NAME"/>) menentukan nama file yang berbeda &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="4968399700653439437">Tukar data dengan komputer mana saja di domain: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">Tampilan web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">semua situs <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Ubah laman beranda Anda menjadi: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">Membaca dan memodifikasi data Anda di <ph name="NUMBER_OF_WEBSITES"/> situs web</translation>
+<translation id="27822970480436970">Ekstensi ini gagal memodifikasi permintaan jaringan karena modifikasi bentrok dengan ekstensi lain.</translation>
+<translation id="2241053333139545397">Membaca dan mengubah data Anda di sejumlah situs web</translation>
 <translation id="8602184400052594090">File manifes tidak ada atau tidak dapat dibaca.</translation>
+<translation id="4883436287898674711">Semua situs <ph name="WEBSITE_1"/></translation>
+<translation id="9111791539553342076">Ekstensi ini gagal memodifikasi tajuk tanggapan &quot;<ph name="HEADER_NAME"/>&quot; dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">Menggunakan kamera Anda</translation>
+<translation id="8341840687457896278">Ekstensi ini gagal memberikan kredensial ke permintaan jaringan karena ekstensi lain (<ph name="EXTENSION_NAME"/>) telah memberikan kredensial yang berbeda.</translation>
+<translation id="5627523580512561598">ekstensi <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Mengakses foto, musik, dan media lain dari komputer Anda</translation>
+<translation id="4761104368405085019">Menggunakan mikrofon Anda</translation>
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME"/> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
 <translation id="7154130902455071009">Ubah laman awal Anda menjadi: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">Membaca dan memodifikasi data Anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Tidak dapat memuat laman latar belakang '<ph name="BACKGROUND_PAGE"/>'.</translation>
-<translation id="8207052894957937969">Membaca dan memodifikasi data Anda di <ph name="NUMBER_OF_WEBSITES"/> situs web</translation>
 </translationbundle>

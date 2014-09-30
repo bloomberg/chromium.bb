@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">แนะนำ</translation>
 <translation id="4058922952496707368">คีย์ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> ค้นหา</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="1228893227497259893">ตัวระบุเอนทิตีไม่ถูกต้อง</translation>
 <translation id="6337534724793800597">กรองนโยบายตามชื่อ</translation>
@@ -28,7 +29,7 @@
 <translation id="1103523840287552314">แปลภาษา<ph name="LANGUAGE"/>ทุกครั้ง</translation>
 <translation id="1227633850867390598">ซ่อนค่า</translation>
 <translation id="6753269504797312559">ค่านโยบาย</translation>
-<translation id="8834246243508017242">เปิดใช้การป้อนข้อความอัตโนมัติโดยใช้ที่อยู่ติดต่อ…</translation>
+<translation id="8834246243508017242">เปิดใช้การป้อนข้อความอัตโนมัติโดยใช้รายชื่อติดต่อ…</translation>
 <translation id="7275334191706090484">บุ๊กมาร์กที่มีการจัดการ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">ไม่</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">พื้นที่</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
+<translation id="8940229512486821554">เรียกใช้คำสั่ง <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="112840717907525620">แคชนโยบายใช้ได้</translation>
 <translation id="3452404311384756672">ช่วงการดึงข้อมูล:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">ไม่พบนโยบาย</translation>
 <translation id="3150653042067488994">ข้อผิดพลาดชั่วคราวของเซิร์ฟเวอร์</translation>
 <translation id="7087282848513945231">อำเภอ</translation>
+<translation id="1132774398110320017">การตั้งค่าป้อนข้อความอัตโนมัติของ Chrome...</translation>
 <translation id="6458467102616083041">ไม่ใช้งานเนื่องจากการค้นหาเริ่มต้นถูกปิดใช้งานตามนโยบาย</translation>
 <translation id="1227224963052638717">นโยบายที่ไม่รู้จัก</translation>
 <translation id="9207861905230894330">การเพิ่มบทความล้มเหลว</translation>
 <translation id="337363190475750230">ยกเลิกการจัดเตรียมแล้ว</translation>
 <translation id="2367567093518048410">ระดับ</translation>
+<translation id="7977590112176369853">&lt;ป้อนคำค้นหา&gt;</translation>
 <translation id="7610193165460212391">ค่าอยู่นอกช่วง <ph name="VALUE"/></translation>
 <translation id="370665806235115550">กำลังโหลด...</translation>
 <translation id="2096368010154057602">จังหวัด</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
 <translation id="5439770059721715174">ข้อผิดพลาดในการตรวจสอบรูปแบบที่ &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">แถบบุ๊กมาร์ก</translation>
+<translation id="7208899522964477531">ค้นหาข้อความ <ph name="SEARCH_TERMS"/> จาก <ph name="SITE_NAME"/></translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนมือถือ</translation>
 <translation id="5089810972385038852">รัฐ</translation>
 <translation id="647261751007945333">นโยบายอุปกรณ์</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1640180200866533862">นโยบายผู้ใช้</translation>
 <translation id="375403751935624634">การแปลล้มเหลวเนื่องจากข้อผิดพลาดของเซิร์ฟเวอร์</translation>
+<translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
 <translation id="5629630648637658800">ไม่สามารถโหลดการตั้งค่านโยบาย</translation>
 <translation id="2354001756790975382">บุ๊กมาร์กอื่นๆ</translation>
 <translation id="3650584904733503804">การตรวจสอบสำเร็จ</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="8249320324621329438">เรียกดูครั้งสุดท้ายเมื่อ:</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
+<translation id="1344588688991793829">การตั้งค่าป้อนข้อความอัตโนมัติของ Chromium...</translation>
 <translation id="6282194474023008486">รหัสไปรษณีย์</translation>
 <translation id="443673843213245140">การใช้พร็อกซีถูกปิดใช้งาน แต่มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจน</translation>
 <translation id="3623476034248543066">แสดงค่า</translation>
 <translation id="9020542370529661692">หน้านี้ได้รับการแปลเป็น <ph name="TARGET_LANGUAGE"/> แล้ว</translation>
 <translation id="5631439013527180824">โทเค็นการจัดการอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="560412284261940334">ไม่สนับสนุนการจัดการ</translation>
+<translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">หน้านี้แปลจากภาษาที่ไม่รู้จักเป็นภาษา <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">ข้อผิดพลาดของเครือข่าย</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">สถานะ:</translation>
 <translation id="1832546148887467272">เปลี่ยนไปเป็น <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">จังหวัด</translation>
-<translation id="1847321074516120686">การตั้งค่าป้อนอัตโนมัติของ Chrome</translation>
+<translation id="3934680773876859118">โหลดเอกสาร PDF ล้มเหลว</translation>
 <translation id="1152021252151287493">ลายเซ็นยืนยันไม่ถูกต้อง</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>

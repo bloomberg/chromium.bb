@@ -40,17 +40,16 @@
 <translation id="473775607612524610">עדכן</translation>
 <translation id="8627706565932943526">שגיאת סנכרון</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
-<translation id="4043215103217793252">ערוך דף סימניות</translation>
 <translation id="656628257199996201">תרגם <ph name="SOURCE_LANGUAGE"/> תמיד</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="4619298195800598081">פתח את התמונה המקורית בכרטיסייה חדשה</translation>
+<translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
 <translation id="907015151729920253">כרטיס חכם</translation>
 <translation id="3063601790762993062">שמור סרטון</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="7267430310003164111">‏הצג בקשה להורדת האפליקציה מחנות Google Play.  שם אפליקציה: <ph name="APP_NAME"/>.  דירוג ממוצע של האפליקציה: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">הכרטיסייה נסגרה</translation>
 <translation id="4148957013307229264">מתקין...</translation>
 <translation id="3992315671621218278">שמור את הקישור</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="969096075394517431">החלף שפות</translation>
-<translation id="5556459405103347317">טען שוב</translation>
 <translation id="5032574515228824816">בקשה</translation>
-<translation id="4847896847259487518">הוסף דף לסימניות</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
 <translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. נסה שוב.</translation>

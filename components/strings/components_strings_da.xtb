@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="4058922952496707368">Nøgle &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> Søg</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="1228893227497259893">Forkert enheds-id</translation>
 <translation id="6337534724793800597">Filtrer politikker efter navn</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
+<translation id="8940229512486821554">Kør <ph name="EXTENSION_NAME"/>-kommandoen: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Ukendt fejl</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
 <translation id="3452404311384756672">Hent interval:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Politikken blev ikke fundet</translation>
 <translation id="3150653042067488994">Midlertidig serverfejl</translation>
 <translation id="7087282848513945231">Amt/region</translation>
+<translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="1227224963052638717">Ukendt politik.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="337363190475750230">Fjernet</translation>
 <translation id="2367567093518048410">Niveau</translation>
+<translation id="7977590112176369853">&lt;indtast forespørgsel&gt;</translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Indlæser...</translation>
 <translation id="2096368010154057602">Departement</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5439770059721715174">Skemavalideringsfejl på &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bogmærkelinje</translation>
+<translation id="7208899522964477531">Søg på <ph name="SITE_NAME"/> efter <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Bogmærker på mobil</translation>
 <translation id="5089810972385038852">Delstat</translation>
 <translation id="647261751007945333">Enhedspolitikker</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
 <translation id="375403751935624634">Oversættelsen mislykkedes på grund af en serverfejl.</translation>
+<translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
 <translation id="3650584904733503804">Valideringen er fuldført</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Enhed</translation>
 <translation id="8249320324621329438">Sidste hentet:</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
+<translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="443673843213245140">Brug af en proxy er deaktiveret, men en eksplicit proxykonfiguration er angivet.</translation>
 <translation id="3623476034248543066">Vis værdi</translation>
 <translation id="9020542370529661692">Denne side er oversat til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Ugyldigt token for enhedsadministration</translation>
 <translation id="560412284261940334">Administration er ikke understøttet</translation>
+<translation id="1639239467298939599">Indlæser...</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="1832546148887467272">Skift til <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provins</translation>
-<translation id="1847321074516120686">Indstillinger for Autofyld i Chrome</translation>
+<translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>
 <translation id="1152021252151287493">Ugyldig verificeringssignatur.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>

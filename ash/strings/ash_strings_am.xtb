@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">ለ<ph name="GIVEN_NAME"/> አንድ መለያ አክል</translation>
 <translation id="1057289296854808272">ማሽከርከር በርቷል (ለመለወጥ እዚህ ጋር መታ ያድርጉ)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> እና <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">የመተላለፊያ ሁኔታ</translation>
 <translation id="30155388420722288">የትርፍ ፍሰት አዝራር</translation>
+<translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">ብሉቱዝ ነቅቷል</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ወደ <ph name="ROTATION"/> ዞሯል</translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">ኤችቲቲፒ ማግኘት አልተሳካም</translation>
 <translation id="2297568595583585744">የሁኔታ መሳቢያ</translation>
 <translation id="1661867754829461514">ፒን ይጎድላል</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>፦ በመገናኘት ላይ...</translation>
 <translation id="2248649616066688669">ወደ ውጫዊ ማሳያ ተገናኝቶ ሳለ የእርስዎን Chromebook መጠቀምዎን መቀጠል ይችላሉ፣ ተዘግቶ ቢሆንም እንኳ።</translation>
 <translation id="40400351611212369">የአውታረ መረብ ማግበር ስህተት</translation>
 <translation id="4237016987259239829">የአውታረመረብ ግንኙነት ስህተት</translation>
@@ -46,13 +45,11 @@
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="6043994281159824495">አሁን ዘግተህ ውጣ</translation>
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
-<translation id="3846575436967432996">ምንም የአውታረ መረብ መረጃ አይገኝም</translation>
 <translation id="4625920103690741805">ማሽከርከር ተቆልፏል (ለመለወጥ እዚህ ጋር መታ ያድርጉ)</translation>
 <translation id="3799026279081545374">መጥፎ የኃይል መሙያ ሊኖርዎት ይችላል። በአሜሪካ ውስጥ የሚኖሩ ከሆኑ እርዳታን እና መተኪያን ለማግኘት እባክዎ ወደ 866-628-1371 ይደውሉ። በዩኬ ውስጥ የሚኖሩ ከሆኑ እባክዎ ወደ 0800-026-0613 ይደውሉ። በአየርላንድ ውስጥ የሚሆኑ ከሆኑ እባክዎ ወደ 1-800-832-664 ይደውሉ። በካናዳ ውስጥ የሚኖሩ ከሆኑ እባክዎ ወደ 866-628-1372 ይደውሉ። በአውስትራሊያ ውስጥ የሚኖሩ ከሆኑ እባክዎ ወደ 1-800-067-460 ይደውሉ።</translation>
 <translation id="3891340733213178823">ዘግተው ለመውጣት Ctrl+Shift+Qን ሁለቴ ይጫኑ።</translation>
 <translation id="5871632337994001636">መሳሪያዎችን ያስተዳድሩ...</translation>
 <translation id="785750925697875037">የተንቀሳቃሽ መለያ ይመልከቱ</translation>
-<translation id="153454903766751181">ተንቀሳቃሽ ሞደምን በማስጀመር ላይ...</translation>
 <translation id="4628814525959230255">የማያ ገጽዎ ቁጥጥር በHangouts በኩል ለ<ph name="HELPER_NAME"/> በማጋራት ላይ።</translation>
 <translation id="7864539943188674973">ብሉቱዝን ያሰናክሉ</translation>
 <translation id="939252827960237676">ቅጽበታዊ ገጽ እይታን ማስቀመጥ አልተቻለም</translation>
@@ -60,8 +57,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">ለማዘመን ዳግም ያስጀምሩ</translation>
 <translation id="2268813581635650749">ሁሉንም ዘግተህ ውጣ</translation>
-<translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
-<translation id="7320906967354320621">ስራ ፈት</translation>
 <translation id="15373452373711364">ትልቅ የመዳፊት ጠቋሚ</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
@@ -70,13 +65,12 @@
 <translation id="8676770494376880701">አነስተኛ ኃይል ያለው ባትሪ መሙያ ተገናኝቷል</translation>
 <translation id="5238774010593222950">ወደሌላ መለያ በመለያ መግባት አይቻልም።</translation>
 <translation id="1723752762323179280">ከክፍለ ጊዜ በመውጣት ላይ</translation>
+<translation id="1426410128494586442">አዎ</translation>
 <translation id="7170041865419449892">ከክልል ውጪ</translation>
-<translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="2544853746127077729">የማረጋገጫ ምስክር ወረቀት በአውታረ መረቡ ተቀባይነት አላገኘም</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">ውቅር</translation>
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="4957722034734105353">ተጨማሪ ለመረዳት...</translation>
 <translation id="2964193600955408481">Wi-Fiን አሰናክል</translation>
@@ -85,7 +79,6 @@
 <translation id="2509468283778169019">CAPS LOCK በርቷል</translation>
 <translation id="3892641579809465218">የውስጥ ማሳያ</translation>
 <translation id="7823564328645135659">ቅንብሮችዎ ከተመሳሰሉ በኋላ ቋንቋው ከ«<ph name="FROM_LOCALE"/> ወደ «<ph name="TO_LOCALE"/>» ተቀይሯል።</translation>
-<translation id="3368922792935385530">ተያይዟል</translation>
 <translation id="3606978283550408104">የብሬይል ማሳያ ተገናኝቷል።</translation>
 <translation id="8654520615680304441">Wi-Fi አብራ...</translation>
 <translation id="6650933572246256093">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የይለፍ ቁልፍ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@
 <translation id="5825747213122829519">የግቤት ስልትዎ ወደ <ph name="INPUT_METHOD_ID"/> ተቀይሯል።
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="2562916301614567480">የግል አውታረ መረብ</translation>
-<translation id="6549021752953852991">ምንም የተንቀሳቃሽ ሞደም አውታረ መረብ አይገኝም</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">አይ</translation>
 <translation id="4379753398862151997">ውድ ማሳያ፣ ልንግባባ አልቻልንም። (ያ ማሳያ አይደገፍም)</translation>
 <translation id="6426039856985689743">የተንቀሳቃሽ ስልክ ውሂብን ያሰናክሉ</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
 <translation id="3742055079367172538">ቅጽበታዊ ገጽ እይታ ተነስቷል</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
-<translation id="5271016907025319479">VPN አልተዋቀረም።</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (ብሉቱዝ)</translation>
 <translation id="3967919079500697218">ቅጽበታዊ-ገጽ እይታዎችን የማንሳት ችሎታ በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="372094107052732682">ለመውጣት Ctrl+Shift+Qን ይጫኑ</translation>
@@ -118,10 +110,7 @@
 <translation id="2614835198358683673">የእርስዎ Chromebook በርቶ ሳለ ባትሪ ላይሞላ ይችላል። ዋናውን ባትሪ መሙያ መጠቀሙን ያስቡበት።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4442424173763614572">የዲ ኤን ኤስ ፍለጋ አልተሳካም</translation>
-<translation id="7874779702599364982">የድምጸ ተያያዥ ሞደም አውታረ መረቦችን በመፈለግ ላይ...</translation>
-<translation id="583281660410589416">ያልታወቀ </translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
-<translation id="3901991538546252627">ከ<ph name="NAME"/> ጋር በመገናኘት ላይ</translation>
 <translation id="2204305834655267233">የአውታረ መረብ መረጃ</translation>
 <translation id="1621499497873603021">ባትሪ ባዶ እስኪሆን ድረስ የቀረው ጊዜ፣ <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ከእንግዳ ውጣ</translation>
@@ -131,7 +120,6 @@
 <translation id="1346748346194534595">ቀኝ</translation>
 <translation id="1773212559869067373">የማረጋገጫ ምስክር ወረቀት በአካባቢው ተቀባይነት አላገኘም</translation>
 <translation id="8528322925433439945">ተንቀሳቃሽ ስልክ ...</translation>
-<translation id="7049357003967926684">ማህበር</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="2372145515558759244">መተግበሪያዎችን በማመሳሰል ላይ...</translation>
 <translation id="7256405249507348194">ያልታወቀ ስህተት፦ <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@
 <translation id="2894654529758326923">መረጃ</translation>
 <translation id="7925247922861151263">የAAA ማረጋገጥ አልተሳካም</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> ሙሉ እስኪሆን ድረስ</translation>
-<translation id="4479639480957787382">ኢተርኔት</translation>
 <translation id="6312403991423642364">ያልታወቀ የአውታረ መረብ ስህተት</translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="5543001071567407895">ኤስ ኤም ኤስ</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830"><ph name="NAME"/>ን በማግበር ላይ</translation>
 <translation id="4527045527269911712">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል።</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
@@ -153,24 +139,20 @@
 <translation id="252373100621549798">ያልታወቀ ማሳያ</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME"/> በማንጸባረቅ ላይ</translation>
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
+<translation id="2761704814324807722">የሁኔታ መሣቢያ፣ ሰዓት <ph name="TIME"/>፣ <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ቆልፍ</translation>
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
-<translation id="1512064327686280138">የማግበር አለመሳካት</translation>
 <translation id="5097002363526479830">ከአውታረ መረብ «<ph name="NAME"/>» ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi ጠፍቷል።</translation>
 <translation id="2872961005593481000">ዝጋ</translation>
 <translation id="3433830597744061105">መለያዎችን አቀናብር</translation>
 <translation id="2966449113954629791">የተሰጠዎት ሞባይል ውሂብ ጨርሰው ሊሆኑ ይችላሉ። ተጨማሪ ውሂብ ለመግዛት የ<ph name="NAME"/> ማስገበሪያ በር ይጎብኙ።</translation>
 <translation id="742594950370306541">ካሜራ ስራ ላይ ነው።</translation>
-<translation id="8132793192354020517">ከ<ph name="NAME"/> ጋር ተገናኝቷል</translation>
 <translation id="7052914147756339792">ልጣፍ አዘጋጅ...</translation>
-<translation id="8678698760965522072">የመስመር ላይ ሁኔታ</translation>
 <translation id="2532589005999780174">ባለከፍተኛ ንፅፅር ሁነታ</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>፣ <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">ውስጣዊ ስህተት</translation>
 <translation id="3019353588588144572">ባትሪ ሙሉ ኃይል እስኪኖረው ድረስ የሚቀረው ጊዜ፣ <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
-<translation id="7005812687360380971">አለመሳካት</translation>
 <translation id="882279321799040148">ለማየት ጠቅ ያድርጉ</translation>
 <translation id="1753067873202720523">የእርስዎ Chromebook በርቶ ሳለ ባትሪ ላይሞላ ይችላል።</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> <ph name="SPECIFIED_RESOLUTION"/>ን አይደግፍም። ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION"/> ተቀይሯል</translation>
@@ -184,7 +166,6 @@
 <translation id="225680501294068881">መሣሪያዎችን በመቃኘት ላይ...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>፣ <ph name="DATE"/></translation>
 <translation id="737451040872859086">ማይክሮፎን (ውስጣዊ)</translation>
-<translation id="4448844063988177157">የWi-Fi አውታረ መረቦችን በመፈለግ ላይ…</translation>
 <translation id="8401662262483418323">ከ«<ph name="NAME"/>» ጋር መገናኘት አልተቻለም፦ <ph name="DETAILS"/>
 የአገልጋይ መልዕክት፦ <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">ስህተት ተከስቷል</translation>
@@ -193,7 +174,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> በ<ph name="DOMAIN"/> የሚቀናበር ይፋዊ ክፍለ ጊዜ ነው</translation>
 <translation id="9044646465488564462">ከአውታረ መረብ ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">ከክፍለ-ጊዜ ውጣ</translation>
-<translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
 <translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ነው።</translation>
@@ -205,7 +185,6 @@
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
 <translation id="6732801395666424405">የእውቅና ማረጋገጫዎች አልተጫኑም</translation>
 <translation id="7573962313813535744">ትክል ሁነታ</translation>
-<translation id="8927026611342028580">መገናኘት ተጠይቋል</translation>
 <translation id="8300849813060516376">OTASP አልተሳካም</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> ፋይል/ፋይሎችን በማመሳሰል ላይ</translation>
@@ -214,7 +193,6 @@
 <translation id="639644700271529076">CAPS LOCK ጠፍቷል</translation>
 <translation id="6248847161401822652">ለመተው Control Shift Qን ሁለት ጊዜ ይጫኑ።</translation>
 <translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>፦ በማግበር ላይ...</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="5947494881799873997">አድህር</translation>
@@ -225,7 +203,6 @@
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="158849752021629804">የቤት አውታረ መረብ ያስፈልጋል</translation>
 <translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780"><ph name="NETWORKSERVICE"/>ን አግብር</translation>
 <translation id="5864471791310927901">የDHCP ፍለጋ አልተሳካም</translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="5507786745520522457">የተንቀሳቃሽ ስልክ ውሂብ ያዋቅሩ</translation>
@@ -234,7 +211,6 @@
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS"/> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="743058460480092004">ካሜራና ማይክራፎን ስራ ላይ ናቸው።</translation>
 <translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
-<translation id="6636709850131805001">ያልታወቀ ሁኔታ</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">ወደ «<ph name="FROM_LOCALE"/>» መልሰህ ቀይር (ዳግም ማስጀመር ይፈልጋል)</translation>
 <translation id="8103386449138765447">የኤስ ኤም ኤስ መልዕክቶች፦ <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ቀርቷል</translation>
 <translation id="3009178788565917040">ውጽዓት</translation>
 <translation id="520760366042891468">የማያ ገጽዎን ቁጥጥር በHangouts በኩል በማጋራት ላይ።</translation>
-<translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
 <translation id="4015692727874266537">ሌላ መለያ ያስገቡ...</translation>
 <translation id="6911468394164995108">ሌላ ይቀላቀሉ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>፦ <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">የተጠቃሚ ስም/ይለፍ ቃል ትክክል አይደለም ወይም EAP-auth አልተሳካም</translation>
 <translation id="6359806961507272919">ኤስ ኤም ኤስ ከ<ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">ድምጸ ተያያዥ ሞደም</translation>
 </translationbundle>

@@ -666,7 +666,7 @@
 
           Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE"/> sẽ cài đặt tiện ích <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> từ URL cập nhật chuẩn trên Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về cách lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
-          Người dùng có thể gỡ cài đặt tiện ích do chính sách này chỉ định. Nếu bạn xóa tiện tích mở rộng khỏi danh sách này, thì tiện ích đó sẽ tự động được gỡ cài đặt bởi <ph name="PRODUCT_NAME"/>. Các tiện ích được chỉ định trong danh sách này cũng tự động được đưa vào danh sách trắng cho cài đặt; ExtensionsInstallBlacklist không ảnh hưởng đến chúng.
+          Người dùng có thể gỡ cài đặt tiện ích do chính sách này chỉ định. Nếu bạn xóa tiện tích khỏi danh sách này, thì tiện ích đó sẽ tự động được gỡ cài đặt bởi <ph name="PRODUCT_NAME"/>. Các tiện ích được chỉ định trong danh sách này cũng tự động được đưa vào danh sách trắng cho cài đặt; ExtensionsInstallBlacklist không ảnh hưởng đến chúng.
 
           Nếu chính sách này không được thiết lập, người dùng có thể gỡ cài đặt bất kỳ tiện ích nào trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Cài đặt tự động phát hiện proxy</translation>
@@ -725,7 +725,7 @@
 <translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
 <translation id="7260277299188117560">Tự động cập nhật p2p được bật</translation>
-<translation id="5316405756476735914">Cho phép bạn đặt liệu các trang web có được phép đặt dữ liệu cục bộ hay không. Bạn có thể cho phép hoặc từ chối đặt dữ liệu cục bộ đối với tất cả các trang web. Nếu không thiết lập chính sách này, 'AllowCookies' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="5316405756476735914">Cho phép bạn đặt liệu các trang web có được phép lưu dữ liệu trên máy hay không. Bạn có thể cho phép hoặc từ chối đặt dữ liệu trên máy đối với tất cả các trang web. Nếu không thiết lập chính sách này, 'AllowCookies' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
 <translation id="6467433935902485842">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy plugin. Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultPluginsSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -961,7 +961,7 @@
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.
 
       Nếu chính sách này không được đặt, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="2236488539271255289">Không cho phép bất kỳ trang web nào đặt dữ liệu cục bộ</translation>
+<translation id="2236488539271255289">Không cho phép bất kỳ trang web nào lưu dữ liệu trên máy</translation>
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
 <translation id="1305864769064309495">Từ điển ánh xạ các URL đến cờ boolean nêu rõ có quyền truy cập đến máy chủ lưu trữ không sẽ được phép (true) hoặc bị chặn (false).
 
@@ -1233,7 +1233,7 @@
 <translation id="4027608872760987929">Bật nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="2223598546285729819">Cài đặt thông báo mặc định</translation>
 <translation id="6158324314836466367">Tên cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
-<translation id="3984028218719007910">Xác định liệu <ph name="PRODUCT_OS_NAME"/> có lưu dữ liệu tài khoản cục bộ sau khi đăng xuất hay không. Nếu được đặt thành đúng, không có tài khoản lâu dài nào được <ph name="PRODUCT_OS_NAME"/> lưu và tất cả các dữ liệu từ phiên của người dùng sẽ bị hủy bỏ sau khi đăng xuất. Nếu chính sách này được đặt thành sai hoặc không được định cấu hình, thiết bị có thể lưu lại dữ liệu người dùng cục bộ (được mã hóa).</translation>
+<translation id="3984028218719007910">Xác định liệu <ph name="PRODUCT_OS_NAME"/> có lưu dữ liệu tài khoản trên máy sau khi đăng xuất hay không. Nếu được đặt thành đúng, không có tài khoản lâu dài nào được <ph name="PRODUCT_OS_NAME"/> lưu và tất cả các dữ liệu từ phiên của người dùng sẽ bị hủy bỏ sau khi đăng xuất. Nếu chính sách này được đặt thành sai hoặc không được định cấu hình, thiết bị có thể lưu lại dữ liệu người dùng trên máy (được mã hóa).</translation>
 <translation id="3793095274466276777">Định cấu hình kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cấu hình này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ luôn kiểm tra khi khởi động để xem đó có phải là trình duyệt mặc định không và tự động đăng ký chính nó nếu có thể. Nếu bạn tắt cài đặt này, <ph name="PRODUCT_NAME"/> sẽ không bao giờ kiểm tra xem đó có phải là trình duyệt mặc định không và vô hiệu hóa kiểm soát của người dùng để đặt tùy chọn này. Nếu cài đặt này không được thiết lập, <ph name="PRODUCT_NAME"/> sẽ cho phép người dùng kiểm soát xem đó có phải là trình duyệt mặc định không và có nên hiển thị thông báo cho người dùng hay không khi không phải là trình duyệt mặc định.</translation>
 <translation id="3504791027627803580">Chỉ định URL của công cụ tìm kiếm được dùng để cung cấp tìm kiếm theo hình ảnh. Yêu cầu tìm kiếm sẽ được gửi bằng phương thức GET. Nếu đặt chính sách DefaultSearchProviderImageURLPostParams thì yêu cầu tìm kiếm theo hình ảnh sẽ sử dụng phương thức POST thay thế.
 
@@ -1649,7 +1649,7 @@
 
           Nếu chính sách này được thiết lập thành false hoặc không được thiết lập, bàn phím sẽ tạo lệnh phím phương tiện mỗi mặc định và các lệnh phím chức năng khi giữ phím tìm kiếm.</translation>
 <translation id="2324547593752594014">Cho phép đăng nhập vào Chrome</translation>
-<translation id="172374442286684480">Cho phép tất cả trang web đặt dữ liệu cục bộ</translation>
+<translation id="172374442286684480">Cho phép tất cả trang web lưu dữ liệu trên máy</translation>
 <translation id="1151353063931113432">Cho phép hình ảnh trên các trang web này</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
 <translation id="2976002782221275500">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn pin.

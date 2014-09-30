@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Προτεινόμενες</translation>
 <translation id="4058922952496707368">Κλειδί &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Σφάλμα ανάλυσης πολιτικής</translation>
+<translation id="6628463337424475685">Αναζήτηση <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
 <translation id="1228893227497259893">Εσφαλμένο αναγνωριστικό οντότητας</translation>
 <translation id="6337534724793800597">Φιλτράρισμα πολιτικών με βάση το όνομα</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Περιοχή</translation>
 <translation id="1871208020102129563">Ο διακομιστής μεσολάβησης έχει ρυθμιστεί να χρησιμοποιεί διακομιστές μεσολάβησης και όχι μια διεύθυνση URL σεναρίου .pac.</translation>
+<translation id="8940229512486821554">Εκτέλεση εντολής <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Άγνωστο σφάλμα</translation>
 <translation id="112840717907525620">Η προσωρινή μνήμη της πολιτικής είναι εντάξει</translation>
 <translation id="3452404311384756672">Διάστημα ανάκτησης:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Η πολιτική δε βρέθηκε</translation>
 <translation id="3150653042067488994">Προσωρινό σφάλμα διακομιστή</translation>
 <translation id="7087282848513945231">Περιφέρεια</translation>
+<translation id="1132774398110320017">Ρυθμίσεις Αυτόματης συμπλήρωσης Chrome…</translation>
 <translation id="6458467102616083041">Αγνοήθηκε επειδή η προεπιλεγμένη αναζήτηση είναι απενεργοποιημένη από την πολιτική.</translation>
 <translation id="1227224963052638717">Άγνωστη πολιτική.</translation>
 <translation id="9207861905230894330">Αποτυχία προσθήκης άρθρου.</translation>
 <translation id="337363190475750230">Κατάργηση παροχής</translation>
 <translation id="2367567093518048410">Επίπεδο</translation>
+<translation id="7977590112176369853">&lt;πληκτρολογήστε ερώτημα&gt;</translation>
 <translation id="7610193165460212391">Η τιμή είναι εκτός του εύρους τιμών <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="2096368010154057602">Νομός</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Αποτυχία αποθήκευσης ρυθμίσεων πολιτικής</translation>
 <translation id="5439770059721715174">Σφάλμα επαλήθευσης σχήματος σε &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Γραμμή σελιδοδεικτών</translation>
+<translation id="7208899522964477531">Αναζήτηση <ph name="SITE_NAME"/> για <ph name="SEARCH_TERMS"/></translation>
 <translation id="7956713633345437162">Σελιδοδείκτες κινητής συσκευής</translation>
 <translation id="5089810972385038852">Πολιτεία</translation>
 <translation id="647261751007945333">Πολιτικές συσκευών </translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Μη έγκυρο αίτημα ή παράμετροι αιτήματος</translation>
 <translation id="1640180200866533862">Πολιτικές χρηστών</translation>
 <translation id="375403751935624634">Η μετάφραση απέτυχε λόγω σφάλματος διακομιστή.</translation>
+<translation id="2597378329261239068">Αυτό το έγγραφο προστατεύεται με κωδικό πρόσβασης.  Πληκτρολογήστε έναν κωδικό πρόσβασης.</translation>
 <translation id="5629630648637658800">Αποτυχία φόρτωσης ρυθμίσεων πολιτικής</translation>
 <translation id="2354001756790975382">Άλλοι σελιδοδείκτες</translation>
 <translation id="3650584904733503804">Επιτυχής επικύρωση</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Συσκευή</translation>
 <translation id="8249320324621329438">Τελευταία ανάκτηση:</translation>
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
+<translation id="1344588688991793829">Ρυθμίσεις αυτόματης συμπλήρωσης Chromium…</translation>
 <translation id="6282194474023008486">Ταχυδρομικός κώδικας</translation>
 <translation id="443673843213245140">Η χρήση ενός διακομιστή μεσολάβησης είναι απενεργοποιημένη, αλλά έχει καθοριστεί μια ρητή διαμόρφωση διακομιστή μεσολάβησης.</translation>
 <translation id="3623476034248543066">Εμφάνιση τιμής</translation>
 <translation id="9020542370529661692">Αυτή η σελίδα έχει μεταφραστεί στα <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5631439013527180824">Μη έγκυρο διακριτικό διαχείρισης συσκευής</translation>
 <translation id="560412284261940334">Η διαχείριση δεν υποστηρίζεται</translation>
+<translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Αυτή η σελίδα έχει μεταφραστεί από μια άγνωστη γλώσσας στα <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Σφάλμα δικτύου</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Κατάσταση:</translation>
 <translation id="1832546148887467272">Αλλαγή σε <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Επαρχία</translation>
-<translation id="1847321074516120686">Ρυθμίσεις Αυτόματης συμπλήρωσης Chrome</translation>
+<translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>
 <translation id="1152021252151287493">Εσφαλμένη υπογραφή επαλήθευσης.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Το αίτημα ήταν επιτυχές</translation>

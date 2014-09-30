@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">Dodaj račun za korisnika <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Rotacija je uključena (dodirnite ovdje za promjenu)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">Stanje mreže: Portal</translation>
 <translation id="30155388420722288">Gumb padajućeg izbornika</translation>
+<translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth omogućen</translation>
 <translation id="6310121235600822547">Zaslon <ph name="DISPLAY_NAME"/> rotiran je za <ph name="ROTATION"/></translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">HTTP GET neuspješan</translation>
 <translation id="2297568595583585744">Ladica statusa</translation>
 <translation id="1661867754829461514">Nedostaje PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: povezivanje...</translation>
 <translation id="2248649616066688669">Možete nastaviti upotrebljavati svoj Chromebook dok je povezan s vanjskim zaslonom, čak i ako je poklopac zatvoren.</translation>
 <translation id="40400351611212369">Pogreška aktivacije mreže</translation>
 <translation id="4237016987259239829">Pogreška mrežne veze</translation>
@@ -46,13 +45,11 @@
 Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6043994281159824495">Odjavi se odmah</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
-<translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
 <translation id="4625920103690741805">Rotacija je zaključana (dodirnite ovdje za promjenu)</translation>
 <translation id="3799026279081545374">Možda imate neispravan punjač. Ako živite u SAD-u, nazovite 866-628-1371 da biste dobili pomoć i zamjenski punjač. Ako živite u Velikoj Britaniji, nazovite 0800-026-0613. Ako živite u Irskoj, nazovite 1-800-832-664. Ako živite u Kanadi, nazovite 866-628-1372. Ako živite u Australiji, nazovite 1-800-067-460.</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
 <translation id="5871632337994001636">Upravljanje uređajima...</translation>
 <translation id="785750925697875037">Prikaz mobilnog računa</translation>
-<translation id="153454903766751181">Inicijaliziranje modema mobilne mreže...</translation>
 <translation id="4628814525959230255">Dijelite kontrolu nad zaslonom s korisnikom <ph name="HELPER_NAME"/> putem značajke Hangouts.</translation>
 <translation id="7864539943188674973">Onemogući Bluetooth</translation>
 <translation id="939252827960237676">Snimka zaslona nije spremljena</translation>
@@ -60,8 +57,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Ponovo pokrenite za ažuriranje</translation>
 <translation id="2268813581635650749">Odjavi sve</translation>
-<translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
-<translation id="7320906967354320621">U mirovanju</translation>
 <translation id="15373452373711364">Veliki pokazivač miša</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
@@ -70,13 +65,12 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="8676770494376880701">Priključen je punjač male snage</translation>
 <translation id="5238774010593222950">Nije moguća prijava na drugi račun.</translation>
 <translation id="1723752762323179280">Napuštanje sesije</translation>
+<translation id="1426410128494586442">Da</translation>
 <translation id="7170041865419449892">Izvan raspona</translation>
-<translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="2544853746127077729">Mreža je odbila certifikat za autentifikaciju</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">Konfiguracija</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="4957722034734105353">Saznajte više...</translation>
 <translation id="2964193600955408481">Onemogući Wi-Fi</translation>
@@ -85,7 +79,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2509468283778169019">Opcija CAPS LOCK uključena</translation>
 <translation id="3892641579809465218">Unutarnji zaslon</translation>
 <translation id="7823564328645135659">Jezik je promijenjen iz: &quot;<ph name="FROM_LOCALE"/>&quot; u: &quot;<ph name="TO_LOCALE"/>&quot; nakon sinkronizacije vaših postavki.</translation>
-<translation id="3368922792935385530">Spojeno</translation>
 <translation id="3606978283550408104">Brajev je redak povezan.</translation>
 <translation id="8654520615680304441">Uključite Wi-Fi...</translation>
 <translation id="6650933572246256093">Bluetooth uređaj &quot;<ph name="DEVICE_NAME"/>&quot; traži dopuštenje za uparivanje. Unesite ovaj pristupni ključ na tom uređaju: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="5825747213122829519">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID"/>.
 Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2562916301614567480">Privatna mreža</translation>
-<translation id="6549021752953852991">Mobilne mreže nisu dostupne</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">Ne</translation>
 <translation id="4379753398862151997">Dragi monitoru, naša veza neće uspjeti. (Taj monitor nije podržan)</translation>
 <translation id="6426039856985689743">Onemogući mobilne podatke</translation>
 <translation id="3087734570205094154">Donji</translation>
 <translation id="3742055079367172538">Izrađena je snimka zaslona</translation>
 <translation id="8878886163241303700">Produljenje zaslona</translation>
-<translation id="5271016907025319479">VPN nije konfiguriran.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Administrator je onemogućio izradu snimki zaslona.</translation>
 <translation id="372094107052732682">Pritisnite Ctrl + Shift + Q dvaput da biste odustali.</translation>
@@ -118,10 +110,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2614835198358683673">Chromebook se možda neće puniti dok je uključen. Savjetujemo upotrebu službenog punjača.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="4442424173763614572">Nije uspjelo pretraživanje DNS poslužitelja</translation>
-<translation id="7874779702599364982">Traženje mobilnih mreža...</translation>
-<translation id="583281660410589416">Nepoznato</translation>
 <translation id="1383876407941801731">Traži</translation>
-<translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Podaci o mreži</translation>
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Izlazak iz sesije gosta</translation>
@@ -131,7 +120,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="1346748346194534595">Udesno</translation>
 <translation id="1773212559869067373">Certifikat za autentifikaciju odbijen je lokalno</translation>
 <translation id="8528322925433439945">Mobilne mreže...</translation>
-<translation id="7049357003967926684">Udruživanje</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="2372145515558759244">Sinkroniziranje aplikacija...</translation>
 <translation id="7256405249507348194">Neprepoznata pogreška: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="7925247922861151263">Provjera AAA nije uspjela</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do potpune napunjenosti</translation>
-<translation id="4479639480957787382">Eternet</translation>
 <translation id="6312403991423642364">Nepoznata mrežna pogreška</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME"/></translation>
 <translation id="4527045527269911712">Bluetooth uređaj &quot;<ph name="DEVICE_NAME"/>&quot; traži dopuštenje za uparivanje.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatski klikovi</translation>
@@ -153,38 +139,33 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="252373100621549798">Nepoznati zaslon</translation>
 <translation id="1882897271359938046">Zrcaljenje na zaslon <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
+<translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Zaključaj</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
-<translation id="1512064327686280138">Neuspjela aktivacija</translation>
 <translation id="5097002363526479830">Neuspješno povezivanje s mrežom &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi je isključen.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3433830597744061105">Upravljaj računima</translation>
 <translation id="2966449113954629791">Vjerojatno ste potrošili dopuštenu količinu mobilnih podataka. Posjetite aktivacijski portal <ph name="NAME"/> kako biste kupili još podataka.</translation>
 <translation id="742594950370306541">Fotoaparat je aktivan.</translation>
-<translation id="8132793192354020517">Povezano s <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
-<translation id="8678698760965522072">Stanje na mreži</translation>
 <translation id="2532589005999780174">Način visokog kontrasta</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Interna pogreška</translation>
 <translation id="3019353588588144572">Baterija će se napuniti za <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Povećalo</translation>
-<translation id="7005812687360380971">Neuspjeh</translation>
 <translation id="882279321799040148">Kliknite za prikaz</translation>
 <translation id="1753067873202720523">Chromebook se možda neće puniti dok je uključen.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ne podržava razlučivost <ph name="SPECIFIED_RESOLUTION"/>. Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Netočna zaporka</translation>
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
 <translation id="68610848741840742">ChromeVox (govorne povratne informacije)</translation>
-<translation id="6981982820502123353">Dostupnost</translation>
+<translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="6585808820553845416">Sesija će završiti za <ph name="SESSION_TIME_REMAINING"/>.</translation>
 <translation id="4274292172790327596">Neprepoznata pogreška</translation>
 <translation id="5977415296283489383">Slušalice</translation>
 <translation id="225680501294068881">Pretraživanje uređaja...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">Mikrofon (ugrađeni)</translation>
-<translation id="4448844063988177157">Traženje Wi-Fi mreža...</translation>
 <translation id="8401662262483418323">Povezivanje s mrežom &quot;<ph name="NAME"/>&quot; nije uspjelo: <ph name="DETAILS"/>
 Poruka poslužitelja: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Došlo je do pogreške</translation>
@@ -193,7 +174,6 @@ Poruka poslužitelja: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> predstavlja javnu sesiju kojom upravlja domena <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Povezivanje s mrežom nije uspjelo: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
-<translation id="8454013096329229812">Wi-Fi je uključen.</translation>
 <translation id="4872237917498892622">Alt + Pretraživanje ili Shift</translation>
 <translation id="2429753432712299108">Bluetooth uređaj &quot;<ph name="DEVICE_NAME"/>&quot; traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Baterija je <ph name="PERCENTAGE"/>% puna.</translation>
@@ -205,7 +185,6 @@ Poruka poslužitelja: <ph name="SERVER_MSG"/></translation>
 <translation id="112308213915226829">Automatski sakrij policu</translation>
 <translation id="6732801395666424405">Certifikati se nisu učitali</translation>
 <translation id="7573962313813535744">Način rada u priključnoj stanici</translation>
-<translation id="8927026611342028580">Podnesen je zahtjev za povezivanje</translation>
 <translation id="8300849813060516376">OTASP nije uspio</translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="8660803626959853127">Sinkroniziranje datoteka (<ph name="COUNT"/>)</translation>
@@ -214,7 +193,6 @@ Poruka poslužitelja: <ph name="SERVER_MSG"/></translation>
 <translation id="639644700271529076">Tipka CAPS LOCK isključena</translation>
 <translation id="6248847161401822652">Pritisnite tipke Control, Shift i Q dvaput da biste odustali.</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE"/>% puna i puni se.</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: aktiviranje...</translation>
 <translation id="4895488851634969361">Baterija je puna.</translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
 <translation id="5947494881799873997">Vrati</translation>
@@ -225,7 +203,6 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="158849752021629804">Potrebna je matična mreža</translation>
 <translation id="1013923882670373915">Bluetooth uređaj &quot;<ph name="DEVICE_NAME"/>&quot; traži dopuštenje za uparivanje. Unesite ovaj PIN na tom uređaju: <ph name="PINCODE"/>.</translation>
-<translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP pretraživanje nije uspjelo</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
 <translation id="5507786745520522457">Postavljanje mobilnih podataka</translation>
@@ -234,7 +211,6 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
 <translation id="8372369524088641025">Neispravan WEP ključ</translation>
-<translation id="6636709850131805001">Neprepoznato stanje</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Vratite na &quot;<ph name="FROM_LOCALE"/>&quot; (zahtijeva ponovno pokretanje)</translation>
 <translation id="8103386449138765447">SMS poruke: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="5102001756192215136">Preostalo <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Izlaz</translation>
 <translation id="520760366042891468">Dijelite kontrolu nad zaslonom putem značajke Hangouts.</translation>
-<translation id="8000066093800657092">Nema mreže</translation>
 <translation id="4015692727874266537">Prijavite se na još jedan račun...</translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Netočno korisničko ime/zaporka ili neuspjela EAP autentifikacija</translation>
 <translation id="6359806961507272919">SMS šalje <ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">Davatelj usluge</translation>
 </translationbundle>

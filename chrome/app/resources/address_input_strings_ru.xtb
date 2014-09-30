@@ -28,11 +28,12 @@
 <translation id="43113324827158664">Это поле должно быть заполнено.</translation>
 <translation id="3050787670591910834">Укажите почтовый индекс, например <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Почтовый индекс</translation>
+<translation id="5937097533660449554">Область</translation>
 <translation id="4376888869070172068">Неправильный формат почтового индекса.</translation>
 <translation id="8446364922515257065">Провинция/город</translation>
 <translation id="4518701284698680367">Укажите почтовый индекс, например <ph name="EXAMPLE"/>. Забыли его? Нажмите <ph name="BEGIN_LINK"/>здесь<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Недопустимый формат почтового индекса. Пример корректного написания: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Почтовый индекс не соответствует адресу.</translation>
 <translation id="5095208057601539847">Провинция</translation>
-<translation id="5327248766486351172">Имя</translation>
+<translation id="5327248766486351172">Название</translation>
 </translationbundle>

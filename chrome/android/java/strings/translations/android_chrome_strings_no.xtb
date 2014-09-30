@@ -40,17 +40,16 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="8627706565932943526">Synkroniseringsfeil</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
-<translation id="4043215103217793252">Rediger bokmerket for siden</translation>
 <translation id="656628257199996201">Oversett alltid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="4619298195800598081">Åpne det opprinnelige bildet i en ny fane</translation>
+<translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="7267430310003164111">Forespørsel om nedlasting av en app fra Google Play-butikken. Appnavn: <ph name="APP_NAME"/>. Appens gjennomsnittlige vurdering: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Fanen er lukket</translation>
 <translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="969096075394517431">Endre språk</translation>
-<translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5032574515228824816">Ledetekst</translation>
-<translation id="4847896847259487518">Legg til bokmerke for siden</translation>
 <translation id="497421865427891073">Gå til neste</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>

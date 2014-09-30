@@ -1,20 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="2286950485307333924">Anda sudah masuk ke Chrome</translation>
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>
-<translation id="8485767968786176057">Kalau begini, alamat yang tercantum dalam sertifikat tidak cocok dengan alamat situs web yang ingin dituju browser Anda. Satu kemungkinan penyebabnya adalah komunikasi Anda sedang diganggu oleh penyerang yang memberikan sertifikat untuk situs web lain, sehingga mengakibatkan ketidakcocokan. Kemungkinan lain adalah server dikonfigurasi untuk menampilkan sertifikat yang sama untuk beberapa situs web, termasuk salah satu yang akan dikunjungi, meskipun sertifikat tersebut tidak valid bagi semua situs web tersebut. Google Chrome dapat memastikan bahwa Anda mencapai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi bahwa itu adalah situs yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang ingin Anda buka. Jika Anda melanjutkan, Chrome tidak akan memeriksa setiap ketidakcocokan nama lebih lanjut.</translation>
+<translation id="1302523850133262269">Harap tunggu selagi Chrome memasang pembaruan sistem terkini.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">Chrome OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="5430073640787465221">File preferensi Anda rusak atau tidak valid. Google Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
-<translation id="7952135150021331855">Google Chrome berjalan di latar belakang.</translation>
 <translation id="345171907106878721">Tambahkan diri Anda ke Chrome</translation>
+<translation id="4921569541910214635">Membagikan komputer? Kini Anda dapat menyiapkan Chrome seperti yang Anda inginkan.</translation>
 <translation id="6236285698028833233">Google Chrome telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi Anda ini.</translation>
 <translation id="5453904507266736060">Jalankan Google Chrome di Latar Belakang</translation>
 <translation id="3454512769850953877">Ya, keluar dari Chrome</translation>
 <translation id="4167057906098955729">Anda dapat melihat semua pemberitahuan dari aplikasi, ekstensi, dan situs web Chrome di sini.</translation>
 <translation id="2704356438731803243">Jika Anda memilih untuk menjaga data Chrome yang sudah ada tetap terpisah, Anda dapat membuat pengguna Chrome baru untuk <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
+<translation id="3784527566857328444">Buang Dari Chrome...</translation>
 <translation id="1225016890511909183">Chrome akan menyimpan informasi dengan aman sehingga Anda tidak harus mengetiknya lagi, tapi Anda masih harus memverifikasi kode keamanan kartu untuk pembayaran di masa mendatang.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="8838365799985821335">Sebuah ekstensi telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chrome.</translation>
@@ -24,7 +26,6 @@
 <translation id="5251420635869119124">Tamu dapat menggunakan Chrome tanpa meninggalkan apa pun.</translation>
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="110877069173485804">Ini Chrome Anda</translation>
-<translation id="1376881911183620035">Terima kasih telah mencoba Chrome baru. Chrome perlu dimulai ulang untuk memastikan bahwa Anda telah menyimpan pekerjaan apa pun yang sedang dikerjakan sebelum melanjutkan.</translation>
 <translation id="8406086379114794905">Bantu kami membuat Chrome jadi lebih baik</translation>
 <translation id="2896252579017640304">Luncurkan aplikasi Chrome</translation>
 <translation id="2721687379934343312">Di Mac, sandi disimpan pada Keychain Anda dan dapat diakses atau disinkronkan oleh pengguna Chrome lain yang berbagi akun OS X ini.</translation>
@@ -42,6 +43,7 @@
 <translation id="4987308747895123092">Tutup semua jendela Google Chrome (termasuk jendela dalam mode Windows 8) dan coba lagi.</translation>
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
+<translation id="8987477933582888019">Browser Web</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
@@ -49,6 +51,7 @@
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="7060865993964054389">Peluncur Aplikasi Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome tidak dapat membaca dan menulis ke direktori datanya: <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="127345590676626841">Chrome diperbarui secara otomatis sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chrome akan dimulai ulang dan segera siap digunakan.</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME"/>. Link yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
 <translation id="1480489203462860648">Cobalah, ini sudah dipasang</translation>
@@ -56,9 +59,10 @@
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS"/>. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="4513711165509885787">Detail penagihan Anda telah disimpan di Chrome.</translation>
+<translation id="5253588388888612165">Jika Anda membagikan komputer ini dengan <ph name="PROFILE_NAME"/>, tambahkan diri Anda ke Chrome untuk menjelajah secara terpisah. Jika tidak, putuskan dari Akun Google-nya.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kontrol Google Chrome</translation>
-<translation id="6423071462708908582">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang kedaluwarsa. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut telah disusupi sejak masa kedaluwarsa. Hal ini mengindikasikan bahwa Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi kesalahan ini dan menyegarkan laman.</translation>
+<translation id="5298539825145851748">Buang Dari Chrome</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
@@ -72,26 +76,28 @@
 <translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
 <translation id="345168553362876363">Peluncur Aplikasi Google Chrome adalah platform yang berdiri sendiri untuk aplikasi Chrome.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
-<translation id="8684521613357479262">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang belum valid. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut dapat dipercaya. Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi jam sistem Anda dan menyegarkan laman ini.</translation>
+<translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
+<translation id="7473136999113284234">Chrome otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> berbahaya dan Chrome telah memblokirnya.</translation>
 <translation id="6368958679917195344">Chrome OS terwujud karena <ph name="BEGIN_LINK_CROS_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
 <translation id="7459554271817304652">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Google Chrome di komputer mana pun.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
+<translation id="4424024547088906515">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN"/>; sertifikat keamanannya tidak dipercaya oleh Chrome. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
 <translation id="1195935957447623558">Google Chrome tidak dinonaktifkan dengan benar. Untuk membuka kembali laman yang pernah dibuka, klik Pulihkan.</translation>
 <translation id="2576431527583832481">Chrome jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="4633000520311261472">Agar Chrome lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum pada <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="3656661827369545115">Meluncurkan Chromium secara otomatis saat komputer Anda dimulai</translation>
+<translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN"/>; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
 <translation id="8460191995881063249">Pusat Pemberitahuan Chrome</translation>
 <translation id="1457721931618994305">Memperbarui Google Chrome...</translation>
 <translation id="2429317896000329049">Google Chrome tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
-<translation id="6557998774620459028">Anda bermaksud membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang diterbitkan oleh entitas yang tidak dipercayai oleh sistem operasi komputer Anda. Ini mungkin berarti server telah membuat kredensial keamanannya sendiri, yang tidak dapat diandalkan Chrome untuk informasi identitas, atau penyerang mungkin mencoba mencegat komunikasi Anda.</translation>
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
 <translation id="7282192067747128786">Chrome - Pemberitahuan (<ph name="QUANTITY"/> belum dibaca)</translation>
 <translation id="6011049234605203654">Buka
@@ -108,24 +114,24 @@
 <translation id="7908968924842975895">Komputer ini tidak akan lagi menerima pembaruan Google Chrome karena perangkat kerasnya tidak didukung lagi.</translation>
 <translation id="2748463065602559597">Anda sedang melihat laman Google Chrome yang aman.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> telah ditambahkan ke Chrome.</translation>
-<translation id="1786477462680638703">Anda bermaksud membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang diterbitkan oleh entitas yang tidak dipercayai oleh Google Chrome. Ini mungkin berarti server telah membuat kredensial keamanannya sendiri, yang tidak dapat diandalkan Chrome untuk informasi identitas, atau penyerang mungkin mencoba mencegat komunikasi Anda.</translation>
 <translation id="7494905215383356681">Lisensi sumber terbuka Chrome</translation>
 <translation id="2346876346033403680">Sebelumnya ada seseorang yang masuk ke Chrome di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST"/>. Jika itu bukan akun Anda, buatlah pengguna Chrome baru untuk menjaga informasi Anda tetap terpisah.
 
 Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Peringatan:<ph name="END_BOLD"/> Google Chrome tidak dapat mencegah ekstensi merekam riwayat penjelajahan Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, batalkan pilihan opsi ini.</translation>
+<translation id="7808348361785373670">Buang dari Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2664962310688259219">Lisensi sumber terbuka Chrome OS</translation>
 <translation id="2290014774651636340">Kunci API Google tidak ada. Beberapa fungsi Google Chrome tidak akan berfungsi.</translation>
 <translation id="4794050651896644714">Simpan detail di Chrome</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
-<translation id="2036562258783619899">Pratinjau Chrome baru</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="7164397146364144019">Anda dapat membantu membuat Chrome lebih aman dan lebih mudah digunakan dengan melaporkan detail secara otomatis tentang kemungkinan insiden keamanan ke Google.</translation>
 <translation id="8008534537613507642">Pasang Ulang Chrome</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome bisa ada berkat proyek sumber terbuka yaitu <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan berbagai <ph name="BEGIN_LINK_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_OSS"/> lainnya.</translation>
+<translation id="7191567847629796517">Google Chrome OS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="3847841918622877581">Google Chrome dapat menggunakan layanan web guna meningkatkan pengalaman menjelajahi Anda.</translation>
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
@@ -147,7 +153,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="3612333635265770873">Modul dengan nama yang sama biasanya konflik dengan Google Chrome.</translation>
 <translation id="2665296953892887393">Bantu Google Chrome jadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK"/> ke Google</translation>
 <translation id="7761834446675418963">Klik nama Anda untuk membuka Chrome dan mulai menjelajah.</translation>
-<translation id="4864451188650489141">Anda dapat menambahkan Akun Google Anda yang lain dan mengunci Chromium di bawah.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> dapat membahayakan pengalaman penjelajahan Anda sehingga Chrome telah memblokirnya.</translation>
 <translation id="5875635642195358109">Buka
         menu Chrome &gt;
@@ -178,23 +183,19 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="163860049029591106">Memulai dengan Chrome OS</translation>
 <translation id="1587223624401073077">Google Chrome menggunakan kamera Anda.</translation>
 <translation id="1399397803214730675">Komputer ini telah memiliki versi Google Chrome yang lebih anyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome dan coba lagi.</translation>
-<translation id="576822117893741893">Tampilkan menu Chrome</translation>
 <translation id="3444832043240812445">Laman ini hanya menunjukkan informasi tentang kondisi ngadat terkini jika Anda <ph name="BEGIN_LINK"/>mengaktifkan pelaporan kondisi ngadat<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="2681064822612051220">Terjadi konflik pemasangan Google Chrome pada sistem. Hapus pemasangan dan coba lagi.</translation>
-<translation id="8209985377776300429">Anda sedang mempratinjau Chrome baru.</translation>
 <translation id="6126631249883707068">Ingin Google Chrome menyimpan sandi Anda?</translation>
 <translation id="7773845170078702898">Ingin Google Chrome menyimpan sandi Anda untuk situs ini?</translation>
 <translation id="4251615635259297716">Tautkan data Chrome Anda ke akun ini?</translation>
 <translation id="7125719106133729027">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda melewatkan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chrome secara manual.</translation>
 <translation id="5940385492829620908">Web, bookmark, dan barang Chrome Anda lainnya tersedia di sini.</translation>
-<translation id="8865765905101981392">Browser Internet</translation>
-<translation id="3039245375609697729">Cobalah cara baru menggunakan Chrome dengan Akun Google dan di komputer bersama.</translation>
+<translation id="629218512217695915">Gunakan sandi yang dibuat oleh Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome menjadi lebih baik</translation>
 <translation id="174539241580958092">Google Chrome tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>
-<translation id="2189123953385179981">Google ChromeOS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Izinkan Chrome untuk mengakses jaringan di setelan firewall atau antivirus
         Anda.</translation>
 <translation id="9102715433345326100">File ini berbahaya dan Chrome memblokirnya.</translation>
@@ -217,19 +218,21 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
           dan batalkan pilihan &quot;Gunakan server proxy untuk LAN&quot;.</translation>
 <translation id="6598387184982954187">Anda menggunakan <ph name="PROFILE_EMAIL"/> untuk menyinkronkan barang-barang Chrome. Untuk memperbarui preferensi sinkronisasi atau untuk menggunakan Chrome tanpa akun Google, kunjungi <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Instalasi gagal karena kesalahan yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
+<translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN"/>; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="4458285410772214805">Keluar dan masuk lagi agar perubahan ini diterapkan.</translation>
 <translation id="8679801911857917785">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="5334545119300433702">Modul ini biasanya konflik dengan Google Chrome.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome sudah diperbarui.</translation>
 <translation id="4120075327926916474">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
+<translation id="3037838751736561277">Google Chrome berjalan di mode latar belakang.</translation>
 <translation id="2084710999043359739">Tambah ke Chrome</translation>
+<translation id="4692614041509923516">Komputer Anda sedang menjalankan versi lama Microsoft Windows yang tidak dapat memproses sertifikat keamanan situs web ini. Karena masalah ini, Google Chrome tidak mengerti apakah sertifikat ini berasal dari <ph name="SITE"/> atau dari seseorang di jaringan Anda yang berpura-pura menjadi <ph name="SITE"/>. Perbarui komputer Anda ke versi Windows yang lebih baru.</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="6991142834212251086">Tautkan data Chrome saya ke akun ini</translation>
 <translation id="3451115285585441894">Menambahkan ke Chrome...</translation>
-<translation id="6502165024350711060">Disarankan oleh Chrome</translation>
 <translation id="3047079729301751317">Memutuskan sambungan <ph name="USERNAME"/> akan menghapus riwayat, bookmark, setelan, dan data Chrome Anda lainnya yang tersimpan di perangkat. Data tersimpan di Akun Google tidak akan dihapus dan dapat dikelola di <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dasbor<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Arsip instalatur rusak atau tidak valid. Unduh kembali Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat menampilkan pratinjau cetak jika penampil PDF default hilang.</translation>
@@ -242,7 +245,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="853189717709780425">Anda masuk dengan akun yang dikelola dan memberikan administratornya kendali atas profil Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME"/>. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain.</translation>
 <translation id="6049075767726609708">Administrator telah menginstal Google Chrome di sistem ini dan tersedia bagi seluruh pengguna. Sekarang tingkat sistem Google Chrome akan mengganti penginstalan tingkat pengguna Anda.</translation>
 <translation id="1818142563254268765">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chrome.</translation>
-<translation id="4338032231047635328">Anda bermaksud membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sertifikat yang ditunjukkan server berisi kesalahan. Google Chrome tidak dapat menggunakan sertifikat berisi kesalahan dan tidak dapat memvalidasi identitas situs yang coba Anda sambungkan.</translation>
+<translation id="7408085963519505752">Persyaratan Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Hampir diperbarui! Luncurkan ulang Google Chrome untuk menyelesaikan pembaruan.</translation>
 <translation id="884296878221830158">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome atau mengeklik tombol Beranda.</translation>

@@ -40,17 +40,16 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="473775607612524610">Ažuriraj</translation>
 <translation id="8627706565932943526">Pogreška sinkronizacije</translation>
 <translation id="8374821112118309944">Morate ažurirati TalkBack na najnoviju verziju.</translation>
-<translation id="4043215103217793252">Uređivanje oznake stranice</translation>
 <translation id="656628257199996201">Uvijek prevodi <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="5684874026226664614">Ups. Stranicu nije bilo moguće prevesti.</translation>
 <translation id="8503813439785031346">Korisničko ime</translation>
 <translation id="4619298195800598081">Izvornik na novoj kartici</translation>
+<translation id="3254409185687681395">Označi ovu stranicu</translation>
 <translation id="907015151729920253">Pametna kartica</translation>
 <translation id="3063601790762993062">Spremi videozapis</translation>
 <translation id="6042308850641462728">Više</translation>
 <translation id="7267430310003164111">Pitanje o preuzimanju aplikacije iz Trgovine Google Play. Naziv aplikacije: <ph name="APP_NAME"/>. Prosječna ocjena aplikacije: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Kartica zatvorena</translation>
 <translation id="4148957013307229264">Instaliranje...</translation>
 <translation id="3992315671621218278">Spremi vezu</translation>
 <translation id="8034522405403831421">Jezik ove stranice jest <ph name="SOURCE_LANGUAGE"/>. Želite li je prevesti na <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="6333140779060797560">Dijeljenje putem aplikacije <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="969096075394517431">Promijenite jezike</translation>
-<translation id="5556459405103347317">Ponovno učitaj</translation>
 <translation id="5032574515228824816">Upit</translation>
-<translation id="4847896847259487518">Označavanje web-stranice</translation>
 <translation id="497421865427891073">Idi naprijed</translation>
 <translation id="8310344678080805313">Standardne kartice</translation>
 <translation id="6277522088822131679">Pojavio se problem prilikom ispisivanja stranice. Pokušajte ponovo.</translation>

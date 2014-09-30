@@ -25,14 +25,15 @@
 <translation id="9207002871037636573">Jums ir jānorāda pasta indekss, piemēram, <ph name="EXAMPLE"/>.</translation>
 <translation id="5089810972385038852">Štats</translation>
 <translation id="6735419622867539268">Vērtība “<ph name="FIELD_VALUE"/>” nav atpazīta kā atbilstoša šim laukam.</translation>
-<translation id="43113324827158664">Šo lauku nedrīkst atstāt tukšu.</translation>
+<translation id="43113324827158664">Šis lauks nedrīkst būt tukšs.</translation>
 <translation id="3050787670591910834">Jums ir jānorāda pasta indekss, piemēram, <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Pasta indekss</translation>
+<translation id="5937097533660449554">Apgabals</translation>
 <translation id="4376888869070172068">Šis pasta indeksa formāts nav atpazīts.</translation>
 <translation id="8446364922515257065">Do/si</translation>
 <translation id="4518701284698680367">Jums ir jānorāda pasta indekss, piemēram, <ph name="EXAMPLE"/>. Vai nezināt savu pasta indeksu? Uzziniet to <ph name="BEGIN_LINK"/>šeit<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Šis pasta indeksa formāts nav atpazīts. Derīga pasta indeksa piemērs: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Šķiet, ka šis pasta indekss neatbilst pārējai adreses informācijai.</translation>
 <translation id="5095208057601539847">Province</translation>
-<translation id="5327248766486351172">Vārds</translation>
+<translation id="5327248766486351172">Nosaukums</translation>
 </translationbundle>

@@ -1,22 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="2286950485307333924">You're now signed in to Chrome</translation>
 <translation id="8000275528373650868">Google Chrome requires Windows Vista or Windows XP with SP2 or higher.</translation>
-<translation id="8485767968786176057">In this case, the address listed in the certificate does not match the address of the website that your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Google Chrome can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chrome will not check for any further name mismatches.</translation>
+<translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="5430073640787465221">Your preferences file is corrupt or invalid.
 
 Google Chrome is unable to recover your settings.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
-<translation id="7952135150021331855">Google Chrome is running in the background.</translation>
 <translation id="345171907106878721">Add yourself to Chrome</translation>
+<translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
 <translation id="6236285698028833233">Google Chrome has stopped updating and no longer supports this version of your operating system.</translation>
 <translation id="5453904507266736060">Let Google Chrome Run In The Background</translation>
 <translation id="3454512769850953877">Yes, exit Chrome</translation>
 <translation id="4167057906098955729">You can see all your notifications from Chrome apps, extensions and websites here.</translation>
 <translation id="2704356438731803243">If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
+<translation id="3784527566857328444">Remove from Chrome</translation>
 <translation id="1225016890511909183">Chrome will securely store your information so you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="8838365799985821335">An extension has changed what page is shown when you start Chrome.</translation>
@@ -28,7 +30,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5251420635869119124">Guests can use Chrome without leaving anything behind.</translation>
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
 <translation id="110877069173485804">This is your Chrome</translation>
-<translation id="1376881911183620035">Thanks for trying out the new Chrome. Chrome needs to restart so make sure that you've saved any open work before continuing.</translation>
 <translation id="8406086379114794905">Help make Chrome better</translation>
 <translation id="2896252579017640304">Launch Chrome apps</translation>
 <translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
@@ -46,6 +47,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4987308747895123092">Please close all Google Chrome windows (including those in Windows 8 mode) and try again.</translation>
 <translation id="568643307450491754">Find your bookmarks in the Chrome menu or on the bookmarks bar.</translation>
 <translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
+<translation id="8987477933582888019">Web Browser</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
@@ -55,6 +57,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="127345590676626841">Chrome updates automatically so that you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="8227755444512189073">Google Chrome needs to launch an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>
 <translation id="1480489203462860648">Try it out, it's already installed</translation>
@@ -62,9 +65,10 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS"/>. Please use the same account to sign in again.</translation>
 <translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
+<translation id="5253588388888612165">If you share this computer with <ph name="PROFILE_NAME"/>, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
-<translation id="6423071462708908582">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
+<translation id="5298539825145851748">Remove from Chrome</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
@@ -78,26 +82,28 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
 <translation id="345168553362876363">Google Chrome App Launcher is a standalone platform for Chrome apps.</translation>
 <translation id="225614027745146050">Welcome</translation>
-<translation id="8684521613357479262">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct your system's clock and then refresh this page.</translation>
+<translation id="7473891865547856676">No Thanks</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="7473136999113284234">Chrome updates automatically so that you always have the freshest version.</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> is malicious and Chrome has blocked it.</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Set up Sync to save your personalised browser features to the web and access them from Google Chrome on any computer.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
+<translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="1195935957447623558">Google Chrome didn't shut down correctly. To reopen the pages that you had open, click Restore.</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
 <translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
+<translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="8460191995881063249">Chrome Notification Center</translation>
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
 <translation id="2429317896000329049">Google Chrome could not sync your data because Sync is not available for your domain.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
-<translation id="6557998774620459028">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by your computer's operating system. This may mean that the server has generated its own security credentials, which Chrome cannot rely on for identity information, or an attacker may be trying to intercept your communications.</translation>
 <translation id="5170938038195470297">Your profile cannot be used because it is from a newer version of Google Chrome.
 
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
@@ -116,24 +122,24 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="7908968924842975895">This computer will no longer receive Google Chrome updates because its hardware is no longer supported.</translation>
 <translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> has been added to Chrome.</translation>
-<translation id="1786477462680638703">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by Google Chrome. This may mean that the server has generated its own security credentials, which Chrome cannot rely on for identity information, or an attacker may be trying to intercept your communications.</translation>
 <translation id="7494905215383356681">Chrome open source licences</translation>
 <translation id="2346876346033403680">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST"/>. If that isn't your account, create a new Chrome user to keep your information separate.
 
 Signing in anyway will merge Chrome information like bookmarks, history and other settings to <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Warning:<ph name="END_BOLD"/> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
+<translation id="7808348361785373670">Remove from Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2664962310688259219">Chrome OS open source licences</translation>
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="4794050651896644714">Save details in Chrome</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
-<translation id="2036562258783619899">Preview the new Chrome</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
 <translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7191567847629796517">Google Chrome OS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
 <translation id="7436949144778751379">Google Chrome requires Windows XP or later. Some features may not work.</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
@@ -155,7 +161,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK"/> to Google</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>
-<translation id="4864451188650489141">You can add your other Google Accounts and lock your Chromium below.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> may harm your browsing experience, so Chrome has blocked it.</translation>
 <translation id="5875635642195358109">Go to
         the Chrome menu &gt;
@@ -186,23 +191,19 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="163860049029591106">Get Started with Chrome OS</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
-<translation id="576822117893741893">Show the Chrome menu</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="2681064822612051220">A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.</translation>
-<translation id="8209985377776300429">You're previewing the new Chrome.</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
 <translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
 <translation id="7125719106133729027">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to manually reinstall Chrome.</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
-<translation id="8865765905101981392">Internet Browser</translation>
-<translation id="3039245375609697729">Try the new way to use Chrome with your Google Account and on shared computers.</translation>
+<translation id="629218512217695915">Use password generated by Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome just got better</translation>
 <translation id="174539241580958092">Google Chrome could not sync your data due to an error signing in.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
-<translation id="2189123953385179981">Google ChromeOS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
         settings.</translation>
 <translation id="9102715433345326100">This file is malicious and Chrome has blocked it.</translation>
@@ -225,19 +226,21 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
           and deselect &quot;Use a proxy server for your LAN&quot;.</translation>
 <translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL"/> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google account, visit <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
+<translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="8679801911857917785">It also controls what page is shown when you start Chrome.</translation>
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="4120075327926916474">Do you want Chrome to save this credit card information for completing web forms?</translation>
+<translation id="3037838751736561277">Google Chrome is in background mode.</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
+<translation id="4692614041509923516">Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Google Chrome can't tell whether the certificate came from <ph name="SITE"/> or from someone on your network pretending to be <ph name="SITE"/>. Please update your computer to a more recent version of Windows.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="6991142834212251086">Link my Chrome data to this account</translation>
 <translation id="3451115285585441894">Adding to Chrome...</translation>
-<translation id="6502165024350711060">Suggested by Chrome</translation>
 <translation id="3047079729301751317">Disconnecting <ph name="USERNAME"/> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
@@ -250,7 +253,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="1818142563254268765">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chrome.</translation>
-<translation id="4338032231047635328">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to.</translation>
+<translation id="7408085963519505752">Chrome OS terms</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>

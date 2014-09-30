@@ -28,11 +28,12 @@
 <translation id="43113324827158664">To pole nie może pozostać puste.</translation>
 <translation id="3050787670591910834">Musisz podać kod pocztowy – np. <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Kod pocztowy</translation>
+<translation id="5937097533660449554">Obwód</translation>
 <translation id="4376888869070172068">Nie można rozpoznać formatu kodu pocztowego.</translation>
 <translation id="8446364922515257065">Do/Si</translation>
 <translation id="4518701284698680367">Musisz podać kod pocztowy – np. <ph name="EXAMPLE"/>. Nie znasz swojego kodu? Sprawdzisz go <ph name="BEGIN_LINK"/>tutaj<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Format kodu pocztowego nie został rozpoznany. Prawidłowy kod powinien wyglądać na przykład tak: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Wygląda na to, że ten kod pocztowy nie pasuje do pozostałych informacji adresowych.</translation>
 <translation id="5095208057601539847">Prowincja</translation>
-<translation id="5327248766486351172">Imię i nazwisko</translation>
+<translation id="5327248766486351172">Nazwa</translation>
 </translationbundle>

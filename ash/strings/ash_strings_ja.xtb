@@ -5,8 +5,8 @@
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> のアカウントを追加</translation>
 <translation id="1057289296854808272">自動回転（タップして変更）</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">ポータル状態</translation>
 <translation id="30155388420722288">オーバーフロー ボタン</translation>
+<translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> を <ph name="ROTATION"/> に回転しました</translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">HTTP を取得できませんでした</translation>
 <translation id="2297568595583585744">ステータス トレイ</translation>
 <translation id="1661867754829461514">PIN がありません</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: 接続しています...</translation>
 <translation id="2248649616066688669">外部ディスプレイに接続している間は、本体を閉じた状態でも Chromebook を使用できます。</translation>
 <translation id="40400351611212369">ネットワーク有効化エラー</translation>
 <translation id="4237016987259239829">ネットワーク接続エラー</translation>
@@ -46,13 +45,11 @@
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="6043994281159824495">ログアウト</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
-<translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
 <translation id="4625920103690741805">回転しない（タップして変更）</translation>
 <translation id="3799026279081545374">充電器に問題がある可能性があります。お住まいの国に応じて、それぞれのサポート/交換対応窓口までお問い合わせください。米国にお住まいの場合は 866-628-1371 までお電話ください。英国にお住まいの場合は 0800-026-0613 までお電話ください。アイルランドにお住まいの場合は 1-800-832-664 までお電話ください。カナダにお住まいの場合は 866-628-1372 までお電話ください。オーストラリアにお住まいの場合は 1-800-067-460 までお電話ください。</translation>
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
-<translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
 <translation id="4628814525959230255">ハングアウトを介して画面の制御を <ph name="HELPER_NAME"/> さんと共有しています。</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
@@ -60,8 +57,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/>（USB）</translation>
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
-<translation id="735745346212279324">VPN が切断されました</translation>
-<translation id="7320906967354320621">待機中</translation>
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
@@ -70,13 +65,12 @@
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="5238774010593222950">別のアカウントにログインできません。</translation>
 <translation id="1723752762323179280">セッションを終了</translation>
+<translation id="1426410128494586442">はい</translation>
 <translation id="7170041865419449892">圏外</translation>
-<translation id="4804818685124855865">切断</translation>
 <translation id="2544853746127077729">認証証明書がネットワークによって拒否されました</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">設定</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="4957722034734105353">詳細...</translation>
 <translation id="2964193600955408481">Wi-Fi を無効にする</translation>
@@ -85,7 +79,6 @@
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="3892641579809465218">内蔵ディスプレイ</translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
-<translation id="3368922792935385530">接続済み</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="8654520615680304441">Wi-Fi をオンにする...</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="2562916301614567480">プライベート ネットワーク</translation>
-<translation id="6549021752953852991">利用可能なセルラー ネットワークがありません</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/>（HDMI）</translation>
+<translation id="4250680216510889253">いいえ</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us.（このモニターはサポートされていません）</translation>
 <translation id="6426039856985689743">モバイル データを無効にする</translation>
 <translation id="3087734570205094154">下</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="8878886163241303700">画面を拡張しています</translation>
-<translation id="5271016907025319479">VPN が設定されていません。</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/>（Bluetooth）</translation>
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="372094107052732682">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
@@ -118,10 +110,7 @@
 <translation id="2614835198358683673">この充電器がオンになっている間は、Chromebook が充電されない可能性があります。正規の充電器の使用をご検討ください。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4442424173763614572">DNS を検索できませんでした</translation>
-<translation id="7874779702599364982">携帯電話ネットワークを検索しています...</translation>
-<translation id="583281660410589416">不明</translation>
 <translation id="1383876407941801731">検索</translation>
-<translation id="3901991538546252627"><ph name="NAME"/> に接続しています</translation>
 <translation id="2204305834655267233">ネットワーク情報</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ゲスト セッションを終了</translation>
@@ -131,7 +120,6 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
 <translation id="8528322925433439945">モバイル...</translation>
-<translation id="7049357003967926684">アソシエーション</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="2372145515558759244">アプリの同期中...</translation>
 <translation id="7256405249507348194">不明なエラー: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@
 <translation id="2894654529758326923">情報</translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
 <translation id="8456362689280298700">フル充電まで: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="4479639480957787382">イーサネット</translation>
 <translation id="6312403991423642364">ネットワークが不明なためエラーが発生しました</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> を有効にしています</translation>
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">自動クリック</translation>
@@ -153,26 +139,22 @@
 <translation id="252373100621549798">不明なディスプレイ</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> へミラーリング</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
+<translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME"/>、<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="2805756323405976993">アプリ</translation>
-<translation id="1512064327686280138">起動失敗</translation>
 <translation id="5097002363526479830">ネットワーク「<ph name="NAME"/>」に接続できませんでした: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="3433830597744061105">アカウントを管理</translation>
 <translation id="2966449113954629791">モバイル データの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME"/> の有効化ポータルにアクセスしてください。</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
-<translation id="8132793192354020517"><ph name="NAME"/> に接続しました</translation>
 <translation id="7052914147756339792">壁紙を設定...</translation>
-<translation id="8678698760965522072">オンライン状態</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>、<ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">内部エラー</translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
-<translation id="7005812687360380971">エラー</translation>
 <translation id="882279321799040148">クリックして表示</translation>
-<translation id="1753067873202720523">このメッセージが表示されているときは、Chromebook の充電はできません。</translation>
+<translation id="1753067873202720523">このメッセージが表示されているときは、Chromebook が充電されない可能性があります。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> は <ph name="SPECIFIED_RESOLUTION"/> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION"/> に変更されました</translation>
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
@@ -184,7 +166,6 @@
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
 <translation id="737451040872859086">マイク（内蔵）</translation>
-<translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
 <translation id="8401662262483418323">'<ph name="NAME"/>' への接続に失敗しました: <ph name="DETAILS"/>
 サーバー メッセージ: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
@@ -193,7 +174,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> は <ph name="DOMAIN"/> が管理する公開セッションです</translation>
 <translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">セッションを終了</translation>
-<translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE"/>%。</translation>
@@ -205,7 +185,6 @@
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="6732801395666424405">証明書が読み込まれていません</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
-<translation id="8927026611342028580">接続をリクエスト済み</translation>
 <translation id="8300849813060516376">OTASP に失敗しました</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> 個のファイルを同期中</translation>
@@ -214,7 +193,6 @@
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE"/>%、充電しています。</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: 有効にしています...</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="5947494881799873997">元に戻す</translation>
@@ -225,7 +203,6 @@
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="158849752021629804">ホーム ネットワークが必要です</translation>
 <translation id="1013923882670373915">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。このデバイスに次の PIN コードを入力してください: <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> を有効にする</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
 <translation id="5507786745520522457">モバイル データを設定する</translation>
@@ -234,7 +211,6 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> 秒後に元の解像度に戻ります</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
-<translation id="6636709850131805001">不明な状態</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE"/>」に戻します（再起動が必要です）</translation>
 <translation id="8103386449138765447">SMS メッセージ: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">出力</translation>
 <translation id="520760366042891468">ハングアウトを介して画面の制御を共有しています。</translation>
-<translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="4015692727874266537">別のアカウントにログイン...</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">ユーザー名/パスワードが正しくないか、EAP 認証に失敗しました</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> の SMS</translation>
-<translation id="1244147615850840081">通信会社</translation>
 </translationbundle>

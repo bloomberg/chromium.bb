@@ -28,11 +28,12 @@
 <translation id="43113324827158664">To polje ne možete ostaviti prazno.</translation>
 <translation id="3050787670591910834">Morate navesti poštanski broj, na primjer <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Poštanski broj</translation>
+<translation id="5937097533660449554">Oblast</translation>
 <translation id="4376888869070172068">To nije važeći format poštanskog broja.</translation>
 <translation id="8446364922515257065">Do/si</translation>
 <translation id="4518701284698680367">Morate navesti ZIP kôd, na primjer <ph name="EXAMPLE"/>. Ne znate svoj ZIP kôd? Saznajte ga <ph name="BEGIN_LINK"/>ovdje<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Format poštanskog broja nije prepoznat. Primjer važećeg poštanskog broja: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Izgleda da taj poštanski broj ne odgovara ostatku adrese.</translation>
 <translation id="5095208057601539847">Provincija</translation>
-<translation id="5327248766486351172">Ime</translation>
+<translation id="5327248766486351172">Naziv</translation>
 </translationbundle>

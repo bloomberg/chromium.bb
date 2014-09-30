@@ -28,11 +28,12 @@
 <translation id="43113324827158664">Це поле не може бути порожнім.</translation>
 <translation id="3050787670591910834">Потрібно вказати поштовий індекс, наприклад, <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Поштовий код</translation>
+<translation id="5937097533660449554">Область</translation>
 <translation id="4376888869070172068">Формат поштового індексу не розпізнано.</translation>
 <translation id="8446364922515257065">До/сі (провінція/місто)</translation>
 <translation id="4518701284698680367">Потрібно вказати поштовий індекс, наприклад, <ph name="EXAMPLE"/>. Не знаєте свій поштовий індекс? Знайдіть його <ph name="BEGIN_LINK"/>тут<ph name="END_LINK"/>.</translation>
 <translation id="3882422586004212847">Формат поштового індексу не розпізнано. Приклад дійсного поштового індексу: <ph name="EXAMPLE"/>.</translation>
 <translation id="9104066683700680171">Схоже, поштовий індекс не відповідає іншим частинам адреси.</translation>
 <translation id="5095208057601539847">Провінція чи область</translation>
-<translation id="5327248766486351172">Ім’я</translation>
+<translation id="5327248766486351172">Назва</translation>
 </translationbundle>

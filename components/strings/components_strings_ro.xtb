@@ -13,6 +13,7 @@
 <translation id="7298195798382681320">Recomandate</translation>
 <translation id="4058922952496707368">Cheie „<ph name="SUBKEY"/>”: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Eroare la analizarea politicii</translation>
+<translation id="6628463337424475685">Căutare <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">Traduceți</translation>
 <translation id="1228893227497259893">Identificator greșit pentru entitate</translation>
 <translation id="6337534724793800597">Filtrați politicile după nume</translation>
@@ -39,6 +40,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Zonă</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
+<translation id="8940229512486821554">Executați comanda <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Eroare necunoscută</translation>
 <translation id="112840717907525620">Memoria cache pentru politică este OK</translation>
 <translation id="3452404311384756672">Interval de preluare:</translation>
@@ -58,11 +60,13 @@
 <translation id="2212735316055980242">Politica nu a fost găsită</translation>
 <translation id="3150653042067488994">Eroare temporară de server</translation>
 <translation id="7087282848513945231">Comitat</translation>
+<translation id="1132774398110320017">Setări de completare automată în Chrome...</translation>
 <translation id="6458467102616083041">Valoare ignorată, deoarece politica a dezactivat căutarea prestabilită.</translation>
 <translation id="1227224963052638717">Politică necunoscută.</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
 <translation id="337363190475750230">Scos din uz</translation>
 <translation id="2367567093518048410">Nivel</translation>
+<translation id="7977590112176369853">&lt;introduceți interogarea&gt;</translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE"/>.</translation>
 <translation id="370665806235115550">Se încarcă…</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -100,6 +104,7 @@
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5439770059721715174">Eroare de validare a schemei la „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
+<translation id="7208899522964477531">Căutați <ph name="SEARCH_TERMS"/> pe <ph name="SITE_NAME"/></translation>
 <translation id="7956713633345437162">Marcaje mobile</translation>
 <translation id="5089810972385038852">Stat</translation>
 <translation id="647261751007945333">Politici privind dispozitivele</translation>
@@ -121,6 +126,7 @@
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
 <translation id="375403751935624634">Traducerea nu a reușit din cauza unei erori de server.</translation>
+<translation id="2597378329261239068">Acest document este protejat cu parolă. Introduceți o parolă.</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="3650584904733503804">Validarea a reușit</translation>
@@ -134,12 +140,14 @@
 <translation id="6965978654500191972">Dispozitiv</translation>
 <translation id="8249320324621329438">Ultima preluare:</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
+<translation id="1344588688991793829">Setări de completare automată în Chromium...</translation>
 <translation id="6282194474023008486">Cod poștal</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
 <translation id="3623476034248543066">Afișați valoarea</translation>
 <translation id="9020542370529661692">Această pagină a fost tradusă în <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Indicativ nevalid pentru gestionarea gadgetului</translation>
 <translation id="560412284261940334">Gestionarea nu este acceptată</translation>
+<translation id="1639239467298939599">Se încarcă</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
@@ -173,7 +181,7 @@
 <translation id="2639739919103226564">Stare:</translation>
 <translation id="1832546148887467272">Comutați la <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincie</translation>
-<translation id="1847321074516120686">Setări pentru Completare automată în Chrome</translation>
+<translation id="3934680773876859118">Documentul PDF nu a fost încărcat</translation>
 <translation id="1152021252151287493">Semnătură de verificare nevalidă.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>

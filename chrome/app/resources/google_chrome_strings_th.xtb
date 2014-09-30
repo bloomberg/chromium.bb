@@ -1,20 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="2286950485307333924">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="8000275528373650868">Google Chrome ต้องใช้ Windows Vista หรือ Windows XP พร้อม SP2 หรือที่สูงกว่า</translation>
-<translation id="8485767968786176057">ในกรณีนี้ ที่อยู่ที่ระบุไว้ในใบรับรองไม่ตรงกับที่อยู่เว็บไซต์ที่เบราว์เซอร์ของคุณพยายามไป เหตุผลหนึ่งที่เป็นไปได้สำหรับปัญหานี้คือการติดต่อสื่อสารของคุณถูกสกัดกั้นโดยผู้โจมตีที่แสดงใบรับรองของเว็บไซต์อื่นทำให้เกิดการจับคู่ที่ผิดพลาด อีกเหตุผลหนึ่งที่เป็นไปได้คือเซิร์ฟเวอร์ถูกตั้งค่าให้ส่งคืนใบรับรองเดียวกันสำหรับเว็บไซต์หลายแห่ง รวมทั้งเว็บไซต์ที่คุณพยายามเข้าถึงด้วย แม้ว่าใบรับรองนั้นจะไม่สามารถใช้ได้กับเว็บไซต์ทุกแห่งก็ตาม Google Chrome แน่ใจว่าคุณได้เข้าถึง &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; แล้วแต่ไม่สามารถยืนยันได้ว่าเป็นไซต์เดียวกับ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ที่คุณตั้งใจจะเข้าถึงหรือไม่ หากคุณดำเนินการต่อ Chrome จะไม่ตรวจหาการจับคู่ชื่อที่ผิดพลาดอื่นๆ ต่อไปอีก</translation>
+<translation id="1302523850133262269">โปรดรอขณะที่ Chrome ติดตั้งการอัปเดตระบบล่าสุด</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านสำหรับการซิงค์</translation>
 <translation id="5430073640787465221">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง Google Chrome ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
-<translation id="7952135150021331855">Google Chrome กำลังทำงานในพื้นหลัง</translation>
 <translation id="345171907106878721">เพิ่มตัวคุณเองใน Chrome</translation>
+<translation id="4921569541910214635">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chrome ในแบบที่คุณชอบได้แล้ว</translation>
 <translation id="6236285698028833233">Google Chrome ได้หยุดการอัปเดต และไม่สนับสนุนระบบปฏิบัติการเวอร์ชันนี้อีกต่อไป</translation>
 <translation id="5453904507266736060">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="3454512769850953877">ใช่ ออกจาก Chrome</translation>
 <translation id="4167057906098955729">คุณสามารถดูการแจ้งเตือนทั้งหมดของคุณจากแอป Chrome, ส่วนขยาย และเว็บไซต์ที่นี่</translation>
 <translation id="2704356438731803243">หากคุณต้องการเก็บข้อมูล Chrome ที่มีอยู่ของคุณแยกไว้ต่างหาก คุณสามารถสร้างผู้ใช้ Chrome ใหม่สำหรับ <ph name="USER_NAME"/></translation>
 <translation id="386202838227397562">โปรดปิดหน้าต่าง Google Chrome ทั้งหมดและลองใหม่อีกครั้ง</translation>
+<translation id="3784527566857328444">นำออกจาก Chrome...</translation>
 <translation id="1225016890511909183">Chrome จะเก็บข้อมูลของคุณอย่างปลอดภัยเพื่อให้คุณไม่จำเป็นต้องพิมพ์ข้อมูลนั้นอีกครั้ง แต่คุณจะยังคงต้องยืนยันรหัสรักษาความปลอดภัยของบัตรของคุณสำหรับการชำระเงินในอนาคต</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="8838365799985821335">มีส่วนขยายรายการหนึ่งเปลี่ยนหน้าเริ่มต้นของ Chrome</translation>
@@ -24,7 +26,6 @@
 <translation id="5251420635869119124">ผู้เยี่ยมชมสามารถใช้ Chrome ได้โดยไม่ทิ้งร่องรอยไว้</translation>
 <translation id="4891791193823137474">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="110877069173485804">นี่คือ Chrome ของคุณ</translation>
-<translation id="1376881911183620035">ขอขอบคุณสำหรับการลองใช้ Chrome ใหม่ Chrome จำเป็นต้องรีสตาร์ทเพื่อให้แน่ใจว่าคุณได้บันทึกงานใดๆ ที่เปิดไว้แล้ว ก่อนที่จะดำเนินการต่อ</translation>
 <translation id="8406086379114794905">ช่วยปรับปรุง Chrome ให้ดีขึ้น</translation>
 <translation id="2896252579017640304">เปิดแอปพลิเคชัน Chrome</translation>
 <translation id="2721687379934343312">สำหรับ Mac รหัสผ่านจะถูกบันทึกไว้ใน Keychain และผู้ใช้ Chrome คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
@@ -42,6 +43,7 @@
 <translation id="4987308747895123092">โปรดปิดหน้าต่าง Google Chrome ทั้งหมด (รวมทั้งในโหมด Windows 8 ด้วย) และลองอีกครั้ง</translation>
 <translation id="568643307450491754">ค้นหาบุ๊กมาร์กของคุณในเมนู Chrome หรือในแถบบุ๊กมาร์ก</translation>
 <translation id="8556340503434111824">มี Chrome รุ่นใหม่ให้ใช้งานแล้วและเร็วกว่าเดิม</translation>
+<translation id="8987477933582888019">เว็บเบราว์เซอร์</translation>
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
 <translation id="4149882025268051530">โปรแกรมติดตั้งยกเลิกการบีบอัดการเก็บข้อมูลไม่ได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
@@ -49,6 +51,7 @@
 <translation id="6989339256997917931">อัปเดต Google Chrome แล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="1682634494516646069">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล: <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="127345590676626841">Chrome ทำการอัปเดตโดยอัตโนมัติเพื่อให้คุณมีเวอร์ชันใหม่ล่าสุดเสมอ เมื่อดาวน์โหลดเสร็จ Chrome จะรีสตาร์ท และคุณจะสามารถใช้งานได้ทันที</translation>
 <translation id="8227755444512189073">Google Chrome จำเป็นต้องเรียกแอปพลิเคชันภายนอกเพื่อเปิดลิงก์ <ph name="SCHEME"/> ลิงก์ที่ขอคือ <ph name="PROTOLINK"/></translation>
 <translation id="8290100596633877290">อ๊ะ! Google Chrome ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
 <translation id="1480489203462860648">ลองใช้ ติดตั้งไว้แล้ว</translation>
@@ -56,9 +59,10 @@
 <translation id="1393853151966637042">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome</translation>
 <translation id="7398801000654795464">คุณเคยลงชื่อเข้าใช้ Chrome ในชื่อ <ph name="USER_EMAIL_ADDRESS"/> โปรดใช้บัญชีเดิมเพื่อลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="4513711165509885787">รายละเอียดการเรียกเก็บเงินของคุณได้ถูกบันทึกไว้ใน Chrome</translation>
+<translation id="5253588388888612165">หากคุณแชร์คอมพิวเตอร์นี้กับ <ph name="PROFILE_NAME"/> ให้เพิ่มตนเองไปยัง Chrome เพื่อแยกการเรียกดูออกมา มิเช่นนั้น ให้ยกเลิกการเชื่อมต่อบัญชี Google ของเขา</translation>
 <translation id="7098166902387133879">Google Chrome ใช้ไมโครโฟนอยู่</translation>
 <translation id="4053720452172726777">กำหนดค่าและควบคุม Google Chrome</translation>
-<translation id="6423071462708908582">คุณพยายามที่จะเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่หมดอายุแล้ว ไม่มีข้อมูลที่ระบุได้ว่าใบรับรองนั้นถูกโจมตีหรือไม่นับจากวันที่หมดอายุ ซึ่งหมายความว่า Google Chrome ไม่สามารถรับประกันได้ว่าคุณกำลังสื่อสารกับ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ไม่ใช่กับผู้บุกรุก เวลาปัจจุบันในเครื่องคอมพิวเตอร์ของคุณถูกตั้งค่าเป็น <ph name="CURRENT_TIME"/> เวลานี้ถูกต้องหรือไม่ ถ้าไม่ คุณควรจะแก้ไขให้ถูกต้องและรีเฟรชหน้าเว็บนี้</translation>
+<translation id="5298539825145851748">นำออกจาก Chrome</translation>
 <translation id="3197823471738295152">อุปกรณ์ของคุณทันสมัยแล้ว</translation>
 <translation id="8286862437124483331">Google Chrome กำลังพยายามแสดงรหัสผ่าน พิมพ์รหัสผ่าน Windows ของคุณเพื่อแสดงรหัสผ่าน</translation>
 <translation id="3889417619312448367">ยกเลิกการติดตั้ง Google Chrome</translation>
@@ -72,27 +76,29 @@
 <translation id="5037239767309817516">โปรดปิดหน้าต่าง Google Chrome ทั้งหมด แล้วเปิดใหม่อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="345168553362876363">Google Chrome App Launcher เป็นแพลตฟอร์มสแตนด์อโลนสำหรับแอปพลิเคชัน Chrome</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
-<translation id="8684521613357479262">คุณพยายามที่จะเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่ยังไม่ถูกต้อง ไม่มีข้อมูลที่ระบุได้ว่าใบรับรองนั้นเชื่อถือได้หรือไม่ Google Chrome ไม่สามารถรับประกันได้ว่าคุณกำลังสื่อสารกับ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ไม่ใช่กับผู้โจมตี เวลาปัจจุบันในเครื่องคอมพิวเตอร์ของคุณถูกตั้งค่าเป็น <ph name="CURRENT_TIME"/> เวลานี้ถูกต้องหรือไม่ ถ้าไม่ คุณควรจะแก้ไขให้ถูกต้องและรีเฟรชหน้าเว็บนี้</translation>
+<translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
+<translation id="7473136999113284234">Chrome จะอัปเดตโดยอัตโนมัติเพื่อให้คุณได้ใช้เวอร์ชันใหม่ล่าสุดอยู่เสมอ</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> เป็นอันตรายและ Chrome ได้บล็อกไฟล์ดังกล่าวไว้</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS"/>ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS"/>เพิ่มเติม</translation>
 <translation id="7459554271817304652">ตั้งค่าการซิงค์เพื่อบัน​​ทึกคุณลักษณะเบราว์เซอร์ในแบบของคุณไปยังเว็บและเข้าถึงได้จาก Google Chrome บนคอมพิวเตอร์เครื่องใดก็ได้</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="8823341990149967727">Chrome ล้าสมัย</translation>
+<translation id="4424024547088906515">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN"/> เพราะ Chrome ไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="473775607612524610">การอัปเดต</translation>
 <translation id="1195935957447623558">Google Chrome ไม่ได้ปิดอย่างถูกต้อง หากต้องการเปิดหน้าที่คุณเปิดไว้แล้วอีกครั้ง ให้คลิกที่ คืนค่า</translation>
 <translation id="2576431527583832481">Chrome พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
 <translation id="4633000520311261472">เพื่อให้ Chrome ปลอดภัยขึ้น เราปิดส่วนขยายบางรายการที่ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="3656661827369545115">เปิด Chromium โดยอัตโนมัติเมื่อเปิดคอมพิวเตอร์</translation>
+<translation id="1763864636252898013">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN"/> เพราะระบบปฏิบัติการของอุปกรณ์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="8460191995881063249">ศูนย์การแจ้งเตือนของ Chrome</translation>
 <translation id="1457721931618994305">กำลังอัปเดต Google Chrome...</translation>
 <translation id="2429317896000329049">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากไม่สามารถใช้การซิงค์กับโดเมนของคุณ</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>
-<translation id="6557998774620459028">คุณพยายามเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่ออกโดยหน่วยงานที่ระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือ ซึ่งอาจหมายความว่าเซิร์ฟเวอร์ได้สร้างข้อมูลรับรองความปลอดภัยของตัวเองขึ้น ซึ่ง Chrome ไม่สามารถเชื่อถือข้อมูลประจำตัวดังกล่าวได้ หรือผู้โจมตีอาจกำลังพยายามสกัดกั้นการติดต่อสื่อสารของคุณอยู่</translation>
 <translation id="5170938038195470297">โปรไฟล์ของคุณไม่สามารถใช้ได้เพราะมาจากรุ่นที่ใหม่กว่าของ Google Chrome คุณลักษณะบางอย่างอาจจะไม่พร้อมใช้งาน โปรดระบุไดเรกทอรีของโปรไฟล์อื่นหรือใช้ Chrome รุ่นที่ใหม่กว่า</translation>
 <translation id="7282192067747128786">Chrome - การแจ้งเตือน (ยังไม่ได้อ่าน <ph name="QUANTITY"/>)</translation>
 <translation id="6011049234605203654">ไปที่
@@ -109,24 +115,24 @@
 <translation id="7908968924842975895">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีกแล้ว เนื่องจากฮาร์ดแวร์ไม่ได้รับการสนับสนุนอีกต่อไป</translation>
 <translation id="2748463065602559597">คุณกำลังดูหน้าเว็บ Google Chrome ที่ปลอดภัย</translation>
 <translation id="7185038942300673794">เพิ่ม <ph name="EXTENSION_NAME"/> ลงใน Chrome แล้ว</translation>
-<translation id="1786477462680638703">คุณพยายามเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่ออกโดยหน่วยงานที่ Google Chrome ไม่เชื่อถือ ซึ่งอาจหมายความว่าเซิร์ฟเวอร์ได้สร้างข้อมูลรับรองความปลอดภัยของตัวเองขึ้น ซึ่ง Chrome ไม่สามารถเชื่อถือข้อมูลประจำตัวดังกล่าวได้ หรือผู้โจมตีอาจกำลังพยายามสกัดกั้นการติดต่อสื่อสารของคุณอยู่</translation>
 <translation id="7494905215383356681">ใบอนุญาตโอเพนซอร์สของ Chrome</translation>
 <translation id="2346876346033403680">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chrome บนคอมพิวเตอร์นี้ในชื่อ <ph name="ACCOUNT_EMAIL_LAST"/> หากนั่นไม่ใช่บัญชีของคุณ ให้สร้างผู้ใช้ Chrome ใหม่เพื่อเก็บข้อมูลแยก
 
 การลงชื่อเข้าใช้ต่อไปจะรวมข้อมูล Chrome เช่น บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ เข้ากับ <ph name="ACCOUNT_EMAIL_NEW"/></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>คำเตือน:<ph name="END_BOLD"/> Google Chrome ไม่สามารถป้องกันส่วนขยายจากการบันทึกประวัติการเรียกดู หากต้องการปิดใช้งานส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
+<translation id="7808348361785373670">นำออกจาก Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2664962310688259219">ใบอนุญาตโอเพนซอร์สของ Chrome OS</translation>
 <translation id="2290014774651636340">คีย์ API ของ Google หายไป การทำงานบางอย่างของ Google Chrome จะถูกปิดใช้งาน</translation>
 <translation id="4794050651896644714">บันทึกรายละเอียดใน Chrome</translation>
 <translation id="911206726377975832">ลบข้อมูลการท่องเว็บด้วยหรือไม่</translation>
-<translation id="2036562258783619899">ดูตัวอย่าง Chrome ใหม่</translation>
 <translation id="5855036575689098185">ซอฟต์แวร์ที่ทำงานบนคอมพิวเตอร์ของคุณไม่สามารถใช้ได้กับ Google Chrome</translation>
 <translation id="7164397146364144019">คุณสามารถช่วยปรับปรุงให้ Chrome ปลอดภัยและใช้งานง่ายขึ้นโดยรายงานรายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ</translation>
 <translation id="8008534537613507642">ติดตั้ง Chrome ใหม่</translation>
 <translation id="2044287590254833138">ดาวน์โหลดแถบเครื่องมือ Google Chrome</translation>
 <translation id="8862326446509486874">คุณไม่มีสิทธิ์ในการติดตั้งระดับระบบ ทดลองใช้งานโปรแกรมติดตั้งอีกครั้งโดยกำหนดให้เป็นผู้ดูแลระบบ</translation>
 <translation id="2874156562296220396">Google Chrome เป็นจริงขึ้นได้จากโครงการโอเพนซอร์ส <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> และ <ph name="BEGIN_LINK_OSS"/>ซอฟต์แวร์โอเพนซอร์สอื่นๆ<ph name="END_LINK_OSS"/></translation>
+<translation id="7191567847629796517">Google Chrome OS ไม่สนับสนุนการเรียกใช้แอปพลิเคชันภายนอกเพื่อจัดการลิงก์ <ph name="SCHEME"/> ลิงก์ที่ขอคือ <ph name="PROTOLINK"/></translation>
 <translation id="3847841918622877581">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงการเรียกดูของคุณ</translation>
 <translation id="7436949144778751379">Google Chrome ต้องใช้ Windows XP หรือรุ่นใหม่กว่า คุณลักษณะบางอย่างอาจไม่ทำงาน</translation>
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
@@ -138,7 +144,7 @@
 <translation id="1104959162601287462">เกี่ยวกับ &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
-<translation id="1759301979429102118">รายละเอียดจากที่อยู่ติดต่อของคุณช่วยให้คุณสามารถกรอกฟอร์มได้อย่างรวดเร็วขึ้นใน Chrome</translation>
+<translation id="1759301979429102118">รายละเอียดจากรายชื่อติดต่อของคุณช่วยให้คุณสามารถกรอกฟอร์มได้อย่างรวดเร็วขึ้นใน Chrome</translation>
 <translation id="7787950393032327779">ดูเหมือนว่าโปรไฟล์กำลังถูกใช้งานโดยกระบวนการอื่นของ Google Chrome (<ph name="PROCESS_ID"/>) บนคอมพิวเตอร์อีกเครื่อง (<ph name="HOST_NAME"/>)  Chrome ล็อกโปรไฟล์ไว้เพื่อไม่ให้โปรไฟล์เกิดความเสียหาย  หากคุณมั่นใจว่าไม่มีกระบวนการอื่นใดกำลังใช้โปรไฟล์นี้อยู่ คุณสามารถปลดล็อกโปรไฟล์และเปิด Chrome ใหม่</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="8568392309447938879">คุณจะต้องลงชื่อเข้าใช้ Chrome เพื่อใช้แอป ซึ่งจะช่วยให้ Chrome สามารถซิงค์แอป บุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ระหว่างอุปกรณ์ได้</translation>
@@ -148,7 +154,6 @@
 <translation id="3612333635265770873">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันจะมีความขัดแย้งกับ Google Chrome</translation>
 <translation id="2665296953892887393">ช่วยทำให้ Google Chrome ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK"/> ไปยัง Google</translation>
 <translation id="7761834446675418963">คลิกชื่อของคุณเพื่อเปิด Chrome และเริ่มท่องเว็บ</translation>
-<translation id="4864451188650489141">คุณสามารถเพิ่มบัญชีอื่นๆ ของ Google และล็อก Chromium ได้ตามวิธีด้านล่าง</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> อาจเป็นอันตรายต่อการท่องเว็บของคุณ Chrome จึงบล็อกไว้</translation>
 <translation id="5875635642195358109">ไปที่
         เมนู Chrome &gt;
@@ -179,23 +184,19 @@
 <translation id="163860049029591106">เริ่มต้นใช้งาน Chrome OS</translation>
 <translation id="1587223624401073077">Google Chrome ใช้กล้องของคุณอยู่</translation>
 <translation id="1399397803214730675">คอมพิวเตอร์เครื่องนี้มี Google Chrome รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome แล้วลองใหม่อีกครั้ง</translation>
-<translation id="576822117893741893">แสดงเมนู Chrome</translation>
 <translation id="3444832043240812445">หน้าเว็บนี้จะแสดงเฉพาะข้อมูลเกี่ยวกับข้อขัดข้องที่เกิดขึ้นเมื่อเร็วๆ นี้ของคุณเท่านั้น หากคุณ<ph name="BEGIN_LINK"/>เปิดใช้งานการรายงานข้อขัดข้อง<ph name="END_LINK"/></translation>
 <translation id="8614913330719544658">Google Chrome ไม่ตอบสนอง เปิดใช้งานใหม่ตอนนี้หรือไม่</translation>
 <translation id="2681064822612051220">พบข้อขัดแย้งในการติดตั้ง Google Chrome บนระบบ โปรดถอนการติดตั้งและลองอีกครั้ง</translation>
-<translation id="8209985377776300429">คุณกำลังดูตัวอย่าง Chrome ใหม่</translation>
 <translation id="6126631249883707068">คุณต้องการให้ Google Chrome บันทึกรหัสผ่านของคุณไหม</translation>
 <translation id="7773845170078702898">คุณต้องการให้ Google Chrome บันทึกรหัสผ่านของคุณสำหรับไซต์นี้หรือไม่</translation>
 <translation id="4251615635259297716">เชื่อมโยงข้อมูล Chrome กับบัญชีนี้ไหม</translation>
 <translation id="7125719106133729027">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดคุณลักษณะเจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องติดตั้ง Chrome ใหม่ด้วยตนเอง</translation>
 <translation id="5940385492829620908">เว็บของคุณ บุ๊กมาร์ก และสิ่งอื่นๆ ใน Chrome พร้อมใช้แล้วที่นี่</translation>
-<translation id="8865765905101981392">อินเทอร์เน็ตเบราว์เซอร์</translation>
-<translation id="3039245375609697729">ลองวิธีใหม่ในการใช้ Chrome กับบัญชี Google ของคุณและบนคอมพิวเตอร์ที่ใช้ร่วมกัน</translation>
+<translation id="629218512217695915">ใช้รหัสผ่านที่ Chrome สร้างขึ้น</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome ดีขึ้นกว่าเดิม</translation>
 <translation id="174539241580958092">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากเกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="8255190535488645436">Google Chrome ใช้กล้องและไมโครโฟนของคุณอยู่</translation>
-<translation id="2189123953385179981">Google ChromeOS ไม่สนับสนุนการเปิดใช้งานแอปพลิเคชันภายนอกเพื่อจัดการลิงก์ <ph name="SCHEME"/> ลิงก์ที่ร้องขอคือ <ph name="PROTOLINK"/></translation>
 <translation id="7396375882099008034">อนุญาตให้ Chrome เข้าถึงเครือข่ายในการตั้งค่าไฟร์วอลล์หรือโปรแกรม
         ป้องกันไวรัส</translation>
 <translation id="9102715433345326100">ไฟล์นี้เป็นอันตรายและ Chrome ได้บล็อกไฟล์ดังกล่าวไว้</translation>
@@ -218,19 +219,21 @@
           และยกเลิกการเลือก &quot;ใช้พร็อกซีเซิร์ฟเวอร์สำหรับ LAN ของคุณ&quot;</translation>
 <translation id="6598387184982954187">คุณกำลังใช้ <ph name="PROFILE_EMAIL"/> ในการซิงค์ข้อมูลใน Chrome หากต้องการอัปเดตค่ากำหนดการซิงค์หรือใช้ Chrome โดยไม่มีบัญชี Google โปรดไปที่ <ph name="SETTINGS_LINK"/></translation>
 <translation id="7825851276765848807">การติดตั้งล้มเหลวเนื่องจากเกิดข้อผิดพลาดที่ไม่ระบุ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
+<translation id="1150979032973867961">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN"/> เพราะระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
 <translation id="5334545119300433702">เป็นที่ทราบว่าโมดูลนี้ขัดแย้งกับ Google Chrome</translation>
 <translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome อัปเดตแล้ว</translation>
 <translation id="4120075327926916474">คุณต้องการให้ Chrome บันทึกข้อมูลบัตรเครดิตนี้เพื่อใช้กรอกแบบฟอร์มบนเว็บหรือไม่</translation>
+<translation id="3037838751736561277">Google Chrome กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>
 <translation id="2084710999043359739">เพิ่มลงใน Chrome</translation>
+<translation id="4692614041509923516">คุณใช้คอมพิวเตอร์ Microsoft Windows เวอร์ชันเก่า ซึ่งไม่สามารถดำเนินการกับใบรับรองความปลอดภัยของเว็บไซต์นี้ ซึ่งปัญหานี้ทำให้ Google Chrome ไม่สามารถบอกได้ว่าใบรับรองมาจาก <ph name="SITE"/> หรือจากบุคคลอื่นในเครือข่ายของคุณซึ่งตบตาว่าเป็น <ph name="SITE"/> โปรดอัปเดตคอมพิวเตอร์เป็นเวอร์ชัน Windows ที่ใหม่กว่านี้</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="1877026089748256423">Chrome ล้าสมัย</translation>
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="6991142834212251086">เชื่อมโยงข้อมูล Chrome ของฉันกับบัญชีนี้</translation>
 <translation id="3451115285585441894">กำลังเพิ่มลงใน Chrome...</translation>
-<translation id="6502165024350711060">แนะนำโดย Chrome</translation>
 <translation id="3047079729301751317">การยกเลิกการเชื่อมต่อกับ <ph name="USERNAME"/> จะล้างประวัติการเข้าชม บุ๊กมาร์ก การตั้งค่า และข้อมูลอื่นๆ ของ Chrome ที่เก็บไว้ในอุปกรณ์นี้ ข้อมูลที่เก็บไว้ในบัญชี Google ของคุณจะไม่ถูกล้างและสามารถจัดการได้บน <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/></translation>
 <translation id="1001534784610492198">การเก็บข้อมูลของโปรแกรมติดตั้งเสียหายหรือไม่ถูกต้อง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="2246246234298806438">Google Chrome ไม่สามารถแสดงหน้าตัวอย่างก่อนพิมพ์หากไม่มีโปรแกรมดู PDF ในตัว</translation>
@@ -243,7 +246,7 @@
 <translation id="853189717709780425">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีการจัดการ และให้อำนาจผู้ดูแลระบบของบัญชีดังกล่าวในการควบคุมโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะถูกผูกติดกับ <ph name="USER_NAME"/> อย่างถาวร คุณจะสามารถลบข้อมูลนี้ผ่านแดชบอร์ด Google Accounts ได้ แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่นได้</translation>
 <translation id="6049075767726609708">ผู้ดูแลระบบติดตั้ง Google Chrome ในระบบนี้แล้ว และผู้ใช้ทุกคนสามารถใช้งานได้ ขณะนี้ Google Chrome ระดับระบบจะแทนที่การติดตั้งระดับผู้ใช้ของคุณ</translation>
 <translation id="1818142563254268765">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดคุณลักษณะเจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องอัปเดต Chrome</translation>
-<translation id="4338032231047635328">คุณพยายามเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่ใบรับรองที่เซิร์ฟเวอร์แสดงมีข้อผิดพลาด Google Chrome ไม่สามารถใช้ใบรับรองที่มีข้อผิดพลาดและไม่สามารถตรวจสอบความถูกต้องของข้อมูลประจำตัวของไซต์ที่คุณพยายามเชื่อมต่อได้</translation>
+<translation id="7408085963519505752">ข้อกำหนดของ Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว! เปิด Google Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="884296878221830158">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือคลิกปุ่ม &quot;หน้าแรก&quot;</translation>

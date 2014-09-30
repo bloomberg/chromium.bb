@@ -40,17 +40,16 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="8627706565932943526">Errore di sincronizzazione</translation>
 <translation id="8374821112118309944">Aggiorna TalkBack a una versione più recente.</translation>
-<translation id="4043215103217793252">Modifica la pagina aggiunta ai segnalibri</translation>
 <translation id="656628257199996201">Traduci sempre da <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="4619298195800598081">Apri originale in nuova scheda</translation>
+<translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Salva video</translation>
 <translation id="6042308850641462728">Più</translation>
 <translation id="7267430310003164111">Viene chiesto di scaricare l'app dal Google Play Store. Nome dell'app: <ph name="APP_NAME"/>. Valutazione media dell'app: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Scheda chiusa</translation>
 <translation id="4148957013307229264">Installazione...</translation>
 <translation id="3992315671621218278">Salva link</translation>
 <translation id="8034522405403831421">Questa pagina è in <ph name="SOURCE_LANGUAGE"/>. Tradurla in <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="6333140779060797560">Condividi tramite <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="969096075394517431">Cambia le lingue</translation>
-<translation id="5556459405103347317">Ricarica</translation>
 <translation id="5032574515228824816">Messaggio</translation>
-<translation id="4847896847259487518">Aggiungi la pagina ai segnalibri</translation>
 <translation id="497421865427891073">Avanti</translation>
 <translation id="8310344678080805313">Schede standard</translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>

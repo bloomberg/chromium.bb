@@ -328,7 +328,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
 <translation id="6598235178374410284">Nutzer-Avatarbild</translation>
 <translation id="1675391920437889033">Legt fest, welche Typen von Apps bzw. Erweiterungen installiert werden können.
 
-          Diese Einstellung erstellt eine Whitelist der Typen von Erweiterungen bzw. Apps, die in <ph name="PRODUCT_NAME"/> installiert werden können. Der Wert besteht aus einer Liste von Zeichenfolgen, die jeweils einer der folgenden Zeichenfolgen entsprechen: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu Chrome-Erweiterungen.
+          Diese Einstellung erstellt eine weiße Liste der Typen von Erweiterungen bzw. Apps, die in <ph name="PRODUCT_NAME"/> installiert werden können. Der Wert besteht aus einer Liste von Zeichenfolgen, die jeweils einer der folgenden Zeichenfolgen entsprechen: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu Chrome-Erweiterungen.
 
           Diese Richtlinie betrifft auch Erweiterungen und Apps, deren Installation mit ExtensionInstallForcelist erzwungen wurde.
 

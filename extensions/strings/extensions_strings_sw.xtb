@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="8804398419035066391">Wasiliana na tovuti zinazoshirikiana</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Kitambulisho ya kiendelezi &quot;<ph name="EXTENSION_ID"/>&quot;) kimezuiwa na msimamizi.</translation>
+<translation id="1005274289863221750">Tumia kipazasauti na kamera yako</translation>
 <translation id="2857834222104759979">Faili ya ratiba sio halali.</translation>
-<translation id="8978038008714088448">Soma na uirekebishe data yako kwenye <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">Soma na uirekebishe data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, na <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Fikia kifaa cha USB.</translation>
 <translation id="6384275966486438344">Badilisha mipangilio yako ya kutafuta iwe: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">Kiendelezi hiki kinapunguza kasi ya <ph name="PRODUCT_NAME"/>. Unafa kukilemaza ili kurejesha upya utendaji wa <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1033780634303702874">Fikia vifaa vyako tambulishi</translation>
+<translation id="6241530762627360640">Fikia maelezo kuhusu vifaa vya Bluetooth vilivyooanishwa na mfumo wako na ugundue vifaa vya karibu vya Bluetooth.</translation>
 <translation id="5911798608827489036">Badilisha data kwa kompyuta yoyote kwenye mtandao au intaneti ya karibu</translation>
 <translation id="4719685943208231314">Fikia kifaa cha USB kutoka kwa <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Haikuweza kupakia hati ya mandharinyuma '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="9131487537093447019">Tuma na upokee barua kutoka kwenye vifaa vya Bluetooth.</translation>
+<translation id="8198425243160395623">Fikia vifaa vyako vya USB</translation>
 <translation id="8597109877291678953">Badilisha data kwa kompyuta iitwayo <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Kiendelezi hiki kinajumuisha faili muhimu '<ph name="KEY_PATH"/>'. Huenda hutaki kufanya hivyo.</translation>
 <translation id="2350172092385603347">Usanidi wa eneo umetumiwa, lakini eneo_chaguo-msingi halikubainishwa katika ratiba</translation>
+<translation id="3759933321830434300">Zuia sehemu za kurasa za mtandao</translation>
 <translation id="8058376558882514200">Fikia kifaa cha USB <ph name="PRODUCT_NAME"/> kutoka kwa <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">Fikia vifaa vya USB</translation>
 <translation id="149347756975725155">Aikoni '<ph name="ICON"/>' ya kiendelezi haikuweza kupakiwa.</translation>
+<translation id="8825366169884721447">Kiendelezi hiki kimeshindwa kuboresha kichwa cha ombi &quot;<ph name="HEADER_NAME"/>&quot; cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="388442998277590542">Isingeweza kupakia ukurasa wa chaguo <ph name="OPTIONS_PAGE"/> '.</translation>
 <translation id="6344170822609224263">Pata orodha ya miunganisho ya mtandao</translation>
+<translation id="2616366145935564096">Soma na ubadilishe data yako kwenye <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Badilisha data kwa kompyuta ziitwazo: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">Soma na ubadilishe data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, na <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Badilisha data kwa kompyuta yoyote kwenye kikoa <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">Fikia vifa vyako vya kuingiza data</translation>
+<translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME"/>) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="6840444547062817500">Kiendelezi hiki kilijipakia chenyewe upya kila mara.</translation>
+<translation id="8047248493720652249">Kiendelezi hiki kimeshindwa kukipa kipakuliwa jina &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; kwa sababu kipakuliwa kingine (<ph name="EXTENSION_NAME"/>) kimechagua jina tofauti la faili &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="4968399700653439437">Badilisha data kwa kompyuta yoyote kwenye vikoa: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">Mwonekano wa wavuti: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">tovuti zote <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Badilisha ukurasa wako wa mwanzo uwe: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">Soma na uirekebishe data yako kwenye tovuti <ph name="NUMBER_OF_WEBSITES"/></translation>
+<translation id="27822970480436970">Kiendelezi hiki kimeshindwa kurekebisha ombi la mtandao kwa sababu ya ukizano wa urekebishaji na kirefusho kingine.</translation>
+<translation id="2241053333139545397">Soma na ubadilishe data yako kwenye tovuti kadhaa</translation>
 <translation id="8602184400052594090">Faili ya ratiba haipatikani au haisomeki.</translation>
+<translation id="4883436287898674711">Tovuti zote <ph name="WEBSITE_1"/></translation>
+<translation id="9111791539553342076">Kiendelezi hiki kimeshindwa kuboresha kichwa cha jibu &quot;<ph name="HEADER_NAME"/>&quot; cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">Tumia kamera yako</translation>
+<translation id="8341840687457896278">Kiendelezi hiki kimeshindwa kutoa vitambulisho kwenye ombi la mtandao kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME"/>) kimetoa vitambulisho tofauti.</translation>
+<translation id="5627523580512561598">kiendelezi <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Fikia picha, muziki, na midia nyingine kwenye kompyuta yako</translation>
+<translation id="4761104368405085019">Tumia kipazasauti chako</translation>
 <translation id="7217838517480956708">Msimamizi wa mashine haya anahitaji <ph name="EXTENSION_NAME"/> kisakinishwe. Hakiwezi kuondolewa au kurekebishwa.</translation>
 <translation id="7154130902455071009">Badilisha ukurasa wako uwe: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">Soma na uirekebishe data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Soma na ubadilishe data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Ukurasa wa mandhari '<ph name="BACKGROUND_PAGE"/>' haukuweza kupakiwa.</translation>
-<translation id="8207052894957937969">Soma na uirekebishe data yako kwenye tovuti <ph name="NUMBER_OF_WEBSITES"/></translation>
 </translationbundle>

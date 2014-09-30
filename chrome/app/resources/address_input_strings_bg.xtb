@@ -28,6 +28,7 @@
 <translation id="43113324827158664">Трябва да попълните това.</translation>
 <translation id="3050787670591910834">Трябва да въведете пощенски код, например <ph name="EXAMPLE"/>.</translation>
 <translation id="6282194474023008486">Пощенски код</translation>
+<translation id="5937097533660449554">Област</translation>
 <translation id="4376888869070172068">Форматът на този пощенски код не е разпознат.</translation>
 <translation id="8446364922515257065">Провинция, град</translation>
 <translation id="4518701284698680367">Трябва да въведете пощенски код, например <ph name="EXAMPLE"/>. Не знаете своя? Открийте го <ph name="BEGIN_LINK"/>тук<ph name="END_LINK"/>.</translation>

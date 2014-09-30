@@ -38,17 +38,16 @@
 <translation id="473775607612524610">تحديث</translation>
 <translation id="8627706565932943526">حدث خطأ أثناء المزامنة</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
-<translation id="4043215103217793252">تعديل صفحة الإشارة</translation>
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE"/> دائمًا</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="4619298195800598081">فتح الصورة الأصلية بتبويب جديد</translation>
+<translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
 <translation id="907015151729920253">البطاقة الذكية</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="7267430310003164111">‏طلب الحصول على تطبيق من متجر Google Play.  اسم التطبيق: <ph name="APP_NAME"/>.  معدل التطبيق المتوسط: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">تم إغلاق علامة التبويب</translation>
 <translation id="4148957013307229264">جارٍ التثبيت...</translation>
 <translation id="3992315671621218278">حفظ الرابط</translation>
 <translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/>. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
@@ -75,9 +74,7 @@
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="969096075394517431">تغيير اللغات</translation>
-<translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5032574515228824816">مطالبة</translation>
-<translation id="4847896847259487518">وضع إشارة على الصفحة</translation>
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="8310344678080805313">علامات التبويب القياسية</translation>
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. الرجاء إعادة المحاولة.</translation>

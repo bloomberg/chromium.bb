@@ -1,20 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="2286950485307333924">Jesteś teraz zalogowany w Chrome</translation>
 <translation id="8000275528373650868">Google Chrome wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
-<translation id="8485767968786176057">W tym przypadku adres z certyfikatu nie pasuje do adresu strony, którą chcesz otworzyć w przeglądarce. Jedna z możliwych przyczyn to przechwycenie komunikacji przez intruza, który przedstawił certyfikat innej strony. Inna jest taka, że serwer zwraca ten sam certyfikat przy wielu stronach (również tej, którą próbujesz odwiedzić), mimo że jest on ważny tylko dla jednej. W tej chwili masz dostęp do &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale Google Chrome nie jest w stanie stwierdzić, czy to ta sama strona co &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na którą chcesz wejść. Jeśli przejdziesz dalej, przeglądarka nie będzie sprawdzać innych niezgodności nazw.</translation>
+<translation id="1302523850133262269">Poczekaj, aż Chrome zainstaluje najnowsze aktualizacje systemu.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">System operacyjny Chrome nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="5430073640787465221">Plik ustawień jest uszkodzony lub nieprawidłowy. Google Chrome nie może odzyskać ustawień.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
-<translation id="7952135150021331855">Google Chrome działa w tle.</translation>
 <translation id="345171907106878721">Dodaj siebie do Chrome</translation>
+<translation id="4921569541910214635">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chrome tak, jak chcesz.</translation>
 <translation id="6236285698028833233">Google Chrome nie jest już aktualizowany ani nie obsługuje tej wersji systemu operacyjnego.</translation>
 <translation id="5453904507266736060">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="3454512769850953877">Tak, wyjdź z Chrome</translation>
 <translation id="4167057906098955729">Tutaj możesz zobaczyć wszystkie powiadomienia z aplikacji, rozszerzeń i stron internetowych w Chrome.</translation>
 <translation id="2704356438731803243">Jeśli chcesz, by Twoje bieżące dane Chrome były przechowywane oddzielnie, możesz utworzyć nowego użytkownika Chrome dla użytkownika <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
+<translation id="3784527566857328444">Usuń z Chrome...</translation>
 <translation id="1225016890511909183">Chrome będzie bezpiecznie przechowywać Twoje dane, dzięki czemu nie będzie trzeba wpisywać ich ponownie. W przypadku przyszłych płatności konieczne jednak będzie zweryfikowanie kodu bezpieczeństwa karty.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="8838365799985821335">Rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
@@ -24,7 +26,6 @@
 <translation id="5251420635869119124">Goście mogą korzystać z Chrome, nie pozostawiając żadnych danych.</translation>
 <translation id="4891791193823137474">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="110877069173485804">Oto Twój Chrome</translation>
-<translation id="1376881911183620035">Dziękujemy za wypróbowanie nowego Chrome. Zanim przejdziesz dalej, Chrome musi uruchomić się ponownie, by wszystkie otwarte dokumenty zostały zapisane.</translation>
 <translation id="8406086379114794905">Pomóż ulepszać Chrome</translation>
 <translation id="2896252579017640304">Uruchom aplikacje Chrome</translation>
 <translation id="2721687379934343312">Na komputerach z systemem Mac hasła są zapisane w pęku kluczy. Inni użytkownicy Chrome udostępniający to konto systemu OS X mogą uzyskiwać do nich dostęp i je synchronizować.</translation>
@@ -42,6 +43,7 @@
 <translation id="4987308747895123092">Zamknij wszystkie okna Chrome (także te działające w trybie Windows 8) i spróbuj ponownie.</translation>
 <translation id="568643307450491754">Zakładki są dostępne w menu Chrome i na pasku zakładek.</translation>
 <translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
+<translation id="8987477933582888019">Przeglądarka</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
@@ -49,6 +51,7 @@
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="7060865993964054389">Program uruchamiający aplikacje Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY"/>.</translation>
+<translation id="127345590676626841">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję. Po zakończeniu pobierania Chrome uruchomi się ponownie i będzie gotowy do działania.</translation>
 <translation id="8227755444512189073">Chrome musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">O kurczę! Przeglądarka Google Chrome uległa awarii. Uruchomić ją teraz ponownie?</translation>
 <translation id="1480489203462860648">Wypróbuj go – jest już zainstalowany</translation>
@@ -56,9 +59,10 @@
 <translation id="1393853151966637042">Pomoc do Chrome</translation>
 <translation id="7398801000654795464">Byłeś zalogowany w Chrome jako <ph name="USER_EMAIL_ADDRESS"/>. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="4513711165509885787">Szczegóły płatności zostały zapisane w Chrome.</translation>
+<translation id="5253588388888612165">Jeśli korzystasz z tego komputera wraz z użytkownikiem <ph name="PROFILE_NAME"/>, dodaj siebie do Chrome, by używać niezależnych ustawień przeglądarki. Możesz też odłączyć konto Google tego użytkownika.</translation>
 <translation id="7098166902387133879">Google Chrome używa Twojego mikrofonu.</translation>
 <translation id="4053720452172726777">Dostosowywanie i kontrolowanie Google Chrome</translation>
-<translation id="6423071462708908582">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił nieważny certyfikat. Nie ma informacji na temat przejęcia tego certyfikatu po utracie ważności. To oznacza, że Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, popraw błąd i odśwież stronę.</translation>
+<translation id="5298539825145851748">Usuń z Chrome</translation>
 <translation id="3197823471738295152">Urządzenie używa aktualnej wersji oprogramowania.</translation>
 <translation id="8286862437124483331">Google Chrome próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
@@ -72,27 +76,29 @@
 <translation id="5037239767309817516">Zamknij wszystkie okna przeglądarki Google Chrome i uruchom ją ponownie, aby zastosować zmiany.</translation>
 <translation id="345168553362876363">Menu z aplikacjami Chrome jest autonomiczną platformą do obsługi aplikacji.</translation>
 <translation id="225614027745146050">Witamy</translation>
-<translation id="8684521613357479262">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, ustaw aktualną godzinę w systemie i odśwież stronę.</translation>
+<translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
+<translation id="7473136999113284234">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>
 <translation id="7084448929020576097">Plik <ph name="FILE_NAME"/> jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Google Chrome na każdym komputerze.</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="8823341990149967727">Chrome jest nieaktualny</translation>
+<translation id="4424024547088906515">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN"/>. Jego certyfikat bezpieczeństwa nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="1195935957447623558">Przeglądarka Chrome nie została poprawnie zamknięta. Aby ponownie otworzyć strony, które były wyświetlone, kliknij przycisk Przywróć.</translation>
 <translation id="2576431527583832481">Chrome jest teraz jeszcze lepszy! Dostępna jest nowa wersja.</translation>
 <translation id="4633000520311261472">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="3656661827369545115">Uruchamiaj Chromium automatycznie po włączeniu komputera</translation>
+<translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN"/>. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="8460191995881063249">Centrum powiadomień Chrome</translation>
 <translation id="1457721931618994305">Aktualizowanie &amp;Google Chrome...</translation>
 <translation id="2429317896000329049">Google Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
-<translation id="6557998774620459028">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat wystawiony przez podmiot, który nie jest zaufany w systemie operacyjnym na Twoim komputerze. Może to oznaczać, że na serwerze samodzielnie wygenerowano dane uwierzytelniające, które zawierają niewiarygodne dla Chrome informacje o tożsamości, albo że intruz próbuje przechwycić Twoją komunikację.</translation>
 <translation id="5170938038195470297">Nie można użyć Twojego profilu, ponieważ został utworzony w nowszej wersji Google Chrome. Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chrome.</translation>
 <translation id="7282192067747128786">Chrome – powiadomienia (nieprzeczytane: <ph name="QUANTITY"/>)</translation>
 <translation id="6011049234605203654">Wybierz
@@ -109,24 +115,24 @@
 <translation id="7908968924842975895">Ten komputer nie będzie otrzymywać aktualizacji Google Chrome, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="7185038942300673794">Rozszerzenie <ph name="EXTENSION_NAME"/> zostało dodane do Chrome.</translation>
-<translation id="1786477462680638703">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat wystawiony przez podmiot, który nie jest zaufany w Google Chrome. Może to oznaczać, że na serwerze samodzielnie wygenerowano dane uwierzytelniające, które zawierają niewiarygodne dla Chrome informacje o tożsamości, albo że Twoją komunikację próbuje przechwycić jakiś intruz.</translation>
 <translation id="7494905215383356681">Licencje oprogramowania typu open source w Chrome</translation>
 <translation id="2346876346033403680">Ktoś zalogował się wcześniej w Chrome na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST"/>. Jeśli to nie jest Twoje konto, utwórz nowego użytkownika Chrome, by Twoje informacje były przechowywane oddzielnie.
 
 Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, historia i inne ustawienia, zostaną połączone z kontem <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Uwaga:<ph name="END_BOLD"/> Google Chrome nie może uniemożliwić rozszerzeniom zapisywania historii przeglądania. Aby wyłączyć to rozszerzenie w trybie incognito, usuń zaznaczenie tej opcji.</translation>
+<translation id="7808348361785373670">Usuń z Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2664962310688259219">Licencje oprogramowania typu open source w Chrome OS</translation>
 <translation id="2290014774651636340">Brakuje kluczy interfejsu Google API. Niektóre funkcje Google Chrome będą wyłączone.</translation>
 <translation id="4794050651896644714">Zapisz szczegóły w Chrome</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
-<translation id="2036562258783619899">Zobacz nową funkcję Chrome</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>
 <translation id="7164397146364144019">Możesz pomóc zwiększyć bezpieczeństwo i komfort korzystania z Chrome, automatycznie przesyłając do Google szczegółowe informacje o możliwych zagrożeniach.</translation>
 <translation id="8008534537613507642">Ponownie zainstaluj Chrome</translation>
 <translation id="2044287590254833138">Pasek narzędzi Google Chrome</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
 <translation id="2874156562296220396">Stworzenie przeglądarki Google Chrome było możliwe dzięki projektowi open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> i innym <ph name="BEGIN_LINK_OSS"/>programom o otwartym kodzie źródłowym<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7191567847629796517">Google Chrome OS nie umożliwia uruchamiania zewnętrznej aplikacji do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="3847841918622877581">Przeglądarka Google Chrome może korzystać z usług internetowych w celu poprawy wygody użytkowania.</translation>
 <translation id="7436949144778751379">Przeglądarka Google Chrome wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
@@ -148,7 +154,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="2665296953892887393">Pomóż nam ulepszyć Google Chrome, przesyłając do Google raporty o awariach i <ph name="UMA_LINK"/></translation>
 <translation id="7761834446675418963">Otwórz Chrome, klikając swoją nazwę, i rozpocznij przeglądanie.</translation>
-<translation id="4864451188650489141">Poniżej możesz dodać swoje pozostałe konta Google i zablokować Chromium.</translation>
 <translation id="2669824781555328029">Plik <ph name="FILE_NAME"/> może wpływać na działanie Chrome, więc został zablokowany.</translation>
 <translation id="5875635642195358109">Wybierz
         menu Chrome &gt;
@@ -179,23 +184,19 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="163860049029591106">Pierwsze kroki z systemem operacyjnym Chrome</translation>
 <translation id="1587223624401073077">Google Chrome używa Twojej kamery.</translation>
 <translation id="1399397803214730675">Na tym komputerze jest już zainstalowana nowsza wersja Google Chrome. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome, a następnie spróbuj ponownie.</translation>
-<translation id="576822117893741893">Pokaż menu Chrome</translation>
 <translation id="3444832043240812445">Ta strona zawiera informacje o ostatnich awariach tylko w przypadku <ph name="BEGIN_LINK"/>włączenia funkcji zgłaszania awarii<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Przeglądarka Google Chrome nie odpowiada. Uruchomić ją teraz ponownie?</translation>
 <translation id="2681064822612051220">W systemie znaleziono zainstalowaną przeglądarkę Google Chrome, która powoduje konflikt. Odinstaluj ją i spróbuj ponownie.</translation>
-<translation id="8209985377776300429">Korzystasz z wersji testowej nowego Chrome.</translation>
 <translation id="6126631249883707068">Czy chcesz, aby przeglądarka Google Chrome zapisała hasło?</translation>
 <translation id="7773845170078702898">Czy Google Chrome ma zapisać hasło do tej strony?</translation>
 <translation id="4251615635259297716">Połączyć Twoje dane Chrome z tym kontem?</translation>
 <translation id="7125719106133729027">Nie udało się zaktualizować Chrome do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz ręcznie zainstalować Chrome ponownie.</translation>
 <translation id="5940385492829620908">Tu są Twoje strony, zakładki i inne dane z Chrome.</translation>
-<translation id="8865765905101981392">Przeglądarka internetowa</translation>
-<translation id="3039245375609697729">Wypróbuj nowy sposób korzystania z Chrome na koncie Google i komputerach używanych przez wiele osób.</translation>
+<translation id="629218512217695915">Użyj hasła wygenerowanego przez Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome jest jeszcze lepszy</translation>
 <translation id="174539241580958092">Google Chrome nie może zsynchronizować danych z powodu błędu podczas logowania.</translation>
 <translation id="8255190535488645436">Google Chrome używa Twojej kamery i mikrofonu.</translation>
-<translation id="2189123953385179981">System operacyjny Google ChromeOS nie umożliwia uruchamiania zewnętrznej aplikacji w celu obsługi linków typu <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Zezwalaj Chrome na korzystanie z sieci w ustawieniach zapory sieciowej
         lub oprogramowania antywirusowego.</translation>
 <translation id="9102715433345326100">Ten plik jest złośliwy i został zablokowany przez Chrome.</translation>
@@ -218,19 +219,21 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
           i usuń zaznaczenie „Użyj serwera proxy dla sieci LAN”.</translation>
 <translation id="6598387184982954187">Używasz adresu <ph name="PROFILE_EMAIL"/> do synchronizowania danych w Chrome. Aby zaktualizować ustawienia synchronizacji lub używać Chrome bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
+<translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN"/>. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="8679801911857917785">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome.</translation>
 <translation id="5334545119300433702">Znane są przypadki konfliktu tego modułu z przeglądarką Google Chrome.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome jest aktualny.</translation>
 <translation id="4120075327926916474">Czy Google Chrome ma zapisać informacje o karcie kredytowej, aby ułatwić wypełnianie formularzy w przyszłości?</translation>
+<translation id="3037838751736561277">Google Chrome jest w trybie działania w tle</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
+<translation id="4692614041509923516">Twój komputer ma starą wersję Microsoft Windows, która nie potrafi przetworzyć certyfikatu bezpieczeństwa tej witryny. Przez ten problem Google Chrome nie może ustalić, czy ten certyfikat pochodzi z <ph name="SITE"/> czy od kogoś w Twojej sieci podszywającego się pod <ph name="SITE"/>. Zaktualizuj Windows na komputerze do nowszej wersji.</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
 <translation id="7592736734348559088">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="6991142834212251086">Połącz moje dane Chrome z tym kontem</translation>
 <translation id="3451115285585441894">Dodaję do Chrome...</translation>
-<translation id="6502165024350711060">Sugestia Chrome</translation>
 <translation id="3047079729301751317">Odłączenie konta <ph name="USERNAME"/> spowoduje wyczyszczenie jego historii, zakładek, ustawień i innych danych Chrome zapisanych na tym urządzeniu. Dane przechowywane na koncie Google nie zostaną usunięte. Możesz nimi zarządzać w <ph name="GOOGLE_DASHBOARD_LINK"/>Panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
 <translation id="2246246234298806438">Google Chrome nie może pokazać podglądu wydruku, gdy nie ma wbudowanej przeglądarki PDF.</translation>
@@ -243,7 +246,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="853189717709780425">Logujesz się na konto zarządzane i przyznajesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME"/>. Będzie je można usunąć w sekcji kont Panelu Google, ale nie będzie można powiązać ich z innym kontem.</translation>
 <translation id="6049075767726609708">Administrator zainstalował w tym systemie przeglądarkę Google Chrome i jest ona dostępna dla wszystkich użytkowników. Przeglądarka Google Chrome zainstalowana na poziomie użytkownika zostanie teraz zastąpiona przez instalację systemową.</translation>
 <translation id="1818142563254268765">Nie udało się zaktualizować Chrome do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz zaktualizować Chrome.</translation>
-<translation id="4338032231047635328">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat z błędami. Google Chrome nie może go użyć, a tym samym zweryfikować tożsamości strony, którą chcesz wyświetlić.</translation>
+<translation id="7408085963519505752">Warunki korzystania z Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Prawie aktualny. Uruchom ponownie Google Chrome, by zakończyć aktualizację.</translation>
 <translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony startowej.</translation>

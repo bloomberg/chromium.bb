@@ -40,17 +40,16 @@
 <translation id="473775607612524610">Оновити</translation>
 <translation id="8627706565932943526">Помилка синхронізації</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
-<translation id="4043215103217793252">Редагувати закладку для сторінки</translation>
 <translation id="656628257199996201">Завжди перекладати з такої мови: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="4619298195800598081">Відкр. оригінал у нов. вкладці</translation>
+<translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="7267430310003164111">Підказка щодо завантаження додатка з Google Play Маркету. Назва додатка: <ph name="APP_NAME"/>. Середній рейтинг додатка: <ph name="APP_RATING"/>.</translation>
-<translation id="303955801043931176">Вкладку закрито</translation>
 <translation id="4148957013307229264">Встановлення...</translation>
 <translation id="3992315671621218278">Зберегти посилання</translation>
 <translation id="8034522405403831421">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE"/>. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -77,9 +76,7 @@
 <translation id="6333140779060797560">Надіслати через <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="969096075394517431">Змінити мови</translation>
-<translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5032574515228824816">Підказка</translation>
-<translation id="4847896847259487518">Зробити закладку для сторінки</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>

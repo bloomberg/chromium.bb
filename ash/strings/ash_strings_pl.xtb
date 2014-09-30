@@ -5,8 +5,8 @@
 <translation id="6895424601869865703">Dodaj konto dla: <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Obracanie włączone (kliknij tutaj, by to zmienić)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
-<translation id="7880025619322806991">Stan portalu</translation>
 <translation id="30155388420722288">Przycisk akcji</translation>
+<translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth włączony</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME"/> został obrócony na <ph name="ROTATION"/></translation>
@@ -31,7 +31,6 @@
 <translation id="6943836128787782965">Wykonanie metody GET protokołu HTTP nie powiodło się.</translation>
 <translation id="2297568595583585744">Zasobnik stanu</translation>
 <translation id="1661867754829461514">Brak kodu PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: łączę...</translation>
 <translation id="2248649616066688669">Z Chromebooka możesz nadal korzystać po podłączeniu do zewnętrznego wyświetlacza, nawet z zamkniętą pokrywą.</translation>
 <translation id="40400351611212369">Błąd aktywacji sieci</translation>
 <translation id="4237016987259239829">Błąd połączenia z siecią</translation>
@@ -46,13 +45,11 @@
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
-<translation id="3846575436967432996">Brak informacji o sieciach</translation>
 <translation id="4625920103690741805">Obracanie zablokowane (kliknij tutaj, by to zmienić)</translation>
 <translation id="3799026279081545374">Możesz mieć niewłaściwą ładowarkę. Jeśli mieszkasz w Stanach Zjednoczonych, aby uzyskać pomoc i zamówić ładowarkę zastępczą, zadzwoń pod numer 866-628-1371. W Wielkiej Brytanii – pod numer 0800-026-0613. W Irlandii – pod numer 1-800-832-664. W Kanadzie – pod numer 866-628-1372. W Australii – pod numer 1-800-067-460.</translation>
 <translation id="3891340733213178823">Naciśnij dwukrotnie Ctrl+Shift+Q, by się wylogować.</translation>
 <translation id="5871632337994001636">Zarządzaj urządzeniami...</translation>
 <translation id="785750925697875037">Wyświetl konto dla telefonów komórkowych</translation>
-<translation id="153454903766751181">Inicjuję modem komórkowy...</translation>
 <translation id="4628814525959230255">Udostępniasz ekran w Hangouts – <ph name="HELPER_NAME"/> kontroluje Twój komputer.</translation>
 <translation id="7864539943188674973">Wyłącz Bluetooth</translation>
 <translation id="939252827960237676">Nie można zapisać zrzutu ekranu</translation>
@@ -60,8 +57,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
-<translation id="735745346212279324">VPN odłączona</translation>
-<translation id="7320906967354320621">Bezczynna</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="3294437725009624529">Gość</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
@@ -70,13 +65,12 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
 <translation id="5238774010593222950">Nie możesz zalogować się na inne konto.</translation>
 <translation id="1723752762323179280">Zamykanie sesji</translation>
+<translation id="1426410128494586442">Tak</translation>
 <translation id="7170041865419449892">Poza zasięgiem</translation>
-<translation id="4804818685124855865">Rozłącz</translation>
 <translation id="2544853746127077729">Certyfikat uwierzytelniania został odrzucony przez sieć</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2688477613306174402">Konfiguracja</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="4957722034734105353">Więcej informacji...</translation>
 <translation id="2964193600955408481">Wyłącz Wi-Fi</translation>
@@ -85,7 +79,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
 <translation id="3892641579809465218">Wyświetlacz wewnętrzny</translation>
 <translation id="7823564328645135659">Po zsynchronizowaniu ustawień zmieniono język z „<ph name="FROM_LOCALE"/>” na „<ph name="TO_LOCALE"/>”.</translation>
-<translation id="3368922792935385530">Połączone</translation>
 <translation id="3606978283550408104">Podłączono monitor brajlowski.</translation>
 <translation id="8654520615680304441">Włącz Wi-Fi...</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME"/>” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY"/></translation>
@@ -93,14 +86,13 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="5825747213122829519">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID"/>.
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2562916301614567480">Sieć prywatna</translation>
-<translation id="6549021752953852991">Brak dostępnych sieci komórkowych</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
+<translation id="4250680216510889253">Nie</translation>
 <translation id="4379753398862151997">Drogi monitorze, nie układa się między nami. (Ten monitor jest nieobsługiwany)</translation>
 <translation id="6426039856985689743">Wyłącz komórkową transmisję danych</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3742055079367172538">Wykonano zrzut ekranu</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
-<translation id="5271016907025319479">Sieć VPN jest nieskonfigurowana.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Możliwość robienia zrzutów ekranów została wyłączona przez administratora.</translation>
 <translation id="372094107052732682">Naciśnij dwukrotnie Ctrl+Shift+Q, by zakończyć.</translation>
@@ -118,10 +110,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2614835198358683673">Włączony Chromebook może nie być ładowany. Zalecamy użycie oryginalnej ładowarki.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4442424173763614572">Wyszukiwanie DNS nie powiodło się.</translation>
-<translation id="7874779702599364982">Szukam sieci komórkowych...</translation>
-<translation id="583281660410589416">Nieznany</translation>
 <translation id="1383876407941801731">Szukaj</translation>
-<translation id="3901991538546252627">Łączę z: <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Informacje o sieci</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Zakończ sesję gościa</translation>
@@ -131,7 +120,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1773212559869067373">Certyfikat uwierzytelniania został odrzucony lokalnie</translation>
 <translation id="8528322925433439945">Komórkowe...</translation>
-<translation id="7049357003967926684">Powiązanie</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="2372145515558759244">Synchronizuję aplikacje...</translation>
 <translation id="7256405249507348194">Nierozpoznany błąd: <ph name="DESC"/></translation>
@@ -139,12 +127,10 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2894654529758326923">Informacje</translation>
 <translation id="7925247922861151263">Sprawdzenie AAA nie powiodło się</translation>
 <translation id="8456362689280298700">Do naładowania: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Nieznany błąd sieci</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="2354174487190027830">Aktywuję <ph name="NAME"/></translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME"/>” chce się sparować.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
@@ -153,24 +139,20 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="252373100621549798">Nieznany wyświetlacz</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
+<translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Zablokuj</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
-<translation id="1512064327686280138">Niepowodzenie aktywacji</translation>
 <translation id="5097002363526479830">Nie udało się połączyć z siecią „<ph name="NAME"/>”: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="3433830597744061105">Zarządzaj kontami</translation>
 <translation id="2966449113954629791">Możliwe, że wykorzystałeś już limit transferu danych przez sieć komórkową. Odwiedź portal aktywacji <ph name="NAME"/>, by zwiększyć limit.</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
-<translation id="8132793192354020517">Połączono z <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
-<translation id="8678698760965522072">Online</translation>
 <translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Błąd wewnętrzny</translation>
 <translation id="3019353588588144572">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
-<translation id="7005812687360380971">Niepowodzenie</translation>
 <translation id="882279321799040148">Kliknij, by wyświetlić</translation>
 <translation id="1753067873202720523">Włączonego Chromebooka nie można ładować.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> nie obsługuje <ph name="SPECIFIED_RESOLUTION"/>. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION"/></translation>
@@ -184,7 +166,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="225680501294068881">Skanowanie w poszukiwaniu urządzeń...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">Mikrofon (wewnętrzny)</translation>
-<translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
 <translation id="8401662262483418323">Nie udało się połączyć z „<ph name="NAME"/>”: <ph name="DETAILS"/>
 Komunikat serwera: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
@@ -193,7 +174,6 @@ Komunikat serwera: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> jest publiczną sesją zarządzaną przez <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Nie udało się połączyć z siecią: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
-<translation id="8454013096329229812">Wi-Fi włączone.</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME"/>” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Naładowanie baterii: <ph name="PERCENTAGE"/>%.</translation>
@@ -205,7 +185,6 @@ Komunikat serwera: <ph name="SERVER_MSG"/></translation>
 <translation id="112308213915226829">Autoukrywanie półki</translation>
 <translation id="6732801395666424405">Certyfikaty nie zostały wczytane</translation>
 <translation id="7573962313813535744">Tryb dokowania</translation>
-<translation id="8927026611342028580">Poproszono o połączenie</translation>
 <translation id="8300849813060516376">Dostarczanie OTASP nie powiodło się</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
 <translation id="8660803626959853127">Synchronizacja: <ph name="COUNT"/> pliki(ów)</translation>
@@ -214,7 +193,6 @@ Komunikat serwera: <ph name="SERVER_MSG"/></translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
 <translation id="6248847161401822652">Naciśnij dwukrotnie Control Shift Q, by zakończyć.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE"/>%. Trwa ładowanie.</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: aktywuję...</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
 <translation id="5947494881799873997">Przywróć</translation>
@@ -225,7 +203,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="158849752021629804">Wymagana sieć macierzysta</translation>
 <translation id="1013923882670373915">Urządzenie Bluetooth „<ph name="DEVICE_NAME"/>” chce się sparować. Wpisz na nim ten kod PIN: <ph name="PINCODE"/></translation>
-<translation id="6857811139397017780">Aktywuj usługę <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Wyszukiwanie DHCP nie powiodło się</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="5507786745520522457">Skonfiguruj komórkową transmisję danych</translation>
@@ -234,7 +211,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
 <translation id="8372369524088641025">Błędny klucz WEP</translation>
-<translation id="6636709850131805001">Nierozpoznany stan</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE"/>” (wymaga ponownego uruchomienia)</translation>
 <translation id="8103386449138765447">SMS-y: <ph name="MESSAGE_COUNT"/></translation>
@@ -248,7 +224,6 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="5102001756192215136">Pozostało <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Urządzenie wyjściowe</translation>
 <translation id="520760366042891468">Udostępniasz ekran i kontrolę nad komputerem w Hangouts.</translation>
-<translation id="8000066093800657092">Brak sieci</translation>
 <translation id="4015692727874266537">Zaloguj się na kolejne konto...</translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
@@ -257,5 +232,4 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Niepoprawna nazwa użytkownika lub hasło albo uwierzytelnianie EAP nie powiodło się</translation>
 <translation id="6359806961507272919">Wiadomość SMS z numeru <ph name="PHONE_NUMBER"/></translation>
-<translation id="1244147615850840081">Operator</translation>
 </translationbundle>

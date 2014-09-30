@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
+<translation id="8804398419035066391">ಸಹಕಾರಿ ವೆಬ್‌ಸೈಟ್‌ಗಳೊಂದಿಗೆ ಸಂವಹಿಸಿ</translation>
 <translation id="7809034755304591547">ನಿರ್ವಾಹಕನಿಂದ <ph name="EXTENSION_NAME"/> (ವಿಸ್ತರಣೆ ID &quot;<ph name="EXTENSION_ID"/>&quot;) ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
+<translation id="1005274289863221750">ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಮತ್ತು ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಿ</translation>
 <translation id="2857834222104759979">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಮಾನ್ಯತೆ ಪಡೆದಿಲ್ಲ.</translation>
-<translation id="8978038008714088448"><ph name="WEBSITE_1"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ರೀಡ್ ಮಾಡಿ ಮತ್ತು ಮಾರ್ಪಡಿಸಿ</translation>
-<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ಮತ್ತು <ph name="WEBSITE_3"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ರೀಡ್ ಮಾಡಿ ಮತ್ತು ಮಾರ್ಪಡಿಸಿ</translation>
 <translation id="3828484226910527078">USB ಸಾಧನವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="6384275966486438344">ನಿಮ್ಮ ಹುಡುಕಾಟದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೀಗೆ ಬದಲಾಯಿಸಿ: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">ಈ ವಿಸ್ತರಣೆಯು <ph name="PRODUCT_NAME"/> ಅನ್ನು ನಿಧಾನವಾಗಿಸುತ್ತಿದೆ. ನೀವು <ph name="PRODUCT_NAME"/> ರ ಕಾರ್ಯಾಚರಣೆಯನ್ನು ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸಲು ಇದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುವುದು ಅವಶ್ಯಕ.</translation>
+<translation id="1033780634303702874">ನಿಮ್ಮ ಸರಣಿ ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="6241530762627360640">ನಿಮ್ಮ ಸಿಸ್ಟಂ ಜೊತೆಗೆ ಜೋಡಿಯಾಗಿರುವ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳ ಕುರಿತ ಮಾಹಿತಿಯನ್ನು ಪ್ರವೇಶಿಸಿ ಮತ್ತು ಹತ್ತಿರದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಿ.</translation>
 <translation id="5911798608827489036">ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಅಥವಾ ಇಂಟರ್ನೆಟ್‌ನಲ್ಲಿ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> ನಿಂದ USB ಸಾಧನವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT"/>' ಹಿನ್ನೆಲೆ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="9131487537093447019">ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳಿಗೆ ಸಂದೇಶಗಳನ್ನು ಕಳುಹಿಸಿ ಮತ್ತು ಸ್ವೀಕರಿಸಿ.</translation>
+<translation id="8198425243160395623">ನಿಮ್ಮ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> ಹೆಸರಿನ ಕಂಪ್ಯೂಟರ್‌ನೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ</translation>
 <translation id="5456409301717116725">ಈ ವಿಸ್ತರಣೆಯು ಕೀ ಫೈಲ್ '<ph name="KEY_PATH"/>' ಅನ್ನು ಒಳಗೊಂಡಿದೆ. ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಗೆ ಮಾಡಲು ಬಯಸುವುದಿಲ್ಲ.</translation>
 <translation id="2350172092385603347">ಲೋಕಲೈಜೇಷನ್ ಬಳಸಲಾಗಿದೆ, ಆದರೆ ಡೀಫಾಲ್ಟ್ _ಲೋಕಲ್ ಅನ್ನು ಮ್ಯಾನಿಫಾಸ್ಟ್‌ನಲ್ಲಿ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿಲ್ಲ.</translation>
+<translation id="3759933321830434300">ವೆಬ್ ಪುಟಗಳ ಭಾಗಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="8058376558882514200">USB ಸಾಧನ <ph name="PRODUCT_NAME"/> ಅನ್ನು <ph name="VENDOR_NAME"/> ನಿಂದ ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="8774379383902544371">USB ಸಾಧನಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' ಎಕ್ಸ್‌ಟೆನ್ಷನ್ ಐಕಾನ್  ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.</translation>
+<translation id="8825366169884721447">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME"/>) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ  ವಿನಂತಿಯ ಶಿರೋನಾಮೆ &quot;<ph name="HEADER_NAME"/>&quot; ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="388442998277590542">ಆಯ್ಕೆಗಳ ಪುಟ '<ph name="OPTIONS_PAGE"/>' ವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6344170822609224263">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳ ಪಟ್ಟಿಯನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="2616366145935564096"><ph name="WEBSITE_1"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="2518849872271000461">ಈ ಹೆಸರಿನ ಕಂಪ್ಯೂಟರ್‌ಗಳೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, ಮತ್ತು <ph name="WEBSITE_3"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> ಡೊಮೇನ್‌‌ನಲ್ಲಿ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ</translation>
+<translation id="3502064055007747926">ನಿಮ್ಮ ಇನ್‌ಪುಟ್‌ ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="8670869118777164560">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME"/>) ಇದನ್ನು <ph name="ACTUAL_REDIRECT_DESTINATION"/> ಗೆ ಮರುನಿರ್ದೇಶಿಸಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> ಗೆ ಮರುನಿರ್ದೇಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="6840444547062817500">ಈ ವಿಸ್ತರಣೆಯು ತಾನಾಗಿಯೇ ಪದೇ ಪದೇ ಮರು ಲೋಡ್ ಆಗುತ್ತಿದೆ.</translation>
+<translation id="8047248493720652249">ಈ ವಿಸ್ತರಣೆಯು &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವುದನ್ನು ಹೆಸರಿಸಲು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME"/>) ಯು ವಿಭಿನ್ನ ಫೈಲ್‌ ಹೆಸರು &quot;<ph name="ACTUAL_FILENAME"/>&quot; ಗೆ ನಿರ್ಧರಿಸಿದೆ.</translation>
 <translation id="4968399700653439437">ಡೊಮೇನ್‌ಗಳಲ್ಲಿ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">ವೆಬ್‌ವೀಕ್ಷಣೆ: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">ಎಲ್ಲಾ <ph name="WEBSITE_1"/> ಸೈಟ್‌ಗಳು</translation>
 <translation id="8662911384982557515">ನಿಮ್ಮ ಮುಖ ಪುಟವನ್ನು ಇದಕ್ಕೆ ಬದಲಾಯಿಸಿ: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ರೀಡ್ ಮಾಡಿ ಮತ್ತು ಮಾರ್ಪಡಿಸಿ</translation>
+<translation id="27822970480436970">ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಮತ್ತೊಂದು ವಿಸ್ತರಣೆಯೊಂದಿಗೆ ಸಂಘರ್ಷಗೊಂಡಿದೆ.</translation>
+<translation id="2241053333139545397">ಹಲವಾರು ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="8602184400052594090">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಕಾಣದಾಗಿದೆ ಅಥವಾ ಓದಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="7893008570150657497">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೊಗಳು, ಸಂಗೀತ ಮತ್ತು ಇತರೆ ಮಾಧ್ಯಮ ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="4883436287898674711">ಎಲ್ಲಾ <ph name="WEBSITE_1"/> ಸೈಟ್‌ಗಳು</translation>
+<translation id="9111791539553342076">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME"/>) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ ಪ್ರತಿಕ್ರಿಯೆ ಶಿರೋನಾಮೆ &quot;<ph name="HEADER_NAME"/>&quot; ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="9150045010208374699">ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಿ</translation>
+<translation id="8341840687457896278">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME"/>) ವಿಭಿನ್ನ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಗೆ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="5627523580512561598">ವಿಸ್ತರಣೆ<ph name="EXTENSION_NAME"/></translation>
+<translation id="7893008570150657497">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ ಮತ್ತು ಇತರೆ ಮಾಧ್ಯಮ ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="4761104368405085019">ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="7217838517480956708">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME"/> ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ತೆಗೆದುಹಾಕಲು ಅಥವಾ ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="7154130902455071009">ನಿಮ್ಮ ಪ್ರಾರಂಭ ಪುಟವನ್ನು ಇದಕ್ಕೆ ಬದಲಾಯಿಸಿ: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368"><ph name="WEBSITE_1"/> ಮತ್ತು <ph name="WEBSITE_2"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ರೀಡ್ ಮಾಡಿ ಮತ್ತು ಮಾರ್ಪಡಿಸಿ</translation>
+<translation id="6698810901424468597"><ph name="WEBSITE_1"/> ಮತ್ತು <ph name="WEBSITE_2"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' ಹಿನ್ನಲೆ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ರೀಡ್ ಮಾಡಿ ಮತ್ತು ಮಾರ್ಪಡಿಸಿ</translation>
 </translationbundle>

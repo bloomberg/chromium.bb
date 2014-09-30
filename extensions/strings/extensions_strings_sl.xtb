@@ -1,33 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="8804398419035066391">Komuniciranje s sodelujočim spletnim mestom</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID razširitve »<ph name="EXTENSION_ID"/>«) je blokiral skrbnik.</translation>
+<translation id="1005274289863221750">Uporabite mikrofon in kamero</translation>
 <translation id="2857834222104759979">Datoteka manifesta ni veljavna.</translation>
-<translation id="8978038008714088448">Branje in spreminjanje podatkov na spletnem mestu <ph name="WEBSITE_1"/></translation>
-<translation id="4205302772098850608">Branje in spreminjanje podatkov na spletnih mestih <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> in <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Dostop do naprave USB</translation>
 <translation id="6384275966486438344">Sprememba nastavitev iskanja na: <ph name="SEARCH_HOST"/></translation>
+<translation id="1445572445564823378">Ta razširitev upočasnjuje <ph name="PRODUCT_NAME"/>. Onemogočite jo, če želite obnoviti delovanje storitve <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1033780634303702874">Dostop do serijskih naprav</translation>
+<translation id="6241530762627360640">Dostop do podatkov o napravah Bluetooth, ki so seznanjene z vašim sistemom, in odkrivanje naprav Bluetooth v bližini.</translation>
 <translation id="5911798608827489036">Izmenjava podatkov s katerim koli računalnikom v lokalnem omrežju ali internetu</translation>
 <translation id="4719685943208231314">Dostop do naprave USB ponudnika <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Skripta za ozadje »<ph name="BACKGROUND_SCRIPT"/>« ni bilo mogoče naložiti.</translation>
+<translation id="9131487537093447019">Pošiljanje sporočil napravam Bluetooth in prejemanje sporočil od naprav Bluetooth.</translation>
+<translation id="8198425243160395623">Dostop do naprav USB</translation>
 <translation id="8597109877291678953">Izmenjava podatkov z računalnikom z imenom <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Ta razširitev vključuje datoteko s ključem »<ph name="KEY_PATH"/>«. Verjetno ne želite narediti tega.</translation>
 <translation id="2350172092385603347">Uporabljena je bila lokalizacija, vendar v manifestu ni bil naveden parameter default_locale.</translation>
+<translation id="3759933321830434300">Blokiraj dele spletnih strani</translation>
 <translation id="8058376558882514200">Dostop do naprave USB <ph name="PRODUCT_NAME"/> ponudnika <ph name="VENDOR_NAME"/></translation>
-<translation id="8774379383902544371">Dostop do naprav USB</translation>
 <translation id="149347756975725155">Ikone razširitve »<ph name="ICON"/>« ni bilo mogoče naložiti.</translation>
+<translation id="8825366169884721447">Razširitvi ni uspelo spremeniti glave zahteve »<ph name="HEADER_NAME"/>« omrežne zahteve, ker je sprememba v sporu z drugo razširitvijo (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="388442998277590542">Strani z možnostmi »<ph name="OPTIONS_PAGE"/>« ni bilo mogoče naložiti.</translation>
 <translation id="6344170822609224263">Dostop do seznama omrežnih povezav</translation>
+<translation id="2616366145935564096">Branje in spreminjanje vaših podatkov na spletnem mestu <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Izmenjava podatkov z računalniki z imenom: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
+<translation id="6408118934673775994">Branje in spreminjanje vaših podatkov na spletnih mestih <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> in <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Izmenjava podatkov s katerim koli računalnikom v domeni <ph name="DOMAIN"/></translation>
+<translation id="3502064055007747926">Dostop do vhodnih naprav</translation>
+<translation id="8670869118777164560">Razširitvi ni uspelo preusmeriti omrežne zahteve <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, ker jo je druga razširitev (<ph name="EXTENSION_NAME"/>) preusmerila na cilj <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="6840444547062817500">Ta razširitev se je prepogosto naložila znova.</translation>
+<translation id="8047248493720652249">Ta razširitev ni mogla prenosa poimenovati »<ph name="ATTEMPTED_FILENAME"/>«, ker je druga razširitev (<ph name="EXTENSION_NAME"/>) določila drugo ime datoteke: »<ph name="ACTUAL_FILENAME"/>«.</translation>
 <translation id="4968399700653439437">Izmenjava podatkov s katerim koli računalnikom v domenah: <ph name="DOMAINS"/></translation>
+<translation id="5026754133087629784">Spletni pogled: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="8284279544186306258">vsa spletna mesta <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Sprememba domače strani na: <ph name="HOME_PAGE"/></translation>
-<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
+<translation id="27822970480436970">Tej razširitvi ni uspelo spremeniti omrežne zahteve, ker je bila sprememba v sporu z drugo razširitvijo.</translation>
+<translation id="2241053333139545397">Branje in spreminjanje vaših podatkov na več spletnih mestih</translation>
 <translation id="8602184400052594090">Datoteka manifesta manjka ali pa je ni mogoče prebrati.</translation>
+<translation id="4883436287898674711">Vsa spletna mesta <ph name="WEBSITE_1"/></translation>
+<translation id="9111791539553342076">Razširitvi ni uspelo spremeniti glave odziva »<ph name="HEADER_NAME"/>« omrežne zahteve, ker je sprememba v sporu z drugo razširitvijo (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9150045010208374699">Uporabite kamero</translation>
+<translation id="8341840687457896278">Razširitev je neuspešno podala poverilnice omrežni zahtevi, ker je druga razširitev (<ph name="EXTENSION_NAME"/>) podala druge poverilnice.</translation>
+<translation id="5627523580512561598">razširitev <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Dostop do fotografij, glasbe in druge predstavnosti v računalniku</translation>
+<translation id="4761104368405085019">Uporabite mikrofon</translation>
 <translation id="7217838517480956708">Skrbnik tega računalnika zahteva namestitev razširitve <ph name="EXTENSION_NAME"/>. Ni je mogoče odstraniti ali spremeniti.</translation>
 <translation id="7154130902455071009">Sprememba začetne strani na: <ph name="START_PAGE"/></translation>
-<translation id="6094507746643187368">Branje in spreminjanje podatkov na spletnih mestih <ph name="WEBSITE_1"/> in <ph name="WEBSITE_2"/></translation>
+<translation id="6698810901424468597">Branje in spreminjanje vaših podatkov na spletnih mestih <ph name="WEBSITE_1"/> in <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Strani za ozadje »<ph name="BACKGROUND_PAGE"/>« ni bilo mogoče naložiti.</translation>
-<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>
