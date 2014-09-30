@@ -27,6 +27,7 @@ class InfoCommand(cr.Command):
   def EarlyArgProcessing(self):
     if getattr(cr.context.args, '_short', False):
       self.requires_build_dir = False
+    cr.Command.EarlyArgProcessing(self)
 
   def Run(self):
     if cr.context.remains:
