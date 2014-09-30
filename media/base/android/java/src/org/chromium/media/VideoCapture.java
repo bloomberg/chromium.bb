@@ -77,6 +77,18 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
     protected int mDeviceOrientation;
     private static final String TAG = "VideoCapture";
 
+    static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
+        android.hardware.Camera.CameraInfo cameraInfo =
+                new android.hardware.Camera.CameraInfo();
+        try {
+            android.hardware.Camera.getCameraInfo(id, cameraInfo);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "getCameraInfo: Camera.getCameraInfo: " + ex);
+            return null;
+        }
+        return cameraInfo;
+    }
+
     VideoCapture(Context context,
                  int id,
                  long nativeVideoCaptureDeviceAndroid) {
@@ -96,7 +108,7 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
             return false;
         }
 
-        android.hardware.Camera.CameraInfo cameraInfo = getCameraInfo(mId);
+        android.hardware.Camera.CameraInfo cameraInfo = VideoCapture.getCameraInfo(mId);
         if (cameraInfo == null) {
             mCamera.release();
             mCamera = null;
@@ -368,14 +380,4 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
         return parameters;
     }
 
-    private android.hardware.Camera.CameraInfo getCameraInfo(int id) {
-        android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
-        try {
-            android.hardware.Camera.getCameraInfo(id, cameraInfo);
-        } catch (RuntimeException ex) {
-            Log.e(TAG, "getCameraInfo: android.hardware.Camera.getCameraInfo: " + ex);
-            return null;
-        }
-        return cameraInfo;
-    }
 }

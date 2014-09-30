@@ -79,6 +79,16 @@ public class VideoCaptureAndroid extends VideoCapture {
     private static final int NUM_CAPTURE_BUFFERS = 3;
     private static final String TAG = "VideoCaptureAndroid";
 
+    static int getNumberOfCameras() {
+        return android.hardware.Camera.getNumberOfCameras();
+    }
+
+    static String getName(int id) {
+        android.hardware.Camera.CameraInfo cameraInfo = VideoCapture.getCameraInfo(id);
+        return "camera " + id + ", facing " + (cameraInfo.facing ==
+                android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
+    }
+
     static CaptureFormat[] getDeviceSupportedFormats(int id) {
         android.hardware.Camera camera;
         try {
