@@ -154,6 +154,13 @@ TEST_F(SupervisedUserServiceTest, GetManualExceptionsForHost) {
             supervised_user_service_->GetManualBehaviorForURL(kMooseURL));
 }
 
+TEST_F(SupervisedUserServiceTest, ChangesIncludedSessionOnChangedSettings) {
+  supervised_user_service_->Init();
+  EXPECT_TRUE(supervised_user_service_->IncludesSyncSessionsType());
+  profile_->GetPrefs()->SetBoolean(prefs::kRecordHistory, false);
+  EXPECT_FALSE(supervised_user_service_->IncludesSyncSessionsType());
+}
+
 // Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
 // DCHECK is hit when the service is destroyed, this test passed.
 TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {

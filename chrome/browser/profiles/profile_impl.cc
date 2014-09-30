@@ -320,6 +320,10 @@ void ProfileImpl::RegisterProfilePrefs(
       prefs::kForceSafeSearch,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kRecordHistory,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kProfileAvatarIndex,
       -1,

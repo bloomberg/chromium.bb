@@ -206,7 +206,10 @@ class SupervisedUserService : public KeyedService,
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest, ClearOmitOnRegistration);
-
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
+                           ChangesIncludedSessionOnChangedSettings);
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
+                           ChangesSyncSessionStateOnChangedSettings);
   // A bridge from the UI thread to the SupervisedUserURLFilters, one of which
   // lives on the IO thread. This class mediates access to them and makes sure
   // they are kept in sync.
@@ -308,6 +311,19 @@ class SupervisedUserService : public KeyedService,
 
   // Returns the human readable name of the supervised user.
   std::string GetSupervisedUserName() const;
+
+  // Subscribes to the SupervisedUserPrefStore, refreshes
+  // |includes_sync_sessions_type_| and triggers reconfiguring the
+  // ProfileSyncService.
+  void OnHistoryRecordingStateChanged();
+
+  // Returns true if the syncer::SESSIONS type should be included in Sync.
+  bool IncludesSyncSessionsType() const;
+
+  // The option a custodian sets to either record or prevent recording the
+  // supervised user's history. Set by |FetchNewSessionSyncState()| and
+  // defaults to true.
+  bool includes_sync_sessions_type_;
 
   // Owns us via the KeyedService mechanism.
   Profile* profile_;

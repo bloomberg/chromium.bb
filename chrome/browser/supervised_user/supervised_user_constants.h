@@ -13,6 +13,7 @@ extern const char kContentPackDefaultFilteringBehavior[];
 extern const char kContentPackManualBehaviorHosts[];
 extern const char kContentPackManualBehaviorURLs[];
 extern const char kForceSafeSearch[];
+extern const char kRecordHistory[];
 extern const char kSigninAllowed[];
 extern const char kUserName[];
 

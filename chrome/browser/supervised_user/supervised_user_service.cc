@@ -156,7 +156,8 @@ void SupervisedUserService::URLFilterContext::OnBlacklistLoaded() {
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
-    : profile_(profile),
+    : includes_sync_sessions_type_(true),
+      profile_(profile),
       active_(false),
       delegate_(NULL),
 #if defined(ENABLE_EXTENSIONS)
@@ -400,7 +401,8 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
     return syncer::ModelTypeSet();
 
   syncer::ModelTypeSet result;
-  result.Put(syncer::SESSIONS);
+  if (IncludesSyncSessionsType())
+    result.Put(syncer::SESSIONS);
   result.Put(syncer::EXTENSIONS);
   result.Put(syncer::EXTENSION_SETTINGS);
   result.Put(syncer::APPS);
@@ -408,6 +410,17 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
   result.Put(syncer::APP_NOTIFICATIONS);
   result.Put(syncer::APP_LIST);
   return result;
+}
+
+void SupervisedUserService::OnHistoryRecordingStateChanged() {
+  includes_sync_sessions_type_ =
+      profile_->GetPrefs()->GetBoolean(prefs::kRecordHistory);
+  ProfileSyncServiceFactory::GetForProfile(profile_)
+      ->ReconfigureDatatypeManager();
+}
+
+bool SupervisedUserService::IncludesSyncSessionsType() const {
+  return includes_sync_sessions_type_;
 }
 
 void SupervisedUserService::OnStateChanged() {
@@ -680,6 +693,10 @@ void SupervisedUserService::Init() {
       prefs::kSupervisedUserId,
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kRecordHistory,
+      base::Bind(&SupervisedUserService::OnHistoryRecordingStateChanged,
+                 base::Unretained(this)));
 
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);

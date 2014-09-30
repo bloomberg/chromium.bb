@@ -36,16 +36,16 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
     prefs::kSupervisedUserManualURLs,
   },
   {
-    supervised_users::kForceSafeSearch,
-    prefs::kForceSafeSearch,
+    supervised_users::kForceSafeSearch, prefs::kForceSafeSearch,
   },
   {
-    supervised_users::kSigninAllowed,
-    prefs::kSigninAllowed,
+    supervised_users::kRecordHistory, prefs::kRecordHistory,
   },
   {
-    supervised_users::kUserName,
-    prefs::kProfileName,
+    supervised_users::kSigninAllowed, prefs::kSigninAllowed,
+  },
+  {
+    supervised_users::kUserName, prefs::kProfileName,
   },
 };
 
@@ -95,6 +95,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     prefs_->SetValue(prefs::kDefaultSupervisedUserFilteringBehavior,
                      new FundamentalValue(SupervisedUserURLFilter::ALLOW));
     prefs_->SetValue(prefs::kForceSafeSearch, new FundamentalValue(true));
+    prefs_->SetValue(prefs::kRecordHistory, new FundamentalValue(true));
     prefs_->SetValue(prefs::kHideWebStoreIcon, new FundamentalValue(true));
     prefs_->SetValue(prefs::kIncognitoModeAvailability,
                      new FundamentalValue(IncognitoModePrefs::DISABLED));

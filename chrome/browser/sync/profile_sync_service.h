@@ -478,8 +478,18 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // is complete). The UI calls this as soon as any part of the signin wizard is
   // displayed (even just the login UI).
   // If |setup_in_progress| is false, this also kicks the sync engine to ensure
-  // that data download starts.
+  // that data download starts. In this case, |ReconfigureDatatypeManager| will
+  // get triggered.
   virtual void SetSetupInProgress(bool setup_in_progress);
+
+  // Reconfigures the data type manager with the latest enabled types.
+  // Note: Does not initialize the backend if it is not already initialized.
+  // This function needs to be called only after sync has been initialized
+  // (i.e.,only for reconfigurations). The reason we don't initialize the
+  // backend is because if we had encountered an unrecoverable error we don't
+  // want to startup once more.
+  // This function is called by |SetSetupInProgress|.
+  virtual void ReconfigureDatatypeManager();
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes.
@@ -910,14 +920,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Create and register a new datatype controller.
   void RegisterNewDataType(syncer::ModelType data_type);
-
-  // Reconfigures the data type manager with the latest enabled types.
-  // Note: Does not initialize the backend if it is not already initialized.
-  // This function needs to be called only after sync has been initialized
-  // (i.e.,only for reconfigurations). The reason we don't initialize the
-  // backend is because if we had encountered an unrecoverable error we don't
-  // want to startup once more.
-  virtual void ReconfigureDatatypeManager();
 
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
