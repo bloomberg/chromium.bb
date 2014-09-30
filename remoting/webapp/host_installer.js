@@ -128,7 +128,7 @@ remoting.HostInstaller.prototype.downloadAndWaitForInstall = function() {
       return Promise.resolve(true);
     }
 
-    if (that.downloadAndWaitForInstallPromise_ !== null) {
+    if (that.downloadAndWaitForInstallPromise_ === null) {
       that.downloadAndWaitForInstallPromise_ = new Promise(
         /** @param {Function} resolve */
         function(resolve){
