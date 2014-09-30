@@ -292,11 +292,32 @@ TEST_F(AppListModelFolderTest, MergeItems) {
   AppListItem* item1 = model_.top_level_item_list()->item_at(1);
   AppListItem* item2 = model_.top_level_item_list()->item_at(2);
 
+  // Merge an item onto a non-existent target.
+  EXPECT_EQ(std::string(), model_.MergeItems("nonexistent", item0->id()));
+  ASSERT_EQ(3u, model_.top_level_item_list()->item_count());
+
+  // Merge a non-existent item onto a target.
+  EXPECT_EQ(std::string(), model_.MergeItems(item0->id(), "nonexistent"));
+  ASSERT_EQ(3u, model_.top_level_item_list()->item_count());
+
+  // Merge an item onto itself (should have no effect). This should not be
+  // possible, but there have been bugs in the past that made it possible (see
+  // http://crbug.com/415530), so it should be handled correctly.
+  EXPECT_EQ(std::string(), model_.MergeItems(item0->id(), item0->id()));
+  ASSERT_EQ(3u, model_.top_level_item_list()->item_count());
+
   // Merge two items.
   std::string folder1_id = model_.MergeItems(item0->id(), item1->id());
   ASSERT_EQ(2u, model_.top_level_item_list()->item_count());  // Folder + 1 item
   AppListFolderItem* folder1_item = model_.FindFolderItem(folder1_id);
   ASSERT_TRUE(folder1_item);
+  EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1_item->item_list()));
+
+  // Merge an item onto an item that is already in a folder (should have no
+  // effect). This should not be possible, but it should be handled correctly
+  // if it does happen.
+  EXPECT_EQ(std::string(), model_.MergeItems(item1->id(), item2->id()));
+  ASSERT_EQ(2u, model_.top_level_item_list()->item_count());  // Folder + 1 item
   EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1_item->item_list()));
 
   // Merge an item from the new folder into the third item.
@@ -315,6 +336,7 @@ TEST_F(AppListModelFolderTest, MergeItems) {
   // The empty folder should be deleted.
   folder1_item = model_.FindFolderItem(folder1_id);
   EXPECT_FALSE(folder1_item);
+  EXPECT_EQ(1u, model_.top_level_item_list()->item_count());  // 1 folder
 }
 
 TEST_F(AppListModelFolderTest, AddItemToFolder) {

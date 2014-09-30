@@ -1741,7 +1741,13 @@ void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
   const std::string& source_item_id = item_view->item()->id();
   AppListItemView* target_view =
       GetViewDisplayedAtSlotOnCurrentPage(target.slot);
+  DCHECK(target_view);
   const std::string& target_view_item_id = target_view->item()->id();
+
+  // Check that the item is not being dropped onto itself; this should not
+  // happen, but it can if something allows multiple views to share an
+  // item (e.g., if a folder drop does not clean up properly).
+  DCHECK_NE(source_item_id, target_view_item_id);
 
   // Make change to data model.
   item_list_->RemoveObserver(this);

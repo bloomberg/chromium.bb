@@ -91,13 +91,19 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
     return "";
   }
   DVLOG(2) << "MergeItems: " << source_item_id << " -> " << target_item_id;
+
+  if (target_item_id == source_item_id) {
+    LOG(WARNING) << "MergeItems tried to drop item onto itself ("
+                 << source_item_id << " -> " << target_item_id << ").";
+    return "";
+  }
+
   // Find the target item.
-  AppListItem* target_item = FindItem(target_item_id);
+  AppListItem* target_item = top_level_item_list_->FindItem(target_item_id);
   if (!target_item) {
     LOG(ERROR) << "MergeItems: Target no longer exists.";
     return "";
   }
-  CHECK(target_item->folder_id().empty());
 
   AppListItem* source_item = FindItem(source_item_id);
   if (!source_item) {
@@ -125,6 +131,8 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
   // location, they will become owned by the new folder.
   scoped_ptr<AppListItem> source_item_ptr = RemoveItem(source_item);
   CHECK(source_item_ptr);
+  // Note: This would fail if |target_item_id == source_item_id|, except we
+  // checked that they are distinct at the top of this method.
   scoped_ptr<AppListItem> target_item_ptr =
       top_level_item_list_->RemoveItem(target_item_id);
   CHECK(target_item_ptr);
