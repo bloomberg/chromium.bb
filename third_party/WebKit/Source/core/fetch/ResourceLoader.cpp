@@ -298,9 +298,6 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
 
     ResourceRequest& request(applyOptions(passedRequest.toMutableResourceRequest()));
 
-    // FIXME: We should have a real context for redirect requests. Currently, we don't: see WebURLLoaderImpl::Context::OnReceivedRedirect in content/.
-    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
-
     ASSERT(!request.isNull());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
