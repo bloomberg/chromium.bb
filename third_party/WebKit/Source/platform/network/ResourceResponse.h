@@ -162,6 +162,9 @@ public:
     bool wasFetchedViaServiceWorker() const { return m_wasFetchedViaServiceWorker; }
     void setWasFetchedViaServiceWorker(bool value) { m_wasFetchedViaServiceWorker = value; }
 
+    bool wasFallbackRequiredByServiceWorker() const { return m_wasFallbackRequiredByServiceWorker; }
+    void setWasFallbackRequiredByServiceWorker(bool value) { m_wasFallbackRequiredByServiceWorker = value; }
+
     bool isMultipartPayload() const { return m_isMultipartPayload; }
     void setIsMultipartPayload(bool value) { m_isMultipartPayload = value; }
 
@@ -258,6 +261,9 @@ private:
     // Was the resource fetched over a ServiceWorker.
     bool m_wasFetchedViaServiceWorker;
 
+    // Was the fallback request with skip service worker flag required.
+    bool m_wasFallbackRequiredByServiceWorker;
+
     // The time at which the response headers were received.  For cached
     // responses, this time could be "far" in the past.
     double m_responseTime;
@@ -306,6 +312,7 @@ public:
     bool m_wasAlternateProtocolAvailable;
     bool m_wasFetchedViaProxy;
     bool m_wasFetchedViaServiceWorker;
+    bool m_wasFallbackRequiredByServiceWorker;
     double m_responseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;

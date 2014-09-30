@@ -56,6 +56,7 @@ ResourceResponse::ResourceResponse()
     , m_wasAlternateProtocolAvailable(false)
     , m_wasFetchedViaProxy(false)
     , m_wasFetchedViaServiceWorker(false)
+    , m_wasFallbackRequiredByServiceWorker(false)
     , m_responseTime(0)
     , m_remotePort(0)
 {
@@ -89,6 +90,7 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_wasAlternateProtocolAvailable(false)
     , m_wasFetchedViaProxy(false)
     , m_wasFetchedViaServiceWorker(false)
+    , m_wasFallbackRequiredByServiceWorker(false)
     , m_responseTime(0)
     , m_remotePort(0)
 {
@@ -119,6 +121,7 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
     response->m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
     response->m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
+    response->m_wasFallbackRequiredByServiceWorker = data->m_wasFallbackRequiredByServiceWorker;
     response->m_responseTime = data->m_responseTime;
     response->m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
     response->m_remotePort = data->m_remotePort;
@@ -155,6 +158,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_wasAlternateProtocolAvailable = m_wasAlternateProtocolAvailable;
     data->m_wasFetchedViaProxy = m_wasFetchedViaProxy;
     data->m_wasFetchedViaServiceWorker = m_wasFetchedViaServiceWorker;
+    data->m_wasFallbackRequiredByServiceWorker = m_wasFallbackRequiredByServiceWorker;
     data->m_responseTime = m_responseTime;
     data->m_remoteIPAddress = m_remoteIPAddress.string().isolatedCopy();
     data->m_remotePort = m_remotePort;

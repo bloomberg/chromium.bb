@@ -167,6 +167,11 @@ public:
     BLINK_PLATFORM_EXPORT bool wasFetchedViaServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setWasFetchedViaServiceWorker(bool);
 
+    // Flag whether the fallback request with skip service worker flag was
+    // required.
+    BLINK_PLATFORM_EXPORT bool wasFallbackRequiredByServiceWorker() const;
+    BLINK_PLATFORM_EXPORT void setWasFallbackRequiredByServiceWorker(bool);
+
     // Flag whether this request is part of a multipart response.
     BLINK_PLATFORM_EXPORT bool isMultipartPayload() const;
     BLINK_PLATFORM_EXPORT void setIsMultipartPayload(bool);
