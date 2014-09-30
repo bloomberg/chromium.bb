@@ -1,0 +1,16 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 595x16
+          text run at (0,0) width 595: "Testing reflections on directly composited images. Left and right sides should look the same."
+      RenderBlock (anonymous) at (0,32) size 784x168
+        RenderText {#text} at (224,152) size 4x16
+          text run at (224,152) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+layer at (28,60) size 184x124
+  RenderImage {IMG} at (20,20) size 184x124
+layer at (256,60) size 184x124
+  RenderImage {IMG} at (248,20) size 184x124

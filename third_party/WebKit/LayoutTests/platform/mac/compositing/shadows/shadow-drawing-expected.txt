@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x310
-  RenderBlock {HTML} at (0,0) size 800x310
-    RenderBody {BODY} at (8,16) size 784x286
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 262x18
-          text run at (0,0) width 262: "Left and right sides should look the same."
-      RenderBlock (anonymous) at (0,34) size 784x252
+layer at (0,0) size 800x308
+  RenderBlock {HTML} at (0,0) size 800x308
+    RenderBody {BODY} at (8,16) size 784x284
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 268x16
+          text run at (0,0) width 268: "Left and right sides should look the same."
+      RenderBlock (anonymous) at (0,32) size 784x252
         RenderBlock {DIV} at (50,50) size 202x152 [border: (1px solid #000000)]
-        RenderText {#text} at (302,151) size 4x18
-          text run at (302,151) width 4: " "
+        RenderText {#text} at (302,141) size 4x16
+          text run at (302,141) width 4: " "
         RenderText {#text} at (0,0) size 0x0
-layer at (59,138) size 200x86
-  RenderBlock {P} at (1,38.33) size 200x86 [color=#0000FF]
-    RenderText {#text} at (21,0) size 158x86
-      text run at (21,0) width 158: "Shadowed"
-      text run at (72,43) width 56: "text"
-layer at (364,100) size 202x152
+layer at (59,136) size 200x74
+  RenderBlock {P} at (1,38.33) size 200x74 [color=#0000FF]
+    RenderText {#text} at (22,0) size 156x74
+      text run at (22,0) width 156: "Shadowed"
+      text run at (72,37) width 56: "text"
+layer at (364,98) size 202x152
   RenderBlock {DIV} at (356,50) size 202x152 [border: (1px solid #000000)]
-layer at (365,138) size 200x86
-  RenderBlock {P} at (1,38.33) size 200x86 [color=#0000FF]
-    RenderText {#text} at (21,0) size 158x86
-      text run at (21,0) width 158: "Shadowed"
-      text run at (72,43) width 56: "text"
+layer at (365,136) size 200x74
+  RenderBlock {P} at (1,38.33) size 200x74 [color=#0000FF]
+    RenderText {#text} at (22,0) size 156x74
+      text run at (22,0) width 156: "Shadowed"
+      text run at (72,37) width 56: "text"

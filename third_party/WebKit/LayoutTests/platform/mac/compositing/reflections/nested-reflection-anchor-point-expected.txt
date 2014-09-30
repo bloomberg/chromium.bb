@@ -1,0 +1,14 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x304
+  RenderBlock {HTML} at (0,0) size 800x304
+    RenderBody {BODY} at (8,16) size 784x268
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 291x16
+          text run at (0,0) width 291: "Left and right sides should look symmetrical."
+layer at (68,52) size 122x232
+  RenderBlock {DIV} at (60,36) size 122x232 [border: (1px solid #000000)]
+layer at (79,63) size 100x100
+  RenderBlock {DIV} at (11,11) size 100x100 [bgcolor=#008000]
+    RenderText {#text} at (33,0) size 34x67
+      text run at (33,0) width 34: "1"

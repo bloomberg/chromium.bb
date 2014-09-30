@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x350
-  RenderBlock {HTML} at (0,0) size 800x350
-    RenderBody {BODY} at (8,16) size 784x326
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 493x18
-          text run at (0,0) width 493: "You should see a reflected video below, rather than the red video background."
-layer at (8,50) size 300x292
-  RenderBlock {DIV} at (0,34) size 300x292
+layer at (0,0) size 800x348
+  RenderBlock {HTML} at (0,0) size 800x348
+    RenderBody {BODY} at (8,16) size 784x324
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 501x16
+          text run at (0,0) width 501: "You should see a reflected video below, rather than the red video background."
+layer at (8,48) size 300x292
+  RenderBlock {DIV} at (0,32) size 300x292
     RenderText {#text} at (0,0) size 0x0
-layer at (8,50) size 352x288
+layer at (8,48) size 352x288
   RenderVideo {VIDEO} at (0,0) size 352x288 [bgcolor=#FF0000]
-layer at (8,50) size 352x288
+layer at (8,48) size 352x288
   RenderFlexibleBox {DIV} at (0,0) size 352x288
     RenderBlock {DIV} at (0,253) size 352x35
-layer at (8,50) size 352x253
+layer at (8,48) size 352x253
   RenderFlexibleBox {DIV} at (0,0) size 352x253

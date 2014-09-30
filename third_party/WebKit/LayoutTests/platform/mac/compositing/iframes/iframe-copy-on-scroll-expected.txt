@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x50
-  RenderBlock {HTML} at (0,0) size 800x50
-    RenderBody {BODY} at (8,16) size 784x18
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 376x18
-          text run at (0,0) width 376: "In pixel results, the blue box should be scrolled out of view."
-layer at (8,50) size 324x228
-  RenderBlock (positioned) zI: 1 {DIV} at (8,50) size 324x228
+layer at (0,0) size 800x48
+  RenderBlock {HTML} at (0,0) size 800x48
+    RenderBody {BODY} at (8,16) size 784x16
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 384x16
+          text run at (0,0) width 384: "In pixel results, the blue box should be scrolled out of view."
+layer at (8,48) size 324x228
+  RenderBlock (positioned) zI: 1 {DIV} at (8,48) size 324x228
     RenderText zI: 1 {#text} at (0,0) size 0x0
-layer at (18,60) size 304x204
+layer at (18,58) size 304x204
   RenderPartObject {IFRAME} at (10,10) size 304x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 285x1018
       RenderView at (0,0) size 285x200
