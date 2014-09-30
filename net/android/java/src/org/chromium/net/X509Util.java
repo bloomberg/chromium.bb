@@ -433,7 +433,7 @@ public class X509Util {
         try {
             ensureInitialized();
         } catch (CertificateException e) {
-            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_FAILED);
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
         }
 
         X509Certificate[] serverCertificates = new X509Certificate[certChain.length];
@@ -442,7 +442,7 @@ public class X509Util {
                 serverCertificates[i] = createCertificateFromBytes(certChain[i]);
             }
         } catch (CertificateException e) {
-            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_UNABLE_TO_PARSE);
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.UNABLE_TO_PARSE);
         }
 
         // Expired and not yet valid certificates would be rejected by the trust managers, but the
@@ -453,20 +453,20 @@ public class X509Util {
             serverCertificates[0].checkValidity();
             if (!verifyKeyUsage(serverCertificates[0])) {
                 return new AndroidCertVerifyResult(
-                        CertVerifyStatusAndroid.VERIFY_INCORRECT_KEY_USAGE);
+                        CertVerifyStatusAndroid.INCORRECT_KEY_USAGE);
             }
         } catch (CertificateExpiredException e) {
-            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_EXPIRED);
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.EXPIRED);
         } catch (CertificateNotYetValidException e) {
-            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_NOT_YET_VALID);
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.NOT_YET_VALID);
         } catch (CertificateException e) {
-            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_FAILED);
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
         }
 
         synchronized (sLock) {
             // If no trust manager was found, fail without crashing on the null pointer.
             if (sDefaultTrustManager == null)
-                return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_FAILED);
+                return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
 
             List<X509Certificate> verifiedChain;
             try {
@@ -482,7 +482,7 @@ public class X509Util {
                     Log.i(TAG, "Failed to validate the certificate chain, error: " +
                               eDefaultManager.getMessage());
                     return new AndroidCertVerifyResult(
-                            CertVerifyStatusAndroid.VERIFY_NO_TRUSTED_ROOT);
+                            CertVerifyStatusAndroid.NO_TRUSTED_ROOT);
                 }
             }
 
@@ -492,7 +492,7 @@ public class X509Util {
                 isIssuedByKnownRoot = isKnownRoot(root);
             }
 
-            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_OK,
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.OK,
                                                isIssuedByKnownRoot, verifiedChain);
         }
     }

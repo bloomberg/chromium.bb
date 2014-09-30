@@ -39,8 +39,11 @@ LOCAL_SRC_FILES += \
 # Java files generated from .template rules. This list should match list of java dependencies in
 # android_webview/android_webview.gyp
 LOCAL_GENERATED_SOURCES := \
-$(call intermediates-dir-for,GYP,shared)/enums/window_open_disposition_java/org/chromium/ui/WindowOpenDisposition.java \
 $(call intermediates-dir-for,GYP,shared)/enums/bitmap_format_java/org/chromium/ui/gfx/BitmapFormat.java \
+$(call intermediates-dir-for,GYP,shared)/enums/cert_verify_status_android_java/org/chromium/net/CertVerifyStatusAndroid.java \
+$(call intermediates-dir-for,GYP,shared)/enums/certificate_mime_types_java/org/chromium/net/CertificateMimeType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/private_key_types_java/org/chromium/net/PrivateKeyType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/window_open_disposition_java/org/chromium/ui/WindowOpenDisposition.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ApplicationState.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/GestureEventType.java \
@@ -52,10 +55,7 @@ $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content_public/common/ScreenOrientationValues.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/media/AndroidImageFormat.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyStatusAndroid.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/NetError.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/PrivateKeyType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/ui/base/PageTransitionTypes.java \
 
 # content dependencies on java components that are provided by the system on

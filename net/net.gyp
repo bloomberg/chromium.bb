@@ -1620,38 +1620,26 @@
         {
           'target_name': 'certificate_mime_types_java',
           'type': 'none',
-          'sources': [
-            'android/java/CertificateMimeType.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/net',
-            'template_deps': ['base/mime_util_certificate_type_list.h'],
+            'source_file': 'base/mime_util.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'cert_verify_status_android_java',
           'type': 'none',
-          'sources': [
-            'android/java/CertVerifyStatusAndroid.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/net',
-            'template_deps': ['android/cert_verify_status_android_list.h'],
+            'source_file': 'android/cert_verify_result_android.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'private_key_types_java',
           'type': 'none',
-          'sources': [
-            'android/java/PrivateKeyType.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/net',
-            'template_deps': ['android/private_key_type_list.h'],
+            'source_file': 'android/keystore.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'net_unittests_apk',

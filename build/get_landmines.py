@@ -56,6 +56,8 @@ def print_landmines():
   print '[chromium-dev] PSA: clobber build needed for IDR_INSPECTOR_* compil...'
   print 'blink_resources.grd changed: crbug.com/400860'
   print 'ninja dependency cycle: crbug.com/408192'
+  if platform() == 'android':
+    print 'Clobber: To delete stale generated .java files.'
 
 
 def main():

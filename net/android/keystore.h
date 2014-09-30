@@ -26,10 +26,14 @@ struct AndroidEVP_PKEY;
 // Define a list of constants describing private key types. The
 // values are shared with Java through org.chromium.net.PrivateKeyType.
 // Example: PRIVATE_KEY_TYPE_RSA.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
 enum PrivateKeyType {
-#define DEFINE_PRIVATE_KEY_TYPE(name,value)  PRIVATE_KEY_TYPE_ ## name = value,
-#include "net/android/private_key_type_list.h"
-#undef DEFINE_PRIVATE_KEY_TYPE
+  PRIVATE_KEY_TYPE_RSA = 0,
+  PRIVATE_KEY_TYPE_DSA = 1,
+  PRIVATE_KEY_TYPE_ECDSA = 2,
+  PRIVATE_KEY_TYPE_INVALID = 255,
 };
 
 // Returns the modulus of a given RSAPrivateKey platform object,

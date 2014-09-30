@@ -147,10 +147,14 @@ NET_EXPORT void RemoveProprietaryMediaTypesAndCodecsForTests();
 NET_EXPORT const std::string GetIANAMediaType(const std::string& mime_type);
 
 // A list of supported certificate-related mime types.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
 enum CertificateMimeType {
-#define CERTIFICATE_MIME_TYPE(name, value) CERTIFICATE_MIME_TYPE_ ## name = value,
-#include "net/base/mime_util_certificate_type_list.h"
-#undef CERTIFICATE_MIME_TYPE
+  CERTIFICATE_MIME_TYPE_UNKNOWN,
+  CERTIFICATE_MIME_TYPE_X509_USER_CERT,
+  CERTIFICATE_MIME_TYPE_X509_CA_CERT,
+  CERTIFICATE_MIME_TYPE_PKCS12_ARCHIVE,
 };
 
 NET_EXPORT CertificateMimeType GetCertificateMimeTypeForMimeType(

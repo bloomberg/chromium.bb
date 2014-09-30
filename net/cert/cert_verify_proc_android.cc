@@ -38,21 +38,21 @@ bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
                                &status, &verify_result->is_issued_by_known_root,
                                &verified_chain);
   switch (status) {
-    case android::VERIFY_FAILED:
+    case android::CERT_VERIFY_STATUS_ANDROID_FAILED:
       return false;
-    case android::VERIFY_OK:
+    case android::CERT_VERIFY_STATUS_ANDROID_OK:
       break;
-    case android::VERIFY_NO_TRUSTED_ROOT:
+    case android::CERT_VERIFY_STATUS_ANDROID_NO_TRUSTED_ROOT:
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
       break;
-    case android::VERIFY_EXPIRED:
-    case android::VERIFY_NOT_YET_VALID:
+    case android::CERT_VERIFY_STATUS_ANDROID_EXPIRED:
+    case android::CERT_VERIFY_STATUS_ANDROID_NOT_YET_VALID:
       verify_result->cert_status |= CERT_STATUS_DATE_INVALID;
       break;
-    case android::VERIFY_UNABLE_TO_PARSE:
+    case android::CERT_VERIFY_STATUS_ANDROID_UNABLE_TO_PARSE:
       verify_result->cert_status |= CERT_STATUS_INVALID;
       break;
-    case android::VERIFY_INCORRECT_KEY_USAGE:
+    case android::CERT_VERIFY_STATUS_ANDROID_INCORRECT_KEY_USAGE:
       verify_result->cert_status |= CERT_STATUS_INVALID;
       break;
     default:
@@ -85,7 +85,8 @@ bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
   // correct, as a full chain may have been constructed and then failed to
   // validate. However, if that is the case, the more serious error will
   // override any SHA-1 considerations.
-  size_t correction_for_root = (status == android::VERIFY_OK) ? 1 : 0;
+  size_t correction_for_root =
+      (status == android::CERT_VERIFY_STATUS_ANDROID_OK) ? 1 : 0;
   for (size_t i = 0; i < chain.size() - correction_for_root; ++i) {
     int sig_alg = OBJ_obj2nid(chain[i]->sig_alg->algorithm);
     if (sig_alg == NID_md2WithRSAEncryption) {

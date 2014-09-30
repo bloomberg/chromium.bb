@@ -12,10 +12,8 @@ android_library("net_java") {
   ]
 
   srcjar_deps = [
-    ":cert_verify_status_android_java",
-    ":certificate_mime_types_java",
     ":net_errors_java",
-    ":private_key_types_java",
+    ":net_android_java_enums_srcjar",
     ":remote_android_keystore_aidl",
   ]
 }
@@ -51,33 +49,16 @@ java_cpp_template("net_errors_java") {
   ]
 }
 
-java_cpp_template("certificate_mime_types_java") {
-  package_name = "org/chromium/net"
+java_cpp_enum("net_android_java_enums_srcjar") {
   sources = [
-    "java/CertificateMimeType.template",
+    "../base/mime_util.h",
+    "cert_verify_result_android.h",
+    "keystore.h"
   ]
-  inputs = [
-    "../base/mime_util_certificate_type_list.h"
-  ]
-}
-
-java_cpp_template("cert_verify_status_android_java") {
-  package_name = "org/chromium/net"
-  sources = [
-    "java/CertVerifyStatusAndroid.template",
-  ]
-  inputs = [
-    "cert_verify_status_android_list.h"
-  ]
-}
-
-java_cpp_template("private_key_types_java") {
-  package_name = "org/chromium/net"
-  sources = [
-    "java/PrivateKeyType.template",
-  ]
-  inputs = [
-    "private_key_type_list.h"
+  outputs = [
+    "org/chromium/net/CertificateMimeType.java",
+    "org/chromium/net/CertVerifyStatusAndroid.java",
+    "org/chromium/net/PrivateKeyType.java",
   ]
 }
 
