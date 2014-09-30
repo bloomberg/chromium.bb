@@ -1674,7 +1674,7 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
 }
 
 // Tests that the AppListButton renders as active in response to touches.
-TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
+TEST_F(ShelfViewTest, DISABLED_AppListButtonTouchFeedback) {
   AppListButton* app_list_button =
       static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
   EXPECT_FALSE(app_list_button->draw_background_as_active());
@@ -1694,7 +1694,7 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
 
 // Tests that a touch that slides out of the bounds of the AppListButton leads
 // to the end of rendering an active state.
-TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
+TEST_F(ShelfViewTest, DISABLED_AppListButtonTouchFeedbackCancellation) {
   AppListButton* app_list_button =
       static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
   EXPECT_FALSE(app_list_button->draw_background_as_active());
