@@ -134,19 +134,22 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
             Log.e(TAG, "allocate: no fps range found");
             return false;
         }
-        int frameRateInMs = frameRate * 1000;
-        // Use the first range as default.
-        int[] fpsMinMax = listFpsRange.get(0);
-        int newFrameRate = (fpsMinMax[0] + 999) / 1000;
+        // Use the first range as the default chosen range.
+        int[] chosenFpsRange = listFpsRange.get(0);
+        int chosenFrameRate = (chosenFpsRange[0] + 999) / 1000;
+        int fpsRangeSize = Integer.MAX_VALUE;
+        // API fps ranges are scaled up x1000 to avoid floating point.
+        int frameRateScaled = frameRate * 1000;
         for (int[] fpsRange : listFpsRange) {
-            if (fpsRange[0] <= frameRateInMs && frameRateInMs <= fpsRange[1]) {
-                fpsMinMax = fpsRange;
-                newFrameRate = frameRate;
-                break;
+            if (fpsRange[0] <= frameRateScaled && frameRateScaled <= fpsRange[1] &&
+                    (fpsRange[1] - fpsRange[0]) <= fpsRangeSize) {
+                chosenFpsRange = fpsRange;
+                chosenFrameRate = frameRate;
+                fpsRangeSize = fpsRange[1] - fpsRange[0];
             }
         }
-        frameRate = newFrameRate;
-        Log.d(TAG, "allocate: fps set to " + frameRate);
+        Log.d(TAG, "allocate: fps set to " + chosenFrameRate + ", [" +
+                chosenFpsRange[0] + "-" + chosenFpsRange[1] + "]");
 
         // Calculate size.
         List<android.hardware.Camera.Size> listCameraSize =
@@ -183,10 +186,10 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
             Log.d(TAG, "Image stabilization not supported.");
         }
 
-        setCaptureParameters(matchedWidth, matchedHeight, frameRate, parameters);
+        setCaptureParameters(matchedWidth, matchedHeight, chosenFrameRate, parameters);
         parameters.setPreviewSize(mCaptureFormat.mWidth,
                                   mCaptureFormat.mHeight);
-        parameters.setPreviewFpsRange(fpsMinMax[0], fpsMinMax[1]);
+        parameters.setPreviewFpsRange(chosenFpsRange[0], chosenFpsRange[1]);
         parameters.setPreviewFormat(mCaptureFormat.mPixelFormat);
         try {
             mCamera.setParameters(parameters);
