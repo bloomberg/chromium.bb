@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DETAILS} at (0,0) size 784x18
-        RenderBlock {SUMMARY} at (0,0) size 784x18
-          RenderDetailsMarker {DIV} at (0,4) size 10.55x10.55: down
-          RenderText {#text} at (16,0) size 63x18
-            text run at (16,0) width 63: "summary "
-          RenderInline {SPAN} at (0,0) size 143x18
-            RenderInline {B} at (0,0) size 143x18
-              RenderText {#text} at (78,0) size 143x18
-                text run at (78,0) width 143: "should have bold test"
-        RenderBlock {DIV} at (0,18) size 784x0
+      RenderBlock {DETAILS} at (0,0) size 784x16
+        RenderBlock {SUMMARY} at (0,0) size 784x16
+          RenderDetailsMarker {DIV} at (0,2) size 10.55x10.55: down
+          RenderText {#text} at (16,0) size 65x16
+            text run at (16,0) width 65: "summary "
+          RenderInline {SPAN} at (0,0) size 145x16
+            RenderInline {B} at (0,0) size 145x16
+              RenderText {#text} at (80,0) size 145x16
+                text run at (80,0) width 145: "should have bold test"
+        RenderBlock {DIV} at (0,16) size 784x0

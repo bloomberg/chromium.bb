@@ -3,23 +3,23 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {DETAILS} at (0,0) size 784x36
-        RenderBlock {SUMMARY} at (0,0) size 784x18
-          RenderDetailsMarker {DIV} at (0,4) size 10.55x10.55: down
-          RenderText {#text} at (16,0) size 62x18
-            text run at (16,0) width 62: "Summary"
-        RenderBlock {DIV} at (0,18) size 784x18
-          RenderBlock {SPAN} at (0,2) size 64x15
-            RenderText {#text} at (0,0) size 64x15
-              text run at (0,0) width 64: "Details1"
-          RenderText {#text} at (64,0) size 4x18
-            text run at (64,0) width 4: " "
+      RenderBlock {DETAILS} at (0,0) size 784x32
+        RenderBlock {SUMMARY} at (0,0) size 784x16
+          RenderDetailsMarker {DIV} at (0,2) size 10.55x10.55: down
+          RenderText {#text} at (16,0) size 64x16
+            text run at (16,0) width 64: "Summary"
+        RenderBlock {DIV} at (0,16) size 784x16
+          RenderBlock {SPAN} at (0,2) size 62.42x13
+            RenderText {#text} at (0,0) size 63x13
+              text run at (0,0) width 63: "Details1"
+          RenderText {#text} at (62,0) size 5x16
+            text run at (62,0) width 5: " "
           RenderText {#text} at (0,0) size 0x0
-          RenderBlock {SPAN} at (68,2) size 64x15
-            RenderText {#text} at (0,0) size 64x15
-              text run at (0,0) width 64: "Details2"
+          RenderBlock {SPAN} at (66.42,2) size 62.42x13
+            RenderText {#text} at (0,0) size 63x13
+              text run at (0,0) width 63: "Details2"
           RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,36) size 784x18
+      RenderBlock (anonymous) at (0,32) size 784x18
         RenderButton {INPUT} at (0,0) size 40.06x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 24.06x13
             RenderText {#text} at (0,0) size 25x13

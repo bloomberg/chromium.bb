@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {UL} at (0,0) size 784x48
+        RenderListItem {LI} at (40,0) size 744x16
+          RenderListMarker at (-13,6) size 6x6
+          RenderText {#text} at (0,0) size 60x16
+            text run at (0,0) width 60: "Item One"
+        RenderListItem {LI} at (40,16) size 744x16
+          RenderListMarker at (-13,6) size 6x6
+          RenderText {#text} at (0,0) size 63x16
+            text run at (0,0) width 63: "Item Two"
+        RenderListItem {LI} at (40,32) size 744x16
+          RenderListMarker at (-13,6) size 6x6
+          RenderText {#text} at (0,0) size 71x16
+            text run at (0,0) width 71: "Item Three"

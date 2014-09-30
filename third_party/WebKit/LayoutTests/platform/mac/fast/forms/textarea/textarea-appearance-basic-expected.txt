@@ -3,32 +3,32 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x418
   RenderBlock {HTML} at (0,0) size 800x418
     RenderBody {BODY} at (8,8) size 784x402
-      RenderText {#text} at (169,26) size 4x18
-        text run at (169,26) width 4: " "
-      RenderBR {BR} at (173,26) size 0x18
-      RenderText {#text} at (173,74) size 4x18
-        text run at (173,74) width 4: " "
-      RenderText {#text} at (346,74) size 4x18
-        text run at (346,74) width 4: " "
-      RenderBR {BR} at (350,74) size 0x18
-      RenderText {#text} at (169,118) size 4x18
-        text run at (169,118) width 4: " "
-      RenderBR {BR} at (173,118) size 0x18
-      RenderText {#text} at (169,162) size 4x18
-        text run at (169,162) width 4: " "
-      RenderBR {BR} at (173,162) size 0x18
-      RenderText {#text} at (229,226) size 4x18
-        text run at (229,226) width 4: " "
-      RenderText {#text} at (502,226) size 4x18
-        text run at (502,226) width 4: " "
-      RenderText {#text} at (309,300) size 4x18
-        text run at (309,300) width 4: " "
-      RenderBR {BR} at (313,300) size 0x18
-      RenderText {#text} at (235,384) size 4x18
-        text run at (235,384) width 4: " "
-      RenderText {#text} at (542,384) size 4x18
-        text run at (542,384) width 4: " "
-      RenderBR {BR} at (546,384) size 0x18
+      RenderText {#text} at (169,28) size 4x16
+        text run at (169,28) width 4: " "
+      RenderBR {BR} at (173,28) size 0x16
+      RenderText {#text} at (173,76) size 4x16
+        text run at (173,76) width 4: " "
+      RenderText {#text} at (346,76) size 4x16
+        text run at (346,76) width 4: " "
+      RenderBR {BR} at (350,76) size 0x16
+      RenderText {#text} at (169,120) size 4x16
+        text run at (169,120) width 4: " "
+      RenderBR {BR} at (173,120) size 0x16
+      RenderText {#text} at (169,164) size 4x16
+        text run at (169,164) width 4: " "
+      RenderBR {BR} at (173,164) size 0x16
+      RenderText {#text} at (229,228) size 4x16
+        text run at (229,228) width 4: " "
+      RenderText {#text} at (502,228) size 4x16
+        text run at (502,228) width 4: " "
+      RenderText {#text} at (309,302) size 4x16
+        text run at (309,302) width 4: " "
+      RenderBR {BR} at (313,302) size 0x16
+      RenderText {#text} at (235,386) size 4x16
+        text run at (235,386) width 4: " "
+      RenderText {#text} at (542,386) size 4x16
+        text run at (542,386) width 4: " "
+      RenderBR {BR} at (546,386) size 0x16
 layer at (12,12) size 161x32 clip at (13,13) size 159x30
   RenderTextControl {TEXTAREA} at (4,4) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 155x13

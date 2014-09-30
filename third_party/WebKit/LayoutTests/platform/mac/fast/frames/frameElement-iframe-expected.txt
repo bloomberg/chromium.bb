@@ -11,6 +11,6 @@ layer at (8,8) size 304x154
     layer at (0,0) size 300x150
       RenderBlock {HTML} at (0,0) size 300x150
         RenderBody {BODY} at (8,8) size 284x134
-          RenderBlock {DIV} at (0,0) size 284x18
-            RenderText {#text} at (0,0) size 208x18
-              text run at (0,0) width 208: "frameElement ID is \"Mr. Frame\""
+          RenderBlock {DIV} at (0,0) size 284x16
+            RenderText {#text} at (0,0) size 212x16
+              text run at (0,0) width 212: "frameElement ID is \"Mr. Frame\""
