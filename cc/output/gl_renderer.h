@@ -143,6 +143,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                             const CheckerboardDrawQuad* quad);
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
+  static bool ShouldApplyBlendModeUsingBlendFunc(const DrawQuad* quad);
+  void ApplyBlendModeUsingBlendFunc(const DrawQuad* quad);
+  void RestoreBlendFuncToDefault();
   scoped_ptr<ScopedResource> GetBackgroundWithFilters(
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
