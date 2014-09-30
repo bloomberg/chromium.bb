@@ -309,9 +309,9 @@ blink::WebTimeRanges WebMediaPlayerMS::buffered() const {
   return buffered_;
 }
 
-double WebMediaPlayerMS::maxTimeSeekable() const {
+blink::WebTimeRanges WebMediaPlayerMS::seekable() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return 0.0;
+  return blink::WebTimeRanges();
 }
 
 bool WebMediaPlayerMS::didLoadingProgress() {

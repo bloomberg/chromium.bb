@@ -484,18 +484,25 @@ blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
   return ConvertToWebTimeRanges(buffered_time_ranges);
 }
 
-double WebMediaPlayerImpl::maxTimeSeekable() const {
+blink::WebTimeRanges WebMediaPlayerImpl::seekable() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  // If we haven't even gotten to ReadyStateHaveMetadata yet then just
-  // return 0 so that the seekable range is empty.
+  // If we haven't even gotten to ReadyStateHaveMetadata yet then there
+  // are no seekable ranges.
   if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
-    return 0.0;
+    return blink::WebTimeRanges();
 
   // We don't support seeking in streaming media.
   if (data_source_ && data_source_->IsStreaming())
-    return 0.0;
-  return duration();
+    return blink::WebTimeRanges();
+
+  // If we have a duration then use [0, duration] as the seekable range.
+  const double seekable_end = duration();
+  if (!seekable_end)
+    return blink::WebTimeRanges();
+
+  blink::WebTimeRange seekable_range(0.0, seekable_end);
+  return blink::WebTimeRanges(&seekable_range, 1);
 }
 
 bool WebMediaPlayerImpl::didLoadingProgress() {

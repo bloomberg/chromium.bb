@@ -64,7 +64,6 @@ static const int kSDKVersionToSupportSecurityOriginCheck = 20;
 using blink::WebMediaPlayer;
 using blink::WebSize;
 using blink::WebString;
-using blink::WebTimeRanges;
 using blink::WebURL;
 using gpu::gles2::GLES2Interface;
 using media::MediaPlayerAndroid;
@@ -514,19 +513,25 @@ WebMediaPlayer::ReadyState WebMediaPlayerAndroid::readyState() const {
   return ready_state_;
 }
 
-WebTimeRanges WebMediaPlayerAndroid::buffered() const {
+blink::WebTimeRanges WebMediaPlayerAndroid::buffered() const {
   if (media_source_delegate_)
     return media_source_delegate_->Buffered();
   return buffered_;
 }
 
-double WebMediaPlayerAndroid::maxTimeSeekable() const {
-  // If we haven't even gotten to ReadyStateHaveMetadata yet then just
-  // return 0 so that the seekable range is empty.
+blink::WebTimeRanges WebMediaPlayerAndroid::seekable() const {
+  // If we haven't even gotten to ReadyStateHaveMetadata yet then there
+  // are no seekable ranges.
   if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
-    return 0.0;
+    return blink::WebTimeRanges();
 
-  return duration();
+  // If we have a duration then use [0, duration] as the seekable range.
+  const double seekable_end = duration();
+  if (!seekable_end)
+    return blink::WebTimeRanges();
+
+  blink::WebTimeRange seekable_range(0.0, seekable_end);
+  return blink::WebTimeRanges(&seekable_range, 1);
 }
 
 bool WebMediaPlayerAndroid::didLoadingProgress() {

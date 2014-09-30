@@ -112,7 +112,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual void requestRemotePlayback();
   virtual void requestRemotePlaybackControl();
   virtual blink::WebTimeRanges buffered() const;
-  virtual double maxTimeSeekable() const;
+  virtual blink::WebTimeRanges seekable() const;
 
   // Poster image, as defined in the <video> element.
   virtual void setPoster(const blink::WebURL& poster) OVERRIDE;
