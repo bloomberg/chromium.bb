@@ -21,8 +21,7 @@
                   android:taskAffinity=".CastShellActivity"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
                   android:excludeFromRecents="true"
-                  android:noHistory="true"
-                  android:permission="android.permission.INTERNET">
+                  android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
