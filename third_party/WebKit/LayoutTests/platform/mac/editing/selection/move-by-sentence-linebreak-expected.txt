@@ -1,0 +1,30 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 564x16
+          text run at (0,0) width 564: "This tests for sentence boundary when there are empty line breaks between lines of text."
+        RenderBR {BR} at (563,12) size 1x0
+        RenderText {#text} at (0,16) size 501x16
+          text run at (0,16) width 501: "The result insertion point should be at the end of the sentence \"How are you?\""
+      RenderBlock {DIV} at (0,48) size 784x96
+        RenderBlock (anonymous) at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 32x16
+            text run at (0,0) width 32: "hello"
+        RenderBlock {DIV} at (0,16) size 784x16
+          RenderBR {BR} at (0,0) size 0x16
+        RenderBlock {DIV} at (0,32) size 784x16
+          RenderText {#text} at (0,0) size 38x16
+            text run at (0,0) width 38: "world"
+        RenderBlock {DIV} at (0,48) size 784x16
+          RenderBR {BR} at (0,0) size 0x16
+        RenderBlock {DIV} at (0,64) size 784x16
+          RenderBR {BR} at (0,0) size 0x16
+        RenderBlock {DIV} at (0,80) size 784x16
+          RenderText {#text} at (0,0) size 270x16
+            text run at (0,0) width 89: "This is a test. "
+            text run at (88,0) width 95: "How are you? "
+            text run at (182,0) width 88: "Life is sweet!"
+caret: position 30 of child 0 {#text} of child 9 {DIV} of child 2 {DIV} of body

@@ -13,11 +13,11 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (0,0) size 800x584
       RenderBlock (anonymous) at (0,0) size 800x304
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,320) size 800x36
-        RenderText {#text} at (0,0) size 795x36
-          text run at (0,0) width 795: "This test uses the eventSender to do drag and drop. To run it manually, drag the word selected in the above subframe and drop"
-          text run at (0,18) width 80: "it after 'baz'. "
-          text run at (80,18) width 213: "The result should be 'foo baz bar'."
+      RenderBlock {P} at (0,320) size 800x32
+        RenderText {#text} at (0,0) size 775x32
+          text run at (0,0) width 775: "This test uses the eventSender to do drag and drop. To run it manually, drag the word selected in the above subframe and"
+          text run at (0,16) width 116: "drop it after 'baz'. "
+          text run at (115,16) width 217: "The result should be 'foo baz bar'."
 layer at (0,0) size 304x304
   RenderPartObject {IFRAME} at (0,0) size 304x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x300
@@ -25,5 +25,5 @@ layer at (0,0) size 304x304
     layer at (0,0) size 300x300
       RenderBlock {HTML} at (0,0) size 300x300
         RenderBody {BODY} at (8,8) size 284x284 [bgcolor=#FFFFE0]
-          RenderText {#text} at (0,0) size 71x18
-            text run at (0,0) width 71: "foo baz bar"
+          RenderText {#text} at (0,0) size 72x16
+            text run at (0,0) width 72: "foo baz bar"

@@ -1,0 +1,18 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 767x32
+          text run at (0,0) width 767: "Tests that drag/drop after double-click does a smart drag. Specifically the end result should have a space: \"world hello\"."
+          text run at (0,16) width 464: "To test manually double click on the \"hello\" and drag it to after \"world\"."
+      RenderBlock {DIV} at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 74x16
+          text run at (0,0) width 74: "world hello"
+selection start: position 5 of child 0 {#text} of child 3 {DIV} of body
+selection end:   position 11 of child 0 {#text} of child 3 {DIV} of body

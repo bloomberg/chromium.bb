@@ -1,0 +1,33 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 244x16
+          text run at (0,0) width 244: "There was a workaround added to fix "
+        RenderInline {A} at (0,0) size 153x16 [color=#0000EE]
+          RenderText {#text} at (243,0) size 153x16
+            text run at (243,0) width 153: "rdar://problem/4033202"
+        RenderText {#text} at (395,0) size 302x16
+          text run at (395,0) width 9: ". "
+          text run at (403,0) width 294: "A bug to remove the workaround was filed as"
+        RenderInline {A} at (0,0) size 153x16 [color=#0000EE]
+          RenderText {#text} at (0,16) size 153x16
+            text run at (0,16) width 153: "rdar://problem/4040763"
+        RenderText {#text} at (152,16) size 775x32
+          text run at (152,16) width 9: ". "
+          text run at (160,16) width 615: "The underlying problem with VisiblePositions was fixed, and so I removed the workaround and"
+          text run at (0,32) width 140: "added this layout test."
+      RenderBlock {DIV} at (0,64) size 784x50 [border: (1px solid #0000FF)]
+        RenderBlock {P} at (1,1) size 782x16
+          RenderText {#text} at (0,0) size 13x16
+            text run at (0,0) width 13: "hi"
+          RenderInline {SPAN} at (0,0) size 1x16
+        RenderBlock (anonymous) at (1,17) size 782x32
+          RenderBR {BR} at (0,0) size 0x16
+          RenderText {#text} at (0,16) size 23x16
+            text run at (0,16) width 23: "test"
+caret: position 0 of child 2 {BR} of child 3 {DIV} of body

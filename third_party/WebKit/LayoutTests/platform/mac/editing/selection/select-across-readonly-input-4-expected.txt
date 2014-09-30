@@ -3,30 +3,30 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 776x36
-          text run at (0,0) width 776: "This test ensures selection that crosses the shadow DOM boundary of a readonly input element cannot be made by a mouse"
-          text run at (0,18) width 32: "drag."
-      RenderBlock {P} at (0,52) size 784x36
-        RenderText {#text} at (0,0) size 762x36
-          text run at (0,0) width 762: "To manually test, select text by a mouse drag starting in \"hello\" and ending in \"WebKit\". Selection should extend only in"
-          text run at (0,18) width 244: "the input element that contains \"hello\"."
-      RenderBlock {DIV} at (0,104) size 784x24
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 744x32
+          text run at (0,0) width 744: "This test ensures selection that crosses the shadow DOM boundary of a readonly input element cannot be made by a"
+          text run at (0,16) width 79: "mouse drag."
+      RenderBlock {P} at (0,48) size 784x32
+        RenderText {#text} at (0,0) size 776x32
+          text run at (0,0) width 776: "To manually test, select text by a mouse drag starting in \"hello\" and ending in \"WebKit\". Selection should extend only in"
+          text run at (0,16) width 250: "the input element that contains \"hello\"."
+      RenderBlock {DIV} at (0,96) size 784x24
         RenderTextControl {INPUT} at (0,0) size 59.39x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (59,4) size 5x18
-          text run at (59,4) width 5: " "
-        RenderInline {SPAN} at (0,0) size 38x18
-          RenderText {#text} at (63,4) size 38x18
-            text run at (63,4) width 38: "world"
-        RenderText {#text} at (100,4) size 5x18
-          text run at (100,4) width 5: " "
-        RenderTextControl {INPUT} at (104.39,0) size 59.39x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (59,6) size 5x16
+          text run at (59,6) width 5: " "
+        RenderInline {SPAN} at (0,0) size 38x16
+          RenderText {#text} at (63,6) size 38x16
+            text run at (63,6) width 38: "world"
+        RenderText {#text} at (100,6) size 5x16
+          text run at (100,6) width 5: " "
+        RenderTextControl {INPUT} at (104.72,0) size 59.39x24 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-layer at (11,115) size 53x18
+layer at (11,107) size 53x18
   RenderBlock {DIV} at (3,3) size 53.39x18
     RenderText {#text} at (0,0) size 38x18
       text run at (0,0) width 38: "hello"
-layer at (115,115) size 53x18 scrollWidth 54
+layer at (116,107) size 53x18 scrollWidth 54
   RenderBlock {DIV} at (3,3) size 53.39x18
     RenderText {#text} at (0,0) size 54x18
       text run at (0,0) width 54: "WebKit"

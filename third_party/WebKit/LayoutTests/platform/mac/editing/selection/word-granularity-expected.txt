@@ -1,0 +1,50 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 692x16
+          text run at (0,0) width 388: "This tests modifying a selection created with a double click. "
+          text run at (387,0) width 305: "The new selection should use word granularity."
+      RenderBlock {P} at (0,32) size 784x48 [color=#008000]
+        RenderText {#text} at (0,0) size 767x48
+          text run at (0,0) width 230: "This test does not run interactively. "
+          text run at (229,0) width 360: "It uses the testRunners eventSender to do mouse clicks. "
+          text run at (588,0) width 172: "To run it manually, double"
+          text run at (0,16) width 322: "click on the blue 'g', then drag down to the red 'g'. "
+          text run at (321,16) width 446: "As you drag, watch the selection that is created, it should always start"
+          text run at (0,32) width 186: "and end on word boundaries."
+      RenderBlock {DIV} at (0,96) size 784x96
+        RenderText {#text} at (0,0) size 86x16
+          text run at (0,0) width 86: "This is a para"
+        RenderInline {SPAN} at (0,0) size 9x16 [color=#0000FF]
+          RenderText {#text} at (85,0) size 9x16
+            text run at (85,0) width 9: "g"
+        RenderText {#text} at (93,0) size 34x16
+          text run at (93,0) width 34: "raph."
+        RenderBR {BR} at (126,12) size 1x0
+        RenderText {#text} at (0,16) size 65x16
+          text run at (0,16) width 65: "Some text"
+        RenderBR {BR} at (64,28) size 1x0
+        RenderText {#text} at (0,32) size 65x16
+          text run at (0,32) width 65: "Some text"
+        RenderBR {BR} at (64,44) size 1x0
+        RenderText {#text} at (0,48) size 65x16
+          text run at (0,48) width 65: "Some text"
+        RenderBR {BR} at (64,60) size 1x0
+        RenderText {#text} at (0,64) size 65x16
+          text run at (0,64) width 65: "Some text"
+        RenderBR {BR} at (64,76) size 1x0
+        RenderText {#text} at (0,80) size 86x16
+          text run at (0,80) width 86: "This is a para"
+        RenderInline {SPAN} at (0,0) size 9x16 [color=#FF0000]
+          RenderText {#text} at (85,80) size 9x16
+            text run at (85,80) width 9: "g"
+        RenderText {#text} at (93,80) size 34x16
+          text run at (93,80) width 34: "raph."
+selection start: position 11 of child 0 {#text} of child 5 {DIV} of body
+selection end:   position 4 of child 14 {#text} of child 5 {DIV} of body

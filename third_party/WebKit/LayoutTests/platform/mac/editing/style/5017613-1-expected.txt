@@ -1,0 +1,26 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 760x48
+          text run at (0,0) width 760: "This tests to see that plaintext-only regions can be styled as long as they are fully selected. The editable, plaintext-only"
+          text run at (0,16) width 712: "cell should contain bold text, which should be implemented with the bold CSS property in the cell's inline style"
+          text run at (0,32) width 325: "declaration, not with wrapper spans inside the cell."
+      RenderBlock {DIV} at (0,64) size 784x42
+        RenderBlock {DIV} at (0,0) size 784x16
+          RenderInline {B} at (0,0) size 22x16
+            RenderText {#text} at (0,0) size 22x16
+              text run at (0,0) width 22: "foo"
+        RenderTable {TABLE} at (0,16) size 192x26 [border: (1px outset #808080)]
+          RenderTableSection {TBODY} at (1,1) size 190x24
+            RenderTableRow {TR} at (0,2) size 190x20
+              RenderTableCell {TD} at (2,2) size 84x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                RenderText {#text} at (2,2) size 80x16
+                  text run at (2,2) width 80: "non-editable"
+              RenderTableCell {TD} at (88,2) size 100x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                RenderText {#text} at (2,2) size 96x16
+                  text run at (2,2) width 96: "plaintext-only"
+selection start: position 0 of child 0 {#text} of child 0 {B} of child 0 {DIV} of child 2 {DIV} of body
+selection end:   position 1 of child 1 {TABLE} of child 2 {DIV} of body

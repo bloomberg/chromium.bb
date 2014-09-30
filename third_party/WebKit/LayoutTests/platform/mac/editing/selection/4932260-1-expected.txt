@@ -1,0 +1,18 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 437x16
+          text run at (0,0) width 437: "This tests for a bug where images would act as sentence boundaries."
+      RenderBlock {DIV} at (0,32) size 784x107
+        RenderText {#text} at (0,91) size 130x16
+          text run at (0,91) width 130: "The caret should be "
+        RenderImage {IMG} at (129.72,0) size 76x103
+        RenderText {#text} at (205,91) size 212x16
+          text run at (205,91) width 212: "at the beginning of this sentence."
+caret: position 0 of child 0 {#text} of child 2 {DIV} of body

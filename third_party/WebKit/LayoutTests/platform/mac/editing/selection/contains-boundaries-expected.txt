@@ -1,0 +1,29 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 55x16
+          text run at (0,0) width 55: "Test for "
+        RenderInline {I} at (0,0) size 754x32
+          RenderInline {A} at (0,0) size 306x16 [color=#0000EE]
+            RenderText {#text} at (54,0) size 306x16
+              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=14347"
+          RenderText {#text} at (359,0) size 754x32
+            text run at (359,0) width 5: " "
+            text run at (363,0) width 391: "REGRESSION (r21291): Initiating a drag near the edge of a"
+            text run at (0,16) width 132: "selection deselects it"
+        RenderText {#text} at (131,16) size 5x16
+          text run at (131,16) width 5: "."
+      RenderBlock {P} at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 334x16
+          text run at (0,0) width 334: "Drag the selected letter W into the yellow rectangle."
+      RenderBlock {DIV} at (0,80) size 784x72
+        RenderText {#text} at (0,0) size 68x72
+          text run at (0,0) width 68: "W"
+      RenderBlock {DIV} at (0,152) size 784x72 [bgcolor=#FFFFCC]
+        RenderText {#text} at (0,0) size 68x72
+          text run at (0,0) width 68: "W"
+selection start: position 0 of child 0 {#text} of child 6 {DIV} of body
+selection end:   position 1 of child 0 {#text} of child 6 {DIV} of body

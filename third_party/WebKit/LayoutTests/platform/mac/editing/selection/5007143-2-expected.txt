@@ -1,0 +1,24 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 776x32
+          text run at (0,0) width 776: "This tests for a bug when moving the caret forward by a line from a range selection with a horizontal position for vertical"
+          text run at (0,16) width 139: "arrow navigation set. "
+          text run at (138,16) width 612: "To match TextEdit, the caret should be between the second and third 'x's in the forth paragraph."
+      RenderBlock {DIV} at (0,48) size 784x64
+        RenderText {#text} at (0,0) size 24x16
+          text run at (0,0) width 24: "xxx"
+        RenderBR {BR} at (24,12) size 0x0
+        RenderText {#text} at (0,16) size 24x16
+          text run at (0,16) width 24: "xxx"
+        RenderBR {BR} at (24,28) size 0x0
+        RenderText {#text} at (0,32) size 8x16
+          text run at (0,32) width 8: "x"
+        RenderBR {BR} at (8,44) size 0x0
+        RenderText {#text} at (0,48) size 24x16
+          text run at (0,48) width 24: "xxx"
+        RenderBR {BR} at (24,60) size 0x0
+caret: position 3 of child 6 {#text} of child 2 {DIV} of body

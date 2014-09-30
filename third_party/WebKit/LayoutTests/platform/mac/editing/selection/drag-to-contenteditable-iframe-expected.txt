@@ -7,15 +7,15 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (0,0) size 800x584
       RenderBlock (anonymous) at (0,0) size 800x212
-        RenderText {#text} at (208,194) size 4x18
-          text run at (208,194) width 4: " "
+        RenderText {#text} at (208,196) size 4x16
+          text run at (208,196) width 4: " "
         RenderImage {IMG} at (212,105) size 76x103
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {UL} at (0,228) size 800x18
-        RenderListItem {LI} at (40,0) size 760x18
-          RenderListMarker at (-17,0) size 7x18: bullet
-          RenderText {#text} at (0,0) size 288x18
-            text run at (0,0) width 288: "Abe should be outside the frame and inside it."
+      RenderBlock {UL} at (0,228) size 800x16
+        RenderListItem {LI} at (40,0) size 760x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 294x16
+            text run at (0,0) width 294: "Abe should be outside the frame and inside it."
 layer at (0,0) size 208x208
   RenderPartObject {IFRAME} at (0,0) size 208x208 [border: (4px solid #000000)]
     layer at (0,0) size 200x200

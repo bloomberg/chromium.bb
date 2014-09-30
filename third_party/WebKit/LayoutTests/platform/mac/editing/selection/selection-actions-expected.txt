@@ -1,0 +1,37 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderText {#text} at (0,0) size 764x32
+        text run at (0,0) width 764: "This tests whether certain NSResponder methods that should only operate on editable regions modify a selection that is"
+        text run at (0,16) width 160: "not in an editable region."
+      RenderBR {BR} at (159,28) size 1x0
+      RenderText {#text} at (0,32) size 86x16
+        text run at (0,32) width 86: "This is a para"
+      RenderInline {SPAN} at (0,0) size 9x16 [color=#0000FF]
+        RenderText {#text} at (85,32) size 9x16
+          text run at (85,32) width 9: "g"
+      RenderText {#text} at (93,32) size 34x16
+        text run at (93,32) width 34: "raph."
+      RenderBR {BR} at (126,44) size 1x0
+      RenderText {#text} at (0,48) size 65x16
+        text run at (0,48) width 65: "Some text"
+      RenderBR {BR} at (64,60) size 1x0
+      RenderText {#text} at (0,64) size 65x16
+        text run at (0,64) width 65: "Some text"
+      RenderBR {BR} at (64,76) size 1x0
+      RenderText {#text} at (0,80) size 65x16
+        text run at (0,80) width 65: "Some text"
+      RenderBR {BR} at (64,92) size 1x0
+      RenderText {#text} at (0,96) size 65x16
+        text run at (0,96) width 65: "Some text"
+      RenderBR {BR} at (64,108) size 1x0
+      RenderText {#text} at (0,112) size 127x16
+        text run at (0,112) width 127: "This is a paragraph."
+      RenderText {#text} at (0,0) size 0x0
+selection start: position 11 of child 2 {#text} of body
+selection end:   position 1 of child 9 {BR} of body

@@ -3,20 +3,22 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 784x36
-          text run at (0,0) width 784: "This tests for a bug that caused the parent of an active frame to paint as though it were active when its window becomes key."
-          text run at (0,18) width 776: "To run manually, make another window active and then make this window active. Only the subframe should appear active."
-      RenderBlock (anonymous) at (0,52) size 784x173
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 773x48
+          text run at (0,0) width 768: "This tests for a bug that caused the parent of an active frame to paint as though it were active when its window becomes"
+          text run at (0,16) width 32: "key. "
+          text run at (31,16) width 742: "To run manually, make another window active and then make this window active. Only the subframe should appear"
+          text run at (0,32) width 43: "active."
+      RenderBlock (anonymous) at (0,64) size 784x173
         RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderBR {BR} at (123,14) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (11,63) size 117x13
+layer at (11,75) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 18x13
       text run at (0,0) width 18: "foo"
-layer at (8,79) size 304x154
+layer at (8,91) size 304x154
   RenderPartObject {IFRAME} at (0,19) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150

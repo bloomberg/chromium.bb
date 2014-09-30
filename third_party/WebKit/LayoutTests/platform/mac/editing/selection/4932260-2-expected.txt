@@ -1,0 +1,18 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 415x16
+          text run at (0,0) width 415: "This tests for a bug where images would act as word boundaries."
+      RenderBlock {DIV} at (0,32) size 784x107
+        RenderText {#text} at (0,91) size 25x16
+          text run at (0,91) width 25: "The"
+        RenderImage {IMG} at (24.88,0) size 76x103
+        RenderText {#text} at (100,91) size 374x16
+          text run at (100,91) width 374: "caret should be just after the second word in this sentence."
+caret: position 5 of child 2 {#text} of child 2 {DIV} of body
