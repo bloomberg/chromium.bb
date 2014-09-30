@@ -18,6 +18,7 @@
       "name": "Braille Keyboard",
       "type": "ime",
       "id": "braille",
+      "indicator": "\u2803\u2817\u2807",  // Unicode of 'brl' in English (and many other) braille codes.
       "language": ["None"],
       "description": "Braille hardware keyboard"
     }

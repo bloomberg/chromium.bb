@@ -47,6 +47,9 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   // Returns preferred keyboard layout.
   std::string GetPreferredKeyboardLayout() const;
 
+  // Returns the indicator text of this input method.
+  std::string GetIndicator() const;
+
  private:
   // An ID that identifies an input method engine (e.g., "t:latn-post",
   // "pinyin", "hangul").

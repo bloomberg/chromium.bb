@@ -116,8 +116,10 @@ bool IsMemberOfExtension(const std::string& input_method_id,
 }
 
 bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
-  std::string prefix = kComponentExtensionIMEPrefix;
-  return StartsWithASCII(input_method_id, prefix + kXkbExtensionId, true);
+  if (IsComponentExtensionIME(input_method_id))
+    return StartsWithASCII(GetComponentIDByInputMethodID(input_method_id),
+                           "xkb:", true);
+  return false;
 }
 
 std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {

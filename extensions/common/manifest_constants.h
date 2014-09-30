@@ -59,6 +59,7 @@ extern const char kImeOptionsPage[];
 extern const char kImport[];
 extern const char kIncognito[];
 extern const char kIncludeGlobs[];
+extern const char kIndicator[];
 extern const char kInputComponents[];
 extern const char kInputView[];
 extern const char kIntentDisposition[];

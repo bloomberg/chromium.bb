@@ -56,6 +56,7 @@ const char kImeOptionsPage[] = "options_page";
 const char kImport[] = "import";
 const char kIncognito[] = "incognito";
 const char kIncludeGlobs[] = "include_globs";
+const char kIndicator[] = "indicator";
 const char kInputComponents[] = "input_components";
 const char kInputView[] = "input_view";
 const char kIsolation[] = "app.isolation";

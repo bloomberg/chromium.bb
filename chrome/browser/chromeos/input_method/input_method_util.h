@@ -182,7 +182,6 @@ class InputMethodUtil {
 
   LanguageCodeToIdsMap language_code_to_ids_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
-  std::map<std::string, std::string> xkb_layout_to_indicator_;
 
   typedef base::hash_map<std::string, int> HashType;
   HashType english_to_resource_id_;

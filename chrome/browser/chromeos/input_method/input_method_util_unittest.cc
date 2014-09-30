@@ -159,12 +159,13 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(pinyin_ime_id, "us", "zh-CN", "");
+        GetDesc(pinyin_ime_id, "us", "zh-CN", "\xe6\x8b\xbc");
     EXPECT_EQ(base::UTF8ToUTF16("\xe6\x8b\xbc"),
               util_.GetInputMethodShortName(desc));
   }
   {
-    InputMethodDescriptor desc = GetDesc(zhuyin_ime_id, "us", "zh-TW", "");
+    InputMethodDescriptor desc =
+        GetDesc(zhuyin_ime_id, "us", "zh-TW", "\xE6\xB3\xA8");
     EXPECT_EQ(base::UTF8ToUTF16("\xE6\xB3\xA8"),
               util_.GetInputMethodShortName(desc));
   }

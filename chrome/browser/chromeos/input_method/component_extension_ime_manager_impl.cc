@@ -345,6 +345,8 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
     return false;
   if (!dict.GetString(extensions::manifest_keys::kName, &out->display_name))
     return false;
+  if (!dict.GetString(extensions::manifest_keys::kIndicator, &out->indicator))
+    out->indicator = "";
 
   // Localizes the input method name.
   if (out->display_name.find("__MSG_") == 0) {

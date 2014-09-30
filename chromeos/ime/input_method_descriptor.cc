@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -36,6 +38,18 @@ std::string InputMethodDescriptor::GetPreferredKeyboardLayout() const {
   // TODO(nona): Investigate better way to guess the preferred layout
   //             http://crbug.com/170601.
   return keyboard_layouts_.empty() ? "us" : keyboard_layouts_[0];
+}
+
+std::string InputMethodDescriptor::GetIndicator() const {
+  // If indicator is empty, use the first two character in its preferred
+  // keyboard layout or language code.
+  if (indicator_.empty()) {
+    if (extension_ime_util::IsKeyboardLayoutExtension(id_))
+      return StringToUpperASCII(GetPreferredKeyboardLayout().substr(0, 2));
+    DCHECK(language_codes_.size() > 0);
+    return StringToUpperASCII(language_codes_[0].substr(0, 2));
+  }
+  return indicator_;
 }
 
 InputMethodDescriptor::InputMethodDescriptor() {

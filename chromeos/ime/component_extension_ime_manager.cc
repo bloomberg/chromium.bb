@@ -154,7 +154,7 @@ input_method::InputMethodDescriptors
           input_method::InputMethodDescriptor(
               input_method_id,
               ime.display_name,
-              std::string(), // TODO(uekawa): Set short name.
+              ime.indicator,
               layouts,
               ime.language_codes,
               // Enables extension based xkb keyboards on login screen.
