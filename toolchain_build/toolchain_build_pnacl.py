@@ -210,15 +210,6 @@ def CmakeHostArchFlags(host, options):
   # undefined.
   cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
 
-  if pynacl.platform.IsLinux64() and pynacl.platform.PlatformTriple() != host:
-    # Currently the only supported "cross" build is 64-bit Linux to 32-bit
-    # Linux. Enable it.  Also disable libxml and libtinfo because our Ubuntu
-    # doesn't have 32-bit libxml or libtinfo build, and users may not have them
-    # either.
-    cmake_flags.extend(['-DLLVM_BUILD_32_BITS=ON',
-                        '-DLLVM_ENABLE_LIBXML=OFF',
-                        '-DLLVM_ENABLE_TERMINFO=OFF'])
-
   if options.sanitize:
     cmake_flags.extend(['-DCMAKE_%s_FLAGS=-fsanitize=%s' % (c, options.sanitize)
                         for c in ('C', 'CXX')])
