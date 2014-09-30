@@ -73,10 +73,19 @@ Make
   <https://github.com/kennethreitz/osx-gcc-installer>`_.
 * On Windows, the Native Client SDK includes a copy of GNU Make.
 
+.. _platforms:
+
+Platforms
+---------
+
+Native Client supports several operating systems, including Windows, Linux, OSX,
+and ChromeOS. It supports several architectures including on x86-32, x86-64,
+ARM, and MIPS.
+
 .. _versioning:
 
-Versioning
-----------
+Versions
+--------
 
 Chrome is released on a six week cycle, and developer versions of Chrome are
 pushed to the public beta channel three weeks before each release. As with any
