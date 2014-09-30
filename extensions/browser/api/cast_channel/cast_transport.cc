@@ -32,6 +32,7 @@ CastTransport::CastTransport(CastSocketInterface* socket,
       read_delegate_(read_delegate),
       write_state_(WRITE_STATE_NONE),
       read_state_(READ_STATE_NONE),
+      error_state_(CHANNEL_ERROR_NONE),
       logger_(logger) {
   DCHECK(socket);
   DCHECK(read_delegate);

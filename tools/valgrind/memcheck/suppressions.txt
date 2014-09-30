@@ -3459,10 +3459,3 @@
    fun:_ZN4base19SequencedWorkerPoolC1EmRKSs
    fun:_ZN16sync_file_system13drive_backend14SyncEngineTest5SetUpEv
 }
-{
-   bug_418767
-   Memcheck:Uninitialized
-   fun:_ZN10extensions8core_api12cast_channel13CastTransport13SetErrorStateENS1_12ChannelErrorE
-   fun:_ZN10extensions8core_api12cast_channel13CastTransport1*CompleteEi
-   fun:_ZN10extensions8core_api12cast_channel13CastTransport1*ResultEi
-}
