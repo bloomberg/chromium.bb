@@ -74,7 +74,7 @@ void Channel::Shutdown() {
        it != to_destroy.end();
        ++it) {
     if (it->second->state_ == ChannelEndpoint::STATE_NORMAL) {
-      it->second->message_pipe_->OnRemove(it->second->port_);
+      it->second->message_pipe_->Close(it->second->port_);
       num_live++;
     } else {
       DCHECK(!it->second->message_pipe_.get());
@@ -493,7 +493,7 @@ bool Channel::RemoveMessagePipeEndpoint(
         static_cast<unsigned>(remote_id)));
   }
 
-  message_pipe->OnRemove(port);
+  message_pipe->Close(port);
 
   return true;
 }

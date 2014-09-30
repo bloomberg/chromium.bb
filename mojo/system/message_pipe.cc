@@ -75,7 +75,10 @@ void MessagePipe::Close(unsigned port) {
   unsigned destination_port = GetPeerPort(port);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port]);
+  // The endpoint's |OnPeerClose()| may have been called first and returned
+  // false, which would have resulted in its destruction.
+  if (!endpoints_[port])
+    return;
 
   endpoints_[port]->Close();
   if (endpoints_[destination_port]) {
@@ -182,21 +185,6 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
 MojoResult MessagePipe::EnqueueMessage(unsigned port,
                                        scoped_ptr<MessageInTransit> message) {
   return EnqueueMessageInternal(port, message.Pass(), nullptr);
-}
-
-void MessagePipe::OnRemove(unsigned port) {
-  unsigned destination_port = GetPeerPort(port);
-
-  base::AutoLock locker(lock_);
-  // A |OnPeerClose()| can come in first, before |OnRemove()| gets called.
-  if (!endpoints_[port])
-    return;
-
-  if (endpoints_[destination_port]) {
-    if (!endpoints_[destination_port]->OnPeerClose())
-      endpoints_[destination_port].reset();
-  }
-  endpoints_[port].reset();
 }
 
 MessagePipe::MessagePipe() {
