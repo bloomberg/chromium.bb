@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x544
+  RenderBlock {HTML} at (0,0) size 800x544
+    RenderBody {BODY} at (8,16) size 784x520 [color=#FFFFFF] [bgcolor=#000000]
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 210x16
+          text run at (0,0) width 210: "Images should all look the same."
+      RenderBlock {DIV} at (0,32) size 784x244
+        RenderImage {IMG} at (0,0) size 360x240
+        RenderText {#text} at (360,228) size 4x16
+          text run at (360,228) width 4: " "
+        RenderImage {IMG} at (364,0) size 360x240
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,276) size 784x244
+        RenderText {#text} at (360,228) size 4x16
+          text run at (360,228) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+layer at (8,292) size 360x240
+  RenderImage {IMG} at (0,0) size 360x240
+layer at (372,292) size 360x240
+  RenderImage {IMG} at (364,0) size 360x240

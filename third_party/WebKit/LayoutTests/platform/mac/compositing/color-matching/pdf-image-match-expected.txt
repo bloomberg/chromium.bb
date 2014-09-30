@@ -1,0 +1,12 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x80
+  RenderBlock {HTML} at (0,0) size 800x80
+    RenderBody {BODY} at (8,16) size 784x56
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 164x16
+          text run at (0,0) width 164: "This test should not crash"
+      RenderBlock (anonymous) at (0,32) size 784x24
+        RenderText {#text} at (0,0) size 0x0
+layer at (8,48) size 20x20
+  RenderImage {IMG} at (0,0) size 20x20
