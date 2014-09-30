@@ -451,4 +451,91 @@ TEST(AudioBufferTest, TrimRangeInterleaved) {
   TrimRangeTest(kSampleFormatF32);
 }
 
+static scoped_refptr<AudioBuffer> MakeReadFramesInterleavedTestBuffer(
+    SampleFormat sample_format,
+    int sample_rate,
+    ChannelLayout channel_layout,
+    int channel_count,
+    int frames) {
+  switch (sample_format) {
+    case kSampleFormatS16:
+    case kSampleFormatPlanarS16:
+      return MakeAudioBuffer<int16>(sample_format,
+                                    channel_layout,
+                                    channel_count,
+                                    sample_rate,
+                                    0,
+                                    1,
+                                    frames,
+                                    base::TimeDelta::FromSeconds(0));
+    case kSampleFormatS32:
+      return MakeAudioBuffer<int32>(kSampleFormatS32,
+                                    channel_layout,
+                                    channel_count,
+                                    sample_rate,
+                                    0,
+                                    65536,
+                                    frames,
+                                    base::TimeDelta::FromSeconds(0));
+    case kSampleFormatF32:
+    case kSampleFormatPlanarF32:
+      return MakeAudioBuffer<float>(
+          sample_format,
+          channel_layout,
+          channel_count,
+          sample_rate,
+          0.0f,
+          65536.0f / std::numeric_limits<int32>::max(),
+          frames,
+          base::TimeDelta::FromSeconds(0));
+    case kSampleFormatU8:
+    case kUnknownSampleFormat:
+      EXPECT_FALSE(true);
+      break;
+  }
+  return AudioBuffer::CreateEOSBuffer();
+}
+
+static void ReadFramesInterleavedS32Test(SampleFormat sample_format) {
+  const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
+  const int channels = ChannelLayoutToChannelCount(channel_layout);
+  const int frames = kSampleRate / 100;
+  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(10);
+  scoped_refptr<AudioBuffer> buffer = MakeReadFramesInterleavedTestBuffer(
+      sample_format, kSampleRate, channel_layout, channels, frames);
+  EXPECT_EQ(frames, buffer->frame_count());
+  EXPECT_EQ(duration, buffer->duration());
+
+  int32* dest = new int32[frames * channels];
+  buffer->ReadFramesInterleavedS32(frames, dest);
+
+  int count = 0;
+  for (int i = 0; i < frames; ++i) {
+    for (int ch = 0; ch < channels; ++ch) {
+      EXPECT_EQ(dest[count++], (frames * ch + i) << 16);
+    }
+  }
+  delete[] dest;
+}
+
+TEST(AudioBufferTest, ReadFramesInterleavedS32FromS16) {
+  ReadFramesInterleavedS32Test(kSampleFormatS16);
+}
+
+TEST(AudioBufferTest, ReadFramesInterleavedS32FromS32) {
+  ReadFramesInterleavedS32Test(kSampleFormatS32);
+}
+
+TEST(AudioBufferTest, ReadFramesInterleavedS32FromF32) {
+  ReadFramesInterleavedS32Test(kSampleFormatF32);
+}
+
+TEST(AudioBufferTest, ReadFramesInterleavedS32FromPlanarS16) {
+  ReadFramesInterleavedS32Test(kSampleFormatPlanarS16);
+}
+
+TEST(AudioBufferTest, ReadFramesInterleavedS32FromPlanarF32) {
+  ReadFramesInterleavedS32Test(kSampleFormatPlanarF32);
+}
+
 }  // namespace media
