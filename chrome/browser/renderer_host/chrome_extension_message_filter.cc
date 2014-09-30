@@ -229,6 +229,9 @@ void ChromeExtensionMessageFilter::OpenChannelToTabOnUIThread(
 void ChromeExtensionMessageFilter::OnPostMessage(
     int port_id,
     const extensions::Message& message) {
+  if (!profile_)
+    return;
+
   extensions::MessageService::Get(profile_)->PostMessage(port_id, message);
 }
 
@@ -269,6 +272,9 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool(
 void ChromeExtensionMessageFilter::OnExtensionCloseChannel(
     int port_id,
     const std::string& error_message) {
+  if (!profile_)
+    return;
+
   if (!content::RenderProcessHost::FromID(render_process_id_))
     return;  // To guard against crash in browser_tests shutdown.
 
