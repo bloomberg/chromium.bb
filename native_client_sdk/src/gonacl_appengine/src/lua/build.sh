@@ -5,14 +5,13 @@
 
 set -o nounset
 set -o errexit
-set -o xtrace
 
 SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
 cd ${SCRIPT_DIR}
 
 OUT_DIR=out
-NACLPORTS_URL=http://naclports.googlecode.com/svn/trunk/src
-NACLPORTS_REV=1290
+NACLPORTS_URL=https://chromium.googlesource.com/external/naclports.git
+NACLPORTS_REV=99f2417ab1a397735b20ccceaa58ffcc166f3fb1
 NACLPORTS_DIR=${OUT_DIR}/naclports
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
@@ -37,24 +36,11 @@ LogExecute() {
   $*
 }
 
-Clone() {
-  local url=$1
-  local dir=$2
-  local sha=$3
-  if [ ! -d $dir ]; then
-    LogExecute git clone $url $dir
-  else
-    pushd $dir
-    LogExecute git fetch origin
-    popd
-  fi
-
-  pushd $dir
-  LogExecute git checkout $sha
-  popd
-}
-
 Banner Cloning naclports
+if [ -d ${NACLPORTS_DIR} -a ! -d ${NACLPORTS_DIR}/src/.git ]; then
+  rm -rf ${NACLPORTS_DIR}
+fi
+
 if [ ! -d ${NACLPORTS_DIR} ]; then
   mkdir -p ${NACLPORTS_DIR}
   pushd ${NACLPORTS_DIR}
