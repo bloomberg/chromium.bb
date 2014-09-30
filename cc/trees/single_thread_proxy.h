@@ -57,7 +57,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual bool MainFrameWillHappenForTesting() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
+  virtual BeginFrameSource* ExternalBeginFrameSource() OVERRIDE;
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
@@ -83,7 +83,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual void SetMaxSwapsPendingOnImplThread(int max) OVERRIDE {}
   virtual void DidSwapBuffersOnImplThread() OVERRIDE;
   virtual void DidSwapBuffersCompleteOnImplThread() OVERRIDE;
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;

@@ -74,6 +74,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
     advance_now_ = advance_now;
   }
 
+  bool HasPendingTasks() const;
   base::TimeTicks NextTaskTime();
   base::TimeDelta DelayToNextTaskTime();
 

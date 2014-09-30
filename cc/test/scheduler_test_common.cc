@@ -34,25 +34,107 @@ std::string TestDelayBasedTimeSource::TypeString() const {
 TestDelayBasedTimeSource::~TestDelayBasedTimeSource() {
 }
 
+void FakeBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
+  remaining_frames_ = remaining_frames;
+}
+void FakeBeginFrameSource::AsValueInto(base::debug::TracedValue* dict) const {
+  dict->SetString("type", "FakeBeginFrameSource");
+  BeginFrameSourceMixIn::AsValueInto(dict);
+}
+
+TestBackToBackBeginFrameSource::TestBackToBackBeginFrameSource(
+    scoped_refptr<TestNowSource> now_src,
+    base::SingleThreadTaskRunner* task_runner)
+    : BackToBackBeginFrameSource(task_runner), now_src_(now_src) {
+}
+
+TestBackToBackBeginFrameSource::~TestBackToBackBeginFrameSource() {
+}
+
+base::TimeTicks TestBackToBackBeginFrameSource::Now() {
+  return now_src_->Now();
+}
+
+TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
+    scoped_refptr<DelayBasedTimeSource> time_source)
+    : SyntheticBeginFrameSource(time_source) {
+}
+
+TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
+}
+
+TestSchedulerFrameSourcesConstructor::TestSchedulerFrameSourcesConstructor(
+    OrderedSimpleTaskRunner* test_task_runner,
+    TestNowSource* now_src)
+    : test_task_runner_(test_task_runner), now_src_(now_src) {
+}
+TestSchedulerFrameSourcesConstructor::~TestSchedulerFrameSourcesConstructor() {
+}
+
+BeginFrameSource*
+TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
+    Scheduler* scheduler) {
+  if (!scheduler->settings_.throttle_frame_production) {
+    TRACE_EVENT1(
+        "cc",
+        "TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource",
+        "source",
+        "TestBackToBackBeginFrameSource");
+    DCHECK(!scheduler->primary_frame_source_internal_);
+    scheduler->primary_frame_source_internal_ =
+        TestBackToBackBeginFrameSource::Create(now_src_, test_task_runner_);
+    return scheduler->primary_frame_source_internal_.get();
+  } else if (scheduler->settings_.begin_frame_scheduling_enabled) {
+    return SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
+        scheduler);
+  } else {
+    TRACE_EVENT1(
+        "cc",
+        "TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource",
+        "source",
+        "TestSyntheticBeginFrameSource");
+    scoped_ptr<TestSyntheticBeginFrameSource> synthetic_source =
+        TestSyntheticBeginFrameSource::Create(
+            now_src_, test_task_runner_, BeginFrameArgs::DefaultInterval());
+
+    DCHECK(!scheduler->vsync_observer_);
+    scheduler->vsync_observer_ = synthetic_source.get();
+
+    DCHECK(!scheduler->primary_frame_source_internal_);
+    scheduler->primary_frame_source_internal_ = synthetic_source.Pass();
+    return scheduler->primary_frame_source_internal_.get();
+  }
+}
+
+BeginFrameSource*
+TestSchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource(
+    Scheduler* scheduler) {
+  TRACE_EVENT1(
+      "cc",
+      "TestSchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource",
+      "source",
+      "TestSyntheticBeginFrameSource");
+  DCHECK(!(scheduler->background_frame_source_internal_));
+  scheduler->background_frame_source_internal_ =
+      TestSyntheticBeginFrameSource::Create(
+          now_src_, test_task_runner_, base::TimeDelta::FromSeconds(1));
+  return scheduler->background_frame_source_internal_.get();
+}
+
 TestScheduler::TestScheduler(
     scoped_refptr<TestNowSource> now_src,
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
-    const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner)
+    const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
+    TestSchedulerFrameSourcesConstructor* frame_sources_constructor)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,
-                test_task_runner),
+                test_task_runner,
+                frame_sources_constructor),
       now_src_(now_src),
       test_task_runner_(test_task_runner.get()) {
-  if (!settings_.begin_frame_scheduling_enabled) {
-    scoped_refptr<DelayBasedTimeSource> time_source =
-        TestDelayBasedTimeSource::Create(
-            now_src, VSyncInterval(), test_task_runner_);
-    synthetic_begin_frame_source_.reset(
-        new SyntheticBeginFrameSource(this, time_source));
-  }
 }
 
 base::TimeTicks TestScheduler::Now() const {

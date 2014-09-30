@@ -19,7 +19,7 @@ namespace cc {
 
 class FakeTimeSourceClient : public TimeSourceClient {
  public:
-  FakeTimeSourceClient() { Reset(); }
+  FakeTimeSourceClient() : tick_called_(false) {}
   void Reset() { tick_called_ = false; }
   bool TickCalled() const { return tick_called_; }
 
@@ -73,6 +73,88 @@ class TestDelayBasedTimeSource : public DelayBasedTimeSource {
   scoped_refptr<TestNowSource> now_src_;
 };
 
+struct FakeBeginFrameSource : public BeginFrameSourceMixIn {
+  bool remaining_frames_ = false;
+
+  BeginFrameObserver* GetObserver() { return observer_; }
+
+  BeginFrameArgs TestLastUsedBeginFrameArgs() {
+    if (observer_) {
+      return observer_->LastUsedBeginFrameArgs();
+    }
+    return BeginFrameArgs();
+  }
+  void TestOnBeginFrame(const BeginFrameArgs& args) {
+    return CallOnBeginFrame(args);
+  }
+
+  // BeginFrameSource
+  virtual void DidFinishFrame(size_t remaining_frames) OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
+
+  virtual ~FakeBeginFrameSource() {}
+};
+
+class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
+ public:
+  virtual ~TestBackToBackBeginFrameSource();
+
+  static scoped_ptr<TestBackToBackBeginFrameSource> Create(
+      scoped_refptr<TestNowSource> now_src,
+      base::SingleThreadTaskRunner* task_runner) {
+    return make_scoped_ptr(
+        new TestBackToBackBeginFrameSource(now_src, task_runner));
+  }
+
+ protected:
+  TestBackToBackBeginFrameSource(scoped_refptr<TestNowSource> now_src,
+                                 base::SingleThreadTaskRunner* task_runner);
+
+  virtual base::TimeTicks Now() OVERRIDE;
+
+  scoped_refptr<TestNowSource> now_src_;
+};
+
+class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
+ public:
+  virtual ~TestSyntheticBeginFrameSource();
+
+  static scoped_ptr<TestSyntheticBeginFrameSource> Create(
+      scoped_refptr<TestNowSource> now_src,
+      OrderedSimpleTaskRunner* task_runner,
+      base::TimeDelta initial_interval) {
+    return make_scoped_ptr(
+        new TestSyntheticBeginFrameSource(TestDelayBasedTimeSource::Create(
+            now_src, initial_interval, task_runner)));
+  }
+
+ protected:
+  TestSyntheticBeginFrameSource(
+      scoped_refptr<DelayBasedTimeSource> time_source);
+};
+
+class TestScheduler;
+class TestSchedulerFrameSourcesConstructor
+    : public SchedulerFrameSourcesConstructor {
+ public:
+  virtual ~TestSchedulerFrameSourcesConstructor();
+
+ protected:
+  virtual BeginFrameSource* ConstructPrimaryFrameSource(
+      Scheduler* scheduler) OVERRIDE;
+  virtual BeginFrameSource* ConstructBackgroundFrameSource(
+      Scheduler* scheduler) OVERRIDE;
+
+  OrderedSimpleTaskRunner* test_task_runner_;
+  TestNowSource* now_src_;
+
+ protected:
+  explicit TestSchedulerFrameSourcesConstructor(
+      OrderedSimpleTaskRunner* test_task_runner,
+      TestNowSource* now_src);
+  friend class TestScheduler;
+};
+
 class TestScheduler : public Scheduler {
  public:
   static scoped_ptr<TestScheduler> Create(
@@ -85,11 +167,14 @@ class TestScheduler : public Scheduler {
 
     scoped_refptr<OrderedSimpleTaskRunner> test_task_runner =
         new OrderedSimpleTaskRunner(now_src, true);
+    TestSchedulerFrameSourcesConstructor frame_sources_constructor(
+        test_task_runner.get(), now_src.get());
     return make_scoped_ptr(new TestScheduler(now_src,
                                              client,
                                              scheduler_settings,
                                              layer_tree_host_id,
-                                             test_task_runner));
+                                             test_task_runner,
+                                             &frame_sources_constructor));
   }
 
   // Extra test helper functionality
@@ -97,10 +182,7 @@ class TestScheduler : public Scheduler {
     return begin_retro_frame_args_.empty();
   }
 
-  bool IsSyntheticBeginFrameSourceActive() const {
-    return synthetic_begin_frame_source_->IsActive();
-  }
-
+  BeginFrameSource& frame_source() { return *frame_source_; }
   OrderedSimpleTaskRunner& task_runner() { return *test_task_runner_; }
 
   virtual ~TestScheduler();
@@ -110,11 +192,13 @@ class TestScheduler : public Scheduler {
   virtual base::TimeTicks Now() const OVERRIDE;
 
  private:
-  TestScheduler(scoped_refptr<TestNowSource> now_src,
-                SchedulerClient* client,
-                const SchedulerSettings& scheduler_settings,
-                int layer_tree_host_id,
-                const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner);
+  TestScheduler(
+      scoped_refptr<TestNowSource> now_src,
+      SchedulerClient* client,
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id,
+      const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
+      TestSchedulerFrameSourcesConstructor* frame_sources_constructor);
 
   scoped_refptr<TestNowSource> now_src_;
   OrderedSimpleTaskRunner* test_task_runner_;

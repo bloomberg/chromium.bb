@@ -118,7 +118,6 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void SetMaxSwapsPendingOnImplThread(int max) OVERRIDE {}
   virtual void DidSwapBuffersOnImplThread() OVERRIDE {}
   virtual void DidSwapBuffersCompleteOnImplThread() OVERRIDE {}
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {
     on_can_draw_state_changed_called_ = true;
   }

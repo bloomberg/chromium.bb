@@ -31,6 +31,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/draw_result.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -73,7 +74,6 @@ class LayerTreeHostImplClient {
   virtual void SetMaxSwapsPendingOnImplThread(int max) = 0;
   virtual void DidSwapBuffersOnImplThread() = 0;
   virtual void DidSwapBuffersCompleteOnImplThread() = 0;
-  virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
   // Please call these 3 functions through
@@ -112,6 +112,7 @@ class CC_EXPORT LayerTreeHostImpl
       public OutputSurfaceClient,
       public TopControlsManagerClient,
       public ScrollbarAnimationControllerClient,
+      public BeginFrameSourceMixIn,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
   static scoped_ptr<LayerTreeHostImpl> Create(
@@ -122,6 +123,9 @@ class CC_EXPORT LayerTreeHostImpl
       SharedBitmapManager* manager,
       int id);
   virtual ~LayerTreeHostImpl();
+
+  // BeginFrameSourceMixIn implementation
+  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) OVERRIDE;
 
   // InputHandler implementation
   virtual void BindToClient(InputHandlerClient* client) OVERRIDE;
@@ -296,7 +300,6 @@ class CC_EXPORT LayerTreeHostImpl
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;
 
   virtual bool SwapBuffers(const FrameData& frame);
-  void SetNeedsBeginFrame(bool enable);
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);
   void DidModifyTilePriorities();
 
@@ -428,9 +431,7 @@ class CC_EXPORT LayerTreeHostImpl
     return begin_impl_frame_interval_;
   }
 
-  void AsValueInto(base::debug::TracedValue* value) const {
-    return AsValueWithFrameInto(NULL, value);
-  }
+  virtual void AsValueInto(base::debug::TracedValue* value) const OVERRIDE;
   void AsValueWithFrameInto(FrameData* frame,
                             base::debug::TracedValue* value) const;
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;

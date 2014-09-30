@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/vsync_parameter_observer.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
@@ -30,7 +32,7 @@ namespace cc {
 
 class SchedulerClient {
  public:
-  virtual void SetNeedsBeginFrame(bool enable) = 0;
+  virtual BeginFrameSource* ExternalBeginFrameSource() = 0;
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame() = 0;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
@@ -51,15 +53,37 @@ class SchedulerClient {
   virtual ~SchedulerClient() {}
 };
 
-class CC_EXPORT Scheduler {
+class Scheduler;
+// This class exists to allow tests to override the frame source construction.
+// A virtual method can't be used as this needs to happen in the constructor
+// (see C++ FAQ / Section 23 - http://goo.gl/fnrwom for why).
+// This class exists solely long enough to construct the frame sources.
+class CC_EXPORT SchedulerFrameSourcesConstructor {
+ public:
+  virtual ~SchedulerFrameSourcesConstructor() {}
+  virtual BeginFrameSource* ConstructPrimaryFrameSource(Scheduler* scheduler);
+  virtual BeginFrameSource* ConstructBackgroundFrameSource(
+      Scheduler* scheduler);
+
+ protected:
+  SchedulerFrameSourcesConstructor() {}
+
+  friend class Scheduler;
+};
+
+class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
  public:
   static scoped_ptr<Scheduler> Create(
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-    return make_scoped_ptr(new Scheduler(
-        client, scheduler_settings, layer_tree_host_id, task_runner));
+    SchedulerFrameSourcesConstructor frame_sources_constructor;
+    return make_scoped_ptr(new Scheduler(client,
+                                         scheduler_settings,
+                                         layer_tree_host_id,
+                                         task_runner,
+                                         &frame_sources_constructor));
   }
 
   virtual ~Scheduler();
@@ -125,67 +149,47 @@ class CC_EXPORT Scheduler {
 
   base::TimeTicks LastBeginImplFrameTime();
 
-  void BeginFrame(const BeginFrameArgs& args);
-
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::debug::TracedValue* state) const;
+  virtual void AsValueInto(base::debug::TracedValue* value) const OVERRIDE;
 
   void SetContinuousPainting(bool continuous_painting) {
     state_machine_.SetContinuousPainting(continuous_painting);
   }
 
+  // BeginFrameObserverMixin
+  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) OVERRIDE;
+
  protected:
-  class CC_EXPORT SyntheticBeginFrameSource : public TimeSourceClient {
-   public:
-    SyntheticBeginFrameSource(Scheduler* scheduler,
-                              scoped_refptr<DelayBasedTimeSource> time_source);
-    virtual ~SyntheticBeginFrameSource();
-
-    // Updates the phase and frequency of the timer.
-    void CommitVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval);
-
-    // Activates future BeginFrames and, if activating, pushes the most
-    // recently missed BeginFrame to the back of a retroactive queue.
-    void SetNeedsBeginFrame(bool needs_begin_frame,
-                            std::deque<BeginFrameArgs>* begin_retro_frame_args);
-
-    bool IsActive() const;
-
-    // TimeSourceClient implementation of OnTimerTick triggers a BeginFrame.
-    virtual void OnTimerTick() OVERRIDE;
-
-    void AsValueInto(base::debug::TracedValue* dict) const;
-
-   private:
-    BeginFrameArgs CreateSyntheticBeginFrameArgs(base::TimeTicks frame_time);
-
-    Scheduler* scheduler_;
-    scoped_refptr<DelayBasedTimeSource> time_source_;
-  };
-
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings,
             int layer_tree_host_id,
-            const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+            const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+            SchedulerFrameSourcesConstructor* frame_sources_constructor);
 
+  // virtual for testing - Don't call these in the constructor or
+  // destructor!
   virtual base::TimeTicks Now() const;
+
+  scoped_ptr<BeginFrameSourceMultiplexer> frame_source_;
+  BeginFrameSource* primary_frame_source_;
+  BeginFrameSource* background_frame_source_;
+
+  // Storage when frame sources are internal
+  scoped_ptr<BeginFrameSource> primary_frame_source_internal_;
+  scoped_ptr<SyntheticBeginFrameSource> background_frame_source_internal_;
+
+  VSyncParameterObserver* vsync_observer_;
 
   const SchedulerSettings settings_;
   SchedulerClient* client_;
   int layer_tree_host_id_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::TimeDelta vsync_interval_;
   base::TimeDelta estimated_parent_draw_time_;
 
-  bool last_set_needs_begin_frame_;
-  bool begin_unthrottled_frame_posted_;
   bool begin_retro_frame_posted_;
   std::deque<BeginFrameArgs> begin_retro_frame_args_;
   BeginFrameArgs begin_impl_frame_args_;
-
-  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   base::Closure begin_retro_frame_closure_;
   base::Closure begin_unthrottled_frame_closure_;
@@ -201,8 +205,6 @@ class CC_EXPORT Scheduler {
   bool inside_process_scheduled_actions_;
   SchedulerStateMachine::Action inside_action_;
 
-  base::TimeDelta VSyncInterval() { return vsync_interval_; }
-
  private:
   base::TimeTicks AdjustedBeginImplFrameDeadline(
       const BeginFrameArgs& args,
@@ -210,17 +212,13 @@ class CC_EXPORT Scheduler {
   void ScheduleBeginImplFrameDeadline(base::TimeTicks deadline);
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
-  void SetupNextBeginFrameWhenVSyncThrottlingEnabled(bool needs_begin_frame);
-  void SetupNextBeginFrameWhenVSyncThrottlingDisabled(bool needs_begin_frame);
   void SetupPollingMechanisms(bool needs_begin_frame);
   void DrawAndSwapIfPossible();
   void ProcessScheduledActions();
   bool CanCommitAndActivateBeforeDeadline() const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
-  void SetupSyntheticBeginFrames();
   void BeginRetroFrame();
-  void BeginUnthrottledFrame();
   void BeginImplFrame(const BeginFrameArgs& args);
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
@@ -235,6 +233,9 @@ class CC_EXPORT Scheduler {
   }
 
   base::WeakPtrFactory<Scheduler> weak_factory_;
+
+  friend class SchedulerFrameSourcesConstructor;
+  friend class TestSchedulerFrameSourcesConstructor;
 
   DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };

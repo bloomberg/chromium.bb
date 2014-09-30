@@ -181,7 +181,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) OVERRIDE;
   virtual void SetEstimatedParentDrawTime(base::TimeDelta draw_time) OVERRIDE;
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void SetMaxSwapsPendingOnImplThread(int max) OVERRIDE;
   virtual void DidSwapBuffersOnImplThread() OVERRIDE;
   virtual void DidSwapBuffersCompleteOnImplThread() OVERRIDE;
@@ -211,7 +210,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   virtual void DidManageTiles() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
+  virtual BeginFrameSource* ExternalBeginFrameSource() OVERRIDE;
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE;

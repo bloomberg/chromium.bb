@@ -20,6 +20,11 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(base::TimeTicks frame_time);
 BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
                                               int64 deadline,
                                               int64 interval);
+BeginFrameArgs CreateTypedBeginFrameArgsForTesting(
+    int64 frame_time,
+    int64 deadline,
+    int64 interval,
+    BeginFrameArgs::BeginFrameArgsType type);
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting();
 
 // Creates a BeginFrameArgs using the fake Now value stored on the

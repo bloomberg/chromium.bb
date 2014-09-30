@@ -431,12 +431,6 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   layer_tree_host_->DidCompleteSwapBuffers();
 }
 
-void SingleThreadProxy::BeginFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::BeginFrame");
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->BeginFrame(args);
-}
-
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
@@ -557,8 +551,8 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return false;
 }
 
-void SingleThreadProxy::SetNeedsBeginFrame(bool enable) {
-  layer_tree_host_impl_->SetNeedsBeginFrame(enable);
+BeginFrameSource* SingleThreadProxy::ExternalBeginFrameSource() {
+  return layer_tree_host_impl_.get();
 }
 
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {

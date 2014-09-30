@@ -127,6 +127,10 @@ bool OrderedSimpleTaskRunner::RunsTasksOnCurrentThread() const {
   return true;
 }
 
+bool OrderedSimpleTaskRunner::HasPendingTasks() const {
+  return pending_tasks_.size() > 0;
+}
+
 base::TimeTicks OrderedSimpleTaskRunner::NextTaskTime() {
   if (pending_tasks_.size() <= 0) {
     return TestNowSource::kAbsoluteMaxNow;
@@ -202,7 +206,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
 
     // Conditions could modify the pending task length, so we need to recheck
     // that there are tasks to run.
-    if (!condition_success || pending_tasks_.size() == 0) {
+    if (!condition_success || !HasPendingTasks()) {
       break;
     }
 
@@ -219,7 +223,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
     pending_tasks_.erase(task_to_run);
   }
 
-  return pending_tasks_.size() > 0;
+  return HasPendingTasks();
 }
 
 bool OrderedSimpleTaskRunner::RunPendingTasks() {

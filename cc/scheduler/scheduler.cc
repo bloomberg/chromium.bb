@@ -17,69 +17,73 @@
 
 namespace cc {
 
-Scheduler::SyntheticBeginFrameSource::SyntheticBeginFrameSource(
-    Scheduler* scheduler,
-    scoped_refptr<DelayBasedTimeSource> time_source)
-    : scheduler_(scheduler), time_source_(time_source) {
-  time_source_->SetClient(this);
-}
+BeginFrameSource* SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
+    Scheduler* scheduler) {
+  if (!scheduler->settings_.throttle_frame_production) {
+    TRACE_EVENT1("cc",
+                 "Scheduler::Scheduler()",
+                 "PrimaryFrameSource",
+                 "BackToBackBeginFrameSource");
+    DCHECK(!scheduler->primary_frame_source_internal_);
+    scheduler->primary_frame_source_internal_ =
+        BackToBackBeginFrameSource::Create(scheduler->task_runner_.get());
+    return scheduler->primary_frame_source_internal_.get();
+  } else if (scheduler->settings_.begin_frame_scheduling_enabled) {
+    TRACE_EVENT1("cc",
+                 "Scheduler::Scheduler()",
+                 "PrimaryFrameSource",
+                 "SchedulerClient");
+    return scheduler->client_->ExternalBeginFrameSource();
+  } else {
+    TRACE_EVENT1("cc",
+                 "Scheduler::Scheduler()",
+                 "PrimaryFrameSource",
+                 "SyntheticBeginFrameSource");
+    scoped_ptr<SyntheticBeginFrameSource> synthetic_source =
+        SyntheticBeginFrameSource::Create(scheduler->task_runner_.get(),
+                                          scheduler->Now(),
+                                          BeginFrameArgs::DefaultInterval());
 
-Scheduler::SyntheticBeginFrameSource::~SyntheticBeginFrameSource() {
-}
+    DCHECK(!scheduler->vsync_observer_);
+    scheduler->vsync_observer_ = synthetic_source.get();
 
-void Scheduler::SyntheticBeginFrameSource::CommitVSyncParameters(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  time_source_->SetTimebaseAndInterval(timebase, interval);
-}
-
-void Scheduler::SyntheticBeginFrameSource::SetNeedsBeginFrame(
-    bool needs_begin_frame,
-    std::deque<BeginFrameArgs>* begin_retro_frame_args) {
-  DCHECK(begin_retro_frame_args);
-  base::TimeTicks missed_tick_time =
-      time_source_->SetActive(needs_begin_frame);
-  if (!missed_tick_time.is_null()) {
-    begin_retro_frame_args->push_back(
-        CreateSyntheticBeginFrameArgs(missed_tick_time));
+    DCHECK(!scheduler->primary_frame_source_internal_);
+    scheduler->primary_frame_source_internal_ = synthetic_source.Pass();
+    return scheduler->primary_frame_source_internal_.get();
   }
 }
 
-bool Scheduler::SyntheticBeginFrameSource::IsActive() const {
-  return time_source_->Active();
-}
-
-void Scheduler::SyntheticBeginFrameSource::OnTimerTick() {
-  BeginFrameArgs begin_frame_args(
-      CreateSyntheticBeginFrameArgs(time_source_->LastTickTime()));
-  scheduler_->BeginFrame(begin_frame_args);
-}
-
-void Scheduler::SyntheticBeginFrameSource::AsValueInto(
-    base::debug::TracedValue* state) const {
-  time_source_->AsValueInto(state);
-}
-
-BeginFrameArgs
-Scheduler::SyntheticBeginFrameSource::CreateSyntheticBeginFrameArgs(
-    base::TimeTicks frame_time) {
-  base::TimeTicks deadline = time_source_->NextTickTime();
-  return BeginFrameArgs::Create(
-      frame_time, deadline, scheduler_->VSyncInterval());
+BeginFrameSource*
+SchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource(
+    Scheduler* scheduler) {
+  TRACE_EVENT1("cc",
+               "Scheduler::Scheduler()",
+               "BackgroundFrameSource",
+               "SyntheticBeginFrameSource");
+  DCHECK(!(scheduler->background_frame_source_internal_));
+  scheduler->background_frame_source_internal_ =
+      SyntheticBeginFrameSource::Create(scheduler->task_runner_.get(),
+                                        scheduler->Now(),
+                                        base::TimeDelta::FromSeconds(1));
+  return scheduler->background_frame_source_internal_.get();
 }
 
 Scheduler::Scheduler(
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : settings_(scheduler_settings),
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    SchedulerFrameSourcesConstructor* frame_sources_constructor)
+    : frame_source_(),
+      primary_frame_source_(NULL),
+      background_frame_source_(NULL),
+      primary_frame_source_internal_(),
+      background_frame_source_internal_(),
+      vsync_observer_(NULL),
+      settings_(scheduler_settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
-      vsync_interval_(BeginFrameArgs::DefaultInterval()),
-      last_set_needs_begin_frame_(false),
-      begin_unthrottled_frame_posted_(false),
       begin_retro_frame_posted_(false),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false),
@@ -94,8 +98,6 @@ Scheduler::Scheduler(
 
   begin_retro_frame_closure_ =
       base::Bind(&Scheduler::BeginRetroFrame, weak_factory_.GetWeakPtr());
-  begin_unthrottled_frame_closure_ =
-      base::Bind(&Scheduler::BeginUnthrottledFrame, weak_factory_.GetWeakPtr());
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
   poll_for_draw_triggers_closure_ = base::Bind(
@@ -103,34 +105,30 @@ Scheduler::Scheduler(
   advance_commit_state_closure_ = base::Bind(
       &Scheduler::PollToAdvanceCommitState, weak_factory_.GetWeakPtr());
 
-  if (!settings_.begin_frame_scheduling_enabled) {
-    SetupSyntheticBeginFrames();
-  }
+  frame_source_ = BeginFrameSourceMultiplexer::Create();
+  frame_source_->AddObserver(this);
+
+  // Primary frame source
+  primary_frame_source_ =
+      frame_sources_constructor->ConstructPrimaryFrameSource(this);
+  frame_source_->AddSource(primary_frame_source_);
+
+  // Background ticking frame source
+  background_frame_source_ =
+      frame_sources_constructor->ConstructBackgroundFrameSource(this);
+  frame_source_->AddSource(background_frame_source_);
 }
 
 Scheduler::~Scheduler() {
-  if (synthetic_begin_frame_source_) {
-    synthetic_begin_frame_source_->SetNeedsBeginFrame(false,
-                                                      &begin_retro_frame_args_);
-  }
-}
-
-void Scheduler::SetupSyntheticBeginFrames() {
-  scoped_refptr<DelayBasedTimeSource> time_source;
-  if (gfx::FrameTime::TimestampsAreHighRes()) {
-    time_source = DelayBasedTimeSourceHighRes::Create(VSyncInterval(),
-                                                      task_runner_.get());
-  } else {
-    time_source =
-        DelayBasedTimeSource::Create(VSyncInterval(), task_runner_.get());
-  }
-  DCHECK(!synthetic_begin_frame_source_);
-  synthetic_begin_frame_source_.reset(
-      new SyntheticBeginFrameSource(this, time_source));
 }
 
 base::TimeTicks Scheduler::Now() const {
-  return gfx::FrameTime::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.now"),
+               "Scheduler::Now",
+               "now",
+               now);
+  return now;
 }
 
 void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
@@ -138,9 +136,9 @@ void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
   // TODO(brianderson): We should not be receiving 0 intervals.
   if (interval == base::TimeDelta())
     interval = BeginFrameArgs::DefaultInterval();
-  vsync_interval_ = interval;
-  if (!settings_.begin_frame_scheduling_enabled)
-    synthetic_begin_frame_source_->CommitVSyncParameters(timebase, interval);
+
+  if (vsync_observer_)
+    vsync_observer_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void Scheduler::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
@@ -155,6 +153,11 @@ void Scheduler::SetCanStart() {
 
 void Scheduler::SetVisible(bool visible) {
   state_machine_.SetVisible(visible);
+  if (visible) {
+    frame_source_->SetActiveSource(primary_frame_source_);
+  } else {
+    frame_source_->SetActiveSource(background_frame_source_);
+  }
   ProcessScheduledActions();
 }
 
@@ -237,18 +240,15 @@ void Scheduler::DidManageTiles() {
 void Scheduler::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidLoseOutputSurface");
   state_machine_.DidLoseOutputSurface();
-  last_set_needs_begin_frame_ = false;
-  if (!settings_.begin_frame_scheduling_enabled) {
-    synthetic_begin_frame_source_->SetNeedsBeginFrame(false,
-                                                      &begin_retro_frame_args_);
-  }
+  if (frame_source_->NeedsBeginFrames())
+    frame_source_->SetNeedsBeginFrames(false);
   begin_retro_frame_args_.clear();
   ProcessScheduledActions();
 }
 
 void Scheduler::DidCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidCreateAndInitializeOutputSurface");
-  DCHECK(!last_set_needs_begin_frame_);
+  DCHECK(!frame_source_->NeedsBeginFrames());
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
   state_machine_.DidCreateAndInitializeOutputSurface();
   ProcessScheduledActions();
@@ -260,7 +260,7 @@ void Scheduler::NotifyBeginMainFrameStarted() {
 }
 
 base::TimeTicks Scheduler::AnticipatedDrawTime() const {
-  if (!last_set_needs_begin_frame_ ||
+  if (!frame_source_->NeedsBeginFrames() ||
       begin_impl_frame_args_.interval <= base::TimeDelta())
     return base::TimeTicks();
 
@@ -281,75 +281,27 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
 
   bool needs_begin_frame = state_machine_.BeginFrameNeeded();
 
-  if (settings_.throttle_frame_production) {
-    SetupNextBeginFrameWhenVSyncThrottlingEnabled(needs_begin_frame);
-  } else {
-    SetupNextBeginFrameWhenVSyncThrottlingDisabled(needs_begin_frame);
-  }
-  SetupPollingMechanisms(needs_begin_frame);
-}
-
-// When we are throttling frame production, we request BeginFrames
-// from the OutputSurface.
-void Scheduler::SetupNextBeginFrameWhenVSyncThrottlingEnabled(
-    bool needs_begin_frame) {
   bool at_end_of_deadline =
-      state_machine_.begin_impl_frame_state() ==
-          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE;
+      (state_machine_.begin_impl_frame_state() ==
+       SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE);
 
   bool should_call_set_needs_begin_frame =
       // Always request the BeginFrame immediately if it wasn't needed before.
-      (needs_begin_frame && !last_set_needs_begin_frame_) ||
+      (needs_begin_frame && !frame_source_->NeedsBeginFrames()) ||
       // Only stop requesting BeginFrames after a deadline.
-      (!needs_begin_frame && last_set_needs_begin_frame_ && at_end_of_deadline);
+      (!needs_begin_frame && frame_source_->NeedsBeginFrames() &&
+       at_end_of_deadline);
 
   if (should_call_set_needs_begin_frame) {
-    if (settings_.begin_frame_scheduling_enabled) {
-      client_->SetNeedsBeginFrame(needs_begin_frame);
-    } else {
-      synthetic_begin_frame_source_->SetNeedsBeginFrame(
-          needs_begin_frame, &begin_retro_frame_args_);
-    }
-    last_set_needs_begin_frame_ = needs_begin_frame;
+    frame_source_->SetNeedsBeginFrames(needs_begin_frame);
+  }
+
+  if (at_end_of_deadline) {
+    frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
   }
 
   PostBeginRetroFrameIfNeeded();
-}
-
-// When we aren't throttling frame production, we initiate a BeginFrame
-// as soon as one is needed.
-void Scheduler::SetupNextBeginFrameWhenVSyncThrottlingDisabled(
-    bool needs_begin_frame) {
-  last_set_needs_begin_frame_ = needs_begin_frame;
-
-  if (!needs_begin_frame || begin_unthrottled_frame_posted_)
-    return;
-
-  if (state_machine_.begin_impl_frame_state() !=
-          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE &&
-      state_machine_.begin_impl_frame_state() !=
-          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE) {
-    return;
-  }
-
-  begin_unthrottled_frame_posted_ = true;
-  task_runner_->PostTask(FROM_HERE, begin_unthrottled_frame_closure_);
-}
-
-// BeginUnthrottledFrame is used when we aren't throttling frame production.
-// This will usually be because VSync is disabled.
-void Scheduler::BeginUnthrottledFrame() {
-  DCHECK(!settings_.throttle_frame_production);
-  DCHECK(begin_retro_frame_args_.empty());
-
-  base::TimeTicks now = Now();
-  base::TimeTicks deadline = now + vsync_interval_;
-
-  BeginFrameArgs begin_frame_args =
-      BeginFrameArgs::Create(now, deadline, vsync_interval_);
-  BeginImplFrame(begin_frame_args);
-
-  begin_unthrottled_frame_posted_ = false;
+  SetupPollingMechanisms(needs_begin_frame);
 }
 
 // We may need to poll when we can't rely on BeginFrame to advance certain
@@ -405,9 +357,18 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
 // making a frame. Usually this means that user input for the frame is complete.
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
 // a BeginRetroFrame.
-void Scheduler::BeginFrame(const BeginFrameArgs& args) {
+bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", args.AsValue());
-  DCHECK(settings_.throttle_frame_production);
+
+  // We have just called SetNeedsBeginFrame(true) and the BeginFrameSource has
+  // sent us the last BeginFrame we have missed. As we might not be able to
+  // actually make rendering for this call, handle it like a "retro frame".
+  // TODO(brainderson): Add a test for this functionality ASAP!
+  if (args.type == BeginFrameArgs::MISSED) {
+    begin_retro_frame_args_.push_back(args);
+    PostBeginRetroFrameIfNeeded();
+    return true;
+  }
 
   BeginFrameArgs adjusted_args(args);
   adjusted_args.deadline -= EstimatedParentDrawTime();
@@ -418,7 +379,7 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   } else {
     should_defer_begin_frame =
         !begin_retro_frame_args_.empty() || begin_retro_frame_posted_ ||
-        !last_set_needs_begin_frame_ ||
+        !frame_source_->NeedsBeginFrames() ||
         (state_machine_.begin_impl_frame_state() !=
          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   }
@@ -427,10 +388,11 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
     begin_retro_frame_args_.push_back(adjusted_args);
     TRACE_EVENT_INSTANT0(
         "cc", "Scheduler::BeginFrame deferred", TRACE_EVENT_SCOPE_THREAD);
-    return;
+    // Queuing the frame counts as "using it", so we need to return true.
+  } else {
+    BeginImplFrame(adjusted_args);
   }
-
-  BeginImplFrame(adjusted_args);
+  return true;
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because
@@ -469,10 +431,10 @@ void Scheduler::BeginRetroFrame() {
                          "BeginFrameArgs",
                          begin_retro_frame_args_.front().AsValue());
     begin_retro_frame_args_.pop_front();
+    frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
   }
 
   if (begin_retro_frame_args_.empty()) {
-    DCHECK(settings_.throttle_frame_production);
     TRACE_EVENT_INSTANT0("cc",
                          "Scheduler::BeginRetroFrames all expired",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -491,7 +453,7 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
                "Scheduler::PostBeginRetroFrameIfNeeded",
                "state",
                AsValue());
-  if (!last_set_needs_begin_frame_)
+  if (!frame_source_->NeedsBeginFrames())
     return;
 
   if (begin_retro_frame_args_.empty() || begin_retro_frame_posted_)
@@ -719,21 +681,18 @@ void Scheduler::AsValueInto(base::debug::TracedValue* state) const {
   state->BeginDictionary("state_machine");
   state_machine_.AsValueInto(state, Now());
   state->EndDictionary();
-  if (synthetic_begin_frame_source_) {
-    state->BeginDictionary("synthetic_begin_frame_source_");
-    synthetic_begin_frame_source_->AsValueInto(state);
-    state->EndDictionary();
-  }
+
+  state->BeginDictionary("frame_source_");
+  frame_source_->AsValueInto(state);
+  state->EndDictionary();
 
   state->BeginDictionary("scheduler_state");
   state->SetDouble("time_until_anticipated_draw_time_ms",
                    (AnticipatedDrawTime() - Now()).InMillisecondsF());
-  state->SetDouble("vsync_interval_ms", vsync_interval_.InMillisecondsF());
   state->SetDouble("estimated_parent_draw_time_ms",
                    estimated_parent_draw_time_.InMillisecondsF());
-  state->SetBoolean("last_set_needs_begin_frame_", last_set_needs_begin_frame_);
-  state->SetBoolean("begin_unthrottled_frame_posted_",
-                    begin_unthrottled_frame_posted_);
+  state->SetBoolean("last_set_needs_begin_frame_",
+                    frame_source_->NeedsBeginFrames());
   state->SetBoolean("begin_retro_frame_posted_", begin_retro_frame_posted_);
   state->SetInteger("begin_retro_frame_args_", begin_retro_frame_args_.size());
   state->SetBoolean("begin_impl_frame_deadline_task_",

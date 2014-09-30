@@ -42,6 +42,7 @@ class CC_EXPORT DelayBasedTimeSource
   // TimeSource implementation
   virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
                                       base::TimeDelta interval);
+  base::TimeDelta Interval() const { return next_parameters_.interval; }
 
   virtual base::TimeTicks SetActive(bool active);
   virtual bool Active() const;

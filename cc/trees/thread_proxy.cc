@@ -349,14 +349,8 @@ void ThreadProxy::DidSwapBuffersCompleteOnImplThread() {
       base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
 }
 
-void ThreadProxy::SetNeedsBeginFrame(bool enable) {
-  TRACE_EVENT1("cc", "ThreadProxy::SetNeedsBeginFrame", "enable", enable);
-  impl().layer_tree_host_impl->SetNeedsBeginFrame(enable);
-  UpdateBackgroundAnimateTicking();
-}
-
-void ThreadProxy::BeginFrame(const BeginFrameArgs& args) {
-  impl().scheduler->BeginFrame(args);
+BeginFrameSource* ThreadProxy::ExternalBeginFrameSource() {
+  return impl().layer_tree_host_impl.get();
 }
 
 void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -1249,7 +1243,7 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   layer_tree_host()->DeleteContentsTexturesOnImplThread(
       impl().layer_tree_host_impl->resource_provider());
   impl().current_resource_update_controller = nullptr;
-  impl().layer_tree_host_impl->SetNeedsBeginFrame(false);
+  impl().layer_tree_host_impl->SetNeedsBeginFrames(false);
   impl().scheduler = nullptr;
   impl().layer_tree_host_impl = nullptr;
   impl().weak_factory.InvalidateWeakPtrs();

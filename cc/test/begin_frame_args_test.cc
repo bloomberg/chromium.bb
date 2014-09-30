@@ -29,6 +29,18 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
                                 base::TimeDelta::FromInternalValue(interval));
 }
 
+BeginFrameArgs CreateTypedBeginFrameArgsForTesting(
+    int64 frame_time,
+    int64 deadline,
+    int64 interval,
+    BeginFrameArgs::BeginFrameArgsType type) {
+  return BeginFrameArgs::CreateTyped(
+      base::TimeTicks::FromInternalValue(frame_time),
+      base::TimeTicks::FromInternalValue(deadline),
+      base::TimeDelta::FromInternalValue(interval),
+      type);
+}
+
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting() {
   base::TimeTicks now = gfx::FrameTime::Now();
   return BeginFrameArgs::Create(now,
