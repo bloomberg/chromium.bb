@@ -25,8 +25,6 @@
 #include "ipc/ipc_sender.h"
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
-struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace ui {
 struct LatencyInfo;
@@ -93,11 +91,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
   void OnAcceleratedSurfaceInitialized(int32 surface_id, int32 route_id);
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
-  void OnAcceleratedSurfacePostSubBuffer(
-      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
-  void OnAcceleratedSurfaceSuspend(int32 surface_id);
-  void OnAcceleratedSurfaceRelease(
-      const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
   void OnVideoMemoryUsageStatsReceived(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
   void OnFrameDrawn(const std::vector<ui::LatencyInfo>& latency_info);

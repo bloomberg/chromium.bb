@@ -193,18 +193,6 @@ void RenderWidgetHostViewGuest::SetTooltipText(
   platform_view_->SetTooltipText(tooltip_text);
 }
 
-void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-    int gpu_host_id) {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
-    int gpu_host_id) {
-  NOTREACHED();
-}
-
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {

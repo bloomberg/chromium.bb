@@ -43,7 +43,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& surface_handle) {
   DCHECK(surface_handle.transport_type == gfx::NATIVE_DIRECT ||
-         surface_handle.transport_type == gfx::NATIVE_TRANSPORT);
+         surface_handle.transport_type == gfx::NULL_TRANSPORT);
 
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:

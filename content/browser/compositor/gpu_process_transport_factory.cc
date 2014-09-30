@@ -329,7 +329,7 @@ base::MessageLoopProxy* GpuProcessTransportFactory::GetCompositorMessageLoop() {
 
 gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
-      gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
+      gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
   handle.parent_client_id =
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;

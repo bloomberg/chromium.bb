@@ -12,8 +12,8 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/null_transport_surface.h"
 #include "content/common/gpu/sync_point_manager.h"
-#include "content/common/gpu/texture_image_transport_surface.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
@@ -34,8 +34,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
-  if (handle.transport_type == gfx::TEXTURE_TRANSPORT)
-    surface = new TextureImageTransportSurface(manager, stub, handle);
+  if (handle.transport_type == gfx::NULL_TRANSPORT)
+    surface = new NullTransportSurface(manager, stub, handle);
   else
     surface = CreateNativeSurface(manager, stub, handle);
 
@@ -83,8 +83,6 @@ bool ImageTransportHelper::Initialize() {
   return true;
 }
 
-void ImageTransportHelper::Destroy() {}
-
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
@@ -106,19 +104,6 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-}
-
-void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
-    GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
-  params.surface_id = stub_->surface_id();
-  params.route_id = route_id_;
-  manager_->Send(new GpuHostMsg_AcceleratedSurfacePostSubBuffer(params));
-}
-
-void ImageTransportHelper::SendAcceleratedSurfaceRelease() {
-  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-  params.surface_id = stub_->surface_id();
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
 }
 
 void ImageTransportHelper::SendUpdateVSyncParameters(
@@ -175,10 +160,6 @@ void ImageTransportHelper::SetSwapInterval(gfx::GLContext* context) {
     context->SetSwapInterval(1);
 }
 
-void ImageTransportHelper::Suspend() {
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceSuspend(stub_->surface_id()));
-}
-
 gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
   if (!stub_.get())
     return NULL;
@@ -232,7 +213,6 @@ bool PassThroughImageTransportSurface::Initialize() {
 }
 
 void PassThroughImageTransportSurface::Destroy() {
-  helper_->Destroy();
   GLSurfaceAdapter::Destroy();
 }
 

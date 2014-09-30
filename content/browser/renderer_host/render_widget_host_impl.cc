@@ -2024,17 +2024,6 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 // static
-void RenderWidgetHostImpl::AcknowledgeBufferPresent(
-    int32 route_id, int gpu_host_id,
-    const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
-  if (ui_shim) {
-    ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id,
-                                                            params));
-  }
-}
-
-// static
 void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
     int32 route_id,
     uint32 output_surface_id,

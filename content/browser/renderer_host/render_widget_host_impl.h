@@ -399,13 +399,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void UpdateVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval);
 
-  // Called by the view in response to AcceleratedSurfaceBuffersSwapped or
-  // AcceleratedSurfacePostSubBuffer.
-  static void AcknowledgeBufferPresent(
-      int32 route_id,
-      int gpu_host_id,
-      const AcceleratedSurfaceMsg_BufferPresented_Params& params);
-
   // Called by the view in response to OnSwapCompositorFrame.
   static void SendSwapCompositorFrameAck(
       int32 route_id,

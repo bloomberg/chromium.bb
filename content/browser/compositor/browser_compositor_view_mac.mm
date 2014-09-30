@@ -91,7 +91,6 @@ void BrowserCompositorViewMac::GotAcceleratedFrame(
 
   // Acknowledge the swap, now that it has been processed.
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.sync_point = 0;
   ack_params.renderer_id = renderer_id;
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
   if (ui_shim) {

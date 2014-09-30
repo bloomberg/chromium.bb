@@ -36,8 +36,6 @@
 class SkBitmap;
 
 struct AccessibilityHostMsg_EventParams;
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
-struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_TextInputState_Params;
 
@@ -289,27 +287,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // IsSurfaceAvailableForCopy() and HasAcceleratedSurface().
   virtual bool CanCopyToVideoFrame() const = 0;
 
-  // Called when an accelerated compositing surface is initialized.
-  virtual void AcceleratedSurfaceInitialized(int host_id, int route_id) = 0;
-  // |params.window| and |params.surface_id| indicate which accelerated
-  // surface's buffers swapped. |params.renderer_id| and |params.route_id|
-  // are used to formulate a reply to the GPU process to prevent it from getting
-  // too far ahead. They may all be zero, in which case no flow control is
-  // enforced; this case is currently used for accelerated plugins.
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
-      int gpu_host_id) = 0;
-  // Similar to above, except |params.(x|y|width|height)| define the region
-  // of the surface that changed.
-  virtual void AcceleratedSurfacePostSubBuffer(
-      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
-      int gpu_host_id) = 0;
-
-  // Release the accelerated surface temporarily. It will be recreated on the
-  // next swap buffers or post sub buffer.
-  virtual void AcceleratedSurfaceSuspend() = 0;
-
-  virtual void AcceleratedSurfaceRelease() = 0;
+  // DEPRECATED. Called when an accelerated compositing surface is initialized.
+  virtual void AcceleratedSurfaceInitialized(int route_id) {}
 
   // Return true if the view has an accelerated surface that contains the last
   // presented frame for the view. If |desired_size| is non-empty, true is

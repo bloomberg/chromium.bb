@@ -56,8 +56,6 @@ bool ImageTransportSurfaceFBO::Initialize() {
 
 void ImageTransportSurfaceFBO::Destroy() {
   DestroyFramebuffer();
-
-  helper_->Destroy();
 }
 
 bool ImageTransportSurfaceFBO::DeferDraws() {
@@ -111,7 +109,6 @@ void ImageTransportSurfaceFBO::AdjustBufferAllocation() {
       !frontbuffer_suggested_allocation_ &&
       has_complete_framebuffer_) {
     DestroyFramebuffer();
-    helper_->Suspend();
   } else if (backbuffer_suggested_allocation_ && !has_complete_framebuffer_) {
     CreateFramebuffer();
   }

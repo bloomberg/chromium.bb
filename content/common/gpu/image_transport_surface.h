@@ -23,7 +23,6 @@
 
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
-struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 namespace gfx {
 class GLSurface;
@@ -108,7 +107,6 @@ class ImageTransportHelper
   virtual ~ImageTransportHelper();
 
   bool Initialize();
-  void Destroy();
 
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -117,9 +115,6 @@ class ImageTransportHelper
   // like size and surface id. The helper fills in the rest.
   void SendAcceleratedSurfaceBuffersSwapped(
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
-  void SendAcceleratedSurfacePostSubBuffer(
-      GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params);
-  void SendAcceleratedSurfaceRelease();
   void SendUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 
@@ -138,8 +133,6 @@ class ImageTransportHelper
 
   // Set the default swap interval on the surface.
   static void SetSwapInterval(gfx::GLContext* context);
-
-  void Suspend();
 
   GpuChannelManager* manager() const { return manager_; }
   GpuCommandBufferStub* stub() const { return stub_.get(); }

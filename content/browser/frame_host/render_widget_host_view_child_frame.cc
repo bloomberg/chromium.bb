@@ -195,21 +195,6 @@ void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
 }
 #endif
 
-void RenderWidgetHostViewChildFrame::AcceleratedSurfaceInitialized(int host_id,
-                                                              int route_id) {
-}
-
-void RenderWidgetHostViewChildFrame::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-    int gpu_host_id) {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewChildFrame::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
-    int gpu_host_id) {
-}
-
 void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) {
@@ -302,20 +287,13 @@ bool RenderWidgetHostViewChildFrame::CanCopyToVideoFrame() const {
   return false;
 }
 
-void RenderWidgetHostViewChildFrame::AcceleratedSurfaceSuspend() {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewChildFrame::AcceleratedSurfaceRelease() {
-}
-
 bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
   return false;
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewChildFrame::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
 }
 
 #if defined(OS_WIN)

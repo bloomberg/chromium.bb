@@ -1231,15 +1231,9 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 #endif  // defined(VIDEO_HOLE)
 }
 
-void RenderWidgetHostViewAndroid::AcceleratedSurfaceInitialized(int host_id,
-                                                                int route_id) {
+void RenderWidgetHostViewAndroid::AcceleratedSurfaceInitialized(int route_id) {
+  // TODO: remove need for the surface id here
   accelerated_surface_route_id_ = route_id;
-}
-
-void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-    int gpu_host_id) {
-  NOTREACHED() << "Need --composite-to-mailbox or --enable-delegated-renderer";
 }
 
 void RenderWidgetHostViewAndroid::AttachLayers() {
@@ -1333,20 +1327,6 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   return needs_animate;
 }
 
-void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
-    int gpu_host_id) {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
-  NOTREACHED();
-}
-
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
   if (layer_.get())
     DestroyDelegatedContent();
@@ -1375,7 +1355,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
   gfx::GLSurfaceHandle handle =
-      gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
+      gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
   if (CompositorImpl::IsInitialized()) {
     handle.parent_client_id =
         ImageTransportFactoryAndroid::GetInstance()->GetChannelID();

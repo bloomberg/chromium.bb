@@ -127,23 +127,6 @@ bool TestRenderWidgetHostView::CanCopyToVideoFrame() const {
   return false;
 }
 
-void TestRenderWidgetHostView::AcceleratedSurfaceInitialized(int host_id,
-                                                             int route_id) {
-}
-
-void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-    int gpu_host_id) {
-}
-
-void TestRenderWidgetHostView::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
-    int gpu_host_id) {
-}
-
-void TestRenderWidgetHostView::AcceleratedSurfaceSuspend() {
-}
-
 bool TestRenderWidgetHostView::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
   return false;

@@ -10,7 +10,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
-#include "content/common/gpu/image_transport_surface.h"
+#include "content/common/gpu/null_transport_surface.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -31,17 +31,14 @@ void DidAccessGpu() {
 }
 
 class ImageTransportSurfaceAndroid
-    : public PassThroughImageTransportSurface,
+    : public NullTransportSurface,
       public base::SupportsWeakPtr<ImageTransportSurfaceAndroid> {
  public:
   ImageTransportSurfaceAndroid(GpuChannelManager* manager,
                                GpuCommandBufferStub* stub,
-                               gfx::GLSurface* surface,
-                               uint32 parent_client_id);
+                               const gfx::GLSurfaceHandle& handle);
 
   // gfx::GLSurface implementation.
-  virtual bool Initialize() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual void WakeUpGpu() OVERRIDE;
 
@@ -52,7 +49,6 @@ class ImageTransportSurfaceAndroid
   void ScheduleWakeUp();
   void DoWakeUpGpu();
 
-  uint32 parent_client_id_;
   base::TimeTicks begin_wake_up_time_;
 };
 
@@ -75,40 +71,14 @@ class DirectSurfaceAndroid : public PassThroughImageTransportSurface {
 ImageTransportSurfaceAndroid::ImageTransportSurfaceAndroid(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurface* surface,
-    uint32 parent_client_id)
-    : PassThroughImageTransportSurface(manager, stub, surface),
-      parent_client_id_(parent_client_id) {}
+    const gfx::GLSurfaceHandle& handle)
+    : NullTransportSurface(manager, stub, handle) {}
 
 ImageTransportSurfaceAndroid::~ImageTransportSurfaceAndroid() {}
-
-bool ImageTransportSurfaceAndroid::Initialize() {
-  if (!surface())
-    return false;
-
-  if (!PassThroughImageTransportSurface::Initialize())
-    return false;
-
-  GpuChannel* parent_channel =
-      GetHelper()->manager()->LookupChannel(parent_client_id_);
-  if (parent_channel) {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
-      GetHelper()->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
-  }
-
-  return true;
-}
 
 bool ImageTransportSurfaceAndroid::OnMakeCurrent(gfx::GLContext* context) {
   DidAccessGpu();
   return true;
-}
-
-bool ImageTransportSurfaceAndroid::SwapBuffers() {
-  NOTREACHED();
-  return false;
 }
 
 void ImageTransportSurfaceAndroid::WakeUpGpu() {
@@ -165,12 +135,9 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
-  if (handle.transport_type == gfx::NATIVE_TRANSPORT) {
+  if (handle.transport_type == gfx::NULL_TRANSPORT) {
     return scoped_refptr<gfx::GLSurface>(
-        new ImageTransportSurfaceAndroid(manager,
-                                         stub,
-                                         manager->GetDefaultOffscreenSurface(),
-                                         handle.parent_client_id));
+        new ImageTransportSurfaceAndroid(manager, stub, handle));
   }
 
   DCHECK(GpuSurfaceLookup::GetInstance());

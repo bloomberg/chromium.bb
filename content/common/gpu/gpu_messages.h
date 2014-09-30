@@ -76,40 +76,13 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
   IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(float, scale_factor)
   IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
-  IPC_STRUCT_MEMBER(int32, surface_id)
-  IPC_STRUCT_MEMBER(uint64, surface_handle)
-  IPC_STRUCT_MEMBER(int32, route_id)
-  IPC_STRUCT_MEMBER(int, x)
-  IPC_STRUCT_MEMBER(int, y)
-  IPC_STRUCT_MEMBER(int, width)
-  IPC_STRUCT_MEMBER(int, height)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
-  IPC_STRUCT_MEMBER(gfx::Size, surface_size)
-  IPC_STRUCT_MEMBER(float, surface_scale_factor)
-  IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
-  IPC_STRUCT_MEMBER(int32, surface_id)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
-  IPC_STRUCT_MEMBER(uint32, sync_point)
-#if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(int32, renderer_id)
-#endif
-#if defined(OS_WIN)
-  IPC_STRUCT_MEMBER(base::TimeTicks, vsync_timebase)
-  IPC_STRUCT_MEMBER(base::TimeDelta, vsync_interval)
-#endif
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
@@ -405,23 +378,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_FrameDrawn,
 // Same as above with a rect of the part of the surface that changed.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
-
-// This message notifies the browser process that the renderer
-// swapped a portion of the buffers associated with the given "window", which
-// should cause the browser to redraw the compositor's contents.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
-                     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
-
-// Tells the browser to release whatever resources are associated with
-// the given surface. The browser must send an ACK once this operation
-// is complete.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceRelease,
-                     GpuHostMsg_AcceleratedSurfaceRelease_Params)
-
-// Tells the browser to release resources for the given surface until the next
-// time swap buffers or post sub buffer is sent.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSuspend,
-                     int32 /* surface_id */)
 
 // Tells the browser about updated parameters for vsync alignment.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_UpdateVSyncParameters,

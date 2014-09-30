@@ -27,7 +27,6 @@ namespace base {
 class TimeDelta;
 }
 
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewMsg_SwapOut_Params;
 

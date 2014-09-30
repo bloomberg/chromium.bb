@@ -969,10 +969,6 @@ void RenderWidgetHostViewAura::EndFrameSubscription() {
   delegated_frame_host_->EndFrameSubscription();
 }
 
-void RenderWidgetHostViewAura::AcceleratedSurfaceInitialized(int host_id,
-                                                             int route_id) {
-}
-
 #if defined(OS_WIN)
 bool RenderWidgetHostViewAura::UsesNativeWindowFrame() const {
   return (legacy_render_widget_host_HWND_ != NULL);
@@ -1012,12 +1008,6 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
   legacy_window_destroyed_ = true;
 }
 #endif
-
-void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
-    int gpu_host_id) {
-  // Oldschool composited mode is no longer supported.
-}
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32 output_surface_id,
@@ -1062,18 +1052,6 @@ gfx::NativeViewId RenderWidgetHostViewAura::GetParentForWindowlessPlugin()
   return NULL;
 }
 #endif
-
-void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
-    int gpu_host_id) {
-  // Oldschool composited mode is no longer supported.
-}
-
-void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
-}
-
-void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
-}
 
 bool RenderWidgetHostViewAura::HasAcceleratedSurface(
     const gfx::Size& desired_size) {

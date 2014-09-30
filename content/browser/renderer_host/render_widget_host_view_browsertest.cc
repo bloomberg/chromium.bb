@@ -293,8 +293,6 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                  base::Unretained(this),
                  run_loop.QuitClosure()),
       kN32_SkColorType);
-  // Delete the surface before the callback is run.
-  GetRenderWidgetHostView()->AcceleratedSurfaceRelease();
   run_loop.Run();
 
   EXPECT_EQ(1, callback_invoke_count());
@@ -330,8 +328,6 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
       gfx::Rect(view->GetViewBounds().size()), dest, base::Bind(
           &RenderWidgetHostViewBrowserTest::FinishCopyFromCompositingSurface,
           base::Unretained(this), run_loop.QuitClosure()));
-  // Delete the surface before the callback is run.
-  view->AcceleratedSurfaceRelease();
   run_loop.Run();
 
   EXPECT_EQ(1, callback_invoke_count());
