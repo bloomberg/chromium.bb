@@ -20,7 +20,6 @@ import posixpath
 import re
 import sys
 
-from utils import short_expression_finder
 
 # Files that should be 0-length when mapped.
 KEY_TOUCHED = 'isolate_dependency_touched'
@@ -331,160 +330,12 @@ def verify_root(value, variables_and_values):
   verify_variables(variables)
 
 
-def remove_weak_dependencies(values, key, item, item_configs):
-  """Removes any configs from this key if the item is already under a
-  strong key.
-  """
-  if key == KEY_TOUCHED:
-    item_configs = set(item_configs)
-    for stronger_key in (KEY_TRACKED, KEY_UNTRACKED):
-      try:
-        item_configs -= values[stronger_key][item]
-      except KeyError:
-        pass
-
-  return item_configs
-
-
-def remove_repeated_dependencies(folders, key, item, item_configs):
-  """Removes any configs from this key if the item is in a folder that is
-  already included."""
-
-  if key in (KEY_UNTRACKED, KEY_TRACKED, KEY_TOUCHED):
-    item_configs = set(item_configs)
-    for (folder, configs) in folders.iteritems():
-      if folder != item and item.startswith(folder):
-        item_configs -= configs
-
-  return item_configs
-
-
 def get_folders(values_dict):
   """Returns a dict of all the folders in the given value_dict."""
   return dict(
     (item, configs) for (item, configs) in values_dict.iteritems()
     if item.endswith('/')
   )
-
-
-def invert_map(variables):
-  """Converts {config: {deptype: list(depvals)}} to
-  {deptype: {depval: set(configs)}}.
-  """
-  KEYS = (
-    KEY_TOUCHED,
-    KEY_TRACKED,
-    KEY_UNTRACKED,
-    'command',
-    'read_only',
-  )
-  out = dict((key, {}) for key in KEYS)
-  for config, values in variables.iteritems():
-    for key in KEYS:
-      if key == 'command':
-        items = [tuple(values[key])] if key in values else []
-      elif key == 'read_only':
-        items = [values[key]] if key in values else []
-      else:
-        assert key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED)
-        items = values.get(key, [])
-      for item in items:
-        out[key].setdefault(item, set()).add(config)
-  return out
-
-
-def reduce_inputs(values):
-  """Reduces the output of invert_map() to the strictest minimum list.
-
-  Looks at each individual file and directory, maps where they are used and
-  reconstructs the inverse dictionary.
-
-  Returns the minimized dictionary.
-  """
-  KEYS = (
-    KEY_TOUCHED,
-    KEY_TRACKED,
-    KEY_UNTRACKED,
-    'command',
-    'read_only',
-  )
-
-  # Folders can only live in KEY_UNTRACKED.
-  folders = get_folders(values.get(KEY_UNTRACKED, {}))
-
-  out = dict((key, {}) for key in KEYS)
-  for key in KEYS:
-    for item, item_configs in values.get(key, {}).iteritems():
-      item_configs = remove_weak_dependencies(values, key, item, item_configs)
-      item_configs = remove_repeated_dependencies(
-          folders, key, item, item_configs)
-      if item_configs:
-        out[key][item] = item_configs
-  return out
-
-
-def convert_map_to_isolate_dict(values, config_variables):
-  """Regenerates back a .isolate configuration dict from files and dirs
-  mappings generated from reduce_inputs().
-  """
-  # Gather a list of configurations for set inversion later.
-  all_mentioned_configs = set()
-  for configs_by_item in values.itervalues():
-    for configs in configs_by_item.itervalues():
-      all_mentioned_configs.update(configs)
-
-  # Invert the mapping to make it dict first.
-  conditions = {}
-  for key in values:
-    for item, configs in values[key].iteritems():
-      then = conditions.setdefault(frozenset(configs), {})
-      variables = then.setdefault('variables', {})
-
-      if key == 'read_only':
-        if not isinstance(item, int):
-          raise IsolateError(
-              'Unexpected entry type %r for key %s' % (item, key))
-        variables[key] = item
-      elif key == 'command':
-        if not isinstance(item, tuple):
-          raise IsolateError(
-              'Unexpected entry type %r for key %s' % (item, key))
-        if key in variables:
-          raise IsolateError('Unexpected duplicate key %s' % key)
-        if not item:
-          raise IsolateError('Expected non empty entry in %s' % key)
-        variables[key] = list(item)
-      elif key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED):
-        if not isinstance(item, basestring):
-          raise IsolateError('Unexpected entry type %r' % item)
-        if not item:
-          raise IsolateError('Expected non empty entry in %s' % key)
-        # The list of items (files or dirs). Append the new item and keep
-        # the list sorted.
-        l = variables.setdefault(key, [])
-        l.append(item)
-        l.sort()
-      else:
-        raise IsolateError('Unexpected key %s' % key)
-
-  if all_mentioned_configs:
-    # Change [(1, 2), (3, 4)] to [set(1, 3), set(2, 4)]
-    config_values = map(set, zip(*all_mentioned_configs))
-    for i in config_values:
-      i.discard(None)
-    sef = short_expression_finder.ShortExpressionFinder(
-        zip(config_variables, config_values))
-    conditions = sorted([sef.get_expr(c), v] for c, v in conditions.iteritems())
-  else:
-    conditions = []
-  out = {'conditions': conditions}
-  for c in conditions:
-    if c[0] == '':
-      # Extract the global.
-      out.update(c[1])
-      conditions.remove(c)
-      break
-  return out
 
 
 class ConfigSettings(object):
@@ -712,14 +563,6 @@ class Configs(object):
     """Returns a flat dictionary representation of the configuration.
     """
     return dict((k, v.flatten()) for k, v in self._by_config.iteritems())
-
-  def make_isolate_file(self):
-    """Returns a dictionary suitable for writing to a .isolate file.
-    """
-    dependencies_by_config = self.flatten()
-    configs_by_dependency = reduce_inputs(invert_map(dependencies_by_config))
-    return convert_map_to_isolate_dict(configs_by_dependency,
-                                       self.config_variables)
 
   def __str__(self):
     return 'Configs(%s,%s)' % (

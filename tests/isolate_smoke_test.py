@@ -177,7 +177,6 @@ class Isolate(unittest.TestCase):
         'check',
         'help',
         'remap',
-        'rewrite',
         'run',
     )
     # If a new command is added it should at least has a bare test.

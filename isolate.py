@@ -856,35 +856,6 @@ def CMDremap(parser, args):
   return 0
 
 
-def CMDrewrite(parser, args):
-  """Rewrites a .isolate file into the canonical format."""
-  parser.require_isolated = False
-  options, args = parser.parse_args(args)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
-
-  if options.isolated:
-    # Load the previous state if it was present. Namely, "foo.isolated.state".
-    complete_state = CompleteState.load_files(options.isolated)
-    isolate = options.isolate or complete_state.saved_state.isolate_filepath
-  else:
-    isolate = options.isolate
-  if not isolate:
-    parser.error('--isolate is required.')
-
-  with open(isolate, 'r') as f:
-    content = f.read()
-  config = isolate_format.load_isolate_as_config(
-      os.path.dirname(os.path.abspath(isolate)),
-      isolate_format.eval_content(content),
-      isolate_format.extract_comment(content))
-  data = config.make_isolate_file()
-  print('Updating %s' % isolate)
-  with open(isolate, 'wb') as f:
-    isolate_format.print_all(config.file_comment, data, f)
-  return 0
-
-
 @subcommand.usage('-- [extra arguments]')
 def CMDrun(parser, args):
   """Runs the test executable in an isolated (temporary) directory.

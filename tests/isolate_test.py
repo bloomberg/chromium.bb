@@ -1349,25 +1349,6 @@ class IsolateCommand(IsolateBase):
     with open(isolated_file + '.state', 'rb') as f:
       self.assertEqual(json.load(f)['isolate_file'], 'Y.isolate')
 
-  def test_CMDrewrite(self):
-    isolate_file = os.path.join(self.cwd, 'x.isolate')
-    data = (
-      '# Foo',
-      '{',
-      '}',
-    )
-    with open(isolate_file, 'wb') as f:
-      f.write('\n'.join(data))
-
-    self.mock(sys, 'stdout', cStringIO.StringIO())
-    cmd = ['-i', isolate_file]
-    self.assertEqual(0, isolate.CMDrewrite(isolate.OptionParserIsolate(), cmd))
-    with open(isolate_file, 'rb') as f:
-      actual = f.read()
-
-    expected = "# Foo\n{\n  'conditions': [\n  ],\n}\n"
-    self.assertEqual(expected, actual)
-
   def test_CMDrun_extra_args(self):
     cmd = [
       'run',
