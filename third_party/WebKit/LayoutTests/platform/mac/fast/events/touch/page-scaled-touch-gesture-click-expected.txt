@@ -1,0 +1,40 @@
+This tests basic single touch gesture generation.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS event.type is "mousemove"
+FAIL event.clientX should be 20. Was 29.
+FAIL event.clientY should be 24. Was 47.
+PASS event.shiftKey is false
+PASS event.altKey is false
+PASS event.ctrlKey is false
+PASS event.metaKey is false
+PASS event.type is "mousedown"
+FAIL event.clientX should be 20. Was 29.
+FAIL event.clientY should be 24. Was 47.
+PASS event.shiftKey is false
+PASS event.altKey is false
+PASS event.ctrlKey is false
+PASS event.metaKey is false
+PASS event.type is "mouseup"
+FAIL event.clientX should be 20. Was 29.
+FAIL event.clientY should be 24. Was 47.
+PASS event.shiftKey is false
+PASS event.altKey is false
+PASS event.ctrlKey is false
+PASS event.metaKey is false
+PASS event.type is "click"
+FAIL event.clientX should be 20. Was 29.
+FAIL event.clientY should be 24. Was 47.
+PASS event.shiftKey is false
+PASS event.altKey is false
+PASS event.ctrlKey is false
+PASS event.metaKey is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

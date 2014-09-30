@@ -1,0 +1,11 @@
+Test that only a single popup is allowed in response to a single touch sequence. The test passes if only one popup is created when you touch and move around on this page.
+
+touchstart event
+touchstart event
+touchmove event
+touchmove event
+touchmove event
+touchmove event
+touchend event
+touchend event
+

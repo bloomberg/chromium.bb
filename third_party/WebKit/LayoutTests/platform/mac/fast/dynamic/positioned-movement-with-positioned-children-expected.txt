@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
-        RenderText {#text} at (0,0) size 98x54
-          text run at (0,0) width 98: "You should not"
-          text run at (0,18) width 96: "see this. Resize"
-          text run at (0,36) width 79: "the window."
+        RenderText {#text} at (0,0) size 99x48
+          text run at (0,0) width 99: "You should not"
+          text run at (0,16) width 99: "see this. Resize"
+          text run at (0,32) width 80: "the window."
 hidden layer at (8,8) size 100x118
   RenderBlock (positioned) {DIV} at (0,0) size 100x118
     RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]

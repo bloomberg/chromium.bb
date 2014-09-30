@@ -7,65 +7,65 @@ layer at (0,0) size 800x183
         RenderFlexibleBox {DIV} at (0,0) size 129x15
           RenderBlock {DIV} at (0,0) size 129x15
             RenderBlock {DIV} at (57,0) size 15x15
-      RenderText {#text} at (137,5) size 4x18
-        text run at (137,5) width 4: " "
-      RenderBR {BR} at (141,5) size 0x18
+      RenderText {#text} at (137,7) size 4x16
+        text run at (137,7) width 4: " "
+      RenderBR {BR} at (141,7) size 0x16
       RenderSlider {INPUT} at (4,27) size 135x21 [color=#909090] [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
         RenderFlexibleBox {DIV} at (3,3) size 129x15
           RenderBlock {DIV} at (0,0) size 129x15
             RenderBlock {DIV} at (57,0) size 15x15
-      RenderText {#text} at (143,34) size 4x18
-        text run at (143,34) width 4: " "
+      RenderText {#text} at (143,36) size 4x16
+        text run at (143,36) width 4: " "
       RenderSlider {INPUT} at (151,33) size 129x15 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 129x15
           RenderBlock {DIV} at (0,0) size 129x15
             RenderBlock {DIV} at (57,0) size 15x15
-      RenderText {#text} at (284,34) size 4x18
-        text run at (284,34) width 4: " "
-      RenderBR {BR} at (288,34) size 0x18
+      RenderText {#text} at (284,36) size 4x16
+        text run at (284,36) width 4: " "
+      RenderBR {BR} at (288,36) size 0x16
       RenderSlider {INPUT} at (4,56) size 129x15 [color=#909090]
         RenderFlexibleBox {DIV} at (0,0) size 129x15
           RenderBlock {DIV} at (0,0) size 129x15
             RenderBlock {DIV} at (57,0) size 15x15
-      RenderText {#text} at (137,57) size 4x18
-        text run at (137,57) width 4: " "
-      RenderBR {BR} at (141,57) size 0x18
+      RenderText {#text} at (137,59) size 4x16
+        text run at (137,59) width 4: " "
+      RenderBR {BR} at (141,59) size 0x16
       RenderSlider {INPUT} at (4,79) size 129x15 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 129x15
           RenderBlock {DIV} at (0,0) size 129x15
             RenderBlock {DIV} at (57,0) size 15x15
-      RenderText {#text} at (137,80) size 4x18
-        text run at (137,80) width 4: " "
-      RenderBR {BR} at (141,80) size 0x18
+      RenderText {#text} at (137,82) size 4x16
+        text run at (137,82) width 4: " "
+      RenderBR {BR} at (141,82) size 0x16
       RenderSlider {INPUT} at (4,102) size 40x15 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 40x15
           RenderBlock {DIV} at (0,0) size 40x15
             RenderBlock {DIV} at (12.50,0) size 15x15
-      RenderText {#text} at (48,103) size 4x18
-        text run at (48,103) width 4: " "
+      RenderText {#text} at (48,105) size 4x16
+        text run at (48,105) width 4: " "
       RenderSlider {INPUT} at (56,102) size 40x15 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 40x15
           RenderBlock {DIV} at (0,0) size 40x15
             RenderBlock {DIV} at (12.50,0) size 15x15
-      RenderText {#text} at (100,103) size 4x18
-        text run at (100,103) width 4: " "
+      RenderText {#text} at (100,105) size 4x16
+        text run at (100,105) width 4: " "
       RenderSlider {INPUT} at (108,102) size 40x15 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 40x15
           RenderBlock {DIV} at (0,0) size 40x15
             RenderBlock {DIV} at (12.50,0) size 15x15
-      RenderText {#text} at (152,103) size 4x18
-        text run at (152,103) width 4: " "
-      RenderBR {BR} at (156,103) size 0x18
+      RenderText {#text} at (152,105) size 4x16
+        text run at (152,105) width 4: " "
+      RenderBR {BR} at (156,105) size 0x16
       RenderSlider {INPUT} at (6,137) size 193.50x22 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 193.50x22
           RenderBlock {DIV} at (0,0) size 193.50x22
             RenderBlock {DIV} at (85.75,0) size 22x22
-      RenderText {#text} at (205,145) size 5x18
-        text run at (205,145) width 5: " "
+      RenderText {#text} at (205,147) size 5x16
+        text run at (205,147) width 5: " "
       RenderSlider {INPUT} at (217.50,129) size 258x30 [color=#909090] [bgcolor=#FFFFFF]
         RenderFlexibleBox {DIV} at (0,0) size 258x30
           RenderBlock {DIV} at (0,0) size 258x30
             RenderBlock {DIV} at (114,0) size 30x30
-      RenderText {#text} at (483,145) size 5x18
-        text run at (483,145) width 5: " "
-      RenderBR {BR} at (487,145) size 1x18
+      RenderText {#text} at (483,147) size 5x16
+        text run at (483,147) width 5: " "
+      RenderBR {BR} at (487,147) size 1x16

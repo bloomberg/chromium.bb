@@ -6,12 +6,12 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 7, 784, 20]
+        [8, 7, 784, 18]
       ],
       "children": [
         {
           "position": [68, 7],
-          "bounds": [365, 20],
+          "bounds": [374, 18],
           "drawsContent": true,
           "backfaceVisibility": "hidden"
         }
