@@ -80,6 +80,7 @@ static const char* const kSwitchNames[] = {
   switches::kDisableSeccompFilterSandbox,
 #if defined(ENABLE_WEBRTC)
   switches::kDisableWebRtcHWEncoding,
+  switches::kEnableWebRtcHWVp8Encoding,
 #endif
   switches::kEnableLogging,
   switches::kEnableShareGroupAsyncTextureUpload,
