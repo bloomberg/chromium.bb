@@ -511,7 +511,7 @@ class ChromeTests:
     assert((chunk_size == 0) != (len(self._args) == 0))
     # Build the ginormous commandline in 'cmd'.
     # It's going to be roughly
-    #  python valgrind_test.py ... python run_webkit_tests.py ...
+    #  python valgrind_test.py ...
     # but we'll use the --indirect flag to valgrind_test.py
     # to avoid valgrinding python.
     # Start by building the valgrind_test.py commandline.
@@ -520,7 +520,7 @@ class ChromeTests:
     cmd.append("--trace_children")
     cmd.append("--indirect_webkit_layout")
     cmd.append("--ignore_exit_code")
-    # Now build script_cmd, the run_webkits_tests.py commandline
+    # Now build script_cmd, the run-webkits-tests commandline.
     # Store each chunk in its own directory so that we can find the data later
     chunk_dir = os.path.join("layout", "chunk_%05d" % chunk_num)
     out_dir = os.path.join(path_utils.ScriptDir(), "latest")
@@ -531,8 +531,8 @@ class ChromeTests:
         os.remove(f)
     else:
       os.makedirs(out_dir)
-    script = os.path.join(self._source_dir, "webkit", "tools", "layout_tests",
-                          "run_webkit_tests.py")
+    script = os.path.join(self._source_dir, "third_party", "WebKit", "Tools",
+                          "Scripts", "run-webkit-tests")
     # http://crbug.com/260627: After the switch to content_shell from DRT, each
     # test now brings up 3 processes.  Under Valgrind, they become memory bound
     # and can eventually OOM if we don't reduce the total count.
@@ -549,8 +549,8 @@ class ChromeTests:
                   # http://crbug.com/176908: Don't launch a browser when done.
                   "--no-show-results",
                   "--nocheck-sys-deps"]
-    # Pass build mode to run_webkit_tests.py.  We aren't passed it directly,
-    # so parse it out of build_dir.  run_webkit_tests.py can only handle
+    # Pass build mode to run-webkit-tests.  We aren't passed it directly,
+    # so parse it out of build_dir.  run-webkit-tests can only handle
     # the two values "Release" and "Debug".
     # TODO(Hercules): unify how all our scripts pass around build mode
     # (--mode / --target / --build-dir / --debug)
