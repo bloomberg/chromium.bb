@@ -1662,7 +1662,7 @@ void Node::showNodePathForThis() const
 
 static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
 {
-    for (const Node* node = rootNode; node; node = NodeTraversal::next(*node)) {
+    for (const Node* node = rootNode; node; node = NodeTraversal::next(*node, rootNode)) {
         if (node == markedNode1)
             fprintf(stderr, "%s", markedLabel1);
         if (node == markedNode2)
@@ -1675,6 +1675,17 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
         fprintf(stderr, "%s", indent.toString().utf8().data());
         node->showNode();
         indent.append('\t');
+
+        if (node->isElementNode()) {
+            const Element* element = toElement(node);
+            if (Element* pseudo = element->pseudoElement(BEFORE))
+                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+            if (Element* pseudo = element->pseudoElement(AFTER))
+                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+            if (Element* pseudo = element->pseudoElement(BACKDROP))
+                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+        }
+
         if (node->isShadowRoot()) {
             if (ShadowRoot* youngerShadowRoot = toShadowRoot(node)->youngerShadowRoot())
                 traverseTreeAndMark(indent.toString(), youngerShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2);
