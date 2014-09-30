@@ -52,6 +52,6 @@ private:
     RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementDefinition_h

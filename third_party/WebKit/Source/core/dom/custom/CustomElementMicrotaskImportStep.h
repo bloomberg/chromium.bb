@@ -84,6 +84,6 @@ private:
     RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_queue;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementMicrotaskImportStep_h

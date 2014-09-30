@@ -20,6 +20,6 @@ private:
     virtual void doDispatch();
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // CustomElementSyncMicrotaskQueue_h

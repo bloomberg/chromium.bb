@@ -44,7 +44,6 @@
 namespace blink {
 
 class CustomElementConstructorBuilder;
-class Document;
 class ExceptionState;
 
 class CustomElementRegistry FINAL {
@@ -65,4 +64,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // CustomElementRegistry_h

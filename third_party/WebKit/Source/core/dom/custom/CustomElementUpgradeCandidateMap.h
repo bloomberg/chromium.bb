@@ -40,8 +40,6 @@
 
 namespace blink {
 
-class Element;
-
 class CustomElementUpgradeCandidateMap FINAL : public CustomElementObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
@@ -72,6 +70,6 @@ private:
     UnresolvedDefinitionMap m_unresolvedDefinitions;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementUpgradeCandidateMap_h

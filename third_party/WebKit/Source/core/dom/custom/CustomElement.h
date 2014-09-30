@@ -43,7 +43,6 @@ namespace blink {
 
 class CustomElementMicrotaskImportStep;
 class Document;
-class Element;
 class HTMLImportChild;
 
 class CustomElement {
@@ -76,6 +75,6 @@ private:
     static Vector<AtomicString>& embedderCustomElementNames();
 };
 
-}
+} // namespace blink
 
 #endif // CustomElement_h

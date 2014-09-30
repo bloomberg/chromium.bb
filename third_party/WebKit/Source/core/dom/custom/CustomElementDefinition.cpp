@@ -44,4 +44,4 @@ CustomElementDefinition::CustomElementDefinition(const CustomElementDescriptor& 
 {
 }
 
-}
+} // namespace blink

@@ -62,6 +62,6 @@ private:
     static String preamble(const AtomicString& type);
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementException_h

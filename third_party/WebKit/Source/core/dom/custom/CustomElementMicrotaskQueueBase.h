@@ -38,6 +38,6 @@ protected:
     bool m_inDispatch;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementMicrotaskQueueBase_h

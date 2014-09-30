@@ -77,6 +77,6 @@ private:
     bool m_inCreatedCallback;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementCallbackQueue_h

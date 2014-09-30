@@ -35,8 +35,6 @@
 
 namespace blink {
 
-class CustomElementMicrotaskImportStep;
-
 class CustomElementAsyncImportMicrotaskQueue : public CustomElementMicrotaskQueueBase {
 public:
     static PassRefPtrWillBeRawPtr<CustomElementAsyncImportMicrotaskQueue> create() { return adoptRefWillBeNoop(new CustomElementAsyncImportMicrotaskQueue()); }
@@ -48,5 +46,6 @@ private:
     virtual void doDispatch() OVERRIDE;
 };
 
-}
+} // namespace blink
+
 #endif // CustomElementAsyncImportMicrotaskQueue_h

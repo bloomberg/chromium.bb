@@ -56,6 +56,6 @@ public:
 #endif
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementMicrotaskStep_h

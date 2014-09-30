@@ -44,6 +44,6 @@ private:
     bool m_dispatchIsPending;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // CustomElementMicrotaskRunQueue_h

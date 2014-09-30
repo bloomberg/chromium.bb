@@ -13,10 +13,6 @@
 namespace blink {
 
 class CustomElementCallbackQueue;
-class CustomElementMicrotaskImportStep;
-class CustomElementMicrotaskStep;
-class Document;
-class HTMLImportLoader;
 
 class CustomElementMicrotaskDispatcher FINAL : public NoBaseWillBeGarbageCollected<CustomElementMicrotaskDispatcher> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskDispatcher);
@@ -49,6 +45,6 @@ private:
     WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> > m_elements;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementMicrotaskDispatcher_h

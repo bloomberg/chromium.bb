@@ -45,8 +45,6 @@ class CustomElementDescriptor;
 class CustomElementMicrotaskImportStep;
 class CustomElementMicrotaskStep;
 class CustomElementRegistrationContext;
-class Document;
-class Element;
 class HTMLImportChild;
 
 class CustomElementScheduler FINAL : public NoBaseWillBeGarbageCollected<CustomElementScheduler> {
@@ -68,6 +66,6 @@ private:
     static void enqueueMicrotaskStep(Document&, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>, bool importIsSync = true);
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementScheduler_h

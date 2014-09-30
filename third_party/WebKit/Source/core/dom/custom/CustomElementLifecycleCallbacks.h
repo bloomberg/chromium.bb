@@ -64,6 +64,6 @@ private:
     CallbackType m_callbackType;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementLifecycleCallbacks_h

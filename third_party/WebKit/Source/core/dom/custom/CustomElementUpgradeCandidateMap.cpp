@@ -119,4 +119,4 @@ void CustomElementUpgradeCandidateMap::trace(Visitor* visitor)
     CustomElementObserver::trace(visitor);
 }
 
-}
+} // namespace blink

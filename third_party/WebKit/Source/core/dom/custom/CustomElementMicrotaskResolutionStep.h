@@ -66,6 +66,6 @@ private:
     CustomElementDescriptor m_descriptor;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementMicrotaskResolutionStep_h
