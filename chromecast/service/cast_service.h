@@ -22,9 +22,6 @@ class URLRequestContextGetter;
 }
 
 namespace chromecast {
-namespace shell {
-class CastNetworkDelegate;
-}
 
 class CastService {
  public:
@@ -41,7 +38,6 @@ class CastService {
   static CastService* Create(
       content::BrowserContext* browser_context,
       net::URLRequestContextGetter* request_context_getter,
-      shell::CastNetworkDelegate* network_delegate,
       const OptInStatsChangedCallback& opt_in_stats_callback);
 
   virtual ~CastService();
