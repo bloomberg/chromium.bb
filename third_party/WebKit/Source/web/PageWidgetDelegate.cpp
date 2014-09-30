@@ -47,24 +47,41 @@
 
 namespace blink {
 
-void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime, LocalFrame* root)
+static inline FrameView* rootFrameView(Page* page, LocalFrame* rootFrame)
 {
-    RefPtr<FrameView> view = root->view();
+    if (rootFrame)
+        return rootFrame->view();
+    if (!page)
+        return 0;
+    if (!page->mainFrame()->isLocalFrame())
+        return 0;
+    return toLocalFrame(page->mainFrame())->view();
+}
+
+void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime, LocalFrame* rootFrame)
+{
+    RefPtr<FrameView> view = rootFrameView(page, rootFrame);
     if (!view)
         return;
     page->autoscrollController().animate(monotonicFrameBeginTime);
     page->animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 
-void PageWidgetDelegate::layout(Page* page, LocalFrame* root)
+void PageWidgetDelegate::layout(Page* page, LocalFrame* rootFrame)
 {
     if (!page)
         return;
 
-    page->animator().updateLayoutAndStyleForPainting(root);
+    if (!rootFrame) {
+        if (!page->mainFrame() || !page->mainFrame()->isLocalFrame())
+            return;
+        rootFrame = toLocalFrame(page->mainFrame());
+    }
+
+    page->animator().updateLayoutAndStyleForPainting(rootFrame);
 }
 
-void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background, LocalFrame* root)
+void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background, LocalFrame* rootFrame)
 {
     if (rect.isEmpty())
         return;
@@ -74,7 +91,7 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     gc.setDeviceScaleFactor(page->deviceScaleFactor());
     IntRect dirtyRect(rect);
     gc.save(); // Needed to save the canvas, not the GraphicsContext.
-    FrameView* view = root->view();
+    FrameView* view = rootFrameView(page, rootFrame);
     if (view) {
         gc.clip(dirtyRect);
         view->paint(&gc, dirtyRect);
@@ -86,40 +103,41 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     gc.restore();
 }
 
-bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
+bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* rootFrame)
 {
+    LocalFrame* frame = rootFrame;
+    if (!frame)
+        frame = page && page->mainFrame()->isLocalFrame() ? toLocalFrame(page->mainFrame()) : 0;
     switch (event.type) {
 
     // FIXME: WebKit seems to always return false on mouse events processing
     // methods. For now we'll assume it has processed them (as we are only
     // interested in whether keyboard events are processed).
-    // FIXME: Why do we return true when there is no root or the root is
-    // detached?
     case WebInputEvent::MouseMove:
-        if (!root || !root->view())
+        if (!frame || !frame->view())
             return true;
-        handler.handleMouseMove(*root, static_cast<const WebMouseEvent&>(event));
+        handler.handleMouseMove(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
     case WebInputEvent::MouseLeave:
-        if (!root || !root->view())
+        if (!frame || !frame->view())
             return true;
-        handler.handleMouseLeave(*root, static_cast<const WebMouseEvent&>(event));
+        handler.handleMouseLeave(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
     case WebInputEvent::MouseDown:
-        if (!root || !root->view())
+        if (!frame || !frame->view())
             return true;
-        handler.handleMouseDown(*root, static_cast<const WebMouseEvent&>(event));
+        handler.handleMouseDown(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
     case WebInputEvent::MouseUp:
-        if (!root || !root->view())
+        if (!frame || !frame->view())
             return true;
-        handler.handleMouseUp(*root, static_cast<const WebMouseEvent&>(event));
+        handler.handleMouseUp(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
 
     case WebInputEvent::MouseWheel:
-        if (!root || !root->view())
+        if (!frame || !frame->view())
             return false;
-        return handler.handleMouseWheel(*root, static_cast<const WebMouseWheelEvent&>(event));
+        return handler.handleMouseWheel(*frame, static_cast<const WebMouseWheelEvent&>(event));
 
     case WebInputEvent::RawKeyDown:
     case WebInputEvent::KeyDown:
@@ -149,9 +167,9 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
     case WebInputEvent::TouchMove:
     case WebInputEvent::TouchEnd:
     case WebInputEvent::TouchCancel:
-        if (!root || !root->view())
+        if (!frame || !frame->view())
             return false;
-        return handler.handleTouchEvent(*root, static_cast<const WebTouchEvent&>(event));
+        return handler.handleTouchEvent(*frame, static_cast<const WebTouchEvent&>(event));
 
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
