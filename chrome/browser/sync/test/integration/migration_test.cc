@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriBoth) {
 }
 
 // The whole shebang -- all data types.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/403778
 #define MAYBE_AllTypesIndividually DISABLED_AllTypesIndividually
 #else
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, MAYBE_AllTypesIndividually) {
   RunSingleClientMigrationTest(GetPreferredDataTypesList(), MODIFY_BOOKMARK);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/403778
 #define MAYBE_AllTypesIndividuallyTriggerNotification DISABLED_AllTypesIndividuallyTriggerNotification
 #else
