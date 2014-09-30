@@ -185,11 +185,6 @@ TEST_F(DOMWebSocketTest, invalidSubprotocols)
     Vector<String> subprotocols;
     subprotocols.append("@subprotocol-|'\"x\x01\x02\x03x");
 
-    {
-        InSequence s;
-        EXPECT_CALL(channel(), disconnect());
-    }
-
     m_websocket->connect("ws://example.com/", subprotocols, m_exceptionState);
 
     EXPECT_TRUE(m_exceptionState.hadException());
