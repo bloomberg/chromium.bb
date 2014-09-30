@@ -1405,7 +1405,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle&
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle& style)
 {
-    return zoomAdjustedPixelValue(style.fontDescription().computedPixelSize(), style);
+    return zoomAdjustedPixelValue(RuntimeEnabledFeatures::subpixelFontScalingEnabled() ? style.fontDescription().computedSize() : style.fontDescription().computedPixelSize(), style);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(RenderStyle& style)
