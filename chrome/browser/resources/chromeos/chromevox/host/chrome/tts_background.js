@@ -218,9 +218,6 @@ cvox.TtsBackground.prototype.speak = function(
   if (!properties) {
     properties = {};
   }
-  if (queueMode === undefined) {
-    queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
-  }
 
   // Chunk to improve responsiveness. Use a replace/split pattern in order to
   // retain the original punctuation.
@@ -241,7 +238,7 @@ cvox.TtsBackground.prototype.speak = function(
       propertiesCopy['endCallback'] =
           i == (splitTextString.length - 1) ? endCallback : null;
       this.speak(splitTextString[i], queueMode, propertiesCopy);
-      queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+      queueMode = cvox.QueueMode.QUEUE;
     }
     return this;
   }
@@ -268,7 +265,7 @@ cvox.TtsBackground.prototype.speak = function(
       } catch (e) {
       }
     }
-    if (queueMode === cvox.AbstractTts.QUEUE_MODE_FLUSH) {
+    if (queueMode === cvox.QueueMode.FLUSH) {
       this.stop();
     }
     return this;
@@ -280,9 +277,9 @@ cvox.TtsBackground.prototype.speak = function(
     mergedProperties['voiceName'] = this.currentVoice;
   }
 
-  if (queueMode == cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH &&
+  if (queueMode == cvox.QueueMode.CATEGORY_FLUSH &&
       !mergedProperties['category']) {
-    queueMode = cvox.AbstractTts.QUEUE_MODE_FLUSH;
+    queueMode = cvox.QueueMode.FLUSH;
   }
 
   var utterance = new cvox.Utterance(textString, mergedProperties);
@@ -292,15 +289,15 @@ cvox.TtsBackground.prototype.speak = function(
 /**
  * Use the speech queue to handle the given speech request.
  * @param {cvox.Utterance} utterance The utterance to speak.
- * @param {number} queueMode The queue mode.
+ * @param {cvox.QueueMode} queueMode The queue mode.
  * @private
  */
 cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
   // First, take care of removing the current utterance and flushing
   // anything from the queue we need to. If we remove the current utterance,
   // make a note that we're going to stop speech.
-  if (queueMode == cvox.AbstractTts.QUEUE_MODE_FLUSH ||
-      queueMode == cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH) {
+  if (queueMode == cvox.QueueMode.FLUSH ||
+      queueMode == cvox.QueueMode.CATEGORY_FLUSH) {
     if (this.shouldCancel_(this.currentUtterance_, utterance, queueMode)) {
       this.cancelUtterance_(this.currentUtterance_);
       this.currentUtterance_ = null;
@@ -422,7 +419,7 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
  *
  * @param {cvox.Utterance} utteranceToCancel The utterance in question.
  * @param {cvox.Utterance} newUtterance The new utterance we're enqueueing.
- * @param {number} queueMode The queue mode.
+ * @param {cvox.QueueMode} queueMode The queue mode.
  * @return {boolean} True if this utterance should be canceled.
  * @private
  */
@@ -435,11 +432,11 @@ cvox.TtsBackground.prototype.shouldCancel_ =
     return false;
   }
   switch (queueMode) {
-    case cvox.AbstractTts.QUEUE_MODE_QUEUE:
+    case cvox.QueueMode.QUEUE:
       return false;
-    case cvox.AbstractTts.QUEUE_MODE_FLUSH:
+    case cvox.QueueMode.FLUSH:
       return true;
-    case cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH:
+    case cvox.QueueMode.CATEGORY_FLUSH:
       return (utteranceToCancel.properties['category'] ==
           newUtterance.properties['category']);
   }
@@ -655,7 +652,7 @@ cvox.TtsBackground.prototype.pronouncePhonetically_ = function(text) {
     this.clearTimeout_();
     var self = this;
     this.timeoutId_ = setTimeout(function() {
-      self.speak(text, 1);
+      self.speak(text, cvox.QueueMode.QUEUE);
     }, cvox.TtsBackground.PHONETIC_DELAY_MS_);
     return true;
   }

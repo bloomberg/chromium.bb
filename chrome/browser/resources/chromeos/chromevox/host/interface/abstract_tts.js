@@ -420,28 +420,6 @@ cvox.AbstractTts.DEBUG = true;
 
 
 /**
- * Speech queue mode that interrupts the current utterance.
- * @type {number}
- */
-cvox.AbstractTts.QUEUE_MODE_FLUSH = 0;
-
-
-/**
- * Speech queue mode that does not interrupt the current utterance.
- * @type {number}
- */
-cvox.AbstractTts.QUEUE_MODE_QUEUE = 1;
-
-
-/**
- * Speech queue mode that flushes all utterances of the same category
- * (as set by properties['category']).
- * @type {number}
- */
-cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH = 2;
-
-
-/**
  * Character dictionary. These symbols are replaced with their human readable
  * equivalents. This replacement only occurs for single character utterances.
  * @type {Object.<string, string>}

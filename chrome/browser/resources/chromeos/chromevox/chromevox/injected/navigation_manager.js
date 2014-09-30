@@ -66,7 +66,7 @@ cvox.NavigationManager.prototype.readFrom = function(store) {
   this.curSel_.setReversed(store['reversed']);
   this.shifter_.readFrom(store);
   if (store['keepReading']) {
-    this.startReading(cvox.AbstractTts.QUEUE_MODE_FLUSH);
+    this.startReading(cvox.QueueMode.FLUSH);
   }
 };
 
@@ -391,7 +391,7 @@ cvox.NavigationManager.prototype.clearPageSel = function(opt_announce) {
   var hasSel = !!this.pageSel_;
   if (hasSel && opt_announce) {
     var announcement = cvox.ChromeVox.msgs.getMsg('clear_page_selection');
-    cvox.ChromeVox.tts.speak(announcement, cvox.AbstractTts.QUEUE_MODE_FLUSH,
+    cvox.ChromeVox.tts.speak(announcement, cvox.QueueMode.FLUSH,
                              cvox.AbstractTts.PERSONALITY_ANNOTATION);
   }
   this.pageSel_ = null;
@@ -635,7 +635,7 @@ cvox.NavigationManager.prototype.ensureNotSubnavigating = function() {
  * Delegates to NavigationSpeaker.
  * @param {Array.<cvox.NavDescription>} descriptionArray The array of
  *     NavDescriptions to speak.
- * @param {number} initialQueueMode The initial queue mode.
+ * @param {cvox.QueueMode} initialQueueMode The initial queue mode.
  * @param {Function} completionFunction Function to call when finished speaking.
  * @param {Object=} opt_personality Optional personality for all descriptions.
  * @param {string=} opt_category Optional category for all descriptions.
@@ -693,7 +693,7 @@ cvox.NavigationManager.prototype.updatePosition = function(node) {
  * is spoken to the user.
  * @param {boolean=} opt_setFocus Whether or not to focus the current node.
  * Defaults to true.
- * @param {number=} opt_queueMode Initial queue mode to use.
+ * @param {cvox.QueueMode=} opt_queueMode Initial queue mode to use.
  * @param {function(): ?=} opt_callback Function to call after speaking.
  */
 cvox.NavigationManager.prototype.finishNavCommand = function(
@@ -707,7 +707,7 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
       if (this.isReversed()) {
         msg = cvox.ChromeVox.msgs.getMsg('wrapped_to_bottom');
       }
-      cvox.ChromeVox.tts.speak(msg, cvox.AbstractTts.QUEUE_MODE_QUEUE,
+      cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.QUEUE,
           cvox.AbstractTts.PERSONALITY_ANNOTATION);
     }
     return;
@@ -727,12 +727,12 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
   }
   this.updateIndicator();
 
-  var queueMode = opt_queueMode || cvox.AbstractTts.QUEUE_MODE_FLUSH;
+  var queueMode = opt_queueMode || cvox.QueueMode.FLUSH;
 
   if (opt_prefix) {
     cvox.ChromeVox.tts.speak(
         opt_prefix, queueMode, cvox.AbstractTts.PERSONALITY_ANNOTATION);
-    queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+    queueMode = cvox.QueueMode.QUEUE;
   }
   this.speakDescriptionArray(descriptionArray,
                              queueMode,
@@ -802,7 +802,7 @@ cvox.NavigationManager.prototype.skip = function() {
   if (cvox.ChromeVox.host.hasTtsCallback()) {
     this.skipped_ = true;
     this.setReversed(false);
-    this.startCallbackReading_(cvox.AbstractTts.QUEUE_MODE_FLUSH);
+    this.startCallbackReading_(cvox.QueueMode.FLUSH);
   }
   return true;
 };
@@ -810,7 +810,7 @@ cvox.NavigationManager.prototype.skip = function() {
 
 /**
  * Starts reading the page from the current selection.
- * @param {number} queueMode Either flush or queue.
+ * @param {cvox.QueueMode} queueMode Either flush or queue.
  */
 cvox.NavigationManager.prototype.startReading = function(queueMode) {
   this.keepReading_ = true;
@@ -848,14 +848,14 @@ cvox.NavigationManager.prototype.isReading = function() {
 
 /**
  * Starts reading the page from the current selection if there are callbacks.
- * @param {number} queueMode Either flush or queue.
+ * @param {cvox.QueueMode} queueMode Either flush or queue.
  * @private
  */
 cvox.NavigationManager.prototype.startCallbackReading_ =
     cvox.ChromeVoxEventSuspender.withSuspendedEvents(function(queueMode) {
   this.finishNavCommand('', true, queueMode, goog.bind(function() {
     if (this.next_(true) && this.keepReading_) {
-      this.startCallbackReading_(cvox.AbstractTts.QUEUE_MODE_QUEUE);
+      this.startCallbackReading_(cvox.QueueMode.QUEUE);
     }
   }, this));
 });
@@ -864,7 +864,7 @@ cvox.NavigationManager.prototype.startCallbackReading_ =
 /**
  * Starts reading the page from the current selection if there are no callbacks.
  * With this method, we poll the keepReading_ var and stop when it is false.
- * @param {number} queueMode Either flush or queue.
+ * @param {cvox.QueueMode} queueMode Either flush or queue.
  * @private
  */
 cvox.NavigationManager.prototype.startNonCallbackReading_ =

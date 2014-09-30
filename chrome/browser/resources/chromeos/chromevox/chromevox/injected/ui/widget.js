@@ -116,7 +116,7 @@ cvox.Widget.prototype.hide = function(opt_noSync) {
         this.initialNode : this.initialNode.parentNode;
     cvox.ApiImplementation.syncToNode(this.initialNode,
                                       true,
-                                      cvox.AbstractTts.QUEUE_MODE_QUEUE);
+                                      cvox.QueueMode.QUEUE);
   }
 
   this.active = false;

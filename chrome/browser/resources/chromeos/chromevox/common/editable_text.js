@@ -344,9 +344,9 @@ cvox.ChromeVoxEditableTextBase.prototype.speak =
   if (this.node && (document.activeElement != this.node)) {
     return;
   }
-  var queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+  var queueMode = cvox.QueueMode.QUEUE;
   if (opt_triggeredByUser === true) {
-    queueMode = cvox.AbstractTts.QUEUE_MODE_FLUSH;
+    queueMode = cvox.QueueMode.FLUSH;
   }
   this.tts.speak(str, queueMode, opt_personality || {});
 };

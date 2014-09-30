@@ -13,7 +13,7 @@ goog.provide('cvox.SpokenMessage');
  * @constructor
  */
 cvox.SpokenMessage = function() {
-  /** @type {?Number} */
+  /** @type {?number} */
   this.count = null;
 
   /** @type {Array} */

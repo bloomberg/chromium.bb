@@ -131,7 +131,7 @@ cvox.TestTts.prototype.getUtteranceList = function() {
 
 /**
  * Return a list of strings of what was spoken by tts.speak().
- * @return {Array.<{text: string, queueMode: number}>}
+ * @return {Array.<{text: string, queueMode: cvox.QueueMode}>}
  *     A list of info about all utterances spoken since
  *     initialization or the last call to clearUtterances.
  */

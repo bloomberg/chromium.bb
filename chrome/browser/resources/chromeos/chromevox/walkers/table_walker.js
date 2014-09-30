@@ -18,6 +18,7 @@ goog.require('cvox.BrailleUtil');
 goog.require('cvox.DescriptionUtil');
 goog.require('cvox.DomUtil');
 goog.require('cvox.NavDescription');
+goog.require('cvox.QueueMode');
 goog.require('cvox.TraverseTable');
 
 /**
@@ -204,7 +205,7 @@ cvox.TableWalker.prototype.nextCol = function(sel) {
  */
 cvox.TableWalker.prototype.announceHeaders = function(sel) {
   cvox.ChromeVox.tts.speak(this.getHeaderText_(sel),
-                           cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                           cvox.QueueMode.FLUSH,
                            cvox.AbstractTts.PERSONALITY_ANNOTATION);
   return sel;
 };
@@ -217,7 +218,7 @@ cvox.TableWalker.prototype.announceHeaders = function(sel) {
 cvox.TableWalker.prototype.speakTableLocation = function(sel) {
   cvox.ChromeVox.navigationManager.speakDescriptionArray(
       this.getLocationDescription_(sel),
-      cvox.AbstractTts.QUEUE_MODE_FLUSH,
+      cvox.QueueMode.FLUSH,
       null);
   return sel;
 };

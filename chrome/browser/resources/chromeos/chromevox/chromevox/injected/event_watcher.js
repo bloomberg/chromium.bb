@@ -29,6 +29,7 @@ goog.require('cvox.Memoize');
 goog.require('cvox.NavigationSpeaker');
 goog.require('cvox.PlatformFilter');  // TODO: Find a better place for this.
 goog.require('cvox.PlatformUtil');
+goog.require('cvox.QueueMode');
 goog.require('cvox.TextHandlerInterface');
 goog.require('cvox.UserEventDetail');
 
@@ -672,11 +673,11 @@ cvox.ChromeVoxEventWatcher.focusHandler = function(evt) {
 
     if (cvox.ChromeVoxEventWatcher.getInitialVisibility() ||
         cvox.ChromeVoxEventWatcher.handleDialogFocus(target)) {
-      queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+      queueMode = cvox.QueueMode.QUEUE;
     }
 
     if (cvox.ChromeVox.navigationManager.clearPageSel(true)) {
-      queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+      queueMode = cvox.QueueMode.QUEUE;
     }
 
     // Navigate to this control so that it will be the same for focus as for
@@ -839,7 +840,8 @@ cvox.ChromeVoxEventWatcher.keyPressEventWatcher = function(evt) {
   if (cvox.ChromeVoxEditableTextBase.eventTypingEcho && (speakChar &&
           cvox.DomPredicates.editTextPredicate([document.activeElement])) &&
       document.activeElement.type !== 'password') {
-    cvox.ChromeVox.tts.speak(String.fromCharCode(evt.charCode), 0);
+    cvox.ChromeVox.tts.speak(String.fromCharCode(evt.charCode),
+                             cvox.QueueMode.FLUSH);
   }
   cvox.ChromeVoxEventWatcher.addEvent(evt);
   if (cvox.ChromeVoxEventWatcher.eventToEat &&
@@ -870,7 +872,8 @@ cvox.ChromeVoxEventWatcher.changeEventWatcher = function(evt) {
  * @return {boolean} True if the default action should be performed.
  */
 cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
-  cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(evt.type).toLowerCase());
+  cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(evt.type).toLowerCase(),
+                           cvox.QueueMode.QUEUE);
   var text = '';
   switch (evt.type) {
   case 'paste':
@@ -881,7 +884,7 @@ cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
     text = window.getSelection().toString();
     break;
   }
-  cvox.ChromeVox.tts.speak(text, cvox.AbstractTts.QUEUE_MODE_QUEUE);
+  cvox.ChromeVox.tts.speak(text, cvox.QueueMode.QUEUE);
   cvox.ChromeVox.navigationManager.clearPageSel();
   return true;
 };
@@ -1247,7 +1250,7 @@ cvox.ChromeVoxEventWatcher.handleDialogFocus = function(target) {
             cvox.DescriptionUtil.getFullDescriptionsFromChildren(null, dialog);
         var descSpeaker = new cvox.NavigationSpeaker();
         descSpeaker.speakDescriptionArray(dialogDescArray,
-                                          cvox.AbstractTts.QUEUE_MODE_QUEUE,
+                                          cvox.QueueMode.QUEUE,
                                           null);
       }
       return true;
@@ -1300,15 +1303,15 @@ cvox.ChromeVoxEventWatcherUtil.shouldWaitToProcess = function(
  * a result of an event or navigation. The first utterance that's spoken
  * after an explicit user action like a key press will flush, and
  * subsequent events will return a category flush.
- * @return {number} Either QUEUE_MODE_FLUSH or QUEUE_MODE_QUEUE.
+ * @return {cvox.QueueMode} The queue mode.
  * @private
  */
 cvox.ChromeVoxEventWatcher.queueMode_ = function() {
   if (cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance) {
     cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance = false;
-    return cvox.AbstractTts.QUEUE_MODE_FLUSH;
+    return cvox.QueueMode.FLUSH;
   }
-  return cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH;
+  return cvox.QueueMode.CATEGORY_FLUSH;
 };
 
 

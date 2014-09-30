@@ -9,6 +9,7 @@
  *
  */
 
+goog.provide('cvox.QueueMode');
 goog.provide('cvox.TtsCapturingEventListener');
 goog.provide('cvox.TtsCategory');
 goog.provide('cvox.TtsInterface');
@@ -19,12 +20,31 @@ goog.provide('cvox.TtsInterface');
  * category but not other utterances.
  *
  * NAV: speech related to explicit navigation, or focus changing.
+ * LIVE: speech coming from changes to live regions.
  *
  * @enum {string}
  */
 cvox.TtsCategory = {
   LIVE: 'live',
   NAV: 'nav'
+};
+
+/**
+ * Queue modes for calls to {@code cvox.TtsInterface.speak}.
+ * @enum
+ */
+cvox.QueueMode = {
+  /** Stop speech, clear everything, then speak this utterance. */
+  FLUSH: 0,
+
+  /** Append this utterance to the end of the queue. */
+  QUEUE: 1,
+
+  /**
+   * Clear any utterances of the same category (as set by
+   * properties['category']) from the queue, then enqueue this utterance.
+   */
+  CATEGORY_FLUSH: 2
 };
 
 /**
@@ -53,8 +73,7 @@ cvox.TtsInterface = function() { };
 /**
  * Speaks the given string using the specified queueMode and properties.
  * @param {string} textString The string of text to be spoken.
- * @param {number=} queueMode The queue mode: cvox.AbstractTts.QUEUE_MODE_FLUSH
- *        for flush, cvox.AbstractTts.QUEUE_MODE_QUEUE for adding to queue.
+ * @param {cvox.QueueMode} queueMode The queue mode to use for speaking.
  * @param {Object=} properties Speech properties to use for this utterance.
  * @return {cvox.TtsInterface} A tts object useful for chaining speak calls.
  */

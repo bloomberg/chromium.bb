@@ -77,6 +77,7 @@ cvox.OverlayWidget.prototype.onKeyDown = function(evt) {
     }
     this.onNavigate();
     cvox.ChromeVox.navigationManager.speakDescriptionArray(
-        cvox.ChromeVox.navigationManager.getDescription(), 0, null);
+        cvox.ChromeVox.navigationManager.getDescription(),
+        cvox.QueueMode.FLUSH, null);
   }
 };

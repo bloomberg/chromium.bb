@@ -15,6 +15,7 @@ goog.require('cvox.BrailleInterface');
 goog.require('cvox.BrailleUtil');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.NavBraille');
+goog.require('cvox.QueueMode');
 
 
 /**
@@ -106,9 +107,9 @@ cvox.AccessibilityApiHandler.prototype.editableTextName = '';
 
 /**
  * The queue mode for the next focus event.
- * @type {number}
+ * @type {cvox.QueueMode}
  */
-cvox.AccessibilityApiHandler.prototype.nextQueueMode = 0;
+cvox.AccessibilityApiHandler.prototype.nextQueueMode = cvox.QueueMode.FLUSH;
 
 /**
  * The timeout id for the pending text changed event - the return
@@ -198,12 +199,12 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
       return;
     }
     this.tts.speak(win.name,
-                   cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                   cvox.QueueMode.FLUSH,
                    cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
     this.braille.write(cvox.NavBraille.fromText(win.name));
     // Queue the next utterance because a window opening is always followed
     // by a focus event.
-    this.nextQueueMode = 1;
+    this.nextQueueMode = cvox.QueueMode.QUEUE;
     this.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_OPEN);
     this.queueAlertsForActiveTab();
   }, this));
@@ -223,7 +224,7 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
       return;
     }
     this.tts.speak(msg('chrome_menu_opened', [menu.name]),
-                   cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                   cvox.QueueMode.FLUSH,
                    cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
     this.braille.write(
         cvox.NavBraille.fromText(msg('chrome_menu_opened', [menu.name])));
@@ -281,7 +282,7 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
             this.earcons.playEarcon(cvox.AbstractEarcons.TASK_SUCCESS);
             this.tts.speak(
                 msg('chrome_brightness_changed', [brightness.brightness]),
-                cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                cvox.QueueMode.FLUSH,
                 cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
             this.braille.write(cvox.NavBraille.fromText(
                 msg('chrome_brightness_changed', [brightness.brightness])));
@@ -296,7 +297,7 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
         // Speak about system update when it's ready, otherwise speak nothing.
         if (status.state == 'NeedRestart') {
           this.tts.speak(msg('chrome_system_need_restart'),
-                         cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                         cvox.QueueMode.FLUSH,
                          cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
           this.braille.write(
               cvox.NavBraille.fromText(msg('chrome_system_need_restart')));
@@ -324,7 +325,7 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
 
     var description = this.describe(ctl, true);
     this.tts.speak(description.utterance,
-                   cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                   cvox.QueueMode.FLUSH,
                    description.ttsProps);
     description.braille.write();
     if (description.earcon) {
@@ -346,7 +347,7 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
 
       var description = this.describe(ctl, false);
       this.tts.speak(description.utterance,
-                     cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                     cvox.QueueMode.FLUSH,
                      description.ttsProps);
       description.braille.write();
       if (description.earcon) {
@@ -439,7 +440,7 @@ cvox.AccessibilityApiHandler.prototype.onControlFocused = function(ctl) {
                  this.nextQueueMode,
                  description.ttsProps);
   description.braille.write();
-  this.nextQueueMode = 0;
+  this.nextQueueMode = cvox.QueueMode.FLUSH;
   if (description.earcon) {
     this.earcons.playEarcon(description.earcon);
   }
@@ -476,7 +477,7 @@ cvox.AccessibilityApiHandler.prototype.onTtsIdle = function() {
   var utterance = this.idleSpeechQueue_.shift();
   var msg = goog.bind(cvox.ChromeVox.msgs.getMsg, cvox.ChromeVox.msgs);
   this.tts.speak(utterance,
-                 cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                 cvox.QueueMode.FLUSH,
                  cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 };
 

@@ -88,7 +88,7 @@ cvox.BrailleCaptionsBackground.setActive = function(newValue) {
     var msg = newValue ?
         cvox.ChromeVox.msgs.getMsg('braille_captions_enabled') :
         cvox.ChromeVox.msgs.getMsg('braille_captions_disabled');
-    cvox.ChromeVox.tts.speak(msg);
+    cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.QUEUE);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(msg));
   }
 };

@@ -8,6 +8,7 @@
  */
 
 goog.provide('cvox.PdfProcessor');
+goog.require('cvox.QueueMode');
 
 /**
  * Process PDFs created with Chrome's built-in PDF plug-in, which has an
@@ -31,7 +32,8 @@ cvox.PdfProcessor.processEmbeddedPdfs = function() {
       }
       if (!info.copyable) {
         cvox.ChromeVox.tts.speak(
-            'Unable to access copy-protected PDF. Skipping.');
+            cvox.ChromeVox.msgs.getMsg('copy_protected_pdf'),
+            cvox.QueueMode.QUEUE);
         continue;
       }
 

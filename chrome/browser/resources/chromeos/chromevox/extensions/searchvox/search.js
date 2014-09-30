@@ -102,9 +102,9 @@ cvox.Search.syncToIndex = function() {
   cvox.ChromeVox.tts.stop();
   var prop = { endCallback: cvox.Search.speakSync_ };
   if (cvox.Search.index === 0) {
-    cvox.ChromeVox.tts.speak('First result', 1, prop);
+    cvox.ChromeVox.tts.speak('First result', cvox.QueueMode.QUEUE, prop);
   } else if (cvox.Search.index === cvox.Search.results.length - 1) {
-    cvox.ChromeVox.tts.speak('Last result', 1, prop);
+    cvox.ChromeVox.tts.speak('Last result', cvox.QueueMode.QUEUE, prop);
   } else {
     cvox.Search.speakSync_();
   }
@@ -173,9 +173,10 @@ cvox.Search.navigatePage = function(next) {
   if (url) {
     var pageNumber = cvox.Search.getPageNumber(url);
     if (!isNaN(pageNumber)) {
-      cvox.ChromeVox.tts.speak('Page ' + pageNumber, 0, prop);
+      cvox.ChromeVox.tts.speak('Page ' + pageNumber, cvox.QueueMode.FLUSH,
+                               prop);
     } else {
-      cvox.ChromeVox.tts.speak('Unknown page.', 0, prop);
+      cvox.ChromeVox.tts.speak('Unknown page.', cvox.QueueMode.FLUSH, prop);
     }
   }
 };
@@ -186,11 +187,12 @@ cvox.Search.navigatePage = function(next) {
 cvox.Search.goToPane = function() {
   var pane = cvox.Search.panes[cvox.Search.paneIndex];
   if (pane.className === cvox.Search.SELECTED_PANE_CLASS) {
-    cvox.ChromeVox.tts.speak('You are already on that page.');
+    cvox.ChromeVox.tts.speak('You are already on that page.',
+                             cvox.QueueMode.QUEUE);
     return;
   }
   var anchor = pane.querySelector('a');
-  cvox.ChromeVox.tts.speak(anchor.textContent);
+  cvox.ChromeVox.tts.speak(anchor.textContent, cvox.QueueMode.QUEUE);
   var url = cvox.SearchUtil.extractURL(pane);
   if (url) {
     window.location = url;

@@ -7,7 +7,7 @@
  */
 
 goog.provide('cvox.SpokenListBuilder');
-
+goog.require('cvox.QueueMode');
 
 
 /**
@@ -25,7 +25,7 @@ cvox.SpokenListBuilder = function() {
  * @return {cvox.SpokenListBuilder} this.
  */
 cvox.SpokenListBuilder.prototype.flush = function(expectedText) {
-  this.list_.push([expectedText, cvox.AbstractTts.QUEUE_MODE_FLUSH]);
+  this.list_.push([expectedText, cvox.QueueMode.FLUSH]);
   return this;  // for chaining
 };
 
@@ -36,7 +36,7 @@ cvox.SpokenListBuilder.prototype.flush = function(expectedText) {
  * @return {cvox.SpokenListBuilder} this.
  */
 cvox.SpokenListBuilder.prototype.queue = function(expectedText) {
-  this.list_.push([expectedText, cvox.AbstractTts.QUEUE_MODE_QUEUE]);
+  this.list_.push([expectedText, cvox.QueueMode.QUEUE]);
   return this;  // for chaining
 };
 
@@ -47,7 +47,7 @@ cvox.SpokenListBuilder.prototype.queue = function(expectedText) {
  * @return {cvox.SpokenListBuilder} this.
  */
 cvox.SpokenListBuilder.prototype.categoryFlush = function(expectedText) {
-  this.list_.push([expectedText, cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH]);
+  this.list_.push([expectedText, cvox.QueueMode.CATEGORY_FLUSH]);
   return this;  // for chaining
 };
 

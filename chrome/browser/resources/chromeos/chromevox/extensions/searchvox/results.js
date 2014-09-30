@@ -31,11 +31,11 @@ cvox.SearchResults.speakResultBySelectTexts = function(result, selectTexts) {
     if (selectText.select) {
       var elems = result.querySelectorAll(selectText.select);
       for (var i = 0; i < elems.length; i++) {
-        cvox.ChromeVox.speakNode(elems.item(i), 1);
+        cvox.ChromeVox.speakNode(elems.item(i), cvox.QueueMode.QUEUE);
       }
     }
     if (selectText.text) {
-      cvox.ChromeVox.tts.speak(selectText.text, 1);
+      cvox.ChromeVox.tts.speak(selectText.text, cvox.QueueMode.QUEUE);
     }
   }
 };
@@ -100,8 +100,8 @@ cvox.NormalResult.prototype.speak = function(result) {
   var discussTitles = result.querySelectorAll(DISCUSS_TITLE_SELECT);
   var discussDates = result.querySelectorAll(DISCUSS_DATE_SELECT);
   for (var i = 0; i < discussTitles.length; i++) {
-    cvox.ChromeVox.speakNode(discussTitles.item(i), 1);
-    cvox.ChromeVox.speakNode(discussDates.item(i), 1);
+    cvox.ChromeVox.speakNode(discussTitles.item(i), cvox.QueueMode.QUEUE);
+    cvox.ChromeVox.speakNode(discussDates.item(i), cvox.QueueMode.QUEUE);
   }
   return true;
 };
@@ -191,7 +191,7 @@ cvox.WeatherResult.prototype.speak = function(result) {
 
   var WEATHER_FORCAST_CLASS = 'wob_df';
   var forecasts = result.getElementsByClassName(WEATHER_FORCAST_CLASS);
-  cvox.ChromeVox.tts.speak(FORE_INTRO, 1);
+  cvox.ChromeVox.tts.speak(FORE_INTRO, cvox.QueueMode.QUEUE);
   for (var i = 0; i < forecasts.length; i++) {
     var forecast = forecasts.item(i);
     cvox.WeatherResult.speakForecast(forecast);
@@ -226,7 +226,7 @@ cvox.KnowResult.prototype.isType = function(result) {
  * @override
  */
 cvox.KnowResult.prototype.speak = function(result) {
-  cvox.ChromeVox.speakNode(result, 1);
+  cvox.ChromeVox.speakNode(result, cvox.QueueMode.QUEUE);
   return true;
 };
 
@@ -404,7 +404,7 @@ cvox.CategoryResult.prototype.speak = function(result) {
   }
   var LABEL_SELECT = '.rg_bb_label';
   var label = result.querySelector(LABEL_SELECT);
-  cvox.ChromeVox.speakNode(label, 1);
+  cvox.ChromeVox.speakNode(label, cvox.QueueMode.QUEUE);
   return true;
 };
 

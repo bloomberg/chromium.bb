@@ -131,7 +131,7 @@ cvox.SearchWidget.prototype.hide = function(opt_noSync) {
       cvox.ChromeVox.navigationManager))(true);
   cvox.ChromeVox.navigationManager.speakDescriptionArray(
       cvox.ChromeVox.navigationManager.getDescription(),
-      cvox.AbstractTts.QUEUE_MODE_QUEUE,
+      cvox.QueueMode.QUEUE,
       null,
       cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
@@ -321,10 +321,14 @@ cvox.SearchWidget.prototype.createTextAreaNode_ = function() {
 cvox.SearchWidget.prototype.toggleCaseSensitivity_ = function() {
   if (this.caseSensitive_) {
     cvox.SearchWidget.caseSensitive_ = false;
-    cvox.ChromeVox.tts.speak('Ignoring case.', 0, null);
+    cvox.ChromeVox.tts.speak(
+        cvox.ChromeVox.msgs.getMsg('ignoring_case'),
+        cvox.QueueMode.FLUSH, null);
   } else {
     this.caseSensitive_ = true;
-    cvox.ChromeVox.tts.speak('Case sensitive.', 0, null);
+    cvox.ChromeVox.tts.speak(
+        cvox.ChromeVox.msgs.getMsg('case_sensitive'),
+        cvox.QueueMode.FLUSH, null);
   }
 };
 
@@ -453,12 +457,12 @@ cvox.SearchWidget.prototype.outputSearchResult_ = function(result, searchStr) {
 
   cvox.ChromeVox.navigationManager.speakDescriptionArray(
       result,
-      cvox.AbstractTts.QUEUE_MODE_FLUSH,
+      cvox.QueueMode.FLUSH,
       null,
       cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
   cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg('search_help_item'),
-                           cvox.AbstractTts.QUEUE_MODE_QUEUE,
+                           cvox.QueueMode.QUEUE,
                            cvox.AbstractTts.PERSONALITY_ANNOTATION);
 
   // Output to Braille.

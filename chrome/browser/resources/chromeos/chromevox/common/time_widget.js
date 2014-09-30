@@ -18,7 +18,7 @@ goog.provide('cvox.ChromeVoxHTMLTimeWidget');
  * @param {Element} timeElem The time widget element.
  * @param {cvox.TtsInterface} tts The TTS object from ChromeVox.
  */
-cvox.ChromeVoxHTMLTimeWidget = function(timeElem, tts){
+cvox.ChromeVoxHTMLTimeWidget = function(timeElem, tts) {
   var self = this;
   this.timeElem_ = timeElem;
   this.timeTts_ = tts;
@@ -31,12 +31,12 @@ cvox.ChromeVoxHTMLTimeWidget = function(timeElem, tts){
   this.maxPos_ = 2;
   this.keyListener_ = function(evt) {
     self.eventHandler_(evt);
-  }
+  };
   this.blurListener_ = function(evt) {
     self.shutdown();
-  }
+  };
   if (this.timeElem_.hasAttribute('step')) {
-  var step = this.timeElem_.getAttribute('step');
+    var step = this.timeElem_.getAttribute('step');
     if (step > 0) { // 0 or invalid values show hh:mm AM/PM
       if (step >= 1) {
         this.maxPos_ = 3; // Anything larger than 1 shows hh:mm:ss AM/PM
@@ -80,24 +80,32 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.shutdown = function() {
   this.timeElem_.removeEventListener('keyup', this.keyListener_, false);
 };
 
+/**
+ * Initialize to midnight.
+ * @private
+ */
 cvox.ChromeVoxHTMLTimeWidget.prototype.forceInitTime_ = function() {
   this.timeElem_.setAttribute('value', '12:00');
 };
 
+/**
+ * Called when the position changes.
+ * @private
+ */
 cvox.ChromeVoxHTMLTimeWidget.prototype.handlePosChange_ = function() {
-  if (this.pos_ < 0){
+  if (this.pos_ < 0) {
     this.pos_ = 0;
   }
-  if (this.pos_ > this.maxPos_){
+  if (this.pos_ > this.maxPos_) {
     this.pos_ = this.maxPos_;
   }
   // Reset the cached state of the new field so that the field will be spoken
   // in the update.
-  if (this.pos_ == this.maxPos_){
+  if (this.pos_ == this.maxPos_) {
     this.pAmpm_ = '';
     return;
   }
-  switch (this.pos_){
+  switch (this.pos_) {
     case 0:
       this.pHours_ = -1;
       break;
@@ -113,10 +121,13 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.handlePosChange_ = function() {
   }
 };
 
-
+/**
+ * @param {boolean} shouldSpeakLabel True if the label should be spoken.
+ * @private
+ */
 cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
-  var splitTime = this.timeElem_.value.split(":");
-  if (splitTime.length < 1){
+  var splitTime = this.timeElem_.value.split(':');
+  if (splitTime.length < 1) {
     this.forceInitTime_();
     return;
   }
@@ -132,7 +143,7 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
   if (splitTime.length > 2) {
     var splitSecondsAndMilliseconds = splitTime[2].split('.');
     seconds = splitSecondsAndMilliseconds[0];
-    if (splitSecondsAndMilliseconds.length > 1){
+    if (splitSecondsAndMilliseconds.length > 1) {
       milliseconds = splitSecondsAndMilliseconds[1];
     }
   }
@@ -184,10 +195,14 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
   }
 
   if (changeMessage.length > 0) {
-    this.timeTts_.speak(changeMessage, 0, null);
+    this.timeTts_.speak(changeMessage, cvox.QueueMode.FLUSH, null);
   }
 };
 
+/**
+ * @param {Object} evt The event to handle.
+ * @private
+ */
 cvox.ChromeVoxHTMLTimeWidget.prototype.eventHandler_ = function(evt) {
   var shouldSpeakLabel = false;
   if (evt.type == 'keydown') {

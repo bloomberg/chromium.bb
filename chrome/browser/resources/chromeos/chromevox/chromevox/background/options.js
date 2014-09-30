@@ -186,7 +186,7 @@ cvox.OptionsPage.addKeys = function() {
     } else {
       announce = cvox.ChromeVox.msgs.getMsg('key_conflict', [announce]);
     }
-    cvox.OptionsPage.speak(announce);
+    cvox.OptionsPage.speak(announce, cvox.QueueMode.QUEUE);
     this.prevTime = currentTime;
 
     evt.preventDefault();
@@ -289,7 +289,8 @@ cvox.OptionsPage.addKeys = function() {
         // Indicate error and instructions excluding tab.
         if (evt.keyCode != 9) {
           cvox.OptionsPage.speak(
-              cvox.ChromeVox.msgs.getMsg('modifier_entry_error'), 0, {});
+              cvox.ChromeVox.msgs.getMsg('modifier_entry_error'),
+              cvox.QueueMode.FLUSH, {});
         }
         this.modifierSeq_ = null;
       } else {
@@ -312,7 +313,8 @@ cvox.OptionsPage.addKeys = function() {
               cvox.KeyUtil.keySequenceToString(this.modifierSeq_, true, true);
           evt.target.value = modifierStr;
           cvox.OptionsPage.speak(
-              cvox.ChromeVox.msgs.getMsg('modifier_entry_set', [modifierStr]));
+              cvox.ChromeVox.msgs.getMsg('modifier_entry_set', [modifierStr]),
+              cvox.QueueMode.QUEUE);
           localStorage['cvoxKey'] = modifierStr;
           this.modifierSeq_ = null;
         }
@@ -555,7 +557,7 @@ cvox.OptionsPage.hidePlatformSpecifics = function() {
  * Calls a {@code cvox.TtsInterface.speak} method in the background page to
  * speak an utterance.  See that method for further details.
  * @param {string} textString The string of text to be spoken.
- * @param {number=} queueMode The queue mode to use.
+ * @param {cvox.QueueMode} queueMode The queue mode to use.
  * @param {Object=} properties Speech properties to use for this utterance.
  */
 cvox.OptionsPage.speak = function(textString, queueMode, properties) {

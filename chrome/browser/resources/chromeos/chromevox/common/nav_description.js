@@ -14,6 +14,7 @@ goog.provide('cvox.NavDescription');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.CursorSelection');
+goog.require('cvox.QueueMode');
 
 /**
  * A class representing the description of navigation from one object to
@@ -90,13 +91,13 @@ cvox.NavDescription.prototype.pushEarcon = function(earconId) {
 
 /**
  * Speak this nav description with the given queue mode.
- * @param {number=} queueMode The queue mode: cvox.AbstractTts.QUEUE_MODE_FLUSH
- *     for flush, cvox.AbstractTts.QUEUE_MODE_QUEUE for adding to queue.
- * @param {function()=} startCallback Function called when this starts speaking.
- * @param {function()=} endCallback Function called when this ends speaking.
+ * @param {cvox.QueueMode=} queueMode The queue mode.
+ * @param {function()=} opt_startCallback Function called when this
+ *     starts speaking.
+ * @param {function()=} opt_endCallback Function called when this ends speaking.
  */
 cvox.NavDescription.prototype.speak = function(
-    queueMode, startCallback, endCallback) {
+    queueMode, opt_startCallback, opt_endCallback) {
   /**
    * Return a deep copy of PERSONALITY_ANNOTATION for modifying.
    * @return {Object} The newly created properties object.
@@ -113,13 +114,13 @@ cvox.NavDescription.prototype.speak = function(
   var speakArgs = new Array();
   if (this.context) {
     speakArgs.push([this.context, queueMode, makeAnnotationProps()]);
-    queueMode = 1;
+    queueMode = cvox.QueueMode.QUEUE;
   }
 
   speakArgs.push([this.text,
                   queueMode,
                   this.personality ? this.personality : {}]);
-  queueMode = 1;
+  queueMode = cvox.QueueMode.QUEUE;
 
   if (this.userValue) {
     speakArgs.push([this.userValue, queueMode, {}]);
@@ -135,11 +136,11 @@ cvox.NavDescription.prototype.speak = function(
 
   var length = speakArgs.length;
   for (var i = 0; i < length; i++) {
-    if (i == 0 && startCallback) {
-      speakArgs[i][2]['startCallback'] = startCallback;
+    if (i == 0 && opt_startCallback) {
+      speakArgs[i][2]['startCallback'] = opt_startCallback;
     }
-    if (i == length - 1 && endCallback) {
-      speakArgs[i][2]['endCallback'] = endCallback;
+    if (i == length - 1 && opt_endCallback) {
+      speakArgs[i][2]['endCallback'] = opt_endCallback;
     }
     if (this.category) {
       speakArgs[i][2]['category'] = this.category;

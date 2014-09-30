@@ -82,16 +82,12 @@ cvox.LiveRegions.nodesAlreadyHandled = [];
 /**
  * @param {Date} pageLoadTime The time the page was loaded. Live region
  *     updates within the first INITIAL_SILENCE_MS milliseconds are ignored.
- * @param {number} queueMode Interrupt or flush.  Polite live region
+ * @param {cvox.QueueMode} queueMode Interrupt or flush.  Polite live region
  *   changes always queue.
  * @param {boolean} disableSpeak true if change announcement should be disabled.
  * @return {boolean} true if any regions announced.
  */
 cvox.LiveRegions.init = function(pageLoadTime, queueMode, disableSpeak) {
-  if (queueMode == undefined) {
-    queueMode = cvox.AbstractTts.QUEUE_MODE_FLUSH;
-  }
-
   cvox.LiveRegions.pageLoadTime = pageLoadTime;
 
   if (disableSpeak || !document.hasFocus()) {
@@ -109,8 +105,8 @@ cvox.LiveRegions.init = function(pageLoadTime, queueMode, disableSpeak) {
         false,
         false,
         function(assertive, navDescriptions) {
-          if (!assertive && queueMode == cvox.AbstractTts.QUEUE_MODE_FLUSH) {
-            queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+          if (!assertive && queueMode == cvox.QueueMode.FLUSH) {
+            queueMode = cvox.QueueMode.QUEUE;
           }
           var descSpeaker = new cvox.NavigationSpeaker();
           descSpeaker.speakDescriptionArray(navDescriptions, queueMode, null);

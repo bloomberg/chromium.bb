@@ -52,7 +52,7 @@ cvox.TabsApiHandler.prototype = {
       return;
     }
     this.tts_.speak(this.msg_('chrome_tab_created'),
-                   cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                   cvox.QueueMode.FLUSH,
                    cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
     this.braille_.write(
         cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
@@ -85,7 +85,7 @@ cvox.TabsApiHandler.prototype = {
       var title = tab.title ? tab.title : tab.url;
       this.tts_.speak(this.msg_('chrome_tab_selected',
                          [title]),
-                     cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                     cvox.QueueMode.FLUSH,
                      cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
       this.braille_.write(
           cvox.NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
@@ -131,7 +131,7 @@ cvox.TabsApiHandler.prototype = {
           'chrome_normal_window_selected';
         var title = tab.title ? tab.title : tab.url;
         this.tts_.speak(this.msg_(msgId, [title]),
-                       cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                       cvox.QueueMode.FLUSH,
                        cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
         this.braille_.write(
             cvox.NavBraille.fromText(this.msg_(msgId, [title])));

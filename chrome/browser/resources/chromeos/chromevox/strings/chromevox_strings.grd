@@ -2464,6 +2464,15 @@
       <message desc="Spoken and brailled when the braille captions feature is disabled. This feature shows the braille output in a small overlay on the screen for development and demonstration purposes." name="IDS_CHROMEVOX_BRAILLE_CAPTIONS_DISABLED">
         Braille captions disabled.
       </message>
+      <message desc="Message displayed and spoken to user if they open a copy-protected PDF and the browser is unable to offer accessible text." name="IDS_CHROMEVOX_COPY_PROTECTED_PDF">
+        Unable to access accessible text from copy-protected PDF.
+      </message>
+      <message desc="Message spoken to user when switching to a mode where searching is not case-sensitive." name="IDS_CHROMEVOX_IGNORING_CASE">
+        Ignoring case.
+      </message>
+      <message desc="Message spoken to user when switching to a mode where searching is case-sensitive." name="IDS_CHROMEVOX_CASE_SENSITIVE">
+        Case sensitive.
+      </message>
     </messages>
   </release>
 </grit>

@@ -107,8 +107,7 @@ cvox.ChromeTts.prototype.addBridgeListener = function() {
 /**
  * Creates a message suitable for sending as a speak action to background tts.
  * @param {string} textString The string of text to be spoken.
- * @param {number=} queueMode The queue mode: cvox.AbstractTts.QUEUE_MODE_FLUSH,
- *        for flush, cvox.AbstractTts.QUEUE_MODE_QUEUE for adding to queue.
+ * @param {cvox.QueueMode} queueMode The queue mode.
  * @param {Object=} properties Speech properties to use for this utterance.
  * @return {Object} A message.
  * @private
@@ -132,6 +131,7 @@ cvox.ChromeTts.prototype.createMessageForProperties_ =
     message['endCallbackId'] = cvox.ChromeTts.callId++;
   }
   return message;
-    };
+};
 
+/** @override */
 cvox.HostFactory.ttsConstructor = cvox.ChromeTts;

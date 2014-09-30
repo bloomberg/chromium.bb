@@ -49,14 +49,14 @@ cvox.InitialSpeech.speak = function() {
 
     if (title && !disableSpeak) {
       cvox.ChromeVox.tts.speak(
-          title, cvox.AbstractTts.QUEUE_MODE_FLUSH);
+          title, cvox.QueueMode.FLUSH);
     }
     cvox.BrailleOverlayWidget.getInstance().init();
   }
 
   // Initialize live regions and speak alerts.
   cvox.LiveRegions.init(
-      new Date(), cvox.AbstractTts.QUEUE_MODE_QUEUE, disableSpeak);
+      new Date(), cvox.QueueMode.QUEUE, disableSpeak);
 
   // If our activeElement is on body, try to sync to the first element. This
   // actually happens inside of NavigationManager.reset, which doesn't get
@@ -78,7 +78,7 @@ cvox.InitialSpeech.speak = function() {
     if (!disableSpeak) {
       cvox.ChromeVoxEventSuspender.withSuspendedEvents(function() {
         cvox.ChromeVox.navigationManager.finishNavCommand(
-            '', true, cvox.AbstractTts.QUEUE_MODE_QUEUE);
+            '', true, cvox.QueueMode.QUEUE);
       })();
     }
   }

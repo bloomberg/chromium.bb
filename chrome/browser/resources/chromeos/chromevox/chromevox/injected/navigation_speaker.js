@@ -63,7 +63,7 @@ cvox.NavigationSpeaker.prototype.speakDescriptionArray = function(
       }
     };
     var endCallbackHelper = function() {
-      speakDescriptionChain(i + 1, cvox.AbstractTts.QUEUE_MODE_QUEUE, id);
+      speakDescriptionChain(i + 1, cvox.QueueMode.QUEUE, id);
     };
     var endCallback = function() {
       // We process content-script specific properties here for now.
