@@ -174,7 +174,16 @@ void LocalFrame::detach()
     // will trigger the unload event handlers of any child frames, and those event
     // handlers might start a new subresource load in this frame.
     m_loader.stopAllLoaders();
-    m_loader.detachFromParent();
+    if (!client())
+        return;
+    m_loader.detach();
+    setView(nullptr);
+    willDetachFrameHost();
+    // Notify ScriptController that the frame is closing, since its cleanup ends up calling
+    // back to FrameLoaderClient via WindowProxy.
+    script().clearForClose();
+    InspectorInstrumentation::frameDetachedFromParent(this);
+    Frame::detach();
 }
 
 bool LocalFrame::inScope(TreeScope* scope) const
@@ -315,12 +324,6 @@ void LocalFrame::removeDestructionObserver(FrameDestructionObserver* observer)
 
 void LocalFrame::willDetachFrameHost()
 {
-    // We should never be detatching the page during a Layout.
-    RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
-
-    Frame* parent = tree().parent();
-    if (parent && parent->isLocalFrame())
-        toLocalFrame(parent)->loader().checkLoadComplete();
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> >::iterator stop = m_destructionObservers.end();
     for (WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> >::iterator it = m_destructionObservers.begin(); it != stop; ++it)
@@ -335,13 +338,6 @@ void LocalFrame::willDetachFrameHost()
 
     if (page() && page()->scrollingCoordinator() && m_view)
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
-}
-
-void LocalFrame::detachFromFrameHost()
-{
-    // We should never be detaching the page during a Layout.
-    RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
-    m_host = nullptr;
 }
 
 String LocalFrame::documentTypeString() const
@@ -580,7 +576,7 @@ bool LocalFrame::isURLAllowed(const KURL& url) const
 {
     // We allow one level of self-reference because some sites depend on that,
     // but we don't allow more than one.
-    if (page()->subframeCount() >= Page::maxNumberOfFrames)
+    if (host()->frameCount() >= FrameHost::maxNumberOfFrames)
         return false;
     bool foundSelfReference = false;
     for (const Frame* frame = this; frame; frame = frame->tree().parent()) {

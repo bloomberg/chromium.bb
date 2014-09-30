@@ -150,7 +150,7 @@ public:
     Frame* opener();
     void setOpener(LocalFrame*);
 
-    void detachFromParent();
+    void detach();
 
     void loadDone();
     void finishedParsing();
@@ -208,7 +208,6 @@ private:
 
     bool validateTransitionNavigationMode();
     bool dispatchNavigationTransitionData();
-    void detachClient();
 
     void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = nullptr);
 

@@ -82,6 +82,15 @@ public:
 
     void trace(Visitor*);
 
+    // Don't allow more than a certain number of frames in a page.
+    // This seems like a reasonable upper bound, and otherwise mutually
+    // recursive frameset pages can quickly bring the program to its knees
+    // with exponential growth in the number of frames.
+    static const int maxNumberOfFrames = 1000;
+    void incrementFrameCount() { ++m_frameCount; }
+    void decrementFrameCount() { ASSERT(m_frameCount); --m_frameCount; }
+    int frameCount() const;
+
 private:
     explicit FrameHost(Page&);
 
@@ -90,6 +99,7 @@ private:
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
 
     AtomicString m_overrideEncoding;
+    int m_frameCount;
 };
 
 }

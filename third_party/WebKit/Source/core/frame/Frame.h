@@ -59,11 +59,10 @@ public:
     virtual void trace(Visitor*);
 
     virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) = 0;
-    virtual void detach() = 0;
+    virtual void detach();
     void detachChildren();
 
     FrameClient* client() const;
-    void clearClient();
 
     // NOTE: Page is moving out of Blink up into the browser process as
     // part of the site-isolation (out of process iframes) work.
@@ -119,11 +118,6 @@ private:
 inline FrameClient* Frame::client() const
 {
     return m_client;
-}
-
-inline void Frame::clearClient()
-{
-    m_client = 0;
 }
 
 inline LocalDOMWindow* Frame::domWindow() const

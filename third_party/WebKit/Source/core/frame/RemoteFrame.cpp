@@ -34,7 +34,7 @@ void RemoteFrame::navigate(Document&, const KURL& url, const Referrer& referrer,
 void RemoteFrame::detach()
 {
     detachChildren();
-    m_host = nullptr;
+    Frame::detach();
 }
 
 void RemoteFrame::setView(PassRefPtr<RemoteFrameView> view)

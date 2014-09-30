@@ -18,6 +18,11 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
 {
 }
 
+void RemoteFrameClientImpl::detached()
+{
+    // FIXME: Implement.
+}
+
 Frame* RemoteFrameClientImpl::opener() const
 {
     return toCoreFrame(m_webFrame->opener());

@@ -3744,9 +3744,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
     EXPECT_FALSE(client.findResultsAreReady());
 
     mainFrame->resetMatchCount();
-
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+    mainFrame->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     // The first scopeStringMatches will have reset the state. Detach before it actually scopes.
     EXPECT_TRUE(mainFrame->document().getElementById("frame").remove());

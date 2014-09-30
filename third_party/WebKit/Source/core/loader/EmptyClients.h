@@ -181,7 +181,7 @@ public:
     virtual Frame* nextSibling() const OVERRIDE { return 0; }
     virtual Frame* firstChild() const OVERRIDE { return 0; }
     virtual Frame* lastChild() const OVERRIDE { return 0; }
-    virtual void detachedFromParent() OVERRIDE { }
+    virtual void detached() OVERRIDE { }
 
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) OVERRIDE { }
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) OVERRIDE { }
