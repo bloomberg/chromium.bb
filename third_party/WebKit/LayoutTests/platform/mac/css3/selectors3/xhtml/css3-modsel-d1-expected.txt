@@ -1,0 +1,10 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x88
+  RenderBlock {html} at (0,0) size 800x88
+    RenderBody {body} at (8,16) size 784x64
+      RenderBlock {div} at (0,0) size 784x64
+        RenderBlock {p} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 225x16
+            text run at (0,0) width 225: "The following bar should be green."
+        RenderBlock {div} at (0,32) size 784x32 [bgcolor=#FF0000]
