@@ -151,9 +151,10 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     # Bad responses.
     LOGGER.debug('response msg:\n%s', response.msg)
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    msg = ('%s %s %s\n%s %d %s' %
+    msg = ('%s %s %s\n%s %d %s\nResponse body: %s' %
            (reqtype, conn.req_params['url'], http_version,
-            http_version, response.status, response.reason))
+            http_version, response.status, response.reason,
+            response.read()))
 
     # Ones we can retry.
     if response.status >= 500:
@@ -173,7 +174,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
       err_prefix = ('Authorization error; missing/bad %s/.netrc credentials or '
                     'permissions (0600)?\n See %s' % (home, url))
     elif response.status in (422,):
-      err_prefix = ('Bad request body?  Response body: "%s"' % response.read())
+      err_prefix = ('Bad request body?')
 
     if response.status >= 400:
       # The 'X-ErrorId' header is set only on >= 400 response code.
