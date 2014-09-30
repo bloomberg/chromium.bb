@@ -226,7 +226,10 @@ Utils.sendRequest = function(requestType, responseType, message, serverURL,
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.responseType = responseType;
     xmlhttp.open(requestType, serverURL, true);
-
+    xmlhttp.onerror = function(e) {
+      Utils.timeLog('Request status: ' + this.statusText);
+      Utils.failTest('FAILED: License request XHR failed with network error.');
+    };
     xmlhttp.onload = function(e) {
       if (this.status == 200) {
         if (onSuccessCallbackFn)
