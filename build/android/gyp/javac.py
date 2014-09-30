@@ -77,7 +77,11 @@ def DoJavac(
       '-classpath', ':'.join(classpath),
       '-d', classes_dir]
   if chromium_code:
-    javac_args.extend(['-Xlint:unchecked', '-Xlint:deprecation'])
+    javac_args.extend(['-Xlint:unchecked'])
+    # TODO(aurimas): re-enable this after the L SDK is launched and make
+    # everyone fix new deprecation warnings correctly.
+    # http://crbug.com/405174,398669,411361,411366,411367,411376,416041
+    # '-Xlint:deprecation'
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
     # ct.sym. This means that using a java internal package/class will not
@@ -260,5 +264,3 @@ def main(argv):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
-
-
