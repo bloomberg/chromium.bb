@@ -94,6 +94,8 @@ class SyncBackendHostMock : public SyncBackendHost {
   virtual void GetModelSafeRoutingInfo(
       syncer::ModelSafeRoutingInfo* out) const OVERRIDE;
 
+  virtual void FlushDirectory() const OVERRIDE;
+
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
 

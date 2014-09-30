@@ -789,6 +789,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   base::Time GetDeviceBackupTimeForTesting() const;
 
+  // This triggers a Directory::SaveChanges() call on the sync thread.
+  // It should be used to persist data to disk when the process might be
+  // killed in the near future.
+  void FlushDirectory() const;
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();

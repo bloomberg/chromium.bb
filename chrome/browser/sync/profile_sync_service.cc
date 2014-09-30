@@ -2707,3 +2707,10 @@ bool ProfileSyncService::NeedBackup() const {
 base::Time ProfileSyncService::GetDeviceBackupTimeForTesting() const {
   return device_info_sync_service_->GetLocalDeviceBackupTime();
 }
+
+void ProfileSyncService::FlushDirectory() const {
+  // backend_initialized_ implies backend_ isn't NULL and the manager exists.
+  // If sync is not initialized yet, we fail silently.
+  if (backend_initialized_)
+    backend_->FlushDirectory();
+}

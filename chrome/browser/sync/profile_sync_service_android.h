@@ -46,6 +46,9 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Called from Java when the user signs out of Chrome
   void SignOutSync(JNIEnv* env, jobject obj);
 
+  // Called from Java when we get a signal that the Directory should be saved.
+  void FlushDirectory(JNIEnv* env, jobject obj);
+
   // Returns a string version of browser_sync::SyncBackendHost::StatusSummary
   base::android::ScopedJavaLocalRef<jstring> QuerySyncStatusSummary(
       JNIEnv* env, jobject obj);

@@ -111,6 +111,8 @@ bool SyncBackendHostMock::IsCryptographerReady(
 void SyncBackendHostMock::GetModelSafeRoutingInfo(
     syncer::ModelSafeRoutingInfo* out) const {}
 
+void SyncBackendHostMock::FlushDirectory() const {}
+
 base::MessageLoop* SyncBackendHostMock::GetSyncLoopForTesting() {
   return NULL;
 }

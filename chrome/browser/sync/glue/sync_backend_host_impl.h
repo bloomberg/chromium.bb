@@ -127,6 +127,7 @@ class SyncBackendHostImpl
       const syncer::BaseTransaction* trans) const OVERRIDE;
   virtual void GetModelSafeRoutingInfo(
       syncer::ModelSafeRoutingInfo* out) const OVERRIDE;
+  virtual void FlushDirectory() const OVERRIDE;
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
   virtual void EnableDirectoryTypeDebugInfoForwarding() OVERRIDE;

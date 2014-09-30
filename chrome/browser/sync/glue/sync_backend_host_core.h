@@ -239,6 +239,11 @@ class SyncBackendHostCore
       base::Callback<void(const std::vector<syncer::ModelType>& type,
                           ScopedVector<base::ListValue>) > callback);
 
+  // Tell the sync manager to persist its state by writing to disk.
+  // Called on the sync thread, both by a timer and, on Android, when the
+  // application is backgrounded.
+  void SaveChanges();
+
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
   friend class SyncBackendHostForProfileSyncTest;
@@ -250,13 +255,6 @@ class SyncBackendHostCore
   // This must be called from the thread on which SaveChanges is intended to
   // be run on; the host's |registrar_->sync_thread()|.
   void StartSavingChanges();
-
-  // Invoked periodically to tell the syncapi to persist its state
-  // by writing to disk.
-  // This is called from the thread we were created on (which is sync thread),
-  // using a repeating timer that is kicked off as soon as the SyncManager
-  // tells us it completed initialization.
-  void SaveChanges();
 
   // Name used for debugging.
   const std::string name_;

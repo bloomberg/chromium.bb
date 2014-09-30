@@ -4,9 +4,13 @@
 
 package org.chromium.chrome.browser.sync;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -90,6 +94,16 @@ public class ProfileSyncService {
         // been set up, but ProfileSyncService::Startup() won't be called until
         // credentials are available.
         mNativeProfileSyncServiceAndroid = nativeInit();
+
+        // When the application gets paused, tell sync to flush the directory to disk.
+        ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
+          @Override
+          public void onActivityStateChange(Activity activity, int newState) {
+            if (newState == ActivityState.PAUSED) {
+              flushDirectory();
+            }
+          }
+        });
     }
 
     @CalledByNative
@@ -495,6 +509,13 @@ public class ProfileSyncService {
     }
 
     /**
+     * Flushes the sync directory.
+     */
+    public void flushDirectory() {
+        nativeFlushDirectory(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
      * Returns the time when the last sync cycle was completed.
      *
      * @return The difference measured in microseconds, between last sync cycle completion time
@@ -541,6 +562,7 @@ public class ProfileSyncService {
     private native long nativeInit();
     private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
     private native void nativeDisableSync(long nativeProfileSyncServiceAndroid);
+    private native void nativeFlushDirectory(long nativeProfileSyncServiceAndroid);
     private native void nativeSignInSync(long nativeProfileSyncServiceAndroid);
     private native void nativeSignOutSync(long nativeProfileSyncServiceAndroid);
     private native boolean nativeSetSyncSessionsId(

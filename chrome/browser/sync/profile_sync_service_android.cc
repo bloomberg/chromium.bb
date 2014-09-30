@@ -141,6 +141,11 @@ void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
   sync_prefs_->SetStartSuppressed(false);
 }
 
+void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env, jobject) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  sync_service_->FlushDirectory();
+}
+
 ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::QuerySyncStatusSummary(
     JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
