@@ -3,11 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 774x18
-          text run at (0,0) width 508: "This page tests whether Netscape plug-ins can access their own DOM elements. "
-          text run at (508,0) width 266: "The plug-in should have a 3px red border."
-      RenderBlock (anonymous) at (0,34) size 784x206
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 736x32
+          text run at (0,0) width 516: "This page tests whether Netscape plug-ins can access their own DOM elements. "
+          text run at (515,0) width 221: "The plug-in should have a 3px red"
+          text run at (0,16) width 46: "border."
+      RenderBlock (anonymous) at (0,48) size 784x206
         RenderText {#text} at (0,0) size 0x0
-layer at (8,42) size 206x206
+layer at (8,56) size 206x206
   RenderEmbeddedObject {EMBED} at (0,0) size 206x206 [border: (3px solid #FF0000)]

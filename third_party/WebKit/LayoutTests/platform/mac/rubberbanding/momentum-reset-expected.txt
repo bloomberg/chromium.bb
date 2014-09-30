@@ -1,9 +1,9 @@
-layer at (0,0) size 785x838
+layer at (0,0) size 785x836
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x838
-  RenderBlock {HTML} at (0,0) size 785x838
-    RenderBody {BODY} at (8,8) size 769x822
+layer at (0,0) size 785x836
+  RenderBlock {HTML} at (0,0) size 785x836
+    RenderBody {BODY} at (8,8) size 769x820
       RenderBlock {DIV} at (0,0) size 773x804 [bgcolor=#008000] [border: (2px solid #000000)]
-      RenderBlock {DIV} at (0,804) size 769x18
-        RenderText {#text} at (0,0) size 148x18
-          text run at (0,0) width 148: "This test requires DRT."
+      RenderBlock {DIV} at (0,804) size 769x16
+        RenderText {#text} at (0,0) size 151x16
+          text run at (0,0) width 151: "This test requires DRT."
