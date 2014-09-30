@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
@@ -120,9 +122,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   prefs_->GetDifferingKeys(old_prefs.get(), &changed_prefs);
 
   // Send out change notifications.
-  for (std::vector<std::string>::const_iterator pref(changed_prefs.begin());
-       pref != changed_prefs.end();
-       ++pref) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(*pref));
+  for (const std::string& pref : changed_prefs) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(pref));
   }
 }

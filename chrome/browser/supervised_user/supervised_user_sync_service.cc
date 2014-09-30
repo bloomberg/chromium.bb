@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -417,11 +419,10 @@ SyncMergeResult SupervisedUserSyncService::MergeDataAndStartSyncing(
   std::set<std::string> seen_ids;
   int num_items_added = 0;
   int num_items_modified = 0;
-  for (SyncDataList::const_iterator it = initial_sync_data.begin();
-       it != initial_sync_data.end(); ++it) {
-    DCHECK_EQ(SUPERVISED_USERS, it->GetDataType());
+  for (const SyncData& sync_data : initial_sync_data) {
+    DCHECK_EQ(SUPERVISED_USERS, sync_data.GetDataType());
     const ManagedUserSpecifics& supervised_user =
-        it->GetSpecifics().managed_user();
+        sync_data.GetSpecifics().managed_user();
     base::DictionaryValue* value = new base::DictionaryValue();
     value->SetString(kName, supervised_user.name());
     value->SetBoolean(kAcknowledged, supervised_user.acknowledged());
@@ -486,13 +487,12 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
   SyncError error;
   DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
-  for (SyncChangeList::const_iterator it = change_list.begin();
-       it != change_list.end(); ++it) {
-    SyncData data = it->sync_data();
+  for (const SyncChange& sync_change : change_list) {
+    SyncData data = sync_change.sync_data();
     DCHECK_EQ(SUPERVISED_USERS, data.GetDataType());
     const ManagedUserSpecifics& supervised_user =
         data.GetSpecifics().managed_user();
-    switch (it->change_type()) {
+    switch (sync_change.change_type()) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
         // Every item we get from the server should be acknowledged.
@@ -505,7 +505,7 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
         // an add action, it should not.
         DCHECK_EQ(
             old_value ? SyncChange::ACTION_UPDATE : SyncChange::ACTION_ADD,
-            it->change_type());
+            sync_change.change_type());
 
         // If the supervised user switched from unacknowledged to acknowledged,
         // we might need to continue with a registration.
@@ -569,9 +569,7 @@ void SupervisedUserSyncService::NotifySupervisedUsersChanged() {
 void SupervisedUserSyncService::DispatchCallbacks() {
   const base::DictionaryValue* supervised_users =
       prefs_->GetDictionary(prefs::kSupervisedUsers);
-  for (std::vector<SupervisedUsersCallback>::iterator it = callbacks_.begin();
-       it != callbacks_.end(); ++it) {
-    it->Run(supervised_users);
-  }
+  for (const auto& callback : callbacks_)
+    callback.Run(supervised_users);
   callbacks_.clear();
 }

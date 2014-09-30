@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_PREF_STORE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_PREF_STORE_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_store.h"

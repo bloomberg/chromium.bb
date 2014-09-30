@@ -221,23 +221,18 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   // Uploading should produce changes when we start syncing.
   StartSyncing(syncer::SyncDataList());
   ASSERT_EQ(3u, sync_processor_->changes().size());
-  for (syncer::SyncChangeList::const_iterator it =
-           sync_processor_->changes().begin();
-       it != sync_processor_->changes().end();
-       ++it) {
-    ASSERT_TRUE(it->IsValid());
-    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, it->change_type());
-    VerifySyncDataItem(it->sync_data());
+  for (const syncer::SyncChange& sync_change : sync_processor_->changes()) {
+    ASSERT_TRUE(sync_change.IsValid());
+    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, sync_change.change_type());
+    VerifySyncDataItem(sync_change.sync_data());
   }
 
   // It should also show up in local Sync data.
   syncer::SyncDataList sync_data =
       settings_service_.GetAllSyncData(syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(3u, sync_data.size());
-  for (syncer::SyncDataList::const_iterator it = sync_data.begin();
-       it != sync_data.end(); ++it) {
-    VerifySyncDataItem(*it);
-  }
+  for (const syncer::SyncData& sync_data_item : sync_data)
+    VerifySyncDataItem(sync_data_item);
 
   // Uploading after we have started syncing should work too.
   sync_processor_->changes().clear();
@@ -251,10 +246,8 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   sync_data = settings_service_.GetAllSyncData(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
-  for (syncer::SyncDataList::const_iterator it = sync_data.begin();
-       it != sync_data.end(); ++it) {
-    VerifySyncDataItem(*it);
-  }
+  for (const syncer::SyncData& sync_data_item : sync_data)
+    VerifySyncDataItem(sync_data_item);
 
   // Uploading an item with a previously seen key should create an UPDATE
   // action.
@@ -269,10 +262,8 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   sync_data = settings_service_.GetAllSyncData(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
-  for (syncer::SyncDataList::const_iterator it = sync_data.begin();
-       it != sync_data.end(); ++it) {
-    VerifySyncDataItem(*it);
-  }
+  for (const syncer::SyncData& sync_data_item : sync_data)
+    VerifySyncDataItem(sync_data_item);
 
   sync_processor_->changes().clear();
   UploadAtomicItem("fjord");
@@ -285,10 +276,8 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   sync_data = settings_service_.GetAllSyncData(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
-  for (syncer::SyncDataList::const_iterator it = sync_data.begin();
-       it != sync_data.end(); ++it) {
-    VerifySyncDataItem(*it);
-  }
+  for (const syncer::SyncData& sync_data_item : sync_data)
+    VerifySyncDataItem(sync_data_item);
 
   // The uploaded items should not show up as settings.
   const base::Value* value = NULL;

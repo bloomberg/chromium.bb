@@ -135,10 +135,8 @@ TEST_F(SupervisedUserServiceTest, GetManualExceptionsForHost) {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kSupervisedUserManualURLs);
     base::DictionaryValue* dict = update.Get();
-    for (std::vector<GURL>::iterator it = exceptions.begin();
-         it != exceptions.end(); ++it) {
-      dict->RemoveWithoutPathExpansion(it->spec(), NULL);
-    }
+    for (const GURL& url : exceptions)
+      dict->RemoveWithoutPathExpansion(url.spec(), NULL);
   }
 
   EXPECT_EQ(SupervisedUserService::MANUAL_NONE,
@@ -396,14 +394,12 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   ASSERT_EQ(4u, sites.size());
   // The site lists might be returned in any order, so we put them into a set.
   std::set<std::string> site_names;
-  for (std::vector<SupervisedUserSiteList::Site>::const_iterator it =
-      sites.begin(); it != sites.end(); ++it) {
-    site_names.insert(base::UTF16ToUTF8(it->name));
-  }
-  EXPECT_TRUE(site_names.count("YouTube") == 1u);
-  EXPECT_TRUE(site_names.count("Homestar Runner") == 1u);
-  EXPECT_TRUE(site_names.count(std::string()) == 1u);
-  EXPECT_TRUE(site_names.count("Moose") == 1u);
+  for (const SupervisedUserSiteList::Site& site : sites)
+    site_names.insert(base::UTF16ToUTF8(site.name));
+  EXPECT_EQ(1u, site_names.count("YouTube"));
+  EXPECT_EQ(1u, site_names.count("Homestar Runner"));
+  EXPECT_EQ(1u, site_names.count(std::string()));
+  EXPECT_EQ(1u, site_names.count("Moose"));
 
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));

@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_URL_FILTER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_URL_FILTER_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

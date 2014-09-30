@@ -42,18 +42,14 @@ void ManagerPasswordService::Init(
   SupervisedUserManager* supervised_user_manager =
       ChromeUserManager::Get()->GetSupervisedUserManager();
 
-  const user_manager::UserList& users =
-      user_manager::UserManager::Get()->GetUsers();
-
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
-    if ((*it)->GetType() != user_manager::USER_TYPE_SUPERVISED)
+  for (const user_manager::User* user :
+           user_manager::UserManager::Get()->GetUsers()) {
+    if (user->GetType() != user_manager::USER_TYPE_SUPERVISED)
       continue;
-    if (user_id != supervised_user_manager->GetManagerUserId((*it)->email()))
+    if (user_id != supervised_user_manager->GetManagerUserId(user->email()))
       continue;
     OnSharedSettingsChange(
-        supervised_user_manager->GetUserSyncId((*it)->email()),
+        supervised_user_manager->GetUserSyncId(user->email()),
         supervised_users::kChromeOSPasswordData);
   }
 }

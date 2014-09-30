@@ -100,12 +100,11 @@ void SupervisedUserService::URLFilterContext::LoadWhitelists(
     ScopedVector<SupervisedUserSiteList> site_lists) {
   // SupervisedUserURLFilter::LoadWhitelists takes ownership of |site_lists|,
   // so we make an additional copy of it.
-  /// TODO(bauerb): This is kinda ugly.
+  // TODO(bauerb): This is kinda ugly.
   ScopedVector<SupervisedUserSiteList> site_lists_copy;
-  for (ScopedVector<SupervisedUserSiteList>::iterator it = site_lists.begin();
-       it != site_lists.end(); ++it) {
-    site_lists_copy.push_back((*it)->Clone());
-  }
+  for (const SupervisedUserSiteList* site_list : site_lists)
+    site_lists_copy.push_back(site_list->Clone());
+
   ui_url_filter_->LoadWhitelists(site_lists.Pass());
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -314,11 +313,8 @@ void SupervisedUserService::AddNavigationBlockedCallback(
 
 void SupervisedUserService::DidBlockNavigation(
     content::WebContents* web_contents) {
-  for (std::vector<NavigationBlockedCallback>::iterator it =
-           navigation_blocked_callbacks_.begin();
-       it != navigation_blocked_callbacks_.end(); ++it) {
-    it->Run(web_contents);
-  }
+  for (const auto& callback : navigation_blocked_callbacks_)
+    callback.Run(web_contents);
 }
 
 void SupervisedUserService::AddObserver(
@@ -508,15 +504,13 @@ SupervisedUserService::GetActiveSiteLists() {
   if (!extension_service)
     return site_lists.Pass();
 
-  const extensions::ExtensionSet* extensions = extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const extensions::Extension* extension = it->get();
+  for (const scoped_refptr<const extensions::Extension>& extension :
+           *extension_service->extensions()) {
     if (!extension_service->IsExtensionEnabled(extension->id()))
       continue;
 
     extensions::ExtensionResource site_list =
-        extensions::SupervisedUserInfo::GetContentPackSiteList(extension);
+        extensions::SupervisedUserInfo::GetContentPackSiteList(extension.get());
     if (!site_list.empty()) {
       site_lists.push_back(new SupervisedUserSiteList(extension->id(),
                                                       site_list.GetFilePath()));

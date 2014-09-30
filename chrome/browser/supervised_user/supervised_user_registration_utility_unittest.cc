@@ -215,11 +215,10 @@ SupervisedUserRegistrationUtilityTest::GetRegistrationUtility() {
 
 void SupervisedUserRegistrationUtilityTest::Acknowledge() {
   SyncChangeList new_changes;
-  const SyncChangeList& changes = change_processor()->changes();
-  for (SyncChangeList::const_iterator it = changes.begin(); it != changes.end();
-       ++it) {
-    EXPECT_EQ(SyncChange::ACTION_ADD, it->change_type());
-    ::sync_pb::EntitySpecifics specifics = it->sync_data().GetSpecifics();
+  for (const SyncChange& sync_change : change_processor()->changes()) {
+    EXPECT_EQ(SyncChange::ACTION_ADD, sync_change.change_type());
+    ::sync_pb::EntitySpecifics specifics =
+        sync_change.sync_data().GetSpecifics();
     EXPECT_FALSE(specifics.managed_user().acknowledged());
     specifics.mutable_managed_user()->set_acknowledged(true);
     new_changes.push_back(

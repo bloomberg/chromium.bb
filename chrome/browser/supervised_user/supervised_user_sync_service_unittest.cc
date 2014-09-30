@@ -68,10 +68,9 @@ SyncError MockChangeProcessor::ProcessSyncChanges(
 }
 
 SyncChange MockChangeProcessor::GetChange(const std::string& id) const {
-  for (SyncChangeList::const_iterator it = change_list_.begin();
-       it != change_list_.end(); ++it) {
-    if (it->sync_data().GetSpecifics().managed_user().id() == id)
-      return *it;
+  for (const SyncChange& sync_change : change_list_) {
+    if (sync_change.sync_data().GetSpecifics().managed_user().id() == id)
+      return sync_change;
   }
   return SyncChange();
 }

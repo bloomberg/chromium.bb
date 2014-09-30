@@ -4,6 +4,9 @@
 
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 
+#include <set>
+#include <utility>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -119,22 +122,14 @@ void FilterBuilder::AddSiteList(SupervisedUserSiteList* site_list) {
   std::vector<SupervisedUserSiteList::Site> sites;
   site_list->GetSites(&sites);
   int site_id = contents_->sites.size();
-  for (std::vector<SupervisedUserSiteList::Site>::const_iterator it =
-           sites.begin(); it != sites.end(); ++it) {
-    const SupervisedUserSiteList::Site& site = *it;
+  for (const SupervisedUserSiteList::Site& site : sites) {
     contents_->sites.push_back(site);
 
-    for (std::vector<std::string>::const_iterator pattern_it =
-             site.patterns.begin();
-         pattern_it != site.patterns.end(); ++pattern_it) {
-      AddPattern(*pattern_it, site_id);
-    }
+    for (const std::string& pattern : site.patterns)
+      AddPattern(pattern, site_id);
 
-    for (std::vector<std::string>::const_iterator hash_it =
-             site.hostname_hashes.begin();
-         hash_it != site.hostname_hashes.end(); ++hash_it) {
-      AddHostnameHash(*hash_it, site_id);
-    }
+    for (const std::string& hash : site.hostname_hashes)
+      AddHostnameHash(hash, site_id);
 
     site_id++;
   }
@@ -151,10 +146,9 @@ scoped_ptr<SupervisedUserURLFilter::Contents> CreateWhitelistFromPatterns(
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   FilterBuilder builder;
-  for (std::vector<std::string>::const_iterator it = patterns.begin();
-       it != patterns.end(); ++it) {
+  for (const std::string& pattern : patterns) {
     // TODO(bauerb): We should create a fake site for the whitelist.
-    builder.AddPattern(*it, -1);
+    builder.AddPattern(pattern, -1);
   }
 
   return builder.Build();
@@ -166,10 +160,8 @@ LoadWhitelistsOnBlockingPoolThread(
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   FilterBuilder builder;
-  for (ScopedVector<SupervisedUserSiteList>::iterator it = site_lists.begin();
-       it != site_lists.end(); ++it) {
-    builder.AddSiteList(*it);
-  }
+  for (SupervisedUserSiteList* site_list : site_lists)
+    builder.AddSiteList(site_list);
 
   return builder.Build();
 }
@@ -282,11 +274,10 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
 
   // Look for patterns matching the hostname, with a value that is different
   // from the default (a value of true in the map meaning allowed).
-  for (std::map<std::string, bool>::const_iterator host_it =
-      host_map_.begin(); host_it != host_map_.end(); ++host_it) {
-    if ((host_it->second == (default_behavior_ == BLOCK)) &&
-        HostMatchesPattern(host, host_it->first)) {
-      return host_it->second ? ALLOW : BLOCK;
+  for (const std::pair<std::string, bool>& host_entry : host_map_) {
+    if ((host_entry.second == (default_behavior_ == BLOCK)) &&
+        HostMatchesPattern(host, host_entry.first)) {
+      return host_entry.second ? ALLOW : BLOCK;
     }
   }
 
@@ -318,10 +309,9 @@ void SupervisedUserURLFilter::GetSites(
     std::vector<SupervisedUserSiteList::Site*>* sites) const {
   std::set<URLMatcherConditionSet::ID> matching_ids =
       contents_->url_matcher.MatchURL(url);
-  for (std::set<URLMatcherConditionSet::ID>::const_iterator it =
-           matching_ids.begin(); it != matching_ids.end(); ++it) {
+  for (const URLMatcherConditionSet::ID& id : matching_ids) {
     std::map<URLMatcherConditionSet::ID, int>::const_iterator entry =
-        contents_->matcher_site_map.find(*it);
+        contents_->matcher_site_map.find(id);
     if (entry == contents_->matcher_site_map.end()) {
       NOTREACHED();
       continue;

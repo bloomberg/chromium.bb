@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SHARED_SETTINGS_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SHARED_SETTINGS_SERVICE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/memory/scoped_ptr.h"

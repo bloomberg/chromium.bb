@@ -10,10 +10,6 @@
 #include "base/values.h"
 #include "extensions/common/extension.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-using base::Value;
-
 const int kSitelistFormatVersion = 1;
 
 const char kCategoriesKey[] = "categories";
@@ -76,10 +72,9 @@ void AddWhitelistEntries(const base::DictionaryValue* site_dict,
   const base::ListValue* whitelist = NULL;
   if (site_dict->GetList(kWhitelistKey, &whitelist)) {
     found = true;
-    for (base::ListValue::const_iterator whitelist_it = whitelist->begin();
-         whitelist_it != whitelist->end(); ++whitelist_it) {
+    for (const base::Value* entry : *whitelist) {
       std::string pattern;
-      if (!(*whitelist_it)->GetAsString(&pattern)) {
+      if (!entry->GetAsString(&pattern)) {
         LOG(ERROR) << "Invalid whitelist entry";
         continue;
       }
@@ -92,10 +87,9 @@ void AddWhitelistEntries(const base::DictionaryValue* site_dict,
   const base::ListValue* hash_list = NULL;
   if (site_dict->GetList(kHostnameHashesKey, &hash_list)) {
     found = true;
-    for (base::ListValue::const_iterator hash_list_it = hash_list->begin();
-         hash_list_it != hash_list->end(); ++hash_list_it) {
+    for (const base::Value* entry : *hash_list) {
       std::string hash;
-      if (!(*hash_list_it)->GetAsString(&hash)) {
+      if (!entry->GetAsString(&hash)) {
         LOG(ERROR) << "Invalid whitelist entry";
         continue;
       }
@@ -142,7 +136,7 @@ SupervisedUserSiteList::SupervisedUserSiteList(
 SupervisedUserSiteList::~SupervisedUserSiteList() {
 }
 
-SupervisedUserSiteList* SupervisedUserSiteList::Clone() {
+SupervisedUserSiteList* SupervisedUserSiteList::Clone() const {
   return new SupervisedUserSiteList(extension_id_, path_);
 }
 
@@ -159,10 +153,9 @@ void SupervisedUserSiteList::GetSites(std::vector<Site>* sites) {
   if (!LazyLoad())
     return;
 
-  for (base::ListValue::iterator entry_it = sites_->begin();
-       entry_it != sites_->end(); ++entry_it) {
-    base::DictionaryValue* entry = NULL;
-    if (!(*entry_it)->GetAsDictionary(&entry)) {
+  for (const base::Value* site : *sites_) {
+    const base::DictionaryValue* entry = NULL;
+    if (!site->GetAsDictionary(&entry)) {
       LOG(ERROR) << "Entry is invalid";
       continue;
     }
@@ -175,10 +168,9 @@ void SupervisedUserSiteList::GetSites(std::vector<Site>* sites) {
     int category_id = 0;
     const base::ListValue* categories = NULL;
     if (entry->GetList(kCategoriesKey, &categories)) {
-      for (base::ListValue::const_iterator it = categories->begin();
-           it != categories->end(); ++it) {
+      for (const base::Value* category_entry : *categories) {
         std::string category;
-        if (!(*it)->GetAsString(&category)) {
+        if (!category_entry->GetAsString(&category)) {
           LOG(ERROR) << "Invalid category";
           continue;
         }
@@ -192,7 +184,7 @@ void SupervisedUserSiteList::GetSites(std::vector<Site>* sites) {
 }
 
 bool SupervisedUserSiteList::LazyLoad() {
-  if (sites_.get())
+  if (sites_)
     return true;
 
   JSONFileValueSerializer serializer(path_);

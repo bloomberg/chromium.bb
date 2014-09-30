@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
@@ -101,11 +103,9 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
 
   void VerifySyncChangesAndClear() {
     SyncChangeList& changes = sync_processor_->changes();
-    for (SyncChangeList::const_iterator it = changes.begin();
-         it != changes.end();
-         ++it) {
+    for (const SyncChange& sync_change : changes) {
       const sync_pb::ManagedUserSharedSettingSpecifics& setting =
-          it->sync_data().GetSpecifics().managed_user_shared_setting();
+          sync_change.sync_data().GetSpecifics().managed_user_shared_setting();
       EXPECT_EQ(
           setting.value(),
           ToJson(settings_service_.GetValue(setting.mu_id(), setting.key())));

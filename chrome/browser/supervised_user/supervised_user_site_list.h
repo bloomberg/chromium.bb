@@ -58,7 +58,7 @@ class SupervisedUserSiteList {
 
   // Creates a copy of the site list.
   // Caller takes ownership of the returned value.
-  SupervisedUserSiteList* Clone();
+  SupervisedUserSiteList* Clone() const;
 
   // Returns a list of all categories.
   // TODO(bauerb): The list is hardcoded for now, but if we allow custom

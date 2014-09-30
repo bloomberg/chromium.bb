@@ -4,6 +4,9 @@
 
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
 
+#include <map>
+#include <set>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
@@ -202,13 +205,11 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
 
   // Iterate over all initial sync data, and update it locally. This means that
   // the value from the server always wins over a local value.
-  for (SyncDataList::const_iterator it = initial_sync_data.begin();
-       it != initial_sync_data.end();
-       ++it) {
-    DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, it->GetDataType());
+  for (const SyncData& sync_data : initial_sync_data) {
+    DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, sync_data.GetDataType());
     const ::sync_pb::ManagedUserSharedSettingSpecifics&
         supervised_user_shared_setting =
-            it->GetSpecifics().managed_user_shared_setting();
+            sync_data.GetSpecifics().managed_user_shared_setting();
     scoped_ptr<Value> value(
         base::JSONReader::Read(supervised_user_shared_setting.value()));
     const std::string& su_id = supervised_user_shared_setting.mu_id();
@@ -290,10 +291,8 @@ syncer::SyncDataList SupervisedUserSharedSettingsService::GetAllSyncData(
 syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  for (SyncChangeList::const_iterator it = change_list.begin();
-       it != change_list.end();
-       ++it) {
-    SyncData data = it->sync_data();
+  for (const SyncChange& sync_change : change_list) {
+    SyncData data = sync_change.sync_data();
     DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, data.GetDataType());
     const ::sync_pb::ManagedUserSharedSettingSpecifics&
         supervised_user_shared_setting =
@@ -304,7 +303,7 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
     DictionaryValue* update_dict = update.Get();
     DictionaryValue* dict = NULL;
     bool has_key = update_dict->GetDictionaryWithoutPathExpansion(key, &dict);
-    switch (it->change_type()) {
+    switch (sync_change.change_type()) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
         // Every setting we get from the server should have the acknowledged
@@ -314,10 +313,10 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
         if (has_key) {
           // If the supervised user already exists, it should be an update
           // action.
-          DCHECK_EQ(SyncChange::ACTION_UPDATE, it->change_type());
+          DCHECK_EQ(SyncChange::ACTION_UPDATE, sync_change.change_type());
         } else {
           // Otherwise, it should be an add action.
-          DCHECK_EQ(SyncChange::ACTION_ADD, it->change_type());
+          DCHECK_EQ(SyncChange::ACTION_ADD, sync_change.change_type());
           dict = new DictionaryValue;
           update_dict->SetWithoutPathExpansion(key, dict);
         }
