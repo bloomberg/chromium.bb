@@ -8,7 +8,7 @@
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/api/attachments/attachment_store.h"
+#include "sync/api/attachments/fake_attachment_store.h"
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 
 using sync_driver::AssociatorInterface;
