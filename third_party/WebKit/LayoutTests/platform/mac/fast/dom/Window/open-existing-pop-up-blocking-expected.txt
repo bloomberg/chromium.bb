@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderText {#text} at (304,140) size 4x18
-        text run at (304,140) width 4: " "
+      RenderText {#text} at (304,142) size 4x16
+        text run at (304,142) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 304x154
   RenderPartObject {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
@@ -13,11 +13,11 @@ layer at (8,8) size 304x154
     layer at (0,0) size 300x150
       RenderBlock {HTML} at (0,0) size 300x150
         RenderBody {BODY} at (8,8) size 284x134
-          RenderText {#text} at (0,0) size 278x72
-            text run at (0,0) width 278: "This frame will try to replace the contents of"
-            text run at (0,18) width 275: "the frame to the right. If the bug still occurs,"
-            text run at (0,36) width 269: "pop-up blocking will prevent it from doing"
-            text run at (0,54) width 18: "so."
+          RenderText {#text} at (0,0) size 284x64
+            text run at (0,0) width 268: "This frame will try to replace the contents"
+            text run at (0,16) width 251: "of the frame to the right. If the bug still"
+            text run at (0,32) width 284: "occurs, pop-up blocking will prevent it from"
+            text run at (0,48) width 59: "doing so."
 layer at (316,8) size 304x154
   RenderPartObject {IFRAME} at (308,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
@@ -25,6 +25,6 @@ layer at (316,8) size 304x154
     layer at (0,0) size 300x150
       RenderBlock {HTML} at (0,0) size 300x150
         RenderBody {BODY} at (8,8) size 284x134
-          RenderText {#text} at (0,0) size 267x36
-            text run at (0,0) width 267: "This text successfully replaced the original"
-            text run at (0,18) width 211: "text in the frame. Test succeeded!"
+          RenderText {#text} at (0,0) size 275x32
+            text run at (0,0) width 275: "This text successfully replaced the original"
+            text run at (0,16) width 216: "text in the frame. Test succeeded!"

@@ -3,68 +3,68 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 249x18
-          text run at (0,0) width 249: "What it should look like (positive case):"
-      RenderBlock {DIV} at (0,34) size 784x72 [border: (1px solid #008000)]
-        RenderBlock {DIV} at (1,11) size 782x20 [border: (1px solid #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-        RenderBlock {DIV} at (1,41) size 782x20 [border: (1px dotted #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-      RenderBlock {P} at (0,122) size 784x18
-        RenderText {#text} at (0,0) size 253x18
-          text run at (0,0) width 253: "What it should look like (negative case):"
-      RenderBlock {DIV} at (0,156) size 784x32 [border: (1px solid #008000)]
-        RenderBlock {DIV} at (1,11) size 782x20 [border: (1px solid #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-        RenderBlock {DIV} at (1,21) size 782x20 [border: (1px dotted #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-      RenderBlock {P} at (0,204) size 784x18
-        RenderText {#text} at (0,0) size 369x18
-          text run at (0,0) width 369: "Dynamic case (automatically testing positive --> negative):"
-      RenderBlock {DIV} at (0,238) size 784x32 [border: (1px solid #008000)]
-        RenderBlock {DIV} at (1,11) size 782x20 [border: (1px solid #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-        RenderBlock {DIV} at (1,21) size 782x20 [border: (1px dotted #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-      RenderBlock (anonymous) at (0,270) size 784x37
-        RenderBR {BR} at (0,0) size 0x18
-        RenderButton {INPUT} at (0,19) size 103.50x18 [bgcolor=#C0C0C0]
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 256x16
+          text run at (0,0) width 256: "What it should look like (positive case):"
+      RenderBlock {DIV} at (0,32) size 784x68 [border: (1px solid #008000)]
+        RenderBlock {DIV} at (1,11) size 782x18 [border: (1px solid #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+        RenderBlock {DIV} at (1,39) size 782x18 [border: (1px dotted #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+      RenderBlock {P} at (0,116) size 784x16
+        RenderText {#text} at (0,0) size 260x16
+          text run at (0,0) width 260: "What it should look like (negative case):"
+      RenderBlock {DIV} at (0,148) size 784x28 [border: (1px solid #008000)]
+        RenderBlock {DIV} at (1,11) size 782x18 [border: (1px solid #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+        RenderBlock {DIV} at (1,19) size 782x18 [border: (1px dotted #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+      RenderBlock {P} at (0,192) size 784x16
+        RenderText {#text} at (0,0) size 380x16
+          text run at (0,0) width 380: "Dynamic case (automatically testing positive --> negative):"
+      RenderBlock {DIV} at (0,224) size 784x28 [border: (1px solid #008000)]
+        RenderBlock {DIV} at (1,11) size 782x18 [border: (1px solid #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+        RenderBlock {DIV} at (1,19) size 782x18 [border: (1px dotted #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+      RenderBlock (anonymous) at (0,252) size 784x34
+        RenderBR {BR} at (0,0) size 0x16
+        RenderButton {INPUT} at (0,16) size 103.50x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 87.50x13
             RenderText {#text} at (0,0) size 88x13
               text run at (0,0) width 88: "Negative margin"
-        RenderText {#text} at (103,18) size 5x18
-          text run at (103,18) width 5: " "
-        RenderButton {INPUT} at (107.50,19) size 97.94x18 [bgcolor=#C0C0C0]
+        RenderText {#text} at (103,17) size 5x16
+          text run at (103,17) width 5: " "
+        RenderButton {INPUT} at (107.50,16) size 97.94x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 81.94x13
             RenderText {#text} at (0,0) size 82x13
               text run at (0,0) width 82: "Positive margin"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,323) size 784x18
-        RenderText {#text} at (0,0) size 445x18
-          text run at (0,0) width 445: "Dynamic case (automatically testing positive --> negative --> positive):"
-      RenderBlock {DIV} at (0,357) size 784x72 [border: (1px solid #008000)]
-        RenderBlock {DIV} at (1,11) size 782x20 [border: (1px solid #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-        RenderBlock {DIV} at (1,41) size 782x20 [border: (1px dotted #0000FF)]
-          RenderText {#text} at (1,1) size 84x18
-            text run at (1,1) width 84: "Lorem ipsum"
-      RenderBlock (anonymous) at (0,429) size 784x37
-        RenderBR {BR} at (0,0) size 0x18
-        RenderButton {INPUT} at (0,19) size 103.50x18 [bgcolor=#C0C0C0]
+      RenderBlock {P} at (0,302) size 784x16
+        RenderText {#text} at (0,0) size 458x16
+          text run at (0,0) width 458: "Dynamic case (automatically testing positive --> negative --> positive):"
+      RenderBlock {DIV} at (0,334) size 784x68 [border: (1px solid #008000)]
+        RenderBlock {DIV} at (1,11) size 782x18 [border: (1px solid #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+        RenderBlock {DIV} at (1,39) size 782x18 [border: (1px dotted #0000FF)]
+          RenderText {#text} at (1,1) size 86x16
+            text run at (1,1) width 86: "Lorem ipsum"
+      RenderBlock (anonymous) at (0,402) size 784x34
+        RenderBR {BR} at (0,0) size 0x16
+        RenderButton {INPUT} at (0,16) size 103.50x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 87.50x13
             RenderText {#text} at (0,0) size 88x13
               text run at (0,0) width 88: "Negative margin"
-        RenderText {#text} at (103,18) size 5x18
-          text run at (103,18) width 5: " "
-        RenderButton {INPUT} at (107.50,19) size 97.94x18 [bgcolor=#C0C0C0]
+        RenderText {#text} at (103,17) size 5x16
+          text run at (103,17) width 5: " "
+        RenderButton {INPUT} at (107.50,16) size 97.94x18 [bgcolor=#C0C0C0]
           RenderBlock (anonymous) at (8,2.50) size 81.94x13
             RenderText {#text} at (0,0) size 82x13
               text run at (0,0) width 82: "Positive margin"

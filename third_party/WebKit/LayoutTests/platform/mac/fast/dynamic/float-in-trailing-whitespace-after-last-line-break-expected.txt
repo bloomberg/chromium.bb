@@ -1,0 +1,30 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 55x16
+          text run at (0,0) width 55: "Test for "
+        RenderInline {I} at (0,0) size 753x32
+          RenderInline {A} at (0,0) size 312x16 [color=#0000EE]
+            RenderText {#text} at (54,0) size 312x16
+              text run at (54,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=19278"
+          RenderText {#text} at (365,0) size 753x32
+            text run at (365,0) width 5: " "
+            text run at (369,0) width 384: "REGRESSION (r31114-r31132): image float disappears on"
+            text run at (0,16) width 46: "refresh"
+        RenderText {#text} at (45,16) size 5x16
+          text run at (45,16) width 5: "."
+      RenderBlock {DIV} at (0,48) size 784x64
+        RenderBlock (anonymous) at (0,0) size 784x32
+          RenderText {#text} at (0,0) size 263x16
+            text run at (0,0) width 263: "Somewhere on this page, there should be"
+          RenderBR {BR} at (262,12) size 1x0
+          RenderBR {BR} at (0,16) size 0x16
+          RenderBlock (floating) {DIV} at (0,32) size 100x100 [bgcolor=#008000]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock {DIV} at (0,32) size 150x32
+          RenderText {#text} at (100,0) size 47x32
+            text run at (100,0) width 47: "a green"
+            text run at (100,16) width 46: "square."

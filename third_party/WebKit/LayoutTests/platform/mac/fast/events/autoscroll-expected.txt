@@ -1,31 +1,31 @@
-layer at (0,0) size 785x3163
+layer at (0,0) size 785x3155
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x3163
-  RenderBlock {HTML} at (0,0) size 785x3163
-    RenderBody {BODY} at (8,8) size 769x3139
-      RenderBlock {P} at (0,0) size 769x18
-        RenderText {#text} at (0,0) size 53x18
-          text run at (0,0) width 53: "Test for "
-        RenderInline {A} at (0,0) size 68x18 [color=#0000EE]
-          RenderText {#text} at (53,0) size 68x18
-            text run at (53,0) width 68: "bug 12331"
-        RenderText {#text} at (121,0) size 4x18
-          text run at (121,0) width 4: "."
-      RenderBlock {P} at (0,34) size 769x36
-        RenderText {#text} at (0,0) size 739x36
-          text run at (0,0) width 739: "To test manually, scroll down until you find the input element. Select some text. If the bug occurs, the page will scroll"
-          text run at (0,18) width 117: "back up to the top."
-      RenderBlock {DIV} at (0,86) size 769x3000
-      RenderBlock (anonymous) at (0,3086) size 769x19
+layer at (0,0) size 785x3155
+  RenderBlock {HTML} at (0,0) size 785x3155
+    RenderBody {BODY} at (8,8) size 769x3131
+      RenderBlock {P} at (0,0) size 769x16
+        RenderText {#text} at (0,0) size 55x16
+          text run at (0,0) width 55: "Test for "
+        RenderInline {A} at (0,0) size 69x16 [color=#0000EE]
+          RenderText {#text} at (54,0) size 69x16
+            text run at (54,0) width 69: "bug 12331"
+        RenderText {#text} at (122,0) size 5x16
+          text run at (122,0) width 5: "."
+      RenderBlock {P} at (0,32) size 769x32
+        RenderText {#text} at (0,0) size 756x32
+          text run at (0,0) width 756: "To test manually, scroll down until you find the input element. Select some text. If the bug occurs, the page will scroll"
+          text run at (0,16) width 119: "back up to the top."
+      RenderBlock {DIV} at (0,80) size 769x3000
+      RenderBlock (anonymous) at (0,3080) size 769x19
         RenderTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,3121) size 769x18
-        RenderText {#text} at (0,0) size 404x18
-          text run at (0,0) width 404: "If the bug does not occur, you'll be left down here at the bottom."
-layer at (11,3097) size 117x13 scrollWidth 126
+      RenderBlock {P} at (0,3115) size 769x16
+        RenderText {#text} at (0,0) size 412x16
+          text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
+layer at (11,3091) size 117x13 scrollWidth 126
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 126x13
       text run at (0,0) width 126: "select some of this text"
 selection start: position 2 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 17 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
-scrolled to 0,2563
+scrolled to 0,2555
