@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "athena/wm/public/window_list_provider_observer.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"

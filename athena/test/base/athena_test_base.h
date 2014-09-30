@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_TEST_ATHENA_TEST_BASE_H_
-#define ATHENA_TEST_ATHENA_TEST_BASE_H_
+#ifndef ATHENA_TEST_BASE_ATHENA_TEST_BASE_H_
+#define ATHENA_TEST_BASE_ATHENA_TEST_BASE_H_
 
-#include "athena/test/athena_test_helper.h"
+#include "athena/test/base/athena_test_helper.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,4 +50,4 @@ class AthenaTestBase : public testing::Test {
 }  // namespace test
 }  // namespace athena
 
-#endif  // ATHENA_TEST_ATHENA_TEST_BASE_H_
+#endif  // ATHENA_TEST_BASE_ATHENA_TEST_BASE_H_

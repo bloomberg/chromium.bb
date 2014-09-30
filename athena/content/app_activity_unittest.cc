@@ -9,7 +9,7 @@
 #include "athena/content/public/app_registry.h"
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/resource_manager/public/resource_manager.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "extensions/common/extension_set.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"

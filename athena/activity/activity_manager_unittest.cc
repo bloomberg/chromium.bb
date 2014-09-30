@@ -6,7 +6,7 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "ui/aura/window.h"
 
 namespace athena {

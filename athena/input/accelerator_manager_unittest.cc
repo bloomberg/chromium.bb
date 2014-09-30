@@ -5,7 +5,7 @@
 #include "athena/input/public/accelerator_manager.h"
 
 #include "athena/input/public/input_manager.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "ui/events/test/event_generator.h"
 
 namespace athena {

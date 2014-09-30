@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/sample_activity_factory.h"
+#include "athena/test/base/sample_activity_factory.h"
 
 #include <string>
 
 #include "athena/activity/public/activity_manager.h"
-#include "athena/test/sample_activity.h"
+#include "athena/test/base/sample_activity.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"

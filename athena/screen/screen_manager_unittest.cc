@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <string>
 
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "athena/util/container_priorities.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"

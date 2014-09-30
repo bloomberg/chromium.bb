@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_TEST_ATHENA_TEST_HELPER_H_
-#define ATHENA_TEST_ATHENA_TEST_HELPER_H_
+#ifndef ATHENA_TEST_BASE_ATHENA_TEST_HELPER_H_
+#define ATHENA_TEST_BASE_ATHENA_TEST_HELPER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -71,4 +71,4 @@ class AthenaTestHelper {
 }  // namespace test
 }  // namespace athena
 
-#endif  // ATHENA_TEST_ATHENA_TEST_HELPER_H_
+#endif  // ATHENA_TEST_BASE_ATHENA_TEST_HELPER_H_

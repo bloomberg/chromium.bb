@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/athena_test_helper.h"
+#include "athena/test/base/athena_test_helper.h"
 
 #include "athena/env/public/athena_env.h"
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/main/public/athena_launcher.h"
-#include "athena/test/sample_activity_factory.h"
-#include "athena/test/test_app_model_builder.h"
+#include "athena/test/base/sample_activity_factory.h"
+#include "athena/test/base/test_app_model_builder.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"

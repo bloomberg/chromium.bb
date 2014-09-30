@@ -5,7 +5,7 @@
 #include "athena/wm/split_view_controller.h"
 
 #include "athena/screen/public/screen_manager.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/test/window_manager_impl_test_api.h"
 #include "base/memory/scoped_vector.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_TEST_SAMPLE_ACTIVITY_H_
-#define ATHENA_TEST_SAMPLE_ACTIVITY_H_
+#ifndef ATHENA_TEST_BASE_SAMPLE_ACTIVITY_H_
+#define ATHENA_TEST_BASE_SAMPLE_ACTIVITY_H_
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
@@ -59,4 +59,4 @@ class SampleActivity : public Activity,
 }  // namespace test
 }  // namespace athena
 
-#endif  // ATHENA_TEST_SAMPLE_ACTIVITY_H_
+#endif  // ATHENA_TEST_BASE_SAMPLE_ACTIVITY_H_

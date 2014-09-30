@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/test_app_model_builder.h"
+#include "athena/test/base/test_app_model_builder.h"
 
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"

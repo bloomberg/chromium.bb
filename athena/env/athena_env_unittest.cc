@@ -4,7 +4,7 @@
 
 #include "athena/env/public/athena_env.h"
 
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "base/bind.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"

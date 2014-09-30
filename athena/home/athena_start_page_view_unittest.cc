@@ -5,7 +5,7 @@
 #include "athena/home/athena_start_page_view.h"
 
 #include "athena/home/home_card_constants.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

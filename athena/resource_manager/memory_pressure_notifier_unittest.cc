@@ -4,7 +4,7 @@
 
 #include "athena/resource_manager/memory_pressure_notifier.h"
 #include "athena/resource_manager/public/resource_manager_delegate.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 
 namespace athena {
 namespace test {

@@ -6,7 +6,7 @@
 
 #include "athena/home/home_card_constants.h"
 #include "athena/home/public/home_card.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

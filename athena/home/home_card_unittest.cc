@@ -7,7 +7,7 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/home/home_card_constants.h"
 #include "athena/home/home_card_impl.h"
-#include "athena/test/athena_test_base.h"
+#include "athena/test/base/athena_test_base.h"
 #include "athena/wm/public/window_manager.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/sample_activity.h"
+#include "athena/test/base/sample_activity.h"
 
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
