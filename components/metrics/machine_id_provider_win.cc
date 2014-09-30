@@ -60,7 +60,7 @@ std::string MachineIdProvider::GetMachineId() {
   // Perform an initial query to get the number of bytes being returned.
   DWORD bytes_returned;
   STORAGE_DESCRIPTOR_HEADER header = {};
-  BOOL status = DeviceIoControl(drive_handle,
+  BOOL status = DeviceIoControl(drive_handle.Get(),
                                 IOCTL_STORAGE_QUERY_PROPERTY,
                                 &query,
                                 sizeof(STORAGE_PROPERTY_QUERY),
@@ -74,7 +74,7 @@ std::string MachineIdProvider::GetMachineId() {
 
   // Query for the actual serial number.
   std::vector<int8> output_buf(header.Size);
-  status = DeviceIoControl(drive_handle,
+  status = DeviceIoControl(drive_handle.Get(),
                            IOCTL_STORAGE_QUERY_PROPERTY,
                            &query,
                            sizeof(STORAGE_PROPERTY_QUERY),

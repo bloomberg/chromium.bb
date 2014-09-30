@@ -253,7 +253,7 @@ void EjectDeviceInThreadPool(
   // files on it). If this fails, it means some other process has files
   // open on the device. Note that the lock is released when the volume
   // handle is closed, and this is done by the ScopedHandle above.
-  BOOL locked = DeviceIoControl(volume_handle, FSCTL_LOCK_VOLUME,
+  BOOL locked = DeviceIoControl(volume_handle.Get(), FSCTL_LOCK_VOLUME,
                                 NULL, 0, NULL, 0, &bytes_returned, NULL);
   UMA_HISTOGRAM_ENUMERATION("StorageMonitor.EjectWinLock",
                             LOCK_ATTEMPT, NUM_LOCK_OUTCOMES);
@@ -283,14 +283,14 @@ void EjectDeviceInThreadPool(
 
   // Unmount the device from the filesystem -- this will remove it from
   // the file picker, drive enumerations, etc.
-  BOOL dismounted = DeviceIoControl(volume_handle, FSCTL_DISMOUNT_VOLUME,
+  BOOL dismounted = DeviceIoControl(volume_handle.Get(), FSCTL_DISMOUNT_VOLUME,
                                     NULL, 0, NULL, 0, &bytes_returned, NULL);
 
   // Reached if we acquired a lock, but could not dismount. This might
   // occur if another process unmounted without locking. Call this OK,
   // since the volume is now unreachable.
   if (!dismounted) {
-    DeviceIoControl(volume_handle, FSCTL_UNLOCK_VOLUME,
+    DeviceIoControl(volume_handle.Get(), FSCTL_UNLOCK_VOLUME,
                     NULL, 0, NULL, 0, &bytes_returned, NULL);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(callback, StorageMonitor::EJECT_OK));
@@ -300,7 +300,7 @@ void EjectDeviceInThreadPool(
   PREVENT_MEDIA_REMOVAL pmr_buffer;
   pmr_buffer.PreventMediaRemoval = FALSE;
   // Mark the device as safe to remove.
-  if (!DeviceIoControl(volume_handle, IOCTL_STORAGE_MEDIA_REMOVAL,
+  if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_MEDIA_REMOVAL,
                        &pmr_buffer, sizeof(PREVENT_MEDIA_REMOVAL),
                        NULL, 0, &bytes_returned, NULL)) {
     BrowserThread::PostTask(
@@ -310,7 +310,7 @@ void EjectDeviceInThreadPool(
   }
 
   // Physically eject or soft-eject the device.
-  if (!DeviceIoControl(volume_handle, IOCTL_STORAGE_EJECT_MEDIA,
+  if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_EJECT_MEDIA,
                        NULL, 0, NULL, 0, &bytes_returned, NULL)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

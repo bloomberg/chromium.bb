@@ -30,7 +30,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     // NaClDebugExceptionHandlerRun() receives debug events for the
     // process.
     bool attached = false;
-    int pid = GetProcessId(nacl_process_);
+    int pid = GetProcessId(nacl_process_.Get());
     if (pid == 0) {
       LOG(ERROR) << "Invalid process handle";
     } else {
@@ -44,7 +44,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
 
     if (attached) {
       NaClDebugExceptionHandlerRun(
-          nacl_process_,
+          nacl_process_.Get(),
           reinterpret_cast<const void*>(startup_info_.data()),
           startup_info_.size());
     }
