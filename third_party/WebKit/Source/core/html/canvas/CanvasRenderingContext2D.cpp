@@ -81,6 +81,7 @@ static const char rtl[] = "rtl";
 static const char ltr[] = "ltr";
 static const double TryRestoreContextInterval = 0.5;
 static const unsigned MaxTryRestoreContextAttempts = 4;
+static const unsigned FetchedFontsCacheLimit = 50;
 
 static bool contextLostRestoredEventsEnabled()
 {
@@ -1924,15 +1925,23 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     if (!canvas()->document().frame())
         return;
 
+    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle;
     MutableStylePropertyMap::iterator i = m_fetchedFonts.find(newFont);
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : nullptr;
-
-    if (!parsedStyle) {
+    if (i != m_fetchedFonts.end()) {
+        parsedStyle = i->value;
+        m_fetchedFontsLRUList.remove(newFont);
+    } else {
         parsedStyle = MutableStylePropertySet::create();
         CSSParserMode mode = m_usesCSSCompatibilityParseMode ? HTMLQuirksMode : HTMLStandardMode;
         CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, mode, 0);
+        if (m_fetchedFonts.size() >= FetchedFontsCacheLimit) {
+            m_fetchedFonts.remove(m_fetchedFontsLRUList.first());
+            m_fetchedFontsLRUList.removeFirst();
+        }
         m_fetchedFonts.add(newFont, parsedStyle);
     }
+    m_fetchedFontsLRUList.add(newFont);
+
     if (parsedStyle->isEmpty())
         return;
 

@@ -41,6 +41,7 @@
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -376,6 +377,7 @@ private:
     bool m_contextRestorable;
     Canvas2DContextStorage m_storageMode;
     MutableStylePropertyMap m_fetchedFonts;
+    ListHashSet<String> m_fetchedFontsLRUList;
     unsigned m_tryRestoreContextAttemptCount;
     Timer<CanvasRenderingContext2D> m_dispatchContextLostEventTimer;
     Timer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;
