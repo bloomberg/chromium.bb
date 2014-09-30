@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/Element.h"
+#include "core/html/canvas/HitRegionOptions.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -17,23 +18,11 @@
 
 namespace blink {
 
-// FIXME: We already have IDL dictionary support; this should be removed.
-// http://crbug.com/403150
-struct HitRegionOptionsInternal {
-    STACK_ALLOCATED();
-
-public:
-    String id;
-    RefPtrWillBeMember<Element> control;
-    Path path;
-    WindRule fillRule;
-};
-
 class HitRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<HitRegion> {
 public:
-    static PassRefPtrWillBeRawPtr<HitRegion> create(const HitRegionOptionsInternal& options)
+    static PassRefPtrWillBeRawPtr<HitRegion> create(const Path& path, const HitRegionOptions& options)
     {
-        return adoptRefWillBeNoop(new HitRegion(options));
+        return adoptRefWillBeNoop(new HitRegion(path, options));
     }
 
     virtual ~HitRegion() { }
@@ -51,7 +40,7 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit HitRegion(const HitRegionOptionsInternal&);
+    HitRegion(const Path&, const HitRegionOptions&);
 
     String m_id;
     RefPtrWillBeMember<Element> m_control;

@@ -55,7 +55,6 @@
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
-#include "core/html/canvas/HitRegionOptions.h"
 #include "core/html/canvas/Path2D.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
@@ -2399,10 +2398,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 
 void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, ExceptionState& exceptionState)
 {
-    HitRegionOptionsInternal passOptions;
-    passOptions.id = options.id();
-    passOptions.control = options.control();
-    if (passOptions.id.isEmpty() && !passOptions.control) {
+    if (options.id().isEmpty() && !options.control()) {
         exceptionState.throwDOMException(NotSupportedError, "Both id and control are null.");
         return;
     }
@@ -2428,26 +2424,14 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
         return;
     }
 
-    passOptions.path = hitRegionPath;
-
-    if (options.fillRule() != "evenodd")
-        passOptions.fillRule = RULE_NONZERO;
-    else
-        passOptions.fillRule = RULE_EVENODD;
-
-    addHitRegionInternal(passOptions, exceptionState);
-}
-
-void CanvasRenderingContext2D::addHitRegionInternal(const HitRegionOptionsInternal& options, ExceptionState& exceptionState)
-{
     if (!m_hitRegionManager)
         m_hitRegionManager = HitRegionManager::create();
 
     // Remove previous region (with id or control)
-    m_hitRegionManager->removeHitRegionById(options.id);
-    m_hitRegionManager->removeHitRegionByControl(options.control.get());
+    m_hitRegionManager->removeHitRegionById(options.id());
+    m_hitRegionManager->removeHitRegionByControl(options.control().get());
 
-    RefPtrWillBeRawPtr<HitRegion> hitRegion = HitRegion::create(options);
+    RefPtrWillBeRawPtr<HitRegion> hitRegion = HitRegion::create(hitRegionPath, options);
     hitRegion->updateAccessibility(canvas());
     m_hitRegionManager->addHitRegion(hitRegion.release());
 }

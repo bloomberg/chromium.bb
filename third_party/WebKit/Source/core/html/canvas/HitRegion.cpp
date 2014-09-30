@@ -10,12 +10,15 @@
 
 namespace blink {
 
-HitRegion::HitRegion(const HitRegionOptionsInternal& options)
-    : m_id(options.id)
-    , m_control(options.control)
-    , m_path(options.path)
-    , m_fillRule(options.fillRule)
+HitRegion::HitRegion(const Path& path, const HitRegionOptions& options)
+    : m_id(options.id())
+    , m_control(options.control())
+    , m_path(path)
 {
+    if (options.fillRule() != "evenodd")
+        m_fillRule = RULE_NONZERO;
+    else
+        m_fillRule = RULE_EVENODD;
 }
 
 void HitRegion::updateAccessibility(Element* canvas)
