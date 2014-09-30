@@ -761,8 +761,8 @@ crbug.com/334269 [ Mac ] fast/css/word-spacing-characters-complex-text.html [ Sk
 crbug.com/334269 [ Mac ] virtual/threaded/animations/webkit-perspective.html [ ImageOnlyFailure Crash ]
 crbug.com/334269 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure Crash ]
 
-crbug.com/334269 [ Mac ] fast/text/zero-width-characters-complex-script.html [ Failure ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Failure ]
+crbug.com/334269 [ Mac ] fast/text/zero-width-characters-complex-script.html [ Failure Crash ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Failure Crash ]
 
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
@@ -1818,7 +1818,6 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-li
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-menulist.html [ NeedsRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-mirror-he-ar.html [ NeedsRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-neutral-directionality-paragraph-start.html [ NeedsRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-neutral-run.html [ NeedsRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-override.html [ NeedsRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-word-spacing-rtl.html [ NeedsRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bold-bengali.html [ NeedsRebaseline ]
@@ -2604,6 +2603,13 @@ crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-http-equiv-refr
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-location-reload.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
 crbug.com/418091 [ Mavericks ] editing/inserting/edited-whitespace-1.html [ ImageOnlyFailure ]
+
+crbug.com/418091 [ SnowLeopard Debug ] media/track/track-cue-rendering-rtl.html [ Pass Crash ]
+crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/international/bidi-neutral-run.html [ Pass Crash ]
+crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ Pass Crash ]
+crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Pass Crash ]
+crbug.com/418091 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Pass Crash ]
+crbug.com/418091 [ SnowLeopard Debug ] fast/text/atsui-bidi-control.html [ Pass Crash ]
 
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
 
