@@ -519,7 +519,6 @@
           '--disable-introspection',
       ],
       'dependencies=': [],
-      'patch': 'patches/libgdk-pixbuf2.0-0.diff',
       'run_before_build': 'scripts/libgdk-pixbuf2.0-0.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
