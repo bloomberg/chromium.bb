@@ -2832,9 +2832,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.volumeManager_)
       this.volumeManager_.dispose();
     for (var i = 0;
-         i < this.fileTransferController_.pendingTaskId.length;
+         i < this.fileTransferController_.pendingTaskIds.length;
          i++) {
-      var taskId = this.fileTransferController_.pendingTaskId[i];
+      var taskId = this.fileTransferController_.pendingTaskIds[i];
       var item =
           this.backgroundPage_.background.progressCenter.getItemById(taskId);
       item.message = '';
