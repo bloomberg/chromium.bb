@@ -944,5 +944,27 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
   menu.reset();
 }
 
+// Resolution in UpdateDisplay is not being respected on Windows 8.
+#if defined(OS_WIN)
+#define MAYBE_DisplayRotation DISABLED_DisplayRotation
+#else
+#define MAYBE_DisplayRotation DisplayRotation
+#endif
+
+// Tests that the virtual keyboard correctly resizes with a change to display
+// orientation. See crbug/417612.
+TEST_F(VirtualKeyboardRootWindowControllerTest, MAYBE_DisplayRotation) {
+  UpdateDisplay("800x600");
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* keyboard_container =
+      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
+  ASSERT_TRUE(keyboard_container);
+  keyboard_container->Show();
+  EXPECT_EQ("0,0 800x600", keyboard_container->bounds().ToString());
+
+  UpdateDisplay("600x800");
+  EXPECT_EQ("0,0 600x800", keyboard_container->bounds().ToString());
+}
+
 }  // namespace test
 }  // namespace ash

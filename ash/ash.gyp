@@ -616,6 +616,8 @@
       'wm/toplevel_window_event_handler.h',
       'wm/video_detector.cc',
       'wm/video_detector.h',
+      "wm/virtual_keyboard_container_layout_manager.cc",
+      "wm/virtual_keyboard_container_layout_manager.h",
       'wm/window_animations.cc',
       'wm/window_animations.h',
       'wm/window_positioner.cc',
