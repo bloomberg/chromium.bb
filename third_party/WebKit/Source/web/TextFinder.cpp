@@ -441,13 +441,13 @@ void TextFinder::updateFindMatchRects()
     }
 
     size_t deadMatches = 0;
-    for (Vector<FindMatch>::iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it) {
-        if (!it->m_range->boundaryPointsValid() || !it->m_range->startContainer()->inDocument())
-            it->m_rect = FloatRect();
+    for (FindMatch& match : m_findMatchesCache) {
+        if (!match.m_range->boundaryPointsValid() || !match.m_range->startContainer()->inDocument())
+            match.m_rect = FloatRect();
         else if (!m_findMatchRectsAreValid)
-            it->m_rect = findInPageRectFromRange(it->m_range.get());
+            match.m_rect = findInPageRectFromRange(match.m_range.get());
 
-        if (it->m_rect.isEmpty())
+        if (match.m_rect.isEmpty())
             ++deadMatches;
     }
 
@@ -456,9 +456,9 @@ void TextFinder::updateFindMatchRects()
         WillBeHeapVector<FindMatch> filteredMatches;
         filteredMatches.reserveCapacity(m_findMatchesCache.size() - deadMatches);
 
-        for (Vector<FindMatch>::const_iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it) {
-            if (!it->m_rect.isEmpty())
-                filteredMatches.append(*it);
+        for (const FindMatch& match : m_findMatchesCache) {
+            if (!match.m_rect.isEmpty())
+                filteredMatches.append(match);
         }
 
         m_findMatchesCache.swap(filteredMatches);
@@ -493,15 +493,15 @@ void TextFinder::appendFindMatchRects(Vector<WebFloatRect>& frameRects)
 {
     updateFindMatchRects();
     frameRects.reserveCapacity(frameRects.size() + m_findMatchesCache.size());
-    for (Vector<FindMatch>::const_iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it) {
-        ASSERT(!it->m_rect.isEmpty());
-        frameRects.append(it->m_rect);
+    for (const FindMatch& match : m_findMatchesCache) {
+        ASSERT(!match.m_rect.isEmpty());
+        frameRects.append(match.m_rect);
     }
 }
 
 int TextFinder::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
 {
-    TextFinder* bestFinder = 0;
+    TextFinder* bestFinder = nullptr;
     int indexInBestFrame = -1;
     float distanceInBestFrame = FLT_MAX;
 
@@ -600,7 +600,7 @@ PassOwnPtr<TextFinder> TextFinder::create(WebLocalFrameImpl& ownerFrame)
 
 TextFinder::TextFinder(WebLocalFrameImpl& ownerFrame)
     : m_ownerFrame(ownerFrame)
-    , m_currentActiveMatchFrame(0)
+    , m_currentActiveMatchFrame(nullptr)
     , m_activeMatchIndexInCurrentFrame(-1)
     , m_resumeScopingFromRange(nullptr)
     , m_lastMatchCount(-1)

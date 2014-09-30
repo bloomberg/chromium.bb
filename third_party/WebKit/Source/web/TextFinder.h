@@ -214,7 +214,7 @@ private:
     WTF::String m_lastSearchString;
 
     // Keeps track of how many matches this frame has found so far, so that we
-    // don't loose count between scoping efforts, and is also used (in conjunction
+    // don't lose count between scoping efforts, and is also used (in conjunction
     // with m_lastSearchString) to figure out if we need to search the frame again.
     int m_lastMatchCount;
 
