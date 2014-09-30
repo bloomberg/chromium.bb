@@ -26,7 +26,8 @@ class NavigationControllerImpl;
 class NavigationEntryImpl;
 class NavigatorDelegate;
 class RenderFrameHostImpl;
-struct NavigationBeforeCommitInfo;
+struct CommitNavigationParams;
+struct CommonNavigationParams;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -114,7 +115,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // Signal |render_frame_host| that a navigation is ready to commit (the
   // response to the navigation request has been received).
   virtual void CommitNavigation(RenderFrameHostImpl* render_frame_host,
-                                const NavigationBeforeCommitInfo& info) {};
+                                const GURL& stream_url,
+                                const CommonNavigationParams& common_params,
+                                const CommitNavigationParams& commit_params) {}
 
   // Called when the first resource request for a given navigation is executed
   // so that it can be tracked into an histogram.

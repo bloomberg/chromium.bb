@@ -402,6 +402,8 @@
       'common/mojo/service_registry_impl.cc',
       'common/mojo/service_registry_impl.h',
       'common/navigation_gesture.h',
+      'common/navigation_params.cc',
+      'common/navigation_params.h',
       'common/net/url_fetcher.cc',
       'common/net/url_request_user_data.cc',
       'common/net/url_request_user_data.h',

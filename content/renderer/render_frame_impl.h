@@ -33,6 +33,7 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
 
+class GURL;
 class TransportDIB;
 struct FrameMsg_Navigate_Params;
 
@@ -79,6 +80,8 @@ class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
+struct CommitNavigationParams;
+struct CommonNavigationParams;
 struct CustomContextMenuContext;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -548,6 +551,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSelectPopupMenuItem(int selected_index);
   void OnCopyToFindPboard();
 #endif
+
+  // PlzNavigate
+  void OnCommitNavigation(const GURL& stream_url,
+                          const CommonNavigationParams& common_params,
+                          const CommitNavigationParams& commit_params);
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(

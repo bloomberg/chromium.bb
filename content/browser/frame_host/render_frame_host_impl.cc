@@ -1054,10 +1054,11 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
 }
 
 void RenderFrameHostImpl::OnBeginNavigation(
-    const FrameHostMsg_BeginNavigation_Params& params) {
+    const FrameHostMsg_BeginNavigation_Params& params,
+    const CommonNavigationParams& common_params) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  frame_tree_node()->render_manager()->OnBeginNavigation(params);
+  frame_tree_node()->render_manager()->OnBeginNavigation(params, common_params);
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
@@ -1227,8 +1228,8 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   // so do not grant them the ability to request additional URLs.
   if (!GetProcess()->IsIsolatedGuest()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-        GetProcess()->GetID(), params.url);
-    if (params.url.SchemeIs(url::kDataScheme) &&
+        GetProcess()->GetID(), params.common_params.url);
+    if (params.common_params.url.SchemeIs(url::kDataScheme) &&
         params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
       // If 'data:' is used, and we have a 'file:' base url, grant access to
       // local files.
@@ -1265,20 +1266,20 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   //
   // Blink doesn't send throb notifications for JavaScript URLs, so we
   // don't want to either.
-  if (!params.url.SchemeIs(url::kJavaScriptScheme))
+  if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme))
     delegate_->DidStartLoading(this, true);
 }
 
 void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   FrameMsg_Navigate_Params params;
+  params.common_params.url = url;
+  params.common_params.transition = ui::PAGE_TRANSITION_LINK;
+  params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  params.commit_params.browser_navigation_start = base::TimeTicks::Now();
   params.page_id = -1;
   params.pending_history_list_offset = -1;
   params.current_history_list_offset = -1;
   params.current_history_list_length = 0;
-  params.url = url;
-  params.transition = ui::PAGE_TRANSITION_LINK;
-  params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params.browser_navigation_start = base::TimeTicks::Now();
   Navigate(params);
 }
 
@@ -1369,6 +1370,20 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
 
 void RenderFrameHostImpl::NotificationClosed(int notification_id) {
   cancel_notification_callbacks_.erase(notification_id);
+}
+
+// PlzNavigate
+void RenderFrameHostImpl::CommitNavigation(
+    const GURL& stream_url,
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params) {
+  // TODO(clamy): Check if we have to add security checks for the browser plugin
+  // guests.
+
+  Send(new FrameMsg_CommitNavigation(
+      routing_id_, stream_url, common_params, commit_params));
+  // TODO(clamy): Check if we should start the throbber for non javascript urls
+  // here.
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
@@ -1510,7 +1525,8 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
     SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
     DCHECK(!proceed_time.is_null());
-    suspended_nav_params_->browser_navigation_start = proceed_time;
+    suspended_nav_params_->commit_params.browser_navigation_start =
+        proceed_time;
     Send(new FrameMsg_Navigate(routing_id_, *suspended_nav_params_));
     suspended_nav_params_.reset();
   }

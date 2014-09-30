@@ -176,16 +176,15 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 }
 
 void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
-  FrameHostMsg_BeginNavigation_Params params;
-  params.method = "GET";
-  params.url = url;
-  params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
-  params.load_flags = net::LOAD_NORMAL;
-  params.has_user_gesture = false;
-  params.transition_type = ui::PAGE_TRANSITION_LINK;
-  params.should_replace_current_entry = false;
-  params.allow_download = true;
-  OnBeginNavigation(params);
+  FrameHostMsg_BeginNavigation_Params begin_params;
+  CommonNavigationParams common_params;
+  begin_params.method = "GET";
+  begin_params.load_flags = net::LOAD_NORMAL;
+  begin_params.has_user_gesture = false;
+  common_params.url = url;
+  common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
+  common_params.transition = ui::PAGE_TRANSITION_LINK;
+  OnBeginNavigation(begin_params, common_params);
 }
 
 void TestRenderFrameHost::DidDisownOpener() {

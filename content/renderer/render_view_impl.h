@@ -26,8 +26,10 @@
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
+#include "content/common/frame_message_enums.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/navigation_params.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
@@ -624,7 +626,7 @@ class CONTENT_EXPORT RenderViewImpl
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
 
-  static bool IsReload(const FrameMsg_Navigate_Params& params);
+  static bool IsReload(FrameMsg_Navigate_Type::Value navigation_type);
 
   static Referrer GetReferrerFromRequest(
       blink::WebFrame* frame,

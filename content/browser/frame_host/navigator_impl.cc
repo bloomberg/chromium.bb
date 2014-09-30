@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/navigation_before_commit_info.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -19,6 +20,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/navigation_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -72,6 +74,62 @@ RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
   return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
 }
 
+void MakeNavigateParams(const NavigationEntryImpl& entry,
+                        NavigationControllerImpl* controller,
+                        NavigationController::ReloadType reload_type,
+                        base::TimeTicks navigation_start,
+                        FrameMsg_Navigate_Params* params) {
+  params->common_params = CommonNavigationParams(
+      entry.GetURL(), entry.GetReferrer(), entry.GetTransitionType(),
+      GetNavigationType(controller->GetBrowserContext(), entry, reload_type),
+      !entry.IsViewSourceMode());
+  params->request_params = RequestNavigationParams(
+      entry.GetHasPostData(),
+      entry.extra_headers(),
+      entry.GetBrowserInitiatedPostData());
+  params->commit_params = CommitNavigationParams(
+      entry.GetPageState(), entry.GetIsOverridingUserAgent(), navigation_start);
+  if (!entry.GetBaseURLForDataURL().is_empty()) {
+    params->base_url_for_data_url = entry.GetBaseURLForDataURL();
+    params->history_url_for_data_url = entry.GetVirtualURL();
+  }
+  params->should_replace_current_entry = entry.should_replace_entry();
+  // This is used by the old performance infrastructure to set up DocumentState
+  // associated with the RenderView.
+  // TODO(ppi): make it go away.
+  params->request_time = base::Time::Now();
+  params->transferred_request_child_id =
+      entry.transferred_global_request_id().child_id;
+  params->transferred_request_request_id =
+      entry.transferred_global_request_id().request_id;
+
+  params->page_id = entry.GetPageID();
+  params->should_clear_history_list = entry.should_clear_history_list();
+  if (entry.should_clear_history_list()) {
+    // Set the history list related parameters to the same values a
+    // NavigationController would return before its first navigation. This will
+    // fully clear the RenderView's view of the session history.
+    params->pending_history_list_offset = -1;
+    params->current_history_list_offset = -1;
+    params->current_history_list_length = 0;
+  } else {
+    params->pending_history_list_offset = controller->GetIndexOfEntry(&entry);
+    params->current_history_list_offset =
+        controller->GetLastCommittedEntryIndex();
+    params->current_history_list_length = controller->GetEntryCount();
+  }
+  // Set the redirect chain to the navigation's redirects, unless we are
+  // returning to a completed navigation (whose previous redirects don't apply).
+  if (ui::PageTransitionIsNewNavigation(params->common_params.transition)) {
+    params->redirects = entry.GetRedirectChain();
+  } else {
+    params->redirects.clear();
+  }
+
+  params->can_load_local_resources = entry.GetCanLoadLocalResources();
+  params->frame_to_navigate = entry.GetFrameToNavigate();
+}
+
 }  // namespace
 
 
@@ -82,74 +140,7 @@ NavigatorImpl::NavigatorImpl(
       delegate_(delegate) {
 }
 
-NavigatorImpl::~NavigatorImpl() {
-}
-
-// static.
-void NavigatorImpl::MakeNavigateParams(
-    const NavigationEntryImpl& entry,
-    const NavigationControllerImpl& controller,
-    NavigationController::ReloadType reload_type,
-    base::TimeTicks navigation_start,
-    FrameMsg_Navigate_Params* params) {
-  params->page_id = entry.GetPageID();
-  params->should_clear_history_list = entry.should_clear_history_list();
-  params->should_replace_current_entry = entry.should_replace_entry();
-  if (entry.should_clear_history_list()) {
-    // Set the history list related parameters to the same values a
-    // NavigationController would return before its first navigation. This will
-    // fully clear the RenderView's view of the session history.
-    params->pending_history_list_offset = -1;
-    params->current_history_list_offset = -1;
-    params->current_history_list_length = 0;
-  } else {
-    params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
-    params->current_history_list_offset =
-        controller.GetLastCommittedEntryIndex();
-    params->current_history_list_length = controller.GetEntryCount();
-  }
-  params->url = entry.GetURL();
-  if (!entry.GetBaseURLForDataURL().is_empty()) {
-    params->base_url_for_data_url = entry.GetBaseURLForDataURL();
-    params->history_url_for_data_url = entry.GetVirtualURL();
-  }
-  params->referrer = entry.GetReferrer();
-  params->transition = entry.GetTransitionType();
-  params->page_state = entry.GetPageState();
-  params->navigation_type =
-      GetNavigationType(controller.GetBrowserContext(), entry, reload_type);
-  // This is used by the old performance infrastructure to set up DocumentState
-  // associated with the RenderView.
-  // TODO(ppi): make it go away.
-  params->request_time = base::Time::Now();
-  params->extra_headers = entry.extra_headers();
-  params->transferred_request_child_id =
-      entry.transferred_global_request_id().child_id;
-  params->transferred_request_request_id =
-      entry.transferred_global_request_id().request_id;
-  params->is_overriding_user_agent = entry.GetIsOverridingUserAgent();
-  // Avoid downloading when in view-source mode.
-  params->allow_download = !entry.IsViewSourceMode();
-  params->is_post = entry.GetHasPostData();
-  if (entry.GetBrowserInitiatedPostData()) {
-    params->browser_initiated_post_data.assign(
-        entry.GetBrowserInitiatedPostData()->front(),
-        entry.GetBrowserInitiatedPostData()->front() +
-            entry.GetBrowserInitiatedPostData()->size());
-  }
-
-  // Set the redirect chain to the navigation's redirects, unless we are
-  // returning to a completed navigation (whose previous redirects don't apply).
-  if (ui::PageTransitionIsNewNavigation(params->transition)) {
-    params->redirects = entry.GetRedirectChain();
-  } else {
-    params->redirects.clear();
-  }
-
-  params->can_load_local_resources = entry.GetCanLoadLocalResources();
-  params->frame_to_navigate = entry.GetFrameToNavigate();
-  params->browser_navigation_start = navigation_start;
-}
+NavigatorImpl::~NavigatorImpl() {}
 
 NavigationController* NavigatorImpl::GetController() {
   return controller_;
@@ -317,7 +308,6 @@ bool NavigatorImpl::NavigateToEntry(
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
-  FrameMsg_Navigate_Params navigate_params;
   RenderFrameHostManager* manager =
       render_frame_host->frame_tree_node()->render_manager();
 
@@ -327,10 +317,23 @@ bool NavigatorImpl::NavigateToEntry(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation)) {
     navigation_start_time_and_url = MakeTuple(navigation_start, entry.GetURL());
-    // Create the navigation parameters.
-    MakeNavigateParams(
-        entry, *controller_, reload_type, navigation_start, &navigate_params);
-    return manager->RequestNavigation(entry, navigate_params);
+    FrameMsg_Navigate_Type::Value navigation_type =
+        GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
+    scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
+        render_frame_host->frame_tree_node()->frame_tree_node_id(),
+        CommonNavigationParams(entry.GetURL(),
+                               entry.GetReferrer(),
+                               entry.GetTransitionType(),
+                               navigation_type,
+                               !entry.IsViewSourceMode()),
+        CommitNavigationParams(entry.GetPageState(),
+                               entry.GetIsOverridingUserAgent(),
+                               navigation_start)));
+    RequestNavigationParams request_params(entry.GetHasPostData(),
+                                           entry.extra_headers(),
+                                           entry.GetBrowserInitiatedPostData());
+    return manager->RequestNavigation(navigation_request.Pass(),
+                                      request_params);
   }
 
   RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
@@ -352,8 +355,9 @@ bool NavigatorImpl::NavigateToEntry(
   // Create the navigation parameters.
   // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once
   // http://crbug.com/408684 is fixed.
+  FrameMsg_Navigate_Params navigate_params;
   MakeNavigateParams(
-      entry, *controller_, reload_type, navigation_start, &navigate_params);
+      entry, controller_, reload_type, navigation_start, &navigate_params);
 
   // Navigate in the desired RenderFrameHost.
   // We can skip this step in the rare case that this is a transfer navigation
@@ -654,11 +658,12 @@ void NavigatorImpl::RequestTransferURL(
 
 void NavigatorImpl::CommitNavigation(
     RenderFrameHostImpl* render_frame_host,
-    const NavigationBeforeCommitInfo& info) {
-  CheckWebUIRendererDoesNotDisplayNormalURL(
-      render_frame_host, info.navigation_url);
-  // TODO(clamy): the render_frame_host should now send a commit IPC to the
-  // renderer.
+    const GURL& stream_url,
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params) {
+  CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
+                                            common_params.url);
+  render_frame_host->CommitNavigation(stream_url, common_params, commit_params);
 }
 
 void NavigatorImpl::LogResourceRequestTime(

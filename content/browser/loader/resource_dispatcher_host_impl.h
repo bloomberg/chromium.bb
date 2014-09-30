@@ -61,6 +61,7 @@ class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
 class SaveFileManager;
 class WebContentsImpl;
+struct CommonNavigationParams;
 struct DownloadSaveInfo;
 struct NavigationRequestInfo;
 struct Referrer;
@@ -252,7 +253,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // PlzNavigate
   // Called by NavigationRequest to start a navigation request in the node
   // identified by |frame_node_id|.
-  void StartNavigationRequest(const NavigationRequestInfo& info,
+  void StartNavigationRequest(const CommonNavigationParams& common_params,
+                              const NavigationRequestInfo& info,
                               scoped_refptr<ResourceRequestBody> request_body,
                               int64 navigation_request_id,
                               int64 frame_node_id);

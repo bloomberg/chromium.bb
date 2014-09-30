@@ -30,6 +30,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
+#include "content/common/navigation_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -45,35 +46,49 @@
 
 namespace content {
 
-namespace {
-
 // PlzNavigate
-// Simulates a renderer response to a navigation request when there is no live
-// renderer.
-FrameHostMsg_BeginNavigation_Params BeginNavigationFromNavigate(
-    const FrameMsg_Navigate_Params& navigate_params) {
-  FrameHostMsg_BeginNavigation_Params begin_navigation_params;
-  begin_navigation_params.method = navigate_params.is_post ? "POST" : "GET";
-  begin_navigation_params.url = navigate_params.url;
-  begin_navigation_params.referrer =
-      Referrer(navigate_params.referrer.url, navigate_params.referrer.policy);
-
-  // TODO(clamy): This should be modified to take into account caching policy
-  // requirements (eg for POST reloads).
-  begin_navigation_params.load_flags = net::LOAD_NORMAL;
-
-  // TODO(clamy): Post data from the browser should be put in the request body.
-
-  begin_navigation_params.has_user_gesture = false;
-  begin_navigation_params.transition_type = navigate_params.transition;
-  begin_navigation_params.should_replace_current_entry =
-      navigate_params.should_replace_current_entry;
-  begin_navigation_params.allow_download =
-      navigate_params.allow_download;
-  return begin_navigation_params;
+// Returns the net load flags to use based on the navigation type.
+// TODO(clamy): unify the code with what is happening on the renderer side.
+int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
+  int load_flags = net::LOAD_NORMAL;
+  switch (navigation_type) {
+    case FrameMsg_Navigate_Type::RELOAD:
+    case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
+      load_flags |= net::LOAD_VALIDATE_CACHE;
+      break;
+    case FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE:
+      load_flags |= net::LOAD_BYPASS_CACHE;
+      break;
+    case FrameMsg_Navigate_Type::RESTORE:
+      load_flags |= net::LOAD_PREFERRING_CACHE;
+      break;
+    case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      break;
+    case FrameMsg_Navigate_Type::NORMAL:
+    default:
+      break;
+  }
+  return load_flags;
 }
 
-}  // namespace
+// PlzNavigate
+// Generates a default FrameHostMsg_BeginNavigation_Params to be used when there
+// is no live renderer.
+FrameHostMsg_BeginNavigation_Params MakeDefaultBeginNavigation(
+    const RequestNavigationParams& request_params,
+    FrameMsg_Navigate_Type::Value navigation_type) {
+  FrameHostMsg_BeginNavigation_Params begin_navigation_params;
+  begin_navigation_params.method = request_params.is_post ? "POST" : "GET";
+  begin_navigation_params.load_flags =
+      LoadFlagFromNavigationType(navigation_type);
+
+  // TODO(clamy): Post data from the browser should be put in the request body.
+  // Headers should be filled in as well.
+
+  begin_navigation_params.has_user_gesture = false;
+  return begin_navigation_params;
+}
 
 bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
   node->render_manager()->pending_delete_hosts_.clear();
@@ -565,33 +580,53 @@ void RenderFrameHostManager::ResetProxyHosts() {
 
 // PlzNavigate
 bool RenderFrameHostManager::RequestNavigation(
-    const NavigationEntryImpl& entry,
-    const FrameMsg_Navigate_Params& navigate_params) {
+    scoped_ptr<NavigationRequest> navigation_request,
+    const RequestNavigationParams& request_params) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
+
+  // TODO(clamy): Check if navigations are blocked and if so store the
+  // parameters.
+
+  // If there is an ongoing request it must be canceled.
+  if (navigation_request_.get())
+    navigation_request_->CancelNavigation();
+
+  navigation_request_ = navigation_request.Pass();
+
   if (render_frame_host_->IsRenderFrameLive()) {
     // TODO(clamy): send a RequestNavigation IPC.
     return true;
   }
 
   // The navigation request is sent directly to the IO thread.
-  OnBeginNavigation(BeginNavigationFromNavigate(navigate_params));
+  OnBeginNavigation(
+      MakeDefaultBeginNavigation(
+          request_params, navigation_request_->common_params().navigation_type),
+      navigation_request_->common_params());
   return true;
 }
 
 // PlzNavigate
 void RenderFrameHostManager::OnBeginNavigation(
-    const FrameHostMsg_BeginNavigation_Params& params) {
+    const FrameHostMsg_BeginNavigation_Params& params,
+    const CommonNavigationParams& common_params) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  // TODO(clamy): Check if navigations are blocked and if so, return
-  // immediately.
-  NavigationRequestInfo info(params);
+  // TODO(clamy): In case of a renderer initiated navigation create a new
+  // NavigationRequest.
+  DCHECK(navigation_request_.get());
+  // Update the referrer with the one received from the renderer.
+  navigation_request_->common_params().referrer = common_params.referrer;
 
-  info.first_party_for_cookies = frame_tree_node_->IsMainFrame() ?
-      params.url : frame_tree_node_->frame_tree()->root()->current_url();
-  info.is_main_frame = frame_tree_node_->IsMainFrame();
-  info.parent_is_main_frame = !frame_tree_node_->parent() ?
+  scoped_ptr<NavigationRequestInfo> info(new NavigationRequestInfo(params));
+
+  info->first_party_for_cookies =
+      frame_tree_node_->IsMainFrame()
+          ? navigation_request_->common_params().url
+          : frame_tree_node_->frame_tree()->root()->current_url();
+  info->is_main_frame = frame_tree_node_->IsMainFrame();
+  info->parent_is_main_frame = !frame_tree_node_->parent() ?
       false : frame_tree_node_->parent()->IsMainFrame();
 
   // TODO(clamy): Check if the current RFH should be initialized (in case it has
@@ -599,13 +634,7 @@ void RenderFrameHostManager::OnBeginNavigation(
   // TODO(clamy): Spawn a speculative renderer process if we do not have one to
   // use for the navigation.
 
-  // If there is an ongoing request it must be canceled.
-  if (navigation_request_.get())
-    navigation_request_->CancelNavigation();
-
-  navigation_request_.reset(new NavigationRequest(
-      info, frame_tree_node_->frame_tree_node_id()));
-  navigation_request_->BeginNavigation(params.request_body);
+  navigation_request_->BeginNavigation(info.Pass(), params.request_body);
 }
 
 // PlzNavigate
@@ -628,7 +657,7 @@ void RenderFrameHostManager::CommitNavigation(
   scoped_refptr<SiteInstance> new_instance = GetSiteInstanceForNavigation(
       info.navigation_url,
       NULL,
-      navigation_request_->info().navigation_params.transition_type,
+      navigation_request_->common_params().transition,
       false,
       false);
   DCHECK(!pending_render_frame_host_.get());
@@ -661,7 +690,10 @@ void RenderFrameHostManager::CommitNavigation(
   }
 
   frame_tree_node_->navigator()->CommitNavigation(
-      render_frame_host_.get(), info);
+      render_frame_host_.get(),
+      info.stream_url,
+      navigation_request_->common_params(),
+      navigation_request_->commit_params());
 }
 
 void RenderFrameHostManager::Observe(

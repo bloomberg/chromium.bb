@@ -18,7 +18,8 @@ namespace content {
 // ResourceDispatcherHost. It is initialized on the UI thread, and then passed
 // to the IO thread by a NavigationRequest object.
 struct NavigationRequestInfo {
-  NavigationRequestInfo(const FrameHostMsg_BeginNavigation_Params& params);
+  explicit NavigationRequestInfo(
+      const FrameHostMsg_BeginNavigation_Params& params);
 
   const FrameHostMsg_BeginNavigation_Params navigation_params;
 

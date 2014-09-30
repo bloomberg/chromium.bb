@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/tuple.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -13,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
+class GURL;
 struct FrameMsg_Navigate_Params;
 
 namespace content {
@@ -20,6 +22,9 @@ namespace content {
 class NavigationControllerImpl;
 class NavigatorDelegate;
 struct LoadCommittedDetails;
+struct CommitNavigationParams;
+struct CommonNavigationParams;
+struct RequestNavigationParams;
 
 // This class is an implementation of Navigator, responsible for managing
 // navigations in regular browser tabs.
@@ -27,13 +32,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
  public:
   NavigatorImpl(NavigationControllerImpl* navigation_controller,
                 NavigatorDelegate* delegate);
-
-  // Fills in |params| based on the content of |entry|.
-  static void MakeNavigateParams(const NavigationEntryImpl& entry,
-                                 const NavigationControllerImpl& controller,
-                                 NavigationController::ReloadType reload_type,
-                                 base::TimeTicks navigation_start,
-                                 FrameMsg_Navigate_Params* params);
 
   // Navigator implementation.
   virtual NavigationController* GetController() OVERRIDE;
@@ -74,8 +72,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       bool user_gesture) OVERRIDE;
   virtual void CommitNavigation(
       RenderFrameHostImpl* render_frame_host,
-      const NavigationBeforeCommitInfo& info) OVERRIDE;
-
+      const GURL& stream_url,
+      const CommonNavigationParams& common_params,
+      const CommitNavigationParams& commit_params) OVERRIDE;
   virtual void LogResourceRequestTime(
       base::TimeTicks timestamp, const GURL& url) OVERRIDE;
 

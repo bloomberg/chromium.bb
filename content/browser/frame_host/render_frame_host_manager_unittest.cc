@@ -12,12 +12,14 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/navigation_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -40,6 +42,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -394,6 +397,47 @@ class RenderFrameHostManagerTest
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableBrowserSideNavigation);
   }
+
+  void SendRequestNavigation(FrameTreeNode* node,
+                             const GURL& url) {
+    SendRequestNavigationWithParameters(
+        node, url, Referrer(), ui::PAGE_TRANSITION_LINK,
+        FrameMsg_Navigate_Type::NORMAL);
+  }
+
+  void SendRequestNavigationWithParameters(
+      FrameTreeNode* node,
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition_type,
+      FrameMsg_Navigate_Type::Value navigation_type) {
+    scoped_ptr<NavigationEntryImpl> entry(
+        NavigationEntryImpl::FromNavigationEntry(
+            NavigationController::CreateNavigationEntry(
+                url,
+                referrer,
+                transition_type,
+                false,
+                std::string(),
+                controller().GetBrowserContext())));
+    scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
+        node->frame_tree_node_id(),
+        CommonNavigationParams(entry->GetURL(),
+                               entry->GetReferrer(),
+                               entry->GetTransitionType(),
+                               navigation_type,
+                               !entry->IsViewSourceMode()),
+        CommitNavigationParams(entry->GetPageState(),
+                               entry->GetIsOverridingUserAgent(),
+                               base::TimeTicks::Now())));
+    RequestNavigationParams request_params(
+        entry->GetHasPostData(),
+        entry->extra_headers(),
+        entry->GetBrowserInitiatedPostData());
+    node->render_manager()->RequestNavigation(navigation_request.Pass(),
+                                              request_params);
+  }
+
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
   scoped_ptr<FrameLifetimeConsistencyChecker> lifetime_checker_;
@@ -1708,6 +1752,8 @@ TEST_F(RenderFrameHostManagerTest,
 
 // PlzNavigate: Test that a proper NavigationRequest is created by
 // BeginNavigation.
+// Note that all PlzNavigate methods on the browser side require the use of the
+// flag kEnableBrowserSideNavigation.
 TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
@@ -1725,29 +1771,33 @@ TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
       contents()->GetFrameTree()->AddFrame(
           contents()->GetFrameTree()->root(), 14, "Child"));
 
+  RenderFrameHostManager* subframe_manager =
+      subframe_rfh->frame_tree_node()->render_manager();
+  SendRequestNavigation(subframe_rfh->frame_tree_node(), kUrl2);
   // Simulate a BeginNavigation IPC on the subframe.
   subframe_rfh->SendBeginNavigationWithURL(kUrl2);
   NavigationRequest* subframe_request =
-      GetNavigationRequestForRenderFrameManager(
-          subframe_rfh->frame_tree_node()->render_manager());
+      GetNavigationRequestForRenderFrameManager(subframe_manager);
   ASSERT_TRUE(subframe_request);
-  EXPECT_EQ(kUrl2, subframe_request->info().navigation_params.url);
+  EXPECT_EQ(kUrl2, subframe_request->common_params().url);
   // First party for cookies url should be that of the main frame.
-  EXPECT_EQ(
-      kUrl1, subframe_request->info().first_party_for_cookies);
-  EXPECT_FALSE(subframe_request->info().is_main_frame);
-  EXPECT_TRUE(subframe_request->info().parent_is_main_frame);
+  EXPECT_EQ(kUrl1, subframe_request->info_for_test()->first_party_for_cookies);
+  EXPECT_FALSE(subframe_request->info_for_test()->is_main_frame);
+  EXPECT_TRUE(subframe_request->info_for_test()->parent_is_main_frame);
   EXPECT_EQ(kFirstNavRequestID, subframe_request->navigation_request_id());
 
+  RenderFrameHostManager* main_frame_manager =
+      contents()->GetMainFrame()->frame_tree_node()->render_manager();
+  SendRequestNavigation(contents()->GetMainFrame()->frame_tree_node(), kUrl3);
   // Simulate a BeginNavigation IPC on the main frame.
   contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl3);
-  NavigationRequest* main_request = GetNavigationRequestForRenderFrameManager(
-      contents()->GetMainFrame()->frame_tree_node()->render_manager());
+  NavigationRequest* main_request =
+      GetNavigationRequestForRenderFrameManager(main_frame_manager);
   ASSERT_TRUE(main_request);
-  EXPECT_EQ(kUrl3, main_request->info().navigation_params.url);
-  EXPECT_EQ(kUrl3, main_request->info().first_party_for_cookies);
-  EXPECT_TRUE(main_request->info().is_main_frame);
-  EXPECT_FALSE(main_request->info().parent_is_main_frame);
+  EXPECT_EQ(kUrl3, main_request->common_params().url);
+  EXPECT_EQ(kUrl3, main_request->info_for_test()->first_party_for_cookies);
+  EXPECT_TRUE(main_request->info_for_test()->is_main_frame);
+  EXPECT_FALSE(main_request->info_for_test()->parent_is_main_frame);
   EXPECT_EQ(kFirstNavRequestID + 1, main_request->navigation_request_id());
 }
 
@@ -1759,10 +1809,9 @@ TEST_F(RenderFrameHostManagerTest,
 
   EnableBrowserSideNavigation();
   EXPECT_FALSE(main_test_rfh()->render_view_host()->IsRenderViewLive());
-  contents()->GetController().LoadURL(
-      kUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   RenderFrameHostManager* render_manager =
       main_test_rfh()->frame_tree_node()->render_manager();
+  SendRequestNavigation(main_test_rfh()->frame_tree_node(), kUrl);
   NavigationRequest* main_request =
       GetNavigationRequestForRenderFrameManager(render_manager);
   // A NavigationRequest should have been generated.
@@ -1801,6 +1850,7 @@ TEST_F(RenderFrameHostManagerTest,
 
   EnableBrowserSideNavigation();
   // Navigate to a different site.
+  SendRequestNavigation(main_test_rfh()->frame_tree_node(), kUrl2);
   main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
   NavigationRequest* main_request =
       GetNavigationRequestForRenderFrameManager(render_manager);
@@ -1837,6 +1887,7 @@ TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(kUrl0_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
 
   // Request navigation to the 1st URL and gather data.
+  SendRequestNavigation(main_test_rfh()->frame_tree_node(), kUrl1);
   main_test_rfh()->SendBeginNavigationWithURL(kUrl1);
   NavigationRequest* request1 =
       GetNavigationRequestForRenderFrameManager(render_manager);
@@ -1844,6 +1895,7 @@ TEST_F(RenderFrameHostManagerTest,
   int64 request_id1 = request1->navigation_request_id();
 
   // Request navigation to the 2nd URL and gather more data.
+  SendRequestNavigation(main_test_rfh()->frame_tree_node(), kUrl2);
   main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
   NavigationRequest* request2 =
       GetNavigationRequestForRenderFrameManager(render_manager);
@@ -1889,6 +1941,44 @@ TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationHistogramTest) {
   EnableBrowserSideNavigation();
   contents()->NavigateAndCommit(kUrl1);
   histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 2);
+}
+
+// PlzNavigate: Test that a reload navigation is properly signaled to the
+// renderer when the navigation can commit.
+TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationReload) {
+  const GURL kUrl("http://www.google.com/");
+  contents()->NavigateAndCommit(kUrl);
+
+  EnableBrowserSideNavigation();
+  RenderFrameHostManager* render_manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  SendRequestNavigationWithParameters(
+      main_test_rfh()->frame_tree_node(), kUrl, Referrer(),
+      ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD);
+  contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl);
+  // A NavigationRequest should have been generated.
+  NavigationRequest* main_request =
+      GetNavigationRequestForRenderFrameManager(render_manager);
+  ASSERT_TRUE(main_request != NULL);
+  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
+            main_request->common_params().navigation_type);
+  int page_id = contents()->GetMaxPageIDForSiteInstance(
+                    main_test_rfh()->GetSiteInstance()) + 1;
+  main_test_rfh()->SendNavigate(page_id, kUrl);
+
+  // Now do a shift+reload.
+  SendRequestNavigationWithParameters(
+      main_test_rfh()->frame_tree_node(),
+      kUrl,
+      Referrer(),
+      ui::PAGE_TRANSITION_LINK,
+      FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
+  contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl);
+  // A NavigationRequest should have been generated.
+  main_request = GetNavigationRequestForRenderFrameManager(render_manager);
+  ASSERT_TRUE(main_request != NULL);
+  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE,
+            main_request->common_params().navigation_type);
 }
 
 }  // namespace content

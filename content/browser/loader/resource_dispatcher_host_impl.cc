@@ -54,6 +54,7 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -1755,6 +1756,7 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 }
 
 void ResourceDispatcherHostImpl::StartNavigationRequest(
+    const CommonNavigationParams& params,
     const NavigationRequestInfo& info,
     scoped_refptr<ResourceRequestBody> request_body,
     int64 navigation_request_id,

@@ -343,12 +343,10 @@ static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
 
 // static
-bool RenderViewImpl::IsReload(const FrameMsg_Navigate_Params& params) {
-  return
-      params.navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-      params.navigation_type == FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
-      params.navigation_type ==
-          FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+bool RenderViewImpl::IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
+  return navigation_type == FrameMsg_Navigate_Type::RELOAD ||
+         navigation_type == FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
+         navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
 // static
@@ -1408,7 +1406,8 @@ bool RenderViewImpl::IsBackForwardToStaleEntry(
   // Make sure this isn't a back/forward to an entry we have already cropped
   // or replaced from our history, before the browser knew about it.  If so,
   // a new navigation has committed in the mean time, and we can ignore this.
-  bool is_back_forward = !is_reload && params.page_state.IsValid();
+  bool is_back_forward =
+      !is_reload && params.commit_params.page_state.IsValid();
 
   // Note: if the history_list_length_ is 0 for a back/forward, we must be
   // restoring from a previous session.  We'll update our state in OnNavigate.
@@ -2284,8 +2283,8 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
-  if (!params.url.SchemeIs(url::kJavaScriptScheme) &&
-      params.navigation_type == FrameMsg_Navigate_Type::RESTORE) {
+  if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme) &&
+      params.common_params.navigation_type == FrameMsg_Navigate_Type::RESTORE) {
     // We're doing a load of a page that was restored from the last session. By
     // default this prefers the cache over loading (LOAD_PREFERRING_CACHE) which
     // can result in stale data for pages that are set to expire. We explicitly
@@ -2300,17 +2299,18 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
         WebURLRequest::UseProtocolCachePolicy);
   }
 
-  if (IsReload(params))
+  if (IsReload(params.common_params.navigation_type))
     document_state->set_load_type(DocumentState::RELOAD);
-  else if (params.page_state.IsValid())
+  else if (params.commit_params.page_state.IsValid())
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
-  internal_data->set_is_overriding_user_agent(params.is_overriding_user_agent);
+  internal_data->set_is_overriding_user_agent(
+      params.commit_params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
-      params.navigation_type ==
-          FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+      params.common_params.navigation_type ==
+      FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
   document_state->set_can_load_local_resources(params.can_load_local_resources);
 }
 
@@ -2321,20 +2321,20 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
   // A navigation resulting from loading a javascript URL should not be treated
   // as a browser initiated event.  Instead, we want it to look as if the page
   // initiated any load resulting from JS execution.
-  if (!params.url.SchemeIs(url::kJavaScriptScheme)) {
+  if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme)) {
     navigation_state = NavigationState::CreateBrowserInitiated(
         params.page_id,
         params.pending_history_list_offset,
         params.should_clear_history_list,
-        params.transition);
+        params.common_params.transition);
     navigation_state->set_should_replace_current_entry(
         params.should_replace_current_entry);
     navigation_state->set_transferred_request_child_id(
         params.transferred_request_child_id);
     navigation_state->set_transferred_request_request_id(
         params.transferred_request_request_id);
-    navigation_state->set_allow_download(params.allow_download);
-    navigation_state->set_extra_headers(params.extra_headers);
+    navigation_state->set_allow_download(params.common_params.allow_download);
+    navigation_state->set_extra_headers(params.request_params.extra_headers);
   } else {
     navigation_state = NavigationState::CreateContentInitiated();
   }

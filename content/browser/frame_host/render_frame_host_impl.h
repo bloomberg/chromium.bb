@@ -55,9 +55,12 @@ class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
 class TimeoutMonitor;
+struct CommitNavigationParams;
 struct ContextMenuParams;
+struct CommonNavigationParams;
 struct GlobalRequestID;
 struct Referrer;
+struct RequestNavigationParams;
 struct ShowDesktopNotificationHostMsgParams;
 struct TransitionLayerData;
 
@@ -344,6 +347,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidCancelPopupMenu();
 #endif
 
+  // PlzNavigate: Indicates that a navigation is ready to commit and can be
+  // handled by this RenderFrame.
+  void CommitNavigation(const GURL& stream_url,
+                        const CommonNavigationParams& common_params,
+                        const CommitNavigationParams& commit_params);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -413,8 +422,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                      const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
-  void OnBeginNavigation(
-      const FrameHostMsg_BeginNavigation_Params& params);
+  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params,
+                         const CommonNavigationParams& common_params);
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params);
   void OnAccessibilityLocationChanges(

@@ -3895,7 +3895,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   ASSERT_TRUE(message != NULL);
   Tuple1<FrameMsg_Navigate_Params> nav_params;
   FrameMsg_Navigate::Read(message, &nav_params);
-  EXPECT_EQ(url1, nav_params.a.url);
+  EXPECT_EQ(url1, nav_params.a.common_params.url);
   process()->sink().ClearMessages();
 
   // Now test history.forward()
@@ -3907,7 +3907,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   message = process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
   ASSERT_TRUE(message != NULL);
   FrameMsg_Navigate::Read(message, &nav_params);
-  EXPECT_EQ(url3, nav_params.a.url);
+  EXPECT_EQ(url3, nav_params.a.common_params.url);
   process()->sink().ClearMessages();
 
   controller.DiscardNonCommittedEntries();

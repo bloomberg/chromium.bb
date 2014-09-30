@@ -797,6 +797,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -810,15 +811,18 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 
 void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate",
-               "id", routing_id_, "url", params.url.possibly_invalid_spec());
-  MaybeHandleDebugURL(params.url);
+               "id", routing_id_,
+               "url", params.common_params.url.possibly_invalid_spec());
+  MaybeHandleDebugURL(params.common_params.url);
   if (!render_view_->webview())
     return;
 
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, render_view_->observers_, Navigate(params.url));
+  FOR_EACH_OBSERVER(RenderViewObserver,
+                    render_view_->observers_,
+                    Navigate(params.common_params.url));
 
-  bool is_reload = RenderViewImpl::IsReload(params);
+  bool is_reload =
+      RenderViewImpl::IsReload(params.common_params.navigation_type);
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
 
@@ -851,24 +855,27 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     is_swapped_out_ = false;
   }
 
+  int pending_history_list_offset = params.pending_history_list_offset;
+  int current_history_list_offset = params.current_history_list_offset;
+  int current_history_list_length = params.current_history_list_length;
   if (params.should_clear_history_list) {
-    CHECK_EQ(params.pending_history_list_offset, -1);
-    CHECK_EQ(params.current_history_list_offset, -1);
-    CHECK_EQ(params.current_history_list_length, 0);
+    CHECK_EQ(pending_history_list_offset, -1);
+    CHECK_EQ(current_history_list_offset, -1);
+    CHECK_EQ(current_history_list_length, 0);
   }
-  render_view_->history_list_offset_ = params.current_history_list_offset;
-  render_view_->history_list_length_ = params.current_history_list_length;
+  render_view_->history_list_offset_ = current_history_list_offset;
+  render_view_->history_list_length_ = current_history_list_length;
   if (render_view_->history_list_length_ >= 0) {
     render_view_->history_page_ids_.resize(
         render_view_->history_list_length_, -1);
   }
-  if (params.pending_history_list_offset >= 0 &&
-      params.pending_history_list_offset < render_view_->history_list_length_) {
-    render_view_->history_page_ids_[params.pending_history_list_offset] =
+  if (pending_history_list_offset >= 0 &&
+      pending_history_list_offset < render_view_->history_list_length_) {
+    render_view_->history_page_ids_[pending_history_list_offset] =
         params.page_id;
   }
 
-  GetContentClient()->SetActiveURL(params.url);
+  GetContentClient()->SetActiveURL(params.common_params.url);
 
   WebFrame* frame = frame_;
   if (!params.frame_to_navigate.empty()) {
@@ -894,20 +901,20 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   // back/forward navigation event.
   if (is_reload) {
     bool reload_original_url =
-        (params.navigation_type ==
-            FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
-    bool ignore_cache = (params.navigation_type ==
-                             FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
+        (params.common_params.navigation_type ==
+         FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+    bool ignore_cache = (params.common_params.navigation_type ==
+                         FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
 
     if (reload_original_url)
-      frame->reloadWithOverrideURL(params.url, true);
+      frame->reloadWithOverrideURL(params.common_params.url, true);
     else
       frame->reload(ignore_cache);
-  } else if (params.page_state.IsValid()) {
+  } else if (params.commit_params.page_state.IsValid()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
     scoped_ptr<HistoryEntry> entry =
-        PageStateToHistoryEntry(params.page_state);
+        PageStateToHistoryEntry(params.commit_params.page_state);
     if (entry) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
@@ -917,7 +924,8 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
     std::string mime_type, charset, data;
-    if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
+    if (net::DataURL::Parse(
+            params.common_params.url, &mime_type, &charset, &data)) {
       frame->loadData(
           WebData(data.c_str(), data.length()),
           WebString::fromUTF8(mime_type),
@@ -926,12 +934,12 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
           params.history_url_for_data_url,
           false);
     } else {
-      CHECK(false) <<
-          "Invalid URL passed: " << params.url.possibly_invalid_spec();
+      CHECK(false) << "Invalid URL passed: "
+                   << params.common_params.url.possibly_invalid_spec();
     }
   } else {
     // Navigate to the given URL.
-    WebURLRequest request(params.url);
+    WebURLRequest request(params.common_params.url);
 
     // A session history navigation should have been accompanied by state.
     CHECK_EQ(params.page_id, -1);
@@ -939,37 +947,39 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     if (frame->isViewSourceModeEnabled())
       request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
 
-    if (params.referrer.url.is_valid()) {
+    if (params.common_params.referrer.url.is_valid()) {
       WebString referrer = WebSecurityPolicy::generateReferrerHeader(
-          params.referrer.policy,
-          params.url,
-          WebString::fromUTF8(params.referrer.url.spec()));
+          params.common_params.referrer.policy,
+          params.common_params.url,
+          WebString::fromUTF8(params.common_params.referrer.url.spec()));
       if (!referrer.isEmpty())
-        request.setHTTPReferrer(referrer, params.referrer.policy);
+        request.setHTTPReferrer(referrer, params.common_params.referrer.policy);
     }
 
-    if (!params.extra_headers.empty()) {
-      for (net::HttpUtil::HeadersIterator i(params.extra_headers.begin(),
-                                            params.extra_headers.end(), "\n");
-           i.GetNext(); ) {
+    if (!params.request_params.extra_headers.empty()) {
+      for (net::HttpUtil::HeadersIterator i(
+               params.request_params.extra_headers.begin(),
+               params.request_params.extra_headers.end(),
+               "\n");
+           i.GetNext();) {
         request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
                                    WebString::fromUTF8(i.values()));
       }
     }
 
-    if (params.is_post) {
+    if (params.request_params.is_post) {
       request.setHTTPMethod(WebString::fromUTF8("POST"));
 
       // Set post data.
       WebHTTPBody http_body;
       http_body.initialize();
       const char* data = NULL;
-      if (params.browser_initiated_post_data.size()) {
+      if (params.request_params.browser_initiated_post_data.size()) {
         data = reinterpret_cast<const char*>(
-            &params.browser_initiated_post_data.front());
+            &params.request_params.browser_initiated_post_data.front());
       }
-      http_body.appendData(
-          WebData(data, params.browser_initiated_post_data.size()));
+      http_body.appendData(WebData(
+          data, params.request_params.browser_initiated_post_data.size()));
       request.setHTTPBody(http_body);
     }
 
@@ -982,14 +992,15 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     // Navigation Timing information for the browser-initiated navigations. In
     // case of cross-process navigations, this carries over the time of
     // finishing the onbeforeunload handler of the previous page.
-    DCHECK(!params.browser_navigation_start.is_null());
+    DCHECK(!params.commit_params.browser_navigation_start.is_null());
     if (frame->provisionalDataSource()) {
       // |browser_navigation_start| is likely before this process existed, so we
       // can't use InterProcessTimeTicksConverter. We need at least to ensure
       // that the browser-side navigation start we set is not later than the one
       // on the renderer side.
-      base::TimeTicks navigation_start = std::min(
-          params.browser_navigation_start, renderer_navigation_start);
+      base::TimeTicks navigation_start =
+          std::min(params.commit_params.browser_navigation_start,
+                   renderer_navigation_start);
       double navigation_start_seconds =
           (navigation_start - base::TimeTicks()).InSecondsF();
       frame->provisionalDataSource()->setNavigationStartTime(
@@ -2137,7 +2148,7 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
         navigation_state->pending_history_list_offset();
     render_view_->pending_navigation_params_->should_clear_history_list =
         navigation_state->history_list_was_cleared();
-    render_view_->pending_navigation_params_->transition =
+    render_view_->pending_navigation_params_->common_params.transition =
         navigation_state->transition_type();
     render_view_->pending_navigation_params_->request_time =
         document_state->request_time();
@@ -3467,6 +3478,14 @@ void RenderFrameImpl::HandleWebAccessibilityEvent(
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
   if (renderer_accessibility_)
     renderer_accessibility_->FocusedNodeChanged(node);
+}
+
+// PlzNavigate
+void RenderFrameImpl::OnCommitNavigation(
+    const GURL& stream_url,
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params) {
+  NOTIMPLEMENTED();
 }
 
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(

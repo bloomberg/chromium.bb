@@ -338,8 +338,8 @@ void RenderViewTest::ClearHistory() {
 
 void RenderViewTest::Reload(const GURL& url) {
   FrameMsg_Navigate_Params params;
-  params.url = url;
-  params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
+  params.common_params.url = url;
+  params.common_params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->GetMainRenderFrame()->OnNavigate(params);
   FrameLoadWaiter(impl->GetMainRenderFrame()).Wait();
@@ -411,13 +411,14 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   int pending_offset = offset + impl->history_list_offset();
 
   FrameMsg_Navigate_Params navigate_params;
-  navigate_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  navigate_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  navigate_params.common_params.navigation_type =
+      FrameMsg_Navigate_Type::NORMAL;
+  navigate_params.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   navigate_params.current_history_list_length = history_list_length;
   navigate_params.current_history_list_offset = impl->history_list_offset();
   navigate_params.pending_history_list_offset = pending_offset;
   navigate_params.page_id = impl->page_id_ + offset;
-  navigate_params.page_state = state;
+  navigate_params.commit_params.page_state = state;
   navigate_params.request_time = base::Time::Now();
 
   FrameMsg_Navigate navigate_message(impl->GetMainRenderFrame()->GetRoutingID(),

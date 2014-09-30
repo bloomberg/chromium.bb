@@ -10,6 +10,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_param.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/navigation_params.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
@@ -173,7 +174,35 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   IPC_STRUCT_MEMBER(int, render_view_routing_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(referrer)
+  IPC_STRUCT_TRAITS_MEMBER(transition)
+  IPC_STRUCT_TRAITS_MEMBER(navigation_type)
+  IPC_STRUCT_TRAITS_MEMBER(allow_download)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(is_post)
+  IPC_STRUCT_TRAITS_MEMBER(extra_headers)
+  IPC_STRUCT_TRAITS_MEMBER(browser_initiated_post_data)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(page_state)
+  IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
+  IPC_STRUCT_TRAITS_MEMBER(browser_navigation_start)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
+  // TODO(clamy): investigate which parameters are also needed in PlzNavigate
+  // and move them to the appropriate NavigationParams struct.
+
+  // These structs contain parameters shared by other navigation IPCs.
+  IPC_STRUCT_MEMBER(content::CommonNavigationParams, common_params)
+  IPC_STRUCT_MEMBER(content::RequestNavigationParams, request_params)
+  IPC_STRUCT_MEMBER(content::CommitNavigationParams, commit_params)
+
   // The page_id for this navigation, or -1 if it is a new navigation.  Back,
   // Forward, and Reload navigations should have a valid page_id.  If the load
   // succeeds, then this page_id will be reflected in the resultant
@@ -195,9 +224,6 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // succesful when the navigation commits.
   IPC_STRUCT_MEMBER(bool, should_clear_history_list)
 
-  // The URL to load.
-  IPC_STRUCT_MEMBER(GURL, url)
-
   // Base URL for use in WebKit's SubstituteData.
   // Is only used with data: URLs.
   IPC_STRUCT_MEMBER(GURL, base_url_for_data_url)
@@ -206,35 +232,19 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // Is only used with data: URLs.
   IPC_STRUCT_MEMBER(GURL, history_url_for_data_url)
 
-  // The URL to send in the "Referer" header field. Can be empty if there is
-  // no referrer.
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
-
   // Any redirect URLs that occurred before |url|. Useful for cross-process
   // navigations; defaults to empty.
   IPC_STRUCT_MEMBER(std::vector<GURL>, redirects)
-
-  // The type of transition.
-  IPC_STRUCT_MEMBER(ui::PageTransition, transition)
 
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
   // the transferred navigation can recover the navigation state.
   IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
 
-  // Opaque history state (received by ViewHostMsg_UpdateState).
-  IPC_STRUCT_MEMBER(content::PageState, page_state)
-
-  // Type of navigation.
-  IPC_STRUCT_MEMBER(FrameMsg_Navigate_Type::Value, navigation_type)
-
   // The time the request was created. This is used by the old performance
   // infrastructure to set up DocumentState associated with the RenderView.
   // TODO(ppi): make it go away.
   IPC_STRUCT_MEMBER(base::Time, request_time)
-
-  // Extra headers (separated by \n) to send during the request.
-  IPC_STRUCT_MEMBER(std::string, extra_headers)
 
   // The following two members identify a previous request that has been
   // created before this navigation is being transferred to a new render view.
@@ -243,28 +253,12 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   IPC_STRUCT_MEMBER(int, transferred_request_child_id)
   IPC_STRUCT_MEMBER(int, transferred_request_request_id)
 
-  // Whether or not we should allow the url to download.
-  IPC_STRUCT_MEMBER(bool, allow_download)
-
-  // Whether or not the user agent override string should be used.
-  IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
-
-  // True if this was a post request.
-  IPC_STRUCT_MEMBER(bool, is_post)
-
-  // If is_post is true, holds the post_data information from browser. Empty
-  // otherwise.
-  IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
-
   // Whether or not this url should be allowed to access local file://
   // resources.
   IPC_STRUCT_MEMBER(bool, can_load_local_resources)
 
   // If not empty, which frame to navigate.
   IPC_STRUCT_MEMBER(std::string, frame_to_navigate)
-
-  // The navigationStart time to expose through the Navigation Timing API to JS.
-  IPC_STRUCT_MEMBER(base::TimeTicks, browser_navigation_start)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
@@ -277,14 +271,11 @@ IPC_STRUCT_END()
 
 // PlzNavigate
 IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
+  // TODO(clamy): See if it is possible to define a common struct between this
+  // IPC and ResourceMsg_Request_Params.
+
   // The request method: GET, POST, etc.
   IPC_STRUCT_MEMBER(std::string, method)
-
-  // The requested URL.
-  IPC_STRUCT_MEMBER(GURL, url)
-
-  // The referrer to use (may be empty).
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
 
   // Additional HTTP request headers.
   IPC_STRUCT_MEMBER(std::string, headers)
@@ -298,15 +289,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
 
   // True if the request was user initiated.
   IPC_STRUCT_MEMBER(bool, has_user_gesture)
-
-  IPC_STRUCT_MEMBER(ui::PageTransition, transition_type)
-
-  // Whether this navigation should replace the current session history entry on
-  // commit.
-  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
-
-  // Whether or not we should allow the URL to download.
-  IPC_STRUCT_MEMBER(bool, allow_download)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -481,6 +463,15 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
 
 #endif
+
+// PlzNavigate
+// Tells the renderer that a navigation is ready to commit.  The renderer should
+// request |stream_url| to get access to the stream containing the body of the
+// response.
+IPC_MESSAGE_ROUTED3(FrameMsg_CommitNavigation,
+                    GURL, /* stream_url */
+                    content::CommonNavigationParams, /* common_params */
+                    content::CommitNavigationParams /* commit_params */)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
@@ -744,9 +735,11 @@ IPC_MESSAGE_CONTROL4(FrameHostMsg_AddNavigationTransitionData,
                      std::string  /* selector */,
                      std::string  /* markup */)
 
+// PlzNavigate
 // Tells the browser to perform a navigation.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_BeginNavigation,
-                    FrameHostMsg_BeginNavigation_Params)
+IPC_MESSAGE_ROUTED2(FrameHostMsg_BeginNavigation,
+                    FrameHostMsg_BeginNavigation_Params,
+                    content::CommonNavigationParams)
 
 // Sent once a paint happens after the first non empty layout. In other words
 // after the frame has painted something.

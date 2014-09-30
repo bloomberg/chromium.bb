@@ -43,7 +43,9 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
+struct CommonNavigationParams;
 struct NavigationBeforeCommitInfo;
+struct RequestNavigationParams;
 
 // Manages RenderFrameHosts for a FrameTreeNode.  This class acts as a state
 // machine to make cross-process navigations in a frame possible.
@@ -316,16 +318,18 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   // PlzNavigate: sends a RequestNavigation IPC to the renderer to ask it to
   // navigate. If no live renderer is present, then the navigation request will
-  // be sent directly to the ResourceDispatcherHost.
-  bool RequestNavigation(const NavigationEntryImpl& entry,
-                         const FrameMsg_Navigate_Params& navigate_params);
+  // be sent directly to the ResourceDispatcherHost. Takes ownership of
+  // |navigation_request|.
+  bool RequestNavigation(scoped_ptr<NavigationRequest> navigation_request,
+                         const RequestNavigationParams& request_params);
 
   // PlzNavigate: Used to start a navigation. OnBeginNavigation is called
   // directly by RequestNavigation when there is no live renderer. Otherwise, it
   // is called following a BeginNavigation IPC from the renderer (which in
   // browser-initiated navigation also happens after RequestNavigation has been
   // called).
-  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params);
+  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params,
+                         const CommonNavigationParams& common_params);
 
   // PlzNavigate: Called when a navigation request has received a response, to
   // select a renderer to use for the navigation.
