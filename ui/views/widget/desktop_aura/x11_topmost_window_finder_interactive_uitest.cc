@@ -356,6 +356,51 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   XDestroyWindow(xdisplay(), xid2);
 }
 
+// Test that a window with an empty shape are properly handled.
+TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
+  if (!ui::IsShapeExtensionAvailable())
+    return;
+
+  scoped_ptr<Widget> widget1(
+      CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
+  XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  SkRegion* skregion1 = new SkRegion;
+  skregion1->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
+  // Widget takes ownership of |skregion1|.
+  widget1->SetShape(skregion1);
+
+  XID xids[] = { xid1 };
+  StackingClientListWaiter stack_waiter(xids, arraysize(xids));
+  stack_waiter.Wait();
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  EXPECT_NE(xid1, FindTopmostXWindowAt(105, 105));
+}
+
+// Test that setting a Null shape removes the shape.
+TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
+  if (!ui::IsShapeExtensionAvailable())
+    return;
+
+  scoped_ptr<Widget> widget1(
+      CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
+  XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  SkRegion* skregion1 = new SkRegion;
+  skregion1->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
+  // Widget takes ownership of |skregion1|.
+  widget1->SetShape(skregion1);
+
+  // Remove the shape - this is now just a normal window.
+  widget1->SetShape(NULL);
+
+  XID xids[] = { xid1 };
+  StackingClientListWaiter stack_waiter(xids, arraysize(xids));
+  stack_waiter.Wait();
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  EXPECT_EQ(xid1, FindTopmostXWindowAt(105, 105));
+}
+
 // Test that the TopmostWindowFinder finds windows which belong to menus
 // (which may or may not belong to Chrome).
 TEST_F(X11TopmostWindowFinderTest, Menu) {

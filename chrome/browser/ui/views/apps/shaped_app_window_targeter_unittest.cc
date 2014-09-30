@@ -72,6 +72,30 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
   }
 
   scoped_ptr<SkRegion> region(new SkRegion);
+  region->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
+  app_window()->UpdateShape(region.Pass());
+  {
+    // With an empty custom shape, all events within the window should fall
+    // through to the root window.
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(40, 40), gfx::Point(40, 40),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    EXPECT_EQ(root_window(), move.target());
+  }
+
+  // Window shape (global coordinates)
+  //    30       70    90        130
+  //  30 +        +-----+
+  //       .      |     |             <- mouse move (40,40)
+  //  70 +--------+     +---------+
+  //     |           .            |   <- mouse move (80,80)
+  //  90 +--------+     +---------+
+  //              |     |
+  // 130          +-----+
+  region.reset(new SkRegion);
   region->op(SkIRect::MakeXYWH(40, 0, 20, 100), SkRegion::kUnion_Op);
   region->op(SkIRect::MakeXYWH(0, 40, 100, 20), SkRegion::kUnion_Op);
   app_window()->UpdateShape(region.Pass());
