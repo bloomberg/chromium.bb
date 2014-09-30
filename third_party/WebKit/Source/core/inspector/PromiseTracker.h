@@ -41,10 +41,12 @@ public:
 
     typedef WillBeHeapVector<RefPtrWillBeMember<PromiseData> > PromiseDataVector;
     typedef WillBeHeapHashMap<int, PromiseDataVector> PromiseDataMap;
+    typedef WillBeHeapHashMap<int, RefPtrWillBeMember<PromiseData> > PromiseIdToDataMap;
 
     void trace(Visitor*);
 
     PromiseDataMap& promiseDataMap() { return m_promiseDataMap; }
+    PromiseIdToDataMap& promiseIdToDataMap() { return m_promiseIdToDataMap; }
 
 private:
     PromiseTracker();
@@ -55,6 +57,7 @@ private:
     int m_circularSequentialId;
     PromiseDataMap m_promiseDataMap;
     bool m_isEnabled;
+    PromiseIdToDataMap m_promiseIdToDataMap;
 };
 
 } // namespace blink
