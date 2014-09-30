@@ -116,14 +116,14 @@
         '<(_sanitizer_type)-libasound2',
         '<(_sanitizer_type)-pango1.0',
         '<(_sanitizer_type)-libcap2',
-        '<(_sanitizer_type)-libudev0',
+        '<(_sanitizer_type)-udev',
         '<(_sanitizer_type)-libtasn1-3',
         '<(_sanitizer_type)-libgnome-keyring0',
         '<(_sanitizer_type)-libgtk2.0-0',
         '<(_sanitizer_type)-libgdk-pixbuf2.0-0',
         '<(_sanitizer_type)-libpci3',
         '<(_sanitizer_type)-libdbusmenu-glib4',
-        '<(_sanitizer_type)-liboverlay-scrollbar-0.2-0',
+        '<(_sanitizer_type)-overlay-scrollbar',
         '<(_sanitizer_type)-libgconf-2-4',
         '<(_sanitizer_type)-libappindicator1',
         '<(_sanitizer_type)-libdbusmenu',
@@ -245,6 +245,7 @@
         '--disable-gtk-doc-pdf',
       ],
       'asan_blacklist': 'blacklists/asan/libglib2.0-0.txt',
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -266,6 +267,8 @@
     {
       'package_name': 'libp11-kit0',
       'dependencies=': [],
+      # Required on Trusty due to autoconf version mismatch.
+      'run_before_build': 'scripts/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -293,6 +296,8 @@
       'dependencies=': [],
       'extra_configure_flags': ['--disable-specs'],
       'msan_blacklist': 'blacklists/msan/libx11-6.txt',
+      # Required on Trusty due to autoconf version mismatch.
+      'run_before_build': 'scripts/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -304,6 +309,8 @@
       'package_name': 'libxcb1',
       'dependencies=': [],
       'extra_configure_flags': ['--disable-build-docs'],
+      # Required on Trusty due to autoconf version mismatch.
+      'run_before_build': 'scripts/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -456,7 +463,7 @@
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
-      'package_name': 'libudev0',
+      'package_name': 'udev',
       'dependencies=': [],
       'extra_configure_flags': [
           # Without this flag there's a linking step that doesn't honor LDFLAGS
@@ -464,6 +471,8 @@
           # TODO(earthdok): find a better fix.
           '--disable-gudev'
       ],
+      # Required on Trusty due to autoconf version mismatch.
+      'run_before_build': 'scripts/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -477,6 +486,8 @@
           # Build static libs (from debian/rules).
           '--enable-static',
           '--enable-tests=no',
+          # Make the build less problematic.
+          '--disable-introspection',
       ],
       'package_ldflags': ['-Wl,--as-needed'],
       'dependencies=': [],
@@ -532,14 +543,16 @@
           '--disable-vala',
       ],
       'dependencies=': [],
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
-      'package_name': 'liboverlay-scrollbar-0.2-0',
+      'package_name': 'overlay-scrollbar',
       'extra_configure_flags': [
           '--with-gtk=2',
       ],
       'dependencies=': [],
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -562,6 +575,7 @@
       ],
       'dependencies=': [],
       'jobs': 1,
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -575,6 +589,7 @@
           '--disable-vala',
       ],
       'dependencies=': [],
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -589,6 +604,7 @@
     {
       'package_name': 'libunity9',
       'dependencies=': [],
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -598,6 +614,7 @@
           '--disable-introspection',
       ],
       'dependencies=': [],
+      'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
   ],
