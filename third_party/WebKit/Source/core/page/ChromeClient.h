@@ -198,6 +198,7 @@ public:
     // For testing.
     virtual void setPagePopupDriver(PagePopupDriver*) = 0;
     virtual void resetPagePopupDriver() = 0;
+    virtual PagePopupDriver* pagePopupDriver() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }
     virtual String acceptLanguages() = 0;

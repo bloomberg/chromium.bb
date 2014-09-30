@@ -120,6 +120,7 @@ public:
     virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const OVERRIDE;
     virtual void setPagePopupDriver(PagePopupDriver*) OVERRIDE { }
     virtual void resetPagePopupDriver() OVERRIDE { }
+    virtual PagePopupDriver* pagePopupDriver() const OVERRIDE { return nullptr; }
 
     virtual void setStatusbarText(const String&) OVERRIDE { }
 

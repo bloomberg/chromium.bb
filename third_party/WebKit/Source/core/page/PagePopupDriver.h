@@ -29,6 +29,7 @@
 namespace blink {
 
 class IntRect;
+class LocalDOMWindow;
 class PagePopup;
 class PagePopupClient;
 
@@ -36,6 +37,7 @@ class PagePopupDriver {
 public:
     virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) = 0;
     virtual void closePagePopup(PagePopup*) = 0;
+    virtual LocalDOMWindow* pagePopupWindow() = 0;
     virtual ~PagePopupDriver() { }
 };
 

@@ -10,12 +10,10 @@ window.enablePixelTesting = true;
 </head>
 <body>
 <input type=date id=date value="10000-12-31">
-
 <p id="description" style="opacity: 0"></p>
 <div id="console" style="opacity: 0"></div>
-
 <script>
-openPicker(document.getElementById('date'), finishJSTest);
+openPickerWithoutMock(document.getElementById('date'), finishJSTest);
 </script>
 </body>
 </html>

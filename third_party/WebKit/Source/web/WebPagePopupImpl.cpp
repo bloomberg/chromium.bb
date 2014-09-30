@@ -43,6 +43,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
@@ -114,12 +115,16 @@ private:
 
     virtual void scheduleAnimation() OVERRIDE
     {
+        // Calling scheduleAnimation on m_webView so WebTestProxy will call beginFrame.
+        if (LayoutTestSupport::isRunningLayoutTest())
+            m_popup->m_webView->scheduleAnimation();
+
         if (m_popup->isAcceleratedCompositingActive()) {
             ASSERT(m_popup->m_layerTreeView);
             m_popup->m_layerTreeView->setNeedsAnimate();
             return;
         }
-        m_popup->widgetClient()->scheduleAnimation();
+        m_popup->m_widgetClient->scheduleAnimation();
     }
 
     virtual WebScreenInfo screenInfo() const OVERRIDE
@@ -424,6 +429,11 @@ void WebPagePopupImpl::closePopup()
     }
 
     m_popupClient->didClosePopup();
+}
+
+LocalDOMWindow* WebPagePopupImpl::window()
+{
+    return m_page->mainFrame()->domWindow();
 }
 
 void WebPagePopupImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)

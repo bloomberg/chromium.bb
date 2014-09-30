@@ -161,6 +161,7 @@ public:
     void closePagePopup(PagePopup*);
     virtual void setPagePopupDriver(PagePopupDriver*) OVERRIDE;
     virtual void resetPagePopupDriver() OVERRIDE;
+    virtual PagePopupDriver* pagePopupDriver() const OVERRIDE { return m_pagePopupDriver; }
 
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, Document::PageDismissalType) const OVERRIDE;
 

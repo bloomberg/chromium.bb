@@ -1,11 +1,11 @@
 window.jsTestIsAsync = true;
-if (window.internals)
-    internals.setEnableMockPagePopup(true);
 
 var popupWindow = null;
 
 var popupOpenCallback = null;
 function openPicker(input, callback) {
+    if (window.internals)
+        internals.setEnableMockPagePopup(true);
     input.offsetTop; // Force to lay out
     if (input.type === "color") {
         input.focus();
@@ -35,4 +35,24 @@ function sendKey(input, keyName, ctrlKey, altKey) {
     input.dispatchEvent(event);
 }
 
-
+function openPickerWithoutMock(input, callback) {
+    window.moveTo();
+    input.offsetTop; // Force to lay out
+    if (input.type === "color") {
+        input.focus();
+        eventSender.keyDown(" ");
+    } else {
+        sendKey(input, "Down", false, true);
+    }
+    popupWindow = window.internals.pagePopupWindow;
+    if (typeof callback === "function") {
+        popupOpenCallback = (function(callback) {
+            // We need to move the window to the top left of available space
+            // because the window will move back to (0, 0) when the
+            // ShellViewMsg_SetTestConfiguration IPC arrives.
+            window.moveTo();
+            callback();
+        }).bind(this, callback);
+        popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
+    }
+}

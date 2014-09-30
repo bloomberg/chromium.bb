@@ -139,6 +139,7 @@ public:
     void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
     void setEnableMockPagePopup(bool, ExceptionState&);
     PassRefPtrWillBeRawPtr<PagePopupController> pagePopupController();
+    LocalDOMWindow* pagePopupWindow() const;
 
     PassRefPtrWillBeRawPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
 

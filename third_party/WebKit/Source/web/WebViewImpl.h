@@ -414,6 +414,7 @@ public:
     // PagePopupDriver functions.
     virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(PagePopup*) OVERRIDE;
+    virtual LocalDOMWindow* pagePopupWindow() OVERRIDE;
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.

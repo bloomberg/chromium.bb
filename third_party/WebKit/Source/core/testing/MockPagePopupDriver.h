@@ -51,6 +51,7 @@ private:
     // PagePopupDriver functions:
     virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(PagePopup*) OVERRIDE;
+    virtual LocalDOMWindow* pagePopupWindow() OVERRIDE { return nullptr; }
 
     RefPtr<MockPagePopup> m_mockPagePopup;
     LocalFrame* m_mainFrame;

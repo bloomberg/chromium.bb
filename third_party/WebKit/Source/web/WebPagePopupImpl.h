@@ -47,6 +47,7 @@ class PlatformKeyboardEvent;
 class WebLayerTreeView;
 class WebLayer;
 class WebViewImpl;
+class LocalDOMWindow;
 
 class WebPagePopupImpl FINAL
     : public WebPagePopup
@@ -63,6 +64,7 @@ public:
     void closePopup();
     WebWidgetClient* widgetClient() const { return m_widgetClient; }
     bool hasSamePopupClient(WebPagePopupImpl* other) { return other && m_popupClient == other->m_popupClient; }
+    LocalDOMWindow* window();
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) OVERRIDE;
     virtual WebPoint positionRelativeToOwner() OVERRIDE;
 

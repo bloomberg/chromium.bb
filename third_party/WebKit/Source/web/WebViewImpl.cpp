@@ -1596,6 +1596,11 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup = nullptr;
 }
 
+LocalDOMWindow* WebViewImpl::pagePopupWindow()
+{
+    return m_pagePopup ? m_pagePopup->window() : nullptr;
+}
+
 Frame* WebViewImpl::focusedCoreFrame() const
 {
     return m_page ? m_page->focusController().focusedOrMainFrame() : 0;

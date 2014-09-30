@@ -144,6 +144,8 @@ crbug.com/418884 virtual/antialiasedtext/fast/text/emphasis-combined-text.html [
 
 crbug.com/410461 [ Linux ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 
+crbug.com/340522 fast/forms/calendar-picker/calendar-picker-appearance.html [ NeedsRebaseline ]
+
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]

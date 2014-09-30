@@ -688,6 +688,20 @@ PassRefPtrWillBeRawPtr<PagePopupController> Internals::pagePopupController()
     return s_pagePopupDriver ? s_pagePopupDriver->pagePopupController() : 0;
 }
 
+LocalDOMWindow* Internals::pagePopupWindow() const
+{
+    Document* document = contextDocument();
+    if (!document)
+        return nullptr;
+    Page* page = document->page();
+    if (!page)
+        return nullptr;
+    PagePopupDriver* pagePopupDriver = page->chrome().client().pagePopupDriver();
+    if (!pagePopupDriver)
+        return nullptr;
+    return pagePopupDriver->pagePopupWindow();
+}
+
 PassRefPtrWillBeRawPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState& exceptionState)
 {
     Document* document = contextDocument();
