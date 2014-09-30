@@ -976,6 +976,11 @@
             '../ui/keyboard/keyboard.gyp:keyboard_resources',
           ],
         }],
+        ['use_athena==1', {
+          'defines': ['USE_ATHENA=1'],
+          'sources': ['browser/extensions/api/tabs/tabs_api_athena.cc' ],
+          'sources!': ['browser/extensions/api/tabs/tabs_api.cc' ],
+        }],
         ['OS=="linux"', {
           'conditions': [
             ['use_aura==1', {
