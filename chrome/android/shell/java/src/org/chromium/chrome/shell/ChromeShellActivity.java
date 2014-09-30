@@ -28,6 +28,8 @@ import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
+import org.chromium.chrome.browser.nfc.BeamController;
+import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -172,6 +174,15 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         // SyncController that we have started.
         mSyncController.onStart();
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
+
+        BeamController.registerForBeam(this, new BeamProvider() {
+            @Override
+            public String getTabUrlForBeam() {
+                ChromeShellTab tab = getActiveTab();
+                if (tab == null) return null;
+                return tab.getUrl();
+            }
+        });
     }
 
     @Override

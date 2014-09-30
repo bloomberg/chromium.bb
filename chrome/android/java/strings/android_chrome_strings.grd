@@ -389,6 +389,14 @@ You are signing in with a managed account and giving its administrator control o
         Settings
       </message>
 
+      <!-- Android NFC Beam strings -->
+      <message name="IDS_NFC_BEAM_ERROR_OVERLAY_ACTIVE" desc="Android Beam error - a tab is not in the foreground [CHAR-LIMIT=40]">
+        Select a tab to beam
+      </message>
+      <message name="IDS_NFC_BEAM_ERROR_BAD_URL" desc="Android Beam error - the current tab has an invalid url [CHAR-LIMIT=40]">
+        Can’t beam current tab
+      </message>
+
     </messages>
   </release>
 </grit>

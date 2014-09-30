@@ -36,6 +36,15 @@ static void RecordUsingMenu(JNIEnv*,
   }
 }
 
+// Android Beam
+static void RecordBeamCallbackSuccess(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("MobileBeamCallbackSuccess"));
+}
+
+static void RecordBeamInvalidAppState(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("MobileBeamInvalidAppState"));
+}
+
 namespace chrome {
 namespace android {
 

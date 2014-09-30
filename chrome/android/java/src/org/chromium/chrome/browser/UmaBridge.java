@@ -29,6 +29,19 @@ public class UmaBridge {
         nativeRecordUsingMenu(isByHwButton, isDragging);
     }
 
+    // Android beam
+    public static void beamCallbackSuccess() {
+        nativeRecordBeamCallbackSuccess();
+    }
+
+    public static void beamInvalidAppState() {
+        nativeRecordBeamInvalidAppState();
+    }
+
     private static native void nativeRecordMenuShow();
     private static native void nativeRecordUsingMenu(boolean isByHwButton, boolean isDragging);
+
+    // Android Beam
+    private static native void nativeRecordBeamInvalidAppState();
+    private static native void nativeRecordBeamCallbackSuccess();
 }
