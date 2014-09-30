@@ -1,0 +1,23 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 658x16
+          text run at (0,0) width 513: "This tests for a hang when pasting underlined content at the end of a paragraph. "
+          text run at (512,0) width 146: "You should see 'Hello "
+        RenderInline {U} at (0,0) size 48x16
+          RenderText {#text} at (657,0) size 48x16
+            text run at (657,0) width 48: "World!"
+        RenderText {#text} at (704,0) size 50x16
+          text run at (704,0) width 50: "' below."
+      RenderBlock {DIV} at (0,32) size 784x16
+        RenderBlock {DIV} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 40x16
+            text run at (0,0) width 40: "Hello "
+          RenderInline {SPAN} at (0,0) size 47x16
+            RenderText {#text} at (39,0) size 47x16
+              text run at (39,0) width 47: "World!"
+        RenderBlock (anonymous) at (0,16) size 784x0
+caret: position 6 of child 0 {#text} of child 1 {SPAN} of child 0 {DIV} of child 2 {DIV} of body

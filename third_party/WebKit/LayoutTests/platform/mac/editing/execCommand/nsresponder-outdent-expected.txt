@@ -1,0 +1,16 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 460x16
+          text run at (0,0) width 201: "This tests the outdent: method. "
+          text run at (200,0) width 260: "You should see an undented 'foo' below."
+      RenderBlock {DIV} at (0,32) size 784x16
+        RenderText {#text} at (0,0) size 22x16
+          text run at (0,0) width 22: "foo"
+caret: position 0 of child 0 {#text} of child 2 {DIV} of body

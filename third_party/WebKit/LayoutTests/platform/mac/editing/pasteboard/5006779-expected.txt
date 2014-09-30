@@ -1,0 +1,24 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 609x16
+          text run at (0,0) width 430: "This tests copying/pasting less than a paragraph of quoted content. "
+          text run at (429,0) width 180: "It should not appear quoted."
+      RenderBlock {DIV} at (0,32) size 784x80
+        RenderBlock (anonymous) at (0,0) size 784x32
+          RenderText {#text} at (0,0) size 20x16
+            text run at (0,0) width 20: "On"
+          RenderBR {BR} at (19,12) size 1x0
+          RenderBR {BR} at (0,16) size 0x16
+        RenderBlock {BLOCKQUOTE} at (0,32) size 784x16 [color=#0000FF] [border: none (2px solid #0000FF)]
+          RenderText {#text} at (12,0) size 165x16
+            text run at (12,0) width 165: "On Tuesday, Dave wrote:"
+        RenderBlock {BLOCKQUOTE} at (0,48) size 784x16 [color=#0000FF] [border: none (2px solid #0000FF)]
+          RenderBR {BR} at (12,0) size 0x16
+        RenderBlock {BLOCKQUOTE} at (0,64) size 784x16 [color=#0000FF] [border: none (2px solid #0000FF)]
+          RenderText {#text} at (12,0) size 85x16
+            text run at (12,0) width 85: "Hello World."
+caret: position 3 of child 0 {#text} of child 2 {DIV} of body

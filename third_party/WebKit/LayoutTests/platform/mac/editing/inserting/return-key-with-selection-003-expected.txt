@@ -1,0 +1,58 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x332 [border: (2px solid #0000FF)]
+        RenderBlock {DIV} at (14,14) size 756x96
+          RenderText {#text} at (0,0) size 68x24
+            text run at (0,0) width 68: "Tests: "
+          RenderBR {BR} at (67,18) size 1x0
+          RenderText {#text} at (0,24) size 608x24
+            text run at (0,24) width 608: "A scenario I thought of based on my experiences with this bug:"
+          RenderInline {A} at (0,0) size 257x24 [color=#0000EE]
+            RenderText {#text} at (0,48) size 257x24
+              text run at (0,48) width 257: "<rdar://problem/4045521>"
+          RenderText {#text} at (256,48) size 735x48
+            text run at (256,48) width 479: " Hitting return key with full line selected does not"
+            text run at (0,72) width 252: "add blank line as it should"
+        RenderBlock {DIV} at (14,126) size 756x192
+          RenderBlock (anonymous) at (0,0) size 756x96
+            RenderText {#text} at (0,0) size 190x24
+              text run at (0,0) width 190: "Expected Results: "
+            RenderBR {BR} at (189,18) size 1x0
+            RenderText {#text} at (0,24) size 740x72
+              text run at (0,24) width 718: "Should see this content in the red box below (note that there should be two"
+              text run at (0,48) width 740: "blank lines between \"foo\" and \"baz\"; also note that the insertion point should"
+              text run at (0,72) width 422: "be at the start of the third line, a blank line):"
+          RenderBlock {DIV} at (0,96) size 756x24
+            RenderText {#text} at (0,0) size 32x24
+              text run at (0,0) width 32: "foo"
+          RenderBlock {DIV} at (0,120) size 756x24
+            RenderBR {BR} at (0,0) size 0x24
+          RenderBlock {DIV} at (0,144) size 756x24
+            RenderBR {BR} at (0,0) size 0x24
+          RenderBlock {DIV} at (0,168) size 756x24
+            RenderText {#text} at (0,0) size 34x24
+              text run at (0,0) width 34: "baz"
+      RenderBlock {DIV} at (0,356) size 784x100
+        RenderBlock {DIV} at (0,0) size 784x100 [border: (2px solid #FF0000)]
+          RenderBlock {DIV} at (2,2) size 780x24
+            RenderText {#text} at (0,0) size 32x24
+              text run at (0,0) width 32: "foo"
+          RenderBlock {DIV} at (2,26) size 780x24
+            RenderBR {BR} at (0,0) size 0x24
+          RenderBlock {DIV} at (2,50) size 780x24
+            RenderBR {BR} at (0,0) size 0x24
+          RenderBlock {DIV} at (2,74) size 780x24
+            RenderText {#text} at (0,0) size 34x24
+              text run at (0,0) width 34: "baz"
+caret: position 0 of child 0 {BR} of child 3 {DIV} of child 1 {DIV} of child 3 {DIV} of body

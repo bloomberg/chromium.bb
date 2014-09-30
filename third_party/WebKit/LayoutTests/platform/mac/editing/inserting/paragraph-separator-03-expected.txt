@@ -1,0 +1,32 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x579
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 767x48
+          text run at (0,0) width 747: "Tests for a bug in the paragraph separator insertion code that would add an extra newline when inserting a paragraph"
+          text run at (0,16) width 427: "separator at the end of a paragraph in text that preserves newlines. "
+          text run at (426,16) width 341: "Also, an extraneous space would be added after 'foo'."
+          text run at (0,32) width 230: "Only one newline should be added. "
+          text run at (229,32) width 274: "And there should be no extraneous spaces."
+      RenderBlock {P} at (0,64) size 784x16
+        RenderInline {B} at (0,0) size 155x16
+          RenderText {#text} at (0,0) size 155x16
+            text run at (0,0) width 155: "It demonstrates a bug:"
+        RenderText {#text} at (154,0) size 593x16
+          text run at (154,0) width 593: " too much padding is left between the new line and the end of the paragraph containing 'foo'."
+      RenderBlock {DIV} at (0,96) size 784x52
+        RenderBlock {PRE} at (0,0) size 784x13
+          RenderText {#text} at (0,0) size 24x13
+            text run at (0,0) width 24: "foo"
+        RenderBlock {PRE} at (0,26) size 784x26
+          RenderText {#text} at (0,0) size 24x26
+            text run at (0,0) width 0: " "
+            text run at (0,13) width 24: "bar"
+caret: position 0 of child 0 {#text} of child 1 {PRE} of child 4 {DIV} of body

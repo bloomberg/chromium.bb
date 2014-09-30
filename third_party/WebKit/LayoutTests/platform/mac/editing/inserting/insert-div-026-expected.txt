@@ -1,0 +1,50 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x188 [border: (2px solid #0000FF)]
+        RenderBlock {DIV} at (14,14) size 756x96
+          RenderText {#text} at (0,0) size 68x24
+            text run at (0,0) width 68: "Tests: "
+          RenderBR {BR} at (0,0) size 0x0
+          RenderText {#text} at (0,24) size 716x48
+            text run at (0,24) width 716: "Inserting blocks for paragraphs should do a better job of finding a block to"
+            text run at (0,48) width 116: "insert after. "
+          RenderInline {A} at (0,0) size 257x24 [color=#0000EE]
+            RenderText {#text} at (115,48) size 257x24
+              text run at (115,48) width 257: "<rdar://problem/3996605>"
+          RenderText {#text} at (371,48) size 727x48
+            text run at (371,48) width 356: " Insert paragraph command puts new"
+            text run at (0,72) width 548: "block in wrong place, creating difficult-to-handle HTML"
+        RenderBlock {DIV} at (14,126) size 756x48
+          RenderText {#text} at (0,0) size 190x24
+            text run at (0,0) width 190: "Expected Results: "
+          RenderBR {BR} at (189,18) size 1x0
+          RenderText {#text} at (0,24) size 438x24
+            text run at (0,24) width 438: "Should see this content in the red box below: "
+          RenderInline {B} at (0,0) size 21x24
+            RenderText {#text} at (437,24) size 21x24
+              text run at (437,24) width 21: "fo"
+          RenderText {#text} at (457,24) size 13x24
+            text run at (457,24) width 13: "x"
+      RenderBlock {DIV} at (0,212) size 784x28
+        RenderBlock {DIV} at (0,0) size 784x28 [border: (2px solid #FF0000)]
+          RenderInline {B} at (0,0) size 20x24
+            RenderText {#text} at (2,2) size 20x24
+              text run at (2,2) width 20: "fo"
+          RenderText {#text} at (21,2) size 13x24
+            text run at (21,2) width 13: "x"
+caret: position 3 of child 0 {#text} of child 0 {B} of child 1 {DIV} of child 3 {DIV} of body

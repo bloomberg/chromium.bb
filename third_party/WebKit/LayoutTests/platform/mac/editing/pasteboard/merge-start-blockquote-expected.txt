@@ -1,0 +1,21 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 749x32
+          text run at (0,0) width 749: "This test makes sure that content inside a Mail blockquote in an incoming fragment isn't pulled out of the blockquote"
+          text run at (0,16) width 83: "during paste."
+      RenderBlock {P} at (0,48) size 784x16
+        RenderInline {B} at (0,0) size 575x16
+          RenderText {#text} at (0,0) size 575x16
+            text run at (0,0) width 575: "You should see 'bar' inside a blockquote (it will have a blue border around it if it is)."
+      RenderBlock {DIV} at (0,80) size 784x18
+        RenderBlock {BLOCKQUOTE} at (40,0) size 704x18 [border: (1px solid #0000FF)]
+          RenderText {#text} at (1,1) size 21x16
+            text run at (1,1) width 21: "bar"
+caret: position 3 of child 0 {#text} of child 0 {BLOCKQUOTE} of child 4 {DIV} of body

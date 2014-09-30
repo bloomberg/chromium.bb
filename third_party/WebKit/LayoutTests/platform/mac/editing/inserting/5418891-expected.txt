@@ -1,0 +1,23 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 761x32
+          text run at (0,0) width 548: "This tests for a crash when attempting to break a blockquote at the end of its content. "
+          text run at (547,0) width 214: "The caret should be in the first of"
+          text run at (0,16) width 392: "two empty paragraphs between two pieces of quoted content."
+      RenderBlock {DIV} at (0,48) size 784x64
+        RenderBlock {BLOCKQUOTE} at (0,0) size 784x16 [color=#0000FF] [border: none (2px solid #0000FF)]
+          RenderBlock {DIV} at (7,0) size 777x16
+            RenderText {#text} at (0,0) size 22x16
+              text run at (0,0) width 22: "foo"
+        RenderBlock (anonymous) at (0,16) size 784x32
+          RenderBR {BR} at (0,0) size 0x16
+          RenderBR {BR} at (0,16) size 0x16
+        RenderBlock {BLOCKQUOTE} at (0,48) size 784x16 [color=#0000FF] [border: none (2px solid #0000FF)]
+          RenderBlock {DIV} at (7,0) size 777x16
+            RenderText {#text} at (0,0) size 21x16
+              text run at (0,0) width 21: "bar"
+caret: position 0 of child 2 {BR} of child 2 {DIV} of body

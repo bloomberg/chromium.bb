@@ -1,0 +1,32 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 541x16
+          text run at (0,0) width 541: "This tests Insert{Un}OrderedList on a range selection that is entirely within one list."
+      RenderBlock {DIV} at (0,32) size 784x96
+        RenderBlock (anonymous) at (0,0) size 784x64
+          RenderText {#text} at (0,0) size 76x16
+            text run at (0,0) width 76: "None of the"
+          RenderBR {BR} at (75,12) size 1x0
+          RenderText {#text} at (0,16) size 103x16
+            text run at (0,16) width 103: "selected content"
+          RenderBR {BR} at (102,28) size 1x0
+          RenderText {#text} at (0,32) size 62x16
+            text run at (0,32) width 62: "should be"
+          RenderBR {BR} at (61,44) size 1x0
+          RenderText {#text} at (0,48) size 52x16
+            text run at (0,48) width 52: "in a list."
+          RenderBR {BR} at (51,60) size 1x0
+        RenderBlock {OL} at (0,80) size 784x16
+          RenderListItem {LI} at (40,0) size 744x16
+            RenderListMarker at (-20,0) size 16x16: "1"
+            RenderText {#text} at (0,0) size 323x16
+              text run at (0,0) width 323: "This should be in a list and should not be selected."
+selection start: position 2 of child 0 {#text} of child 2 {DIV} of body
+selection end:   position 2 of child 6 {#text} of child 2 {DIV} of body

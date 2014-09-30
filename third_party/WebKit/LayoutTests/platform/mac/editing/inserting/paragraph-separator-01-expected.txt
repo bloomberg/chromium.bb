@@ -1,0 +1,24 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 595x16
+          text run at (0,0) width 369: "Tests for a bug in the paragraph separator insertion code. "
+          text run at (368,0) width 227: "Only one newline should be added."
+      RenderBlock {DIV} at (0,32) size 784x48
+        RenderBlock (anonymous) at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 22x16
+            text run at (0,0) width 22: "foo"
+        RenderBlock {DIV} at (0,16) size 784x32
+          RenderBlock (anonymous) at (0,0) size 784x16
+            RenderBR {BR} at (0,0) size 0x16
+          RenderBlock {DIV} at (0,16) size 784x16
+            RenderText {#text} at (0,0) size 21x16
+              text run at (0,0) width 21: "bar"
+caret: position 0 of child 0 {BR} of child 1 {DIV} of child 2 {DIV} of body

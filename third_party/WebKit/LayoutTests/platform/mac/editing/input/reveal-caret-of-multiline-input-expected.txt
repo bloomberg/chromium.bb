@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x174
-  RenderBlock {HTML} at (0,0) size 800x174
-    RenderBody {BODY} at (8,8) size 784x158
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 595x18
-          text run at (0,0) width 595: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
-      RenderBlock (anonymous) at (0,18) size 784x140
+layer at (0,0) size 800x172
+  RenderBlock {HTML} at (0,0) size 800x172
+    RenderBody {BODY} at (8,8) size 784x156
+      RenderBlock {DIV} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 610x16
+          text run at (0,0) width 610: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
+      RenderBlock (anonymous) at (0,16) size 784x140
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (8,26) size 91x136 clip at (9,27) size 74x134 scrollY 99 scrollHeight 420
+layer at (8,24) size 91x136 clip at (9,25) size 74x134 scrollY 99 scrollHeight 420
   RenderTextControl {TEXTAREA} at (0,0) size 91x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 70x416
       RenderText {#text} at (0,0) size 14x13

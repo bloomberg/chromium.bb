@@ -12,22 +12,22 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 613x18
-          text run at (0,0) width 613: "The three items below should be stitched together into one ordered list when you click the button."
-      RenderBlock {DIV} at (0,34) size 784x54
-        RenderBlock {DIV} at (0,0) size 784x54
-          RenderBlock {OL} at (0,0) size 784x54
-            RenderListItem {LI} at (40,0) size 744x18
-              RenderListMarker at (-20,0) size 16x18: "1"
-              RenderText {#text} at (0,0) size 21x18
-                text run at (0,0) width 21: "foo"
-            RenderListItem {LI} at (40,18) size 744x18
-              RenderListMarker at (-20,0) size 16x18: "2"
-              RenderText {#text} at (0,0) size 20x18
-                text run at (0,0) width 20: "bar"
-            RenderListItem {LI} at (40,36) size 744x18
-              RenderListMarker at (-20,0) size 16x18: "3"
-              RenderText {#text} at (0,0) size 22x18
-                text run at (0,0) width 22: "baz"
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 626x16
+          text run at (0,0) width 626: "The three items below should be stitched together into one ordered list when you click the button."
+      RenderBlock {DIV} at (0,32) size 784x48
+        RenderBlock {DIV} at (0,0) size 784x48
+          RenderBlock {OL} at (0,0) size 784x48
+            RenderListItem {LI} at (40,0) size 744x16
+              RenderListMarker at (-20,0) size 16x16: "1"
+              RenderText {#text} at (0,0) size 22x16
+                text run at (0,0) width 22: "foo"
+            RenderListItem {LI} at (40,16) size 744x16
+              RenderListMarker at (-20,0) size 16x16: "2"
+              RenderText {#text} at (0,0) size 21x16
+                text run at (0,0) width 21: "bar"
+            RenderListItem {LI} at (40,32) size 744x16
+              RenderListMarker at (-20,0) size 16x16: "3"
+              RenderText {#text} at (0,0) size 23x16
+                text run at (0,0) width 23: "baz"
 caret: position 0 of child 0 {#text} of child 2 {LI} of child 0 {OL} of child 1 {DIV} of child 1 {DIV} of body

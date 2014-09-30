@@ -1,0 +1,25 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 767x32
+          text run at (0,0) width 767: "This is a test to make sure that a placeholder, even one without our special class on it, is removed only when it has been"
+          text run at (0,16) width 411: "collapsed away or when it has been displaced by pasted content."
+      RenderBlock {P} at (0,48) size 784x32
+        RenderText {#text} at (0,0) size 778x32
+          text run at (0,0) width 710: "Placeholders with our special class can, through bugs in deletion, be inserted into the document unnecessarily. "
+          text run at (709,0) width 63: "Once that"
+          text run at (0,16) width 778: "happens, we don't want to make matters worse by removing them if they are acting as line breaks instead of placeholders."
+      RenderBlock {DIV} at (0,96) size 784x32
+        RenderText {#text} at (0,0) size 102x16
+          text run at (0,0) width 102: "First paragraph."
+        RenderBR {BR} at (101,12) size 1x0
+        RenderText {#text} at (0,16) size 120x16
+          text run at (0,16) width 120: "Second paragraph."
+caret: position 16 of child 0 {#text} of child 4 {DIV} of body

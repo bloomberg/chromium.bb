@@ -1,0 +1,20 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 764x48
+          text run at (0,0) width 500: "This tests for a bug where indented text would appear quoted in GoogleDocs. "
+          text run at (499,0) width 221: "Google docs uses blockquotes and"
+          text run at (0,16) width 764: "FormatBlock to implement a \"Quote Text\" feature, and style rules for blockquotes appeared on the blockquotes that we"
+          text run at (0,32) width 179: "use to implement indenting."
+      RenderBlock {DIV} at (0,64) size 784x58
+        RenderBlock {BLOCKQUOTE} at (40,0) size 744x16
+          RenderBlock {DIV} at (0,0) size 744x16
+            RenderText {#text} at (0,0) size 234x16
+              text run at (0,0) width 234: "This should be indented, not quoted."
+        RenderBlock {BLOCKQUOTE} at (8,24) size 768x34 [border: (1px dashed #AAAAAA)]
+          RenderText {#text} at (9,9) size 178x16
+            text run at (9,9) width 178: "This text should be Quoted."
+caret: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {BLOCKQUOTE} of child 3 {DIV} of body

@@ -1,0 +1,60 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x568
+      RenderBlock (anonymous) at (0,0) size 784x96
+        RenderText {#text} at (0,0) size 741x48
+          text run at (0,0) width 735: "Test inserting paragraphs and managing typing style correctly: Only \"line 1\""
+          text run at (734,0) width 7: " "
+          text run at (0,24) width 618: "should be bold. Other lines should be non-bold. Fix for this bug:"
+          text run at (617,24) width 7: " "
+        RenderInline {A} at (0,0) size 257x24 [color=#0000EE]
+          RenderText {#text} at (0,48) size 257x24
+            text run at (0,48) width 257: "<rdar://problem/3944492>"
+        RenderText {#text} at (256,48) size 716x48
+          text run at (256,48) width 454: " after pressing return twice, text is bold when it"
+          text run at (709,48) width 7: " "
+          text run at (0,72) width 116: "shouldn't be"
+      RenderBlock {DIV} at (0,96) size 784x12
+      RenderBlock {P} at (0,132) size 784x52 [border: (2px solid #0000FF)]
+        RenderInline {B} at (0,0) size 56x24
+          RenderText {#text} at (14,14) size 56x24
+            text run at (14,14) width 56: "line 1"
+      RenderBlock {P} at (0,208) size 784x52 [border: (2px solid #0000FF)]
+        RenderText {#text} at (14,14) size 36x24
+          text run at (14,14) width 36: "xxx"
+      RenderBlock {P} at (0,284) size 784x52 [border: (2px solid #0000FF)]
+        RenderBR {BR} at (14,14) size 0x24 [bgcolor=#008000]
+      RenderBlock {P} at (0,360) size 784x52 [border: (2px solid #0000FF)]
+        RenderText {#text} at (14,14) size 36x24
+          text run at (14,14) width 36: "xxx"
+caret: position 3 of child 0 {#text} of child 8 {P} of body

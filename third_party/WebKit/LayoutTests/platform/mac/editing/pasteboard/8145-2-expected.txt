@@ -1,0 +1,33 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 774x48
+          text run at (0,0) width 305: "This tests a change made with the fix for 8145. "
+          text run at (304,0) width 434: "The paragraph separator inserted to prevent nesting blocks from the"
+          text run at (0,16) width 774: "fragment to paste inside the block where the paste occured was incorrectly inserted when the paste occured at the start of"
+          text run at (0,32) width 80: "a paragraph."
+      RenderBlock {DIV} at (0,64) size 784x66 [border: (1px solid #000000)]
+        RenderBlock (anonymous) at (1,1) size 782x16
+          RenderText {#text} at (0,0) size 22x16
+            text run at (0,0) width 22: "foo"
+          RenderBR {BR} at (21,12) size 1x0
+        RenderBlock {DIV} at (1,17) size 782x16
+          RenderText {#text} at (0,0) size 22x16
+            text run at (0,0) width 22: "foo"
+        RenderBlock (anonymous) at (1,33) size 782x32
+          RenderText {#text} at (0,0) size 21x16
+            text run at (0,0) width 21: "bar"
+          RenderText {#text} at (20,0) size 21x16
+            text run at (20,0) width 21: "bar"
+          RenderBR {BR} at (40,12) size 1x0
+          RenderText {#text} at (0,16) size 23x16
+            text run at (0,16) width 23: "baz"
+caret: position 3 of child 3 {#text} of child 2 {DIV} of body

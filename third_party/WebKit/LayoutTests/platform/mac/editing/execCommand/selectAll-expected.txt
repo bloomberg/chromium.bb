@@ -1,0 +1,47 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x316 [border: (2px solid #FF0000)]
+        RenderBlock (anonymous) at (14,14) size 756x48
+          RenderInline {SPAN} at (0,0) size 756x48
+            RenderText {#text} at (0,0) size 756x48
+              text run at (0,0) width 756: "\"The quick brown fox jumps over the lazy dog\" uses every letter in the english"
+              text run at (755,0) width 1: " "
+              text run at (0,24) width 93: "language."
+        RenderBlock (anonymous) at (14,86) size 756x192
+          RenderBlock {P} at (0,0) size 756x192
+            RenderText {#text} at (0,0) size 753x192
+              text run at (0,0) width 458: "Here's to the crazy ones, the misfits, the rebels, "
+              text run at (457,0) width 192: "the trouble makers, "
+              text run at (648,0) width 92: "the round"
+              text run at (739,0) width 7: " "
+              text run at (0,24) width 242: "pegs in the square holes, "
+              text run at (241,24) width 348: "the ones who see things differently. "
+              text run at (588,24) width 144: "There not fond"
+              text run at (731,24) width 7: " "
+              text run at (0,48) width 506: "of rules, and they have no respect for the status quo, "
+              text run at (505,48) width 189: "you can quote then,"
+              text run at (0,72) width 195: "disagree with them, "
+              text run at (194,72) width 216: "glorify or vilify them, "
+              text run at (409,72) width 338: "about the only thing you can't do is"
+              text run at (746,72) width 7: " "
+              text run at (0,96) width 128: "ignore them. "
+              text run at (127,96) width 279: "Because they change things. "
+              text run at (405,96) width 342: "They push the human race forward."
+              text run at (0,120) width 477: "And while some may see them as the crazy ones, "
+              text run at (476,120) width 146: "we see genius. "
+              text run at (621,120) width 117: "Because the"
+              text run at (737,120) width 7: " "
+              text run at (0,144) width 626: "people who are crazy enough to think they can change the world "
+              text run at (625,144) width 115: "are the ones"
+              text run at (739,144) width 7: " "
+              text run at (0,168) width 78: "who do."
+        RenderBlock (anonymous) at (14,302) size 756x0
+          RenderInline {SPAN} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+selection start: position 0 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body
+selection end:   position 562 of child 0 {#text} of child 1 {P} of child 1 {SPAN} of child 1 {DIV} of body

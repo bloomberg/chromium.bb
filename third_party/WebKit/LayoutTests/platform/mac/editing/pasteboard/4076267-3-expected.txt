@@ -349,41 +349,41 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 333x18
-          text run at (0,0) width 333: "This tests to see if spaces are lost during a copy/paste"
-      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,44) size 784x198
-        RenderBlock (anonymous) at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 20x18
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 342x16
+          text run at (0,0) width 342: "This tests to see if spaces are lost during a copy/paste"
+      RenderBlock {HR} at (0,32) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {DIV} at (0,42) size 784x176
+        RenderBlock (anonymous) at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 20x16
             text run at (0,0) width 20: "x x"
-        RenderBlock {DIV} at (0,18) size 784x18
-          RenderText {#text} at (0,0) size 24x18
+        RenderBlock {DIV} at (0,16) size 784x16
+          RenderText {#text} at (0,0) size 24x16
             text run at (0,0) width 24: "x  x"
-        RenderBlock {DIV} at (0,36) size 784x18
-          RenderText {#text} at (0,0) size 28x18
+        RenderBlock {DIV} at (0,32) size 784x16
+          RenderText {#text} at (0,0) size 28x16
             text run at (0,0) width 28: "x   x"
-        RenderBlock {DIV} at (0,54) size 784x18
-          RenderText {#text} at (0,0) size 32x18
+        RenderBlock {DIV} at (0,48) size 784x16
+          RenderText {#text} at (0,0) size 32x16
             text run at (0,0) width 32: "x    x"
-        RenderBlock {DIV} at (0,72) size 784x18
-          RenderText {#text} at (0,0) size 36x18
+        RenderBlock {DIV} at (0,64) size 784x16
+          RenderText {#text} at (0,0) size 36x16
             text run at (0,0) width 36: "x     x"
-        RenderBlock {DIV} at (0,90) size 784x18
-          RenderText {#text} at (0,0) size 40x18
+        RenderBlock {DIV} at (0,80) size 784x16
+          RenderText {#text} at (0,0) size 40x16
             text run at (0,0) width 40: "x      x"
-        RenderBlock {DIV} at (0,108) size 784x18
-          RenderText {#text} at (0,0) size 44x18
+        RenderBlock {DIV} at (0,96) size 784x16
+          RenderText {#text} at (0,0) size 44x16
             text run at (0,0) width 44: "x       x"
-        RenderBlock {DIV} at (0,126) size 784x18
-          RenderText {#text} at (0,0) size 48x18
+        RenderBlock {DIV} at (0,112) size 784x16
+          RenderText {#text} at (0,0) size 48x16
             text run at (0,0) width 48: "x        x"
-        RenderBlock {DIV} at (0,144) size 784x18
-          RenderText {#text} at (0,0) size 52x18
+        RenderBlock {DIV} at (0,128) size 784x16
+          RenderText {#text} at (0,0) size 52x16
             text run at (0,0) width 52: "x         x"
-        RenderBlock {DIV} at (0,162) size 784x18
-          RenderText {#text} at (0,0) size 56x18
+        RenderBlock {DIV} at (0,144) size 784x16
+          RenderText {#text} at (0,0) size 56x16
             text run at (0,0) width 56: "x          x"
-        RenderBlock {DIV} at (0,180) size 784x18
-          RenderBR {BR} at (0,0) size 0x18
+        RenderBlock {DIV} at (0,160) size 784x16
+          RenderBR {BR} at (0,0) size 0x16
 caret: position 0 of child 0 {BR} of child 10 {DIV} of child 5 {DIV} of body

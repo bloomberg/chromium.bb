@@ -1,0 +1,30 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock (anonymous) at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 765x48
+          text run at (0,0) width 759: "Test inserting paragraphs: should see a blue box with \"bar\" in it, and two blank"
+          text run at (758,0) width 7: " "
+          text run at (0,24) width 292: "lines between \"foo\" and \"bar\"."
+      RenderBlock {DIV} at (0,48) size 784x36
+      RenderBlock (anonymous) at (0,84) size 784x72
+        RenderInline {SPAN} at (0,0) size 32x24
+          RenderText {#text} at (0,0) size 32x24
+            text run at (0,0) width 32: "foo"
+        RenderBR {BR} at (31,18) size 1x0
+        RenderBR {BR} at (0,24) size 0x24
+        RenderBR {BR} at (0,48) size 0x24
+      RenderBlock {DIV} at (0,156) size 784x52 [border: (2px solid #0000FF)]
+        RenderText {#text} at (14,14) size 31x24
+          text run at (14,14) width 31: "bar"
+caret: position 0 of child 0 {#text} of child 7 {DIV} of body

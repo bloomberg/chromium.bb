@@ -1,0 +1,27 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 626x16
+          text run at (0,0) width 347: "This tests InsertParagraphSeparator inside table cells. "
+          text run at (346,0) width 280: "'Cell' and 'Two' should be on separate lines."
+      RenderBlock {DIV} at (0,32) size 784x42
+        RenderTable {TABLE} at (0,0) size 105x42 [border: (1px outset #808080)]
+          RenderTableSection {TBODY} at (1,1) size 103x40
+            RenderTableRow {TR} at (0,2) size 103x36
+              RenderTableCell {TD} at (2,10) size 62x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                RenderText {#text} at (2,2) size 58x16
+                  text run at (2,2) width 58: "Cell One"
+              RenderTableCell {TD} at (66,2) size 35x36 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                RenderText {#text} at (2,2) size 31x16
+                  text run at (2,2) width 31: "Cell "
+                RenderBR {BR} at (32,14) size 1x0
+                RenderInline {SPAN} at (0,0) size 30x16
+                  RenderText {#text} at (2,18) size 30x16
+                    text run at (2,18) width 30: "Two"
+caret: position 0 of child 0 {#text} of child 2 {SPAN} of child 1 {TD} of child 0 {TR} of child 0 {TBODY} of child 0 {TABLE} of child 2 {DIV} of body
