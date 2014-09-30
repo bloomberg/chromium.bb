@@ -38,11 +38,11 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
 
   // mojo::MediaRenderer implementation.
   virtual void Initialize(mojo::DemuxerStreamPtr stream,
-                          const mojo::Callback<void()>& callback) MOJO_OVERRIDE;
-  virtual void Flush(const mojo::Callback<void()>& callback) MOJO_OVERRIDE;
-  virtual void StartPlayingFrom(int64_t time_delta_usec) MOJO_OVERRIDE;
-  virtual void SetPlaybackRate(float playback_rate) MOJO_OVERRIDE;
-  virtual void SetVolume(float volume) MOJO_OVERRIDE;
+                          const mojo::Callback<void()>& callback) override;
+  virtual void Flush(const mojo::Callback<void()>& callback) override;
+  virtual void StartPlayingFrom(int64_t time_delta_usec) override;
+  virtual void SetPlaybackRate(float playback_rate) override;
+  virtual void SetVolume(float volume) override;
 
  private:
   // Called when the MojoDemuxerStreamAdapter is ready to go (has a config,

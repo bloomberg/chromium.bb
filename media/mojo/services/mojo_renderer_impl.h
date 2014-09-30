@@ -47,22 +47,22 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
-                          const BufferingStateCB& buffering_state_cb) OVERRIDE;
-  virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
-  virtual void StartPlayingFrom(base::TimeDelta time) OVERRIDE;
-  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
-  virtual void SetVolume(float volume) OVERRIDE;
-  virtual base::TimeDelta GetMediaTime() OVERRIDE;
-  virtual bool HasAudio() OVERRIDE;
-  virtual bool HasVideo() OVERRIDE;
-  virtual void SetCdm(MediaKeys* cdm) OVERRIDE;
+                          const BufferingStateCB& buffering_state_cb) override;
+  virtual void Flush(const base::Closure& flush_cb) override;
+  virtual void StartPlayingFrom(base::TimeDelta time) override;
+  virtual void SetPlaybackRate(float playback_rate) override;
+  virtual void SetVolume(float volume) override;
+  virtual base::TimeDelta GetMediaTime() override;
+  virtual bool HasAudio() override;
+  virtual bool HasVideo() override;
+  virtual void SetCdm(MediaKeys* cdm) override;
 
   // mojo::MediaRendererClient implementation.
   virtual void OnTimeUpdate(int64_t time_usec,
-                            int64_t max_time_usec) MOJO_OVERRIDE;
-  virtual void OnBufferingStateChange(mojo::BufferingState state) MOJO_OVERRIDE;
-  virtual void OnEnded() MOJO_OVERRIDE;
-  virtual void OnError() MOJO_OVERRIDE;
+                            int64_t max_time_usec) override;
+  virtual void OnBufferingStateChange(mojo::BufferingState state) override;
+  virtual void OnEnded() override;
+  virtual void OnError() override;
 
  private:
   // Called when |remote_audio_renderer_| has finished initializing.
