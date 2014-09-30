@@ -681,6 +681,8 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     WillToggleFullscreen();
   is_fullscreen_ = is_fullscreen;
 
+  webwidget_->setTopControlsLayoutHeight(top_controls_layout_height);
+
   if (size_ != new_size) {
     size_ = new_size;
 
