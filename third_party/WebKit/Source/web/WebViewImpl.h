@@ -337,7 +337,7 @@ public:
     void mouseContextMenu(const WebMouseEvent&);
     void mouseDoubleClick(const WebMouseEvent&);
 
-    bool detectContentOnTouch(const WebPoint&);
+    bool detectContentOnTouch(const GestureEventWithHitTestResults& targetedEvent);
     bool startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
 
     void hasTouchEventHandlers(bool);

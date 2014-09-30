@@ -18,7 +18,7 @@ TouchMove: 0
 TouchEnd: 0
 GestureTapDown: 2
 GestureShowPress: 2
-GestureTap: 7
+GestureTap: 6
 GestureScrollBegin: 1
 GestureTapCancel: 1
 GestureScrollUpdate: 0
@@ -36,7 +36,7 @@ TouchMove: 0 0 0
 TouchEnd: 0 0 0
 GestureTapDown: 1 1 2
 GestureShowPress: 1 1 2
-GestureTap: 3 3 7
+GestureTap: 2 2 6
 GestureScrollBegin: 1 1 1
 GestureTapCancel: 1 1 1
 GestureScrollUpdate: 0 0 0
@@ -54,7 +54,7 @@ TouchMove: 0 0 0
 TouchEnd: 0 0 0
 GestureTapDown: 1 4 16
 GestureShowPress: 1 4 16
-GestureTap: 4 9 32
+GestureTap: 3 8 32
 GestureScrollBegin: 1 1 0
 GestureTapCancel: 1 1 0
 GestureScrollUpdate: 0 0 0

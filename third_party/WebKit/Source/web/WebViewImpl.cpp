@@ -733,9 +733,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     switch (event.type) {
     case WebInputEvent::GestureTap: {
         m_client->cancelScheduledContentIntents();
-        // FIXME: Use targeted event here and save another hit test.
-        // FIXME: Content intent should be generated using same node that was highlighted. crbug.com/416746
-        if (detectContentOnTouch(platformEvent.position())) {
+        if (detectContentOnTouch(targetedEvent)) {
             eventSwallowed = true;
             break;
         }
@@ -4337,9 +4335,14 @@ void WebViewImpl::updateRootLayerTransform()
     }
 }
 
-bool WebViewImpl::detectContentOnTouch(const WebPoint& position)
+bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& targetedEvent)
 {
-    HitTestResult touchHit = hitTestResultForWindowPos(position);
+    if (!m_page->mainFrame()->isLocalFrame())
+        return false;
+
+    // Need a local copy of the hit test as setToShadowHostIfInUserAgentShadowRoot() will modify it.
+    HitTestResult touchHit = targetedEvent.hitTestResult();
+    touchHit.setToShadowHostIfInUserAgentShadowRoot();
 
     if (touchHit.isContentEditable())
         return false;
