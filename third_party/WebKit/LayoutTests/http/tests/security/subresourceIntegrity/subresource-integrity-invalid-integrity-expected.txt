@@ -1,1 +1,5 @@
+CONSOLE ERROR: The 'integrity' attribute's value  'yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8=' is not valid integrity metadata.
+CONSOLE ERROR: The 'integrity' attribute's value  'ni://#yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8=' is not valid integrity metadata.
+CONSOLE ERROR: The 'integrity' attribute's value  'yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8=' is not valid integrity metadata.
+CONSOLE ERROR: The 'integrity' attribute's value  'ni://sha1;Ywd5te2RvxmuHLzLzZjYo1/0LMw=' is not valid integrity metadata.
 This test passes if no 'FAIL' alert appears.

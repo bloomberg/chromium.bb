@@ -324,7 +324,6 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
             return;
         }
 
-        // FIXME: On failure, SRI should probably provide an error message for the console.
         if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url()))
             return;
     }

@@ -1,1 +1,4 @@
+CONSOLE ERROR: The computed SHA-256 integrity 'yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8=' does not match the 'integrity' attribute 'BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=' for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/fail.js'.
+CONSOLE ERROR: The computed SHA-384 integrity 'S6xh6guV2pHeSNxnbroULlz9KudZHqIdobKgjbKThvTId0IkJDVmnEKKNPT5yZVG' does not match the 'integrity' attribute 'XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr' for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/fail.js'.
+CONSOLE ERROR: The computed SHA-512 integrity 'ycr1MW0ijTo/8WJCkRWTd7SbO/8zw6iQ00lTo4VYeZ3sHT68zBeti8FrKFQ31GTOLIBIVHazyqYQBou2JbgMyA==' does not match the 'integrity' attribute 'tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==' for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/fail.js'.
 This test passes if no 'FAIL' alert appears.

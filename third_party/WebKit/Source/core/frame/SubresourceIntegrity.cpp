@@ -8,7 +8,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
 #include "platform/ParsingUtilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -30,6 +32,11 @@ static bool isIntegrityCharacter(UChar c)
     return isASCIIAlphanumeric(c) || c == '+' || c == '/' || c == '=';
 }
 
+static void logErrorToConsole(const String& message, Document& document)
+{
+    document.addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
+}
+
 static bool DigestsEqual(const DigestValue& digest1, const DigestValue& digest2)
 {
     if (digest1.size() != digest2.size())
@@ -43,8 +50,35 @@ static bool DigestsEqual(const DigestValue& digest1, const DigestValue& digest2)
     return true;
 }
 
-// FIXME: If CheckSubresourceIntegrity fails, Blink should create a console
-// message to alert the developer of the failure.
+static String algorithmToString(HashAlgorithm algorithm)
+{
+    static const struct {
+        HashAlgorithm algorithm;
+        const char* name;
+    } kAlgorithmToString[] = {
+        {  HashAlgorithmSha256, "SHA-256" },
+        {  HashAlgorithmSha384, "SHA-384" },
+        {  HashAlgorithmSha512, "SHA-512" }
+    };
+
+    // See comment in parseIntegrityAttribute about why sizeof() is used
+    // instead of WTF_ARRAY_LENGTH.
+    size_t i = 0;
+    size_t kSupportedAlgorithmsLength = sizeof(kAlgorithmToString) / sizeof(kAlgorithmToString[0]);
+    for (; i < kSupportedAlgorithmsLength; i++) {
+        if (kAlgorithmToString[i].algorithm == algorithm)
+            return kAlgorithmToString[i].name;
+    }
+
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+static String digestToString(const DigestValue& digest)
+{
+    return base64Encode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
+}
+
 bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl)
 {
     if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
@@ -53,9 +87,8 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     if (!element.fastHasAttribute(HTMLNames::integrityAttr))
         return true;
 
-    // FIXME: If insecureOriginMsg is not empty after the check, Blink
-    // should send a console message.
-    //
+    Document& document = element.document();
+
     // Instead of just checking SecurityOrigin::isSecure on resourceUrl, this
     // checks canAccessFeatureRequiringSecureOrigin so that file:// protocols
     // and localhost resources can be allowed. These may be useful for testing
@@ -63,19 +96,25 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     // allows them here.
     String insecureOriginMsg = "";
     RefPtr<SecurityOrigin> resourceSecurityOrigin = SecurityOrigin::create(resourceUrl);
-    if (!element.document().securityOrigin()->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)) {
-        UseCounter::count(element.document(), UseCounter::SRIElementWithIntegrityAttributeAndInsecureOrigin);
+    if (!document.securityOrigin()->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)) {
+        UseCounter::count(document, UseCounter::SRIElementWithIntegrityAttributeAndInsecureOrigin);
+        // FIXME: This console message should probably utilize
+        // inesecureOriginMsg to give a more helpful message to the user.
+        logErrorToConsole("The 'integrity' attribute may only be used in documents in secure origins.", document);
         return false;
     }
     if (!resourceSecurityOrigin->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)) {
-        UseCounter::count(element.document(), UseCounter::SRIElementWithIntegrityAttributeAndInsecureResource);
+        UseCounter::count(document, UseCounter::SRIElementWithIntegrityAttributeAndInsecureResource);
+        logErrorToConsole("The 'integrity' attribute may only be used with resources on secure origins.", document);
         return false;
     }
 
     String integrity;
     HashAlgorithm algorithm;
-    if (!parseIntegrityAttribute(element.fastGetAttribute(HTMLNames::integrityAttr), integrity, algorithm)) {
-        UseCounter::count(element.document(), UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+    String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
+    if (!parseIntegrityAttribute(attribute, integrity, algorithm)) {
+        UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+        logErrorToConsole("The 'integrity' attribute's value  '" + attribute + "' is not valid integrity metadata.", document);
         return false;
     }
 
@@ -91,12 +130,21 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         DigestValue convertedHashVector;
         convertedHashVector.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
         if (DigestsEqual(digest, convertedHashVector)) {
-            UseCounter::count(element.document(), UseCounter::SRIElementWithMatchingIntegrityAttribute);
+            UseCounter::count(document, UseCounter::SRIElementWithMatchingIntegrityAttribute);
             return true;
+        } else {
+            // This message exposes the digest of the resource to the console.
+            // Because this is only to the console, that's okay for now, but we
+            // need to be very careful not to expose this in exceptions or
+            // JavaScript, otherwise it risks exposing information about the
+            // resource cross-origin.
+            logErrorToConsole("The computed " + algorithmToString(algorithm) + " integrity '" + digestToString(digest) + "' does not match the 'integrity' attribute '" + integrity + "' for resource '" + resourceUrl.elidedString() + "'.", document);
         }
+    } else {
+        logErrorToConsole("There was an error computing an 'integrity' value for resource '" + resourceUrl.elidedString() + "'.", document);
     }
 
-    UseCounter::count(element.document(), UseCounter::SRIElementWithNonMatchingIntegrityAttribute);
+    UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityAttribute);
     return false;
 }
 
@@ -104,7 +152,8 @@ bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, Stri
 {
     DEFINE_STATIC_LOCAL(const String, integrityPrefix, ("ni://"));
     // Any additions or subtractions from this struct should also modify the
-    // respective entries in the kAlgorithmMap array in checkDigest().
+    // respective entries in the kAlgorithmMap array in checkDigest() as well
+    // as the array in algorithmToString().
     static const struct {
         const char* prefix;
         HashAlgorithm algorithm;
