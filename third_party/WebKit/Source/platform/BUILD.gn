@@ -213,15 +213,12 @@ component("platform") {
 
   if (is_mac) {
     sources -= [
-      "fonts/harfbuzz/FontHarfBuzz.cpp",
-      "fonts/harfbuzz/HarfBuzzFaceSkia.cpp",
       "fonts/opentype/OpenTypeTypes.h",
       "fonts/opentype/OpenTypeVerticalData.cpp",
       "fonts/opentype/OpenTypeVerticalData.h",
       # The Mac currently uses FontCustomPlatformDataMac.cpp instead.
       "fonts/skia/FontCustomPlatformDataSkia.cpp",
       "fonts/skia/FontCacheSkia.cpp",
-      "fonts/skia/SimpleFontDataSkia.cpp",
       # Uses LocaleMac instead.
       "text/LocaleICU.cpp",
       "text/LocaleICU.h",
@@ -250,7 +247,6 @@ component("platform") {
     ]
   } else {
     sources -= [
-      "fonts/harfbuzz/HarfBuzzFaceCoreText.cpp",
       "geometry/cg/FloatPointCG.cpp",
       "geometry/cg/FloatRectCG.cpp",
       "geometry/cg/FloatSizeCG.cpp",

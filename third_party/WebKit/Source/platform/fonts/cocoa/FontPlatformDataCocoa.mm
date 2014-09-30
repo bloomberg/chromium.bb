@@ -28,8 +28,12 @@
 #import <AvailabilityMacros.h>
 #import <wtf/text/WTFString.h>
 
+#include "platform/LayoutTestSupport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #import "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
+
+
 
 namespace blink {
 
@@ -38,6 +42,29 @@ unsigned FontPlatformData::hash() const
     ASSERT(m_font || !m_cgFont);
     uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isHashTableDeletedValue << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticItalic) };
     return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
+}
+
+void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
+{
+    bool shouldSmoothFonts = true;
+    bool shouldAntialias = true;
+
+    shouldAntialias = shouldAntialias && (!LayoutTestSupport::isRunningLayoutTest()
+        || LayoutTestSupport::isFontAntialiasingEnabledForTest());
+    bool useSubpixelText = RuntimeEnabledFeatures::subpixelFontScalingEnabled();
+    shouldSmoothFonts = shouldSmoothFonts && !LayoutTestSupport::isRunningLayoutTest();
+
+    paint->setAntiAlias(shouldAntialias);
+    paint->setEmbeddedBitmapText(false);
+    const float ts = m_textSize >= 0 ? m_textSize : 12;
+    paint->setTextSize(SkFloatToScalar(ts));
+    paint->setTypeface(typeface());
+    paint->setFakeBoldText(m_syntheticBold);
+    paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
+    paint->setAutohinted(false); // freetype specific
+    paint->setLCDRenderText(shouldSmoothFonts);
+    paint->setSubpixelText(useSubpixelText);
+    paint->setHinting(SkPaint::kNo_Hinting);
 }
 
 // These CoreText Text Spacing feature selectors are not defined in CoreText.
@@ -262,21 +289,6 @@ CTFontRef FontPlatformData::ctFont() const
     }
 
     return m_CTFont.get();
-}
-
-bool FontPlatformData::isAATFont(CTFontRef ctFont) const
-{
-    CFDataRef table = CTFontCopyTable(ctFont, kCTFontTableMort, 0);
-    if (table) {
-        CFRelease(table);
-        return true;
-    }
-    table = CTFontCopyTable(ctFont, kCTFontTableMorx, 0);
-    if (table) {
-        CFRelease(table);
-        return true;
-    }
-    return false;
 }
 
 } // namespace blink

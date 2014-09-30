@@ -153,6 +153,38 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
 #endif
 }
 
+FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
+    : m_typeface(src.m_typeface)
+#if !OS(WIN)
+    , m_family(src.m_family)
+#endif
+    , m_textSize(textSize)
+    , m_syntheticBold(src.m_syntheticBold)
+    , m_syntheticItalic(src.m_syntheticItalic)
+    , m_orientation(src.m_orientation)
+#if OS(MACOSX)
+    , m_isColorBitmapFont(src.m_isColorBitmapFont)
+    , m_isCompositeFontReference(src.m_isCompositeFontReference)
+#endif
+    , m_widthVariant(RegularWidth)
+#if !OS(MACOSX)
+    , m_style(src.m_style)
+#endif
+    , m_harfBuzzFace(nullptr)
+    , m_isHashTableDeletedValue(false)
+#if OS(WIN)
+    , m_paintTextFlags(src.m_paintTextFlags)
+    , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
+    , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
+    , m_minSizeForSubpixel(src.m_minSizeForSubpixel)
+#endif
+{
+#if OS(MACOSX)
+    platformDataInit(src);
+#else
+    querySystemForRenderStyle(FontDescription::subpixelPositioning());
+#endif
+}
 
 #if OS(MACOSX)
 FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
@@ -194,28 +226,6 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     querySystemForRenderStyle(subpixelTextPosition);
 }
 
-
-FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
-    : m_typeface(src.m_typeface)
-#if !OS(WIN)
-    , m_family(src.m_family)
-#endif
-    , m_textSize(textSize)
-    , m_syntheticBold(src.m_syntheticBold)
-    , m_syntheticItalic(src.m_syntheticItalic)
-    , m_orientation(src.m_orientation)
-    , m_widthVariant(RegularWidth)
-    , m_harfBuzzFace(nullptr)
-    , m_isHashTableDeletedValue(false)
-#if OS(WIN)
-    , m_paintTextFlags(src.m_paintTextFlags)
-    , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
-    , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
-    , m_minSizeForSubpixel(src.m_minSizeForSubpixel)
-#endif
-{
-    querySystemForRenderStyle(FontDescription::subpixelPositioning());
-}
 #endif
 
 FontPlatformData::~FontPlatformData()
@@ -329,13 +339,6 @@ SkTypeface* FontPlatformData::typeface() const
 
 HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 {
-#if OS(MACOSX)
-    CTFontRef font = ctFont();
-    // Keeping the decision not to pass AAT font to HarfBuzz for now,
-    // until we switch to HarfBuzz as a shaper for all cases.
-    if (isAATFont(font))
-        return 0;
-#endif
     if (!m_harfBuzzFace)
         m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
 

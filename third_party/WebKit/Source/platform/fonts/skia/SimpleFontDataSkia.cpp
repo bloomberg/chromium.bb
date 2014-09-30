@@ -45,8 +45,10 @@
 
 namespace blink {
 
+#if OS(LINUX) || OS(ANDROID)
 // This is the largest VDMX table which we'll try to load and parse.
 static const size_t maxVDMXTableSize = 1024 * 1024; // 1 MB
+#endif
 
 void SimpleFontData::platformInit()
 {

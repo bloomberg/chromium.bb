@@ -98,6 +98,10 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 
+# AAT/mortx shaping not supported on platforms other than Mac
+[ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
+[ Linux Win Android ] virtual/antialiasedtext/fast/text/aat-morx.html [ WontFix ]
+
 # This test crashes occasionally on Windows and we can't seem to repro locally.
 # See comments in crbug.com/239077
 [ Win ] fast/canvas/webgl/index-validation-with-resized-buffer.html [ WontFix ]

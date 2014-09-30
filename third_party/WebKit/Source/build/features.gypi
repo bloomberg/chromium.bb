@@ -33,6 +33,7 @@
   'variables': {
     'feature_defines': [
       'ENABLE_SVG_FONTS=1',
+      'ENABLE_OPENTYPE_VERTICAL=1',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.
@@ -69,12 +70,6 @@
           # Enabling the FFT is enough to enable WebAudio support to
           # allow most WebAudio features to work on Android.
           'ENABLE_WEB_AUDIO=1',
-        ],
-      }],
-      # Mac OS X has not implemented support for ENABLE(OPENTYPE_VERTICAL) yet
-      ['OS!="mac"', {
-        'feature_defines': [
-          'ENABLE_OPENTYPE_VERTICAL=1',
         ],
       }],
       ['use_default_render_theme==1', {

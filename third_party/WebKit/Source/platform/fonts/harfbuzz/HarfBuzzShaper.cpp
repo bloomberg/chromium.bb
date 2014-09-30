@@ -899,7 +899,6 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
 
     if (!currentRun->hasGlyphToCharacterIndexes()) {
         // FIXME: https://crbug.com/337886
-        ASSERT_NOT_REACHED();
         return;
     }
 

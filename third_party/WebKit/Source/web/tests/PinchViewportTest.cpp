@@ -730,7 +730,7 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
 
 // Test that the coordinates sent into moveRangeSelection are offset by the
 // pinch viewport's location.
-TEST_F(PinchViewportTest, TestWebFrameRangeAccountsForPinchViewportScroll)
+TEST_F(PinchViewportTest, DISABLED_TestWebFrameRangeAccountsForPinchViewportScroll)
 {
     initializeWithDesktopSettings();
     webViewImpl()->settings()->setDefaultFontSize(12);

@@ -2876,7 +2876,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned with a margin for possible label.
     int hScroll = editBoxWithText.x - leftBoxRatio * viewportWidth / scale;
-    EXPECT_NEAR(hScroll, scroll.x(), 1);
+    EXPECT_NEAR(hScroll, scroll.x(), 5);
     int vScroll = editBoxWithText.y - (viewportHeight / scale - editBoxWithText.height) / 2;
     EXPECT_NEAR(vScroll, scroll.y(), 1);
     EXPECT_NEAR(minReadableCaretHeight / caret.height, scale, 0.1);

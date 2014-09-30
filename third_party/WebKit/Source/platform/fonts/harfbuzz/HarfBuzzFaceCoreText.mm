@@ -31,14 +31,51 @@
 #include "config.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 
+#include "hb-coretext.h"
+#include "hb.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
-
+#include <AppKit/AppKit.h>
 #include <ApplicationServices/ApplicationServices.h>
-#include "hb.h"
+
+// The names of these constants were taken from history
+// /trunk/WebKit/WebCoreSupport.subproj/WebTextRenderer.m@9311. The values
+// were derived from the assembly of libWebKitSystemInterfaceLeopard.a.
+enum CGFontRenderingMode {
+  kCGFontRenderingMode1BitPixelAligned = 0x0,
+  kCGFontRenderingModeAntialiasedPixelAligned = 0x1,
+  kCGFontRenderingModeAntialiased = 0xd
+};
+
+// Forward declare Mac SPIs.
+extern "C" {
+// Request for public API: rdar://13803586
+bool CGFontGetGlyphAdvancesForStyle(CGFontRef font, CGAffineTransform* transform, CGFontRenderingMode renderingMode, ATSGlyphRef* glyph, size_t count, CGSize* advance);
+}
+
+static CGFontRenderingMode cgFontRenderingModeForNSFont(NSFont* font) {
+    if (!font)
+        return kCGFontRenderingModeAntialiasedPixelAligned;
+
+    switch ([font renderingMode]) {
+        case NSFontIntegerAdvancementsRenderingMode: return kCGFontRenderingMode1BitPixelAligned;
+        case NSFontAntialiasedIntegerAdvancementsRenderingMode: return kCGFontRenderingModeAntialiasedPixelAligned;
+        default: return kCGFontRenderingModeAntialiased;
+    }
+}
 
 namespace blink {
+
+static void advanceForGlyph(Glyph glyph, const FontPlatformData& platformData, CGSize* advance) {
+    float pointSize = platformData.m_textSize;
+    NSFont *font = platformData.font();
+    CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
+    if (!CGFontGetGlyphAdvancesForStyle(platformData.cgFont(), &m, cgFontRenderingModeForNSFont(font), &glyph, 1, advance)) {
+        WTF_LOG_ERROR("Unable to retrieve glyph advance for %@ %f", [font displayName], pointSize);
+        advance->width = 0;
+    }
+}
 
 static hb_position_t floatToHarfBuzzPosition(CGFloat value)
 {
@@ -58,12 +95,14 @@ static hb_bool_t getGlyph(hb_font_t* hbFont, void* fontData, hb_codepoint_t unic
     return true;
 }
 
+
 static hb_position_t getGlyphHorizontalAdvance(hb_font_t* hbFont, void* fontData, hb_codepoint_t glyph, void* userData)
 {
-    CTFontRef ctFont = reinterpret_cast<FontPlatformData*>(fontData)->ctFont();
-    CGGlyph cgGlyph = glyph;
-    CGFloat advance = CTFontGetAdvancesForGlyphs(ctFont, kCTFontHorizontalOrientation, &cgGlyph, 0, 1);
-    return floatToHarfBuzzPosition(advance);
+    CGSize advance;
+    FontPlatformData* platformData = reinterpret_cast<FontPlatformData*>(fontData);
+    advanceForGlyph(glyph, *platformData, &advance);
+    float syntheticBoldOffset = platformData->m_syntheticBold ? 1.0f : 0.0f;
+    return floatToHarfBuzzPosition(advance.width + syntheticBoldOffset);
 }
 
 static hb_bool_t getGlyphHorizontalOrigin(hb_font_t* hbFont, void* fontData, hb_codepoint_t glyph, hb_position_t* x, hb_position_t* y, void* userData)
@@ -100,33 +139,9 @@ static hb_font_funcs_t* harfBuzzCoreTextGetFontFuncs()
     return harfBuzzCoreTextFontFuncs;
 }
 
-static void releaseTableData(void* userData)
-{
-    CFDataRef cfData = reinterpret_cast<CFDataRef>(userData);
-    CFRelease(cfData);
-}
-
-static hb_blob_t* harfBuzzCoreTextGetTable(hb_face_t* face, hb_tag_t tag, void* userData)
-{
-    CGFontRef cgFont = reinterpret_cast<CGFontRef>(userData);
-    if (!cgFont)
-        return 0;
-    CFDataRef cfData = CGFontCopyTableForTag(cgFont, tag);
-    if (!cfData)
-        return 0;
-
-    const char* data = reinterpret_cast<const char*>(CFDataGetBytePtr(cfData));
-    const size_t length = CFDataGetLength(cfData);
-    if (!data || !length)
-        return 0;
-    return hb_blob_create(data, length, HB_MEMORY_MODE_READONLY, reinterpret_cast<void*>(const_cast<__CFData*>(cfData)), releaseTableData);
-}
-
 hb_face_t* HarfBuzzFace::createFace()
 {
-    // It seems that CTFontCopyTable of MacOSX10.5 sdk doesn't work for
-    // OpenType layout tables(GDEF, GSUB, GPOS). Use CGFontCopyTableForTag instead.
-    hb_face_t* face = hb_face_create_for_tables(harfBuzzCoreTextGetTable, m_platformData->cgFont(), 0);
+    hb_face_t* face = hb_coretext_face_create(m_platformData->cgFont());
     ASSERT(face);
     return face;
 }
