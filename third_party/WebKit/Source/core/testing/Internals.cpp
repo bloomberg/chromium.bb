@@ -541,6 +541,12 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> Internals::computedStyleIncludingVis
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
+PassRefPtrWillBeRawPtr<ShadowRoot> Internals::createUserAgentShadowRoot(Element* host)
+{
+    ASSERT(host);
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(host->ensureUserAgentShadowRoot());
+}
+
 ShadowRoot* Internals::shadowRoot(Element* host)
 {
     // FIXME: Internals::shadowRoot() in tests should be converted to youngestShadowRoot() or oldestShadowRoot().

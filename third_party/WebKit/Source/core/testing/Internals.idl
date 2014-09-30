@@ -41,6 +41,8 @@
 
     [TypeChecking=Interface] CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 
+    [TypeChecking=Interface] ShadowRoot createUserAgentShadowRoot(Element host);
+
     [TypeChecking=Interface] ShadowRoot shadowRoot(Element host);
     [TypeChecking=Interface] ShadowRoot youngestShadowRoot(Element host);
     [TypeChecking=Interface] ShadowRoot oldestShadowRoot(Element host);

@@ -9,6 +9,13 @@ function createShadowRoot()
             'children': children};
 }
 
+function createUserAgentShadowRoot()
+{
+    var shadowRoot = createShadowRoot.apply(null, arguments);
+    shadowRoot.isUserAgentShadowRoot = true;
+    return shadowRoot;
+}
+
 // This function can take optional child elements, which might be a result of createShadowRoot(), as arguments[2:].
 function createDOM(tagName, attributes)
 {
@@ -19,7 +26,12 @@ function createDOM(tagName, attributes)
     for (var i = 0; i < childElements.length; ++i) {
         var child = childElements[i];
         if (child.isShadowRoot) {
-            var shadowRoot = element.createShadowRoot();
+            var shadowRoot;
+            if (child.isUserAgentShadowRoot) {
+                shadowRoot = window.internals.createUserAgentShadowRoot(element);
+            } else {
+                shadowRoot = element.createShadowRoot();
+            }
             if (child.attributes) {
                 for (var attribute in child.attributes) {
                     // Shadow Root does not have setAttribute.

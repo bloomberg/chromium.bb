@@ -721,6 +721,23 @@ static void prepareDataTransferForImageDrag(LocalFrame* source, DataTransfer* da
     dataTransfer->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label);
 }
 
+static ShadowRoot::ShadowRootType treeScopeType(const TreeScope& scope)
+{
+    // Treat document like an author shadow root.
+    if (scope.rootNode().isDocumentNode())
+        return ShadowRoot::AuthorShadowRoot;
+    return toShadowRoot(scope.rootNode()).type();
+}
+
+static bool containsExcludingUserAgentShadowTrees(const Node& dragSrc, Node* dragOrigin)
+{
+    if (!dragOrigin)
+        return false;
+    if (treeScopeType(dragSrc.treeScope()) != treeScopeType(dragOrigin->treeScope()))
+        return false;
+    return dragSrc.containsIncludingShadowDOM(dragOrigin);
+}
+
 bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& state, const IntPoint& dragOrigin)
 {
     ASSERT(dragTypeIsValid(state.m_dragType));
@@ -731,7 +748,7 @@ bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
     // FIXME: Can this even happen? I guess it's possible, but should verify
     // with a layout test.
-    if (!state.m_dragSrc->containsIncludingShadowDOM(hitTestResult.innerNode())) {
+    if (!containsExcludingUserAgentShadowTrees(*state.m_dragSrc, hitTestResult.innerNode())) {
         // The original node being dragged isn't under the drag origin anymore... maybe it was
         // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on
         // something that's not actually under the drag origin.
@@ -849,7 +866,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
         return false;
 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
-    if (!state.m_dragSrc->containsIncludingShadowDOM(hitTestResult.innerNode())) {
+    if (!containsExcludingUserAgentShadowTrees(*state.m_dragSrc, hitTestResult.innerNode())) {
         // The original node being dragged isn't under the drag origin anymore... maybe it was
         // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on
         // something that's not actually under the drag origin.
