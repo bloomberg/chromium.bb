@@ -269,14 +269,18 @@ SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas)
     : canvas_(canvas),
       userClipRectSpecified_(false),
       cgContext_(0),
+      bitmapScaleFactor_(1),
       useDeviceBits_(false),
       bitmapIsDummy_(false) {
 }
 
-SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas, const SkIRect& userClipRect)
+SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas,
+                             const SkIRect& userClipRect,
+                             SkScalar bitmapScaleFactor)
     : canvas_(canvas),
       userClipRectSpecified_(true),
       cgContext_(0),
+      bitmapScaleFactor_(bitmapScaleFactor),
       useDeviceBits_(false),
       bitmapIsDummy_(false) {
   canvas_->save();
@@ -382,8 +386,10 @@ void SkiaBitLocker::releaseIfNeeded() {
       return;
     canvas_->save();
     canvas_->concat(inverse);
-    canvas_->drawBitmap(subset, bounds.x() + bitmapOffset_.x(),
-                                bounds.y() + bitmapOffset_.y());
+    canvas_->translate(bounds.x() + bitmapOffset_.x(),
+                       bounds.y() + bitmapOffset_.y());
+    canvas_->scale(1.f / bitmapScaleFactor_, 1.f / bitmapScaleFactor_);
+    canvas_->drawBitmap(subset, 0, 0);
     canvas_->restore();
   }
   CGContextRelease(cgContext_);
@@ -431,7 +437,8 @@ CGContextRef SkiaBitLocker::cgContext() {
     bitmap_.lockPixels();
   } else {
     bool result = bitmap_.tryAllocN32Pixels(
-        clip_bounds.width(), clip_bounds.height());
+        SkScalarCeilToInt(bitmapScaleFactor_ * clip_bounds.width()),
+        SkScalarCeilToInt(bitmapScaleFactor_ * clip_bounds.height()));
     DCHECK(result);
     if (!result)
       return 0;
@@ -447,7 +454,7 @@ CGContextRef SkiaBitLocker::cgContext() {
   SkMatrix matrix = canvas_->getTotalMatrix();
   matrix.postTranslate(-SkIntToScalar(bitmapOffset_.x()),
                        -SkIntToScalar(bitmapOffset_.y()));
-  matrix.postScale(1, -1);
+  matrix.postScale(bitmapScaleFactor_, -bitmapScaleFactor_);
   matrix.postTranslate(0, SkIntToScalar(bitmap_.height()));
 
   CGContextConcatCTM(cgContext_, SkMatrixToCGAffineTransform(matrix));

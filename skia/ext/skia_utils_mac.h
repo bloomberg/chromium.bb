@@ -108,8 +108,11 @@ SK_API NSImage* SkBitmapToNSImage(const SkBitmap& icon);
 // Converts a SkCanvas temporarily to a CGContext
 class SK_API SkiaBitLocker {
  public:
+  // TODO(ccameron): delete this constructor
   explicit SkiaBitLocker(SkCanvas* canvas);
-  SkiaBitLocker(SkCanvas* canvas, const SkIRect& userClipRect);
+  SkiaBitLocker(SkCanvas* canvas,
+                const SkIRect& userClipRect,
+                SkScalar bitmapScaleFactor = 1);
   ~SkiaBitLocker();
   CGContextRef cgContext();
   bool hasEmptyClipRegion() const;
@@ -128,6 +131,7 @@ class SK_API SkiaBitLocker {
   CGContextRef cgContext_;
   SkBitmap bitmap_;
   SkIPoint bitmapOffset_;
+  SkScalar bitmapScaleFactor_;
 
   // True if we are drawing to |canvas_|'s SkBaseDevice's bits directly through
   // |bitmap_|. Otherwise, the bits in |bitmap_| are our allocation and need to
