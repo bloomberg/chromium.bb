@@ -404,6 +404,10 @@
     'ipc': {
       'filepath': 'ipc/ipc',
     },
+    'ipc_messages': {
+      'filepath': '_message.*.h|'\
+                  '_messages.cc',
+    },
     'libwebp': {
       'filepath': 'third_party/libwebp'
     },
@@ -887,6 +891,7 @@
                 'kmadhusu+watch@chromium.org', 'dhollowa+watch@chromium.org',
                 'jfweitz+watch@chromium.org', 'skanuj+watch@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
+    'ipc_messages': [ 'mkwst+moarreviews-ipc@chromium.org' ],
     'libwebp': ['urvang@google.com', 'jzern@chromium.org',
                 'skal@google.com', 'vikasa@google.com'],
     'linux_fonts': ['derat+watch@chromium.org'],
