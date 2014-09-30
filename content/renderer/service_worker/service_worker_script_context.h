@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_CONTEXT_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_CONTEXT_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
@@ -101,6 +103,11 @@ class ServiceWorkerScriptContext {
 
   // Pending callbacks for GetClientDocuments().
   ClientsCallbacksMap pending_clients_callbacks_;
+
+  // Capture timestamps for UMA
+  std::map<int, base::TimeTicks> activate_start_timings_;
+  std::map<int, base::TimeTicks> fetch_start_timings_;
+  std::map<int, base::TimeTicks> install_start_timings_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptContext);
 };

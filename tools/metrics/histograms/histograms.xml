@@ -29444,6 +29444,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.ActivateEventExecutionTime" units="millisecond">
+  <owner>shimazu@chromium.org</owner>
+  <summary>Execution time of ServiceWorkerGlobalScope.onactivate.</summary>
+</histogram>
+
 <histogram name="ServiceWorker.Database.OpenResult"
     enum="ServiceWorkerDatabaseStatus">
   <owner>nhiroki@chromium.org</owner>
@@ -29487,6 +29492,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Records result of writing response into ServiceWorkerDiskCache.
   </summary>
+</histogram>
+
+<histogram name="ServiceWorker.FetchEventExecutionTime" units="millisecond">
+  <owner>shimazu@chromium.org</owner>
+  <summary>Execution time of ServiceWorkerGlobalScope.onfetch.</summary>
+</histogram>
+
+<histogram name="ServiceWorker.InstallEventExecutionTime" units="millisecond">
+  <owner>shimazu@chromium.org</owner>
+  <summary>Execution time of ServiceWorkerGlobalScope.oninstall.</summary>
 </histogram>
 
 <histogram name="ServiceWorker.ScriptSize" units="bytes">

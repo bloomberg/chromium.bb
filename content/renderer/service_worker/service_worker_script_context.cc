@@ -4,10 +4,9 @@
 
 #include "content/renderer/service_worker/service_worker_script_context.h"
 
-#include <map>
-
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -73,6 +72,11 @@ void ServiceWorkerScriptContext::OnMessageReceived(
 void ServiceWorkerScriptContext::DidHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.ActivateEventExecutionTime",
+      base::TimeTicks::Now() - activate_start_timings_[request_id]);
+  activate_start_timings_.erase(request_id);
+
   Send(new ServiceWorkerHostMsg_ActivateEventFinished(
       GetRoutingID(), request_id, result));
 }
@@ -80,6 +84,11 @@ void ServiceWorkerScriptContext::DidHandleActivateEvent(
 void ServiceWorkerScriptContext::DidHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.InstallEventExecutionTime",
+      base::TimeTicks::Now() - install_start_timings_[request_id]);
+  install_start_timings_.erase(request_id);
+
   Send(new ServiceWorkerHostMsg_InstallEventFinished(
       GetRoutingID(), request_id, result));
 }
@@ -88,6 +97,11 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
     int request_id,
     ServiceWorkerFetchEventResult result,
     const ServiceWorkerResponse& response) {
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.FetchEventExecutionTime",
+      base::TimeTicks::Now() - fetch_start_timings_[request_id]);
+  fetch_start_timings_.erase(request_id);
+
   Send(new ServiceWorkerHostMsg_FetchEventFinished(
       GetRoutingID(), request_id, result, response));
 }
@@ -131,6 +145,7 @@ int ServiceWorkerScriptContext::GetRoutingID() const {
 void ServiceWorkerScriptContext::OnActivateEvent(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnActivateEvent");
+  activate_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchActivateEvent(request_id);
 }
 
@@ -138,6 +153,7 @@ void ServiceWorkerScriptContext::OnInstallEvent(int request_id,
                                                 int active_version_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnInstallEvent");
+  install_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchInstallEvent(request_id);
 }
 
@@ -162,6 +178,7 @@ void ServiceWorkerScriptContext::OnFetchEvent(
   webRequest.setReferrer(blink::WebString::fromUTF8(request.referrer.spec()),
                          blink::WebReferrerPolicyDefault);
   webRequest.setIsReload(request.is_reload);
+  fetch_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchFetchEvent(request_id, webRequest);
 }
 
