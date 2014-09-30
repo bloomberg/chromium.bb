@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.printing;
+package org.chromium.chrome.browser.printing;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -18,9 +18,11 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.shell.ChromeShellTab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.printing.PrintDocumentAdapterWrapper;
+import org.chromium.printing.PrintManagerDelegate;
+import org.chromium.printing.PrintingControllerImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -92,9 +94,8 @@ public class PrintingControllerTest extends ChromeShellTestBase {
         // Create a temporary file to save the PDF.
         final File cacheDir = getInstrumentation().getTargetContext().getCacheDir();
         final File tempFile = File.createTempFile(TEMP_FILE_NAME, TEMP_FILE_EXTENSION, cacheDir);
-        final ParcelFileDescriptor fileDescriptor =
-                ParcelFileDescriptor.open(tempFile, (ParcelFileDescriptor.MODE_CREATE |
-                                                     ParcelFileDescriptor.MODE_READ_WRITE));
+        final ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(tempFile,
+                (ParcelFileDescriptor.MODE_CREATE | ParcelFileDescriptor.MODE_READ_WRITE));
 
         PrintAttributes attributes = new PrintAttributes.Builder()
                 .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
@@ -103,25 +104,21 @@ public class PrintingControllerTest extends ChromeShellTestBase {
                 .build();
 
         // Use this to wait for PDF generation to complete, as it will happen asynchronously.
-        final FutureTask<Boolean> result =
-                new FutureTask<Boolean>(new Callable<Boolean>() {
-                            @Override
-                            public Boolean call() {
-                                return true;
-                            }
-                        });
-
-        callLayoutOnUiThread(
-                printingController,
-                null,
-                attributes,
-                new LayoutResultCallbackWrapperMock() {
-            // Called on UI thread
+        final FutureTask<Boolean> result = new FutureTask<Boolean>(new Callable<Boolean>() {
             @Override
-            public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
-                callWriteOnUiThread(printingController, fileDescriptor, result);
+            public Boolean call() {
+                return true;
             }
         });
+
+        callLayoutOnUiThread(printingController, null, attributes,
+                new LayoutResultCallbackWrapperMock() {
+                    // Called on UI thread
+                    @Override
+                    public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
+                        callWriteOnUiThread(printingController, fileDescriptor, result);
+                    }
+                });
 
         FileInputStream in = null;
         try {
@@ -169,8 +166,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
         try {
             final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
                 @Override
-                public void print(String printJobName,
-                        PrintDocumentAdapter documentAdapter,
+                public void print(String printJobName, PrintDocumentAdapter documentAdapter,
                         PrintAttributes attributes) {
                     // Do nothing, as we will emulate the framework call sequence within the test.
                 }
