@@ -143,12 +143,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles);
 
-  // Removes the message pipe endpoint with the given local ID, which must exist
-  // and be a zombie, and given remote ID. Returns false on failure, in
-  // particular if no message pipe with |local_id| is attached. Only called on
-  // the creation thread.
-  bool RemoveMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                 MessageInTransit::EndpointId remote_id);
+  // Handles "remove message pipe endpoint" messages.
+  bool OnRemoveMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+                                   MessageInTransit::EndpointId remote_id);
+  // Handles "remove message pipe endpoint ack" messages.
+  bool OnRemoveMessagePipeEndpointAck(MessageInTransit::EndpointId local_id);
 
   // Handles errors (e.g., invalid messages) from the remote side. Callable from
   // any thread.

@@ -417,8 +417,8 @@ void Channel::OnReadMessageForChannel(
       DVLOG(2) << "Handling channel message to remove message pipe (local ID "
                << message_view.destination_id() << ", remote ID "
                << message_view.source_id() << ")";
-      if (!RemoveMessagePipeEndpoint(message_view.destination_id(),
-                                     message_view.source_id())) {
+      if (!OnRemoveMessagePipeEndpoint(message_view.destination_id(),
+                                       message_view.source_id())) {
         HandleRemoteError(
             "Received invalid channel message to remove message pipe");
       }
@@ -427,8 +427,7 @@ void Channel::OnReadMessageForChannel(
       DVLOG(2) << "Handling channel message to ack remove message pipe (local "
                   "ID " << message_view.destination_id() << ", remote ID "
                << message_view.source_id() << ")";
-      if (!RemoveMessagePipeEndpoint(message_view.destination_id(),
-                                     message_view.source_id())) {
+      if (!OnRemoveMessagePipeEndpointAck(message_view.destination_id())) {
         HandleRemoteError(
             "Received invalid channel message to ack remove message pipe");
       }
@@ -440,14 +439,11 @@ void Channel::OnReadMessageForChannel(
   }
 }
 
-bool Channel::RemoveMessagePipeEndpoint(
+bool Channel::OnRemoveMessagePipeEndpoint(
     MessageInTransit::EndpointId local_id,
     MessageInTransit::EndpointId remote_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
-  // If this is non-null after the locked block, the endpoint should be detached
-  // (and no remove ack message sent).
-  scoped_refptr<ChannelEndpoint> endpoint_to_detach;
   scoped_refptr<MessagePipe> message_pipe;
   unsigned port = ~0u;
   {
@@ -455,31 +451,31 @@ bool Channel::RemoveMessagePipeEndpoint(
 
     IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
     if (it == local_id_to_endpoint_map_.end()) {
-      DVLOG(2) << "Remove message pipe error: not found";
+      DVLOG(2) << "Remove message pipe endpoint error: not found";
       return false;
     }
 
     switch (it->second->state_) {
       case ChannelEndpoint::STATE_NORMAL:
-        it->second->state_ = ChannelEndpoint::STATE_WAIT_LOCAL_DETACH;
-        message_pipe = it->second->message_pipe_;
-        port = it->second->port_;
-        it->second->message_pipe_ = nullptr;
-        // We have to send a remove ack message (outside the lock).
+        // This is the normal case; we'll proceed on to "wait local detach".
         break;
+
       case ChannelEndpoint::STATE_WAIT_LOCAL_DETACH:
-        DVLOG(2) << "Remove message pipe error: wrong state";
+        // We can only be in this state because we got a "remove" already, so
+        // getting another such message is invalid.
+        DVLOG(2) << "Remove message pipe endpoint error: wrong state";
         return false;
+
       case ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK:
-        endpoint_to_detach = it->second;
-        local_id_to_endpoint_map_.erase(it);
-        // We have to detach (outside the lock).
-        break;
+        // Remove messages "crossed"; we have to wait for the ack.
+        return true;
     }
-  }
-  if (endpoint_to_detach.get()) {
-    endpoint_to_detach->DetachFromChannel();
-    return true;
+
+    it->second->state_ = ChannelEndpoint::STATE_WAIT_LOCAL_DETACH;
+    message_pipe = it->second->message_pipe_;
+    port = it->second->port_;
+    it->second->message_pipe_ = nullptr;
+    // Send the remove ack message outside the lock.
   }
 
   if (!SendControlMessage(
@@ -494,7 +490,34 @@ bool Channel::RemoveMessagePipeEndpoint(
   }
 
   message_pipe->Close(port);
+  return true;
+}
 
+bool Channel::OnRemoveMessagePipeEndpointAck(
+    MessageInTransit::EndpointId local_id) {
+  DCHECK(creation_thread_checker_.CalledOnValidThread());
+
+  scoped_refptr<ChannelEndpoint> endpoint_to_detach;
+  {
+    base::AutoLock locker(lock_);
+
+    IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
+    if (it == local_id_to_endpoint_map_.end()) {
+      DVLOG(2) << "Remove message pipe endpoint ack error: not found";
+      return false;
+    }
+
+    if (it->second->state_ != ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK) {
+      DVLOG(2) << "Remove message pipe endpoint ack error: wrong state";
+      return false;
+    }
+
+    endpoint_to_detach = it->second;
+    local_id_to_endpoint_map_.erase(it);
+    // Detach the endpoint outside the lock.
+  }
+
+  endpoint_to_detach->DetachFromChannel();
   return true;
 }
 
