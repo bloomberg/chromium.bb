@@ -34,8 +34,6 @@ const WrapperTypeInfo& TestInterfaceNode::s_wrapperTypeInfo = V8TestInterfaceNod
 
 namespace TestInterfaceNodeV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void stringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();

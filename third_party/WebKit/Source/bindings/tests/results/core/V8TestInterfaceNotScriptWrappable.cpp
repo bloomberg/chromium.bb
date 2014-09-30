@@ -25,8 +25,6 @@ const WrapperTypeInfo V8TestInterfaceNotScriptWrappable::wrapperTypeInfo = { gin
 
 namespace TestInterfaceNotScriptWrappableV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();

@@ -31,8 +31,6 @@ const WrapperTypeInfo& TestInterfaceConstructor4::s_wrapperTypeInfo = V8TestInte
 
 namespace TestInterfaceConstructor4V8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceConstructor4* testInterface4Arg;

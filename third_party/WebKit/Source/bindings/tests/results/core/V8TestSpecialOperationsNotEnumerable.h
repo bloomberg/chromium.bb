@@ -23,7 +23,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestSpecialOperationsNotEnumerable* toImpl(v8::Handle<v8::Object> object)
     {
-        return toImpl(blink::toScriptWrappableBase(object));
+        return blink::toScriptWrappableBase(object)->toImpl<TestSpecialOperationsNotEnumerable>();
     }
     static TestSpecialOperationsNotEnumerable* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
@@ -35,15 +35,8 @@ public:
     {
         return impl->toScriptWrappableBase();
     }
-
-    static inline TestSpecialOperationsNotEnumerable* toImpl(ScriptWrappableBase* internalPointer)
-    {
-        return internalPointer->toImpl<TestSpecialOperationsNotEnumerable>();
-    }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
-
-private:
 };
 
 inline v8::Handle<v8::Object> wrap(TestSpecialOperationsNotEnumerable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -126,4 +119,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
 }
 
 } // namespace blink
+
 #endif // V8TestSpecialOperationsNotEnumerable_h

@@ -35,8 +35,6 @@ const WrapperTypeInfo& TestSpecialOperations::s_wrapperTypeInfo = V8TestSpecialO
 
 namespace TestSpecialOperationsV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {

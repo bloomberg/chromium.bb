@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestInterfaceConstructor3::s_wrapperTypeInfo = V8TestInte
 
 namespace TestInterfaceConstructor3V8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {

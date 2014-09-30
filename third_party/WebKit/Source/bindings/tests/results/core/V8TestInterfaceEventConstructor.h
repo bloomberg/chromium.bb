@@ -25,7 +25,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceEventConstructor* toImpl(v8::Handle<v8::Object> object)
     {
-        return toImpl(blink::toScriptWrappableBase(object));
+        return blink::toScriptWrappableBase(object)->toImpl<TestInterfaceEventConstructor>();
     }
     static TestInterfaceEventConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
@@ -43,15 +43,8 @@ public:
     {
         return impl->toScriptWrappableBase();
     }
-
-    static inline TestInterfaceEventConstructor* toImpl(ScriptWrappableBase* internalPointer)
-    {
-        return internalPointer->toImpl<TestInterfaceEventConstructor>();
-    }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
-
-private:
 };
 
 inline v8::Handle<v8::Object> wrap(TestInterfaceEventConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -136,4 +129,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtrWil
 bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info, const String& = "");
 
 } // namespace blink
+
 #endif // V8TestInterfaceEventConstructor_h

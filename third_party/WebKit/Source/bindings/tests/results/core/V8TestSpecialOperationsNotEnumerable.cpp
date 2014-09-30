@@ -29,8 +29,6 @@ const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::s_wrapperTypeInfo = V
 
 namespace TestSpecialOperationsNotEnumerableV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());

@@ -32,7 +32,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceImplementation* toImpl(v8::Handle<v8::Object> object)
     {
-        return toImpl(blink::toScriptWrappableBase(object));
+        return blink::toScriptWrappableBase(object)->toImpl<TestInterfaceImplementation>();
     }
     static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
@@ -48,15 +48,8 @@ public:
     {
         return impl->toScriptWrappableBase();
     }
-
-    static inline TestInterfaceImplementation* toImpl(ScriptWrappableBase* internalPointer)
-    {
-        return internalPointer->toImpl<TestInterfaceImplementation>();
-    }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*);
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
-
-private:
 };
 
 class TestInterfaceImplementation;
@@ -105,4 +98,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
 
 } // namespace blink
 #endif // ENABLE(CONDITION)
+
 #endif // V8TestInterface_h

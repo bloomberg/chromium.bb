@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestInterfaceCustomConstructor::s_wrapperTypeInfo = V8Tes
 
 namespace TestInterfaceCustomConstructorV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 } // namespace TestInterfaceCustomConstructorV8Internal
 
 void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

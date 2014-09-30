@@ -94,7 +94,6 @@ RuntimeEnabled=*
 SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptArguments|ActiveWindow|FirstWindow
-SpecialWrapFor=*
 TreatNullAs=NullString|EmptyString
 TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString

@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestInterfaceNamedConstructor::s_wrapperTypeInfo = V8Test
 
 namespace TestInterfaceNamedConstructorV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void TestInterfaceNamedConstructorConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();

@@ -18,9 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    SpecialWrapFor=(HTMLElement,SVGElement),
-] interface Element : Node {
+interface Element : Node {
 
     // DOM Level 1 Core
 

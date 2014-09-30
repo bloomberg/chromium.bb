@@ -34,8 +34,6 @@ const WrapperTypeInfo& TestInterface5Implementation::s_wrapperTypeInfo = V8TestI
 
 namespace TestInterface5ImplementationV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void testInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();

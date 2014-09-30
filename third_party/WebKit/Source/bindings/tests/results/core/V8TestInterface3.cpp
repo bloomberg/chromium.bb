@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestInterface3::s_wrapperTypeInfo = V8TestInterface3::wra
 
 namespace TestInterface3V8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");

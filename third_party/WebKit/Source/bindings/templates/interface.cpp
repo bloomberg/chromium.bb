@@ -884,28 +884,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
 {##############################################################################}
 {% block wrap %}
 {% if not is_script_wrappable %}
-{% if special_wrap_for or is_document %}
-v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    {% for special_wrap_interface in special_wrap_for %}
-    if (impl->is{{special_wrap_interface}}())
-        return wrap(to{{special_wrap_interface}}(impl), creationContext, isolate);
-    {% endfor %}
-    v8::Handle<v8::Object> wrapper = {{v8_class}}::createWrapper(impl, creationContext, isolate);
-    {% if is_document %}
-    if (wrapper.IsEmpty())
-        return wrapper;
-    DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
-    if (world.isMainWorld()) {
-        if (LocalFrame* frame = impl->frame())
-            frame->script().windowProxy(world)->updateDocumentWrapper(wrapper);
-    }
-    {% endif %}
-    return wrapper;
-}
-
-{% elif not has_custom_to_v8 and not has_custom_wrap %}
+{% if not has_custom_to_v8 and not has_custom_wrap %}
 v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
@@ -926,16 +905,6 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl.get(), isolate));
 
-    {% if is_document %}
-    if (LocalFrame* frame = impl->frame()) {
-        if (frame->script().initializeMainWorld()) {
-            // initializeMainWorld may have created a wrapper for the object, retry from the start.
-            v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<{{v8_class}}>(impl.get(), isolate);
-            if (!wrapper.IsEmpty())
-                return wrapper;
-        }
-    }
-    {% endif %}
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, impl->toScriptWrappableBase(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;

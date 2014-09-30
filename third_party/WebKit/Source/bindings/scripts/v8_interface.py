@@ -82,16 +82,6 @@ def interface_context(interface):
         header_includes.update(v8_types.includes_for_interface(parent_interface))
     extended_attributes = interface.extended_attributes
 
-    is_audio_buffer = inherits_interface(interface.name, 'AudioBuffer')
-    if is_audio_buffer:
-        includes.add('modules/webaudio/AudioBuffer.h')
-
-    is_document = inherits_interface(interface.name, 'Document')
-    if is_document:
-        includes.update(['bindings/core/v8/ScriptController.h',
-                         'bindings/core/v8/WindowProxy.h',
-                         'core/frame/LocalFrame.h'])
-
     # [ActiveDOMObject]
     is_active_dom_object = 'ActiveDOMObject' in extended_attributes
 
@@ -142,14 +132,6 @@ def interface_context(interface):
     # [NotScriptWrappable]
     is_script_wrappable = 'NotScriptWrappable' not in extended_attributes
 
-    # [SpecialWrapFor]
-    if 'SpecialWrapFor' in extended_attributes:
-        special_wrap_for = extended_attribute_value_as_list(interface, 'SpecialWrapFor')
-    else:
-        special_wrap_for = []
-    for special_wrap_interface in special_wrap_for:
-        v8_types.add_includes_for_interface(special_wrap_interface)
-
     # [Custom=Wrap], [SetWrapperReferenceFrom]
     has_visit_dom_wrapper = (
         has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
@@ -175,10 +157,8 @@ def interface_context(interface):
         'header_includes': header_includes,
         'interface_name': interface.name,
         'is_active_dom_object': is_active_dom_object,
-        'is_audio_buffer': is_audio_buffer,
         'is_check_security': is_check_security,
         'is_dependent_lifetime': is_dependent_lifetime,
-        'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
@@ -197,7 +177,6 @@ def interface_context(interface):
         'reachable_node_function': reachable_node_function,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
-        'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),
         'wrapper_class_id': wrapper_class_id,
     }

@@ -29,8 +29,6 @@ const WrapperTypeInfo& TestInterfaceEmpty::s_wrapperTypeInfo = V8TestInterfaceEm
 
 namespace TestInterfaceEmptyV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 } // namespace TestInterfaceEmptyV8Internal
 
 static void installV8TestInterfaceEmptyTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)

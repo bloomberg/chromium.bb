@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestNode::s_wrapperTypeInfo = V8TestNode::wrapperTypeInfo
 
 namespace TestNodeV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void hrefAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();

@@ -24,7 +24,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceGarbageCollected* toImpl(v8::Handle<v8::Object> object)
     {
-        return toImpl(blink::toScriptWrappableBase(object));
+        return blink::toScriptWrappableBase(object)->toImpl<TestInterfaceGarbageCollected>();
     }
     static TestInterfaceGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
@@ -40,15 +40,8 @@ public:
     {
         return impl->toScriptWrappableBase();
     }
-
-    static inline TestInterfaceGarbageCollected* toImpl(ScriptWrappableBase* internalPointer)
-    {
-        return internalPointer->toImpl<TestInterfaceGarbageCollected>();
-    }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
-
-private:
 };
 
 inline v8::Handle<v8::Object> wrap(TestInterfaceGarbageCollected* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -131,4 +124,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, RawPtr<TestIn
 }
 
 } // namespace blink
+
 #endif // V8TestInterfaceGarbageCollected_h

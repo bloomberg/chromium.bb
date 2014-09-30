@@ -22,9 +22,7 @@ callback CustomElementConstructor = Element ();
 
 typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
-[
-    SpecialWrapFor=(HTMLDocument,XMLDocument)
-] interface Document : Node {
+interface Document : Node {
 
     // DOM Level 1 Core
     readonly attribute DocumentType doctype;

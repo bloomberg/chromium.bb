@@ -29,8 +29,6 @@ const WrapperTypeInfo& TestException::s_wrapperTypeInfo = V8TestException::wrapp
 
 namespace TestExceptionV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void readonlyUnsignedShortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();

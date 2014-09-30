@@ -8,14 +8,11 @@
 #include "V8TestInterfaceDocument.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -31,8 +28,6 @@ const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedde
 const WrapperTypeInfo& TestInterfaceDocument::s_wrapperTypeInfo = V8TestInterfaceDocument::wrapperTypeInfo;
 
 namespace TestInterfaceDocumentV8Internal {
-
-template <typename T> void V8_USE(T) { }
 
 } // namespace TestInterfaceDocumentV8Internal
 

@@ -35,8 +35,6 @@ const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperT
 {% endif %}
 namespace {{cpp_class}}V8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 {# Constants #}
 {% from 'constants.cpp' import constant_getter_callback
        with context %}

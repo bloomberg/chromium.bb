@@ -33,7 +33,6 @@
     CustomConstructor,
     CustomConstructor(sequence<any> blobParts, optional BlobPropertyBag options),
     Exposed=(Window,Worker),
-    SpecialWrapFor=File,
 ] interface Blob {
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;

@@ -78,8 +78,6 @@ const WrapperTypeInfo& TestObject::s_wrapperTypeInfo = V8TestObject::wrapperType
 
 namespace TestObjectV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");

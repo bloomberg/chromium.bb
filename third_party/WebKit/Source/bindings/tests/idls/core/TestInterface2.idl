@@ -38,7 +38,6 @@
     Custom=Wrap, // Conflicts with and [Custom=ToV8], respectively
     DependentLifetime, // Covered by [ActiveDOMObject]
     SetWrapperReferenceFrom=ownerNode, // Conflicts with [SetWrapperReferenceTo]
-    SpecialWrapFor=(TestInterface,TestInterfaceEmpty), // Conflicts with [Custom=ToV8]
 ] interface TestInterface2 {
     // This interface has only runtime enabled constants.
     [RuntimeEnabled=FeatureName] const unsigned short CONST_VALUE_1 = 1;

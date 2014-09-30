@@ -47,7 +47,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object)
     {
-        return toImpl(blink::toScriptWrappableBase(object));
+        return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
     }
     static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
@@ -152,11 +152,6 @@ public:
     {
         return impl->toScriptWrappableBase();
     }
-
-    static inline {{cpp_class}}* toImpl(ScriptWrappableBase* internalPointer)
-    {
-        return internalPointer->toImpl<{{cpp_class}}>();
-    }
     {% if interface_name == 'Window' %}
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
     static bool indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType, v8::Local<v8::Value> data);
@@ -167,9 +162,9 @@ public:
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if conditionally_enabled_methods %};
     {% else %} { }
     {% endif %}
+    {% if not has_custom_to_v8 and not is_script_wrappable %}
 
 private:
-    {% if not has_custom_to_v8 and not is_script_wrappable %}
     friend v8::Handle<v8::Object> wrap({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper({{pass_cpp_type}}, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     {% endif %}
@@ -291,4 +286,5 @@ bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionSta
 {% endif %}
 } // namespace blink
 {% endfilter %}
+
 #endif // {{v8_class}}_h

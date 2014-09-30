@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestInterfaceEventTarget::s_wrapperTypeInfo = V8TestInter
 
 namespace TestInterfaceEventTargetV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 } // namespace TestInterfaceEventTargetV8Internal
 
 const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::createPersistentHandle, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installConditionallyEnabledMethods, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };

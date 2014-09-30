@@ -31,8 +31,6 @@ const WrapperTypeInfo& TestInterfaceGarbageCollected::s_wrapperTypeInfo = V8Test
 
 namespace TestInterfaceGarbageCollectedV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();

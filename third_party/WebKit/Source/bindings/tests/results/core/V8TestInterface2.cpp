@@ -12,7 +12,6 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -33,8 +32,6 @@ const WrapperTypeInfo V8TestInterface2::wrapperTypeInfo = { gin::kEmbedderBlink,
 const WrapperTypeInfo& TestInterface2::s_wrapperTypeInfo = V8TestInterface2::wrapperTypeInfo;
 
 namespace TestInterface2V8Internal {
-
-template <typename T> void V8_USE(T) { }
 
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {

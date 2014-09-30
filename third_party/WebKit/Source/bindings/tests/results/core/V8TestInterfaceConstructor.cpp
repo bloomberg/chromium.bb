@@ -33,8 +33,6 @@ const WrapperTypeInfo& TestInterfaceConstructor::s_wrapperTypeInfo = V8TestInter
 
 namespace TestInterfaceConstructorV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());

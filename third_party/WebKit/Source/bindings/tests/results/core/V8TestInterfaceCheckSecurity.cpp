@@ -30,8 +30,6 @@ const WrapperTypeInfo& TestInterfaceCheckSecurity::s_wrapperTypeInfo = V8TestInt
 
 namespace TestInterfaceCheckSecurityV8Internal {
 
-template <typename T> void V8_USE(T) { }
-
 static void longAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
