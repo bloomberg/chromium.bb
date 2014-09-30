@@ -217,12 +217,8 @@ void LocalFrame::setView(PassRefPtr<FrameView> view)
 
     m_view = view;
 
-    if (m_view && isMainFrame()) {
-        if (settings()->pinchVirtualViewportEnabled())
-            m_host->pinchViewport().mainFrameDidChangeSize();
-        else
-            m_view->setVisibleContentScaleFactor(page()->pageScaleFactor());
-    }
+    if (m_view && isMainFrame() && !settings()->pinchVirtualViewportEnabled())
+        m_view->setVisibleContentScaleFactor(page()->pageScaleFactor());
 }
 
 void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)

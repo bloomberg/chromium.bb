@@ -728,6 +728,41 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(20, 30), pinchViewport.visibleRect().location());
 }
 
+// Test that navigation to a new page with a different sized main frame doesn't
+// clobber the history item's main frame scroll offset. crbug.com/371867
+TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(100, 100));
+    webViewImpl()->layout();
+
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    FrameView* frameView = webViewImpl()->mainFrameImpl()->frameView();
+    frameView->setScrollOffset(IntPoint(0, 1000));
+
+    // The frameView should be 1000x1000 since the viewport meta width=1000 and
+    // the aspect ratio is 1:1.
+    EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->frameRect().size());
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.setScale(2);
+    pinchViewport.setLocation(FloatPoint(950, 950));
+
+    RefPtr<HistoryItem> firstItem = webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
+    EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
+
+    // Now navigate to a page which causes a smaller frameView. Make sure that
+    // navigating doesn't cause the history item to set a new scroll offset
+    // before the item was replaced.
+    navigateTo("about:blank");
+
+    EXPECT_NE(firstItem, webViewImpl()->mainFrameImpl()->frame()->loader().currentItem());
+    EXPECT_LT(frameView->frameRect().size().width(), 1000);
+    EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
+}
+
 // Test that the coordinates sent into moveRangeSelection are offset by the
 // pinch viewport's location.
 TEST_F(PinchViewportTest, DISABLED_TestWebFrameRangeAccountsForPinchViewportScroll)
