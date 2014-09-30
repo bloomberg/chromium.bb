@@ -27,7 +27,6 @@ const char Inspector[] = "Inspector";
 const char Language[] = "Language";
 const char LinkColorChange[] = "LinkColorChange";
 const char PlatformColorChange[] = "PlatformColorChange";
-const char Plugin[] = "Plugin";
 const char PropagateInheritChangeToDistributedNodes[] = "PropagateInheritChangeToDistributedNodes";
 const char PseudoClass[] = "PseudoClass";
 const char SVGContainerSizeChange[] = "SVGContainerSizeChange";

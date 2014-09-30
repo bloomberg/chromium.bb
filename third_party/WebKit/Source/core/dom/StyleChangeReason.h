@@ -34,7 +34,6 @@ extern const char Inspector[];
 extern const char Language[];
 extern const char LinkColorChange[];
 extern const char PlatformColorChange[];
-extern const char Plugin[];
 extern const char PropagateInheritChangeToDistributedNodes[];
 extern const char PseudoClass[];
 extern const char SVGContainerSizeChange[];
