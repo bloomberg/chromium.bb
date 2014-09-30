@@ -45,7 +45,6 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
 
   if (!output_surface_->context_provider()) {
     capabilities_.using_shared_memory_resources = true;
-    capabilities_.using_image = true;
   } else {
     const ContextProvider::Capabilities& caps =
         output_surface_->context_provider()->ContextCapabilities();
