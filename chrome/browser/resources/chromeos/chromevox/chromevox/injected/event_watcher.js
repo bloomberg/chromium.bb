@@ -25,7 +25,6 @@ goog.require('cvox.DomUtil');
 goog.require('cvox.Focuser');
 goog.require('cvox.History');
 goog.require('cvox.LiveRegions');
-goog.require('cvox.LiveRegionsDeprecated');
 goog.require('cvox.Memoize');
 goog.require('cvox.NavigationSpeaker');
 goog.require('cvox.PlatformFilter');  // TODO: Find a better place for this.
@@ -58,26 +57,6 @@ cvox.ChromeVoxEventWatcher.MAX_WAIT_TIME_MS_ = 50;
  * @private
  */
 cvox.ChromeVoxEventWatcher.WAIT_TIME_MS_ = 10;
-
-/**
- * Amount of time in ms to wait before considering a subtree modified event to
- * be the start of a new burst of subtree modified events.
- * @const
- * @type {number}
- * @private
- */
-cvox.ChromeVoxEventWatcher.SUBTREE_MODIFIED_BURST_DURATION_ = 1000;
-
-
-/**
- * Number of subtree modified events that are part of the same burst to process
- * before we give up on processing any more events from that burst.
- * @const
- * @type {number}
- * @private
- */
-cvox.ChromeVoxEventWatcher.SUBTREE_MODIFIED_BURST_COUNT_LIMIT_ = 3;
-
 
 /**
  * Maximum number of live regions that we will attempt to process.
@@ -246,20 +225,6 @@ cvox.ChromeVoxEventWatcher.secondPassThroughKeyUp_ = false;
   cvox.ChromeVoxEventWatcher.textMutationObserver_ = null;
 
   cvox.ChromeVoxEventWatcher.addEventListeners_(doc);
-
-  /**
-   * The time when the last burst of subtree modified events started
-   * @type {number}
-   * @private
-   */
-  cvox.ChromeVoxEventWatcher.lastSubtreeModifiedEventBurstTime_ = 0;
-
-  /**
-   * The number of subtree modified events in the current burst.
-   * @type {number}
-   * @private
-   */
-  cvox.ChromeVoxEventWatcher.subtreeModifiedEventsCount_ = 0;
 };
 
 
@@ -414,31 +379,26 @@ cvox.ChromeVoxEventWatcher.addEventListeners_ = function(doc) {
   cvox.ChromeVoxEventWatcher.addEventListener_(doc,
       'click', cvox.ChromeVoxEventWatcher.mouseClickEventWatcher, true);
 
-  if (typeof(window.WebKitMutationObserver) != 'undefined') {
-    cvox.ChromeVoxEventWatcher.mutationObserver_ =
-        new window.WebKitMutationObserver(
-            cvox.ChromeVoxEventWatcher.mutationHandler);
-    var observerTarget = null;
-    if (doc.documentElement) {
-      observerTarget = doc.documentElement;
-    } else if (doc.document && doc.document.documentElement) {
-      observerTarget = doc.document.documentElement;
-    }
-    if (observerTarget) {
-      cvox.ChromeVoxEventWatcher.mutationObserver_.observe(
-          observerTarget,
-          /** @type {!MutationObserverInit} */ ({
-            childList: true,
-            attributes: true,
-            characterData: true,
-            subtree: true,
-            attributeOldValue: true,
-            characterDataOldValue: true
-          }));
-    }
-  } else {
-    cvox.ChromeVoxEventWatcher.addEventListener_(doc, 'DOMSubtreeModified',
-        cvox.ChromeVoxEventWatcher.subtreeModifiedEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.mutationObserver_ =
+      new window.WebKitMutationObserver(
+          cvox.ChromeVoxEventWatcher.mutationHandler);
+  var observerTarget = null;
+  if (doc.documentElement) {
+    observerTarget = doc.documentElement;
+  } else if (doc.document && doc.document.documentElement) {
+    observerTarget = doc.document.documentElement;
+  }
+  if (observerTarget) {
+    cvox.ChromeVoxEventWatcher.mutationObserver_.observe(
+        observerTarget,
+        /** @type {!MutationObserverInit} */ ({
+          childList: true,
+          attributes: true,
+          characterData: true,
+          subtree: true,
+          attributeOldValue: true,
+          characterDataOldValue: true
+        }));
   }
 };
 
@@ -952,20 +912,6 @@ cvox.ChromeVoxEventWatcher.selectEventWatcher = function(evt) {
 };
 
 /**
- * Watches for DOM subtree modified events.
- *
- * @param {Event} evt The event to add to the queue.
- * @return {boolean} True if the default action should be performed.
- */
-cvox.ChromeVoxEventWatcher.subtreeModifiedEventWatcher = function(evt) {
-  if (!evt || !evt.target) {
-    return true;
-  }
-  cvox.ChromeVoxEventWatcher.addEvent(evt);
-  return true;
-};
-
-/**
  * Listens for WebKit visibility change events.
  */
 cvox.ChromeVoxEventWatcher.visibilityChangeWatcher = function() {
@@ -998,47 +944,6 @@ cvox.ChromeVoxEventWatcher.speakLiveRegion_ = function(
   var queueMode = cvox.ChromeVoxEventWatcher.queueMode_();
   var descSpeaker = new cvox.NavigationSpeaker();
   descSpeaker.speakDescriptionArray(messages, queueMode, null);
-};
-
-/**
- * Handles DOM subtree modified events passed to it from the events queue.
- * If the change involves an ARIA live region, then speak it.
- *
- * @param {Event} evt The event to handle.
- */
-cvox.ChromeVoxEventWatcher.subtreeModifiedHandler = function(evt) {
-  // Subtree modified events can happen in bursts. If several events happen at
-  // the same time, trying to process all of them will slow ChromeVox to
-  // a crawl and make the page itself unresponsive (ie, Google+).
-  // Before processing subtree modified events, make sure that it is not part of
-  // a large burst of events.
-  // TODO (clchen): Revisit this after the DOM mutation events are
-  // available in Chrome.
-  var currentTime = new Date().getTime();
-
-  if ((cvox.ChromeVoxEventWatcher.lastSubtreeModifiedEventBurstTime_ +
-      cvox.ChromeVoxEventWatcher.SUBTREE_MODIFIED_BURST_DURATION_) >
-      currentTime) {
-    cvox.ChromeVoxEventWatcher.subtreeModifiedEventsCount_++;
-    if (cvox.ChromeVoxEventWatcher.subtreeModifiedEventsCount_ >
-        cvox.ChromeVoxEventWatcher.SUBTREE_MODIFIED_BURST_COUNT_LIMIT_) {
-      return;
-    }
-  } else {
-    cvox.ChromeVoxEventWatcher.lastSubtreeModifiedEventBurstTime_ = currentTime;
-    cvox.ChromeVoxEventWatcher.subtreeModifiedEventsCount_ = 1;
-  }
-
-  if (!evt || !evt.target) {
-    return;
-  }
-  var target = /** @type {Element} */ (evt.target);
-  var regions = cvox.AriaUtil.getLiveRegions(target);
-  for (var i = 0; (i < regions.length) &&
-      (i < cvox.ChromeVoxEventWatcher.MAX_LIVE_REGIONS_); i++) {
-    cvox.LiveRegionsDeprecated.updateLiveRegion(
-        regions[i], cvox.ChromeVoxEventWatcher.queueMode_(), false);
-  }
 };
 
 /**
@@ -1443,8 +1348,7 @@ cvox.ChromeVoxEventWatcher.doProcessQueue_ = function() {
   cvox.ChromeVoxEventWatcher.events_ = [];
   for (i = 0; evt = events[i]; i++) {
     var prevEvt = events[i - 1] || {};
-    if ((i >= lastFocusIndex || evt.type == 'LiveRegion' ||
-        evt.type == 'DOMSubtreeModified') &&
+    if ((i >= lastFocusIndex || evt.type == 'LiveRegion') &&
         (prevEvt.type != 'focus' || evt.type != 'change')) {
       cvox.ChromeVoxEventWatcher.events_.push(evt);
     }
@@ -1452,9 +1356,6 @@ cvox.ChromeVoxEventWatcher.doProcessQueue_ = function() {
 
   cvox.ChromeVoxEventWatcher.events_.sort(function(a, b) {
     if (b.type != 'LiveRegion' && a.type == 'LiveRegion') {
-      return 1;
-    }
-    if (b.type != 'DOMSubtreeModified' && a.type == 'DOMSubtreeModified') {
       return 1;
     }
     return -1;
@@ -1533,9 +1434,6 @@ cvox.ChromeVoxEventWatcher.handleEvent_ = function(evt) {
     case 'LiveRegion':
       cvox.ChromeVoxEventWatcher.speakLiveRegion_(
           evt.assertive, evt.navDescriptions);
-      break;
-    case 'DOMSubtreeModified':
-      cvox.ChromeVoxEventWatcher.subtreeModifiedHandler(evt);
       break;
   }
 };
