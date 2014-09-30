@@ -347,21 +347,35 @@ FileTransferController.prototype = {
          opt_effect === 'move');
     var destinationEntry =
         opt_destinationEntry || this.currentDirectoryContentEntry;
-    var entries;
+    var entries = [];
     var failureUrls;
     var taskId = this.fileOperationManager_.generateTaskId();
 
     util.URLsToEntries(sourceURLs).then(function(result) {
-      this.pendingTaskIds.push(taskId);
-      entries = result.entries;
       failureUrls = result.failureUrls;
+      return this.fileOperationManager_.filterSameDirectoryEntry(
+          result.entries, destinationEntry, toMove);
+    }.bind(this)).then(function(filteredEntries) {
+      entries = filteredEntries;
+      if (entries.length === 0)
+        return Promise.reject('ABORT');
+
+      this.pendingTaskIds.push(taskId);
       var item = new ProgressCenterItem();
       item.id = taskId;
-      item.type = ProgressItemType.COPY;
-      if (result.entries.length === 1)
-        item.message = strf('COPY_FILE_NAME', result.entries[0].name);
-      else
-        item.message = strf('COPY_ITEMS_REMAINING', result.entries.length);
+      if (toMove) {
+        item.type = ProgressItemType.MOVE;
+        if (entries.length === 1)
+          item.message = strf('MOVE_FILE_NAME', entries[0].name);
+        else
+          item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
+      } else {
+        item.type = ProgressItemType.COPY;
+        if (entries.length === 1)
+          item.message = strf('COPY_FILE_NAME', entries[0].name);
+        else
+          item.message = strf('COPY_ITEMS_REMAINING', entries.length);
+      }
       this.progressCenter_.updateItem(item);
       // Check if cross share is needed or not.
       return this.getMultiProfileShareEntries_(entries);

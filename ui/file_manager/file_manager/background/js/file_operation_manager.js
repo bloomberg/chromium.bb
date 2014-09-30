@@ -1178,6 +1178,47 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
 };
 
 /**
+ * Filters the entry in the same directory
+ *
+ * @param {Array.<Entry>} sourceEntries Entries of the source files.
+ * @param {DirectoryEntry} targetEntry The destination entry of the target
+ *     directory.
+ * @param {boolean} isMove True if the operation is "move", otherwise (i.e.
+ *     if the operation is "copy") false.
+ * @return {Promise} Promise fulfilled with the filtered entry. This is not
+ *     rejected.
+ */
+FileOperationManager.prototype.filterSameDirectoryEntry = function(
+    sourceEntries, targetEntry, isMove) {
+  if (!isMove)
+    return Promise.resolve(sourceEntries);
+  // Utility function to concat arrays.
+  var compactArrays = function(arrays) {
+    return arrays.filter(function(element) { return !!element; });
+  };
+  // Call processEntry for each item of entries.
+  var processEntries = function(entries) {
+    var promises = entries.map(processFileOrDirectoryEntries);
+    return Promise.all(promises).then(compactArrays);
+  };
+  // Check all file entries and keeps only those need sharing operation.
+  var processFileOrDirectoryEntries = function(entry) {
+    return new Promise(function(resolve) {
+      entry.getParent(function(inParentEntry) {
+        if (!util.isSameEntry(inParentEntry, targetEntry))
+          resolve(entry);
+        else
+          resolve(null);
+      }, function(error) {
+        console.error(error.stack || error);
+        resolve(null);
+      });
+    });
+  };
+  return processEntries(sourceEntries);
+}
+
+/**
  * Kick off pasting.
  *
  * @param {Array.<Entry>} sourceEntries Entries of the source files.
@@ -1195,37 +1236,14 @@ FileOperationManager.prototype.paste = function(
   if (sourceEntries.length === 0)
     return;
 
-  var filteredEntries = [];
-  var resolveGroup = new AsyncUtil.Queue();
-
-  if (isMove) {
-    for (var index = 0; index < sourceEntries.length; index++) {
-      resolveGroup.run(function(sourceEntry, callback) {
-        sourceEntry.getParent(function(inParentEntry) {
-          if (!util.isSameEntry(inParentEntry, targetEntry))
-            filteredEntries.push(sourceEntry);
-          callback();
-        }, function() {
-          console.warn(
-              'Failed to resolve the parent for: ' + sourceEntry.toURL());
-          // Even if the parent is not available, try to move it.
-          filteredEntries.push(sourceEntry);
-          callback();
-        });
-      }.bind(this, sourceEntries[index]));
-    }
-  } else {
-    // Always copy all of the files.
-    filteredEntries = sourceEntries;
-  }
-
-  resolveGroup.run(function(callback) {
-    // Do nothing, if we have no entries to be pasted.
-    if (filteredEntries.length === 0)
-      return;
-
-    this.queueCopy_(targetEntry, filteredEntries, isMove, opt_taskId);
-  }.bind(this));
+  this.filterSameDirectoryEntry(sourceEntries, targetEntry, isMove).then(
+      function(entries) {
+        if (entries.length === 0)
+          return;
+        this.queueCopy_(targetEntry, entries, isMove, opt_taskId);
+  }.bind(this)).catch(function(error) {
+    console.error(error.stack || error);
+  });
 };
 
 /**
