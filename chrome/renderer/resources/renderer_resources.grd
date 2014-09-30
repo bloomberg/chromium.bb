@@ -84,7 +84,6 @@
         <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="extensions\tts_engine_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_view_request_custom_bindings.js" type="BINDATA" />
 
         <!-- Platform app support. -->
         <include name="IDR_INJECT_APP_TITLEBAR_JS" file="extensions\inject_app_titlebar.js" type="BINDATA" />

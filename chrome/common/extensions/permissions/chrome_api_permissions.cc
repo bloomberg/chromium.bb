@@ -38,10 +38,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        PermissionMessage::kClipboard},
       {APIPermission::kClipboardWrite, "clipboardWrite"},
       {APIPermission::kDeclarativeContent, "declarativeContent"},
-      {APIPermission::kDeclarativeWebRequest, "declarativeWebRequest",
-       APIPermissionInfo::kFlagNone,
-       IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_WEB_REQUEST,
-       PermissionMessage::kDeclarativeWebRequest},
       {APIPermission::kDesktopCapture, "desktopCapture",
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_DESKTOP_CAPTURE,
@@ -151,8 +147,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kWebNavigation, "webNavigation",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
        PermissionMessage::kTabs},
-      {APIPermission::kWebRequest, "webRequest"},
-      {APIPermission::kWebRequestBlocking, "webRequestBlocking"},
 
       // Register private permissions.
       {APIPermission::kScreenlockPrivate, "screenlockPrivate",

@@ -221,6 +221,7 @@ source_set("common") {
       "//device/bluetooth",
       "//device/usb",
       "//extensions/common/api",
+      "//extensions:extensions_resources",
     ]
   } else {
     sources -= [
