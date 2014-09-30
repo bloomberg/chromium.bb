@@ -19,7 +19,10 @@ static_library("ui") {
   defines = []
   libs = []
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//third_party/WebKit/public:debug_devtools",
+  ]
 
   # Since browser and browser_ui actually depend on each other,
   # we must omit the dependency from browser_ui to browser.
@@ -141,9 +144,6 @@ static_library("ui") {
     deps += [
       #"//native_client/src/trusted/service_runtime/service_runtime.gyp:sel",  TODO(GYP)
     ]
-  }
-  if (debug_devtools) {
-    defines += [ "DEBUG_DEVTOOLS=1" ]
   }
   if (enable_configuration_policy) {
     sources += rebase_path(gypi_values.chrome_browser_ui_policy_sources,

@@ -40,17 +40,14 @@ static_library("devtools") {
   ]
   sources += get_target_outputs(":devtools_protocol_constants")
 
-  # TODO(GYP)
-  #     ['debug_devtools==1', {
-  #       'defines': [
-  #         'DEBUG_DEVTOOLS=1',
-  #        ],
-  #     }],
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     cflags = [ "/wd4267" ]
   }
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//third_party/WebKit/public:debug_devtools",
+  ]
 
   deps = [
     ":devtools_protocol_constants",

@@ -25,7 +25,10 @@ gypi_values = exec_script(
     [ "../chrome_browser.gypi" ])
 
 static_library("browser") {
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//third_party/WebKit/public:debug_devtools",
+  ]
   defines = []
   sources = []
   libs = []
@@ -273,10 +276,7 @@ static_library("browser") {
                            ".", "//chrome")
     #deps += [ "//components/nacl:nacl_browser" ]  TODO(GYP)
   }
-  # ["debug_devtools==1", {  TODO(GYP)
-  #   "defines": [
-  #     "DEBUG_DEVTOOLS=1",
-  # }],
+
   if (enable_configuration_policy) {
     sources += rebase_path(
         gypi_values.chrome_browser_policy_shared_with_ios_sources,
