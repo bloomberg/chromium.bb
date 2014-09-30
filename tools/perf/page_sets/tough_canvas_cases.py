@@ -28,8 +28,6 @@ class MicrosofFirefliesPage(ToughCanvasCasesPage):
       url='http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.html',
       page_set=page_set)
 
-    self.disabled = 'Crashes on Galaxy Nexus. crbug.com/314131'
-
 
 class ToughCanvasCasesPageSet(page_set_module.PageSet):
 
@@ -42,7 +40,8 @@ class ToughCanvasCasesPageSet(page_set_module.PageSet):
       archive_data_file='data/tough_canvas_cases.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
-    self.AddPage(MicrosofFirefliesPage(self))
+    # Crashes on Galaxy Nexus. crbug.com/314131
+    # self.AddPage(MicrosofFirefliesPage(self))
 
     # Failing on Nexus 5 (http://crbug.com/364248):
     # 'http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM',
