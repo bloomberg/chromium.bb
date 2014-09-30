@@ -58,6 +58,7 @@ blink::WebURLRequest WebURLLoaderMock::ServeRedirect(
     const blink::WebURLResponse& redirectResponse) {
   blink::WebURLRequest newRequest;
   newRequest.initialize();
+  newRequest.setRequestContext(blink::WebURLRequest::RequestContextInternal);
   GURL redirectURL(redirectResponse.httpHeaderField("Location"));
   newRequest.setURL(redirectURL);
   client_->willSendRequest(this, newRequest, redirectResponse);
