@@ -3147,6 +3147,12 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
     if (isRootLayer())
         return m_renderer->view()->unscaledDocumentRect();
 
+    // The layer created for the RenderFlowThread is just a helper for painting and hit-testing,
+    // and should not contribute to the bounding box. The RenderMultiColumnSets will contribute
+    // the correct size for the rendered content of the multicol container.
+    if (useRegionBasedColumns() && renderer()->isRenderFlowThread())
+        return LayoutRect();
+
     const bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform());
 
     LayoutRect localClipRect = clipper().localClipRect();
