@@ -34,7 +34,7 @@ namespace blink {
 struct FilterData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum FilterDataState { PaintingSource, Applying, Built, CycleDetected };
+    enum FilterDataState { PaintingSource, Built, CycleDetected };
 
     FilterData()
         : state(PaintingSource)

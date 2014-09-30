@@ -193,9 +193,9 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     if (m_filter.contains(object)) {
         FilterData* filterData = m_filter.get(object);
-        if (filterData->state == FilterData::PaintingSource || filterData->state == FilterData::Applying)
+        if (filterData->state == FilterData::PaintingSource)
             filterData->state = FilterData::CycleDetected;
-        return false; // Already built, or we're in a cycle, or we're marked for removal. Regardless, just do nothing more now.
+        return false; // Already built, or we're in a cycle. Regardless, just do nothing more now.
     }
 
     OwnPtr<FilterData> filterData(adoptPtr(new FilterData));
@@ -242,11 +242,10 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
 
     switch (filterData->state) {
     case FilterData::CycleDetected:
-    case FilterData::Applying:
-        // We have a cycle if we are already applying the data.
-        // This can occur due to FeImage referencing a source that makes use of the FEImage itself.
-        // This is the first place we've hit the cycle, so set the state back to PaintingSource so the return stack
-        // will continue correctly.
+        // applyResource detected a cycle. This can occur due to FeImage
+        // referencing a source that makes use of the FEImage itself. This is
+        // the first place we've hit the cycle, so set the state back to
+        // PaintingSource so the return stack will continue correctly.
         filterData->state = FilterData::PaintingSource;
         return;
 
