@@ -1944,5 +1944,23 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop" and archive_gpu_tests==1', {
+      'targets': [
+        {
+          'target_name': 'media_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'media_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'media_unittests.isolate',
+          ],
+          'sources': [
+            'media_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }

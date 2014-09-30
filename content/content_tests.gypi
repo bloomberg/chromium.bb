@@ -988,6 +988,13 @@
           'sources': [
             'content_unittests.isolate',
           ],
+          'conditions': [
+            ['OS=="linux" and use_ozone==0', {
+              'dependencies': [
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
         },
       ],
       'conditions': [

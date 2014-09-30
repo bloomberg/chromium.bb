@@ -2,11 +2,46 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'includes': [
+    '../base/base.isolate',
+  ],
   'conditions': [
-    ['OS=="android"', {
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_untracked': [
           'test/data/',
+        ],
+      },
+    }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'command': [
+          '<(PRODUCT_DIR)/media_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/media_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    # TODO(jmadill): should be automatic. http://crbug.com/418146
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
         ],
       },
     }],
