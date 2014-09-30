@@ -17,7 +17,7 @@ config("media_config") {
   }
   if (use_pulseaudio) {
     defines += [ "USE_PULSEAUDIO" ]
-    if (!linux_link_pulseaudio) {
+    if (!link_pulseaudio) {
       defines += [ "DLOPEN_PULSEAUDIO" ]
     }
   }

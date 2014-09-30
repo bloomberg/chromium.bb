@@ -2,44 +2,56 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# These variables need to be args.
+declare_args() {
+  # Enables proprietary codecs and demuxers; e.g. H264, MOV, AAC, and MP3.
+  proprietary_codecs = false
 
-# Override to dynamically link the cras (ChromeOS audio) library.
-use_cras = false
+  # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
+  # using dlopen. This helps with automated detection of ABI mismatches and
+  # prevents silent errors.
+  link_pulseaudio = false
 
-# Option e.g. for Linux distributions to link pulseaudio directly
-# (DT_NEEDED) instead of using dlopen. This helps with automated
-# detection of ABI mismatches and prevents silent errors.
-#
-# TODO(ajwong): Why is this prefixed "linux_"?
-linux_link_pulseaudio = false
+  # Enable usage of FFmpeg within the media library. Used for most software
+  # based decoding, demuxing, and sometimes optimized FFTs. If disabled,
+  # implementors must provide their own demuxers and decoders.
+  media_use_ffmpeg = true
 
-# TODO(ajwong): Enable libvpx once that's converted.
-media_use_ffmpeg = true
-media_use_libvpx = true
-if (is_android || is_ios) {
-  # Android and iOS don't use ffmpeg or libvpx.
-  media_use_ffmpeg = false
-  media_use_libvpx = false
-}
+  # Enable usage of libvpx within the media library. Used for software based
+  # decoding of VP9 and VP8A type content.
+  media_use_libvpx = true
 
-# TODO(ajwong): how to disable embedded?
-# Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
-use_alsa = false
-use_pulseaudio = false
-if (is_posix && !is_android && !is_mac) {
-  use_alsa = true
-  if (!use_cras) {
-    use_pulseaudio = true
+  # Neither Android nor iOS use ffmpeg or libvpx.
+  if (is_android || is_ios) {
+    media_use_ffmpeg = false
+    media_use_libvpx = false
   }
+
+  # Override to dynamically link the cras (ChromeOS audio) library.
+  use_cras = false
+
+  # Enables runtime selection of PulseAudio library.
+  use_pulseaudio = false
+
+  # Enables runtime selection of ALSA library for audio.
+  use_alsa = false
+
+  # TODO(GYP): How to handled the "embedded" use case?
+  # Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
+  if (is_posix && !is_android && !is_mac) {
+    use_alsa = true
+    if (!use_cras) {
+      use_pulseaudio = true
+    }
+  }
+
+  # Enables the MPEG2-TS stream parser for use with Media Source. Disabled by
+  # default since it's not available on the normal Web Platform and costs money.
+  enable_mpeg2ts_stream_parser = false
+
+  # Enables browser side Content Decryption Modules. Required for android where
+  # the typical PPAPI based CDM is not available.
+  enable_browser_cdms = is_android
+
+  # TODO(GYP): This should be a platform define.
+  is_openbsd = false
 }
-
-# TODO(ajwong): is_openbsd should be a platform define.
-is_openbsd = false
-
-# TODO(ajwong): This should be branding controlled?
-proprietary_codecs = false
-
-# TODO(ajwong): Where are these coming from?jk
-enable_mpeg2ts_stream_parser = false
-enable_browser_cdms = is_android
