@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -371,8 +372,9 @@ void FindFileHandlerTasks(
        ++iter) {
     const Extension* extension = iter->get();
 
-    // We don't support using hosted apps to open files.
-    if (!extension->is_platform_app())
+    // Check that the extension can be launched via an event. This includes all
+    // platform apps plus whitelisted extensions.
+    if (!CanLaunchViaEvent(extension))
       continue;
 
     // Ephemeral apps cannot be file handlers.
