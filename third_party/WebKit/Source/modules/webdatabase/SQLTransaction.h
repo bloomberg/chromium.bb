@@ -110,6 +110,7 @@ private:
     OwnPtr<SQLErrorData> m_transactionError;
 
     bool m_readOnly;
+    int m_asyncOperationId;
 };
 
 } // namespace blink

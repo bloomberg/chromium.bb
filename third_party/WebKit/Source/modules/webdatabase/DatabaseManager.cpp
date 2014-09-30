@@ -75,6 +75,11 @@ public:
         m_creationCallback->handleEvent(m_database.get());
     }
 
+    virtual String taskNameForInstrumentation() const OVERRIDE
+    {
+        return "openDatabase";
+    }
+
 private:
     DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, DatabaseCallback* callback)
         : m_database(database)

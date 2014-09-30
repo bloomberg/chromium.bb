@@ -108,18 +108,10 @@ private:
 
     class DispatchCallbackTaskBase : public ExecutionContextTask {
     public:
-        DispatchCallbackTaskBase()
-            : m_taskName("FileSystem")
+        virtual String taskNameForInstrumentation() const OVERRIDE
         {
+            return "FileSystem";
         }
-
-        virtual const String& taskNameForInstrumentation() const OVERRIDE
-        {
-            return m_taskName;
-        }
-
-    private:
-        const String m_taskName;
     };
 
     // A helper template to schedule a callback task.

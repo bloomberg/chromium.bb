@@ -66,6 +66,7 @@ private:
 
     CrossThreadPersistentWillBeMember<SQLStatementCallback> m_statementCallback;
     CrossThreadPersistentWillBeMember<SQLStatementErrorCallback> m_statementErrorCallback;
+    int m_asyncOperationId;
 };
 
 } // namespace blink

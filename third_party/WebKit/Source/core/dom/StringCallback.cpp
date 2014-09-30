@@ -51,7 +51,7 @@ public:
         m_callback->handleEvent(m_data);
     }
 
-    virtual const String& taskNameForInstrumentation() const OVERRIDE
+    virtual String taskNameForInstrumentation() const OVERRIDE
     {
         return m_taskName;
     }
