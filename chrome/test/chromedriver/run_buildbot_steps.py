@@ -52,14 +52,14 @@ from slave import slave_utils
 import util
 
 
-def _ArchivePrebuilts(revision):
+def _ArchivePrebuilts(commit_position):
   """Uploads the prebuilts to google storage."""
   util.MarkBuildStepStart('archive prebuilts')
   zip_path = util.Zip(os.path.join(chrome_paths.GetBuildDir(['chromedriver']),
                                    'chromedriver'))
   if slave_utils.GSUtilCopy(
       zip_path,
-      '%s/%s' % (GS_PREBUILTS_URL, 'r%s.zip' % revision)):
+      '%s/%s' % (GS_PREBUILTS_URL, 'r%s.zip' % commit_position)):
     util.MarkBuildStepError()
 
 
@@ -96,7 +96,7 @@ def _GetTestResultsLog(platform):
     platform: The platform that the test results log is for.
 
   Returns:
-    A dictionary where the keys are SVN revisions and the values are booleans
+    A dictionary where the keys are commit positions and the values are booleans
     indicating whether the tests passed.
   """
   temp_log = tempfile.mkstemp()[1]
@@ -122,20 +122,23 @@ def _PutTestResultsLog(platform, test_results_log):
     raise Exception('Failed to upload test results log to google storage')
 
 
-def _UpdateTestResultsLog(platform, revision, passed):
+def _UpdateTestResultsLog(platform, commit_position, passed):
   """Updates the test results log for the given platform.
 
   Args:
     platform: The platform name.
-    revision: The SVN revision number.
-    passed: Boolean indicating whether the tests passed at this revision.
+    commit_position: The commit position number.
+    passed: Boolean indicating whether the tests passed at this commit position.
   """
-  assert isinstance(revision, int), 'The revision must be an integer'
+
+  assert commit_position.isdigit(), 'The commit position must be a number'
+  commit_position = int(commit_position)
   log = _GetTestResultsLog(platform)
   if len(log) > 500:
     del log[min(log.keys())]
-  assert revision not in log, 'Results already exist for revision %s' % revision
-  log[revision] = bool(passed)
+  assert commit_position not in log, \
+      'Results already exist for commit position %s' % commit_position
+  log[commit_position] = bool(passed)
   _PutTestResultsLog(platform, log)
 
 
@@ -163,39 +166,39 @@ def _GetSupportedChromeVersions():
   return (chrome_min_version, chrome_max_version)
 
 
-def _RevisionState(test_results_log, revision):
-  """Check the state of tests at a given SVN revision.
+def _CommitPositionState(test_results_log, commit_position):
+  """Check the state of tests at a given commit position.
 
-  Considers tests as having passed at a revision if they passed at revisons both
-  before and after.
+  Considers tests as having passed at a commit position if they passed at
+  revisons both before and after.
 
   Args:
     test_results_log: A test results log dictionary from _GetTestResultsLog().
-    revision: The revision to check at.
+    commit_position: The commit position to check at.
 
   Returns:
     'passed', 'failed', or 'unknown'
   """
-  assert isinstance(revision, int), 'The revision must be an integer'
+  assert isinstance(commit_position, int), 'The commit position must be an int'
   keys = sorted(test_results_log.keys())
-  # Return passed if the exact revision passed on Android.
-  if revision in test_results_log:
-    return 'passed' if test_results_log[revision] else 'failed'
-  # Tests were not run on this exact revision on Android.
-  index = bisect.bisect_right(keys, revision)
-  # Tests have not yet run on Android at or above this revision.
+  # Return passed if the exact commit position passed on Android.
+  if commit_position in test_results_log:
+    return 'passed' if test_results_log[commit_position] else 'failed'
+  # Tests were not run on this exact commit position on Android.
+  index = bisect.bisect_right(keys, commit_position)
+  # Tests have not yet run on Android at or above this commit position.
   if index == len(test_results_log):
     return 'unknown'
-  # No log exists for any prior revision, assume it failed.
+  # No log exists for any prior commit position, assume it failed.
   if index == 0:
     return 'failed'
-  # Return passed if the revisions on both sides passed.
+  # Return passed if the commit position on both sides passed.
   if test_results_log[keys[index]] and test_results_log[keys[index - 1]]:
     return 'passed'
   return 'failed'
 
 
-def _ArchiveGoodBuild(platform, revision):
+def _ArchiveGoodBuild(platform, commit_position):
   """Archive chromedriver binary if the build is green."""
   assert platform != 'android'
   util.MarkBuildStepStart('archive build')
@@ -207,7 +210,7 @@ def _ArchiveGoodBuild(platform, revision):
                                    server_name))
 
   build_name = 'chromedriver_%s_%s.%s.zip' % (
-      platform, _GetVersion(), revision)
+      platform, _GetVersion(), commit_position)
   build_url = '%s/%s' % (GS_CONTINUOUS_URL, build_name)
   if slave_utils.GSUtilCopy(zip_path, build_url):
     util.MarkBuildStepError()
@@ -262,17 +265,19 @@ def _MaybeRelease(platform):
   # In this way, if a hot fix is needed, we can delete the release from
   # the chromedriver bucket instead of bumping up the release version number.
   candidates.sort(reverse=True)
-  for revision in candidates:
-    android_result = _RevisionState(android_test_results, revision)
+  for commit_position in candidates:
+    android_result = _CommitPositionState(android_test_results, commit_position)
     if android_result == 'failed':
-      print 'Android tests did not pass at revision', revision
+      print 'Android tests did not pass at commit position', commit_position
     elif android_result == 'passed':
-      print 'Android tests passed at revision', revision
-      candidate = 'chromedriver_%s_%s.%s.zip' % (platform, version, revision)
+      print 'Android tests passed at commit position', commit_position
+      candidate = 'chromedriver_%s_%s.%s.zip' % (
+          platform, version, commit_position)
       _Release('%s/%s' % (GS_CONTINUOUS_URL, candidate), version, platform)
       break
     else:
-      print 'Android tests have not run at a revision as recent as', revision
+      print 'Android tests have not run at a commit position as recent as', \
+          commit_position
 
 
 def _Release(build, version, platform):
@@ -403,7 +408,7 @@ def _GetCommitPositionFromGitHash(snapshot_hashcode):
     result = search_pattern.search(message[len(message)-1])
     if result:
       return result.group(1)
-  util.PrintAndFlush('Failed to get svn revision number for %s' %
+  util.PrintAndFlush('Failed to get commit position number for %s' %
                      snapshot_hashcode)
   return None
 
@@ -425,24 +430,17 @@ def _GetGitHashFromCommitPosition(commit_position):
   return None
 
 
-def _WaitForLatestSnapshot(revision):
+def _WaitForLatestSnapshot(commit_position):
   util.MarkBuildStepStart('wait_for_snapshot')
-  def _IsRevisionNumber(revision):
-    if isinstance(revision, int):
-      return True
-    else:
-      return revision.isdigit()
   while True:
-    snapshot_revision = archive.GetLatestSnapshotVersion()
-    if not _IsRevisionNumber(snapshot_revision):
-      snapshot_revision = _GetCommitPositionFromGitHash(snapshot_revision)
-    if revision is not None and snapshot_revision is not None:
-      if int(snapshot_revision) >= int(revision):
+    snapshot_position = archive.GetLatestSnapshotVersion()
+    if commit_position is not None and snapshot_position is not None:
+      if int(snapshot_position) >= int(commit_position):
         break
       util.PrintAndFlush('Waiting for snapshot >= %s, found %s' %
-                         (revision, snapshot_revision))
+                         (commit_position, snapshot_position))
     time.sleep(60)
-  util.PrintAndFlush('Got snapshot revision %s' % snapshot_revision)
+  util.PrintAndFlush('Got snapshot commit position %s' % snapshot_position)
 
 
 def _AddToolsToPath(platform_name):
@@ -481,7 +479,7 @@ def main():
       help=('Comma separated list of application package names, '
             'if running tests on Android.'))
   parser.add_option(
-      '-r', '--revision', help='Chromium revision')
+      '-r', '--revision', help='Chromium git revision hash')
   parser.add_option(
       '', '--update-log', action='store_true',
       help='Update the test results log (only applicable to Android)')
@@ -498,8 +496,6 @@ def main():
 
   if not options.revision:
     commit_position = None
-  elif options.revision.isdigit():
-    commit_position = options.revision
   else:
     commit_position = _GetCommitPositionFromGitHash(options.revision)
 
