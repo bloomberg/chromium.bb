@@ -3,23 +3,23 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 55x16
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 762x36
-          RenderText {#text} at (54,0) size 762x36
+        RenderInline {I} at (0,0) size 762x32
+          RenderText {#text} at (54,0) size 762x32
             text run at (54,0) width 708: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6137 Disable kerning and some ligatures in the ATSUI code"
-            text run at (0,18) width 29: "path"
-        RenderText {#text} at (28,18) size 5x18
-          text run at (28,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 721x18
+            text run at (0,16) width 29: "path"
+        RenderText {#text} at (28,16) size 5x16
+          text run at (28,16) width 5: "."
+      RenderBlock {P} at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 721x16
           text run at (0,0) width 721: "The word \x{201C}dolor\x{201D} below should be highlighted in its entirety. The highlight should not extend beyond that word."
-      RenderBlock {DIV} at (0,86) size 784x42
+      RenderBlock {DIV} at (0,80) size 784x38
         RenderBlock {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-        RenderBlock (anonymous) at (0,14) size 784x28
-          RenderInline {SPAN} at (0,0) size 549x28
-            RenderText {#text} at (0,0) size 549x28
+        RenderBlock (anonymous) at (0,14) size 784x24
+          RenderInline {SPAN} at (0,0) size 549x24
+            RenderText {#text} at (0,0) size 549x24
               text run at (0,0) width 549: "AVAVAVAVAVfififififififi Lorem ipsum dolor sit ame\x{300}t"
           RenderText {#text} at (0,0) size 0x0
 selection start: position 37 of child 0 {#text} of child 3 {SPAN} of child 5 {DIV} of body

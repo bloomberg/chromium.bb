@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       RenderBlock {H3} at (0,0) size 784x23
         RenderText {#text} at (0,0) size 490x23
           text run at (0,0) width 490: "tt's, font-family inheriting and font-size: a bug"
-      RenderTable {TABLE} at (0,41.72) size 784x376
-        RenderTableSection {TBODY} at (0,0) size 784x376
+      RenderTable {TABLE} at (0,41.72) size 784x374
+        RenderTableSection {TBODY} at (0,0) size 784x374
           RenderTableRow {TR} at (0,10) size 784x211
             RenderTableCell {TD} at (10,10) size 764x211 [r=0 c=0 rs=1 cs=2]
               RenderText {#text} at (1,1) size 336x19
@@ -77,14 +77,14 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (1,1) size 322x19
                   text run at (1,1) width 322: "font-family: Verdana; font-size: 1.0em;"
               RenderText {#text} at (0,0) size 0x0
-          RenderTableRow {TR} at (0,349) size 784x17
-            RenderTableCell {TD} at (10,350) size 377x15 [r=5 c=0 rs=1 cs=1]
-              RenderInline {TT} at (0,0) size 194x13
-                RenderText {#text} at (1,1) size 194x13
+          RenderTableRow {TR} at (0,349) size 784x15
+            RenderTableCell {TD} at (10,350) size 377x13 [r=5 c=0 rs=1 cs=1]
+              RenderInline {TT} at (0,0) size 194x11
+                RenderText {#text} at (1,1) size 194x11
                   text run at (1,1) width 194: "default font; font-size: 0.8em;"
               RenderText {#text} at (0,0) size 0x0
-            RenderTableCell {TD} at (397,349) size 377x17 [r=5 c=1 rs=1 cs=1]
-              RenderInline {SPAN} at (0,0) size 300x15
-                RenderText {#text} at (1,1) size 300x15
+            RenderTableCell {TD} at (397,349) size 377x15 [r=5 c=1 rs=1 cs=1]
+              RenderInline {SPAN} at (0,0) size 300x13
+                RenderText {#text} at (1,1) size 300x13
                   text run at (1,1) width 300: "font-family: courier; font-size: 0.8em;"
               RenderText {#text} at (0,0) size 0x0

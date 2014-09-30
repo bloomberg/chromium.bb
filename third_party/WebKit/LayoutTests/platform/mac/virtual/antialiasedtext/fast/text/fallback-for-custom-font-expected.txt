@@ -3,23 +3,23 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x36
-        RenderText {#text} at (0,0) size 55x18
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 55x16
           text run at (0,0) width 55: "Test for "
-        RenderInline {I} at (0,0) size 712x36
-          RenderInline {A} at (0,0) size 160x18 [color=#0000EE]
-            RenderText {#text} at (54,0) size 160x18
+        RenderInline {I} at (0,0) size 712x32
+          RenderInline {A} at (0,0) size 160x16 [color=#0000EE]
+            RenderText {#text} at (54,0) size 160x16
               text run at (54,0) width 160: "http://crbug.com/373389"
-          RenderText {#text} at (213,0) size 712x36
+          RenderText {#text} at (213,0) size 712x32
             text run at (213,0) width 5: " "
             text run at (217,0) width 495: "When a webfont is missing a glyph, synthesization from the fallback font isn't"
-            text run at (0,18) width 68: "happening"
-        RenderText {#text} at (67,18) size 5x18
-          text run at (67,18) width 5: "."
-      RenderBlock {P} at (0,52) size 784x37
-        RenderText {#text} at (0,16) size 192x18
-          text run at (0,16) width 192: "A synthesized oblique bullet: "
+            text run at (0,16) width 68: "happening"
+        RenderText {#text} at (67,16) size 5x16
+          text run at (67,16) width 5: "."
+      RenderBlock {P} at (0,48) size 784x33
+        RenderText {#text} at (0,14) size 192x16
+          text run at (0,14) width 192: "A synthesized oblique bullet: "
         RenderInline {SPAN} at (0,0) size 20x32
-          RenderText {#text} at (191,4) size 20x32
-            text run at (191,4) width 20: "\x{25CF}"
+          RenderText {#text} at (191,0) size 20x32
+            text run at (191,0) width 20: "\x{25CF}"
         RenderText {#text} at (0,0) size 0x0

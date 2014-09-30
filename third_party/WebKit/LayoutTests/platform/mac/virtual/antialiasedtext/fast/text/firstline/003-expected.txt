@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x28
-        RenderInline (generated) at (0,0) size 18x28 [color=#FF0000]
-          RenderTextFragment {#text} at (0,0) size 18x28
+      RenderBlock {P} at (0,0) size 784x24
+        RenderInline (generated) at (0,0) size 18x24 [color=#FF0000]
+          RenderTextFragment {#text} at (0,0) size 18x24
             text run at (0,0) width 18: "A"
-        RenderTextFragment {#text} at (17,8) size 412x18
-          text run at (17,8) width 412: " The \"A\" should be big and red and ignore the position: relative."
+        RenderTextFragment {#text} at (17,6) size 412x16
+          text run at (17,6) width 412: " The \"A\" should be big and red and ignore the position: relative."

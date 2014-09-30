@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {H1} at (0,0) size 784x37
-        RenderText {#text} at (0,0) size 272x37
-          text run at (0,0) width 272: "Zooming Menu List"
-      RenderBlock (anonymous) at (0,58.44) size 784x54
+      RenderBlock {H1} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 273x32
+          text run at (0,0) width 273: "Zooming Menu List"
+      RenderBlock (anonymous) at (0,53.44) size 784x54
         RenderMenuList {SELECT} at (0,0) size 185x54 [bgcolor=#F8F8F8] [border: (3px solid #A6A6A6)]
           RenderBlock (anonymous) at (3,3) size 179x48
             RenderText at (24,3) size 65x39
