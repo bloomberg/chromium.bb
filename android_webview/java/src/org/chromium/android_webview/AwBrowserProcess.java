@@ -35,6 +35,10 @@ public abstract class AwBrowserProcess {
         } catch (ProcessInitException e) {
             throw new RuntimeException("Cannot load WebView", e);
         }
+        // Switch the command line implementation from Java to native.
+        // It's okay for the WebView to do this before initialization because we have
+        // setup the JNI bindings by this point.
+        LibraryLoader.switchCommandLineForWebView();
     }
 
     /**
