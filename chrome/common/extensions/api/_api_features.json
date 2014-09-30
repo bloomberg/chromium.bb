@@ -250,10 +250,6 @@
     "dependencies": ["permission:declarativeContent"],
     "contexts": ["blessed_extension"]
   },
-  "declarativeWebRequest": {
-    "dependencies": ["permission:declarativeWebRequest"],
-    "contexts": ["blessed_extension"]
-  },
   "desktopCapture": {
     "dependencies": ["permission:desktopCapture"],
     "contexts": ["blessed_extension"]
@@ -312,13 +308,6 @@
   "enterprise.platformKeysPrivate": {
     "dependencies": ["permission:enterprise.platformKeysPrivate"],
     "contexts": ["blessed_extension"]
-  },
-  "events": {
-    "internal": true,
-    "channel": "stable",
-    "extension_types": ["platform_app", "extension"],
-    "contexts": "all",
-    "matches": ["<all_urls>"]
   },
   "experienceSamplingPrivate": {
     "dependencies": ["permission:experienceSamplingPrivate"],
@@ -726,21 +715,6 @@
     "dependencies": ["permission:webNavigation"],
     "contexts": ["blessed_extension"]
   },
-  "webRequest": {
-    "dependencies": ["permission:webRequest"],
-    "contexts": ["blessed_extension"]
-  },
-  "webRequestInternal": [{
-    "internal": true,
-    "channel": "stable",
-    "contexts": ["blessed_extension"]
-  }, {
-    // webview uses webRequestInternal API.
-    "channel": "stable",
-    "internal": true,
-    "contexts": ["webui"],
-    "matches": ["chrome://chrome-signin/*"]
-  }],
   "webrtcAudioPrivate": {
     "dependencies": ["permission:webrtcAudioPrivate"],
     "contexts": ["blessed_extension"]
@@ -768,14 +742,6 @@
     // given the blessed_extension denomination. Confusing.
     "contexts": ["blessed_extension"]
   },
-  "webViewRequest": [{
-    "dependencies": ["permission:webview"],
-    "contexts": ["blessed_extension"]
-  }, {
-    "channel": "stable",
-    "contexts": ["webui"],
-    "matches": ["chrome://chrome-signin/*"]
-  }],
   "webviewTag": {
     "internal": true,
     "channel": "stable",

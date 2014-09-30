@@ -86,13 +86,6 @@ class ExtensionsAPIClient {
       CreateWebViewPermissionHelperDelegate (
           WebViewPermissionHelper* web_view_permission_helper) const;
 
-  // TODO(wjmaclean): Remove this as soon as rules_registry_service.* moves to
-  // extensions/browser/api/declarative/.
-  virtual scoped_refptr<RulesRegistry> GetRulesRegistry(
-      content::BrowserContext* browser_context,
-      const RulesRegistry::WebViewKey& webview_key,
-      const std::string& event_name);
-
   // Creates a delegate for WebRequestEventRouter.
   virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
       const;

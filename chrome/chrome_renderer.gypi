@@ -169,9 +169,6 @@
       'renderer/resources/extensions/system_indicator_custom_bindings.js',
       'renderer/resources/extensions/tts_custom_bindings.js',
       'renderer/resources/extensions/tts_engine_custom_bindings.js',
-      'renderer/resources/extensions/web_view.js',
-      'renderer/resources/extensions/web_view_events.js',
-      'renderer/resources/extensions/web_view_experimental.js',
     ],
     'chrome_renderer_non_android_sources': [
       'renderer/prerender/prerender_media_load_deferrer.cc',

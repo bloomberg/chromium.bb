@@ -579,6 +579,9 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(
       std::make_pair("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("windowControls", IDR_WINDOW_CONTROLS_JS));
+  resources.push_back(
+      std::make_pair("webViewRequest",
+                     IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("binding", IDR_BINDING_JS));
 
   // Custom types sources.

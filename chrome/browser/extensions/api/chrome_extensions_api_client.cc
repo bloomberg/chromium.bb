@@ -15,7 +15,6 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 
@@ -73,14 +72,6 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
     CreateWebViewPermissionHelperDelegate(
         WebViewPermissionHelper* web_view_permission_helper) const {
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
-}
-
-scoped_refptr<RulesRegistry> ChromeExtensionsAPIClient::GetRulesRegistry(
-    content::BrowserContext* browser_context,
-    const RulesRegistry::WebViewKey& webview_key,
-    const std::string& event_name) {
-  return RulesRegistryService::Get(browser_context)->
-      GetRulesRegistry(webview_key, event_name);
 }
 
 WebRequestEventRouterDelegate*

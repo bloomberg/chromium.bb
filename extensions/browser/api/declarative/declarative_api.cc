@@ -13,6 +13,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
@@ -153,8 +154,8 @@ bool RulesFunction::RunAsync() {
 
   // The following call will return a NULL pointer for apps_shell, but should
   // never be called there anyways.
-  rules_registry_ = ExtensionsAPIClient::Get()->GetRulesRegistry(
-      browser_context(), key, event_name);
+  rules_registry_ = RulesRegistryService::Get(browser_context())->
+      GetRulesRegistry(key, event_name);
   DCHECK(rules_registry_.get());
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.

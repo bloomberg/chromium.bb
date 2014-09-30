@@ -23,6 +23,7 @@
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/grit/extensions_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
@@ -242,6 +243,11 @@ void ExtensionAPI::InitDefaultConfiguration() {
     RegisterDependencyProvider(names[i], FeatureProvider::GetByName(names[i]));
 
   ExtensionsClient::Get()->RegisterAPISchemaResources(this);
+
+  RegisterSchemaResource("declarativeWebRequest",
+                         IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
+  RegisterSchemaResource("webViewRequest",
+                         IDR_EXTENSION_API_JSON_WEB_VIEW_REQUEST);
 
   default_configuration_initialized_ = true;
 }

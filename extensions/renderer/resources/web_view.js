@@ -985,12 +985,6 @@ window.addEventListener('readystatechange', function listener(event) {
 WebViewInternal.prototype.maybeGetChromeWebViewEvents = function() {};
 
 /**
- * Implemented when the ChromeWebView API is available.
- * @private
- */
-WebViewInternal.prototype.maybeSetupChromeWebViewEvents = function() {};
-
-/**
  * Implemented when the experimental API is available.
  * @private
  */

@@ -69,6 +69,10 @@
     "dependencies": ["permission:app.window.shape"],
     "contexts": ["blessed_extension"]
   },
+  "declarativeWebRequest": {
+    "dependencies": ["permission:declarativeWebRequest"],
+    "contexts": ["blessed_extension"]
+  },
   "dns": {
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
@@ -80,6 +84,13 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
+  },
+  "events": {
+    "internal": true,
+    "channel": "stable",
+    "extension_types": ["platform_app", "extension"],
+    "contexts": "all",
+    "matches": ["<all_urls>"]
   },
   "guestViewInternal": [
     {
@@ -241,6 +252,21 @@
     "channel": "dev",
     "contexts": ["webui"]
   },
+  "webRequest": {
+    "dependencies": ["permission:webRequest"],
+    "contexts": ["blessed_extension"]
+  },
+  "webRequestInternal": [{
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension"]
+  }, {
+    // webview uses webRequestInternal API.
+    "channel": "stable",
+    "internal": true,
+    "contexts": ["webui"],
+    "matches": ["chrome://chrome-signin/*"]
+  }],
   "webViewExperimentalInternal": [{
     "internal": true,
     "channel": "dev",
@@ -266,6 +292,14 @@
   }, {
     "internal": true,
     "channel": "dev",
+    "contexts": ["webui"],
+    "matches": ["chrome://chrome-signin/*"]
+  }],
+  "webViewRequest": [{
+    "dependencies": ["permission:webview"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "stable",
     "contexts": ["webui"],
     "matches": ["chrome://chrome-signin/*"]
   }]
