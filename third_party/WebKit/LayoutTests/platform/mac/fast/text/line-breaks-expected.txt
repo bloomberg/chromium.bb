@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x493
-  RenderBlock {HTML} at (0,0) size 800x492.63
-    RenderBody {BODY} at (8,8) size 784x463.30
-      RenderBlock (anonymous) at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 82x18
-          text run at (0,0) width 82: "This is good:"
-      RenderBlock {DIV} at (0,39.33) size 100x52
+layer at (0,0) size 800x487
+  RenderBlock {HTML} at (0,0) size 800x486.63
+    RenderBody {BODY} at (8,8) size 784x457.30
+      RenderBlock (anonymous) at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 84x16
+          text run at (0,0) width 84: "This is good:"
+      RenderBlock {DIV} at (0,37.33) size 100x52
         RenderBlock {P} at (0,0) size 100x52 [border: (1px solid #008000)]
           RenderText {#text} at (33,1) size 66x50
             text run at (33,1) width 66: "Lorem"
             text run at (35,26) width 64: "ipsum"
-      RenderBlock (anonymous) at (0,112.66) size 784x18
-        RenderText {#text} at (0,0) size 284x18
-          text run at (0,0) width 284: "The following three should look like \x{201C}good\x{201D}:"
-      RenderBlock {DIV} at (0,151.98) size 100x198.66
+      RenderBlock (anonymous) at (0,110.66) size 784x16
+        RenderText {#text} at (0,0) size 289x16
+          text run at (0,0) width 289: "The following three should look like \x{201C}good\x{201D}:"
+      RenderBlock {DIV} at (0,147.98) size 100x198.66
         RenderBlock {P} at (0,0) size 100x52 [border: (1px solid #0000FF)]
           RenderText {#text} at (33,1) size 66x50
             text run at (33,1) width 66: "Lorem"
@@ -27,10 +27,10 @@ layer at (0,0) size 800x493
           RenderText {#text} at (33,1) size 66x50
             text run at (33,1) width 66: "Lore\x{1E3F}"
             text run at (35,26) width 64: "ipsum"
-      RenderBlock (anonymous) at (0,371.97) size 784x18
-        RenderText {#text} at (0,0) size 73x18
-          text run at (0,0) width 73: "This is bad:"
-      RenderBlock {DIV} at (0,411.30) size 100x52
+      RenderBlock (anonymous) at (0,367.97) size 784x16
+        RenderText {#text} at (0,0) size 75x16
+          text run at (0,0) width 75: "This is bad:"
+      RenderBlock {DIV} at (0,405.30) size 100x52
         RenderBlock {P} at (0,0) size 100x52 [border: (1px solid #FF0000)]
           RenderText {#text} at (27,1) size 72x50
             text run at (27,1) width 72: "Lorem "

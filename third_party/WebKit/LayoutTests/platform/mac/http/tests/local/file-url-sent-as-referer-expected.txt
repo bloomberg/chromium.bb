@@ -3,18 +3,18 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBR {BR} at (0,0) size 0x18
-      RenderText {#text} at (0,18) size 499x18
-        text run at (0,18) width 499: "This is a test to see if a file:// url is sent out as the referrer for a subresource load"
-      RenderBR {BR} at (499,32) size 0x0
-      RenderText {#text} at (304,176) size 4x18
-        text run at (304,176) width 4: " "
-      RenderBR {BR} at (308,190) size 0x0
-      RenderText {#text} at (0,194) size 389x18
-        text run at (0,194) width 389: "The above image will tell you success or failure - green or red"
-      RenderBR {BR} at (389,208) size 0x0
-layer at (8,44) size 304x154
-  RenderPartObject {IFRAME} at (0,36) size 304x154 [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (0,0) size 0x16
+      RenderText {#text} at (0,16) size 515x16
+        text run at (0,16) width 515: "This is a test to see if a file:// url is sent out as the referrer for a subresource load"
+      RenderBR {BR} at (514,28) size 1x0
+      RenderText {#text} at (304,174) size 4x16
+        text run at (304,174) width 4: " "
+      RenderBR {BR} at (308,186) size 0x0
+      RenderText {#text} at (0,190) size 398x16
+        text run at (0,190) width 398: "The above image will tell you success or failure - green or red"
+      RenderBR {BR} at (397,202) size 1x0
+layer at (8,40) size 304x154
+  RenderPartObject {IFRAME} at (0,32) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x514
-  RenderBlock {HTML} at (0,0) size 800x514
-    RenderBody {BODY} at (8,16) size 784x490
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 695x18
-          text run at (0,0) width 486: "Verify that the alignment and writing direction of each selected item matches "
-          text run at (486,0) width 209: "the one below the pop-up button."
-      RenderBlock {DIV} at (0,34) size 784x228
+layer at (0,0) size 800x512
+  RenderBlock {HTML} at (0,0) size 800x512
+    RenderBody {BODY} at (8,16) size 784x488
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 710x16
+          text run at (0,0) width 499: "Verify that the alignment and writing direction of each selected item matches "
+          text run at (498,0) width 212: "the one below the pop-up button."
+      RenderBlock {DIV} at (0,32) size 784x228
         RenderMenuList {SELECT} at (0,0) size 500x21 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 500x21
             RenderText at (8,2) size 163x16
@@ -52,7 +52,7 @@ layer at (0,0) size 800x514
         RenderBlock {DIV} at (0,192) size 470x36
           RenderText {#text} at (10,10) size 163x16
             text run at (10,10) width 163 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
-      RenderBlock {DIV} at (0,262) size 784x228
+      RenderBlock {DIV} at (0,260) size 784x228
         RenderMenuList {SELECT} at (0,0) size 500x21 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 500x21
             RenderText at (314,2) size 163x16

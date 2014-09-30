@@ -1,40 +1,40 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x204
-  RenderBlock {HTML} at (0,0) size 800x204
-    RenderBody {BODY} at (8,8) size 784x183
-      RenderBlock {DIV} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 510x18
-          text run at (0,0) width 510: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
-      RenderBlock {DIV} at (0,18) size 784x75
-        RenderText {#text} at (0,0) size 44x18
-          text run at (0,0) width 44: "!hello. "
-        RenderBR {BR} at (44,0) size 0x18
-        RenderText {#text} at (734,19) size 50x18
+layer at (0,0) size 800x194
+  RenderBlock {HTML} at (0,0) size 800x194
+    RenderBody {BODY} at (8,8) size 784x173
+      RenderBlock {DIV} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 520x16
+          text run at (0,0) width 520: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
+      RenderBlock {DIV} at (0,16) size 784x73
+        RenderText {#text} at (0,0) size 46x16
+          text run at (0,0) width 46: "!hello. "
+        RenderBR {BR} at (45,0) size 1x16
+        RenderText {#text} at (734,19) size 50x16
           text run at (734,19) width 50 RTL: "!\x{5E9}\x{5DC}\x{5D5}\x{5DD}. "
-        RenderBR {BR} at (734,19) size 1x18
-        RenderText {#text} at (0,38) size 67x18
-          text run at (0,38) width 39: "hello, "
-          text run at (39,38) width 19 RTL: "\x{5DC}\x{5D5}\x{5D9}"
-          text run at (57,38) width 10: "! "
-        RenderBR {BR} at (66,38) size 1x18
-        RenderText {#text} at (684,57) size 100x18
-          text run at (684,57) width 6 RTL: "!"
+        RenderBR {BR} at (734,19) size 1x16
+        RenderText {#text} at (0,38) size 69x16
+          text run at (0,38) width 40: "hello, "
+          text run at (39,38) width 20 RTL: "\x{5DC}\x{5D5}\x{5D9}"
+          text run at (58,38) width 11: "! "
+        RenderBR {BR} at (68,38) size 1x16
+        RenderText {#text} at (683,57) size 101x16
+          text run at (683,57) width 7 RTL: "!"
           text run at (689,57) width 51: "WebKit"
           text run at (739,57) width 45 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-      RenderBlock {PRE} at (0,106) size 784x77
-        RenderText {#text} at (0,0) size 784x77
+      RenderBlock {PRE} at (0,102) size 784x71
+        RenderText {#text} at (0,0) size 784x71
           text run at (0,0) width 8: "a"
-          text run at (8,0) width 0: " "
-          text run at (0,15) width 8: "("
-          text run at (8,15) width 0: " "
-          text run at (682,31) width 1 RTL: " "
-          text run at (682,31) width 9 RTL: "!"
-          text run at (690,31) width 49: "WebKit"
-          text run at (738,31) width 46 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-          text run at (0,47) width 56: "hello, "
-          text run at (56,47) width 16 RTL: "\x{5DC}\x{5D5}\x{5D9}"
-          text run at (71,47) width 9: "!"
-          text run at (79,47) width 1: " "
-          text run at (0,62) width 8: ")"
-          text run at (8,62) width 0: " "
+          text run at (7,0) width 1: " "
+          text run at (0,13) width 8: "("
+          text run at (7,13) width 1: " "
+          text run at (684,29) width 1 RTL: " "
+          text run at (684,29) width 9 RTL: "!"
+          text run at (692,29) width 47: "WebKit"
+          text run at (738,29) width 46 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
+          text run at (0,45) width 55: "hello, "
+          text run at (54,45) width 16 RTL: "\x{5DC}\x{5D5}\x{5D9}"
+          text run at (69,45) width 9: "!"
+          text run at (77,45) width 1: " "
+          text run at (0,58) width 8: ")"
+          text run at (7,58) width 1: " "

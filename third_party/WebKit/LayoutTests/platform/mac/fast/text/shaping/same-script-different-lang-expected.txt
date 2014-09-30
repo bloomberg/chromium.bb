@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x193
-  RenderBlock {HTML} at (0,0) size 800x193.44
-    RenderBody {BODY} at (8,18.72) size 784x166.72
-      RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 742x22
-          text run at (0,0) width 742: "The glyph for JHA should look different for Nepali and Hindi, depending on the lang attribute."
-      RenderBlock {P} at (0,40.72) size 784x21
-        RenderText {#text} at (0,0) size 89x21
-          text run at (0,0) width 89: "Hindi:JHA \x{91D}"
-      RenderBlock (anonymous) at (0,77.72) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderBlock {P} at (0,111.72) size 784x21
-        RenderText {#text} at (0,0) size 98x21
-          text run at (0,0) width 98: "Nepali:JHA \x{91D}"
-      RenderBlock (anonymous) at (0,148.72) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+layer at (0,0) size 800x186
+  RenderBlock {HTML} at (0,0) size 800x186.44
+    RenderBody {BODY} at (8,18.72) size 784x159.72
+      RenderBlock {H3} at (0,0) size 784x19
+        RenderText {#text} at (0,0) size 759x19
+          text run at (0,0) width 759: "The glyph for JHA should look different for Nepali and Hindi, depending on the lang attribute."
+      RenderBlock {P} at (0,37.72) size 784x21
+        RenderText {#text} at (0,0) size 87x21
+          text run at (0,0) width 87: "Hindi:JHA \x{91D}"
+      RenderBlock (anonymous) at (0,74.72) size 784x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderBlock {P} at (0,106.72) size 784x21
+        RenderText {#text} at (0,0) size 99x21
+          text run at (0,0) width 99: "Nepali:JHA \x{91D}"
+      RenderBlock (anonymous) at (0,143.72) size 784x16
+        RenderBR {BR} at (0,0) size 0x16
