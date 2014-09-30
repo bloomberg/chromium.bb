@@ -167,7 +167,9 @@ void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
 // the test run successfully on trybots.
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  MockWebContentsDelegate() : requested_(false) {}
+  MockWebContentsDelegate()
+      : requested_(false),
+        checked_(false) {}
   virtual ~MockWebContentsDelegate() {}
 
   virtual void RequestMediaAccessPermission(
@@ -175,20 +177,39 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE {
     requested_ = true;
-    if (message_loop_runner_.get())
-      message_loop_runner_->Quit();
+    if (request_message_loop_runner_.get())
+      request_message_loop_runner_->Quit();
   }
 
-  void WaitForSetMediaPermission() {
+  virtual bool CheckMediaAccessPermission(
+      content::WebContents* web_contents,
+      const GURL& security_origin,
+      content::MediaStreamType type) OVERRIDE {
+    checked_ = true;
+    if (check_message_loop_runner_.get())
+      check_message_loop_runner_->Quit();
+    return true;
+  }
+
+  void WaitForRequestMediaPermission() {
     if (requested_)
       return;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
+    request_message_loop_runner_ = new content::MessageLoopRunner;
+    request_message_loop_runner_->Run();
+  }
+
+  void WaitForCheckMediaPermission() {
+    if (checked_)
+      return;
+    check_message_loop_runner_ = new content::MessageLoopRunner;
+    check_message_loop_runner_->Run();
   }
 
  private:
   bool requested_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool checked_;
+  scoped_refptr<content::MessageLoopRunner> request_message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> check_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
 };
@@ -1765,7 +1786,7 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
                              test_name.c_str())));
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 
-  mock->WaitForSetMediaPermission();
+  mock->WaitForRequestMediaPermission();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
@@ -1835,6 +1856,26 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowTwice) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowAsync) {
   MediaAccessAPIAllowTestHelper("testAllowAsync");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestCheck) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  LoadAndLaunchPlatformApp("web_view/media_access/check", "Launched");
+
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  embedder_web_contents->SetDelegate(mock.get());
+
+  ExtensionTestMessageListener done_listener("TEST_PASSED", false);
+  done_listener.set_failure_message("TEST_FAILED");
+  EXPECT_TRUE(
+      content::ExecuteScript(
+          embedder_web_contents,
+          base::StringPrintf("startCheckTest('')")));
+  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+
+  mock->WaitForCheckMediaPermission();
 }
 
 // Checks that window.screenX/screenY/screenLeft/screenTop works correctly for
