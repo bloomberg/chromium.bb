@@ -1,0 +1,24 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderText {#text} at (0,0) size 627x16
+        text run at (0,0) width 627: "You should see a single green stripe below. The test has failed if you don't see a perfect rectangle."
+      RenderText {#text} at (0,0) size 0x0
+layer at (8,24) size 96x320
+  RenderBlock (positioned) {DIV} at (8,24) size 96x320
+    RenderInline {A} at (0,0) size 47x320 [color=#008000] [bgcolor=#008000]
+      RenderInline {SPAN} at (0,0) size 47x64
+        RenderText {#text} at (0,0) size 47x64
+          text run at (0,0) width 47: "A"
+      RenderText {#text} at (0,64) size 47x64
+        text run at (0,64) width 47: "A"
+      RenderBR {BR} at (46,112) size 1x0
+      RenderInline {SPAN} at (0,0) size 47x64
+        RenderText {#text} at (0,128) size 47x64
+          text run at (0,128) width 47: "A"
+      RenderText {#text} at (0,192) size 47x128
+        text run at (0,192) width 47: "A"
+        text run at (0,256) width 47: "A"
+    RenderText {#text} at (0,0) size 0x0
