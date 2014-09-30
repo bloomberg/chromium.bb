@@ -7,15 +7,71 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/Iterator.h"
 #include "core/fetch/FetchUtils.h"
 #include "core/xml/XMLHttpRequest.h"
-#include "modules/serviceworkers/HeadersForEachCallback.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+namespace {
+
+class HeadersIterator FINAL : public Iterator {
+public:
+    // Only KeyValue is currently used; the other types are to support
+    // Map-like iteration with entries(), keys() and values(), but this has
+    // not yet been added to any spec.
+    enum IterationType { KeyValue, Key, Value };
+
+    HeadersIterator(FetchHeaderList* headers, IterationType type) : m_headers(headers), m_type(type), m_current(0) { }
+
+    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exception) OVERRIDE
+    {
+        // FIXME: This simply advances an index and returns the next value if
+        // any, so if the iterated object is mutated values may be skipped.
+        v8::Isolate* isolate = scriptState->isolate();
+        if (m_current >= m_headers->size())
+            return ScriptValue(scriptState, v8DoneIteratorResult(isolate));
+
+        const FetchHeaderList::Header& header = m_headers->entry(m_current++);
+        switch (m_type) {
+        case KeyValue: {
+            Vector<String> pair;
+            pair.append(header.first);
+            pair.append(header.second);
+            return ScriptValue(scriptState, v8IteratorResult(scriptState, pair));
+        }
+        case Key:
+            return ScriptValue(scriptState, v8IteratorResult(scriptState, header.first));
+
+        case Value:
+            return ScriptValue(scriptState, v8IteratorResult(scriptState, header.second));
+        }
+        ASSERT_NOT_REACHED();
+        return ScriptValue();
+    }
+
+    virtual ScriptValue next(ScriptState* scriptState, ScriptValue, ExceptionState& exceptionState) OVERRIDE
+    {
+        return next(scriptState, exceptionState);
+    }
+
+    virtual void trace(Visitor* visitor)
+    {
+        Iterator::trace(visitor);
+        visitor->trace(m_headers);
+    }
+
+private:
+    const Member<FetchHeaderList> m_headers;
+    const IterationType m_type;
+    size_t m_current;
+};
+
+} // namespace
 
 Headers* Headers::create()
 {
@@ -60,11 +116,6 @@ Headers* Headers::createCopy() const
     Headers* headers = create(headerList);
     headers->m_guard = m_guard;
     return headers;
-}
-
-unsigned long Headers::size() const
-{
-    return m_headerList->size();
 }
 
 void Headers::append(const String& name, const String& value, ExceptionState& exceptionState)
@@ -208,16 +259,6 @@ void Headers::set(const String& name, const String& value, ExceptionState& excep
     m_headerList->set(name, value);
 }
 
-void Headers::forEach(HeadersForEachCallback* callback, const ScriptValue& thisArg)
-{
-    forEachInternal(callback, &thisArg);
-}
-
-void Headers::forEach(HeadersForEachCallback* callback)
-{
-    forEachInternal(callback, 0);
-}
-
 void Headers::fillWith(const Headers* object, ExceptionState& exceptionState)
 {
     ASSERT(m_headerList->size() == 0);
@@ -305,17 +346,9 @@ Headers::Headers(FetchHeaderList* headerList)
 {
 }
 
-void Headers::forEachInternal(HeadersForEachCallback* callback, const ScriptValue* thisArg)
+Iterator* Headers::iterator(ScriptState*, ExceptionState&)
 {
-    TrackExceptionState exceptionState;
-    for (size_t i = 0; i < m_headerList->size(); ++i) {
-        if (thisArg)
-            callback->handleItem(*thisArg, m_headerList->list()[i]->second, m_headerList->list()[i]->first, this);
-        else
-            callback->handleItem(m_headerList->list()[i]->second, m_headerList->list()[i]->first, this);
-        if (exceptionState.hadException())
-            break;
-    }
+    return new HeadersIterator(m_headerList, HeadersIterator::KeyValue);
 }
 
 void Headers::trace(Visitor* visitor)

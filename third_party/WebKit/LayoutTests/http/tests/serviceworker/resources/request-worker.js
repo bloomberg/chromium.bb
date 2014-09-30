@@ -3,6 +3,14 @@ importScripts('test-helpers.js');
 
 var URL = 'https://www.example.com/test.html';
 
+function size(headers) {
+  var count = 0;
+  for (var header of headers) {
+    ++count;
+  }
+  return count;
+}
+
 test(function() {
     var headers = new Headers;
     headers.set('User-Agent', 'Mozilla/5.0');
@@ -17,7 +25,7 @@ test(function() {
     assert_true(request.headers instanceof Headers, 'Request.headers should be Headers');
 
     // 'User-Agent' is a forbidden header.
-    assert_equals(request.headers.size, 2, 'Request.headers.size should match');
+    assert_equals(size(request.headers), 2, 'Request.headers size should match');
     // Note: detailed behavioral tests for Headers are in another test,
     // http/tests/serviceworker/headers.html.
 
@@ -185,31 +193,31 @@ test(function() {
          ['X-ServiceWorker-Test2', 'test2'],
          ['Content-Type', 'foo/bar']];
 
-    ['same-origin', 'cors'].forEach(function(mode) {
+   ['same-origin', 'cors'].forEach(function(mode) {
         var request = new Request(URL, {mode: mode});
         FORBIDDEN_HEADERS.forEach(function(header) {
             request.headers.append(header, 'test');
-            assert_equals(request.headers.size, 0,
+            assert_equals(size(request.headers), 0,
                           'Request.headers.append should ignore the forbidden headers');
             request.headers.set(header, 'test');
-            assert_equals(request.headers.size, 0,
+            assert_equals(size(request.headers), 0,
                           'Request.headers.set should ignore the forbidden headers');
         });
         var request = new Request(URL, {mode: mode});
-        assert_equals(request.headers.size, 0);
+        assert_equals(size(request.headers), 0);
         NON_SIMPLE_HEADERS.forEach(function(header) {
             request.headers.append(header[0], header[1]);
         });
-        assert_equals(request.headers.size, NON_SIMPLE_HEADERS.length);
+        assert_equals(size(request.headers), NON_SIMPLE_HEADERS.length);
         NON_SIMPLE_HEADERS.forEach(function(header) {
             assert_equals(request.headers.get(header[0]), header[1]);
         });
         request = new Request(URL, {mode: mode});
-        assert_equals(request.headers.size, 0);
+        assert_equals(size(request.headers), 0);
         NON_SIMPLE_HEADERS.forEach(function(header) {
             request.headers.set(header[0], header[1]);
         });
-        assert_equals(request.headers.size, NON_SIMPLE_HEADERS.length);
+        assert_equals(size(request.headers), NON_SIMPLE_HEADERS.length);
         NON_SIMPLE_HEADERS.forEach(function(header) {
             assert_equals(request.headers.get(header[0]), header[1]);
         });
@@ -223,25 +231,25 @@ test(function() {
         request.headers.set(header[0], header[1]);
         request.headers.append(header[0], header[1]);
     });
-    assert_equals(request.headers.size, 0,
+    assert_equals(size(request.headers), 0,
                   'no-cors request should only accept simple headers');
 
     SIMPLE_HEADERS.forEach(function(header) {
         request = new Request(URL, {mode: 'no-cors'});
         request.headers.append(header[0], header[1]);
-        assert_equals(request.headers.size, 1,
+        assert_equals(size(request.headers), 1,
                       'no-cors request should accept simple headers');
         request = new Request(URL, {mode: 'no-cors'});
         request.headers.set(header[0], header[1]);
-        assert_equals(request.headers.size, 1,
+        assert_equals(size(request.headers), 1,
                       'no-cors request should accept simple headers');
         request.headers.delete(header[0]);
         if (header[0] == 'Content-Type') {
             assert_equals(
-                request.headers.size, 1,
+                size(request.headers), 1,
                 'Content-Type header of no-cors request shouldn\'t be deleted');
         } else {
-            assert_equals(request.headers.size, 0);
+            assert_equals(size(request.headers), 0);
         }
     });
 
@@ -258,15 +266,15 @@ test(function() {
         }
         ['same-origin', 'cors'].forEach(function(mode) {
           request = new Request(URL, {mode: mode, headers: headers});
-          assert_equals(request.headers.size, expectedSize,
+          assert_equals(size(request.headers), expectedSize,
                         'Request should not support the forbidden headers');
         });
         request = new Request(URL, {mode: 'no-cors', headers: headers});
-        assert_equals(request.headers.size, 1,
+        assert_equals(size(request.headers), 1,
                       'No-CORS Request.headers should only support simple headers');
         ['same-origin', 'cors', 'no-cors'].forEach(function(mode) {
             request = new Request(new Request(URL, {mode: mode, headers: headers}), {mode: 'no-cors'});
-            assert_equals(request.headers.size, 1,
+            assert_equals(size(request.headers), 1,
                           'No-CORS Request.headers should only support simple headers');
         });
     });
@@ -331,11 +339,10 @@ promise_test(function() {
 async_test(function(t) {
     var getContentType = function(headers) {
         var content_type = '';
-        headers.forEach(function(value, key) {
-            if (key == 'content-type') {
-              content_type = value;
-            }
-          });
+        for (var header of headers) {
+          if (header[0] == 'content-type')
+            content_type = header[1];
+        }
         return content_type;
       };
     var request =

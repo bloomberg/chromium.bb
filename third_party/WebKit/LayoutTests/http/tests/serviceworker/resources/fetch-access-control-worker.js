@@ -46,9 +46,9 @@ function getRequestInit(params) {
 
 function headersToArray(headers) {
   var ret = [];
-  headers.forEach(function(value, key) {
-      ret.push([key, value]);
-    });
+  for (var header of headers) {
+    ret.push(header);
+  }
   return ret;
 }
 

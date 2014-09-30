@@ -1,12 +1,20 @@
 importScripts('worker-test-harness.js');
 
+function size(headers) {
+  var count = 0;
+  for (var header of headers) {
+    ++count;
+  }
+  return count;
+}
+
 test(function() {
     var response = new Response(new Blob());
     assert_equals(response.type, 'default', 'Default Response.type should be \'default\'');
     assert_equals(response.url, '', 'Response.url should be the empty string');
     assert_equals(response.status, 200, 'Default Response.status should be 200');
     assert_equals(response.statusText, 'OK', 'Default Response.statusText should be \'OK\'');
-    assert_equals(response.headers.size, 0, 'Default Response should not have any header.');
+    assert_equals(size(response.headers), 0, 'Default Response should not have any header.');
 
     response.status = 394;
     response.statusText = 'Sesame Street';
@@ -49,7 +57,7 @@ test(function() {
         assert_equals(response.status, 303, 'Response.status should match');
         assert_equals(response.statusText, 'See Other', 'Response.statusText should match');
         assert_true(response.headers instanceof Headers, 'Response.headers should be Headers');
-        assert_equals(response.headers.size, 3, 'Response.headers.size should match');
+        assert_equals(size(response.headers), 3, 'Response.headers size should match');
         assert_equals(response.headers.get('Content-Language'), 'ja',
                       'Content-Language of Response.headers should match');
         assert_equals(response.headers.get('Content-Type'), 'text/html; charset=UTF-8',
@@ -57,7 +65,7 @@ test(function() {
         assert_equals(response.headers.get('X-ServiceWorker-Test'), 'response test field',
                       'X-ServiceWorker-Test of Response.headers should match');
         response.headers.set('X-ServiceWorker-Test2', 'response test field2');
-        assert_equals(response.headers.size, 4, 'Response.headers.size should increase by 1.');
+        assert_equals(size(response.headers), 4, 'Response.headers size should increase by 1.');
         assert_equals(response.headers.get('X-ServiceWorker-Test2'), 'response test field2',
                       'Response.headers should be added');
         response.headers.set('set-cookie', 'dummy');
@@ -68,10 +76,10 @@ test(function() {
         response.headers.append('sEt-cookie', 'dummy');
         response.headers.append('set-cookie2', 'dummy');
         response.headers.append('set-cOokie2', 'dummy');
-        assert_equals(response.headers.size, 4,
+        assert_equals(size(response.headers), 4,
                       'Response.headers should not accept Set-Cookie nor Set-Cookie2');
         response.headers.delete('X-ServiceWorker-Test');
-        assert_equals(response.headers.size, 3, 'Response.headers.size should decrease by 1.');
+        assert_equals(size(response.headers), 3, 'Response.headers size should decrease by 1.');
     });
     // Note: detailed behavioral tests for Headers are in another test,
     // http/tests/serviceworker/headers.html.
@@ -79,13 +87,13 @@ test(function() {
 
 test(function() {
     var response = new Response(new Blob(['dummy'], {type :'audio/wav'}));
-    assert_equals(response.headers.size, 1, 'Response.headers should have Content-Type');
+    assert_equals(size(response.headers), 1, 'Response.headers should have Content-Type');
     assert_equals(response.headers.get('Content-Type'), 'audio/wav',
                   'Content-Type of Response.headers should be set');
 
     response = new Response(new Blob(['dummy'], {type :'audio/wav'}),
                             {headers:{'Content-Type': 'text/html; charset=UTF-8'}});
-    assert_equals(response.headers.size, 1, 'Response.headers should have Content-Type');
+    assert_equals(size(response.headers), 1, 'Response.headers should have Content-Type');
     assert_equals(response.headers.get('Content-Type'), 'text/html; charset=UTF-8',
                   'Content-Type of Response.headers should be overridden');
 }, 'Response content type test in ServiceWorkerGlobalScope');

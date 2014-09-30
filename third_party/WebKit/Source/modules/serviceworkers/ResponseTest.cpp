@@ -67,7 +67,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
     WTF::HashMap<String, String> headersMap;
     for (int i = 0; headers[i].key; ++i)
         headersMap.add(headers[i].key, headers[i].value);
-    EXPECT_EQ(headersMap.size(), responseHeaders->size());
+    EXPECT_EQ(headersMap.size(), responseHeaders->headerList()->size());
     for (WTF::HashMap<String, String>::iterator iter = headersMap.begin(); iter != headersMap.end(); ++iter) {
         TrackExceptionState exceptionState;
         EXPECT_EQ(iter->value, responseHeaders->get(iter->key, exceptionState));

@@ -5,9 +5,9 @@ self.addEventListener('fetch', function(event) {
     }
     event.respondWith(new Promise(function(resolve) {
         var headers = [];
-        event.request.headers.forEach(function(value, key) {
-            headers.push([key, value]);
-          });
+        for (var header of event.request.headers) {
+          headers.push(header);
+        }
         event.request.text()
           .then(function(result) {
               resolve(new Response(JSON.stringify({
@@ -15,6 +15,6 @@ self.addEventListener('fetch', function(event) {
                   headers: headers,
                   body: result
                 })));
-            })
+            });
       }));
   });

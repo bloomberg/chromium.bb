@@ -9,9 +9,10 @@ onmessage = function(e) {
 
 onfetch = function(e) {
     var headers = {};
-    e.request.headers.forEach(function(value, key) {
-        headers[key] = value;
-    });
+    for (var header of e.request.headers) {
+      var key = header[0], value = header[1];
+      headers[key] = value;
+    }
     port.postMessage({
         url: e.request.url,
         method: e.request.method,
