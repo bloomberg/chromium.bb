@@ -3181,12 +3181,12 @@ blink::WebScreenOrientationClient*
 bool RenderFrameImpl::isControlledByServiceWorker() {
   // If we're in the middle of committing a load, the data source we need
   // will still be provisional.
-  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  DCHECK(frame_);
   WebDataSource* data_source = NULL;
-  if (main_frame->provisionalDataSource())
-    data_source = main_frame->provisionalDataSource();
+  if (frame_->provisionalDataSource())
+    data_source = frame_->provisionalDataSource();
   else
-    data_source = main_frame->dataSource();
+    data_source = frame_->dataSource();
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(data_source));
