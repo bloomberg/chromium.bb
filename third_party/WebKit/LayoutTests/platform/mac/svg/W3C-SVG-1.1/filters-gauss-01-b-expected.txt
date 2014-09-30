@@ -40,7 +40,7 @@ layer at (0,0) size 480x360
           RenderSVGContainer {g} at (295,185) size 165x165
             RenderSVGRect {rect} at (308,198) size 139x139 [stroke={[type=SOLID] [color=#0000FF] [stroke width=0.50]}] [x=0.00] [y=0.00] [width=135.00] [height=135.00]
             RenderSVGRect {rect} at (295,185) size 165x165 [stroke={[type=SOLID] [color=#0000FF] [stroke width=0.50]}] [x=-13.50] [y=-13.50] [width=162.00] [height=162.00]
-    RenderSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      RenderSVGInlineText {#text} at (0,0) size 264x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.6 $"
+    RenderSVGText {text} at (10,310) size 264x40 contains 1 chunk(s)
+      RenderSVGInlineText {#text} at (0,0) size 264x40
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.6 $"
     RenderSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
