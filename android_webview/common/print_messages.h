@@ -77,8 +77,12 @@ struct PrintHostMsg_RequestPrintPreview_Params {
 
 #define IPC_MESSAGE_START PrintMsgStart
 
-IPC_ENUM_TRAITS(printing::MarginType)
-IPC_ENUM_TRAITS(blink::WebPrintScalingOption)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::MarginType,
+                          printing::MarginType::MARGIN_TYPE_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(
+    blink::WebPrintScalingOption,
+    blink::WebPrintScalingOption::WebPrintScalingOptionLast)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
