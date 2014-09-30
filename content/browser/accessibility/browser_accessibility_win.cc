@@ -3456,13 +3456,15 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
+    case ui::AX_ROLE_DETAILS:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      break;
     case ui::AX_ROLE_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
-      ia_role_ = ROLE_SYSTEM_OUTLINEBUTTON;
-      ia_state_ |= STATE_SYSTEM_READONLY;
+      ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       break;
     case ui::AX_ROLE_DOCUMENT:
     case ui::AX_ROLE_ROOT_WEB_AREA:

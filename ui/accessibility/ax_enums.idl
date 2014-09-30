@@ -84,6 +84,7 @@
     description_list_detail,
     description_list_term,
     desktop,
+    details,
     dialog,
     directory,
     disclosure_triangle,

@@ -124,6 +124,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_DESCRIPTION_LIST_DETAIL;
     case blink::WebAXRoleDescriptionListTerm:
       return ui::AX_ROLE_DESCRIPTION_LIST_TERM;
+    case blink::WebAXRoleDetails:
+      return ui::AX_ROLE_DETAILS;
     case blink::WebAXRoleDialog:
       return ui::AX_ROLE_DIALOG;
     case blink::WebAXRoleDirectory:
