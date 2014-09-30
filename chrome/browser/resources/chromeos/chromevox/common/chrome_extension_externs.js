@@ -957,7 +957,7 @@ ChromeEvent.prototype.hasListener = function(callback) {};
 
 
 /** @return {boolean} */
-ChromeEvent.prototype.hasListeners = function(callback) {};
+ChromeEvent.prototype.hasListeners = function() {};
 
 
 /**
@@ -1209,3 +1209,91 @@ chrome.storage.local.remove = function(keys, opt_callback) {};
  * @type {ChromeEvent}
  */
 chrome.storage.onChanged;
+
+
+/**
+ * @const
+ */
+chrome.automation = {};
+
+/**
+ * @constructor
+ */
+chrome.automation.AutomationNode = function() {};
+
+
+/**
+ * @type {!Object}
+ */
+chrome.automation.AutomationNode.prototype.attributes;
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.firstChild = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.lastChild = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.nextSibling = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.previousSibling = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.parent = function() {};
+
+
+/**
+ * @param {string} eventType
+ * @param {function(chrome.automation.AutomationNode) : void} callback
+ * @param {boolean} capture
+ */
+chrome.automation.AutomationNode.prototype.addEventListener =
+    function(eventType, callback, capture) {};
+
+
+/**
+ * @param {string} eventType
+ * @param {function(chrome.automation.AutomationNode) : void} callback
+ * @param {boolean} capture
+ */
+chrome.automation.AutomationNode.prototype.removeEventListener =
+    function(eventType, callback, capture) {};
+
+
+/**
+ * @param {function(chrome.automation.AutomationNode)} callback
+ */
+chrome.automation.getDesktop = function(callback) {};
+
+
+/**
+ * @param {function(chrome.automation.AutomationNode)} callback
+ */
+chrome.automation.getTree = function(callback) {};
+
+/**
+ * @const
+ */
+chrome.commands = {};
+
+
+/**
+ * @type {ChromeEvent}
+ */
+chrome.commands.onCommand;

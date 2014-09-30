@@ -36,6 +36,7 @@ def CVoxPath(path='.'):
 
 # Externs common to many ChromeVox scripts.
 _COMMON_EXTERNS = [
+    CVoxPath('cvox2/background/externs.js'),
     CVoxPath('common/externs.js'),
     CVoxPath('common/chrome_extension_externs.js'),
     CVoxPath('chromevox/background/externs.js'),
@@ -50,6 +51,7 @@ _TOP_LEVEL_SCRIPTS = [
     [[CVoxPath('chromevox/background/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/background/options_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/injected/loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('cvox2/background/loader.js')], _COMMON_EXTERNS],
     ]
 
 
