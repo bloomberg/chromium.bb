@@ -371,14 +371,12 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 
-  DWORD bytes_read_dword = 0;
   BOOL result = ReadFile(io_handler_->handle(),
                          buffer,
                          static_cast<DWORD>(bytes_to_read),
-                         &bytes_read_dword,
+                         nullptr,
                          &io_handler_->read_context()->overlapped);
   if (!result) {
-    DCHECK_EQ(bytes_read_dword, 0u);
     DWORD error = GetLastError();
     if (error == ERROR_BROKEN_PIPE)
       return IO_FAILED_SHUTDOWN;
@@ -389,6 +387,13 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
   }
 
   if (result && skip_completion_port_on_success_) {
+    DWORD bytes_read_dword = 0;
+    BOOL get_size_result =
+        GetOverlappedResult(io_handler_->handle(),
+                            &io_handler_->read_context()->overlapped,
+                            &bytes_read_dword,
+                            FALSE);
+    DPCHECK(get_size_result);
     *bytes_read = bytes_read_dword;
     return IO_SUCCEEDED;
   }
