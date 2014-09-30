@@ -41,7 +41,6 @@
       'system_storage.idl',
       'test.json',
       'usb.idl',
-      'usb_private.idl',
       'web_request.json',
       'web_view_internal.json',
     ],

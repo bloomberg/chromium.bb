@@ -495,8 +495,6 @@
         'browser/api/usb/usb_api.h',
         'browser/api/usb/usb_device_resource.cc',
         'browser/api/usb/usb_device_resource.h',
-        'browser/api/usb_private/usb_private_api.cc',
-        'browser/api/usb_private/usb_private_api.h',
         'browser/api/web_request/form_data_parser.cc',
         'browser/api/web_request/form_data_parser.h',
         'browser/api/web_request/upload_data_presenter.cc',

@@ -248,10 +248,6 @@
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
   },
-  "usbPrivate": {
-    "channel": "dev",
-    "contexts": ["webui"]
-  },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
     "contexts": ["blessed_extension"]
