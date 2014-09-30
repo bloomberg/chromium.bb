@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/navigation_before_commit_info.h"
@@ -1862,6 +1863,32 @@ TEST_F(RenderFrameHostManagerTest,
   nbc_info.navigation_request_id = request_id2;
   render_manager->CommitNavigation(nbc_info);
   EXPECT_EQ(kUrl2_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
+}
+
+// PlzNavigate: Tests that the navigation histograms are correctly tracked both
+// when PlzNavigate is enabled and disabled, and also ignores in-tab renderer
+// initiated navigation for the non-enabled case.
+// Note: the related histogram, Navigation.TimeToURLJobStart, cannot be tracked
+// by this test as the IO thread is not running.
+TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationHistogramTest) {
+  const GURL kUrl0("http://www.google.com/");
+  const GURL kUrl1("http://www.chromium.org/");
+  base::HistogramTester histo_tester;
+
+  // Performs a "normal" non-PlzNavigate navigation
+  contents()->NavigateAndCommit(kUrl0);
+  histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 1);
+
+  // Performs an in-tab renderer initiated navigation
+  int32 new_page_id = 1 + contents()->GetMaxPageIDForSiteInstance(
+      main_test_rfh()->GetSiteInstance());
+  main_test_rfh()->SendNavigate(new_page_id, kUrl0);
+  histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 1);
+
+  // Performs a PlzNavigate navigation
+  EnableBrowserSideNavigation();
+  contents()->NavigateAndCommit(kUrl1);
+  histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 2);
 }
 
 }  // namespace content

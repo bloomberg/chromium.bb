@@ -13730,6 +13730,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Navigation.TimeToCommit" units="milliseconds">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Time between the start of a navigation request in the browser and its
+    commit.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.TimeToURLJobStart" units="milliseconds">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Time between the start of a navigation request in the browser and the
+    reception of a corresponding ResourceRequest in the network stack.
+  </summary>
+</histogram>
+
 <histogram name="NCN.CM.FastestRTTOn2G" units="milliseconds">
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -38291,7 +38307,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="WinTimeTicks.NonStopTsc">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
-    True if the CPU's time stamp counter ticks at a constant rate regardless of
+    True if the CPU's timestamp counter ticks at a constant rate regardless of
     CPU frequency.
   </summary>
 </histogram>

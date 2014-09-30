@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -79,6 +80,9 @@ NavigatorImpl::NavigatorImpl(
     NavigatorDelegate* delegate)
     : controller_(navigation_controller),
       delegate_(delegate) {
+}
+
+NavigatorImpl::~NavigatorImpl() {
 }
 
 // static.
@@ -322,6 +326,7 @@ bool NavigatorImpl::NavigateToEntry(
   // node.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation)) {
+    navigation_start_time_and_url = MakeTuple(navigation_start, entry.GetURL());
     // Create the navigation parameters.
     MakeNavigateParams(
         entry, *controller_, reload_type, navigation_start, &navigate_params);
@@ -359,6 +364,7 @@ bool NavigatorImpl::NavigateToEntry(
       navigate_params.transferred_request_child_id ==
           dest_render_frame_host->GetProcess()->GetID();
   if (!is_transfer_to_same) {
+    navigation_start_time_and_url = MakeTuple(navigation_start, entry.GetURL());
     dest_render_frame_host->Navigate(navigate_params);
   } else {
     // No need to navigate again.  Just resume the deferred request.
@@ -520,6 +526,17 @@ void NavigatorImpl::DidNavigate(
   // DidNavigateMainFramePostCommit / DidNavigateAnyFramePostCommit (only if
   // necessary, please).
 
+  // TODO(carlosk): Move this out when PlzNavigate implementation properly calls
+  // the observer methods.
+  if (details.is_main_frame &&
+      navigation_start_time_and_url.a.ToInternalValue() != 0
+      && navigation_start_time_and_url.b == params.original_request_url) {
+    base::TimeDelta time_to_commit =
+        base::TimeTicks::Now() - navigation_start_time_and_url.a;
+    UMA_HISTOGRAM_TIMES("Navigation.TimeToCommit", time_to_commit);
+    navigation_start_time_and_url = MakeTuple(base::TimeTicks(), GURL());
+  }
+
   // Run post-commit tasks.
   if (delegate_) {
     if (details.is_main_frame)
@@ -642,6 +659,16 @@ void NavigatorImpl::CommitNavigation(
       render_frame_host, info.navigation_url);
   // TODO(clamy): the render_frame_host should now send a commit IPC to the
   // renderer.
+}
+
+void NavigatorImpl::LogResourceRequestTime(
+    base::TimeTicks timestamp, const GURL& url) {
+  if (navigation_start_time_and_url.a.ToInternalValue() != 0
+      && navigation_start_time_and_url.b == url) {
+    base::TimeDelta time_to_network =
+        timestamp - navigation_start_time_and_url.a;
+    UMA_HISTOGRAM_TIMES("Navigation.TimeToURLJobStart", time_to_network);
+  }
 }
 
 void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(

@@ -6,9 +6,12 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
+#include "base/tuple.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 struct FrameMsg_Navigate_Params;
 
@@ -73,8 +76,11 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       RenderFrameHostImpl* render_frame_host,
       const NavigationBeforeCommitInfo& info) OVERRIDE;
 
+  virtual void LogResourceRequestTime(
+      base::TimeTicks timestamp, const GURL& url) OVERRIDE;
+
  private:
-  virtual ~NavigatorImpl() {}
+  virtual ~NavigatorImpl();
 
   // Navigates to the given entry, which must be the pending entry.  Private
   // because all callers should use NavigateToPendingEntry.
@@ -98,6 +104,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Used to notify the object embedding this Navigator about navigation
   // events. Can be NULL in tests.
   NavigatorDelegate* delegate_;
+
+  // The start time and URL for latest navigation request, used for feeding a
+  // few histograms under the Navigation group.
+  Tuple2<base::TimeTicks, GURL> navigation_start_time_and_url;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

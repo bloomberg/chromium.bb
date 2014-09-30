@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "ui/base/window_open_disposition.h"
@@ -114,6 +115,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // response to the navigation request has been received).
   virtual void CommitNavigation(RenderFrameHostImpl* render_frame_host,
                                 const NavigationBeforeCommitInfo& info) {};
+
+  // Called when the first resource request for a given navigation is executed
+  // so that it can be tracked into an histogram.
+  virtual void LogResourceRequestTime(
+    base::TimeTicks timestamp, const GURL& url) {};
 
  protected:
   friend class base::RefCounted<Navigator>;

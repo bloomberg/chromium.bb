@@ -32,6 +32,7 @@
 #include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/buffered_resource_handler.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
@@ -380,6 +381,24 @@ void AttachRequestBodyBlobDataHandles(
     // upload completion. The |body| takes ownership of |handle|.
     const void* key = handle.get();
     body->SetUserData(key, handle.release());
+  }
+}
+
+// PlzNavigate
+// This method is called in the UI thread to send the timestamp of a resource
+// request to the respective Navigator (for an UMA histogram).
+void LogResourceRequestTimeOnUI(
+    base::TimeTicks timestamp,
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RenderFrameHostImpl* host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (host != NULL) {
+    DCHECK(host->frame_tree_node()->IsMainFrame());
+    host->frame_tree_node()->navigator()->LogResourceRequestTime(
+        timestamp, url);
   }
 }
 
@@ -947,6 +966,19 @@ void ResourceDispatcherHostImpl::OnRequestResource(
     int routing_id,
     int request_id,
     const ResourceHostMsg_Request& request_data) {
+  // When logging time-to-network only care about main frame and non-transfer
+  // navigations.
+  if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME &&
+      request_data.transferred_request_request_id == -1) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&LogResourceRequestTimeOnUI,
+                   TimeTicks::Now(),
+                   filter_->child_id(),
+                   request_data.render_frame_id,
+                   request_data.url));
+  }
   BeginRequest(request_id, request_data, NULL, routing_id);
 }
 
