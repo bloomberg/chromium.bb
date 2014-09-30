@@ -1032,7 +1032,8 @@ bool GetCustomFramePrefDefault() {
       wm == WM_NOTION ||
       wm == WM_QTILE ||
       wm == WM_RATPOISON ||
-      wm == WM_STUMPWM)
+      wm == WM_STUMPWM ||
+      wm == WM_WMII)
     return false;
 
   // Handle a few more window managers that don't get along well with custom
@@ -1259,6 +1260,8 @@ WindowManagerName GuessWindowManager() {
       return WM_RATPOISON;
     if (name == "stumpwm")
       return WM_STUMPWM;
+    if (name == "wmii")
+      return WM_WMII;
     if (name == "Xfwm4")
       return WM_XFWM4;
   }

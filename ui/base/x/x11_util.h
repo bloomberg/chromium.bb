@@ -264,6 +264,7 @@ enum WindowManagerName {
   WM_QTILE,
   WM_RATPOISON,
   WM_STUMPWM,
+  WM_WMII,
   WM_XFWM4,
 };
 // Attempts to guess the window maager. Returns WM_UNKNOWN if we can't

@@ -71,6 +71,7 @@ enum UMALinuxWindowManager {
   UMA_LINUX_WINDOW_MANAGER_QTILE,
   UMA_LINUX_WINDOW_MANAGER_RATPOISON,
   UMA_LINUX_WINDOW_MANAGER_STUMPWM,
+  UMA_LINUX_WINDOW_MANAGER_WMII,
   // NOTE: Append new window managers to the list above this line (i.e. don't
   // renumber) and update LinuxWindowManagerName in
   // tools/metrics/histograms/histograms.xml accordingly.
@@ -181,6 +182,8 @@ UMALinuxWindowManager GetLinuxWindowManager() {
       return UMA_LINUX_WINDOW_MANAGER_RATPOISON;
     case ui::WM_STUMPWM:
       return UMA_LINUX_WINDOW_MANAGER_STUMPWM;
+    case ui::WM_WMII:
+      return UMA_LINUX_WINDOW_MANAGER_WMII;
     case ui::WM_XFWM4:
       return UMA_LINUX_WINDOW_MANAGER_XFWM4;
   }
