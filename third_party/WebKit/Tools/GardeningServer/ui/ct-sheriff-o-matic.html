@@ -62,14 +62,7 @@ found in the LICENSE file.
 
     <header>
       <div>
-        <template if="{{ selected == 0 }}">
-          <img src="../favicon.ico"> <span>Sheriff-o-matic</span>
-        </template>
-        <template if="{{ selected == 1 }}">
-          <a on-click="{{ onBack }}" href="">
-            &lt;&lt; Go back
-          </a>
-        </template>
+        <img src="../favicon.ico"> <span>Sheriff-o-matic</span>
       </div>
       <div id="right-toolbar">
         <ct-last-updated date="{{ failures.lastUpdateDate }}"></ct-last-updated>
@@ -100,13 +93,6 @@ found in the LICENSE file.
 
       onPopState: function(e) {
         this.updateFromHistoryState(e.state);
-      },
-
-      onBack: function(event) {
-        if (event.button == 0) {
-          window.history.back();
-          event.preventDefault();
-        }
       },
 
       onExamine: function(event) {
