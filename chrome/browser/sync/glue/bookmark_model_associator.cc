@@ -66,38 +66,6 @@ const char kOtherBookmarksTag[] = "other_bookmarks";
 // limits; see write_node.cc).
 const int kTitleLimitBytes = 255;
 
-// Bookmark comparer for map of bookmark nodes.
-class BookmarkComparer {
- public:
-  // Compares the two given nodes and returns whether node1 should appear
-  // before node2 in strict weak ordering.
-  bool operator()(const BookmarkNode* node1,
-                  const BookmarkNode* node2) const {
-    DCHECK(node1);
-    DCHECK(node2);
-
-    // Keep folder nodes before non-folder nodes.
-    if (node1->is_folder() != node2->is_folder())
-      return node1->is_folder();
-
-    // Truncate bookmark titles in the form sync does internally to avoid
-    // mismatches due to sync munging titles.
-    std::string title1 = base::UTF16ToUTF8(node1->GetTitle());
-    syncer::SyncAPINameToServerName(title1, &title1);
-    base::TruncateUTF8ToByteSize(title1, kTitleLimitBytes, &title1);
-
-    std::string title2 = base::UTF16ToUTF8(node2->GetTitle());
-    syncer::SyncAPINameToServerName(title2, &title2);
-    base::TruncateUTF8ToByteSize(title2, kTitleLimitBytes, &title2);
-
-    int result = title1.compare(title2);
-    if (result != 0)
-      return result < 0;
-
-    return node1->url() < node2->url();
-  }
-};
-
 // Provides the following abstraction: given a parent bookmark node, find best
 // matching child node for many sync nodes.
 class BookmarkNodeFinder {
@@ -113,10 +81,21 @@ class BookmarkNodeFinder {
                                        bool is_folder);
 
  private:
-  typedef std::multiset<const BookmarkNode*, BookmarkComparer> BookmarkNodesSet;
+  // Maps bookmark node titles to instances, duplicates allowed.
+  // Titles are converted to the sync internal format before
+  // being used as keys for the map.
+  typedef base::hash_multimap<std::string,
+                              const BookmarkNode*> BookmarkNodeMap;
+  typedef std::pair<BookmarkNodeMap::iterator,
+                    BookmarkNodeMap::iterator> BookmarkNodeRange;
+
+  // Converts and truncates bookmark titles in the form sync does internally
+  // to avoid mismatches due to sync munging titles.
+  void ConvertTitleToSyncInternalFormat(
+      const std::string& input, std::string* output);
 
   const BookmarkNode* parent_node_;
-  BookmarkNodesSet child_nodes_;
+  BookmarkNodeMap child_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeFinder);
 };
@@ -141,29 +120,42 @@ class ScopedAssociationUpdater {
 BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
     : parent_node_(parent_node) {
   for (int i = 0; i < parent_node_->child_count(); ++i) {
-    child_nodes_.insert(parent_node_->GetChild(i));
+    const BookmarkNode* child_node = parent_node_->GetChild(i);
+
+    std::string title = base::UTF16ToUTF8(child_node->GetTitle());
+    ConvertTitleToSyncInternalFormat(title, &title);
+
+    child_nodes_.insert(std::make_pair(title, child_node));
   }
 }
 
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const GURL& url, const std::string& title, bool is_folder) {
-  // Create a bookmark node from the given bookmark attributes.
-  BookmarkNode temp_node(url);
-  temp_node.SetTitle(base::UTF8ToUTF16(title));
-  if (is_folder)
-    temp_node.set_type(BookmarkNode::FOLDER);
-  else
-    temp_node.set_type(BookmarkNode::URL);
+  // First lookup a range of bookmarks with the same title.
+  std::string adjusted_title;
+  ConvertTitleToSyncInternalFormat(title, &adjusted_title);
+  BookmarkNodeRange range = child_nodes_.equal_range(adjusted_title);
+  for (BookmarkNodeMap::iterator iter = range.first;
+       iter != range.second;
+       ++iter) {
 
-  const BookmarkNode* result = NULL;
-  BookmarkNodesSet::iterator iter = child_nodes_.find(&temp_node);
-  if (iter != child_nodes_.end()) {
-    result = *iter;
-    // Remove the matched node so we don't match with it again.
-    child_nodes_.erase(iter);
+    // Then within the range match the node by the folder bit
+    // and the url.
+    const BookmarkNode* node = iter->second;
+    if (is_folder == node->is_folder() && url == node->url()) {
+      // Remove the matched node so we don't match with it again.
+      child_nodes_.erase(iter);
+      return node;
+    }
   }
 
-  return result;
+  return NULL;
+}
+
+void BookmarkNodeFinder::ConvertTitleToSyncInternalFormat(
+    const std::string& input, std::string* output) {
+  syncer::SyncAPINameToServerName(input, output);
+  base::TruncateUTF8ToByteSize(*output, kTitleLimitBytes, output);
 }
 
 // Helper class to build an index of bookmark nodes by their IDs.
