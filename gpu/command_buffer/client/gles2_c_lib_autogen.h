@@ -983,17 +983,20 @@ namespace gles2 {
 
 extern const NameToFunc g_gles2_function_table[] = {
     {
-     "glActiveTexture", reinterpret_cast<GLES2FunctionPointer>(glActiveTexture),
+     "glActiveTexture",
+     reinterpret_cast<GLES2FunctionPointer>(glActiveTexture),
     },
     {
-     "glAttachShader", reinterpret_cast<GLES2FunctionPointer>(glAttachShader),
+     "glAttachShader",
+     reinterpret_cast<GLES2FunctionPointer>(glAttachShader),
     },
     {
      "glBindAttribLocation",
      reinterpret_cast<GLES2FunctionPointer>(glBindAttribLocation),
     },
     {
-     "glBindBuffer", reinterpret_cast<GLES2FunctionPointer>(glBindBuffer),
+     "glBindBuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glBindBuffer),
     },
     {
      "glBindFramebuffer",
@@ -1004,52 +1007,64 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glBindRenderbuffer),
     },
     {
-     "glBindTexture", reinterpret_cast<GLES2FunctionPointer>(glBindTexture),
+     "glBindTexture",
+     reinterpret_cast<GLES2FunctionPointer>(glBindTexture),
     },
     {
-     "glBlendColor", reinterpret_cast<GLES2FunctionPointer>(glBlendColor),
+     "glBlendColor",
+     reinterpret_cast<GLES2FunctionPointer>(glBlendColor),
     },
     {
-     "glBlendEquation", reinterpret_cast<GLES2FunctionPointer>(glBlendEquation),
+     "glBlendEquation",
+     reinterpret_cast<GLES2FunctionPointer>(glBlendEquation),
     },
     {
      "glBlendEquationSeparate",
      reinterpret_cast<GLES2FunctionPointer>(glBlendEquationSeparate),
     },
     {
-     "glBlendFunc", reinterpret_cast<GLES2FunctionPointer>(glBlendFunc),
+     "glBlendFunc",
+     reinterpret_cast<GLES2FunctionPointer>(glBlendFunc),
     },
     {
      "glBlendFuncSeparate",
      reinterpret_cast<GLES2FunctionPointer>(glBlendFuncSeparate),
     },
     {
-     "glBufferData", reinterpret_cast<GLES2FunctionPointer>(glBufferData),
+     "glBufferData",
+     reinterpret_cast<GLES2FunctionPointer>(glBufferData),
     },
     {
-     "glBufferSubData", reinterpret_cast<GLES2FunctionPointer>(glBufferSubData),
+     "glBufferSubData",
+     reinterpret_cast<GLES2FunctionPointer>(glBufferSubData),
     },
     {
      "glCheckFramebufferStatus",
      reinterpret_cast<GLES2FunctionPointer>(glCheckFramebufferStatus),
     },
     {
-     "glClear", reinterpret_cast<GLES2FunctionPointer>(glClear),
+     "glClear",
+     reinterpret_cast<GLES2FunctionPointer>(glClear),
     },
     {
-     "glClearColor", reinterpret_cast<GLES2FunctionPointer>(glClearColor),
+     "glClearColor",
+     reinterpret_cast<GLES2FunctionPointer>(glClearColor),
     },
     {
-     "glClearDepthf", reinterpret_cast<GLES2FunctionPointer>(glClearDepthf),
+     "glClearDepthf",
+     reinterpret_cast<GLES2FunctionPointer>(glClearDepthf),
     },
     {
-     "glClearStencil", reinterpret_cast<GLES2FunctionPointer>(glClearStencil),
+     "glClearStencil",
+     reinterpret_cast<GLES2FunctionPointer>(glClearStencil),
     },
     {
-     "glColorMask", reinterpret_cast<GLES2FunctionPointer>(glColorMask),
+     "glColorMask",
+     reinterpret_cast<GLES2FunctionPointer>(glColorMask),
     },
     {
-     "glCompileShader", reinterpret_cast<GLES2FunctionPointer>(glCompileShader),
+     "glCompileShader",
+     reinterpret_cast<GLES2FunctionPointer>(glCompileShader),
     },
     {
      "glCompressedTexImage2D",
@@ -1068,72 +1083,88 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glCopyTexSubImage2D),
     },
     {
-     "glCreateProgram", reinterpret_cast<GLES2FunctionPointer>(glCreateProgram),
+     "glCreateProgram",
+     reinterpret_cast<GLES2FunctionPointer>(glCreateProgram),
     },
     {
-     "glCreateShader", reinterpret_cast<GLES2FunctionPointer>(glCreateShader),
+     "glCreateShader",
+     reinterpret_cast<GLES2FunctionPointer>(glCreateShader),
     },
     {
-     "glCullFace", reinterpret_cast<GLES2FunctionPointer>(glCullFace),
+     "glCullFace",
+     reinterpret_cast<GLES2FunctionPointer>(glCullFace),
     },
     {
-     "glDeleteBuffers", reinterpret_cast<GLES2FunctionPointer>(glDeleteBuffers),
+     "glDeleteBuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteBuffers),
     },
     {
      "glDeleteFramebuffers",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteFramebuffers),
     },
     {
-     "glDeleteProgram", reinterpret_cast<GLES2FunctionPointer>(glDeleteProgram),
+     "glDeleteProgram",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteProgram),
     },
     {
      "glDeleteRenderbuffers",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteRenderbuffers),
     },
     {
-     "glDeleteShader", reinterpret_cast<GLES2FunctionPointer>(glDeleteShader),
+     "glDeleteShader",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteShader),
     },
     {
      "glDeleteTextures",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteTextures),
     },
     {
-     "glDepthFunc", reinterpret_cast<GLES2FunctionPointer>(glDepthFunc),
+     "glDepthFunc",
+     reinterpret_cast<GLES2FunctionPointer>(glDepthFunc),
     },
     {
-     "glDepthMask", reinterpret_cast<GLES2FunctionPointer>(glDepthMask),
+     "glDepthMask",
+     reinterpret_cast<GLES2FunctionPointer>(glDepthMask),
     },
     {
-     "glDepthRangef", reinterpret_cast<GLES2FunctionPointer>(glDepthRangef),
+     "glDepthRangef",
+     reinterpret_cast<GLES2FunctionPointer>(glDepthRangef),
     },
     {
-     "glDetachShader", reinterpret_cast<GLES2FunctionPointer>(glDetachShader),
+     "glDetachShader",
+     reinterpret_cast<GLES2FunctionPointer>(glDetachShader),
     },
     {
-     "glDisable", reinterpret_cast<GLES2FunctionPointer>(glDisable),
+     "glDisable",
+     reinterpret_cast<GLES2FunctionPointer>(glDisable),
     },
     {
      "glDisableVertexAttribArray",
      reinterpret_cast<GLES2FunctionPointer>(glDisableVertexAttribArray),
     },
     {
-     "glDrawArrays", reinterpret_cast<GLES2FunctionPointer>(glDrawArrays),
+     "glDrawArrays",
+     reinterpret_cast<GLES2FunctionPointer>(glDrawArrays),
     },
     {
-     "glDrawElements", reinterpret_cast<GLES2FunctionPointer>(glDrawElements),
+     "glDrawElements",
+     reinterpret_cast<GLES2FunctionPointer>(glDrawElements),
     },
     {
-     "glEnable", reinterpret_cast<GLES2FunctionPointer>(glEnable),
+     "glEnable",
+     reinterpret_cast<GLES2FunctionPointer>(glEnable),
     },
     {
      "glEnableVertexAttribArray",
      reinterpret_cast<GLES2FunctionPointer>(glEnableVertexAttribArray),
     },
     {
-     "glFinish", reinterpret_cast<GLES2FunctionPointer>(glFinish),
+     "glFinish",
+     reinterpret_cast<GLES2FunctionPointer>(glFinish),
     },
     {
-     "glFlush", reinterpret_cast<GLES2FunctionPointer>(glFlush),
+     "glFlush",
+     reinterpret_cast<GLES2FunctionPointer>(glFlush),
     },
     {
      "glFramebufferRenderbuffer",
@@ -1144,10 +1175,12 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glFramebufferTexture2D),
     },
     {
-     "glFrontFace", reinterpret_cast<GLES2FunctionPointer>(glFrontFace),
+     "glFrontFace",
+     reinterpret_cast<GLES2FunctionPointer>(glFrontFace),
     },
     {
-     "glGenBuffers", reinterpret_cast<GLES2FunctionPointer>(glGenBuffers),
+     "glGenBuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glGenBuffers),
     },
     {
      "glGenerateMipmap",
@@ -1162,7 +1195,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGenRenderbuffers),
     },
     {
-     "glGenTextures", reinterpret_cast<GLES2FunctionPointer>(glGenTextures),
+     "glGenTextures",
+     reinterpret_cast<GLES2FunctionPointer>(glGenTextures),
     },
     {
      "glGetActiveAttrib",
@@ -1181,17 +1215,20 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGetAttribLocation),
     },
     {
-     "glGetBooleanv", reinterpret_cast<GLES2FunctionPointer>(glGetBooleanv),
+     "glGetBooleanv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetBooleanv),
     },
     {
      "glGetBufferParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(glGetBufferParameteriv),
     },
     {
-     "glGetError", reinterpret_cast<GLES2FunctionPointer>(glGetError),
+     "glGetError",
+     reinterpret_cast<GLES2FunctionPointer>(glGetError),
     },
     {
-     "glGetFloatv", reinterpret_cast<GLES2FunctionPointer>(glGetFloatv),
+     "glGetFloatv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetFloatv),
     },
     {
      "glGetFramebufferAttachmentParameteriv",
@@ -1199,10 +1236,12 @@ extern const NameToFunc g_gles2_function_table[] = {
          glGetFramebufferAttachmentParameteriv),
     },
     {
-     "glGetIntegerv", reinterpret_cast<GLES2FunctionPointer>(glGetIntegerv),
+     "glGetIntegerv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetIntegerv),
     },
     {
-     "glGetProgramiv", reinterpret_cast<GLES2FunctionPointer>(glGetProgramiv),
+     "glGetProgramiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetProgramiv),
     },
     {
      "glGetProgramInfoLog",
@@ -1213,7 +1252,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGetRenderbufferParameteriv),
     },
     {
-     "glGetShaderiv", reinterpret_cast<GLES2FunctionPointer>(glGetShaderiv),
+     "glGetShaderiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetShaderiv),
     },
     {
      "glGetShaderInfoLog",
@@ -1228,7 +1268,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGetShaderSource),
     },
     {
-     "glGetString", reinterpret_cast<GLES2FunctionPointer>(glGetString),
+     "glGetString",
+     reinterpret_cast<GLES2FunctionPointer>(glGetString),
     },
     {
      "glGetTexParameterfv",
@@ -1239,10 +1280,12 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGetTexParameteriv),
     },
     {
-     "glGetUniformfv", reinterpret_cast<GLES2FunctionPointer>(glGetUniformfv),
+     "glGetUniformfv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetUniformfv),
     },
     {
-     "glGetUniformiv", reinterpret_cast<GLES2FunctionPointer>(glGetUniformiv),
+     "glGetUniformiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetUniformiv),
     },
     {
      "glGetUniformLocation",
@@ -1261,44 +1304,56 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribPointerv),
     },
     {
-     "glHint", reinterpret_cast<GLES2FunctionPointer>(glHint),
+     "glHint",
+     reinterpret_cast<GLES2FunctionPointer>(glHint),
     },
     {
-     "glIsBuffer", reinterpret_cast<GLES2FunctionPointer>(glIsBuffer),
+     "glIsBuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glIsBuffer),
     },
     {
-     "glIsEnabled", reinterpret_cast<GLES2FunctionPointer>(glIsEnabled),
+     "glIsEnabled",
+     reinterpret_cast<GLES2FunctionPointer>(glIsEnabled),
     },
     {
-     "glIsFramebuffer", reinterpret_cast<GLES2FunctionPointer>(glIsFramebuffer),
+     "glIsFramebuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glIsFramebuffer),
     },
     {
-     "glIsProgram", reinterpret_cast<GLES2FunctionPointer>(glIsProgram),
+     "glIsProgram",
+     reinterpret_cast<GLES2FunctionPointer>(glIsProgram),
     },
     {
      "glIsRenderbuffer",
      reinterpret_cast<GLES2FunctionPointer>(glIsRenderbuffer),
     },
     {
-     "glIsShader", reinterpret_cast<GLES2FunctionPointer>(glIsShader),
+     "glIsShader",
+     reinterpret_cast<GLES2FunctionPointer>(glIsShader),
     },
     {
-     "glIsTexture", reinterpret_cast<GLES2FunctionPointer>(glIsTexture),
+     "glIsTexture",
+     reinterpret_cast<GLES2FunctionPointer>(glIsTexture),
     },
     {
-     "glLineWidth", reinterpret_cast<GLES2FunctionPointer>(glLineWidth),
+     "glLineWidth",
+     reinterpret_cast<GLES2FunctionPointer>(glLineWidth),
     },
     {
-     "glLinkProgram", reinterpret_cast<GLES2FunctionPointer>(glLinkProgram),
+     "glLinkProgram",
+     reinterpret_cast<GLES2FunctionPointer>(glLinkProgram),
     },
     {
-     "glPixelStorei", reinterpret_cast<GLES2FunctionPointer>(glPixelStorei),
+     "glPixelStorei",
+     reinterpret_cast<GLES2FunctionPointer>(glPixelStorei),
     },
     {
-     "glPolygonOffset", reinterpret_cast<GLES2FunctionPointer>(glPolygonOffset),
+     "glPolygonOffset",
+     reinterpret_cast<GLES2FunctionPointer>(glPolygonOffset),
     },
     {
-     "glReadPixels", reinterpret_cast<GLES2FunctionPointer>(glReadPixels),
+     "glReadPixels",
+     reinterpret_cast<GLES2FunctionPointer>(glReadPixels),
     },
     {
      "glReleaseShaderCompiler",
@@ -1313,13 +1368,16 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glSampleCoverage),
     },
     {
-     "glScissor", reinterpret_cast<GLES2FunctionPointer>(glScissor),
+     "glScissor",
+     reinterpret_cast<GLES2FunctionPointer>(glScissor),
     },
     {
-     "glShaderBinary", reinterpret_cast<GLES2FunctionPointer>(glShaderBinary),
+     "glShaderBinary",
+     reinterpret_cast<GLES2FunctionPointer>(glShaderBinary),
     },
     {
-     "glShaderSource", reinterpret_cast<GLES2FunctionPointer>(glShaderSource),
+     "glShaderSource",
+     reinterpret_cast<GLES2FunctionPointer>(glShaderSource),
     },
     {
      "glShallowFinishCHROMIUM",
@@ -1330,93 +1388,116 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glShallowFlushCHROMIUM),
     },
     {
-     "glStencilFunc", reinterpret_cast<GLES2FunctionPointer>(glStencilFunc),
+     "glStencilFunc",
+     reinterpret_cast<GLES2FunctionPointer>(glStencilFunc),
     },
     {
      "glStencilFuncSeparate",
      reinterpret_cast<GLES2FunctionPointer>(glStencilFuncSeparate),
     },
     {
-     "glStencilMask", reinterpret_cast<GLES2FunctionPointer>(glStencilMask),
+     "glStencilMask",
+     reinterpret_cast<GLES2FunctionPointer>(glStencilMask),
     },
     {
      "glStencilMaskSeparate",
      reinterpret_cast<GLES2FunctionPointer>(glStencilMaskSeparate),
     },
     {
-     "glStencilOp", reinterpret_cast<GLES2FunctionPointer>(glStencilOp),
+     "glStencilOp",
+     reinterpret_cast<GLES2FunctionPointer>(glStencilOp),
     },
     {
      "glStencilOpSeparate",
      reinterpret_cast<GLES2FunctionPointer>(glStencilOpSeparate),
     },
     {
-     "glTexImage2D", reinterpret_cast<GLES2FunctionPointer>(glTexImage2D),
+     "glTexImage2D",
+     reinterpret_cast<GLES2FunctionPointer>(glTexImage2D),
     },
     {
-     "glTexParameterf", reinterpret_cast<GLES2FunctionPointer>(glTexParameterf),
+     "glTexParameterf",
+     reinterpret_cast<GLES2FunctionPointer>(glTexParameterf),
     },
     {
      "glTexParameterfv",
      reinterpret_cast<GLES2FunctionPointer>(glTexParameterfv),
     },
     {
-     "glTexParameteri", reinterpret_cast<GLES2FunctionPointer>(glTexParameteri),
+     "glTexParameteri",
+     reinterpret_cast<GLES2FunctionPointer>(glTexParameteri),
     },
     {
      "glTexParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(glTexParameteriv),
     },
     {
-     "glTexSubImage2D", reinterpret_cast<GLES2FunctionPointer>(glTexSubImage2D),
+     "glTexSubImage2D",
+     reinterpret_cast<GLES2FunctionPointer>(glTexSubImage2D),
     },
     {
-     "glUniform1f", reinterpret_cast<GLES2FunctionPointer>(glUniform1f),
+     "glUniform1f",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform1f),
     },
     {
-     "glUniform1fv", reinterpret_cast<GLES2FunctionPointer>(glUniform1fv),
+     "glUniform1fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform1fv),
     },
     {
-     "glUniform1i", reinterpret_cast<GLES2FunctionPointer>(glUniform1i),
+     "glUniform1i",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform1i),
     },
     {
-     "glUniform1iv", reinterpret_cast<GLES2FunctionPointer>(glUniform1iv),
+     "glUniform1iv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform1iv),
     },
     {
-     "glUniform2f", reinterpret_cast<GLES2FunctionPointer>(glUniform2f),
+     "glUniform2f",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform2f),
     },
     {
-     "glUniform2fv", reinterpret_cast<GLES2FunctionPointer>(glUniform2fv),
+     "glUniform2fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform2fv),
     },
     {
-     "glUniform2i", reinterpret_cast<GLES2FunctionPointer>(glUniform2i),
+     "glUniform2i",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform2i),
     },
     {
-     "glUniform2iv", reinterpret_cast<GLES2FunctionPointer>(glUniform2iv),
+     "glUniform2iv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform2iv),
     },
     {
-     "glUniform3f", reinterpret_cast<GLES2FunctionPointer>(glUniform3f),
+     "glUniform3f",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform3f),
     },
     {
-     "glUniform3fv", reinterpret_cast<GLES2FunctionPointer>(glUniform3fv),
+     "glUniform3fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform3fv),
     },
     {
-     "glUniform3i", reinterpret_cast<GLES2FunctionPointer>(glUniform3i),
+     "glUniform3i",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform3i),
     },
     {
-     "glUniform3iv", reinterpret_cast<GLES2FunctionPointer>(glUniform3iv),
+     "glUniform3iv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform3iv),
     },
     {
-     "glUniform4f", reinterpret_cast<GLES2FunctionPointer>(glUniform4f),
+     "glUniform4f",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform4f),
     },
     {
-     "glUniform4fv", reinterpret_cast<GLES2FunctionPointer>(glUniform4fv),
+     "glUniform4fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform4fv),
     },
     {
-     "glUniform4i", reinterpret_cast<GLES2FunctionPointer>(glUniform4i),
+     "glUniform4i",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform4i),
     },
     {
-     "glUniform4iv", reinterpret_cast<GLES2FunctionPointer>(glUniform4iv),
+     "glUniform4iv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform4iv),
     },
     {
      "glUniformMatrix2fv",
@@ -1431,7 +1512,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix4fv),
     },
     {
-     "glUseProgram", reinterpret_cast<GLES2FunctionPointer>(glUseProgram),
+     "glUseProgram",
+     reinterpret_cast<GLES2FunctionPointer>(glUseProgram),
     },
     {
      "glValidateProgram",
@@ -1474,7 +1556,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glVertexAttribPointer),
     },
     {
-     "glViewport", reinterpret_cast<GLES2FunctionPointer>(glViewport),
+     "glViewport",
+     reinterpret_cast<GLES2FunctionPointer>(glViewport),
     },
     {
      "glBlitFramebufferCHROMIUM",
@@ -1500,23 +1583,28 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glTexStorage2DEXT),
     },
     {
-     "glGenQueriesEXT", reinterpret_cast<GLES2FunctionPointer>(glGenQueriesEXT),
+     "glGenQueriesEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glGenQueriesEXT),
     },
     {
      "glDeleteQueriesEXT",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteQueriesEXT),
     },
     {
-     "glIsQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glIsQueryEXT),
+     "glIsQueryEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glIsQueryEXT),
     },
     {
-     "glBeginQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glBeginQueryEXT),
+     "glBeginQueryEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glBeginQueryEXT),
     },
     {
-     "glEndQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glEndQueryEXT),
+     "glEndQueryEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glEndQueryEXT),
     },
     {
-     "glGetQueryivEXT", reinterpret_cast<GLES2FunctionPointer>(glGetQueryivEXT),
+     "glGetQueryivEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glGetQueryivEXT),
     },
     {
      "glGetQueryObjectuivEXT",
@@ -1551,7 +1639,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glBindVertexArrayOES),
     },
     {
-     "glSwapBuffers", reinterpret_cast<GLES2FunctionPointer>(glSwapBuffers),
+     "glSwapBuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glSwapBuffers),
     },
     {
      "glGetMaxValueInBufferCHROMIUM",
@@ -1767,7 +1856,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glMatrixLoadIdentityCHROMIUM),
     },
     {
-     NULL, NULL,
+     NULL,
+     NULL,
     },
 };
 

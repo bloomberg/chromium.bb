@@ -219,7 +219,7 @@ enum CommandId {
 #define GLES2_CMD_OP(name) k##name,
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
 #undef GLES2_CMD_OP
-  kNumCommands
+      kNumCommands
 };
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_IDS_AUTOGEN_H_
