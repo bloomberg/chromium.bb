@@ -1138,14 +1138,15 @@ void ResourceDispatcherHostImpl::BeginRequest(
             new_request->url()));
   }
 
-  // Initialize the service worker handler for the request.
+  // Initialize the service worker handler for the request. We don't use
+  // ServiceWorker for synchronous loads to avoid renderer deadlocks.
   ServiceWorkerRequestHandler::InitializeHandler(
       new_request.get(),
       filter_->service_worker_context(),
       blob_context,
       child_id,
       request_data.service_worker_provider_id,
-      request_data.skip_service_worker,
+      request_data.skip_service_worker || is_sync_load,
       request_data.resource_type,
       request_data.request_body);
 
