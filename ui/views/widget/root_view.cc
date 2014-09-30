@@ -249,55 +249,37 @@ ui::EventTarget* RootView::GetRootTarget() {
   return this;
 }
 
-ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
-  if (event->IsKeyEvent())
-    return EventProcessor::OnEventFromSource(event);
+void RootView::OnEventProcessingStarted(ui::Event* event) {
+  if (!event->IsGestureEvent())
+    return;
 
-  if (event->IsScrollEvent())
-    return EventProcessor::OnEventFromSource(event);
+  ui::GestureEvent* gesture_event = event->AsGestureEvent();
 
-  if (event->IsGestureEvent()) {
-    // TODO(tdanderson): Once DispatchGestureEvent() has been removed, move
-    //                   all of this logic into an override of a new
-    //                   virtual method
-    //                   EventProcessor::OnEventProcessingStarted() (which
-    //                   returns false if no processing should take place).
-    //                   Also move the implementation of
-    //                   PrepareEventForDispatch() into this new method.
-    //                   Then RootView::OnEventFromSource() can be removed.
-    ui::GestureEvent* gesture_event = event->AsGestureEvent();
-
-    // Do not dispatch ui::ET_GESTURE_BEGIN events.
-    if (gesture_event->type() == ui::ET_GESTURE_BEGIN)
-      return DispatchDetails();
-
-    // Ignore ui::ET_GESTURE_END events which do not correspond to the
-    // removal of the final touch point.
-    if (gesture_event->type() == ui::ET_GESTURE_END &&
-        gesture_event->details().touch_points() > 1) {
-      return DispatchDetails();
-    }
-
-    // Ignore subsequent gesture scroll events if no handler was set for a
-    // ui::ET_GESTURE_SCROLL_BEGIN event.
-    if (!gesture_handler_ &&
-        (gesture_event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-         gesture_event->type() == ui::ET_GESTURE_SCROLL_END ||
-         gesture_event->type() == ui::ET_SCROLL_FLING_START)) {
-      return DispatchDetails();
-    }
-
-    gesture_handler_set_before_processing_ = !!gesture_handler_;
-    return EventProcessor::OnEventFromSource(event);
+  // Do not process ui::ET_GESTURE_BEGIN events.
+  if (gesture_event->type() == ui::ET_GESTURE_BEGIN) {
+    event->SetHandled();
+    return;
   }
 
-  if (event->IsTouchEvent())
-    NOTREACHED() << "Touch events should not be sent to RootView.";
+  // Do not process ui::ET_GESTURE_END events which do not correspond to the
+  // removal of the final touch point.
+  if (gesture_event->type() == ui::ET_GESTURE_END &&
+      gesture_event->details().touch_points() > 1) {
+    event->SetHandled();
+    return;
+  }
 
-  if (event->IsMouseEvent())
-    NOTREACHED() << "Should not be called with a MouseEvent.";
+  // Do not process subsequent gesture scroll events if no handler was set for
+  // a ui::ET_GESTURE_SCROLL_BEGIN event.
+  if (!gesture_handler_ &&
+      (gesture_event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+       gesture_event->type() == ui::ET_GESTURE_SCROLL_END ||
+       gesture_event->type() == ui::ET_SCROLL_FLING_START)) {
+    event->SetHandled();
+    return;
+  }
 
-  return DispatchDetails();
+  gesture_handler_set_before_processing_ = !!gesture_handler_;
 }
 
 void RootView::OnEventProcessingFinished(ui::Event* event) {

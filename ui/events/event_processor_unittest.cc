@@ -25,7 +25,7 @@ class EventProcessorTest : public testing::Test {
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     processor_.SetRoot(scoped_ptr<EventTarget>(new TestEventTarget()));
-    processor_.ResetCounts();
+    processor_.Reset();
     root()->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
   }
 
@@ -277,6 +277,45 @@ TEST_F(EventProcessorTest, OnEventProcessingFinished) {
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_TRUE(mouse.handled());
+  EXPECT_EQ(1, processor()->num_times_processing_finished());
+}
+
+// Verifies that OnEventProcessingStarted() has been called when starting to
+// process an event, and that processing does not take place if
+// OnEventProcessingStarted() marks the event as handled. Also verifies that
+// OnEventProcessingFinished() is also called in either case.
+TEST_F(EventProcessorTest, OnEventProcessingStarted) {
+  scoped_ptr<TestEventTarget> child(new TestEventTarget());
+  root()->AddChild(child.Pass());
+
+  // Dispatch a mouse event. We expect the event to be seen by the target,
+  // OnEventProcessingStarted() should be called once, and
+  // OnEventProcessingFinished() should be called once. The event should
+  // remain unhandled.
+  MouseEvent mouse(
+      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  DispatchEvent(&mouse);
+  EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_FALSE(mouse.handled());
+  EXPECT_EQ(1, processor()->num_times_processing_started());
+  EXPECT_EQ(1, processor()->num_times_processing_finished());
+  processor()->Reset();
+  root()->ResetReceivedEvents();
+  root()->child_at(0)->ResetReceivedEvents();
+
+  // Dispatch another mouse event, but with OnEventProcessingStarted() marking
+  // the event as handled to prevent processing. We expect the event to not be
+  // seen by the target this time, but OnEventProcessingStarted() and
+  // OnEventProcessingFinished() should both still be called once.
+  processor()->set_should_processing_occur(false);
+  MouseEvent mouse2(
+      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  DispatchEvent(&mouse2);
+  EXPECT_FALSE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_TRUE(mouse2.handled());
+  EXPECT_EQ(1, processor()->num_times_processing_started());
   EXPECT_EQ(1, processor()->num_times_processing_finished());
 }
 

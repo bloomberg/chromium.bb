@@ -674,12 +674,18 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
             EventTypesToString(recorder.events()));
   recorder.Reset();
 
-  // Check that we coalesce held MOUSE_DRAGGED events.
+  // Check that we coalesce held MOUSE_DRAGGED events. Note that here (and
+  // elsewhere in this test) we re-define each event prior to dispatch so that
+  // it has the correct state (phase, handled, target, etc.).
+  mouse_dragged_event = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(10, 10),
                                       gfx::Point(10, 10), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event2);
   EXPECT_TRUE(recorder.events().empty());
+  mouse_pressed_event = ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(recorder.events()));
@@ -687,6 +693,8 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
 
   // Check that on ReleasePointerMoves, held events are not dispatched
   // immediately, but posted instead.
+  mouse_dragged_event = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
   host()->dispatcher()->ReleasePointerMoves();
   EXPECT_TRUE(recorder.events().empty());
@@ -697,8 +705,12 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
   // However if another message comes in before the dispatch of the posted
   // event, check that the posted event is dispatched before this new event.
   host()->dispatcher()->HoldPointerMoves();
+  mouse_dragged_event = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
   host()->dispatcher()->ReleasePointerMoves();
+  mouse_pressed_event = ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(recorder.events()));
@@ -709,8 +721,12 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
   // Check that if the other message is another MOUSE_DRAGGED, we still coalesce
   // them.
   host()->dispatcher()->HoldPointerMoves();
+  mouse_dragged_event = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
   host()->dispatcher()->ReleasePointerMoves();
+  mouse_dragged_event2 = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(10, 10), gfx::Point(10, 10), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event2);
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(recorder.events()));
   recorder.Reset();
@@ -719,6 +735,10 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
 
   // Check that synthetic mouse move event has a right location when issued
   // while holding pointer moves.
+  mouse_dragged_event = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0), gfx::Point(0, 0), 0, 0);
+  mouse_dragged_event2 = ui::MouseEvent(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(10, 10), gfx::Point(10, 10), 0, 0);
   ui::MouseEvent mouse_dragged_event3(ui::ET_MOUSE_DRAGGED, gfx::Point(28, 28),
                                       gfx::Point(28, 28), 0, 0);
   host()->dispatcher()->HoldPointerMoves();

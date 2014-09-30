@@ -33,7 +33,7 @@ class MenuHostRootView : public internal::RootView {
 
  private:
   // ui::EventProcessor:
-  virtual ui::EventDispatchDetails OnEventFromSource(ui::Event* event) OVERRIDE;
+  virtual void OnEventProcessingFinished(ui::Event* event) OVERRIDE;
 
   // Returns the MenuController for this MenuHostRootView.
   MenuController* GetMenuController();

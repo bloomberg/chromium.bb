@@ -14,7 +14,6 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   CHECK(root);
   EventTargeter* targeter = root->GetEventTargeter();
   CHECK(targeter);
-  PrepareEventForDispatch(event);
 
   // If |event| is in the process of being dispatched or has already been
   // dispatched, then dispatch a copy of the event instead.
@@ -26,7 +25,11 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
     event_to_dispatch = event_copy.get();
   }
 
-  EventTarget* target = targeter->FindTargetForEvent(root, event_to_dispatch);
+  OnEventProcessingStarted(event_to_dispatch);
+  EventTarget* target = NULL;
+  if (!event_to_dispatch->handled())
+    target = targeter->FindTargetForEvent(root, event_to_dispatch);
+
   EventDispatchDetails details;
   while (target) {
     details = DispatchEvent(target, event_to_dispatch);
@@ -51,7 +54,7 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   return details;
 }
 
-void EventProcessor::PrepareEventForDispatch(Event* event) {
+void EventProcessor::OnEventProcessingStarted(Event* event) {
 }
 
 void EventProcessor::OnEventProcessingFinished(Event* event) {

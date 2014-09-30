@@ -151,7 +151,7 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return RootView::OnMouseWheel(event);
 }
 
-ui::EventDispatchDetails BrowserRootView::OnEventFromSource(ui::Event* event) {
+void BrowserRootView::OnEventProcessingStarted(ui::Event* event) {
   if (event->IsGestureEvent()) {
     ui::GestureEvent* gesture_event = event->AsGestureEvent();
     if (gesture_event->type() == ui::ET_GESTURE_TAP &&
@@ -161,7 +161,7 @@ ui::EventDispatchDetails BrowserRootView::OnEventFromSource(ui::Event* event) {
     }
   }
 
-  return RootView::OnEventFromSource(event);
+  RootView::OnEventProcessingStarted(event);
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(

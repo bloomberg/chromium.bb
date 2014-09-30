@@ -33,6 +33,8 @@ View* RootViewTargeter::FindTargetForGestureEvent(
 
   // If no default gesture handler has already been set, do not perform any
   // targeting for a ET_GESTURE_END event.
+  // TODO(tdanderson): This check belongs in
+  //                   RootView::OnEventProcessingStarted() instead of here.
   if (gesture.type() == ui::ET_GESTURE_END)
     return NULL;
 

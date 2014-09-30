@@ -9,14 +9,21 @@
 namespace ui {
 namespace test {
 
-TestEventProcessor::TestEventProcessor() : num_times_processing_finished_(0) {}
+TestEventProcessor::TestEventProcessor()
+    : should_processing_occur_(true),
+      num_times_processing_started_(0),
+      num_times_processing_finished_(0) {
+}
+
 TestEventProcessor::~TestEventProcessor() {}
 
 void TestEventProcessor::SetRoot(scoped_ptr<EventTarget> root) {
   root_ = root.Pass();
 }
 
-void TestEventProcessor::ResetCounts() {
+void TestEventProcessor::Reset() {
+  should_processing_occur_ = true;
+  num_times_processing_started_ = 0;
   num_times_processing_finished_ = 0;
 }
 
@@ -30,6 +37,12 @@ EventTarget* TestEventProcessor::GetRootTarget() {
 
 EventDispatchDetails TestEventProcessor::OnEventFromSource(Event* event) {
   return EventProcessor::OnEventFromSource(event);
+}
+
+void TestEventProcessor::OnEventProcessingStarted(Event* event) {
+  num_times_processing_started_++;
+  if (!should_processing_occur_)
+    event->SetHandled();
 }
 
 void TestEventProcessor::OnEventProcessingFinished(Event* event) {

@@ -93,7 +93,7 @@ class VIEWS_EXPORT RootView : public View,
 
   // Overridden from ui::EventProcessor:
   virtual ui::EventTarget* GetRootTarget() OVERRIDE;
-  virtual ui::EventDispatchDetails OnEventFromSource(ui::Event* event) OVERRIDE;
+  virtual void OnEventProcessingStarted(ui::Event* event) OVERRIDE;
   virtual void OnEventProcessingFinished(ui::Event* event) OVERRIDE;
 
   // Overridden from View:

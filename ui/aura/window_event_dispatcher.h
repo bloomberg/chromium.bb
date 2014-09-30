@@ -175,7 +175,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Overridden from ui::EventProcessor:
   virtual ui::EventTarget* GetRootTarget() OVERRIDE;
-  virtual void PrepareEventForDispatch(ui::Event* event) OVERRIDE;
+  virtual void OnEventProcessingStarted(ui::Event* event) OVERRIDE;
 
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;

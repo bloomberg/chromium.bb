@@ -16,21 +16,37 @@ class TestEventProcessor : public EventProcessor {
   TestEventProcessor();
   virtual ~TestEventProcessor();
 
+  int num_times_processing_started() const {
+    return num_times_processing_started_;
+  }
+
   int num_times_processing_finished() const {
     return num_times_processing_finished_;
   }
 
+  void set_should_processing_occur(bool occur) {
+    should_processing_occur_ = occur;
+  }
+
   void SetRoot(scoped_ptr<EventTarget> root);
-  void ResetCounts();
+  void Reset();
 
   // EventProcessor:
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
   virtual EventTarget* GetRootTarget() OVERRIDE;
   virtual EventDispatchDetails OnEventFromSource(Event* event) OVERRIDE;
+  virtual void OnEventProcessingStarted(Event* event) OVERRIDE;
   virtual void OnEventProcessingFinished(Event* event) OVERRIDE;
 
  private:
   scoped_ptr<EventTarget> root_;
+
+  // Used in our override of OnEventProcessingStarted(). If this value is
+  // false, mark incoming events as handled.
+  bool should_processing_occur_;
+
+  // Counts the number of times OnEventProcessingStarted() has been called.
+  int num_times_processing_started_;
 
   // Counts the number of times OnEventProcessingFinished() has been called.
   int num_times_processing_finished_;

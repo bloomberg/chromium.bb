@@ -42,7 +42,7 @@ class BrowserRootView : public views::internal::RootView {
 
  private:
   // ui::EventProcessor:
-  virtual ui::EventDispatchDetails OnEventFromSource(ui::Event* event) OVERRIDE;
+  virtual void OnEventProcessingStarted(ui::Event* event) OVERRIDE;
 
   // Returns true if the event should be forwarded to the tabstrip.
   bool ShouldForwardToTabStrip(const ui::DropTargetEvent& event);
