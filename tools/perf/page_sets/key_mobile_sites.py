@@ -490,7 +490,9 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
     self.AddPage(Page19(self))
     self.AddPage(Page20(self))
     self.AddPage(Page21(self))
-    self.AddPage(Page22(self))
+#    mean_input_event_latency cannot be tracked correctly for Page22.
+#    See crbug.com/409086.
+#    self.AddPage(Page22(self))
 #    self.AddPage(Page23(self))
     self.AddPage(Page24(self))
     self.AddPage(Page25(self))
