@@ -20,18 +20,19 @@ This just checks for npm and bower, and then runs:
 
 # RUNNING SHERIFF-O-MATIC
 
-sheriff-o-matic must be run from a server in order to handle polymer imports correctly.
+sheriff-o-matic must be run from the Google App Engine server, available here:
+https://cloud.google.com/appengine/downloads
 
     $ cd Tools/GardeningServer
-    $ python -m SimpleHTTPServer
+    $ dev_appserver.py .
 
-Then load: http://localhost:8000/sheriff-o-matic.html
+Then load: http://localhost:8080/
 
 # TESTING
 
 The tests can be run in the browser or from the command line.
 
-In the browser: http://localhost:8000/test/run-unit-tests.html
+In the browser: http://localhost:8080/test/run-unit-tests.html
 
 From the command line:
 
