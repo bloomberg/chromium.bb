@@ -1,4 +1,4 @@
-PASS Width of text element is the sum of the width of all characters.
+FAIL Width of text element is 387.203125, expected 388.9375
 PASS successfullyParsed is true
 
 TEST COMPLETE

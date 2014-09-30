@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x295
   RenderBlock {html} at (0,0) size 800x295
     RenderBody {body} at (8,8) size 784x279
-      RenderText {#text} at (175,261) size 4x18
-        text run at (175,261) width 4: " "
-      RenderText {#text} at (354,261) size 4x18
-        text run at (354,261) width 4: " "
-      RenderText {#text} at (533,261) size 4x18
-        text run at (533,261) width 4: " "
+      RenderText {#text} at (175,263) size 4x16
+        text run at (175,263) width 4: " "
+      RenderText {#text} at (354,263) size 4x16
+        text run at (354,263) width 4: " "
+      RenderText {#text} at (533,263) size 4x16
+        text run at (533,263) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 175x275
   RenderEmbeddedObject {object} at (0,0) size 175x275 [bgcolor=#FFA500]

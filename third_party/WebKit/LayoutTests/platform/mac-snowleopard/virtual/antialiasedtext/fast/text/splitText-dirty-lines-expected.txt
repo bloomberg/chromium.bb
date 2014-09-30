@@ -1,0 +1,19 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+layer at (8,8) size 784x584
+  RenderBody {BODY} at (8,8) size 784x584
+layer at (8,8) size 200x106
+  RenderBlock (positioned) {DIV} at (0,0) size 200x106 [color=#FF0000]
+    RenderText {#text} at (0,12) size 169x82
+      text run at (0,12) width 145: "AAAA B"
+      text run at (0,65) width 169: "CCCC D "
+    RenderText {#text} at (168,65) size 25x29
+      text run at (168,65) width 25: "E"
+layer at (8,8) size 200x106
+  RenderBlock (positioned) {DIV} at (0,0) size 200x106 [color=#008000]
+    RenderText {#text} at (0,0) size 0x0
+    RenderText {#text} at (0,12) size 193x82
+      text run at (0,12) width 145: "AAAA B"
+      text run at (0,65) width 193: "CCCC D E"

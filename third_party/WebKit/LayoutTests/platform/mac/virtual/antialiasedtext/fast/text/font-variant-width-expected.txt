@@ -2,8 +2,8 @@
 ￼
 ￼
 ￼
-111
-999
+￼
+￼
 1111
 9999
 11111
@@ -16,10 +16,10 @@ PASS Numbers expected to be laid out in one combining block
 PASS Numbers expected to be laid out in one combining block 
 PASS Numbers expected to be laid out in one combining block 
 PASS Numbers expected to be laid out in one combining block 
-FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 36.48046875
-FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 40.04296875
-FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 48.046875
-FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 53.390625
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 52
+FAIL Numbers expected to be laid out in one combining block assert_equals: Numbers laid out in one combining block. expected 24 but got 52
 PASS Number laid out vertically, not combined. 
 Harness: the test ran to completion.
 

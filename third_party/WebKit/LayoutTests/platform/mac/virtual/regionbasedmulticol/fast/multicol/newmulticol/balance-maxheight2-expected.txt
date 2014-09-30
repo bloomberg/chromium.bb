@@ -1,0 +1,14 @@
+PASS mc.offsetHeight is ref.offsetHeight
+FAIL document.documentElement.scrollWidth should not be 800.
+PASS document.documentElement.scrollWidth is >= document.documentElement.clientWidth
+PASS successfullyParsed is true
+
+TEST COMPLETE
+There should be two identical boxes below.
+
+
+
+
+
+
+

@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x474
   RenderBlock {HTML} at (0,0) size 800x474
     RenderBody {BODY} at (8,8) size 784x458
-      RenderText {#text} at (230,216) size 4x18
-        text run at (230,216) width 4: " "
-      RenderText {#text} at (464,216) size 4x18
-        text run at (464,216) width 4: " "
-      RenderText {#text} at (698,216) size 4x18
-        text run at (698,216) width 4: " "
+      RenderText {#text} at (230,218) size 4x16
+        text run at (230,218) width 4: " "
+      RenderText {#text} at (464,218) size 4x16
+        text run at (464,218) width 4: " "
+      RenderText {#text} at (698,218) size 4x16
+        text run at (698,218) width 4: " "
       RenderBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 230x230

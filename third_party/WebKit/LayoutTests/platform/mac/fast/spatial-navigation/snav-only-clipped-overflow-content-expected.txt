@@ -1,0 +1,22 @@
+That is is a normal link.
+
+This is a scrollable Div created with the CSS property overflow.
+
+
+
+
+
+
+
+
+
+... and here we have a clipped overflow link.
+
+And this is another normal link_2.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be start. Was 1.
+PASS true is true
+

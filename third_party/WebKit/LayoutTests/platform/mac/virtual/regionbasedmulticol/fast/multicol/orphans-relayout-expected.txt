@@ -1,0 +1,14 @@
+Test if an element with orphans relayouts correctly. The red lines of text must be at the top of the blue rectangle. The green lines of text must be at the bottom of the blue rectangle.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+FAIL test Block 1 Line 1 wasn't at the top of the region.
+FAIL test Block 2 Line 1 wasn't at the top of the region.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

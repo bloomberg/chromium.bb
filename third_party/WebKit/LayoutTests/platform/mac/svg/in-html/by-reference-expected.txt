@@ -4,14 +4,14 @@ layer at (0,0) size 800x400
   RenderBlock {HTML} at (0,0) size 800x400
     RenderBody {BODY} at (0,0) size 800x400
       RenderBlock {DIV} at (0,0) size 400x400 [bgcolor=#00FF00]
-        RenderText {#text} at (50,86) size 4x18
-          text run at (50,86) width 4: " "
-        RenderText {#text} at (104,86) size 4x18
-          text run at (104,86) width 4: " "
-        RenderText {#text} at (208,86) size 4x18
-          text run at (208,86) width 4: " "
-        RenderText {#text} at (262,86) size 4x18
-          text run at (262,86) width 4: " "
+        RenderText {#text} at (50,88) size 4x16
+          text run at (50,88) width 4: " "
+        RenderText {#text} at (104,88) size 4x16
+          text run at (104,88) width 4: " "
+        RenderText {#text} at (208,88) size 4x16
+          text run at (208,88) width 4: " "
+        RenderText {#text} at (262,88) size 4x16
+          text run at (262,88) width 4: " "
 layer at (0,50) size 50x50
   RenderEmbeddedObject {OBJECT} at (0,50) size 50x50
     layer at (0,0) size 50x50
