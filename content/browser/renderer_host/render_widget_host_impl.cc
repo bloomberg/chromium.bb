@@ -1734,14 +1734,10 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   SkBitmap zoomed_bitmap;
   zoomed_bitmap.installPixels(info, bitmap->pixels(), info.minRowBytes());
 
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
   // Note that |rect| is in coordinates of pixels relative to the window origin.
   // Aura-based systems will want to convert this to DIPs.
   if (view_)
     view_->ShowDisambiguationPopup(rect_pixels, zoomed_bitmap);
-#else
-  NOTIMPLEMENTED();
-#endif
 
   // It is assumed that the disambiguation popup will make a copy of the
   // provided zoomed image, so we delete this one.

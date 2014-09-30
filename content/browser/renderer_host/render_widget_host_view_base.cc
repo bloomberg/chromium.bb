@@ -605,6 +605,19 @@ SkColorType RenderWidgetHostViewBase::PreferredReadbackFormat() {
   return kN32_SkColorType;
 }
 
+void RenderWidgetHostViewBase::OnTextSurroundingSelectionResponse(
+    const base::string16& content,
+    size_t start_offset,
+    size_t end_offset) {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewBase::ShowDisambiguationPopup(
+    const gfx::Rect& rect_pixels,
+    const SkBitmap& zoomed_bitmap) {
+  NOTIMPLEMENTED();
+}
+
 gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
   return GetViewBounds().size();
 }

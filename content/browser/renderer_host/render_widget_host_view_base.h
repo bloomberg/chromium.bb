@@ -331,14 +331,16 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
 
+  // Called by the RenderFrameHost when it receives an IPC response to a
+  // TextSurroundingSelectionRequest.
   virtual void OnTextSurroundingSelectionResponse(const base::string16& content,
                                                   size_t start_offset,
-                                                  size_t end_offset) {};
+                                                  size_t end_offset);
 
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS) || defined(USE_AURA)
+  // Called by the RenderWidgetHost when an ambiguous gesture is detected to
+  // show the disambiguation popup bubble.
   virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                                       const SkBitmap& zoomed_bitmap) = 0;
-#endif
+                                       const SkBitmap& zoomed_bitmap);
 
 #if defined(OS_ANDROID)
   // Instructs the view to not drop the surface even when the view is hidden.
