@@ -203,6 +203,17 @@ public:
 
     static const String& urlWithUniqueSecurityOrigin();
 
+    // Transfer origin privileges from another security origin.
+    // The following privileges are currently copied over:
+    //
+    //   - Grant universal access.
+    //   - Grant loading of local resources.
+    //   - Use path-based file:// origins.
+    //
+    // Note: It is dangerous to change the privileges of an origin
+    // at any other time than during initialization.
+    void transferPrivilegesFrom(const SecurityOrigin&);
+
 private:
     SecurityOrigin();
     explicit SecurityOrigin(const KURL&);

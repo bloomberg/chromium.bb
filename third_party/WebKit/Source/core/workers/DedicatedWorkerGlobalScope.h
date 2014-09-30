@@ -67,7 +67,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 };
 
 } // namespace blink

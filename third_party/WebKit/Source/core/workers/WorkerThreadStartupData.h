@@ -47,9 +47,9 @@ class WorkerThreadStartupData FINAL : public NoBaseWillBeGarbageCollectedFinaliz
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+    static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     {
-        return adoptPtrWillBeNoop(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, workerClients));
+        return adoptPtrWillBeNoop(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, starterOrigin, workerClients));
     }
 
     ~WorkerThreadStartupData();
@@ -60,12 +60,27 @@ public:
     WorkerThreadStartMode m_startMode;
     String m_contentSecurityPolicy;
     ContentSecurityPolicyHeaderType m_contentSecurityPolicyType;
+
+    // The SecurityOrigin of the Document creating a Worker may have
+    // been configured with extra policy privileges when it was created
+    // (e.g., enforce path-based file:// origins.)
+    // To ensure that these are transferred to the origin of a new worker
+    // global scope, supply the Document's SecurityOrigin as the
+    // 'starter origin'.
+    //
+    // Ownership of this optional starter origin remain with the caller,
+    // and is assumed to stay alive until the new Worker thread has been
+    // initialized.
+    //
+    // See SecurityOrigin::transferPrivilegesFrom() for details on what
+    // privileges are transferred.
+    const SecurityOrigin* m_starterOrigin;
     OwnPtrWillBeMember<WorkerClients> m_workerClients;
 
     void trace(Visitor*);
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 };
 
 } // namespace blink

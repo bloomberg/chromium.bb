@@ -402,6 +402,9 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(document))
         startMode = PauseWorkerGlobalScopeOnStart;
 
+    // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
+    SecurityOrigin* starterOrigin = document->securityOrigin();
+
     OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
     providePermissionClientToWorker(workerClients.get(), m_permissionClient.release());
     provideServiceWorkerGlobalScopeClientToWorker(workerClients.get(), ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
@@ -416,6 +419,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
             // FIXME: fill appropriate CSP info and policy type.
             String(),
             ContentSecurityPolicyHeaderTypeEnforce,
+            starterOrigin,
             workerClients.release());
 
     m_mainScriptLoader.clear();

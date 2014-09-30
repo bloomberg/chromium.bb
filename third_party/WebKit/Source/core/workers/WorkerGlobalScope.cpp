@@ -79,7 +79,7 @@ public:
     virtual bool isCleanupTask() const { return true; }
 };
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_script(adoptPtr(new WorkerScriptController(*this)))
@@ -92,6 +92,9 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
 {
     setSecurityOrigin(SecurityOrigin::create(url));
+    if (starterOrigin)
+        securityOrigin()->transferPrivilegesFrom(*starterOrigin);
+
     m_workerClients->reattachThread();
     m_thread->setWorkerInspectorController(m_workerInspectorController.get());
 }

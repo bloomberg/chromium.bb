@@ -531,4 +531,11 @@ const String& SecurityOrigin::urlWithUniqueSecurityOrigin()
     return uniqueSecurityOriginURL;
 }
 
+void SecurityOrigin::transferPrivilegesFrom(const SecurityOrigin& origin)
+{
+    m_universalAccess = origin.m_universalAccess;
+    m_canLoadLocalResources = origin.m_canLoadLocalResources;
+    m_enforceFilePathSeparation = origin.m_enforceFilePathSeparation;
+}
+
 } // namespace blink

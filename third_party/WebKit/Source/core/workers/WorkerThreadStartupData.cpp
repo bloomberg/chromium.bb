@@ -35,13 +35,14 @@
 
 namespace blink {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())
     , m_startMode(startMode)
     , m_contentSecurityPolicy(contentSecurityPolicy.isolatedCopy())
     , m_contentSecurityPolicyType(contentSecurityPolicyType)
+    , m_starterOrigin(starterOrigin)
     , m_workerClients(workerClients)
 {
 }
