@@ -101,8 +101,8 @@ Value RunForEach(Scope* scope,
   if (old_loop_value_ptr)
     old_loop_value = *old_loop_value_ptr;
 
-  for (size_t i = 0; i < list.size(); i++) {
-    scope->SetValue(loop_var, list[i], function);
+  for (const auto& cur : list) {
+    scope->SetValue(loop_var, cur, function);
     block->ExecuteBlockInScope(scope, err);
     if (err->has_error())
       return Value();

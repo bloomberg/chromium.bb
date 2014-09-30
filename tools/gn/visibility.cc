@@ -30,9 +30,8 @@ bool Visibility::Set(const SourceDir& current_dir,
     return false;
   }
 
-  const std::vector<Value>& list = value.list_value();
-  for (size_t i = 0; i < list.size(); i++) {
-    patterns_.push_back(LabelPattern::GetPattern(current_dir, list[i], err));
+  for (const auto& item : value.list_value()) {
+    patterns_.push_back(LabelPattern::GetPattern(current_dir, item, err));
     if (err->has_error())
       return false;
   }
@@ -54,8 +53,8 @@ void Visibility::SetPrivate(const SourceDir& current_dir) {
 }
 
 bool Visibility::CanSeeMe(const Label& label) const {
-  for (size_t i = 0; i < patterns_.size(); i++) {
-    if (patterns_[i].Matches(label))
+  for (const auto& pattern : patterns_) {
+    if (pattern.Matches(label))
       return true;
   }
   return false;
@@ -76,8 +75,8 @@ std::string Visibility::Describe(int indent, bool include_brackets) const {
     inner_indent_string += "  ";
   }
 
-  for (size_t i = 0; i < patterns_.size(); i++)
-    result += inner_indent_string + patterns_[i].Describe() + "\n";
+  for (const auto& pattern : patterns_)
+    result += inner_indent_string + pattern.Describe() + "\n";
 
   if (include_brackets)
     result += outer_indent_string + "]\n";

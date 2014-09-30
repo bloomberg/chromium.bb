@@ -67,8 +67,8 @@ Value RunWriteFile(Scope* scope,
   std::ostringstream contents;
   if (args[1].type() == Value::LIST) {
     const std::vector<Value>& list = args[1].list_value();
-    for (size_t i = 0; i < list.size(); i++)
-      contents << list[i].ToString(false) << std::endl;
+    for (const auto& cur : list)
+      contents << cur.ToString(false) << std::endl;
   } else {
     contents << args[1].ToString(false);
   }

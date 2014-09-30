@@ -98,8 +98,8 @@ Value RunProcessFileTemplate(Scope* scope,
   // Convert the list of strings to the return Value.
   Value ret(function, Value::LIST);
   ret.list_value().reserve(result_files.size());
-  for (size_t i = 0; i < result_files.size(); i++)
-    ret.list_value().push_back(Value(function, result_files[i]));
+  for (const auto& file : result_files)
+    ret.list_value().push_back(Value(function, file));
 
   return ret;
 }

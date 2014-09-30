@@ -128,9 +128,8 @@ int ListArgs(const std::string& build_dir) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchList);
   if (list_value.empty()) {
     // List all values.
-    for (Scope::KeyValueMap::const_iterator i = build_args.begin();
-         i != build_args.end(); ++i)
-      sorted_args.insert(*i);
+    for (const auto& arg : build_args)
+      sorted_args.insert(arg);
   } else {
     // List just the one specified as the parameter to --list.
     Scope::KeyValueMap::const_iterator found_arg = build_args.find(list_value);
@@ -145,20 +144,18 @@ int ListArgs(const std::string& build_dir) {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchShort)) {
     // Short key=value output.
-    for (std::map<base::StringPiece, Value>::iterator i = sorted_args.begin();
-         i != sorted_args.end(); ++i) {
-      OutputString(i->first.as_string());
+    for (const auto& arg : sorted_args) {
+      OutputString(arg.first.as_string());
       OutputString(" = ");
-      OutputString(i->second.ToString(true));
+      OutputString(arg.second.ToString(true));
       OutputString("\n");
     }
     return 0;
   }
 
   // Long output.
-  for (std::map<base::StringPiece, Value>::iterator i = sorted_args.begin();
-       i != sorted_args.end(); ++i) {
-    PrintArgHelp(i->first, i->second);
+  for (const auto& arg : sorted_args) {
+    PrintArgHelp(arg.first, arg.second);
     OutputString("\n");
   }
 

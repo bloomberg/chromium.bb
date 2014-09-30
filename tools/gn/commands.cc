@@ -113,9 +113,9 @@ bool ResolveTargetsFromCommandLinePattern(
   std::vector<const Target*> all_targets =
       setup->builder()->GetAllResolvedTargets();
 
-  for (size_t i = 0; i < all_targets.size(); i++) {
-    if (pattern.Matches(all_targets[i]->label()))
-      matches->push_back(all_targets[i]);
+  for (const auto& target : all_targets) {
+    if (pattern.Matches(target->label()))
+      matches->push_back(target);
   }
   return true;
 }

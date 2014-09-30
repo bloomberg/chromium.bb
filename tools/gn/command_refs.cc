@@ -48,31 +48,26 @@ void OutputResultSet(const TargetSet& results, bool as_files) {
   if (as_files) {
     // Output the set of unique source files.
     std::set<std::string> unique_files;
-    for (TargetSet::const_iterator iter = results.begin();
-         iter != results.end(); ++iter)
-      unique_files.insert(FilePathToUTF8(FilePathForItem(*iter)));
+    for (const auto& cur : results)
+      unique_files.insert(FilePathToUTF8(FilePathForItem(cur)));
 
-    for (std::set<std::string>::const_iterator iter = unique_files.begin();
-         iter != unique_files.end(); ++iter) {
-      OutputString(*iter + "\n");
-    }
+    for (const auto& cur : unique_files)
+      OutputString(cur + "\n");
   } else {
     // Output sorted and uniquified list of labels. The set will sort the
     // labels.
     std::set<Label> unique_labels;
-    for (TargetSet::const_iterator iter = results.begin();
-         iter != results.end(); ++iter)
-      unique_labels.insert((*iter)->label());
+    for (const auto& cur : results)
+      unique_labels.insert(cur->label());
 
     // Grab the label of the default toolchain from a random target.
     Label default_tc_label =
         (*results.begin())->settings()->default_toolchain_label();
 
-    for (std::set<Label>::const_iterator iter = unique_labels.begin();
-         iter != unique_labels.end(); ++iter) {
+    for (const auto& cur : unique_labels) {
       // Print toolchain only for ones not in the default toolchain.
-      OutputString(iter->GetUserVisibleName(
-          iter->GetToolchainLabel() != default_tc_label));
+      OutputString(cur.GetUserVisibleName(
+          cur.GetToolchainLabel() != default_tc_label));
       OutputString("\n");
     }
   }
@@ -259,15 +254,15 @@ int RunRefs(const std::vector<std::string>& args) {
   } else if (all) {
     // Output recursive dependencies, uniquified and flattened.
     TargetSet results;
-    for (size_t query_i = 0; query_i < query.size(); query_i++)
-      RecursiveCollectChildRefs(dep_map, query[query_i], &results);
+    for (const auto& cur_query : query)
+      RecursiveCollectChildRefs(dep_map, cur_query, &results);
     OutputResultSet(results, files);
   } else {
     // Output direct references of everything in the query.
     TargetSet results;
-    for (size_t query_i = 0; query_i < query.size(); query_i++) {
-      DepMap::const_iterator dep_begin = dep_map.lower_bound(query[query_i]);
-      DepMap::const_iterator dep_end = dep_map.upper_bound(query[query_i]);
+    for (const auto& cur_query : query) {
+      DepMap::const_iterator dep_begin = dep_map.lower_bound(cur_query);
+      DepMap::const_iterator dep_end = dep_map.upper_bound(cur_query);
       for (DepMap::const_iterator cur_dep = dep_begin;
            cur_dep != dep_end; cur_dep++)
         results.insert(cur_dep->second);

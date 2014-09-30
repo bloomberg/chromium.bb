@@ -121,8 +121,8 @@ HeaderChecker::HeaderChecker(const BuildSettings* build_settings,
                              const std::vector<const Target*>& targets)
     : main_loop_(base::MessageLoop::current()),
       build_settings_(build_settings) {
-  for (size_t i = 0; i < targets.size(); i++)
-    AddTargetToFileMap(targets[i], &file_map_);
+  for (const auto& target : targets)
+    AddTargetToFileMap(target, &file_map_);
 }
 
 HeaderChecker::~HeaderChecker() {
@@ -137,8 +137,8 @@ bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
   } else {
     // Run only over the files in the given targets.
     FileMap files_to_check;
-    for (size_t i = 0; i < to_check.size(); i++)
-      AddTargetToFileMap(to_check[i], &files_to_check);
+    for (const auto& check : to_check)
+      AddTargetToFileMap(check, &files_to_check);
     RunCheckOverFiles(files_to_check, force_check);
   }
 
@@ -154,12 +154,9 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
 
   scoped_refptr<base::SequencedWorkerPool> pool(
       new base::SequencedWorkerPool(16, "HeaderChecker"));
-  for (FileMap::const_iterator file_i = files.begin();
-       file_i != files.end(); ++file_i) {
-    const TargetVector& vect = file_i->second;
-
+  for (const auto& file : files) {
     // Only check C-like source files (RC files also have includes).
-    SourceFileType type = GetSourceFileType(file_i->first);
+    SourceFileType type = GetSourceFileType(file.first);
     if (type != SOURCE_CC && type != SOURCE_H && type != SOURCE_C &&
         type != SOURCE_M && type != SOURCE_MM && type != SOURCE_RC)
       continue;
@@ -171,19 +168,18 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
     if (!force_check) {
       bool check_includes = false;
       bool is_generated = false;
-      for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i) {
-        check_includes |= vect[vect_i].target->check_includes();
-        is_generated |= vect[vect_i].is_generated;
+      for (const auto& vect_i : file.second) {
+        check_includes |= vect_i.target->check_includes();
+        is_generated |= vect_i.is_generated;
       }
       if (!check_includes || is_generated)
         continue;
     }
 
-    for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i) {
+    for (const auto& vect_i : file.second) {
       pool->PostWorkerTaskWithShutdownBehavior(
           FROM_HERE,
-          base::Bind(&HeaderChecker::DoWork, this,
-                     vect[vect_i].target, file_i->first),
+          base::Bind(&HeaderChecker::DoWork, this, vect_i.target, file.first),
           base::SequencedWorkerPool::BLOCK_SHUTDOWN);
     }
   }
@@ -212,19 +208,17 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   // action, but those are often then wired into the sources of a compiled
   // target to actually compile generated code. If you depend on the compiled
   // target, it should be enough to be able to include the header.
-  const Target::FileList& sources = target->sources();
-  for (size_t i = 0; i < sources.size(); i++) {
-    SourceFile file = RemoveRootGenDirFromFile(target, sources[i]);
+  for (const auto& source : target->sources()) {
+    SourceFile file = RemoveRootGenDirFromFile(target, source);
     files_to_public[file].is_public = default_public;
   }
 
   // Add in the public files, forcing them to public. This may overwrite some
   // entries, and it may add new ones.
-  const Target::FileList& public_list = target->public_headers();
-  if (default_public)
-    DCHECK(public_list.empty());  // List only used when default is not public.
-  for (size_t i = 0; i < public_list.size(); i++) {
-    SourceFile file = RemoveRootGenDirFromFile(target, public_list[i]);
+  if (default_public)  // List only used when default is not public.
+    DCHECK(target->public_headers().empty());
+  for (const auto& source : target->public_headers()) {
+    SourceFile file = RemoveRootGenDirFromFile(target, source);
     files_to_public[file].is_public = true;
   }
 
@@ -232,23 +226,21 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   // targets can't use them, then there wouldn't be any point in outputting).
   std::vector<SourceFile> outputs;
   target->action_values().GetOutputsAsSourceFiles(target, &outputs);
-  for (size_t i = 0; i < outputs.size(); i++) {
+  for (const auto& output : outputs) {
     // For generated files in the "gen" directory, add the filename to the
     // map assuming "gen" is the source root. This means that when files include
     // the generated header relative to there (the recommended practice), we'll
     // find the file.
-    SourceFile output_file = RemoveRootGenDirFromFile(target, outputs[i]);
+    SourceFile output_file = RemoveRootGenDirFromFile(target, output);
     PublicGeneratedPair* pair = &files_to_public[output_file];
     pair->is_public = true;
     pair->is_generated = true;
   }
 
   // Add the merged list to the master list of all files.
-  for (std::map<SourceFile, PublicGeneratedPair>::const_iterator i =
-           files_to_public.begin();
-       i != files_to_public.end(); ++i) {
-    (*dest)[i->first].push_back(TargetInfo(
-        target, i->second.is_public, i->second.is_generated));
+  for (const auto& cur : files_to_public) {
+    (*dest)[cur.first].push_back(TargetInfo(
+        target, cur.second.is_public, cur.second.is_generated));
   }
 }
 
@@ -396,8 +388,8 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     std::string msg = "It is not in any dependency of " +
         from_target->label().GetUserVisibleName(false);
     msg += "\nThe include file is in the target(s):\n";
-    for (size_t i = 0; i < targets.size(); i++)
-      msg += "  " + targets[i].target->label().GetUserVisibleName(false) + "\n";
+    for (const auto& target : targets)
+      msg += "  " + target.target->label().GetUserVisibleName(false) + "\n";
     if (targets.size() > 1)
       msg += "at least one of ";
     msg += "which should somehow be reachable from " +
@@ -502,11 +494,9 @@ bool HeaderChecker::IsDependencyOf(const Target* search_for,
     }
 
     // Always consider public dependencies as possibilities.
-    const LabelTargetVector& public_deps = target->public_deps();
-    for (size_t i = 0; i < public_deps.size(); i++) {
-      if (breadcrumbs.insert(
-              std::make_pair(public_deps[i].ptr, cur_link)).second)
-        work_queue.push(ChainLink(public_deps[i].ptr, true));
+    for (const auto& dep : target->public_deps()) {
+      if (breadcrumbs.insert(std::make_pair(dep.ptr, cur_link)).second)
+        work_queue.push(ChainLink(dep.ptr, true));
     }
 
     if (first_time || !require_permitted) {
@@ -515,11 +505,9 @@ bool HeaderChecker::IsDependencyOf(const Target* search_for,
       // a target can include headers from its direct deps regardless of
       // public/private-ness.
       first_time = false;
-      const LabelTargetVector& private_deps = target->private_deps();
-      for (size_t i = 0; i < private_deps.size(); i++) {
-        if (breadcrumbs.insert(
-                std::make_pair(private_deps[i].ptr, cur_link)).second)
-          work_queue.push(ChainLink(private_deps[i].ptr, false));
+      for (const auto& dep : target->private_deps()) {
+        if (breadcrumbs.insert(std::make_pair(dep.ptr, cur_link)).second)
+          work_queue.push(ChainLink(dep.ptr, false));
       }
     }
   }

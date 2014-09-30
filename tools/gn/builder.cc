@@ -29,13 +29,7 @@ typedef BuilderRecord::BuilderRecordSet BuilderRecordSet;
 bool RecursiveFindCycle(const BuilderRecord* search_in,
                         std::vector<const BuilderRecord*>* path) {
   path->push_back(search_in);
-
-  const BuilderRecord::BuilderRecordSet& unresolved =
-      search_in->unresolved_deps();
-  for (BuilderRecord::BuilderRecordSet::const_iterator i = unresolved.begin();
-       i != unresolved.end(); ++i) {
-    const BuilderRecord* cur = *i;
-
+  for (const auto& cur : search_in->unresolved_deps()) {
     std::vector<const BuilderRecord*>::iterator found =
         std::find(path->begin(), path->end(), cur);
     if (found != path->end()) {
@@ -132,20 +126,18 @@ const Toolchain* Builder::GetToolchain(const Label& label) const {
 std::vector<const BuilderRecord*> Builder::GetAllRecords() const {
   std::vector<const BuilderRecord*> result;
   result.reserve(records_.size());
-  for (RecordMap::const_iterator i = records_.begin();
-       i != records_.end(); ++i)
-    result.push_back(i->second);
+  for (const auto& record : records_)
+    result.push_back(record.second);
   return result;
 }
 
 std::vector<const Target*> Builder::GetAllResolvedTargets() const {
   std::vector<const Target*> result;
   result.reserve(records_.size());
-  for (RecordMap::const_iterator i = records_.begin();
-       i != records_.end(); ++i) {
-    if (i->second->type() == BuilderRecord::ITEM_TARGET &&
-        i->second->should_generate() && i->second->item())
-      result.push_back(i->second->item()->AsTarget());
+  for (const auto& record : records_) {
+    if (record.second->type() == BuilderRecord::ITEM_TARGET &&
+        record.second->should_generate() && record.second->item())
+      result.push_back(record.second->item()->AsTarget());
   }
   return result;
 }
@@ -174,9 +166,8 @@ bool Builder::CheckForBadItems(Err* err) const {
   // that below.
   std::vector<const BuilderRecord*> bad_records;
   std::string depstring;
-  for (RecordMap::const_iterator i = records_.begin();
-       i != records_.end(); ++i) {
-    const BuilderRecord* src = i->second;
+  for (const auto& record_pair : records_) {
+    const BuilderRecord* src = record_pair.second;
     if (!src->should_generate())
       continue;  // Skip ungenerated nodes.
 
@@ -184,11 +175,7 @@ bool Builder::CheckForBadItems(Err* err) const {
       bad_records.push_back(src);
 
       // Check dependencies.
-      for (BuilderRecord::BuilderRecordSet::const_iterator dest_iter =
-               src->unresolved_deps().begin();
-          dest_iter != src->unresolved_deps().end();
-          ++dest_iter) {
-        const BuilderRecord* dest = *dest_iter;
+      for (const auto& dest : src->unresolved_deps()) {
         if (!dest->item()) {
           depstring += src->label().GetUserVisibleName(true) +
               "\n  needs " + dest->label().GetUserVisibleName(true) + "\n";
@@ -210,9 +197,9 @@ bool Builder::CheckForBadItems(Err* err) const {
       // Something's very wrong, just dump out the bad nodes.
       depstring = "I have no idea what went wrong, but these are unresolved, "
           "possibly due to an\ninternal error:";
-      for (size_t i = 0; i < bad_records.size(); i++) {
+      for (const auto& bad_record : bad_records) {
         depstring += "\n\"" +
-            bad_records[i]->label().GetUserVisibleName(false) + "\"";
+            bad_record->label().GetUserVisibleName(false) + "\"";
       }
       *err = Err(Location(), "", depstring);
     } else {
@@ -328,9 +315,9 @@ BuilderRecord* Builder::GetResolvedRecordOfType(const Label& label,
 bool Builder::AddDeps(BuilderRecord* record,
                       const LabelConfigVector& configs,
                       Err* err) {
-  for (size_t i = 0; i < configs.size(); i++) {
+  for (const auto& config : configs) {
     BuilderRecord* dep_record = GetOrCreateRecordOfType(
-        configs[i].label, configs[i].origin, BuilderRecord::ITEM_CONFIG, err);
+        config.label, config.origin, BuilderRecord::ITEM_CONFIG, err);
     if (!dep_record)
       return false;
     record->AddDep(dep_record);
@@ -341,9 +328,9 @@ bool Builder::AddDeps(BuilderRecord* record,
 bool Builder::AddDeps(BuilderRecord* record,
                       const UniqueVector<LabelConfigPair>& configs,
                       Err* err) {
-  for (size_t i = 0; i < configs.size(); i++) {
+  for (const auto& config : configs) {
     BuilderRecord* dep_record = GetOrCreateRecordOfType(
-        configs[i].label, configs[i].origin, BuilderRecord::ITEM_CONFIG, err);
+        config.label, config.origin, BuilderRecord::ITEM_CONFIG, err);
     if (!dep_record)
       return false;
     record->AddDep(dep_record);
@@ -354,9 +341,9 @@ bool Builder::AddDeps(BuilderRecord* record,
 bool Builder::AddDeps(BuilderRecord* record,
                       const LabelTargetVector& targets,
                       Err* err) {
-  for (size_t i = 0; i < targets.size(); i++) {
+  for (const auto& target : targets) {
     BuilderRecord* dep_record = GetOrCreateRecordOfType(
-        targets[i].label, targets[i].origin, BuilderRecord::ITEM_TARGET, err);
+        target.label, target.origin, BuilderRecord::ITEM_TARGET, err);
     if (!dep_record)
       return false;
     record->AddDep(dep_record);
@@ -383,10 +370,7 @@ void Builder::RecursiveSetShouldGenerate(BuilderRecord* record,
     return;  // Already set.
   record->set_should_generate(true);
 
-  const BuilderRecordSet& deps = record->all_deps();
-  for (BuilderRecordSet::const_iterator i = deps.begin();
-       i != deps.end(); i++) {
-    BuilderRecord* cur = *i;
+  for (const auto& cur : record->all_deps()) {
     if (!cur->should_generate()) {
       ScheduleItemLoadIfNecessary(cur);
       RecursiveSetShouldGenerate(cur, false);
@@ -428,10 +412,7 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
     resolved_callback_.Run(record);
 
   // Recursively update everybody waiting on this item to be resolved.
-  BuilderRecordSet& waiting_set = record->waiting_on_resolution();
-  for (BuilderRecordSet::iterator i = waiting_set.begin();
-       i != waiting_set.end(); ++i) {
-    BuilderRecord* waiting = *i;
+  for (BuilderRecord* waiting : record->waiting_on_resolution()) {
     DCHECK(waiting->unresolved_deps().find(record) !=
            waiting->unresolved_deps().end());
     waiting->unresolved_deps().erase(record);
@@ -441,13 +422,12 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
         return false;
     }
   }
-  waiting_set.clear();
+  record->waiting_on_resolution().clear();
   return true;
 }
 
 bool Builder::ResolveDeps(LabelTargetVector* deps, Err* err) {
-  for (size_t i = 0; i < deps->size(); i++) {
-    LabelTargetPair& cur = (*deps)[i];
+  for (LabelTargetPair& cur : *deps) {
     DCHECK(!cur.ptr);
 
     BuilderRecord* record = GetResolvedRecordOfType(
@@ -460,8 +440,7 @@ bool Builder::ResolveDeps(LabelTargetVector* deps, Err* err) {
 }
 
 bool Builder::ResolveConfigs(UniqueVector<LabelConfigPair>* configs, Err* err) {
-  for (size_t i = 0; i < configs->size(); i++) {
-    const LabelConfigPair& cur = (*configs)[i];
+  for (const auto& cur : *configs) {
     DCHECK(!cur.ptr);
 
     BuilderRecord* record = GetResolvedRecordOfType(
@@ -480,24 +459,24 @@ bool Builder::ResolveForwardDependentConfigs(Target* target, Err* err) {
       target->forward_dependent_configs();
 
   // Assume that the lists are small so that brute-force n^2 is appropriate.
-  for (size_t config_i = 0; config_i < configs.size(); config_i++) {
+  for (const auto& config : configs) {
     for (const auto& dep_pair : target->GetDeps(Target::DEPS_LINKED)) {
-      if (configs[config_i].label == dep_pair.label) {
+      if (config.label == dep_pair.label) {
         DCHECK(dep_pair.ptr);  // Should already be resolved.
         // UniqueVector's contents are constant so uniqueness is preserved, but
         // we want to update this pointer which doesn't change uniqueness
         // (uniqueness in this vector is determined by the label only).
-        const_cast<LabelTargetPair&>(configs[config_i]).ptr = dep_pair.ptr;
+        const_cast<LabelTargetPair&>(config).ptr = dep_pair.ptr;
         break;
       }
     }
-    if (!configs[config_i].ptr) {
+    if (!config.ptr) {
       *err = Err(target->defined_from(),
           "Target in forward_dependent_configs_from was not listed in the deps",
           "This target has a forward_dependent_configs_from entry that was "
           "not present in\nthe deps. A target can only forward things it "
           "depends on. It was forwarding:\n  " +
-          configs[config_i].label.GetUserVisibleName(false));
+          config.label.GetUserVisibleName(false));
       return false;
     }
   }

@@ -22,11 +22,8 @@ namespace {
 
 void PrintToplevelHelp() {
   OutputString("Commands (type \"gn help <command>\" for more details):\n");
-
-  const commands::CommandInfoMap& command_map = commands::GetCommands();
-  for (commands::CommandInfoMap::const_iterator i = command_map.begin();
-       i != command_map.end(); ++i)
-    PrintShortHelp(i->second.help_short);
+  for (const auto& cmd : commands::GetCommands())
+    PrintShortHelp(cmd.second.help_short);
 
   OutputString(
       "\n"
@@ -56,39 +53,30 @@ void PrintToplevelHelp() {
   // Target declarations.
   OutputString("\nTarget declarations (type \"gn help <function>\" for more "
                "details):\n");
-  const functions::FunctionInfoMap& function_map = functions::GetFunctions();
-  for (functions::FunctionInfoMap::const_iterator i = function_map.begin();
-       i != function_map.end(); ++i) {
-    if (i->second.is_target)
-      PrintShortHelp(i->second.help_short);
+  for (const auto& func : functions::GetFunctions()) {
+    if (func.second.is_target)
+      PrintShortHelp(func.second.help_short);
   }
 
   // Functions.
   OutputString("\nBuildfile functions (type \"gn help <function>\" for more "
                "details):\n");
-  for (functions::FunctionInfoMap::const_iterator i = function_map.begin();
-       i != function_map.end(); ++i) {
-    if (!i->second.is_target)
-      PrintShortHelp(i->second.help_short);
+  for (const auto& func : functions::GetFunctions()) {
+    if (!func.second.is_target)
+      PrintShortHelp(func.second.help_short);
   }
 
   // Built-in variables.
   OutputString("\nBuilt-in predefined variables (type \"gn help <variable>\" "
                "for more details):\n");
-  const variables::VariableInfoMap& builtin_vars =
-      variables::GetBuiltinVariables();
-  for (variables::VariableInfoMap::const_iterator i = builtin_vars.begin();
-       i != builtin_vars.end(); ++i)
-    PrintShortHelp(i->second.help_short);
+  for (const auto& builtin : variables::GetBuiltinVariables())
+    PrintShortHelp(builtin.second.help_short);
 
   // Target variables.
   OutputString("\nVariables you set in targets (type \"gn help <variable>\" "
                "for more details):\n");
-  const variables::VariableInfoMap& target_vars =
-      variables::GetTargetVariables();
-  for (variables::VariableInfoMap::const_iterator i = target_vars.begin();
-       i != target_vars.end(); ++i)
-    PrintShortHelp(i->second.help_short);
+  for (const auto& target : variables::GetTargetVariables())
+    PrintShortHelp(target.second.help_short);
 
   OutputString("\nOther help topics:\n");
   PrintShortHelp("buildargs: How build arguments work.");

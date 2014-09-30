@@ -167,9 +167,7 @@ void PrintLongHelp(const std::string& text) {
   std::vector<std::string> lines;
   base::SplitStringDontTrim(text, '\n', &lines);
 
-  for (size_t i = 0; i < lines.size(); i++) {
-    const std::string& line = lines[i];
-
+  for (const auto& line : lines) {
     // Check for a heading line.
     if (!line.empty() && line[0] != ' ') {
       // Highlight up to the colon (if any).

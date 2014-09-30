@@ -64,6 +64,6 @@ SubstitutionList SubstitutionList::MakeForTest(
 }
 
 void SubstitutionList::FillRequiredTypes(SubstitutionBits* bits) const {
-  for (size_t i = 0; i < list_.size(); i++)
-    list_[i].FillRequiredTypes(bits);
+  for (const auto& item : list_)
+    item.FillRequiredTypes(bits);
 }

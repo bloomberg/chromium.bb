@@ -186,6 +186,6 @@ void Err::InternalPrintToStdout(bool is_sub_err) const {
     OutputString(help_text_ + "\n");
 
   // Sub errors.
-  for (size_t i = 0; i < sub_errs_.size(); i++)
-    sub_errs_[i].InternalPrintToStdout(true);
+  for (const auto& sub_err : sub_errs_)
+    sub_err.InternalPrintToStdout(true);
 }

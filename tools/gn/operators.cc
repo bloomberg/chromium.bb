@@ -36,20 +36,19 @@ void AppendFilteredSourcesToValue(const Scope* scope,
     return;
   }
 
-  const std::vector<Value>& source_list = source.list_value();
   if (!filter || filter->is_empty()) {
     // No filter, append everything.
-    for (size_t i = 0; i < source_list.size(); i++)
-      dest->list_value().push_back(source_list[i]);
+    for (const auto& source_entry : source.list_value())
+      dest->list_value().push_back(source_entry);
     return;
   }
 
   // Note: don't reserve() the dest vector here since that actually hurts
   // the allocation pattern when the build script is doing multiple small
   // additions.
-  for (size_t i = 0; i < source_list.size(); i++) {
-    if (!filter->MatchesValue(source_list[i]))
-      dest->list_value().push_back(source_list[i]);
+  for (const auto& source_entry : source.list_value()) {
+    if (!filter->MatchesValue(source_entry))
+      dest->list_value().push_back(source_entry);
   }
 }
 
@@ -228,8 +227,8 @@ void ValuePlusEquals(const Scope* scope,
             AppendFilteredSourcesToValue(scope, right, left);
           } else {
             // Normal list concat.
-            for (size_t i = 0; i < right.list_value().size(); i++)
-              left->list_value().push_back(right.list_value()[i]);
+            for (const auto& value : right.list_value())
+              left->list_value().push_back(value);
           }
           return;
 

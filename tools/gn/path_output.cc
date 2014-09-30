@@ -77,9 +77,9 @@ void PathOutput::WriteFile(std::ostream& out, const OutputFile& file) const {
 
 void PathOutput::WriteFiles(std::ostream& out,
                             const std::vector<OutputFile>& files) const {
-  for (size_t i = 0; i < files.size(); i++) {
+  for (const auto& file : files) {
     out << " ";
-    WriteFile(out, files[i]);
+    WriteFile(out, file);
   }
 }
 

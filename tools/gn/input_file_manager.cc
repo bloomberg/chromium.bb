@@ -255,10 +255,9 @@ void InputFileManager::GetAllPhysicalInputFileNames(
     std::vector<base::FilePath>* result) const {
   base::AutoLock lock(lock_);
   result->reserve(input_files_.size());
-  for (InputFileMap::const_iterator i = input_files_.begin();
-       i != input_files_.end(); ++i) {
-    if (!i->second->file.physical_name().empty())
-      result->push_back(i->second->file.physical_name());
+  for (const auto& file : input_files_) {
+    if (!file.second->file.physical_name().empty())
+      result->push_back(file.second->file.physical_name());
   }
 }
 
@@ -320,8 +319,8 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
   // separately to get some parallelism. But normally there will only be one
   // item in the list, so that's extra overhead and complexity for no gain.
   if (success) {
-    for (size_t i = 0; i < callbacks.size(); i++)
-      callbacks[i].Run(unowned_root);
+    for (const auto& cb : callbacks)
+      cb.Run(unowned_root);
   }
   return success;
 }

@@ -260,9 +260,9 @@ Value RunRebasePath(Scope* scope,
     result = Value(function, Value::LIST);
     result.list_value().reserve(inputs.list_value().size());
 
-    for (size_t i = 0; i < inputs.list_value().size(); i++) {
+    for (const auto& input : inputs.list_value()) {
       result.list_value().push_back(
-          ConvertOnePath(scope, function, inputs.list_value()[i],
+          ConvertOnePath(scope, function, input,
                          from_dir, to_dir, convert_to_system_absolute, err));
       if (err->has_error()) {
         result = Value();

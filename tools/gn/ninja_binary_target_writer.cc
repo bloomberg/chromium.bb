@@ -133,8 +133,7 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
 
 void NinjaBinaryTargetWriter::WriteSources(
     std::vector<OutputFile>* object_files) {
-  const Target::FileList& sources = target_->sources();
-  object_files->reserve(sources.size());
+  object_files->reserve(target_->sources().size());
 
   OutputFile input_dep =
       WriteInputDepsStampAndGetDep(std::vector<const Target*>());
@@ -142,9 +141,9 @@ void NinjaBinaryTargetWriter::WriteSources(
   std::string rule_prefix = GetNinjaRulePrefixForToolchain(settings_);
 
   std::vector<OutputFile> tool_outputs;  // Prevent reallocation in loop.
-  for (size_t i = 0; i < sources.size(); i++) {
+  for (const auto& source : target_->sources()) {
     Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
-    if (!GetOutputFilesForSource(target_, sources[i],
+    if (!GetOutputFilesForSource(target_, source,
                                  &tool_type, &tool_outputs))
       continue;  // No output for this source.
 
@@ -153,7 +152,7 @@ void NinjaBinaryTargetWriter::WriteSources(
       path_output_.WriteFiles(out_, tool_outputs);
       out_ << ": " << rule_prefix << Toolchain::ToolTypeToName(tool_type);
       out_ << " ";
-      path_output_.WriteFile(out_, sources[i]);
+      path_output_.WriteFile(out_, source);
       if (!input_dep.value().empty()) {
         // Write out the input dependencies as an order-only dependency. This
         // will cause Ninja to make sure the inputs are up-to-date before
@@ -212,21 +211,19 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   GetDeps(&extra_object_files, &linkable_deps, &non_linkable_deps);
 
   // Object files.
-  for (size_t i = 0; i < object_files.size(); i++) {
+  for (const auto& obj : object_files) {
     out_ << " ";
-    path_output_.WriteFile(out_, object_files[i]);
+    path_output_.WriteFile(out_, obj);
   }
-  for (size_t i = 0; i < extra_object_files.size(); i++) {
+  for (const auto& obj : extra_object_files) {
     out_ << " ";
-    path_output_.WriteFile(out_, extra_object_files[i]);
+    path_output_.WriteFile(out_, obj);
   }
 
   std::vector<OutputFile> implicit_deps;
   std::vector<OutputFile> solibs;
 
-  for (size_t i = 0; i < linkable_deps.size(); i++) {
-    const Target* cur = linkable_deps[i];
-
+  for (const Target* cur : linkable_deps) {
     // All linkable deps should have a link output file.
     DCHECK(!cur->link_output_file().value().empty())
         << "No link output file for "
@@ -365,8 +362,8 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
   DCHECK(extra_object_files.empty());
 
   std::vector<OutputFile> order_only_deps;
-  for (size_t i = 0; i < non_linkable_deps.size(); i++)
-    order_only_deps.push_back(non_linkable_deps[i]->dependency_output_file());
+  for (const auto& dep : non_linkable_deps)
+    order_only_deps.push_back(dep->dependency_output_file());
 
   WriteStampForTarget(object_files, order_only_deps);
 }
@@ -418,10 +415,9 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
       // Linking in a source set to an executable, shared library, or
       // complete static library, so copy its object files.
       std::vector<OutputFile> tool_outputs;  // Prevent allocation in loop.
-      for (size_t i = 0; i < dep->sources().size(); i++) {
+      for (const auto& source : dep->sources()) {
         Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
-        if (GetOutputFilesForSource(dep, dep->sources()[i], &tool_type,
-                                    &tool_outputs)) {
+        if (GetOutputFilesForSource(dep, source, &tool_type, &tool_outputs)) {
           // Only link the first output if there are more than one.
           extra_object_files->push_back(tool_outputs[0]);
         }

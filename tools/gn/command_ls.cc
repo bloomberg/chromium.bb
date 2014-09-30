@@ -85,32 +85,30 @@ int RunLs(const std::vector<std::string>& args) {
     matches = setup->builder()->GetAllResolvedTargets();
   } else {
     // List all resolved targets in the default toolchain.
-    std::vector<const Target*> all_targets =
-        setup->builder()->GetAllResolvedTargets();
-    for (size_t i = 0; i < all_targets.size(); i++) {
-      if (all_targets[i]->settings()->is_default())
-        matches.push_back(all_targets[i]);
+    for (const auto& target : setup->builder()->GetAllResolvedTargets()) {
+      if (target->settings()->is_default())
+        matches.push_back(target);
     }
   }
 
   if (cmdline->HasSwitch("out")) {
     // List results as build files.
-    for (size_t i = 0; i < matches.size(); i++) {
-      OutputString(matches[i]->dependency_output_file().value());
+    for (const auto& match : matches) {
+      OutputString(match->dependency_output_file().value());
       OutputString("\n");
     }
   } else {
     // List results as sorted labels.
     std::vector<Label> sorted_matches;
-    for (size_t i = 0; i < matches.size(); i++)
-      sorted_matches.push_back(matches[i]->label());
+    for (const auto& match : matches)
+      sorted_matches.push_back(match->label());
     std::sort(sorted_matches.begin(), sorted_matches.end());
 
     Label default_tc_label = setup->loader()->default_toolchain_label();
-    for (size_t i = 0; i < sorted_matches.size(); i++) {
+    for (const auto& match : sorted_matches) {
       // Print toolchain only for ones not in the default toolchain.
-      OutputString(sorted_matches[i].GetUserVisibleName(
-          sorted_matches[i].GetToolchainLabel() != default_tc_label));
+      OutputString(match.GetUserVisibleName(
+          match.GetToolchainLabel() != default_tc_label));
       OutputString("\n");
     }
   }

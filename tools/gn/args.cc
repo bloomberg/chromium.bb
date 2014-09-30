@@ -89,10 +89,9 @@ void Args::AddArgOverride(const char* name, const Value& value) {
 void Args::AddArgOverrides(const Scope::KeyValueMap& overrides) {
   base::AutoLock lock(lock_);
 
-  for (Scope::KeyValueMap::const_iterator i = overrides.begin();
-       i != overrides.end(); ++i) {
-    overrides_[i->first] = i->second;
-    all_overrides_[i->first] = i->second;
+  for (const auto& cur_override : overrides) {
+    overrides_[cur_override.first] = cur_override.second;
+    all_overrides_[cur_override.first] = cur_override.second;
   }
 }
 
@@ -126,8 +125,7 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
                        Err* err) const {
   base::AutoLock lock(lock_);
 
-  for (Scope::KeyValueMap::const_iterator i = args.begin();
-       i != args.end(); ++i) {
+  for (const auto& arg : args) {
     // Verify that the value hasn't already been declared. We want each value
     // to be declared only once.
     //
@@ -135,11 +133,12 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
     // when used from different toolchains, so we can't just check that we've
     // seen it before. Instead, we check that the location matches.
     Scope::KeyValueMap::iterator previously_declared =
-        declared_arguments_.find(i->first);
+        declared_arguments_.find(arg.first);
     if (previously_declared != declared_arguments_.end()) {
-      if (previously_declared->second.origin() != i->second.origin()) {
+      if (previously_declared->second.origin() != arg.second.origin()) {
         // Declaration location mismatch.
-        *err = Err(i->second.origin(), "Duplicate build argument declaration.",
+        *err = Err(arg.second.origin(),
+            "Duplicate build argument declaration.",
             "Here you're declaring an argument that was already declared "
             "elsewhere.\nYou can only declare each argument once in the entire "
             "build so there is one\ncanonical place for documentation and the "
@@ -153,15 +152,15 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
         return false;
       }
     } else {
-      declared_arguments_.insert(*i);
+      declared_arguments_.insert(arg);
     }
 
     // Only set on the current scope to the new value if it hasn't been already
     // set. Mark the variable used so the build script can override it in
     // certain cases without getting unused value errors.
-    if (!scope_to_set->GetValue(i->first)) {
-      scope_to_set->SetValue(i->first, i->second, i->second.origin());
-      scope_to_set->MarkUsed(i->first);
+    if (!scope_to_set->GetValue(arg.first)) {
+      scope_to_set->SetValue(arg.first, arg.second, arg.second.origin());
+      scope_to_set->MarkUsed(arg.first);
     }
   }
 
@@ -177,9 +176,8 @@ bool Args::VerifyAllOverridesUsed(
     const Scope::KeyValueMap& overrides,
     const Scope::KeyValueMap& declared_arguments,
     Err* err) {
-  for (Scope::KeyValueMap::const_iterator i = overrides.begin();
-       i != overrides.end(); ++i) {
-    if (declared_arguments.find(i->first) == declared_arguments.end()) {
+  for (const auto& override : overrides) {
+    if (declared_arguments.find(override.first) == declared_arguments.end()) {
       // Get a list of all possible overrides for help with error finding.
       //
       // It might be nice to do edit distance checks to see if we can find one
@@ -193,8 +191,9 @@ bool Args::VerifyAllOverridesUsed(
         all_declared_str += cur_str->first.as_string();
       }
 
-      *err = Err(i->second.origin(), "Build argument has no effect.",
-          "The variable \"" + i->first.as_string() + "\" was set as a build "
+      *err = Err(override.second.origin(), "Build argument has no effect.",
+          "The variable \"" + override.first.as_string() +
+          "\" was set as a build "
           "argument\nbut never appeared in a declare_args() block in any "
           "buildfile.\n\nPossible arguments: " + all_declared_str);
       return false;
@@ -205,10 +204,8 @@ bool Args::VerifyAllOverridesUsed(
 
 void Args::MergeDeclaredArguments(Scope::KeyValueMap* dest) const {
   base::AutoLock lock(lock_);
-
-  for (Scope::KeyValueMap::const_iterator i = declared_arguments_.begin();
-       i != declared_arguments_.end(); ++i)
-    (*dest)[i->first] = i->second;
+  for (const auto& arg : declared_arguments_)
+    (*dest)[arg.first] = arg.second;
 }
 
 void Args::SetSystemVarsLocked(Scope* dest) const {
@@ -289,14 +286,12 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
 void Args::ApplyOverridesLocked(const Scope::KeyValueMap& values,
                                 Scope* scope) const {
   lock_.AssertAcquired();
-  for (Scope::KeyValueMap::const_iterator i = values.begin();
-       i != values.end(); ++i)
-    scope->SetValue(i->first, i->second, i->second.origin());
+  for (const auto& val : values)
+    scope->SetValue(val.first, val.second, val.second.origin());
 }
 
 void Args::SaveOverrideRecordLocked(const Scope::KeyValueMap& values) const {
   lock_.AssertAcquired();
-  for (Scope::KeyValueMap::const_iterator i = values.begin();
-       i != values.end(); ++i)
-    all_overrides_[i->first] = i->second;
+  for (const auto& val : values)
+    all_overrides_[val.first] = val.second;
 }

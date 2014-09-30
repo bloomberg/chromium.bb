@@ -325,12 +325,12 @@ Value RunExecScript(Scope* scope,
     if (!deps_value.VerifyTypeIs(Value::LIST, err))
       return Value();
 
-    for (size_t i = 0; i < deps_value.list_value().size(); i++) {
-      if (!deps_value.list_value()[0].VerifyTypeIs(Value::STRING, err))
+    for (const auto& dep : deps_value.list_value()) {
+      if (!dep.VerifyTypeIs(Value::STRING, err))
         return Value();
       g_scheduler->AddGenDependency(
           build_settings->GetFullPath(cur_dir.ResolveRelativeFile(
-              deps_value.list_value()[0].string_value())));
+              dep.string_value())));
     }
   }
 
@@ -344,10 +344,10 @@ Value RunExecScript(Scope* scope,
     const Value& script_args = args[1];
     if (!script_args.VerifyTypeIs(Value::LIST, err))
       return Value();
-    for (size_t i = 0; i < script_args.list_value().size(); i++) {
-      if (!script_args.list_value()[i].VerifyTypeIs(Value::STRING, err))
+    for (const auto& arg : script_args.list_value()) {
+      if (!arg.VerifyTypeIs(Value::STRING, err))
         return Value();
-      cmdline.AppendArg(script_args.list_value()[i].string_value());
+      cmdline.AppendArg(arg.string_value());
     }
   }
 

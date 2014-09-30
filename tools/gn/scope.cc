@@ -57,9 +57,8 @@ Scope::~Scope() {
 const Value* Scope::GetValue(const base::StringPiece& ident,
                              bool counts_as_used) {
   // First check for programatically-provided values.
-  for (ProviderSet::const_iterator i = programmatic_providers_.begin();
-       i != programmatic_providers_.end(); ++i) {
-    const Value* v = (*i)->GetProgrammaticValue(ident);
+  for (const auto& provider : programmatic_providers_) {
+    const Value* v = provider->GetProgrammaticValue(ident);
     if (v)
       return v;
   }
@@ -142,13 +141,13 @@ void Scope::RemovePrivateIdentifiers() {
   // I'm not sure if all of them support mutating while iterating. Since this
   // is not perf-critical, do the safe thing.
   std::vector<base::StringPiece> to_remove;
-  for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
-    if (IsPrivateVar(i->first))
-      to_remove.push_back(i->first);
+  for (const auto& cur : values_) {
+    if (IsPrivateVar(cur.first))
+      to_remove.push_back(cur.first);
   }
 
-  for (size_t i = 0; i < to_remove.size(); i++)
-    values_.erase(to_remove[i]);
+  for (const auto& cur : to_remove)
+    values_.erase(cur);
 }
 
 bool Scope::AddTemplate(const std::string& name, const Template* templ) {
@@ -196,20 +195,20 @@ bool Scope::IsSetButUnused(const base::StringPiece& ident) const {
 }
 
 bool Scope::CheckForUnusedVars(Err* err) const {
-  for (RecordMap::const_iterator i = values_.begin();
-       i != values_.end(); ++i) {
-    if (!i->second.used) {
-      std::string help = "You set the variable \"" + i->first.as_string() +
+  for (const auto& pair : values_) {
+    if (!pair.second.used) {
+      std::string help = "You set the variable \"" + pair.first.as_string() +
           "\" here and it was unused before it went\nout of scope.";
 
-      const BinaryOpNode* binary = i->second.value.origin()->AsBinaryOp();
+      const BinaryOpNode* binary = pair.second.value.origin()->AsBinaryOp();
       if (binary && binary->op().type() == Token::EQUAL) {
         // Make a nicer error message for normal var sets.
         *err = Err(binary->left()->GetRange(), "Assignment had no effect.",
                    help);
       } else {
         // This will happen for internally-generated variables.
-        *err = Err(i->second.value.origin(), "Assignment had no effect.", help);
+        *err = Err(pair.second.value.origin(), "Assignment had no effect.",
+                   help);
       }
       return false;
     }
@@ -218,8 +217,8 @@ bool Scope::CheckForUnusedVars(Err* err) const {
 }
 
 void Scope::GetCurrentScopeValues(KeyValueMap* output) const {
-  for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i)
-    (*output)[i->first] = i->second.value;
+  for (const auto& pair : values_)
+    (*output)[pair.first] = pair.second.value;
 }
 
 bool Scope::NonRecursiveMergeTo(Scope* dest,
@@ -228,20 +227,20 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
                                 const char* desc_for_err,
                                 Err* err) const {
   // Values.
-  for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
-    if (options.skip_private_vars && IsPrivateVar(i->first))
+  for (const auto& pair : values_) {
+    if (options.skip_private_vars && IsPrivateVar(pair.first))
       continue;  // Skip this private var.
 
-    const Value& new_value = i->second.value;
+    const Value& new_value = pair.second.value;
     if (!options.clobber_existing) {
-      const Value* existing_value = dest->GetValue(i->first);
+      const Value* existing_value = dest->GetValue(pair.first);
       if (existing_value && new_value != *existing_value) {
         // Value present in both the source and the dest.
         std::string desc_string(desc_for_err);
         *err = Err(node_for_err, "Value collision.",
-            "This " + desc_string + " contains \"" + i->first.as_string() +
+            "This " + desc_string + " contains \"" + pair.first.as_string() +
             "\"");
-        err->AppendSubErr(Err(i->second.value, "defined here.",
+        err->AppendSubErr(Err(pair.second.value, "defined here.",
             "Which would clobber the one in your current scope"));
         err->AppendSubErr(Err(*existing_value, "defined here.",
             "Executing " + desc_string + " should not conflict with anything "
@@ -249,24 +248,23 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
         return false;
       }
     }
-    dest->values_[i->first] = i->second;
+    dest->values_[pair.first] = pair.second;
 
     if (options.mark_used)
-      dest->MarkUsed(i->first);
+      dest->MarkUsed(pair.first);
   }
 
   // Target defaults are owning pointers.
-  for (NamedScopeMap::const_iterator i = target_defaults_.begin();
-       i != target_defaults_.end(); ++i) {
+  for (const auto& pair : target_defaults_) {
     if (!options.clobber_existing) {
-      if (dest->GetTargetDefaults(i->first)) {
+      if (dest->GetTargetDefaults(pair.first)) {
         // TODO(brettw) it would be nice to know the origin of a
         // set_target_defaults so we can give locations for the colliding target
         // defaults.
         std::string desc_string(desc_for_err);
         *err = Err(node_for_err, "Target defaults collision.",
             "This " + desc_string + " contains target defaults for\n"
-            "\"" + i->first + "\" which would clobber one for the\n"
+            "\"" + pair.first + "\" which would clobber one for the\n"
             "same target type in your current scope. It's unfortunate that I'm "
             "too stupid\nto tell you the location of where the target defaults "
             "were set. Usually\nthis happens in the BUILDCONFIG.gn file.");
@@ -275,12 +273,12 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     }
 
     // Be careful to delete any pointer we're about to clobber.
-    Scope** dest_scope = &dest->target_defaults_[i->first];
+    Scope** dest_scope = &dest->target_defaults_[pair.first];
     if (*dest_scope)
       delete *dest_scope;
     *dest_scope = new Scope(settings_);
-    i->second->NonRecursiveMergeTo(*dest_scope, options, node_for_err,
-                                   "<SHOULDN'T HAPPEN>", err);
+    pair.second->NonRecursiveMergeTo(*dest_scope, options, node_for_err,
+                                     "<SHOULDN'T HAPPEN>", err);
   }
 
   // Sources assignment filter.
@@ -300,23 +298,23 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
   }
 
   // Templates.
-  for (TemplateMap::const_iterator i = templates_.begin();
-       i != templates_.end(); ++i) {
-    if (options.skip_private_vars && IsPrivateVar(i->first))
+  for (const auto& pair : templates_) {
+    if (options.skip_private_vars && IsPrivateVar(pair.first))
       continue;  // Skip this private template.
 
     if (!options.clobber_existing) {
-      const Template* existing_template = dest->GetTemplate(i->first);
+      const Template* existing_template = dest->GetTemplate(pair.first);
       // Since templates are refcounted, we can check if it's the same one by
       // comparing pointers.
-      if (existing_template && i->second.get() != existing_template) {
+      if (existing_template && pair.second.get() != existing_template) {
         // Rule present in both the source and the dest, and they're not the
         // same one.
         std::string desc_string(desc_for_err);
         *err = Err(node_for_err, "Template collision.",
             "This " + desc_string + " contains a template \"" +
-            i->first + "\"");
-        err->AppendSubErr(Err(i->second->GetDefinitionRange(), "defined here.",
+            pair.first + "\"");
+        err->AppendSubErr(Err(pair.second->GetDefinitionRange(),
+            "defined here.",
             "Which would clobber the one in your current scope"));
         err->AppendSubErr(Err(existing_template->GetDefinitionRange(),
             "defined here.",
@@ -327,7 +325,7 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     }
 
     // Be careful to delete any pointer we're about to clobber.
-    dest->templates_[i->first] = i->second;
+    dest->templates_[pair.first] = pair.second;
   }
 
   return true;

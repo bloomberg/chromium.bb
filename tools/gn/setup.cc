@@ -351,12 +351,9 @@ bool Setup::FillArgsFromArgsInputFile() {
 bool Setup::SaveArgsToFile() {
   ScopedTrace setup_trace(TraceItem::TRACE_SETUP, "Save args file");
 
-  Scope::KeyValueMap args = build_settings_.build_args().GetAllOverrides();
-
   std::ostringstream stream;
-  for (Scope::KeyValueMap::const_iterator i = args.begin();
-       i != args.end(); ++i) {
-    stream << i->first.as_string() << " = " << i->second.ToString(true);
+  for (const auto& pair : build_settings_.build_args().GetAllOverrides()) {
+    stream << pair.first.as_string() << " = " << pair.second.ToString(true);
     stream << std::endl;
   }
 

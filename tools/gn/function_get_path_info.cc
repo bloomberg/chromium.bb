@@ -222,10 +222,9 @@ Value RunGetPathInfo(Scope* scope,
   } else if (args[0].type() == Value::LIST) {
     const std::vector<Value>& input_list = args[0].list_value();
     Value result(function, Value::LIST);
-    for (size_t i = 0; i < input_list.size(); i++) {
+    for (const auto& cur : input_list) {
       result.list_value().push_back(Value(function,
-          GetOnePathInfo(scope->settings(), current_dir, what,
-                         input_list[i], err)));
+          GetOnePathInfo(scope->settings(), current_dir, what, cur, err)));
       if (err->has_error())
         return Value();
     }

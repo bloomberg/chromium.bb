@@ -62,8 +62,7 @@ bool ValidateSubstitutionList(const std::vector<SubstitutionType>& list,
                               bool (*validate)(SubstitutionType),
                               const Value* origin,
                               Err* err) {
-  for (size_t i = 0; i < list.size(); i++) {
-    SubstitutionType cur_type = list[i];
+  for (const auto& cur_type : list) {
     if (!validate(cur_type)) {
       *err = Err(*origin, "Pattern not valid here.",
           "You used the pattern " + std::string(kSubstitutionNames[cur_type]) +
@@ -179,8 +178,7 @@ bool IsLinkerTool(Toolchain::ToolType type) {
 
 bool IsPatternInOutputList(const SubstitutionList& output_list,
                            const SubstitutionPattern& pattern) {
-  for (size_t output_i = 0; output_i < output_list.list().size(); output_i++) {
-    const SubstitutionPattern& cur = output_list.list()[output_i];
+  for (const auto& cur : output_list.list()) {
     if (pattern.ranges().size() == cur.ranges().size() &&
         std::equal(pattern.ranges().begin(), pattern.ranges().end(),
                    cur.ranges().begin()))

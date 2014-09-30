@@ -82,19 +82,18 @@ ParserHelper Parser::expressions_[] = {
 
 Parser::Parser(const std::vector<Token>& tokens, Err* err)
     : err_(err), cur_(0) {
-  for (std::vector<Token>::const_iterator i(tokens.begin()); i != tokens.end();
-       ++i) {
-    switch(i->type()) {
+  for (const auto& token : tokens) {
+    switch(token.type()) {
       case Token::LINE_COMMENT:
-        line_comment_tokens_.push_back(*i);
+        line_comment_tokens_.push_back(token);
         break;
       case Token::SUFFIX_COMMENT:
-        suffix_comment_tokens_.push_back(*i);
+        suffix_comment_tokens_.push_back(token);
         break;
       default:
         // Note that BLOCK_COMMENTs (top-level standalone comments) are passed
         // through the real parser.
-        tokens_.push_back(*i);
+        tokens_.push_back(token);
         break;
     }
   }
@@ -520,12 +519,8 @@ void Parser::TraverseOrder(const ParseNode* root,
       TraverseOrder(binop->left(), pre, post);
       TraverseOrder(binop->right(), pre, post);
     } else if (const BlockNode* block = root->AsBlock()) {
-      const std::vector<ParseNode*>& statements = block->statements();
-      for (std::vector<ParseNode*>::const_iterator i(statements.begin());
-          i != statements.end();
-          ++i) {
-        TraverseOrder(*i, pre, post);
-      }
+      for (const auto& statement : block->statements())
+        TraverseOrder(statement, pre, post);
       TraverseOrder(block->End(), pre, post);
     } else if (const ConditionNode* condition = root->AsConditionNode()) {
       TraverseOrder(condition->condition(), pre, post);
@@ -537,12 +532,8 @@ void Parser::TraverseOrder(const ParseNode* root,
     } else if (root->AsIdentifier()) {
       // Nothing.
     } else if (const ListNode* list = root->AsList()) {
-      const std::vector<const ParseNode*>& contents = list->contents();
-      for (std::vector<const ParseNode*>::const_iterator i(contents.begin());
-          i != contents.end();
-          ++i) {
-        TraverseOrder(*i, pre, post);
-      }
+      for (const auto& node : list->contents())
+        TraverseOrder(node, pre, post);
       TraverseOrder(list->End(), pre, post);
     } else if (root->AsLiteral()) {
       // Nothing.
@@ -569,13 +560,11 @@ void Parser::AssignComments(ParseNode* file) {
 
   // Assign line comments to syntax immediately following.
   int cur_comment = 0;
-  for (std::vector<const ParseNode*>::const_iterator i = pre.begin();
-       i != pre.end();
-       ++i) {
-    const Location& start = (*i)->GetRange().begin();
+  for (const auto& node : pre) {
+    const Location& start = node->GetRange().begin();
     while (cur_comment < static_cast<int>(line_comment_tokens_.size())) {
       if (start.byte() >= line_comment_tokens_[cur_comment].location().byte()) {
-        const_cast<ParseNode*>(*i)->comments_mutable()->append_before(
+        const_cast<ParseNode*>(node)->comments_mutable()->append_before(
             line_comment_tokens_[cur_comment]);
         ++cur_comment;
       } else {

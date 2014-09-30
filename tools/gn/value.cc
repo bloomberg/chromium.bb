@@ -152,10 +152,9 @@ std::string Value::ToString(bool quote_string) const {
         return std::string("{ }");
 
       std::string result = "{\n";
-      for (Scope::KeyValueMap::const_iterator i = scope_values.begin();
-           i != scope_values.end(); ++i) {
-        result += "  " + i->first.as_string() + " = " +
-                  i->second.ToString(true) + "\n";
+      for (const auto& pair : scope_values) {
+        result += "  " + pair.first.as_string() + " = " +
+                  pair.second.ToString(true) + "\n";
       }
       result += "}";
 

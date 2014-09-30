@@ -59,21 +59,12 @@ Comments* ParseNode::comments_mutable() {
 void ParseNode::PrintComments(std::ostream& out, int indent) const {
   if (comments_) {
     std::string ind = IndentFor(indent + 1);
-    for (std::vector<Token>::const_iterator i(comments_->before().begin());
-         i != comments_->before().end();
-         ++i) {
-      out << ind << "+BEFORE_COMMENT(\"" << i->value() << "\")\n";
-    }
-    for (std::vector<Token>::const_iterator i(comments_->suffix().begin());
-         i != comments_->suffix().end();
-         ++i) {
-      out << ind << "+SUFFIX_COMMENT(\"" << i->value() << "\")\n";
-    }
-    for (std::vector<Token>::const_iterator i(comments_->after().begin());
-         i != comments_->after().end();
-         ++i) {
-      out << ind << "+AFTER_COMMENT(\"" << i->value() << "\")\n";
-    }
+    for (const auto& token : comments_->before())
+      out << ind << "+BEFORE_COMMENT(\"" << token.value() << "\")\n";
+    for (const auto& token : comments_->suffix())
+      out << ind << "+SUFFIX_COMMENT(\"" << token.value() << "\")\n";
+    for (const auto& token : comments_->after())
+      out << ind << "+AFTER_COMMENT(\"" << token.value() << "\")\n";
   }
 }
 
@@ -281,8 +272,8 @@ Err BlockNode::MakeErrorDescribing(const std::string& msg,
 void BlockNode::Print(std::ostream& out, int indent) const {
   out << IndentFor(indent) << "BLOCK\n";
   PrintComments(out, indent);
-  for (size_t i = 0; i < statements_.size(); i++)
-    statements_[i]->Print(out, indent + 1);
+  for (const auto& statement : statements_)
+    statement->Print(out, indent + 1);
   if (end_ && end_->comments())
     end_->Print(out, indent + 1);
 }
@@ -463,8 +454,7 @@ Value ListNode::Execute(Scope* scope, Err* err) const {
   std::vector<Value>& results = result_value.list_value();
   results.reserve(contents_.size());
 
-  for (size_t i = 0; i < contents_.size(); i++) {
-    const ParseNode* cur = contents_[i];
+  for (const auto& cur : contents_) {
     if (cur->AsBlockComment())
       continue;
     results.push_back(cur->Execute(scope, err));
@@ -493,8 +483,8 @@ Err ListNode::MakeErrorDescribing(const std::string& msg,
 void ListNode::Print(std::ostream& out, int indent) const {
   out << IndentFor(indent) << "LIST\n";
   PrintComments(out, indent);
-  for (size_t i = 0; i < contents_.size(); i++)
-    contents_[i]->Print(out, indent + 1);
+  for (const auto& cur : contents_)
+    cur->Print(out, indent + 1);
   if (end_ && end_->comments())
     end_->Print(out, indent + 1);
 }

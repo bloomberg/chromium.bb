@@ -71,8 +71,8 @@ void RecursivePrintDeps(const Target* target,
             LabelPtrLabelLess<Target>());
 
   std::string indent(indent_level * 2, ' ');
-  for (size_t i = 0; i < sorted_deps.size(); i++) {
-    const Target* cur_dep = sorted_deps[i].ptr;
+  for (const auto& pair : sorted_deps) {
+    const Target* cur_dep = pair.ptr;
 
     OutputString(indent +
         cur_dep->label().GetUserVisibleName(default_toolchain));
@@ -130,9 +130,8 @@ void PrintDeps(const Target* target, bool display_header) {
 
     std::set<Label> all_deps;
     RecursiveCollectChildDeps(target, &all_deps);
-    for (std::set<Label>::iterator i = all_deps.begin();
-         i != all_deps.end(); ++i)
-      deps.push_back(*i);
+    for (const auto& dep : all_deps)
+      deps.push_back(dep);
   } else {
     // Show direct dependencies only.
     if (display_header) {
@@ -145,8 +144,8 @@ void PrintDeps(const Target* target, bool display_header) {
   }
 
   std::sort(deps.begin(), deps.end());
-  for (size_t i = 0; i < deps.size(); i++)
-    OutputString("  " + deps[i].GetUserVisibleName(toolchain_label) + "\n");
+  for (const auto& dep : deps)
+    OutputString("  " + dep.GetUserVisibleName(toolchain_label) + "\n");
 }
 
 void PrintForwardDependentConfigsFrom(const Target* target,
@@ -159,13 +158,13 @@ void PrintForwardDependentConfigsFrom(const Target* target,
 
   // Collect the sorted list of deps.
   std::vector<Label> forward;
-  for (size_t i = 0; i < target->forward_dependent_configs().size(); i++)
-    forward.push_back(target->forward_dependent_configs()[i].label);
+  for (const auto& pair : target->forward_dependent_configs())
+    forward.push_back(pair.label);
   std::sort(forward.begin(), forward.end());
 
   Label toolchain_label = target->label().GetToolchainLabel();
-  for (size_t i = 0; i < forward.size(); i++)
-    OutputString("  " + forward[i].GetUserVisibleName(toolchain_label) + "\n");
+  for (const auto& fwd : forward)
+    OutputString("  " + fwd.GetUserVisibleName(toolchain_label) + "\n");
 }
 
 // libs and lib_dirs are special in that they're inherited. We don't currently
@@ -206,8 +205,8 @@ void PrintPublic(const Target* target, bool display_header) {
 
   Target::FileList public_headers = target->public_headers();
   std::sort(public_headers.begin(), public_headers.end());
-  for (size_t i = 0; i < public_headers.size(); i++)
-    OutputString("  " + public_headers[i].value() + "\n");
+  for (const auto& hdr : public_headers)
+    OutputString("  " + hdr.value() + "\n");
 }
 
 void PrintCheckIncludes(const Target* target, bool display_header) {
@@ -225,10 +224,8 @@ void PrintAllowCircularIncludesFrom(const Target* target, bool display_header) {
     OutputString("\nallow_circular_includes_from:\n");
 
   Label toolchain_label = target->label().GetToolchainLabel();
-  const std::set<Label>& allow = target->allow_circular_includes_from();
-  for (std::set<Label>::const_iterator iter = allow.begin();
-       iter != allow.end(); ++iter)
-    OutputString("  " + iter->GetUserVisibleName(toolchain_label) + "\n");
+  for (const auto& cur : target->allow_circular_includes_from())
+    OutputString("  " + cur.GetUserVisibleName(toolchain_label) + "\n");
 }
 
 void PrintVisibility(const Target* target, bool display_header) {

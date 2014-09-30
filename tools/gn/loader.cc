@@ -265,8 +265,8 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
     g_scheduler->FailWithError(err);
 
   // Pass all of the items that were defined off to the builder.
-  for (size_t i = 0; i < collected_items.size(); i++)
-    settings->build_settings()->ItemDefined(collected_items[i]->Pass());
+  for (const auto& item : collected_items)
+    settings->build_settings()->ItemDefined(item->Pass());
 
   trace.Done();
 
@@ -371,14 +371,13 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
     // is OK.
     LoadIDSet old_loads;
     invocations_.swap(old_loads);
-    for (LoadIDSet::iterator i = old_loads.begin();
-         i != old_loads.end(); ++i) {
-      if (i->toolchain_name.is_null()) {
+    for (const auto& load : old_loads) {
+      if (load.toolchain_name.is_null()) {
         // Fix up toolchain label
-        invocations_.insert(LoadID(i->file, label));
+        invocations_.insert(LoadID(load.file, label));
       } else {
         // Can keep the old one.
-        invocations_.insert(*i);
+        invocations_.insert(load);
       }
     }
   } else {
@@ -390,10 +389,8 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
   record->is_config_loaded = true;
 
   // Schedule all waiting file loads.
-  for (size_t i = 0; i < record->waiting_on_me.size(); i++) {
-    ScheduleLoadFile(&record->settings, record->waiting_on_me[i].origin,
-                     record->waiting_on_me[i].file);
-  }
+  for (const auto& waiting : record->waiting_on_me)
+    ScheduleLoadFile(&record->settings, waiting.origin, waiting.file);
   record->waiting_on_me.clear();
 
   DecrementPendingLoads();

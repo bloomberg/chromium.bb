@@ -105,8 +105,8 @@ Value ParseList(const std::string& input, const ParseNode* origin, Err* err) {
     as_lines.resize(as_lines.size() - 1);
 
   ret.list_value().reserve(as_lines.size());
-  for (size_t i = 0; i < as_lines.size(); i++)
-    ret.list_value().push_back(Value(origin, as_lines[i]));
+  for (const auto& line : as_lines)
+    ret.list_value().push_back(Value(origin, line));
   return ret;
 }
 
