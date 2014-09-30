@@ -32,6 +32,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
@@ -68,39 +69,46 @@ static CSSPropertyID cssPropertyIdForFontFaceAttributeName(const QualifiedName& 
         propertyNameToIdMap = new HashMap<StringImpl*, CSSPropertyID>;
         // This is a list of all @font-face CSS properties which are exposed as SVG XML attributes
         // Those commented out are not yet supported by WebCore's style system
-        // mapAttributeToCSSProperty(propertyNameToIdMap, accent_heightAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, alphabeticAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, ascentAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, bboxAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, cap_heightAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, descentAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_familyAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_sizeAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_stretchAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_styleAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_variantAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_weightAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, hangingAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, ideographicAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, mathematicalAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, overline_positionAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, overline_thicknessAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, panose_1Attr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, slopeAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, stemhAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, stemvAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, strikethrough_positionAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, strikethrough_thicknessAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, underline_positionAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, underline_thicknessAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, unicode_rangeAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, units_per_emAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, v_alphabeticAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, v_hangingAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, v_ideographicAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, v_mathematicalAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, widthsAttr);
-        // mapAttributeToCSSProperty(propertyNameToIdMap, x_heightAttr);
+        const QualifiedName* const attrNames[] = {
+            // &accent_heightAttr,
+            // &alphabeticAttr,
+            // &ascentAttr,
+            // &bboxAttr,
+            // &cap_heightAttr,
+            // &descentAttr,
+            &font_familyAttr,
+            &font_sizeAttr,
+            &font_stretchAttr,
+            &font_styleAttr,
+            &font_variantAttr,
+            &font_weightAttr,
+            // &hangingAttr,
+            // &ideographicAttr,
+            // &mathematicalAttr,
+            // &overline_positionAttr,
+            // &overline_thicknessAttr,
+            // &panose_1Attr,
+            // &slopeAttr,
+            // &stemhAttr,
+            // &stemvAttr,
+            // &strikethrough_positionAttr,
+            // &strikethrough_thicknessAttr,
+            // &underline_positionAttr,
+            // &underline_thicknessAttr,
+            // &unicode_rangeAttr,
+            // &units_per_emAttr,
+            // &v_alphabeticAttr,
+            // &v_hangingAttr,
+            // &v_ideographicAttr,
+            // &v_mathematicalAttr,
+            // &widthsAttr,
+            // &x_heightAttr,
+        };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attrNames); i++) {
+            CSSPropertyID propertyId = cssPropertyID(attrNames[i]->localName());
+            ASSERT(propertyId > 0);
+            propertyNameToIdMap->set(attrNames[i]->localName().impl(), propertyId);
+        }
     }
 
     return propertyNameToIdMap->get(attrName.localName().impl());

@@ -287,13 +287,6 @@ void SVGElement::childrenChanged(const ChildrenChange& change)
         invalidateInstances();
 }
 
-void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName)
-{
-    CSSPropertyID propertyId = cssPropertyID(attrName.localName());
-    ASSERT(propertyId > 0);
-    propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
-}
-
 CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& attrName)
 {
     if (!attrName.namespaceURI().isNull())
@@ -303,67 +296,74 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
     if (!propertyNameToIdMap) {
         propertyNameToIdMap = new HashMap<StringImpl*, CSSPropertyID>;
         // This is a list of all base CSS and SVG CSS properties which are exposed as SVG XML attributes
-        mapAttributeToCSSProperty(propertyNameToIdMap, alignment_baselineAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, baseline_shiftAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, buffered_renderingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, clipAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, clip_pathAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, clip_ruleAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::colorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolationAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolation_filtersAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, color_renderingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, cursorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::directionAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, displayAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, dominant_baselineAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, enable_backgroundAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, fillAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, fill_opacityAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, fill_ruleAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, filterAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, flood_colorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, flood_opacityAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_familyAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_sizeAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_stretchAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_styleAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_variantAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, font_weightAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, glyph_orientation_horizontalAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, glyph_orientation_verticalAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, image_renderingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, letter_spacingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, lighting_colorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, marker_endAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, marker_midAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, marker_startAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, maskAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, mask_typeAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, opacityAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, overflowAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, paint_orderAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, pointer_eventsAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, shape_renderingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stop_colorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stop_opacityAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, strokeAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_dasharrayAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_dashoffsetAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_linecapAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_linejoinAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_miterlimitAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_opacityAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, stroke_widthAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, text_anchorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, text_decorationAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, text_renderingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, transform_originAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, unicode_bidiAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, vector_effectAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, visibilityAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, word_spacingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, writing_modeAttr);
+        const QualifiedName* const attrNames[] = {
+            &alignment_baselineAttr,
+            &baseline_shiftAttr,
+            &buffered_renderingAttr,
+            &clipAttr,
+            &clip_pathAttr,
+            &clip_ruleAttr,
+            &SVGNames::colorAttr,
+            &color_interpolationAttr,
+            &color_interpolation_filtersAttr,
+            &color_renderingAttr,
+            &cursorAttr,
+            &SVGNames::directionAttr,
+            &displayAttr,
+            &dominant_baselineAttr,
+            &enable_backgroundAttr,
+            &fillAttr,
+            &fill_opacityAttr,
+            &fill_ruleAttr,
+            &filterAttr,
+            &flood_colorAttr,
+            &flood_opacityAttr,
+            &font_familyAttr,
+            &font_sizeAttr,
+            &font_stretchAttr,
+            &font_styleAttr,
+            &font_variantAttr,
+            &font_weightAttr,
+            &glyph_orientation_horizontalAttr,
+            &glyph_orientation_verticalAttr,
+            &image_renderingAttr,
+            &letter_spacingAttr,
+            &lighting_colorAttr,
+            &marker_endAttr,
+            &marker_midAttr,
+            &marker_startAttr,
+            &maskAttr,
+            &mask_typeAttr,
+            &opacityAttr,
+            &overflowAttr,
+            &paint_orderAttr,
+            &pointer_eventsAttr,
+            &shape_renderingAttr,
+            &stop_colorAttr,
+            &stop_opacityAttr,
+            &strokeAttr,
+            &stroke_dasharrayAttr,
+            &stroke_dashoffsetAttr,
+            &stroke_linecapAttr,
+            &stroke_linejoinAttr,
+            &stroke_miterlimitAttr,
+            &stroke_opacityAttr,
+            &stroke_widthAttr,
+            &text_anchorAttr,
+            &text_decorationAttr,
+            &text_renderingAttr,
+            &transform_originAttr,
+            &unicode_bidiAttr,
+            &vector_effectAttr,
+            &visibilityAttr,
+            &word_spacingAttr,
+            &writing_modeAttr,
+        };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attrNames); i++) {
+            CSSPropertyID propertyId = cssPropertyID(attrNames[i]->localName());
+            ASSERT(propertyId > 0);
+            propertyNameToIdMap->set(attrNames[i]->localName().impl(), propertyId);
+        }
     }
 
     return propertyNameToIdMap->get(attrName.localName().impl());
@@ -621,60 +621,68 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
 
     if (cssPropertyMap.isEmpty()) {
         // Fill the map for the first use.
-        cssPropertyMap.set(alignment_baselineAttr, AnimatedString);
-        cssPropertyMap.set(baseline_shiftAttr, AnimatedString);
-        cssPropertyMap.set(buffered_renderingAttr, AnimatedString);
-        cssPropertyMap.set(clipAttr, AnimatedRect);
-        cssPropertyMap.set(clip_pathAttr, AnimatedString);
-        cssPropertyMap.set(clip_ruleAttr, AnimatedString);
-        cssPropertyMap.set(SVGNames::colorAttr, AnimatedColor);
-        cssPropertyMap.set(color_interpolationAttr, AnimatedString);
-        cssPropertyMap.set(color_interpolation_filtersAttr, AnimatedString);
-        cssPropertyMap.set(color_renderingAttr, AnimatedString);
-        cssPropertyMap.set(cursorAttr, AnimatedString);
-        cssPropertyMap.set(displayAttr, AnimatedString);
-        cssPropertyMap.set(dominant_baselineAttr, AnimatedString);
-        cssPropertyMap.set(fillAttr, AnimatedColor);
-        cssPropertyMap.set(fill_opacityAttr, AnimatedNumber);
-        cssPropertyMap.set(fill_ruleAttr, AnimatedString);
-        cssPropertyMap.set(filterAttr, AnimatedString);
-        cssPropertyMap.set(flood_colorAttr, AnimatedColor);
-        cssPropertyMap.set(flood_opacityAttr, AnimatedNumber);
-        cssPropertyMap.set(font_familyAttr, AnimatedString);
-        cssPropertyMap.set(font_sizeAttr, AnimatedLength);
-        cssPropertyMap.set(font_stretchAttr, AnimatedString);
-        cssPropertyMap.set(font_styleAttr, AnimatedString);
-        cssPropertyMap.set(font_variantAttr, AnimatedString);
-        cssPropertyMap.set(font_weightAttr, AnimatedString);
-        cssPropertyMap.set(image_renderingAttr, AnimatedString);
-        cssPropertyMap.set(letter_spacingAttr, AnimatedLength);
-        cssPropertyMap.set(lighting_colorAttr, AnimatedColor);
-        cssPropertyMap.set(marker_endAttr, AnimatedString);
-        cssPropertyMap.set(marker_midAttr, AnimatedString);
-        cssPropertyMap.set(marker_startAttr, AnimatedString);
-        cssPropertyMap.set(maskAttr, AnimatedString);
-        cssPropertyMap.set(mask_typeAttr, AnimatedString);
-        cssPropertyMap.set(opacityAttr, AnimatedNumber);
-        cssPropertyMap.set(overflowAttr, AnimatedString);
-        cssPropertyMap.set(paint_orderAttr, AnimatedString);
-        cssPropertyMap.set(pointer_eventsAttr, AnimatedString);
-        cssPropertyMap.set(shape_renderingAttr, AnimatedString);
-        cssPropertyMap.set(stop_colorAttr, AnimatedColor);
-        cssPropertyMap.set(stop_opacityAttr, AnimatedNumber);
-        cssPropertyMap.set(strokeAttr, AnimatedColor);
-        cssPropertyMap.set(stroke_dasharrayAttr, AnimatedLengthList);
-        cssPropertyMap.set(stroke_dashoffsetAttr, AnimatedLength);
-        cssPropertyMap.set(stroke_linecapAttr, AnimatedString);
-        cssPropertyMap.set(stroke_linejoinAttr, AnimatedString);
-        cssPropertyMap.set(stroke_miterlimitAttr, AnimatedNumber);
-        cssPropertyMap.set(stroke_opacityAttr, AnimatedNumber);
-        cssPropertyMap.set(stroke_widthAttr, AnimatedLength);
-        cssPropertyMap.set(text_anchorAttr, AnimatedString);
-        cssPropertyMap.set(text_decorationAttr, AnimatedString);
-        cssPropertyMap.set(text_renderingAttr, AnimatedString);
-        cssPropertyMap.set(vector_effectAttr, AnimatedString);
-        cssPropertyMap.set(visibilityAttr, AnimatedString);
-        cssPropertyMap.set(word_spacingAttr, AnimatedLength);
+        struct AttrToTypeEntry {
+            const QualifiedName& attr;
+            const AnimatedPropertyType propType;
+        };
+        const AttrToTypeEntry attrToTypes[] = {
+            { alignment_baselineAttr, AnimatedString },
+            { baseline_shiftAttr, AnimatedString },
+            { buffered_renderingAttr, AnimatedString },
+            { clipAttr, AnimatedRect },
+            { clip_pathAttr, AnimatedString },
+            { clip_ruleAttr, AnimatedString },
+            { SVGNames::colorAttr, AnimatedColor },
+            { color_interpolationAttr, AnimatedString },
+            { color_interpolation_filtersAttr, AnimatedString },
+            { color_renderingAttr, AnimatedString },
+            { cursorAttr, AnimatedString },
+            { displayAttr, AnimatedString },
+            { dominant_baselineAttr, AnimatedString },
+            { fillAttr, AnimatedColor },
+            { fill_opacityAttr, AnimatedNumber },
+            { fill_ruleAttr, AnimatedString },
+            { filterAttr, AnimatedString },
+            { flood_colorAttr, AnimatedColor },
+            { flood_opacityAttr, AnimatedNumber },
+            { font_familyAttr, AnimatedString },
+            { font_sizeAttr, AnimatedLength },
+            { font_stretchAttr, AnimatedString },
+            { font_styleAttr, AnimatedString },
+            { font_variantAttr, AnimatedString },
+            { font_weightAttr, AnimatedString },
+            { image_renderingAttr, AnimatedString },
+            { letter_spacingAttr, AnimatedLength },
+            { lighting_colorAttr, AnimatedColor },
+            { marker_endAttr, AnimatedString },
+            { marker_midAttr, AnimatedString },
+            { marker_startAttr, AnimatedString },
+            { maskAttr, AnimatedString },
+            { mask_typeAttr, AnimatedString },
+            { opacityAttr, AnimatedNumber },
+            { overflowAttr, AnimatedString },
+            { paint_orderAttr, AnimatedString },
+            { pointer_eventsAttr, AnimatedString },
+            { shape_renderingAttr, AnimatedString },
+            { stop_colorAttr, AnimatedColor },
+            { stop_opacityAttr, AnimatedNumber },
+            { strokeAttr, AnimatedColor },
+            { stroke_dasharrayAttr, AnimatedLengthList },
+            { stroke_dashoffsetAttr, AnimatedLength },
+            { stroke_linecapAttr, AnimatedString },
+            { stroke_linejoinAttr, AnimatedString },
+            { stroke_miterlimitAttr, AnimatedNumber },
+            { stroke_opacityAttr, AnimatedNumber },
+            { stroke_widthAttr, AnimatedLength },
+            { text_anchorAttr, AnimatedString },
+            { text_decorationAttr, AnimatedString },
+            { text_renderingAttr, AnimatedString },
+            { vector_effectAttr, AnimatedString },
+            { visibilityAttr, AnimatedString },
+            { word_spacingAttr, AnimatedLength },
+        };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attrToTypes); i++)
+            cssPropertyMap.set(attrToTypes[i].attr, attrToTypes[i].propType);
     }
 
     if (cssPropertyMap.contains(attributeName))
@@ -1000,98 +1008,102 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, animatableAttributes, ());
 
     if (animatableAttributes.isEmpty()) {
-        animatableAttributes.add(XLinkNames::hrefAttr);
-        animatableAttributes.add(SVGNames::amplitudeAttr);
-        animatableAttributes.add(SVGNames::azimuthAttr);
-        animatableAttributes.add(SVGNames::baseFrequencyAttr);
-        animatableAttributes.add(SVGNames::biasAttr);
-        animatableAttributes.add(SVGNames::clipPathUnitsAttr);
-        animatableAttributes.add(SVGNames::cxAttr);
-        animatableAttributes.add(SVGNames::cyAttr);
-        animatableAttributes.add(SVGNames::diffuseConstantAttr);
-        animatableAttributes.add(SVGNames::divisorAttr);
-        animatableAttributes.add(SVGNames::dxAttr);
-        animatableAttributes.add(SVGNames::dyAttr);
-        animatableAttributes.add(SVGNames::edgeModeAttr);
-        animatableAttributes.add(SVGNames::elevationAttr);
-        animatableAttributes.add(SVGNames::exponentAttr);
-        animatableAttributes.add(SVGNames::filterResAttr);
-        animatableAttributes.add(SVGNames::filterUnitsAttr);
-        animatableAttributes.add(SVGNames::fxAttr);
-        animatableAttributes.add(SVGNames::fyAttr);
-        animatableAttributes.add(SVGNames::gradientTransformAttr);
-        animatableAttributes.add(SVGNames::gradientUnitsAttr);
-        animatableAttributes.add(SVGNames::heightAttr);
-        animatableAttributes.add(SVGNames::in2Attr);
-        animatableAttributes.add(SVGNames::inAttr);
-        animatableAttributes.add(SVGNames::interceptAttr);
-        animatableAttributes.add(SVGNames::k1Attr);
-        animatableAttributes.add(SVGNames::k2Attr);
-        animatableAttributes.add(SVGNames::k3Attr);
-        animatableAttributes.add(SVGNames::k4Attr);
-        animatableAttributes.add(SVGNames::kernelMatrixAttr);
-        animatableAttributes.add(SVGNames::kernelUnitLengthAttr);
-        animatableAttributes.add(SVGNames::lengthAdjustAttr);
-        animatableAttributes.add(SVGNames::limitingConeAngleAttr);
-        animatableAttributes.add(SVGNames::markerHeightAttr);
-        animatableAttributes.add(SVGNames::markerUnitsAttr);
-        animatableAttributes.add(SVGNames::markerWidthAttr);
-        animatableAttributes.add(SVGNames::maskContentUnitsAttr);
-        animatableAttributes.add(SVGNames::maskUnitsAttr);
-        animatableAttributes.add(SVGNames::methodAttr);
-        animatableAttributes.add(SVGNames::modeAttr);
-        animatableAttributes.add(SVGNames::numOctavesAttr);
-        animatableAttributes.add(SVGNames::offsetAttr);
-        animatableAttributes.add(SVGNames::operatorAttr);
-        animatableAttributes.add(SVGNames::orderAttr);
-        animatableAttributes.add(SVGNames::orientAttr);
-        animatableAttributes.add(SVGNames::pathLengthAttr);
-        animatableAttributes.add(SVGNames::patternContentUnitsAttr);
-        animatableAttributes.add(SVGNames::patternTransformAttr);
-        animatableAttributes.add(SVGNames::patternUnitsAttr);
-        animatableAttributes.add(SVGNames::pointsAtXAttr);
-        animatableAttributes.add(SVGNames::pointsAtYAttr);
-        animatableAttributes.add(SVGNames::pointsAtZAttr);
-        animatableAttributes.add(SVGNames::preserveAlphaAttr);
-        animatableAttributes.add(SVGNames::preserveAspectRatioAttr);
-        animatableAttributes.add(SVGNames::primitiveUnitsAttr);
-        animatableAttributes.add(SVGNames::radiusAttr);
-        animatableAttributes.add(SVGNames::rAttr);
-        animatableAttributes.add(SVGNames::refXAttr);
-        animatableAttributes.add(SVGNames::refYAttr);
-        animatableAttributes.add(SVGNames::resultAttr);
-        animatableAttributes.add(SVGNames::rotateAttr);
-        animatableAttributes.add(SVGNames::rxAttr);
-        animatableAttributes.add(SVGNames::ryAttr);
-        animatableAttributes.add(SVGNames::scaleAttr);
-        animatableAttributes.add(SVGNames::seedAttr);
-        animatableAttributes.add(SVGNames::slopeAttr);
-        animatableAttributes.add(SVGNames::spacingAttr);
-        animatableAttributes.add(SVGNames::specularConstantAttr);
-        animatableAttributes.add(SVGNames::specularExponentAttr);
-        animatableAttributes.add(SVGNames::spreadMethodAttr);
-        animatableAttributes.add(SVGNames::startOffsetAttr);
-        animatableAttributes.add(SVGNames::stdDeviationAttr);
-        animatableAttributes.add(SVGNames::stitchTilesAttr);
-        animatableAttributes.add(SVGNames::surfaceScaleAttr);
-        animatableAttributes.add(SVGNames::tableValuesAttr);
-        animatableAttributes.add(SVGNames::targetAttr);
-        animatableAttributes.add(SVGNames::targetXAttr);
-        animatableAttributes.add(SVGNames::targetYAttr);
-        animatableAttributes.add(SVGNames::transformAttr);
-        animatableAttributes.add(SVGNames::typeAttr);
-        animatableAttributes.add(SVGNames::valuesAttr);
-        animatableAttributes.add(SVGNames::viewBoxAttr);
-        animatableAttributes.add(SVGNames::widthAttr);
-        animatableAttributes.add(SVGNames::x1Attr);
-        animatableAttributes.add(SVGNames::x2Attr);
-        animatableAttributes.add(SVGNames::xAttr);
-        animatableAttributes.add(SVGNames::xChannelSelectorAttr);
-        animatableAttributes.add(SVGNames::y1Attr);
-        animatableAttributes.add(SVGNames::y2Attr);
-        animatableAttributes.add(SVGNames::yAttr);
-        animatableAttributes.add(SVGNames::yChannelSelectorAttr);
-        animatableAttributes.add(SVGNames::zAttr);
+        const QualifiedName* const animatableAttrs[] = {
+            &XLinkNames::hrefAttr,
+            &SVGNames::amplitudeAttr,
+            &SVGNames::azimuthAttr,
+            &SVGNames::baseFrequencyAttr,
+            &SVGNames::biasAttr,
+            &SVGNames::clipPathUnitsAttr,
+            &SVGNames::cxAttr,
+            &SVGNames::cyAttr,
+            &SVGNames::diffuseConstantAttr,
+            &SVGNames::divisorAttr,
+            &SVGNames::dxAttr,
+            &SVGNames::dyAttr,
+            &SVGNames::edgeModeAttr,
+            &SVGNames::elevationAttr,
+            &SVGNames::exponentAttr,
+            &SVGNames::filterResAttr,
+            &SVGNames::filterUnitsAttr,
+            &SVGNames::fxAttr,
+            &SVGNames::fyAttr,
+            &SVGNames::gradientTransformAttr,
+            &SVGNames::gradientUnitsAttr,
+            &SVGNames::heightAttr,
+            &SVGNames::in2Attr,
+            &SVGNames::inAttr,
+            &SVGNames::interceptAttr,
+            &SVGNames::k1Attr,
+            &SVGNames::k2Attr,
+            &SVGNames::k3Attr,
+            &SVGNames::k4Attr,
+            &SVGNames::kernelMatrixAttr,
+            &SVGNames::kernelUnitLengthAttr,
+            &SVGNames::lengthAdjustAttr,
+            &SVGNames::limitingConeAngleAttr,
+            &SVGNames::markerHeightAttr,
+            &SVGNames::markerUnitsAttr,
+            &SVGNames::markerWidthAttr,
+            &SVGNames::maskContentUnitsAttr,
+            &SVGNames::maskUnitsAttr,
+            &SVGNames::methodAttr,
+            &SVGNames::modeAttr,
+            &SVGNames::numOctavesAttr,
+            &SVGNames::offsetAttr,
+            &SVGNames::operatorAttr,
+            &SVGNames::orderAttr,
+            &SVGNames::orientAttr,
+            &SVGNames::pathLengthAttr,
+            &SVGNames::patternContentUnitsAttr,
+            &SVGNames::patternTransformAttr,
+            &SVGNames::patternUnitsAttr,
+            &SVGNames::pointsAtXAttr,
+            &SVGNames::pointsAtYAttr,
+            &SVGNames::pointsAtZAttr,
+            &SVGNames::preserveAlphaAttr,
+            &SVGNames::preserveAspectRatioAttr,
+            &SVGNames::primitiveUnitsAttr,
+            &SVGNames::radiusAttr,
+            &SVGNames::rAttr,
+            &SVGNames::refXAttr,
+            &SVGNames::refYAttr,
+            &SVGNames::resultAttr,
+            &SVGNames::rotateAttr,
+            &SVGNames::rxAttr,
+            &SVGNames::ryAttr,
+            &SVGNames::scaleAttr,
+            &SVGNames::seedAttr,
+            &SVGNames::slopeAttr,
+            &SVGNames::spacingAttr,
+            &SVGNames::specularConstantAttr,
+            &SVGNames::specularExponentAttr,
+            &SVGNames::spreadMethodAttr,
+            &SVGNames::startOffsetAttr,
+            &SVGNames::stdDeviationAttr,
+            &SVGNames::stitchTilesAttr,
+            &SVGNames::surfaceScaleAttr,
+            &SVGNames::tableValuesAttr,
+            &SVGNames::targetAttr,
+            &SVGNames::targetXAttr,
+            &SVGNames::targetYAttr,
+            &SVGNames::transformAttr,
+            &SVGNames::typeAttr,
+            &SVGNames::valuesAttr,
+            &SVGNames::viewBoxAttr,
+            &SVGNames::widthAttr,
+            &SVGNames::x1Attr,
+            &SVGNames::x2Attr,
+            &SVGNames::xAttr,
+            &SVGNames::xChannelSelectorAttr,
+            &SVGNames::y1Attr,
+            &SVGNames::y2Attr,
+            &SVGNames::yAttr,
+            &SVGNames::yChannelSelectorAttr,
+            &SVGNames::zAttr,
+        };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(animatableAttrs); i++)
+            animatableAttributes.add(*animatableAttrs[i]);
     }
 
     if (name == classAttr)

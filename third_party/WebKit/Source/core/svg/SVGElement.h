@@ -46,8 +46,6 @@ class SVGFitToViewBox;
 class SVGSVGElement;
 class SVGUseElement;
 
-void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
-
 typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
 
 class SVGElement : public Element {
