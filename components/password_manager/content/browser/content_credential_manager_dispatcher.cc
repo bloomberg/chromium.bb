@@ -10,6 +10,7 @@
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -20,7 +21,8 @@ ContentCredentialManagerDispatcher::ContentCredentialManagerDispatcher(
     content::WebContents* web_contents,
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents),
-      client_(client) {
+      client_(client),
+      pending_request_id_(0) {
   DCHECK(web_contents);
 }
 
@@ -70,17 +72,44 @@ void ContentCredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
 
 void ContentCredentialManagerDispatcher::OnRequestCredential(
     int request_id,
-    bool zero_click_only,
+    bool /* zero_click_only */,
     const std::vector<GURL>& federations) {
-  // TODO(mkwst): This is a stub.
+  DCHECK(request_id);
+  PasswordStore* store = GetPasswordStore();
+  if (pending_request_id_ || !store) {
+    // TODO(mkwst): Reject the promise if we can't get to the password store, or
+    // if we're already requesting credentials.
+  }
+
+  pending_request_id_ = request_id;
+
+  autofill::PasswordForm form;
+  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.origin = web_contents()->GetLastCommittedURL().GetOrigin();
+  form.signon_realm = form.origin.spec();
+
+  store->GetLogins(form, PasswordStore::DISALLOW_PROMPT, this);
+}
+
+void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
+    const std::vector<autofill::PasswordForm*>& results) {
+  DCHECK(pending_request_id_);
+
+  // TODO(mkwst): This is a stub. We should be looking at |results| here. Baby
+  // steps.
   password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
                                         base::ASCIIToUTF16("name"),
                                         GURL("https://example.com/image.png"));
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),
-          request_id,
+          pending_request_id_,
           info));
+  pending_request_id_ = 0;
+}
+
+PasswordStore* ContentCredentialManagerDispatcher::GetPasswordStore() {
+  return client_ ? client_->GetPasswordStore() : nullptr;
 }
 
 }  // namespace password_manager

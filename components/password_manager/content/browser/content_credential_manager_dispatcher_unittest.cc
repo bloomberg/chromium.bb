@@ -5,10 +5,13 @@
 #include "components/password_manager/content/browser/content_credential_manager_dispatcher.h"
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,6 +25,28 @@ namespace {
 // Chosen by fair dice roll. Guaranteed to be random.
 const int kRequestId = 4;
 
+class TestPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  TestPasswordManagerClient(password_manager::PasswordStore* store)
+      : store_(store) {}
+  virtual ~TestPasswordManagerClient() {}
+
+  virtual password_manager::PasswordStore* GetPasswordStore() OVERRIDE {
+    return store_;
+  }
+
+ private:
+  password_manager::PasswordStore* store_;
+};
+
+void RunAllPendingTasks() {
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  run_loop.Run();
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -33,14 +58,23 @@ class ContentCredentialManagerDispatcherTest
 
   virtual void SetUp() OVERRIDE {
     content::RenderViewHostTestHarness::SetUp();
+    store_ = new TestPasswordStore;
+    client_.reset(new TestPasswordManagerClient(store_.get()));
     dispatcher_.reset(
-        new ContentCredentialManagerDispatcher(web_contents(), nullptr));
+        new ContentCredentialManagerDispatcher(web_contents(), client_.get()));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    store_->Shutdown();
+    content::RenderViewHostTestHarness::TearDown();
   }
 
   ContentCredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
+  scoped_refptr<TestPasswordStore> store_;
   scoped_ptr<ContentCredentialManagerDispatcher> dispatcher_;
+  scoped_ptr<TestPasswordManagerClient> client_;
 };
 
 TEST_F(ContentCredentialManagerDispatcherTest,
@@ -86,6 +120,8 @@ TEST_F(ContentCredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredential) {
   std::vector<GURL> federations;
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
+
+  RunAllPendingTasks();
 
   const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =

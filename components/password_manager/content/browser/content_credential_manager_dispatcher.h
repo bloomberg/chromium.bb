@@ -7,9 +7,14 @@
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/credential_manager_dispatcher.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
+
+namespace autofill {
+struct PasswordForm;
+}
 
 namespace content {
 class WebContents;
@@ -18,10 +23,12 @@ class WebContents;
 namespace password_manager {
 
 class PasswordManagerClient;
+class PasswordStore;
 struct CredentialInfo;
 
 class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
-                                           public content::WebContentsObserver {
+                                           public content::WebContentsObserver,
+                                           public PasswordStoreConsumer {
  public:
   // |client| isn't yet used by this class, but is necessary for the next step:
   // wiring this up as a subclass of PasswordStoreConsumer.
@@ -42,11 +49,22 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
       bool zero_click_only,
       const std::vector<GURL>& federations) OVERRIDE;
 
-  // content::WebContentsObserver overrides.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // PasswordStoreConsumer implementation.
+  virtual void OnGetPasswordStoreResults(
+      const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
+
  private:
+  PasswordStore* GetPasswordStore();
+
   PasswordManagerClient* client_;
+
+  // When 'OnRequestCredential' is called, it in turn calls out to the
+  // PasswordStore; we store the request ID here in order to properly respond
+  // to the request once the PasswordStore gives us data.
+  int pending_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCredentialManagerDispatcher);
 };
