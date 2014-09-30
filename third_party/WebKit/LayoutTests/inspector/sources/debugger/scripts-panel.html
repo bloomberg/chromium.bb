@@ -44,7 +44,7 @@ function test()
 
     function addDebuggerFile(workspace, url)
     {
-        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, createContentProvider(url));
+        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, url, createContentProvider(url));
         return InspectorTest.testWorkspace.uiSourceCode("debugger:", path)
     }
 
