@@ -204,6 +204,9 @@ ShelfButton::IconView::~IconView() {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfButton
 
+// static
+const char ShelfButton::kViewClassName[] = "ash/ShelfButton";
+
 ShelfButton* ShelfButton::Create(views::ButtonListener* listener,
                                  ShelfButtonHost* host,
                                  ShelfLayoutManager* shelf_layout_manager) {
@@ -319,6 +322,10 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
     // destroyed).
     ClearState(STATE_HOVERED);
   }
+}
+
+const char* ShelfButton::GetClassName() const {
+  return kViewClassName;
 }
 
 bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {

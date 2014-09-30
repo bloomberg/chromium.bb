@@ -17,6 +17,8 @@ class ShelfLayoutManager;
 // Button used for items on the launcher, except for the AppList.
 class ASH_EXPORT ShelfButton : public views::CustomButton {
  public:
+  static const char kViewClassName[];
+
   // Used to indicate the current state of the button.
   enum State {
     // Nothing special. Usually represents an app shortcut item with no running
@@ -91,6 +93,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   };
 
   // View overrides:
+  virtual const char* GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;

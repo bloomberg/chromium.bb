@@ -356,7 +356,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The view being dragged. This is set immediately when the mouse is pressed.
   // |dragging_| is set only if the mouse is dragged far enough.
-  views::View* drag_view_;
+  ShelfButton* drag_view_;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.
   gfx::Point drag_origin_;
