@@ -3,11 +3,11 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {DIV} at (0,0) size 190x44
-        RenderBlock {UL} at (0,0) size 190x44
-          RenderListItem {LI} at (40,0) size 150x44
-            RenderListMarker at (-17,0) size 7x18: bullet
-            RenderInline {A} at (0,0) size 201x18
+      RenderBlock {DIV} at (0,0) size 190x40
+        RenderBlock {UL} at (0,0) size 190x40
+          RenderListItem {LI} at (40,0) size 150x40
+            RenderListMarker at (-16,0) size 6x16: bullet
+            RenderInline {A} at (0,0) size 207x16
               RenderText {#text} at (0,0) size 0x0
-              RenderImage {IMG} at (0,18) size 201x22
+              RenderImage {IMG} at (0,16) size 207x20
             RenderText {#text} at (0,0) size 0x0

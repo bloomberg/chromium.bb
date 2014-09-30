@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock (floating) {DIV} at (0,0) size 100x200 [bgcolor=#00FF00]
+layer at (108,8) size 132x435
+  RenderBlock {DIV} at (100,0) size 132x435 [border: (10px solid #000000)]
+    RenderBlock {P} at (26,10) size 80x415
+      RenderText {#text} at (0,0) size 80x415
+        text run at (0,0) width 415: "This technology preview of our award winning next generation"
+        text run at (16,0) width 57: "browser "
+        text run at (16,56) width 359: "is a sign of things to come from Mozilla. Powerful yet"
+        text run at (32,0) width 121: "easy to use. This "
+        text run at (32,120) width 295: "maintenance release provides a few updates"
+        text run at (48,0) width 246: "based on user feedback - including "
+        text run at (48,245) width 169: "changes to the Extension"
+        text run at (64,0) width 206: "System and icon improvements."

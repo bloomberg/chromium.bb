@@ -5,22 +5,22 @@ layer at (0,0) size 800x224
   RenderBlock {HTML} at (0,0) size 800x224
     RenderBody {BODY} at (8,16) size 784x200
       RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 770x36
-          text run at (0,0) width 461: "This test is verifying that when the focus is removed from an element we "
-          text run at (461,0) width 309: "correctly invalidate continuations and remove the"
-          text run at (0,18) width 67: "focus ring."
+        RenderText {#text} at (0,0) size 765x32
+          text run at (0,0) width 471: "This test is verifying that when the focus is removed from an element we "
+          text run at (470,0) width 295: "correctly invalidate continuations and remove"
+          text run at (0,16) width 92: "the focus ring."
       RenderBlock {P} at (0,36) size 784x20
-        RenderText {#text} at (0,0) size 298x18
-          text run at (0,0) width 298: "If this test passes, you should see no focus ring."
-layer at (8,88) size 86x20
-  RenderBlock (positioned) {DIV} at (8,88) size 86x20
-    RenderBlock (anonymous) at (0,0) size 86x0
+        RenderText {#text} at (0,0) size 305x16
+          text run at (0,0) width 305: "If this test passes, you should see no focus ring."
+layer at (8,88) size 84x20
+  RenderBlock (positioned) {DIV} at (8,88) size 83.56x20
+    RenderBlock (anonymous) at (0,0) size 83.56x0
       RenderInline {SPAN} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-    RenderBlock (anonymous) at (0,0) size 86x20
-      RenderBlock {DIV} at (0,0) size 86x20
-        RenderText {#text} at (0,0) size 86x18
-          text run at (0,0) width 86: "CONTENTS"
-    RenderBlock (anonymous) at (0,20) size 86x0
+    RenderBlock (anonymous) at (0,0) size 83.56x20
+      RenderBlock {DIV} at (0,0) size 83.56x20
+        RenderText {#text} at (0,0) size 84x16
+          text run at (0,0) width 84: "CONTENTS"
+    RenderBlock (anonymous) at (0,20) size 83.56x0
       RenderInline {SPAN} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
