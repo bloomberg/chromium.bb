@@ -211,7 +211,7 @@ def RunTestsOnce(url, options):
   options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
 
   # Setup the environment with the setuid sandbox path.
-  test_env.enable_sandbox_if_required(os.environ)
+  test_env.enable_sandbox_if_required(sys.argv, os.environ)
 
   # Create server
   host = GetHostName()

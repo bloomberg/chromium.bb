@@ -17,13 +17,18 @@ CHROME_SANDBOX_ENV = 'CHROME_DEVEL_SANDBOX'
 CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
 
 
-def should_enable_sandbox(sandbox_path):
+def should_enable_sandbox(cmd, sandbox_path):
   """Return a boolean indicating that the current slave is capable of using the
   sandbox and should enable it.  This should return True iff the slave is a
   Linux host with the sandbox file present and configured correctly."""
   if not (sys.platform.startswith('linux') and
           os.path.exists(sandbox_path)):
     return False
+
+  # Copy the check in tools/build/scripts/slave/runtest.py.
+  if '--lsan=1' in cmd:
+    return False
+
   sandbox_stat = os.stat(sandbox_path)
   if ((sandbox_stat.st_mode & stat.S_ISUID) and
       (sandbox_stat.st_mode & stat.S_IRUSR) and
@@ -33,23 +38,20 @@ def should_enable_sandbox(sandbox_path):
   return False
 
 
-def enable_sandbox_if_required(env, verbose=False):
+def enable_sandbox_if_required(cmd, env, verbose=False):
   """Checks enables the sandbox if it is required, otherwise it disables it."""
   chrome_sandbox_path = env.get(CHROME_SANDBOX_ENV, CHROME_SANDBOX_PATH)
 
-  if should_enable_sandbox(chrome_sandbox_path):
+  if should_enable_sandbox(cmd, chrome_sandbox_path):
     if verbose:
       print 'Enabling sandbox. Setting environment variable:'
       print '  %s="%s"' % (CHROME_SANDBOX_ENV, chrome_sandbox_path)
     env[CHROME_SANDBOX_ENV] = chrome_sandbox_path
   else:
     if verbose:
-      print 'Sandbox not properly installed. Unsetting:'
-      print '  %s' % CHROME_SANDBOX_ENV
-    # The variable should be removed from the environment, making
-    # the variable empty silently disables the sandbox.
-    if env.get(CHROME_SANDBOX_ENV):
-      env.pop(CHROME_SANDBOX_ENV)
+      print 'Disabling sandbox.  Setting environment variable:'
+      print '  CHROME_DEVEL_SANDBOX=""'
+    env['CHROME_DEVEL_SANDBOX'] = ''
 
 
 def fix_python_path(cmd):
@@ -74,7 +76,7 @@ def run_executable(cmd, env):
   # Used by base/base_paths_linux.cc as an override. Just make sure the default
   # logic is used.
   env.pop('CR_SOURCE_ROOT', None)
-  enable_sandbox_if_required(env)
+  enable_sandbox_if_required(cmd, env)
   # Ensure paths are correctly separated on windows.
   cmd[0] = cmd[0].replace('/', os.path.sep)
   cmd = fix_python_path(cmd)

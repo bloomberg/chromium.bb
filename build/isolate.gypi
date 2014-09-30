@@ -98,6 +98,7 @@
         '--config-variable',
           'internal_gles2_conform_tests=<(internal_gles2_conform_tests)',
         '--config-variable', 'icu_use_data_file_flag=<(icu_use_data_file_flag)',
+        '--config-variable', 'lsan=<(lsan)',
         '--config-variable', 'libpeer_target_type=<(libpeer_target_type)',
         '--config-variable', 'use_openssl=<(use_openssl)',
         '--config-variable', 'target_arch=<(target_arch)',
