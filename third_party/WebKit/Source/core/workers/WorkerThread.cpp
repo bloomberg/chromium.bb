@@ -143,7 +143,7 @@ private:
 class WorkerThreadTask : public blink::WebThread::Task {
     WTF_MAKE_NONCOPYABLE(WorkerThreadTask); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<WorkerThreadTask> create(const WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+    static PassOwnPtr<WorkerThreadTask> create(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
     {
         return adoptPtr(new WorkerThreadTask(workerThread, task, isInstrumented));
     }
@@ -167,7 +167,7 @@ public:
     }
 
 private:
-    WorkerThreadTask(const WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+    WorkerThreadTask(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
         : m_workerThread(workerThread)
         , m_task(task)
         , m_isInstrumented(isInstrumented)
@@ -178,7 +178,7 @@ private:
             InspectorInstrumentation::didPostExecutionContextTask(m_workerThread.workerGlobalScope(), m_task.get());
     }
 
-    const WorkerThread& m_workerThread;
+    WorkerThread& m_workerThread;
     OwnPtr<ExecutionContextTask> m_task;
     bool m_isInstrumented;
 };
@@ -372,6 +372,12 @@ void WorkerThread::stop()
 void WorkerThread::stopInShutdownSequence()
 {
     stopInternal();
+}
+
+bool WorkerThread::terminated()
+{
+    MutexLocker lock(m_threadCreationMutex);
+    return m_terminated;
 }
 
 void WorkerThread::stopInternal()

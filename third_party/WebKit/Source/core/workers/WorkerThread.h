@@ -88,7 +88,7 @@ namespace blink {
         void didLeaveNestedLoop();
 
         WorkerGlobalScope* workerGlobalScope() const { return m_workerGlobalScope.get(); }
-        bool terminated() const { return m_terminated; }
+        bool terminated();
 
         // Number of active worker threads.
         static unsigned workerThreadCount();
