@@ -1,87 +1,87 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x132
-  RenderBlock {HTML} at (0,0) size 800x132
-    RenderBody {BODY} at (0,0) size 800x131
+layer at (0,0) size 800x120
+  RenderBlock {HTML} at (0,0) size 800x120
+    RenderBody {BODY} at (0,0) size 800x119
       RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 296x14
-          text run at (0,0) width 296: "Table autosizing tests - fixed-table-lots-of-text-many-cells.html"
-        RenderBR {BR} at (296,0) size 0x14
-        RenderText {#text} at (0,14) size 246x14
-          text run at (0,14) width 246: "This test passes if none of the 18 cells are autosized."
-      RenderTable {TABLE} at (1,37) size 798x94 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x93
-          RenderTableRow {TR} at (0,0) size 797x31
-            RenderTableCell {TD} at (0,7) size 132x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
-            RenderTableCell {TD} at (132,0) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (265,0) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (398,0) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (531,0) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (664,0) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-          RenderTableRow {TR} at (0,31) size 797x31
-            RenderTableCell {TD} at (0,31) size 132x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (132,31) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (265,31) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (398,31) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (531,31) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (664,31) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-          RenderTableRow {TR} at (0,62) size 797x31
-            RenderTableCell {TD} at (0,62) size 132x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (132,62) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (265,62) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (398,62) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=3 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (531,62) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=4 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
-            RenderTableCell {TD} at (664,62) size 133x31 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=5 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 127x28
-                text run at (2,2) width 127: "hello hello hello hello hello"
-                text run at (2,16) width 49: "hello hello"
+        RenderText {#text} at (0,0) size 305x12
+          text run at (0,0) width 305: "Table autosizing tests - fixed-table-lots-of-text-many-cells.html"
+        RenderBR {BR} at (304,0) size 1x12
+        RenderText {#text} at (0,12) size 251x12
+          text run at (0,12) width 251: "This test passes if none of the 18 cells are autosized."
+      RenderTable {TABLE} at (1,37) size 798x82 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x81
+          RenderTableRow {TR} at (0,0) size 797x27
+            RenderTableCell {TD} at (0,6) size 132x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
+            RenderTableCell {TD} at (132,0) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (265,0) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (398,0) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (531,0) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=4 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (664,0) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=5 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+          RenderTableRow {TR} at (0,27) size 797x27
+            RenderTableCell {TD} at (0,27) size 132x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (132,27) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (265,27) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (398,27) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (531,27) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=4 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (664,27) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=5 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+          RenderTableRow {TR} at (0,54) size 797x27
+            RenderTableCell {TD} at (0,54) size 132x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (132,54) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (265,54) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (398,54) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=3 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (531,54) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=4 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"
+            RenderTableCell {TD} at (664,54) size 133x27 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=2 c=5 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 105x24
+                text run at (2,2) width 105: "hello hello hello hello"
+                text run at (2,14) width 78: "hello hello hello"

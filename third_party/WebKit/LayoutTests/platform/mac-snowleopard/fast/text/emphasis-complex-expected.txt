@@ -3,18 +3,18 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x562
-      RenderBlock {P} at (0,0) size 784x58
-        RenderText {#text} at (0,18) size 192x36
-          text run at (0,18) width 192 RTL: "\x{643}\x{62A}\x{627}\x{628} \x{623}\x{644}\x{641} \x{644}\x{64A}\x{644}\x{629} \x{648}\x{644}\x{64A}\x{644}\x{629}"
-      RenderBlock {P} at (0,88) size 784x54
-        RenderText {#text} at (0,18) size 632x36
-          text run at (0,18) width 632: "\x{1797}\x{17B6}\x{179F}\x{17B6}\x{1781}\x{17D2}\x{1798}\x{17C2}\x{179A} \x{1797}\x{17B6}\x{179F}\x{17B6}\x{1781}\x{17D2}\x{1798}\x{17C2}\x{179A} \x{17A2}\x{178F}\x{17D2}\x{1790}\x{1794}\x{1791}\x{200B}\x{1782}\x{17C6}\x{179A}\x{17BC}"
-      RenderBlock {P} at (0,172) size 784x66
-        RenderText {#text} at (0,18) size 261x36
-          text run at (0,18) width 261: "Mixed\x{926}\x{947}\x{935}\x{928}\x{93E}\x{917}\x{930}\x{940}Mixed"
-      RenderBlock {P} at (0,268) size 784x51
-        RenderText {#text} at (0,17) size 256x34
-          text run at (0,17) width 256: "AffiZ Af\x{300}fiZ Libertine"
-      RenderBlock {P} at (0,349) size 784x54
-        RenderText {#text} at (0,18) size 228x36
-          text run at (0,18) width 228: "Af\x{300}fiZ Default Font"
+      RenderBlock {P} at (0,0) size 784x53
+        RenderText {#text} at (0,18) size 187x31
+          text run at (0,18) width 187 RTL: "\x{643}\x{62A}\x{627}\x{628} \x{623}\x{644}\x{641} \x{644}\x{64A}\x{644}\x{629} \x{648}\x{644}\x{64A}\x{644}\x{629}"
+      RenderBlock {P} at (0,83) size 784x49
+        RenderText {#text} at (0,18) size 644x31
+          text run at (0,18) width 644: "\x{1797}\x{17B6}\x{179F}\x{17B6}\x{1781}\x{17D2}\x{1798}\x{17C2}\x{179A} \x{1797}\x{17B6}\x{179F}\x{17B6}\x{1781}\x{17D2}\x{1798}\x{17C2}\x{179A} \x{17A2}\x{178F}\x{17D2}\x{1790}\x{1794}\x{1791}\x{200B}\x{1782}\x{17C6}\x{179A}\x{17BC}"
+      RenderBlock {P} at (0,162) size 784x61
+        RenderText {#text} at (0,18) size 260x31
+          text run at (0,18) width 260: "Mixed\x{926}\x{947}\x{935}\x{928}\x{93E}\x{917}\x{930}\x{940}Mixed"
+      RenderBlock {P} at (0,253) size 784x51
+        RenderText {#text} at (0,17) size 257x34
+          text run at (0,17) width 257: "AffiZ Af\x{300}fiZ Libertine"
+      RenderBlock {P} at (0,334) size 784x49
+        RenderText {#text} at (0,18) size 227x31
+          text run at (0,18) width 227: "Af\x{300}fiZ Default Font"

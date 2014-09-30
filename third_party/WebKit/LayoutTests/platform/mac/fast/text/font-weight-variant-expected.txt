@@ -1,130 +1,130 @@
-layer at (0,0) size 785x1009
+layer at (0,0) size 785x919
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1009
-  RenderBlock {HTML} at (0,0) size 785x1009.06
-    RenderBody {BODY} at (8,19.91) size 769x981.16
-      RenderBlock {SECTION} at (0,0) size 769x135.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 247x28
-            text run at (0,0) width 247: "font-weight: 200 vs light"
-        RenderBlock {DIV} at (0,47.91) size 769x18
-          RenderText {#text} at (0,0) size 396x18
-            text run at (0,0) width 396: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
-          RenderText {#text} at (0,0) size 396x18
-            text run at (0,0) width 396: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
-          RenderText {#text} at (0,0) size 396x18
-            text run at (0,0) width 396: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {P} at (0,117.91) size 769x18
-          RenderText {#text} at (0,0) size 325x18
-            text run at (0,0) width 325: "The three lines above should have the same weight."
-      RenderBlock {SECTION} at (0,155.81) size 769x135.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 292x28
-            text run at (0,0) width 292: "font-weight: 600 vs semibold"
-        RenderBlock {DIV} at (0,47.91) size 769x18
-          RenderText {#text} at (0,0) size 418x18
-            text run at (0,0) width 418: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
-          RenderText {#text} at (0,0) size 396x18
-            text run at (0,0) width 396: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
-          RenderText {#text} at (0,0) size 418x18
-            text run at (0,0) width 418: "Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {P} at (0,117.91) size 769x18
-          RenderText {#text} at (0,0) size 325x18
-            text run at (0,0) width 325: "The three lines above should have the same weight."
-      RenderBlock {SECTION} at (0,311.63) size 769x209.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 258x28
+layer at (0,0) size 785x919
+  RenderBlock {HTML} at (0,0) size 785x919.06
+    RenderBody {BODY} at (8,19.91) size 769x891.16
+      RenderBlock {SECTION} at (0,0) size 769x123.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 248x24
+            text run at (0,0) width 248: "font-weight: 200 vs light"
+        RenderBlock {DIV} at (0,43.91) size 769x16
+          RenderText {#text} at (0,0) size 403x16
+            text run at (0,0) width 403: "Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,59.91) size 769x16
+          RenderText {#text} at (0,0) size 403x16
+            text run at (0,0) width 403: "Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,75.91) size 769x16
+          RenderText {#text} at (0,0) size 403x16
+            text run at (0,0) width 403: "Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {P} at (0,107.91) size 769x16
+          RenderText {#text} at (0,0) size 331x16
+            text run at (0,0) width 331: "The three lines above should have the same weight."
+      RenderBlock {SECTION} at (0,143.81) size 769x123.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 293x24
+            text run at (0,0) width 293: "font-weight: 600 vs semibold"
+        RenderBlock {DIV} at (0,43.91) size 769x16
+          RenderText {#text} at (0,0) size 422x16
+            text run at (0,0) width 422: "Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,59.91) size 769x16
+          RenderText {#text} at (0,0) size 403x16
+            text run at (0,0) width 403: "Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,75.91) size 769x16
+          RenderText {#text} at (0,0) size 422x16
+            text run at (0,0) width 422: "Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {P} at (0,107.91) size 769x16
+          RenderText {#text} at (0,0) size 331x16
+            text run at (0,0) width 331: "The three lines above should have the same weight."
+      RenderBlock {SECTION} at (0,287.63) size 769x187.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 258x24
             text run at (0,0) width 258: "Specific weight, Segoe UI"
-        RenderBlock {DIV} at (0,47.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 200 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 300 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,101.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 400 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,119.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 500 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,137.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 600 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,155.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 700 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,173.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 800 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,191.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
-      RenderBlock {SECTION} at (0,541.44) size 769x209.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 320x28
+        RenderBlock {DIV} at (0,43.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,59.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 200 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,75.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 300 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,91.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 400 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,107.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 500 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,123.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 600 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,139.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 700 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,155.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 800 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,171.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
+      RenderBlock {SECTION} at (0,495.44) size 769x187.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 320x24
             text run at (0,0) width 320: "Specific weight, Segoe UI Light"
-        RenderBlock {DIV} at (0,47.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 200 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 300 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,101.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 400 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,119.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 500 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,137.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 600 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,155.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 700 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,173.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 800 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,191.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
-      RenderBlock {SECTION} at (0,771.25) size 769x209.91
-        RenderBlock {H2} at (0,0) size 769x28
-          RenderText {#text} at (0,0) size 360x28
+        RenderBlock {DIV} at (0,43.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,59.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 200 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,75.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 300 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,91.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 400 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,107.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 500 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,123.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 600 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,139.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 700 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,155.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 800 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,171.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
+      RenderBlock {SECTION} at (0,703.25) size 769x187.91
+        RenderBlock {H2} at (0,0) size 769x24
+          RenderText {#text} at (0,0) size 360x24
             text run at (0,0) width 360: "Specific weight, Segoe UI Semibold"
-        RenderBlock {DIV} at (0,47.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,65.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 200 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,83.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 300 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,101.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 400 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,119.91) size 769x18
-          RenderText {#text} at (0,0) size 514x18
-            text run at (0,0) width 514: "font-weight: 500 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,137.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 600 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,155.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 700 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,173.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 800 - Back in June we delivered oxygen equipment of the same size."
-        RenderBlock {DIV} at (0,191.91) size 769x18
-          RenderText {#text} at (0,0) size 541x18
-            text run at (0,0) width 541: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,43.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 100 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,59.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 200 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,75.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 300 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,91.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 400 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,107.91) size 769x16
+          RenderText {#text} at (0,0) size 523x16
+            text run at (0,0) width 523: "font-weight: 500 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,123.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 600 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,139.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 700 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,155.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 800 - Back in June we delivered oxygen equipment of the same size."
+        RenderBlock {DIV} at (0,171.91) size 769x16
+          RenderText {#text} at (0,0) size 547x16
+            text run at (0,0) width 547: "font-weight: 900 - Back in June we delivered oxygen equipment of the same size."

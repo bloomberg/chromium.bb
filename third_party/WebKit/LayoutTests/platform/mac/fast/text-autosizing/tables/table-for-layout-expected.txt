@@ -1,55 +1,55 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x419
-  RenderBlock {HTML} at (0,0) size 800x419
-    RenderBody {BODY} at (0,0) size 800x418
+layer at (0,0) size 800x367
+  RenderBlock {HTML} at (0,0) size 800x367
+    RenderBody {BODY} at (0,0) size 800x366
       RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 208x14
-          text run at (0,0) width 208: "Table autosizing tests - table-for-layout.html"
-        RenderBR {BR} at (208,0) size 0x14
-        RenderText {#text} at (0,14) size 247x14
-          text run at (0,14) width 247: "This test passes if the main content area is autosized."
-      RenderTable {TABLE} at (1,37) size 798x381 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x380
-          RenderTableRow {TR} at (0,0) size 797x17
-            RenderTableCell {TD} at (0,0) size 797x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=2]
-              RenderText {#text} at (2,2) size 21x14
-                text run at (2,2) width 21: "Title"
-          RenderTableRow {TR} at (0,17) size 797x363
-            RenderTableCell {TD} at (0,141) size 52x115 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
-              RenderBR {BR} at (25,2) size 0x14
-              RenderText {#text} at (2,16) size 49x14
-                text run at (2,16) width 49: "navigation"
-              RenderBR {BR} at (51,16) size 0x14
-              RenderText {#text} at (2,30) size 49x14
-                text run at (2,30) width 49: "navigation"
-              RenderBR {BR} at (51,30) size 0x14
-              RenderText {#text} at (2,44) size 49x14
-                text run at (2,44) width 49: "navigation"
-              RenderBR {BR} at (51,44) size 0x14
-              RenderText {#text} at (2,58) size 49x14
-                text run at (2,58) width 49: "navigation"
-              RenderBR {BR} at (51,58) size 0x14
-              RenderText {#text} at (2,72) size 49x14
-                text run at (2,72) width 49: "navigation"
-              RenderBR {BR} at (51,72) size 0x14
-              RenderText {#text} at (2,86) size 49x14
-                text run at (2,86) width 49: "navigation"
-              RenderBR {BR} at (51,86) size 0x14
-              RenderText {#text} at (2,100) size 49x14
-                text run at (2,100) width 49: "navigation"
-              RenderBR {BR} at (51,100) size 0x14
-            RenderTableCell {TD} at (52,17) size 745x363 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 729x360
-                text run at (2,2) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,38) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,74) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,110) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,146) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,182) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,218) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,254) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,290) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (2,326) width 327: "hello hello hello hello hello"
+        RenderText {#text} at (0,0) size 215x12
+          text run at (0,0) width 215: "Table autosizing tests - table-for-layout.html"
+        RenderBR {BR} at (214,0) size 1x12
+        RenderText {#text} at (0,12) size 254x12
+          text run at (0,12) width 254: "This test passes if the main content area is autosized."
+      RenderTable {TABLE} at (1,37) size 798x329 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x328
+          RenderTableRow {TR} at (0,0) size 797x15
+            RenderTableCell {TD} at (0,0) size 797x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=2]
+              RenderText {#text} at (2,2) size 23x12
+                text run at (2,2) width 23: "Title"
+          RenderTableRow {TR} at (0,15) size 797x313
+            RenderTableCell {TD} at (0,122) size 54x99 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
+              RenderBR {BR} at (25,2) size 1x12
+              RenderText {#text} at (2,14) size 51x12
+                text run at (2,14) width 51: "navigation"
+              RenderBR {BR} at (52,14) size 1x12
+              RenderText {#text} at (2,26) size 51x12
+                text run at (2,26) width 51: "navigation"
+              RenderBR {BR} at (52,26) size 1x12
+              RenderText {#text} at (2,38) size 51x12
+                text run at (2,38) width 51: "navigation"
+              RenderBR {BR} at (52,38) size 1x12
+              RenderText {#text} at (2,50) size 51x12
+                text run at (2,50) width 51: "navigation"
+              RenderBR {BR} at (52,50) size 1x12
+              RenderText {#text} at (2,62) size 51x12
+                text run at (2,62) width 51: "navigation"
+              RenderBR {BR} at (52,62) size 1x12
+              RenderText {#text} at (2,74) size 51x12
+                text run at (2,74) width 51: "navigation"
+              RenderBR {BR} at (52,74) size 1x12
+              RenderText {#text} at (2,86) size 51x12
+                text run at (2,86) width 51: "navigation"
+              RenderBR {BR} at (52,86) size 1x12
+            RenderTableCell {TD} at (54,15) size 743x313 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 735x310
+                text run at (2,2) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,33) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,64) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,95) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,126) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,157) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,188) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,219) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,250) width 735: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,281) width 330: "hello hello hello hello hello"

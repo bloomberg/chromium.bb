@@ -1,25 +1,25 @@
-layer at (0,0) size 800x625
+layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x625
-  RenderBlock {HTML} at (0,0) size 800x625
-    RenderBody {BODY} at (0,0) size 800x368
-      RenderBlock {DIV} at (0,0) size 800x368
-        RenderText {#text} at (0,0) size 783x368
+layer at (0,0) size 800x547
+  RenderBlock {HTML} at (0,0) size 800x547
+    RenderBody {BODY} at (0,0) size 800x320
+      RenderBlock {DIV} at (0,0) size 800x320
+        RenderText {#text} at (0,0) size 784x320
           text run at (0,0) width 643: "This test verifies that FastTextAutosizer"
-          text run at (0,46) width 699: "considers a list item (LI) to be \"text\" for the"
-          text run at (0,92) width 662: "purpose of determining the deepest block"
-          text run at (0,138) width 783: "containing all text (DBCAT). If this were not the"
-          text run at (0,184) width 723: "case, the cluster's DBCAT would be the DIV"
-          text run at (0,230) width 719: "inside the LI, which hasn't entered layout yet"
-          text run at (0,276) width 732: "when the list marker is autosized (causing the"
-          text run at (0,322) width 304: "autosizer to crash)."
-      RenderBlock (floating) {UL} at (0,384) size 800x225
-        RenderListItem {LI} at (40,0) size 760x225
-          RenderBlock {DIV} at (0,0) size 760x225
-            RenderListMarker at (-31,0) size 14x45: bullet
-            RenderText {#text} at (0,0) size 754x225
-              text run at (0,0) width 745: "List item list item list item list item list item list"
-              text run at (0,45) width 754: "item list item list item list item list item list item"
-              text run at (0,90) width 733: "list item list item list item list item list item list"
-              text run at (0,135) width 754: "item list item list item list item list item list item"
-              text run at (0,180) width 127: "list item"
+          text run at (0,40) width 701: "considers a list item (LI) to be \"text\" for the"
+          text run at (0,80) width 661: "purpose of determining the deepest block"
+          text run at (0,120) width 784: "containing all text (DBCAT). If this were not the"
+          text run at (0,160) width 721: "case, the cluster's DBCAT would be the DIV"
+          text run at (0,200) width 719: "inside the LI, which hasn't entered layout yet"
+          text run at (0,240) width 730: "when the list marker is autosized (causing the"
+          text run at (0,280) width 304: "autosizer to crash)."
+      RenderBlock (floating) {UL} at (0,336) size 800x195
+        RenderListItem {LI} at (40,0) size 760x195
+          RenderBlock {DIV} at (0,0) size 760x195
+            RenderListMarker at (-27,0) size 12x39: bullet
+            RenderText {#text} at (0,0) size 733x195
+              text run at (0,0) width 725: "List item list item list item list item list item list"
+              text run at (0,39) width 733: "item list item list item list item list item list item"
+              text run at (0,78) width 712: "list item list item list item list item list item list"
+              text run at (0,117) width 733: "item list item list item list item list item list item"
+              text run at (0,156) width 124: "list item"

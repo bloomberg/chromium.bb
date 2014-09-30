@@ -3,27 +3,27 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 274x18
-          text run at (0,0) width 274: "This test covers Hebrew vowel positioning."
-      RenderBlock {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,52) size 784x18
-        RenderText {#text} at (0,0) size 458x18
-          text run at (0,0) width 458: "The vowel (two vertical dots) should be centered beneath the main letter."
-      RenderBlock {DIV} at (0,86) size 784x97
-        RenderText {#text} at (57,5) size 74x92
-          text run at (57,5) width 74 RTL: "\x{5E1}\x{5B0} "
-        RenderText {#text} at (0,5) size 58x92
-          text run at (0,5) width 58 RTL: "\x{5E9}\x{5B0}"
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 279x16
+          text run at (0,0) width 279: "This test covers Hebrew vowel positioning."
+      RenderBlock {HR} at (0,32) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,50) size 784x16
+        RenderText {#text} at (0,0) size 468x16
+          text run at (0,0) width 468: "The vowel (two vertical dots) should be centered beneath the main letter."
+      RenderBlock {DIV} at (0,82) size 784x97
+        RenderText {#text} at (57,17) size 74x80
+          text run at (57,17) width 74 RTL: "\x{5E1}\x{5B0} "
+        RenderText {#text} at (0,17) size 58x80
+          text run at (0,17) width 58 RTL: "\x{5E9}\x{5B0}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,191) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,209) size 784x18
-        RenderText {#text} at (0,0) size 637x18
-          text run at (0,0) width 637: "The dot should be positioned on the right side of the first letter, and on the left side of the second one."
-      RenderBlock {DIV} at (0,243) size 784x194
-        RenderText {#text} at (0,5) size 58x92
-          text run at (0,5) width 58 RTL: "\x{5E9}\x{5C1}"
+      RenderBlock {HR} at (0,187) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,205) size 784x16
+        RenderText {#text} at (0,0) size 651x16
+          text run at (0,0) width 651: "The dot should be positioned on the right side of the first letter, and on the left side of the second one."
+      RenderBlock {DIV} at (0,237) size 784x194
+        RenderText {#text} at (0,17) size 58x80
+          text run at (0,17) width 58 RTL: "\x{5E9}\x{5C1}"
         RenderBR {BR} at (57,77) size 1x0
-        RenderText {#text} at (0,102) size 58x92
-          text run at (0,102) width 58 RTL: "\x{5E9}\x{5C2}"
+        RenderText {#text} at (0,114) size 58x80
+          text run at (0,114) width 58 RTL: "\x{5E9}\x{5C2}"
         RenderText {#text} at (0,0) size 0x0

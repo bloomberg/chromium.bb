@@ -8,75 +8,75 @@ layer at (0,0) size 800x600
           RenderTableRow {TR} at (0,2) size 774x388
             RenderTableCell {TD} at (2,194) size 716x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
             RenderTableCell {TD} at (720,2) size 52x388 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,5) size 32x18
-                  text run at (2,5) width 32: "\x{5CA1}\x{5C71}"
-              RenderText {#text} at (34,5) size 16x18
-                text run at (34,5) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,29) size 32x18
-                  text run at (2,29) width 32: "\x{5E83}\x{5CF6}"
-              RenderText {#text} at (34,29) size 16x18
-                text run at (34,29) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,53) size 32x18
-                  text run at (2,53) width 32: "\x{5C71}\x{53E3}"
-              RenderText {#text} at (34,53) size 16x18
-                text run at (34,53) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,77) size 32x18
-                  text run at (2,77) width 32: "\x{5FB3}\x{5CF6}"
-              RenderText {#text} at (34,77) size 16x18
-                text run at (34,77) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,101) size 32x18
-                  text run at (2,101) width 32: "\x{9999}\x{5DDD}"
-              RenderText {#text} at (34,101) size 16x18
-                text run at (34,101) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,125) size 32x18
-                  text run at (2,125) width 32: "\x{611B}\x{5A9B}"
-              RenderText {#text} at (34,125) size 16x18
-                text run at (34,125) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (2,149) size 32x18
-                  text run at (2,149) width 32: "\x{9AD8}\x{77E5}"
-              RenderText {#text} at (34,149) size 16x18
-                text run at (34,149) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 48x42 [color=#0000EE]
-                RenderText {#text} at (2,173) size 48x42
-                  text run at (2,173) width 48: "\x{798F}\x{5CA1}\x{30FB}"
-                  text run at (2,197) width 48: "\x{5317}\x{4E5D}\x{5DDE}"
-              RenderText {#text} at (2,221) size 16x18
-                text run at (2,221) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (18,221) size 32x18
-                  text run at (18,221) width 32: "\x{4F50}\x{8CC0}"
-              RenderText {#text} at (2,245) size 16x18
-                text run at (2,245) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (18,245) size 32x18
-                  text run at (18,245) width 32: "\x{9577}\x{5D0E}"
-              RenderText {#text} at (2,269) size 16x18
-                text run at (2,269) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (18,269) size 32x18
-                  text run at (18,269) width 32: "\x{718A}\x{672C}"
-              RenderText {#text} at (2,293) size 16x18
-                text run at (2,293) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (18,293) size 32x18
-                  text run at (18,293) width 32: "\x{5927}\x{5206}"
-              RenderText {#text} at (2,317) size 16x18
-                text run at (2,317) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 32x18 [color=#0000EE]
-                RenderText {#text} at (18,317) size 32x18
-                  text run at (18,317) width 32: "\x{5BAE}\x{5D0E}"
-              RenderText {#text} at (2,341) size 16x18
-                text run at (2,341) width 16: "\x{FF5C}"
-              RenderInline {A} at (0,0) size 48x42 [color=#0000EE]
-                RenderText {#text} at (18,341) size 48x42
-                  text run at (18,341) width 32: "\x{9E7F}\x{5150}"
-                  text run at (2,365) width 16: "\x{5CF6}"
-              RenderText {#text} at (18,365) size 16x18
-                text run at (18,365) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,8) size 32x16
+                  text run at (2,8) width 32: "\x{5CA1}\x{5C71}"
+              RenderText {#text} at (34,8) size 16x16
+                text run at (34,8) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,32) size 32x16
+                  text run at (2,32) width 32: "\x{5E83}\x{5CF6}"
+              RenderText {#text} at (34,32) size 16x16
+                text run at (34,32) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,56) size 32x16
+                  text run at (2,56) width 32: "\x{5C71}\x{53E3}"
+              RenderText {#text} at (34,56) size 16x16
+                text run at (34,56) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,80) size 32x16
+                  text run at (2,80) width 32: "\x{5FB3}\x{5CF6}"
+              RenderText {#text} at (34,80) size 16x16
+                text run at (34,80) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,104) size 32x16
+                  text run at (2,104) width 32: "\x{9999}\x{5DDD}"
+              RenderText {#text} at (34,104) size 16x16
+                text run at (34,104) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,128) size 32x16
+                  text run at (2,128) width 32: "\x{611B}\x{5A9B}"
+              RenderText {#text} at (34,128) size 16x16
+                text run at (34,128) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (2,152) size 32x16
+                  text run at (2,152) width 32: "\x{9AD8}\x{77E5}"
+              RenderText {#text} at (34,152) size 16x16
+                text run at (34,152) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 48x40 [color=#0000EE]
+                RenderText {#text} at (2,176) size 48x40
+                  text run at (2,176) width 48: "\x{798F}\x{5CA1}\x{30FB}"
+                  text run at (2,200) width 48: "\x{5317}\x{4E5D}\x{5DDE}"
+              RenderText {#text} at (2,224) size 16x16
+                text run at (2,224) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (18,224) size 32x16
+                  text run at (18,224) width 32: "\x{4F50}\x{8CC0}"
+              RenderText {#text} at (2,248) size 16x16
+                text run at (2,248) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (18,248) size 32x16
+                  text run at (18,248) width 32: "\x{9577}\x{5D0E}"
+              RenderText {#text} at (2,272) size 16x16
+                text run at (2,272) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (18,272) size 32x16
+                  text run at (18,272) width 32: "\x{718A}\x{672C}"
+              RenderText {#text} at (2,296) size 16x16
+                text run at (2,296) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (18,296) size 32x16
+                  text run at (18,296) width 32: "\x{5927}\x{5206}"
+              RenderText {#text} at (2,320) size 16x16
+                text run at (2,320) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 32x16 [color=#0000EE]
+                RenderText {#text} at (18,320) size 32x16
+                  text run at (18,320) width 32: "\x{5BAE}\x{5D0E}"
+              RenderText {#text} at (2,344) size 16x16
+                text run at (2,344) width 16: "\x{FF5C}"
+              RenderInline {A} at (0,0) size 48x40 [color=#0000EE]
+                RenderText {#text} at (18,344) size 48x40
+                  text run at (18,344) width 32: "\x{9E7F}\x{5150}"
+                  text run at (2,368) width 16: "\x{5CF6}"
+              RenderText {#text} at (18,368) size 16x16
+                text run at (18,368) width 16: "\x{FF5C}"

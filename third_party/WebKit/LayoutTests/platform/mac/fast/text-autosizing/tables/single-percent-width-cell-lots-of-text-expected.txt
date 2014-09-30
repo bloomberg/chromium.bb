@@ -1,83 +1,83 @@
-layer at (0,0) size 800x1895
+layer at (0,0) size 800x1638
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x1895
-  RenderBlock {HTML} at (0,0) size 800x1895
-    RenderBody {BODY} at (0,0) size 800x1894
+layer at (0,0) size 800x1638
+  RenderBlock {HTML} at (0,0) size 800x1638
+    RenderBody {BODY} at (0,0) size 800x1637
       RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 308x14
-          text run at (0,0) width 308: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
-        RenderBR {BR} at (308,0) size 0x14
-        RenderText {#text} at (0,14) size 492x14
-          text run at (0,14) width 492: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
-      RenderTable {TABLE} at (1,37) size 798x1857 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x1856
-          RenderTableRow {TR} at (0,0) size 797x17
-            RenderTableCell {TD} at (0,0) size 279x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
-            RenderTableCell {TD} at (279,0) size 239x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
-            RenderTableCell {TD} at (518,0) size 279x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
-          RenderTableRow {TR} at (0,17) size 797x1839
-            RenderTableCell {TD} at (0,928) size 279x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
-            RenderTableCell {TD} at (279,17) size 239x1839 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 193x1836
-                text run at (2,2) width 193: "hello hello hello"
-                text run at (2,38) width 193: "hello hello hello"
-                text run at (2,74) width 193: "hello hello hello"
-                text run at (2,110) width 193: "hello hello hello"
-                text run at (2,146) width 193: "hello hello hello"
-                text run at (2,182) width 193: "hello hello hello"
-                text run at (2,218) width 193: "hello hello hello"
-                text run at (2,254) width 193: "hello hello hello"
-                text run at (2,290) width 193: "hello hello hello"
-                text run at (2,326) width 193: "hello hello hello"
-                text run at (2,362) width 193: "hello hello hello"
-                text run at (2,398) width 193: "hello hello hello"
-                text run at (2,434) width 193: "hello hello hello"
-                text run at (2,470) width 193: "hello hello hello"
-                text run at (2,506) width 193: "hello hello hello"
-                text run at (2,542) width 193: "hello hello hello"
-                text run at (2,578) width 193: "hello hello hello"
-                text run at (2,614) width 193: "hello hello hello"
-                text run at (2,650) width 193: "hello hello hello"
-                text run at (2,686) width 193: "hello hello hello"
-                text run at (2,722) width 193: "hello hello hello"
-                text run at (2,758) width 193: "hello hello hello"
-                text run at (2,794) width 193: "hello hello hello"
-                text run at (2,830) width 193: "hello hello hello"
-                text run at (2,866) width 193: "hello hello hello"
-                text run at (2,902) width 193: "hello hello hello"
-                text run at (2,938) width 193: "hello hello hello"
-                text run at (2,974) width 193: "hello hello hello"
-                text run at (2,1010) width 193: "hello hello hello"
-                text run at (2,1046) width 193: "hello hello hello"
-                text run at (2,1082) width 193: "hello hello hello"
-                text run at (2,1118) width 193: "hello hello hello"
-                text run at (2,1154) width 193: "hello hello hello"
-                text run at (2,1190) width 193: "hello hello hello"
-                text run at (2,1226) width 193: "hello hello hello"
-                text run at (2,1262) width 193: "hello hello hello"
-                text run at (2,1298) width 193: "hello hello hello"
-                text run at (2,1334) width 193: "hello hello hello"
-                text run at (2,1370) width 193: "hello hello hello"
-                text run at (2,1406) width 193: "hello hello hello"
-                text run at (2,1442) width 193: "hello hello hello"
-                text run at (2,1478) width 193: "hello hello hello"
-                text run at (2,1514) width 193: "hello hello hello"
-                text run at (2,1550) width 193: "hello hello hello"
-                text run at (2,1586) width 193: "hello hello hello"
-                text run at (2,1622) width 193: "hello hello hello"
-                text run at (2,1658) width 193: "hello hello hello"
-                text run at (2,1694) width 193: "hello hello hello"
-                text run at (2,1730) width 193: "hello hello hello"
-                text run at (2,1766) width 193: "hello hello hello"
-                text run at (2,1802) width 126: "hello hello"
-            RenderTableCell {TD} at (518,928) size 279x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
+        RenderText {#text} at (0,0) size 317x12
+          text run at (0,0) width 317: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
+        RenderBR {BR} at (316,0) size 1x12
+        RenderText {#text} at (0,12) size 506x12
+          text run at (0,12) width 506: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
+      RenderTable {TABLE} at (1,37) size 798x1600 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x1599
+          RenderTableRow {TR} at (0,0) size 797x15
+            RenderTableCell {TD} at (0,0) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
+            RenderTableCell {TD} at (279,0) size 239x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
+            RenderTableCell {TD} at (518,0) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
+          RenderTableRow {TR} at (0,15) size 797x1584
+            RenderTableCell {TD} at (0,799) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
+            RenderTableCell {TD} at (279,15) size 239x1584 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 195x1581
+                text run at (2,2) width 195: "hello hello hello"
+                text run at (2,33) width 195: "hello hello hello"
+                text run at (2,64) width 195: "hello hello hello"
+                text run at (2,95) width 195: "hello hello hello"
+                text run at (2,126) width 195: "hello hello hello"
+                text run at (2,157) width 195: "hello hello hello"
+                text run at (2,188) width 195: "hello hello hello"
+                text run at (2,219) width 195: "hello hello hello"
+                text run at (2,250) width 195: "hello hello hello"
+                text run at (2,281) width 195: "hello hello hello"
+                text run at (2,312) width 195: "hello hello hello"
+                text run at (2,343) width 195: "hello hello hello"
+                text run at (2,374) width 195: "hello hello hello"
+                text run at (2,405) width 195: "hello hello hello"
+                text run at (2,436) width 195: "hello hello hello"
+                text run at (2,467) width 195: "hello hello hello"
+                text run at (2,498) width 195: "hello hello hello"
+                text run at (2,529) width 195: "hello hello hello"
+                text run at (2,560) width 195: "hello hello hello"
+                text run at (2,591) width 195: "hello hello hello"
+                text run at (2,622) width 195: "hello hello hello"
+                text run at (2,653) width 195: "hello hello hello"
+                text run at (2,684) width 195: "hello hello hello"
+                text run at (2,715) width 195: "hello hello hello"
+                text run at (2,746) width 195: "hello hello hello"
+                text run at (2,777) width 195: "hello hello hello"
+                text run at (2,808) width 195: "hello hello hello"
+                text run at (2,839) width 195: "hello hello hello"
+                text run at (2,870) width 195: "hello hello hello"
+                text run at (2,901) width 195: "hello hello hello"
+                text run at (2,932) width 195: "hello hello hello"
+                text run at (2,963) width 195: "hello hello hello"
+                text run at (2,994) width 195: "hello hello hello"
+                text run at (2,1025) width 195: "hello hello hello"
+                text run at (2,1056) width 195: "hello hello hello"
+                text run at (2,1087) width 195: "hello hello hello"
+                text run at (2,1118) width 195: "hello hello hello"
+                text run at (2,1149) width 195: "hello hello hello"
+                text run at (2,1180) width 195: "hello hello hello"
+                text run at (2,1211) width 195: "hello hello hello"
+                text run at (2,1242) width 195: "hello hello hello"
+                text run at (2,1273) width 195: "hello hello hello"
+                text run at (2,1304) width 195: "hello hello hello"
+                text run at (2,1335) width 195: "hello hello hello"
+                text run at (2,1366) width 195: "hello hello hello"
+                text run at (2,1397) width 195: "hello hello hello"
+                text run at (2,1428) width 195: "hello hello hello"
+                text run at (2,1459) width 195: "hello hello hello"
+                text run at (2,1490) width 195: "hello hello hello"
+                text run at (2,1521) width 195: "hello hello hello"
+                text run at (2,1552) width 128: "hello hello"
+            RenderTableCell {TD} at (518,799) size 279x15 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 24x12
+                text run at (2,2) width 24: "hello"
