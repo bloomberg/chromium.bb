@@ -1230,8 +1230,10 @@ crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.ht
 crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
 crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Pass Failure ]
-crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure ]
-crbug.com/409755 http/tests/serviceworker/request.html [ Crash Pass Timeout ]
+crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure Timeout ]
+crbug.com/418864 [ Win ] http/tests/serviceworker/chromium/registration-stress.html [ Pass Timeout ]
+crbug.com/418868 [ XP ] http/tests/serviceworker/ready.html [ Pass Timeout ]
+crbug.com/418869 [ Win ] http/tests/serviceworker/register-same-scope-different-script-url.html [ Pass Timeout ]
 
 crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Failure Pass ]
