@@ -1,0 +1,41 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 779x32
+          text run at (0,0) width 779: "The image below has a width of 459px. When the table below it has a width of 459px or greater, the bottom row overlaps"
+          text run at (0,16) width 73: "the top row"
+      RenderBlock (anonymous) at (0,48) size 784x16
+        RenderText {#text} at (0,0) size 143x16
+          text run at (0,0) width 143: "Table with width=459"
+        RenderBR {BR} at (142,12) size 1x0
+      RenderTable {TABLE} at (0,64) size 784x242 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 782x240
+          RenderTableRow {TR} at (0,2) size 782x150
+            RenderTableCell {TD} at (2,110) size 51x20 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
+              RenderText {#text} at (2,2) size 47x16
+                text run at (2,2) width 47: "sidebar"
+            RenderTableCell {TD} at (55,2) size 725x150 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderBlock (anonymous) at (2,2) size 721x120
+                RenderImage {IMG} at (0,0) size 459x120
+                RenderText {#text} at (0,0) size 0x0
+              RenderTable {TABLE} at (2,122) size 459x26 [border: (1px outset #808080)]
+                RenderTableSection {TBODY} at (1,1) size 457x24
+                  RenderTableRow {TR} at (0,2) size 457x20
+                    RenderTableCell {TD} at (2,2) size 453x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 125x16
+                        text run at (2,2) width 125: "THIS IS A TABLE"
+          RenderTableRow {TR} at (0,154) size 782x84
+            RenderTableCell {TD} at (55,154) size 725x84 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 720x80
+                text run at (2,2) width 597: "The XML Cover Pages is a comprehensive online reference work for the Extensible Markup "
+                text run at (598,2) width 114: "Language (XML)"
+                text run at (2,18) width 382: "and its parent, the Standard Generalized Markup Language "
+                text run at (383,18) width 339: "(SGML). The reference collection features extensive"
+                text run at (2,34) width 143: "documentation on the "
+                text run at (144,34) width 505: "application of the open, interoperable \"markup language\" standards, including "
+                text run at (648,34) width 35: "XSL,"
+                text run at (2,50) width 702: "XSLT, XPath, XQuery, XLink, XPointer, XHTML, HyTime, DSSSL, CSS, SPDL, SVG, CGM, ISO-HTML,"
+                text run at (2,66) width 71: "and others."

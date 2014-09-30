@@ -1,0 +1,68 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderTable {TABLE} at (0,0) size 336x34 [border: (5px outset #808080)]
+        RenderTableSection {TBODY} at (5,5) size 326x24
+          RenderTableRow {TR} at (0,2) size 326x20
+            RenderTableCell {TD} at (2,2) size 160x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 156x16
+                text run at (2,2) width 156: "almaalmaalmaalmaalma"
+            RenderTableCell {TD} at (164,2) size 160x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x16
+                text run at (2,2) width 8: "x"
+      RenderBlock (anonymous) at (0,34) size 784x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,50) size 336x34 [border: (5px outset #808080)]
+        RenderTableSection {TBODY} at (5,5) size 326x24
+          RenderTableRow {TR} at (0,2) size 326x20
+            RenderTableCell {TD} at (2,2) size 160x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 156x16
+                text run at (2,2) width 156: "almaalmaalmaalmaalma"
+            RenderTableCell {TD} at (164,2) size 160x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x16
+                text run at (2,2) width 8: "x"
+      RenderBlock (anonymous) at (0,84) size 784x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderBlock {P} at (0,116) size 784x32
+        RenderText {#text} at (0,0) size 360x16
+          text run at (0,0) width 360: "In this table, the second and the third cell are given 40%"
+        RenderBR {BR} at (359,12) size 1x0
+        RenderText {#text} at (0,16) size 260x16
+          text run at (0,16) width 260: "The cells are competing with each other."
+        RenderBR {BR} at (259,28) size 1x0
+      RenderTable {TABLE} at (0,164) size 348x34 [border: (5px outset #808080)]
+        RenderTableSection {TBODY} at (5,5) size 338x24
+          RenderTableRow {TR} at (0,2) size 338x20
+            RenderTableCell {TD} at (2,2) size 66x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 62x16
+                text run at (2,2) width 62: "some text"
+            RenderTableCell {TD} at (70,2) size 132x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x16
+                text run at (2,2) width 8: "x"
+            RenderTableCell {TD} at (204,2) size 132x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x16
+                text run at (2,2) width 8: "x"
+      RenderBlock {P} at (0,214) size 784x48
+        RenderText {#text} at (0,0) size 360x16
+          text run at (0,0) width 360: "In this table, the second and the third cell are given 50%"
+        RenderBR {BR} at (359,12) size 1x0
+        RenderText {#text} at (0,16) size 455x16
+          text run at (0,16) width 455: "The cells are competing again but their percentage can not be satisfied."
+        RenderBR {BR} at (454,28) size 1x0
+        RenderText {#text} at (0,32) size 488x16
+          text run at (0,32) width 488: "The table grows as large as it can and the first cell gets to its minimal width."
+      RenderTable {TABLE} at (0,278) size 784x50 [border: (5px outset #808080)]
+        RenderTableSection {TBODY} at (5,5) size 774x40
+          RenderTableRow {TR} at (0,2) size 774x36
+            RenderTableCell {TD} at (2,2) size 38x36 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 34x32
+                text run at (2,2) width 34: "some"
+                text run at (2,18) width 24: "text"
+            RenderTableCell {TD} at (42,10) size 364x20 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x16
+                text run at (2,2) width 8: "x"
+            RenderTableCell {TD} at (408,10) size 364x20 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 8x16
+                text run at (2,2) width 8: "x"

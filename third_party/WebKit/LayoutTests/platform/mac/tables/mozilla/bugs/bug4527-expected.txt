@@ -10,12 +10,12 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (0,0) size 613x95
           RenderTableRow {TR} at (0,0) size 613x70
             RenderTableCell {TD} at (0,5) size 126x85 [r=0 c=0 rs=2 cs=1]
-              RenderInline {A} at (0,0) size 126x18 [color=#0000EE]
+              RenderInline {A} at (0,0) size 126x16 [color=#0000EE]
                 RenderImage {IMG} at (0,0) size 126x85
               RenderText {#text} at (0,0) size 0x0
             RenderTableCell {TD} at (126,0) size 487x70 [r=0 c=1 rs=1 cs=3]
-              RenderInline {NOBR} at (0,0) size 19x18
-                RenderInline {A} at (0,0) size 19x18 [color=#0000EE]
+              RenderInline {NOBR} at (0,0) size 19x16
+                RenderInline {A} at (0,0) size 19x16 [color=#0000EE]
                   RenderImage {IMG} at (468,0) size 19x60
               RenderBR {BR} at (487,60) size 0x0
               RenderImage {IMG} at (0,60) size 470x10
@@ -30,8 +30,8 @@ layer at (0,0) size 800x600
               RenderBlock {INPUT} at (2.91,5) size 12x13
               RenderImage {IMG} at (17.81,0) size 40x25
               RenderBlock {INPUT} at (60.72,5) size 12x13
-              RenderText {#text} at (75,2) size 5x18
-                text run at (75,2) width 5: " "
+              RenderText {#text} at (75,4) size 5x16
+                text run at (75,4) width 5: " "
               RenderImage {IMG} at (79.63,0) size 46x25
 layer at (134,8) size 468x60
   RenderPartObject {IFRAME} at (0,0) size 468x60
@@ -42,7 +42,7 @@ layer at (134,8) size 468x60
         RenderBody {BODY} at (0,0) size 468x60
           RenderInline {BASE} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
-          RenderInline {A} at (0,0) size 468x18 [color=#0000EE]
+          RenderInline {A} at (0,0) size 468x16 [color=#0000EE]
             RenderText {#text} at (0,0) size 0x0
             RenderImage {IMG} at (0,0) size 468x60
           RenderText {#text} at (0,0) size 0x0

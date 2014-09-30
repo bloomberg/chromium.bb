@@ -1,96 +1,96 @@
-layer at (0,0) size 785x1084
+layer at (0,0) size 785x1038
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1084
-  RenderBlock {HTML} at (0,0) size 785x1084
-    RenderBody {BODY} at (8,8) size 769x1068
-      RenderTable {TABLE} at (0,0) size 769x602 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 769x18
-          RenderInline {NOBR} at (0,0) size 613x18
-            RenderText {#text} at (78,0) size 613x18
-              text run at (78,0) width 356: "caption is considered part of % width, not so in Nav4.6, "
-              text run at (433,0) width 258: "caption is not considered part of %height"
+layer at (0,0) size 785x1038
+  RenderBlock {HTML} at (0,0) size 785x1038
+    RenderBody {BODY} at (8,8) size 769x1022
+      RenderTable {TABLE} at (0,0) size 769x600 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,0) size 769x16
+          RenderInline {NOBR} at (0,0) size 625x16
+            RenderText {#text} at (72,0) size 625x16
+              text run at (72,0) width 362: "caption is considered part of % width, not so in Nav4.6, "
+              text run at (433,0) width 264: "caption is not considered part of %height"
           RenderText {#text} at (0,0) size 0x0
-        RenderTableSection {TBODY} at (1,19) size 767x582
+        RenderTableSection {TBODY} at (1,17) size 767x582
           RenderTableRow {TR} at (0,2) size 767x578
-            RenderTableCell {TD} at (2,271) size 763x40 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (11,11) size 33x18
+            RenderTableCell {TD} at (2,272) size 763x38 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (11,11) size 33x16
                 text run at (11,11) width 33: "FOO"
-      RenderBlock (anonymous) at (0,602) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,620) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 524x18
-          RenderText {#text} at (231,0) size 62x18
-            text run at (231,0) width 62: "top center"
-        RenderTableSection {TBODY} at (1,19) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,666) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,684) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 524x18
-          RenderText {#text} at (471,0) size 53x18
-            text run at (471,0) width 53: "top right"
-        RenderTableSection {TBODY} at (1,19) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,730) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,748) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,28) size 524x18
-          RenderText {#text} at (219,0) size 86x18
-            text run at (219,0) width 86: "bottom center"
-        RenderTableSection {TBODY} at (1,1) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,794) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,812) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,28) size 524x18
-          RenderText {#text} at (0,0) size 68x18
-            text run at (0,0) width 68: "bottom left"
-        RenderTableSection {TBODY} at (1,1) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,858) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,876) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 524x18
-          RenderText {#text} at (231,0) size 62x18
-            text run at (231,0) width 62: "top center"
-        RenderTableSection {TBODY} at (1,19) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,922) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,940) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,28) size 524x18
-          RenderText {#text} at (219,0) size 86x18
-            text run at (219,0) width 86: "bottom center"
-        RenderTableSection {TBODY} at (1,1) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,986) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
-      RenderTable {TABLE} at (0,1004) size 524x46 [border: (1px outset #808080)]
-        RenderBlock {CAPTION} at (0,0) size 524x18
-          RenderText {#text} at (231,0) size 62x18
-            text run at (231,0) width 62: "top center"
-        RenderTableSection {TBODY} at (1,19) size 522x26
-          RenderTableRow {TR} at (0,2) size 522x22
-            RenderTableCell {TD} at (2,2) size 518x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 514x18
-                text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
-      RenderBlock (anonymous) at (0,1050) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+      RenderBlock (anonymous) at (0,600) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,616) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,0) size 511x16
+          RenderText {#text} at (223,0) size 65x16
+            text run at (223,0) width 65: "top center"
+        RenderTableSection {TBODY} at (1,17) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,658) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,674) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,0) size 511x16
+          RenderText {#text} at (456,0) size 55x16
+            text run at (456,0) width 55: "top right"
+        RenderTableSection {TBODY} at (1,17) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,716) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,732) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,26) size 511x16
+          RenderText {#text} at (211,0) size 89x16
+            text run at (211,0) width 89: "bottom center"
+        RenderTableSection {TBODY} at (1,1) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,774) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,790) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,26) size 511x16
+          RenderText {#text} at (0,0) size 71x16
+            text run at (0,0) width 71: "bottom left"
+        RenderTableSection {TBODY} at (1,1) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,832) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,848) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,0) size 511x16
+          RenderText {#text} at (223,0) size 65x16
+            text run at (223,0) width 65: "top center"
+        RenderTableSection {TBODY} at (1,17) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,890) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,906) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,26) size 511x16
+          RenderText {#text} at (211,0) size 89x16
+            text run at (211,0) width 89: "bottom center"
+        RenderTableSection {TBODY} at (1,1) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,948) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
+      RenderTable {TABLE} at (0,964) size 511x42 [border: (1px outset #808080)]
+        RenderBlock {CAPTION} at (0,0) size 511x16
+          RenderText {#text} at (223,0) size 65x16
+            text run at (223,0) width 65: "top center"
+        RenderTableSection {TBODY} at (1,17) size 509x24
+          RenderTableRow {TR} at (0,2) size 509x20
+            RenderTableCell {TD} at (2,2) size 505x20 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 501x16
+                text run at (2,2) width 501: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
+      RenderBlock (anonymous) at (0,1006) size 769x16
+        RenderBR {BR} at (0,0) size 0x16
