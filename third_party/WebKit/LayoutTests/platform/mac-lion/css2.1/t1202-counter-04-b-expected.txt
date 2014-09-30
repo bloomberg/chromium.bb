@@ -1,99 +1,99 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x96
-  RenderBlock {HTML} at (0,0) size 800x96
-    RenderBody {BODY} at (8,16) size 784x72
-      RenderBlock {P} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 233x18
-          text run at (0,0) width 233: "The following two lines should look "
-        RenderInline {EM} at (0,0) size 91x18
-          RenderText {#text} at (233,0) size 91x18
-            text run at (233,0) width 91: "approximately"
-        RenderText {#text} at (324,0) size 63x18
-          text run at (324,0) width 63: " the same:"
-      RenderBlock {DIV} at (0,34) size 784x19
-        RenderInline {SPAN} at (0,0) size 9x18
-          RenderInline (pseudo:before) at (0,0) size 9x18
-            RenderCounter at (0,1) size 9x18
-              text run at (0,1) width 9: "\x{25A0}"
-        RenderText {#text} at (8,1) size 5x18
-          text run at (8,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (12,1) size 10x18
-              text run at (12,1) width 10: "\x{25A0}"
-        RenderText {#text} at (21,1) size 5x18
-          text run at (21,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (25,1) size 10x18
-              text run at (25,1) width 10: "\x{25A0}"
-        RenderText {#text} at (34,1) size 5x18
-          text run at (34,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 9x18
-          RenderInline (pseudo:before) at (0,0) size 9x18
-            RenderCounter at (38,1) size 9x18
-              text run at (38,1) width 9: "\x{25A0}"
-        RenderText {#text} at (46,1) size 5x18
-          text run at (46,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (50,1) size 10x18
-              text run at (50,1) width 10: "\x{25A0}"
-        RenderText {#text} at (59,1) size 5x18
-          text run at (59,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (63,1) size 10x18
-              text run at (63,1) width 10: "\x{25A0}"
-        RenderText {#text} at (72,1) size 5x18
-          text run at (72,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 9x18
-          RenderInline (pseudo:before) at (0,0) size 9x18
-            RenderCounter at (76,1) size 9x18
-              text run at (76,1) width 9: "\x{25A0}"
-        RenderText {#text} at (84,1) size 5x18
-          text run at (84,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (88,1) size 10x18
-              text run at (88,1) width 10: "\x{25A0}"
-        RenderText {#text} at (97,1) size 5x18
-          text run at (97,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (101,1) size 10x18
-              text run at (101,1) width 10: "\x{25A0}"
-        RenderText {#text} at (110,1) size 5x18
-          text run at (110,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 9x18
-          RenderInline (pseudo:before) at (0,0) size 9x18
-            RenderCounter at (114,1) size 9x18
-              text run at (114,1) width 9: "\x{25A0}"
-        RenderText {#text} at (122,1) size 5x18
-          text run at (122,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (126,1) size 10x18
-              text run at (126,1) width 10: "\x{25A0}"
-        RenderText {#text} at (135,1) size 5x18
-          text run at (135,1) width 5: " "
-        RenderInline {SPAN} at (0,0) size 10x18
-          RenderInline (pseudo:before) at (0,0) size 10x18
-            RenderCounter at (139,1) size 10x18
-              text run at (139,1) width 10: "\x{25A0}"
+layer at (0,0) size 800x94
+  RenderBlock {HTML} at (0,0) size 800x94
+    RenderBody {BODY} at (8,16) size 784x70
+      RenderBlock {P} at (0,0) size 784x16
+        RenderText {#text} at (0,0) size 237x16
+          text run at (0,0) width 237: "The following two lines should look "
+        RenderInline {EM} at (0,0) size 93x16
+          RenderText {#text} at (236,0) size 93x16
+            text run at (236,0) width 93: "approximately"
+        RenderText {#text} at (328,0) size 66x16
+          text run at (328,0) width 66: " the same:"
+      RenderBlock {DIV} at (0,32) size 784x19
+        RenderInline {SPAN} at (0,0) size 9x16
+          RenderInline (pseudo:before) at (0,0) size 9x16
+            RenderCounter at (0,3) size 9x16
+              text run at (0,3) width 9: "\x{25A0}"
+        RenderText {#text} at (8,3) size 5x16
+          text run at (8,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (12,3) size 10x16
+              text run at (12,3) width 10: "\x{25A0}"
+        RenderText {#text} at (21,3) size 5x16
+          text run at (21,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (25,3) size 10x16
+              text run at (25,3) width 10: "\x{25A0}"
+        RenderText {#text} at (34,3) size 5x16
+          text run at (34,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 9x16
+          RenderInline (pseudo:before) at (0,0) size 9x16
+            RenderCounter at (38,3) size 9x16
+              text run at (38,3) width 9: "\x{25A0}"
+        RenderText {#text} at (46,3) size 5x16
+          text run at (46,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (50,3) size 10x16
+              text run at (50,3) width 10: "\x{25A0}"
+        RenderText {#text} at (59,3) size 5x16
+          text run at (59,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (63,3) size 10x16
+              text run at (63,3) width 10: "\x{25A0}"
+        RenderText {#text} at (72,3) size 5x16
+          text run at (72,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 9x16
+          RenderInline (pseudo:before) at (0,0) size 9x16
+            RenderCounter at (76,3) size 9x16
+              text run at (76,3) width 9: "\x{25A0}"
+        RenderText {#text} at (84,3) size 5x16
+          text run at (84,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (88,3) size 10x16
+              text run at (88,3) width 10: "\x{25A0}"
+        RenderText {#text} at (97,3) size 5x16
+          text run at (97,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (101,3) size 10x16
+              text run at (101,3) width 10: "\x{25A0}"
+        RenderText {#text} at (110,3) size 5x16
+          text run at (110,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 9x16
+          RenderInline (pseudo:before) at (0,0) size 9x16
+            RenderCounter at (114,3) size 9x16
+              text run at (114,3) width 9: "\x{25A0}"
+        RenderText {#text} at (122,3) size 5x16
+          text run at (122,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (126,3) size 10x16
+              text run at (126,3) width 10: "\x{25A0}"
+        RenderText {#text} at (135,3) size 5x16
+          text run at (135,3) width 5: " "
+        RenderInline {SPAN} at (0,0) size 10x16
+          RenderInline (pseudo:before) at (0,0) size 10x16
+            RenderCounter at (139,3) size 10x16
+              text run at (139,3) width 10: "\x{25A0}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,53) size 784x19
-        RenderText {#text} at (0,1) size 164x18
-          text run at (0,1) width 14: "\x{25FE} "
-          text run at (14,1) width 14: "\x{25FE} "
-          text run at (28,1) width 14: "\x{25FE} "
-          text run at (42,1) width 14: "\x{25FE} "
-          text run at (56,1) width 14: "\x{25FE} "
-          text run at (70,1) width 14: "\x{25FE} "
-          text run at (84,1) width 14: "\x{25FE} "
-          text run at (98,1) width 14: "\x{25FE} "
-          text run at (112,1) width 14: "\x{25FE} "
-          text run at (126,1) width 14: "\x{25FE} "
-          text run at (140,1) width 14: "\x{25FE} "
-          text run at (154,1) width 10: "\x{25FE}"
+      RenderBlock {DIV} at (0,51) size 784x19
+        RenderText {#text} at (0,3) size 160x16
+          text run at (0,3) width 14: "\x{25FE} "
+          text run at (13,3) width 15: "\x{25FE} "
+          text run at (27,3) width 14: "\x{25FE} "
+          text run at (40,3) width 15: "\x{25FE} "
+          text run at (54,3) width 15: "\x{25FE} "
+          text run at (68,3) width 14: "\x{25FE} "
+          text run at (81,3) width 15: "\x{25FE} "
+          text run at (95,3) width 15: "\x{25FE} "
+          text run at (109,3) width 14: "\x{25FE} "
+          text run at (122,3) width 15: "\x{25FE} "
+          text run at (136,3) width 14: "\x{25FE} "
+          text run at (149,3) width 11: "\x{25FE}"
