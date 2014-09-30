@@ -323,7 +323,14 @@ void AppInfoSummaryPanel::StartCalculatingAppSize() {
 }
 
 void AppInfoSummaryPanel::OnAppSizeCalculated(int64 app_size_in_bytes) {
-  size_value_->SetText(ui::FormatBytes(app_size_in_bytes));
+  const int one_mebibyte_in_bytes = 1024 * 1024;
+  if (app_size_in_bytes < one_mebibyte_in_bytes) {
+    size_value_->SetText(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_SMALL_LABEL));
+  } else {
+    size_value_->SetText(ui::FormatBytesWithUnits(
+        app_size_in_bytes, ui::DATA_UNITS_MEBIBYTE, true));
+  }
 }
 
 base::Time AppInfoSummaryPanel::GetInstalledTime() const {

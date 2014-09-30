@@ -2187,9 +2187,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_SIZE_LABEL" desc="Text displayed before the app's size on disk in the details section of the dialog.">
           Size:
         </message>
-        <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app's size on disk in the details section of the dialog while the size is being calculated.">
-          Calculating...
-        </message>
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="Text displayed before the app's version in the details section of the dialog.">
           Version:
         </message>
@@ -2243,9 +2240,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_SIZE_LABEL" desc="In Title Case: Text displayed before the app's size on disk in the details section of the dialog.">
           Size:
         </message>
-        <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app's size on disk in the details section of the dialog while the size is being calculated.">
-          Calculating...
-        </message>
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="In Title Case: Text displayed before the app's version in the details section of the dialog.">
           Version:
         </message>
@@ -2280,6 +2274,12 @@ Even if you have downloaded files from this website before, the website might ha
           Revoke Device Access
         </message>
       </if>
+      <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app's size on disk in the details section of the dialog while the size is being calculated.">
+        Calculating...
+      </message>
+      <message name="IDS_APPLICATION_INFO_SIZE_SMALL_LABEL" desc="Text displayed instead of the app's size for apps that are less than 1 megabyte in size.">
+        &lt; 1 MB
+      </message>
       <message name="IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the app has no permissions.">
         This app requires no special permissions.
       </message>
