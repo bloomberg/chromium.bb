@@ -1,0 +1,37 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
+        RenderBlock {DIV} at (14,14) size 756x72
+          RenderText {#text} at (0,0) size 68x24
+            text run at (0,0) width 68: "Tests: "
+          RenderBR {BR} at (0,0) size 0x0
+          RenderText {#text} at (0,24) size 731x48
+            text run at (0,24) width 731: "Deleting when a selection starts in a blank line created by a BR element and"
+            text run at (0,48) width 282: "extends to the end of a block."
+        RenderBlock {DIV} at (14,102) size 756x96
+          RenderText {#text} at (0,0) size 190x24
+            text run at (0,0) width 190: "Expected Results: "
+          RenderBR {BR} at (189,18) size 1x0
+          RenderText {#text} at (0,24) size 728x72
+            text run at (0,24) width 725: "Should see the three lines in the red box. First line should be \"A\". Next two"
+            text run at (0,48) width 728: "lines should be empty. Insertion point should be blinking on the second line"
+            text run at (0,72) width 196: "(the first blank one)."
+      RenderBlock {DIV} at (0,236) size 784x76
+        RenderBlock {DIV} at (0,0) size 784x76 [border: (2px solid #FF0000)]
+          RenderBlock {P} at (2,2) size 780x24
+            RenderText {#text} at (0,0) size 18x24
+              text run at (0,0) width 18: "A"
+          RenderBlock (anonymous) at (2,26) size 780x24
+            RenderBR {BR} at (0,0) size 0x24
+          RenderBlock {P} at (2,50) size 780x24
+            RenderBR {BR} at (0,0) size 0x24
+caret: position 0 of child 3 {BR} of child 1 {DIV} of child 3 {DIV} of body

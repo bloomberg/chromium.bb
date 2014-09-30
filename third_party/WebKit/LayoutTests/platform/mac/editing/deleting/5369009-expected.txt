@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 782x32
+          text run at (0,0) width 782: "This tests for a hang on delete where a style rule would cause style spans in content moved after the delete to be displayed"
+          text run at (0,16) width 206: "as blocks. You should see Hello"
+        RenderInline {B} at (0,0) size 45x16
+          RenderText {#text} at (205,16) size 45x16
+            text run at (205,16) width 45: "World"
+        RenderText {#text} at (249,16) size 48x16
+          text run at (249,16) width 48: " below."
+      RenderBlock {DIV} at (0,48) size 784x16
+        RenderBlock {DIV} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 36x16
+            text run at (0,0) width 36: "Hello"
+          RenderInline {SPAN} at (0,0) size 45x16
+            RenderText {#text} at (35,0) size 45x16
+              text run at (35,0) width 45: "World"
+caret: position 5 of child 0 {#text} of child 1 {DIV} of child 2 {DIV} of body

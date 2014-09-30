@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x51
-  RenderBlock {test} at (0,0) size 800x51
-    RenderBlock {p} at (0,16) size 800x19
-      RenderBlock {input} at (2.91,4) size 12x12 [bgcolor=#00FF00]
-      RenderText {#text} at (17,0) size 5x18
-        text run at (17,0) width 5: " "
-      RenderInline {span} at (0,0) size 389x18 [bgcolor=#00FF00]
-        RenderText {#text} at (21,0) size 389x18
-          text run at (21,0) width 389: "Everything in this paragraph should have a green background"
+layer at (0,0) size 800x50
+  RenderBlock {test} at (0,0) size 800x50
+    RenderBlock {p} at (0,16) size 800x18
+      RenderBlock {input} at (2.91,3) size 12x12 [bgcolor=#00FF00]
+      RenderText {#text} at (17,1) size 5x16
+        text run at (17,1) width 5: " "
+      RenderInline {span} at (0,0) size 395x16 [bgcolor=#00FF00]
+        RenderText {#text} at (21,1) size 395x16
+          text run at (21,1) width 395: "Everything in this paragraph should have a green background"

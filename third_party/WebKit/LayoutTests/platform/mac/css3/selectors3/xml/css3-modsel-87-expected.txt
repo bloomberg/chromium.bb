@@ -1,0 +1,17 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x128
+  RenderBlock {test} at (0,0) size 800x128
+    RenderBlock {blockquote} at (40,16) size 720x16
+      RenderBlock {div} at (0,0) size 720x16
+        RenderText {#text} at (0,0) size 185x16
+          text run at (0,0) width 185: "This text should be unstyled."
+    RenderBlock {div} at (0,48) size 800x16
+      RenderText {#text} at (0,0) size 185x16
+        text run at (0,0) width 185: "This text should be unstyled."
+    RenderBlock {div} at (0,64) size 800x16
+      RenderText {#text} at (0,0) size 185x16
+        text run at (0,0) width 185: "This text should be unstyled."
+    RenderBlock {p} at (0,96) size 800x16 [color=#008000]
+      RenderText {#text} at (0,0) size 166x16
+        text run at (0,0) width 166: "This text should be green."

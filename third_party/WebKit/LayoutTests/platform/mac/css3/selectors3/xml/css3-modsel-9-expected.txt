@@ -1,0 +1,10 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x64
+  RenderBlock {test} at (0,0) size 800x64
+    RenderBlock {p} at (0,16) size 800x32 [bgcolor=#00FF00]
+      RenderText {#text} at (0,0) size 308x16
+        text run at (0,0) width 308: "This paragraph should have a green background"
+      RenderBR {br} at (307,0) size 1x16
+      RenderText {#text} at (0,16) size 273x16
+        text run at (0,16) width 273: "because its title attribute begins with \"foo\""

@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x112
+  RenderBlock {test} at (0,0) size 800x112
+    RenderBlock {div} at (0,16) size 800x80
+      RenderBlock {p} at (0,0) size 800x16 [bgcolor=#008000]
+        RenderText {#text} at (0,0) size 561x16
+          text run at (0,0) width 390: "This paragraph should have a green background because the "
+          text run at (389,0) width 172: "enclosing div is in english."
+      RenderBlock {p} at (0,32) size 800x16 [bgcolor=#008000]
+        RenderText {#text} at (0,0) size 461x16
+          text run at (0,0) width 367: "This paragraph should have a green background because "
+          text run at (366,0) width 95: "it is in english."
+      RenderBlock {div} at (0,64) size 800x16 [bgcolor=#FF0000]
+        RenderBlock {p} at (0,0) size 800x16 [bgcolor=#008000]
+          RenderText {#text} at (0,0) size 461x16
+            text run at (0,0) width 312: "This paragraph should have a green background "
+            text run at (311,0) width 150: "because it is in english."

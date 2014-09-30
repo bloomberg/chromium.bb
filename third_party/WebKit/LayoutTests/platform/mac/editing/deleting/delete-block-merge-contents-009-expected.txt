@@ -1,0 +1,31 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x124 [border: (2px solid #FF0000)]
+        RenderBlock {DIV} at (14,14) size 756x96
+          RenderBlock (anonymous) at (0,0) size 756x24
+            RenderText {#text} at (0,0) size 40x24
+              text run at (0,0) width 40: "One"
+          RenderBlock {DIV} at (0,24) size 756x48
+            RenderText {#text} at (0,0) size 100x24
+              text run at (0,0) width 100: "TwoThree"
+            RenderBR {BR} at (99,18) size 1x0
+            RenderText {#text} at (0,24) size 46x24
+              text run at (0,24) width 46: "Four"
+          RenderBlock (anonymous) at (0,72) size 756x24
+            RenderText {#text} at (0,0) size 43x24
+              text run at (0,0) width 43: "Five"
+caret: position 3 of child 0 {#text} of child 1 {DIV} of child 1 {DIV} of child 1 {DIV} of body

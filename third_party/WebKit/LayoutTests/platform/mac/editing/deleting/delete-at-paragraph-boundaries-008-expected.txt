@@ -1,0 +1,48 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {DIV} at (0,0) size 784x212 [border: (2px solid #0000FF)]
+        RenderBlock {DIV} at (14,14) size 756x72
+          RenderText {#text} at (0,0) size 68x24
+            text run at (0,0) width 68: "Tests: "
+          RenderBR {BR} at (0,0) size 0x0
+          RenderText {#text} at (0,24) size 682x48
+            text run at (0,24) width 682: "Deleting when a selection starts in the middle of the last paragraph and"
+            text run at (0,48) width 344: "extends to the end of that paragraph"
+        RenderBlock {DIV} at (14,102) size 756x96
+          RenderText {#text} at (0,0) size 190x24
+            text run at (0,0) width 190: "Expected Results: "
+          RenderBR {BR} at (189,18) size 1x0
+          RenderText {#text} at (0,24) size 733x72
+            text run at (0,24) width 733: "Should see the four lines in the red box. First line should be \"one\". Next one"
+            text run at (0,48) width 167: "should be \"two\". "
+            text run at (166,48) width 504: "Next one should be \"three\". Last one should be \"fo\"."
+            text run at (0,72) width 661: "Insertion point should be blinking at the start of the fourth (last) line."
+      RenderBlock {DIV} at (0,236) size 784x100
+        RenderBlock {DIV} at (0,0) size 784x100 [border: (2px solid #FF0000)]
+          RenderBlock (anonymous) at (2,2) size 780x24
+            RenderText {#text} at (0,0) size 35x24
+              text run at (0,0) width 35: "one"
+          RenderBlock {P} at (2,26) size 780x24
+            RenderText {#text} at (0,0) size 36x24
+              text run at (0,0) width 36: "two"
+          RenderBlock {P} at (2,50) size 780x24
+            RenderText {#text} at (0,0) size 48x24
+              text run at (0,0) width 48: "three"
+          RenderBlock {P} at (2,74) size 780x24
+            RenderText {#text} at (0,0) size 20x24
+              text run at (0,0) width 20: "fo"
+caret: position 2 of child 0 {#text} of child 5 {P} of child 1 {DIV} of child 3 {DIV} of body

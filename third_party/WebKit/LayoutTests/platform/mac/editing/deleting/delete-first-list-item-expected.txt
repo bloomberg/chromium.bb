@@ -1,0 +1,31 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {P} at (0,0) size 784x32
+        RenderText {#text} at (0,0) size 754x32
+          text run at (0,0) width 754: "This tests deletion when the caret is in an empty list item at the beginning of the document. It also makes sure that the"
+          text run at (0,16) width 275: "style inside the empty list item is retained. "
+          text run at (274,16) width 106: "You should see '"
+        RenderInline {B} at (0,0) size 23x16
+          RenderText {#text} at (379,16) size 23x16
+            text run at (379,16) width 23: "foo"
+        RenderText {#text} at (401,16) size 257x16
+          text run at (401,16) width 257: "' followed by a list item containing 'bar'."
+      RenderBlock {DIV} at (0,48) size 784x48
+        RenderBlock {DIV} at (0,0) size 784x16
+          RenderInline {B} at (0,0) size 22x16
+            RenderText {#text} at (0,0) size 22x16
+              text run at (0,0) width 22: "foo"
+        RenderBlock {UL} at (0,32) size 784x16
+          RenderListItem {LI} at (40,0) size 744x16
+            RenderListMarker at (-16,0) size 6x16: bullet
+            RenderText {#text} at (0,0) size 21x16
+              text run at (0,0) width 21: "bar"
+caret: position 3 of child 0 {#text} of child 0 {B} of child 0 {DIV} of child 2 {DIV} of body

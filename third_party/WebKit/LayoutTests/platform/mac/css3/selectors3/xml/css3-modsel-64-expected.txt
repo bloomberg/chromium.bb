@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x85
-  RenderBlock {test} at (0,0) size 800x85
-    RenderBlock {div} at (0,16) size 800x53
-      RenderBlock {p} at (0,0) size 800x18 [color=#00FF00]
-        RenderInline {a} at (0,0) size 279x18 [color=#000000]
-          RenderText {#text} at (0,0) size 279x18
-            text run at (0,0) width 279: "This text should turn green while it is active."
+layer at (0,0) size 800x82
+  RenderBlock {test} at (0,0) size 800x82
+    RenderBlock {div} at (0,16) size 800x50
+      RenderBlock {p} at (0,0) size 800x16 [color=#00FF00]
+        RenderInline {a} at (0,0) size 286x16 [color=#000000]
+          RenderText {#text} at (0,0) size 286x16
+            text run at (0,0) width 286: "This text should turn green while it is active."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {p} at (0,34) size 800x19 [color=#00FF00]
-        RenderButton {button} at (0,1) size 254.53x18 [color=#000000] [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+      RenderBlock {p} at (0,32) size 800x18 [color=#00FF00]
+        RenderButton {button} at (0,0) size 254.53x18 [color=#000000] [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,2) size 238.53x13
             RenderText {#text} at (0,0) size 239x13
               text run at (0,0) width 239: "This text should turn green while it is active."
