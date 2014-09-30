@@ -86,6 +86,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   virtual int64 PickDirtyTracker() const OVERRIDE;
   virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
   virtual bool HasDemotedDirtyTracker() const OVERRIDE;
+  virtual bool IsDemotedDirtyTracker(int64 tracker_id) const OVERRIDE;
   virtual void PromoteDemotedDirtyTracker(int64 tracker_id) OVERRIDE;
   virtual bool PromoteDemotedDirtyTrackers() OVERRIDE;
   virtual size_t CountDirtyTracker() const OVERRIDE;

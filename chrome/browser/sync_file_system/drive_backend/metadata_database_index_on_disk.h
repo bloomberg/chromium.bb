@@ -53,6 +53,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual int64 PickDirtyTracker() const OVERRIDE;
   virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
   virtual bool HasDemotedDirtyTracker() const OVERRIDE;
+  virtual bool IsDemotedDirtyTracker(int64 tracker_id) const OVERRIDE;
   virtual void PromoteDemotedDirtyTracker(int64 tracker_id) OVERRIDE;
   virtual bool PromoteDemotedDirtyTrackers() OVERRIDE;
   virtual size_t CountDirtyTracker() const OVERRIDE;
@@ -149,7 +150,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
       int64 tracker_id);
 
   // Checks if |db_| has an entry whose key is |key|.
-  bool DBHasKey(const std::string& key);
+  bool DBHasKey(const std::string& key) const;
 
   // Returns the number of dirty trackers, actually counting them.
   size_t CountDirtyTrackerInternal() const;

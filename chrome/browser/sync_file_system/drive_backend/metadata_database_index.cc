@@ -402,6 +402,11 @@ bool MetadataDatabaseIndex::HasDemotedDirtyTracker() const {
   return !demoted_dirty_trackers_.empty();
 }
 
+bool MetadataDatabaseIndex::IsDemotedDirtyTracker(int64 tracker_id) const {
+  return demoted_dirty_trackers_.find(tracker_id) !=
+      demoted_dirty_trackers_.end();
+}
+
 void MetadataDatabaseIndex::PromoteDemotedDirtyTracker(int64 tracker_id) {
   if (demoted_dirty_trackers_.erase(tracker_id) == 1)
     dirty_trackers_.insert(tracker_id);

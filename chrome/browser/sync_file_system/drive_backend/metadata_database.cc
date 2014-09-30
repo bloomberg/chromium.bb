@@ -1638,7 +1638,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   base::DictionaryValue* metadata = new base::DictionaryValue;
   const char *trackerKeys[] = {
     "tracker_id", "path", "file_id", "tracker_kind", "app_id",
-    "active", "dirty", "folder_listing",
+    "active", "dirty", "folder_listing", "demoted",
     "title", "kind", "md5", "etag", "missing", "change_id",
   };
   std::vector<std::string> key_strings(
@@ -1677,6 +1677,9 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
     dict->SetString("dirty", tracker.dirty() ? "true" : "false");
     dict->SetString("folder_listing",
                     tracker.needs_folder_listing() ? "needed" : "no");
+
+    bool is_demoted = index_->IsDemotedDirtyTracker(tracker.tracker_id());
+    dict->SetString("demoted", is_demoted ? "true" : "false");
     if (tracker.has_synced_details()) {
       const FileDetails& details = tracker.synced_details();
       dict->SetString("title", details.title());

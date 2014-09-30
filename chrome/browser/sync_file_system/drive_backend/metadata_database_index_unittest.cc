@@ -133,7 +133,9 @@ TEST_F(MetadataDatabaseIndexTest, IndexLookUpTest) {
 }
 
 TEST_F(MetadataDatabaseIndexTest, UpdateTest) {
+  EXPECT_FALSE(index()->IsDemotedDirtyTracker(kPlaceholderTrackerID));
   index()->DemoteDirtyTracker(kPlaceholderTrackerID);
+  EXPECT_TRUE(index()->IsDemotedDirtyTracker(kPlaceholderTrackerID));
   EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
   index()->PromoteDemotedDirtyTrackers();
   EXPECT_EQ(kPlaceholderTrackerID, index()->PickDirtyTracker());

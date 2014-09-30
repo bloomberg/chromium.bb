@@ -525,6 +525,11 @@ bool MetadataDatabaseIndexOnDisk::HasDemotedDirtyTracker() const {
   return StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, true);
 }
 
+bool MetadataDatabaseIndexOnDisk::IsDemotedDirtyTracker(
+    int64 tracker_id) const {
+  return DBHasKey(GenerateDemotedDirtyIDKey(tracker_id));
+}
+
 void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTracker(int64 tracker_id) {
   std::string demoted_key = GenerateDemotedDirtyIDKey(tracker_id);
 
@@ -1127,7 +1132,7 @@ void MetadataDatabaseIndexOnDisk::DeactivateInTrackerIDSetWithPrefix(
   }
 }
 
-bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) {
+bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) const {
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(key);
   return itr->Valid() && (itr->key() == key);
