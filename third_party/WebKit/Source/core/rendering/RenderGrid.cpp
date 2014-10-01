@@ -1054,6 +1054,13 @@ void RenderGrid::layoutGridItems()
     m_gridItemsOverflowingGridArea.resize(0);
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+        if (child->isOutOfFlowPositioned()) {
+            // FIXME: Absolute positioned grid items should have a special
+            // behavior as described in the spec (crbug.com/273898):
+            // http://www.w3.org/TR/css-grid-1/#abspos-items
+            child->containingBlock()->insertPositionedObject(child);
+        }
+
         // Because the grid area cannot be styled, we don't need to adjust
         // the grid breadth to account for 'box-sizing'.
         LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child->hasOverrideContainingBlockLogicalWidth() ? child->overrideContainingBlockContentLogicalWidth() : LayoutUnit();
