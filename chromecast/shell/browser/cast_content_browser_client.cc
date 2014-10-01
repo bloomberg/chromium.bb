@@ -5,6 +5,7 @@
 #include "chromecast/shell/browser/cast_content_browser_client.h"
 
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "chromecast/common/cast_paths.h"
@@ -17,7 +18,6 @@
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
@@ -161,7 +161,7 @@ CastContentBrowserClient::GetDevToolsManagerDelegate() {
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    std::vector<content::FileDescriptorInfo>* mappings) {
+    content::FileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath pak_file;
@@ -171,9 +171,9 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     NOTREACHED() << "Failed to open file when creating renderer process: "
                  << "cast_shell.pak";
   }
-  mappings->push_back(content::FileDescriptorInfo(
+  mappings->Transfer(
       kAndroidPakDescriptor,
-      base::FileDescriptor(base::File(pak_file, flags))));
+      base::ScopedFD(pak_with_flags.TakePlatformFile()));
 #endif  // defined(OS_ANDROID)
 }
 

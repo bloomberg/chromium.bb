@@ -70,7 +70,7 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
+      content::FileDescriptorInfo* mappings) OVERRIDE;
 
  private:
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
-#include "content/public/common/eme_codec.h"
+#include "content/public/common/eme_constants.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
