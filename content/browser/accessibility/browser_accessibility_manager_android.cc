@@ -356,14 +356,17 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
         node->ColumnCount(),
         node->IsHierarchical());
   }
-  if (node->IsCollectionItem() || node->IsHeading()) {
+  if (node->IsHeading()) {
+    Java_BrowserAccessibilityManager_setAccessibilityEventHeadingFlag(
+        env, obj, event, true);
+  }
+  if (node->IsCollectionItem()) {
     Java_BrowserAccessibilityManager_setAccessibilityEventCollectionItemInfo(
         env, obj, event,
         node->RowIndex(),
         node->RowSpan(),
         node->ColumnIndex(),
-        node->ColumnSpan(),
-        node->IsHeading());
+        node->ColumnSpan());
   }
   if (node->IsRangeType()) {
     Java_BrowserAccessibilityManager_setAccessibilityEventRangeInfo(

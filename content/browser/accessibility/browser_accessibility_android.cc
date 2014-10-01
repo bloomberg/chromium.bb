@@ -307,14 +307,6 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     }
   }
 
-  switch(GetRole()) {
-    case ui::AX_ROLE_HEADING:
-      // Only append "heading" if this node already has text.
-      if (!text.empty())
-        text += base::ASCIIToUTF16(" Heading");
-      break;
-  }
-
   if (text.empty() && IsLink()) {
     base::string16 url = GetString16Attribute(ui::AX_ATTR_URL);
     // Given a url like http://foo.com/bar/baz.png, just return the

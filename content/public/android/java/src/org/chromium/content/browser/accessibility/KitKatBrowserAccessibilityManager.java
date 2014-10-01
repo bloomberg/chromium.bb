@@ -82,8 +82,15 @@ public class KitKatBrowserAccessibilityManager extends JellyBeanBrowserAccessibi
     }
 
     @Override
+    protected void setAccessibilityEventHeadingFlag(AccessibilityEvent event,
+            boolean heading) {
+        // This is just a fallback for pre-KitKat systems.
+        // Do nothing on KitKat and higher.
+    }
+
+    @Override
     protected void setAccessibilityEventCollectionItemInfo(AccessibilityEvent event,
-            int rowIndex, int rowSpan, int columnIndex, int columnSpan, boolean heading) {
+            int rowIndex, int rowSpan, int columnIndex, int columnSpan) {
         // This is just a fallback for pre-KitKat systems.
         // Do nothing on KitKat and higher.
     }

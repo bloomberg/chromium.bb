@@ -688,15 +688,22 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
+    protected void setAccessibilityEventHeadingFlag(AccessibilityEvent event,
+            boolean heading) {
+        // Backwards compatibility for KitKat AccessibilityNodeInfo fields.
+        Bundle bundle = getOrCreateBundleForAccessibilityEvent(event);
+        bundle.putBoolean("AccessibilityNodeInfo.CollectionItemInfo.heading", heading);
+    }
+
+    @CalledByNative
     protected void setAccessibilityEventCollectionItemInfo(AccessibilityEvent event,
-            int rowIndex, int rowSpan, int columnIndex, int columnSpan, boolean heading) {
+            int rowIndex, int rowSpan, int columnIndex, int columnSpan) {
         // Backwards compatibility for KitKat AccessibilityNodeInfo fields.
         Bundle bundle = getOrCreateBundleForAccessibilityEvent(event);
         bundle.putInt("AccessibilityNodeInfo.CollectionItemInfo.rowIndex", rowIndex);
         bundle.putInt("AccessibilityNodeInfo.CollectionItemInfo.rowSpan", rowSpan);
         bundle.putInt("AccessibilityNodeInfo.CollectionItemInfo.columnIndex", columnIndex);
         bundle.putInt("AccessibilityNodeInfo.CollectionItemInfo.columnSpan", columnSpan);
-        bundle.putBoolean("AccessibilityNodeInfo.CollectionItemInfo.heading", heading);
     }
 
     @CalledByNative
