@@ -1354,6 +1354,9 @@
     # Set to 1 to compile with the OpenGL ES 2.0 conformance tests.
     'internal_gles2_conform_tests%': 0,
 
+    # Set to 1 to compile with the Khronos GL-CTS conformance tests.
+    'internal_khronos_glcts_tests%': 0,
+
     # Set to 1 to compile the filter fuzzer.
     'internal_filter_fuzzer%': 0,
 
