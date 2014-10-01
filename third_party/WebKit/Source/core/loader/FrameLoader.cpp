@@ -1105,22 +1105,61 @@ String FrameLoader::userAgent(const KURL& url) const
     return userAgent;
 }
 
-void FrameLoader::detach()
+void FrameLoader::detachFromParent()
 {
 #if !ENABLE(OILPAN)
     // The caller must protect a reference to m_frame.
     ASSERT(m_frame->refCount() > 1);
 #endif
+
+    InspectorInstrumentation::frameDetachedFromParent(m_frame);
+
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
     m_documentLoader = nullptr;
 
+    if (!client())
+        return;
+
+    // FIXME: All this code belongs up in Page.
     Frame* parent = m_frame->tree().parent();
-    if (parent && parent->isLocalFrame())
+    if (parent && parent->isLocalFrame()) {
+        m_frame->setView(nullptr);
+        // FIXME: Shouldn't need to check if page() is null here.
+        if (m_frame->owner() && m_frame->page())
+            m_frame->page()->decrementSubframeCount();
+        m_frame->willDetachFrameHost();
+        detachClient();
         toLocalFrame(parent)->loader().scheduleCheckCompleted();
+    } else {
+        m_frame->setView(nullptr);
+        m_frame->willDetachFrameHost();
+        detachClient();
+    }
+    m_frame->detachFromFrameHost();
+}
+
+void FrameLoader::detachClient()
+{
+    ASSERT(client());
+
+    // Finish all cleanup work that might require talking to the embedder.
     m_progressTracker->dispose();
     m_progressTracker.clear();
     setOpener(0);
+    // Notify ScriptController that the frame is closing, since its cleanup ends up calling
+    // back to FrameLoaderClient via WindowProxy.
+    m_frame->script().clearForClose();
+
+    // client() should never be null because that means we somehow re-entered
+    // the frame detach code... but it is sometimes.
+    // FIXME: Understand why this is happening so we can document this insanity.
+    if (client()) {
+        // After this, we must no longer talk to the client since this clears
+        // its owning reference back to our owning LocalFrame.
+        client()->detachedFromParent();
+        m_frame->clearClient();
+    }
 }
 
 void FrameLoader::receivedMainResourceError(const ResourceError& error)

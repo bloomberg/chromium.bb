@@ -128,6 +128,7 @@ Page::Page(PageClients& pageClients)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
     , m_storageClient(pageClients.storageClient)
+    , m_subframeCount(0)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
@@ -439,6 +440,19 @@ double Page::timerAlignmentInterval() const
 {
     return m_timerAlignmentInterval;
 }
+
+#if ENABLE(ASSERT)
+void Page::checkSubframeCountConsistency() const
+{
+    ASSERT(m_subframeCount >= 0);
+
+    int subframeCount = 0;
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
+        ++subframeCount;
+
+    ASSERT(m_subframeCount + 1 == subframeCount);
+}
+#endif
 
 void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitialState)
 {

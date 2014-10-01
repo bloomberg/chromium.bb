@@ -75,7 +75,7 @@ public:
     virtual Frame* nextSibling() const OVERRIDE;
     virtual Frame* firstChild() const OVERRIDE;
     virtual Frame* lastChild() const OVERRIDE;
-    virtual void detached() OVERRIDE;
+    virtual void detachedFromParent() OVERRIDE;
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse) OVERRIDE;
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&) OVERRIDE;
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) OVERRIDE;

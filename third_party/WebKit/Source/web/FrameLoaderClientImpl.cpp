@@ -290,7 +290,7 @@ Frame* FrameLoaderClientImpl::lastChild() const
     return toCoreFrame(m_webFrame->lastChild());
 }
 
-void FrameLoaderClientImpl::detached()
+void FrameLoaderClientImpl::detachedFromParent()
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.

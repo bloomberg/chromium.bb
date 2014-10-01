@@ -47,7 +47,6 @@ FrameHost::FrameHost(Page& page)
     : m_page(&page)
     , m_pinchViewport(adoptPtr(new PinchViewport(*this)))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
-    , m_frameCount(0)
 {
 }
 
@@ -90,27 +89,6 @@ void FrameHost::trace(Visitor* visitor)
 {
     visitor->trace(m_page);
     visitor->trace(m_eventHandlerRegistry);
-}
-
-#if ENABLE(ASSERT)
-void checkFrameCountConsistency(int expectedFrameCount, Frame* frame)
-{
-    ASSERT(expectedFrameCount >= 0);
-
-    int actualFrameCount = 0;
-    for (; frame; frame = frame->tree().traverseNext())
-        ++actualFrameCount;
-
-    ASSERT(expectedFrameCount == actualFrameCount);
-}
-#endif
-
-int FrameHost::frameCount() const
-{
-#if ENABLE(ASSERT)
-    checkFrameCountConsistency(m_frameCount, m_page->mainFrame());
-#endif
-    return m_frameCount;
 }
 
 }

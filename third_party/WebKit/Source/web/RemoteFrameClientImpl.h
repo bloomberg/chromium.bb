@@ -15,8 +15,6 @@ public:
     explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
     // FrameClient overrides:
-    virtual void detached() OVERRIDE;
-
     virtual Frame* opener() const OVERRIDE;
     virtual void setOpener(Frame*) OVERRIDE;
 
