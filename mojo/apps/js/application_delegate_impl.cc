@@ -10,22 +10,8 @@
 namespace mojo {
 namespace apps {
 
-ContentHandlerImpl::ContentHandlerImpl(ApplicationDelegateImpl* app)
-    : content_handler_(app) {
-}
-
-ContentHandlerImpl::~ContentHandlerImpl() {
-}
-
-void ContentHandlerImpl::OnConnect(
-    const mojo::String& url,
-    URLResponsePtr content,
-    InterfaceRequest<ServiceProvider> service_provider) {
-  content_handler_->StartJSApp(url.To<std::string>(), content.Pass());
-}
-
 ApplicationDelegateImpl::ApplicationDelegateImpl()
-    : application_impl_(NULL), content_handler_factory_(this) {
+    : application_impl_(nullptr) {
 }
 
 void ApplicationDelegateImpl::Initialize(ApplicationImpl* app) {
@@ -35,15 +21,8 @@ void ApplicationDelegateImpl::Initialize(ApplicationImpl* app) {
 ApplicationDelegateImpl::~ApplicationDelegateImpl() {
 }
 
-bool ApplicationDelegateImpl::ConfigureIncomingConnection(
-    ApplicationConnection* connection) {
-  connection->AddService(&content_handler_factory_);
-  return true;
-}
-
-void ApplicationDelegateImpl::StartJSApp(const std::string& url,
-                                         URLResponsePtr content) {
-  JSApp* app = new JSApp(this, url, content.Pass());
+void ApplicationDelegateImpl::StartJSApp(scoped_ptr<JSApp> app_ptr) {
+  JSApp *app = app_ptr.release();
   app_vector_.push_back(app);
   // TODO(hansmuller): deal with the Start() return value.
   app->Start();

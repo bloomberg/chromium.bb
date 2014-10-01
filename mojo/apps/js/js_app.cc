@@ -9,21 +9,16 @@
 #include "gin/converter.h"
 #include "mojo/apps/js/application_delegate_impl.h"
 #include "mojo/apps/js/mojo_module.h"
-#include "mojo/common/data_pipe_utils.h"
 
 namespace mojo {
 namespace apps {
 
-JSApp::JSApp(ApplicationDelegateImpl* content_handler_app,
-             const std::string& url,
-             URLResponsePtr content)
-    : content_handler_app_(content_handler_app),
-      url_(url),
-      content_(content.Pass()),
-      thread_("Mojo JS " + url),
-      content_handler_task_runner_(
+JSApp::JSApp(ApplicationDelegateImpl* app_delegate_impl)
+    : app_delegate_impl_(app_delegate_impl),
+      thread_("Mojo JS"),
+      app_delegate_impl_task_runner_(
           base::MessageLoop::current()->task_runner()) {
-  CHECK(on_content_handler_thread());
+  CHECK(on_app_delegate_impl_thread());
   runner_delegate_.AddBuiltinModule(Mojo::kModuleName,
                                     base::Bind(Mojo::GetModule, this));
 }
@@ -32,7 +27,7 @@ JSApp::~JSApp() {
 }
 
 bool JSApp::Start() {
-  CHECK(!js_app_task_runner_.get() && on_content_handler_thread());
+  CHECK(!js_app_task_runner_.get() && on_app_delegate_impl_thread());
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_.StartWithOptions(thread_options);
 
@@ -58,10 +53,10 @@ Handle JSApp::ConnectToService(const std::string& application_url,
   CHECK(on_js_app_thread());
   MessagePipe pipe;
 
-  content_handler_task_runner_->PostTask(
+  app_delegate_impl_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ApplicationDelegateImpl::ConnectToService,
-                 base::Unretained(content_handler_app_),
+                 base::Unretained(app_delegate_impl_),
                  base::Passed(pipe.handle1.Pass()),
                  application_url,
                  interface_name));
@@ -70,12 +65,12 @@ Handle JSApp::ConnectToService(const std::string& application_url,
 }
 
 void JSApp::Run() {
-  CHECK(!js_app_task_runner_.get() && !on_content_handler_thread());
+  CHECK(!js_app_task_runner_.get() && !on_app_delegate_impl_thread());
   js_app_task_runner_ = base::MessageLoop::current()->task_runner();
 
-  // TODO(hansmuller): check the return value and fail gracefully.
-  std::string module;
-  common::BlockingCopyToString(content_->body.Pass(), &module);
+  std::string source;
+  std::string file_name;
+  Load(&source, &file_name);  // TODO(hansmuller): handle Load() failure.
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::ArrayBufferAllocator::SharedInstance());
@@ -85,28 +80,27 @@ void JSApp::Run() {
   shell_runner_.reset(
       new gin::ShellRunner(&runner_delegate_, isolate_holder_->isolate()));
 
-  // TODO(hansmuller): exiting this scope here is OK?
   gin::Runner::Scope scope(shell_runner_.get());
-  shell_runner_->Run(module.c_str(), url_.c_str());
+  shell_runner_->Run(source.c_str(), file_name.c_str());
 }
 
 void JSApp::Terminate() {
   isolate_holder_->RemoveRunMicrotasksObserver();
-  shell_runner_.reset(NULL);
+  shell_runner_.reset(nullptr);
 
   // This JSApp's thread must be stopped on the thread that started it. Ask the
-  // content_handler_app_ to erase its AppVector entry for this app, which
+  // app_delegate_impl_ to erase its AppVector entry for this app, which
   // implicitly destroys this JSApp and stops its thread.
-  content_handler_task_runner_->PostTask(
+  app_delegate_impl_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ApplicationDelegateImpl::QuitJSApp,
-                 base::Unretained(content_handler_app_),
+                 base::Unretained(app_delegate_impl_),
                  base::Unretained(this)));
 }
 
-bool JSApp::on_content_handler_thread() const {
-  return content_handler_task_runner_.get() &&
-         content_handler_task_runner_.get() ==
+bool JSApp::on_app_delegate_impl_thread() const {
+  return app_delegate_impl_task_runner_.get() &&
+         app_delegate_impl_task_runner_.get() ==
              base::MessageLoop::current()->task_runner().get();
 }
 

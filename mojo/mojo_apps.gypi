@@ -80,22 +80,49 @@
       ],
     },
     {
-      # GN version: //mojo/apps/js:mojo_js
-      'target_name': 'mojo_js',
-      'type': 'loadable_module',
+      # GN version: //mojo/apps/js/test:mojo_js_apps_lib
+      'target_name': 'mojo_js_apps_lib',
+      'type': 'static_library',
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
       'dependencies': [
         'mojo_base.gyp:mojo_application_chromium',
+        'mojo_apps_js_bindings',
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_utility',
-        'mojo_content_handler_bindings',
         'mojo_js_lib',
-        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'apps/js/application_delegate_impl.cc',
         'apps/js/js_app.cc',
         'apps/js/mojo_module.cc',
-        'apps/js/main.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/apps/js:mojo_js_content_handler
+      'target_name': 'mojo_js_content_handler',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_content_handler_bindings',
+        'mojo_js_apps_lib',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'apps/js/content_handler_impl.cc',
+        'apps/js/content_handler_main.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/apps/js:mojo_js_standalone
+      'target_name': 'mojo_js_standalone',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_js_apps_lib',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'apps/js/standalone_main.cc',
       ],
     },
   ],

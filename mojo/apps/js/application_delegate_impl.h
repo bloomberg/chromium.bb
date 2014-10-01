@@ -5,11 +5,10 @@
 #ifndef MOJO_APPS_JS_CONTENT_HANDLER_H_
 #define MOJO_APPS_JS_CONTENT_HANDLER_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory_impl.h"
-#include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 
@@ -20,49 +19,35 @@ namespace apps {
 class ApplicationDelegateImpl;
 class JSApp;
 
-// Starts a new JSApp for each OnConnect call().
-
-class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
- public:
-  ContentHandlerImpl(ApplicationDelegateImpl* content_handler);
-  virtual ~ContentHandlerImpl();
-
- private:
-  virtual void OnConnect(
-      const mojo::String& url,
-      URLResponsePtr content,
-      InterfaceRequest<ServiceProvider> service_provider) override;
-
-  ApplicationDelegateImpl* content_handler_;
-};
-
 // Manages the JSApps started by this content handler. This class owns the one
 // reference to the Mojo shell. JSApps post a task to the content handler's
-// thread to connect to a service or to quit.l
+// thread to connect to a service or to quit.
+//
+// The lifetime each JSApp is defined by its entry in AppVector. When the entry
+// is removed ("erased") by QuitJSApp(), the JSApp is destroyed.
 
 class ApplicationDelegateImpl : public ApplicationDelegate {
  public:
   ApplicationDelegateImpl();
   virtual ~ApplicationDelegateImpl();
 
-  void StartJSApp(const std::string& url, URLResponsePtr content);
-  void QuitJSApp(JSApp* app);
+  // Add app to the AppVector and call its Start() method.
+  void StartJSApp(scoped_ptr<JSApp> app);
+
+  // Remove app from the AppVector; destroys the app.
+  void QuitJSApp(JSApp *app);
 
   void ConnectToService(ScopedMessagePipeHandle pipe_handle,
                         const std::string& application_url,
                         const std::string& interface_name);
 
+ protected:
+  // ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) override;
+
  private:
   typedef ScopedVector<JSApp> AppVector;
-
-  // ApplicationDelegate methods
-  virtual void Initialize(ApplicationImpl* app) override;
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override;
-
   ApplicationImpl* application_impl_;
-  InterfaceFactoryImplWithContext<ContentHandlerImpl, ApplicationDelegateImpl>
-      content_handler_factory_;
   AppVector app_vector_;
 };
 
