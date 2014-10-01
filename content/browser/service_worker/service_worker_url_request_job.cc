@@ -43,6 +43,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       is_started_(false),
       blob_storage_context_(blob_storage_context),
       request_mode_(request_mode),
+      fall_back_required_(false),
       body_(body),
       weak_factory_(this) {
 }
@@ -195,16 +196,19 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
 
 void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
     bool* was_fetched_via_service_worker,
+    bool* was_fallback_required_by_service_worker,
     GURL* original_url_via_service_worker,
     base::TimeTicks* fetch_start_time,
     base::TimeTicks* fetch_ready_time,
     base::TimeTicks* fetch_end_time) const {
   if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
     *was_fetched_via_service_worker = false;
+    *was_fallback_required_by_service_worker = false;
     *original_url_via_service_worker = GURL();
     return;
   }
   *was_fetched_via_service_worker = true;
+  *was_fallback_required_by_service_worker = fall_back_required_;
   *original_url_via_service_worker = response_url_;
   *fetch_start_time = fetch_start_time_;
   *fetch_ready_time = fetch_ready_time_;
@@ -373,6 +377,18 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   }
 
   if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
+    // When the request_mode is |CORS| or |CORS-with-forced-preflight| we can't
+    // simply fallback to the network in the browser process. It is because the
+    // CORS preflight logic is implemented in the renderer. So we returns a
+    // fall_back_required response to the renderer.
+    if (request_mode_ == FETCH_REQUEST_MODE_CORS ||
+        request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) {
+      fall_back_required_ = true;
+      CreateResponseHeader(
+          400, "Service Worker Fallback Required", ServiceWorkerHeaderMap());
+      CommitResponseHeader();
+      return;
+    }
     // Change the response type and restart the request to fallback to
     // the network.
     response_type_ = FALLBACK_TO_NETWORK;

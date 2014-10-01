@@ -42,6 +42,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,
+      bool* was_fallback_required_by_service_worker,
       GURL* original_url_via_service_worker,
       base::TimeTicks* fetch_start_time,
       base::TimeTicks* fetch_ready_time,

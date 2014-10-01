@@ -101,6 +101,12 @@ struct ResourceResponseInfo {
   // True if the response was fetched by a ServiceWorker.
   bool was_fetched_via_service_worker;
 
+  // True when the request whoes mode is |CORS| or |CORS-with-forced-preflight|
+  // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
+  // renderer have to resend the request with skip service worker flag
+  // considering the CORS preflight logic.
+  bool was_fallback_required_by_service_worker;
+
   // The original URL of the response which was fetched by the ServiceWorker.
   // This may be empty if the response was created inside the ServiceWorker.
   GURL original_url_via_service_worker;

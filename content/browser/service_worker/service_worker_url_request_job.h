@@ -90,6 +90,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   const net::HttpResponseInfo* http_info() const;
 
   void GetExtraResponseInfo(bool* was_fetched_via_service_worker,
+                            bool* was_fallback_required_by_service_worker,
                             GURL* original_url_via_service_worker,
                             base::TimeTicks* fetch_start_time,
                             base::TimeTicks* fetch_ready_time,
@@ -160,6 +161,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   scoped_ptr<net::URLRequest> blob_request_;
   FetchRequestMode request_mode_;
+  bool fall_back_required_;
   // ResourceRequestBody has a collection of BlobDataHandles attached to it
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<ResourceRequestBody> body_;

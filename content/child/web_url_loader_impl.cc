@@ -784,6 +784,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setConnectionReused(info.load_timing.socket_reused);
   response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
   response->setWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
+  response->setWasFallbackRequiredByServiceWorker(
+      info.was_fallback_required_by_service_worker);
   WebURLResponseExtraDataImpl* extra_data =
       new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
   response->setExtraData(extra_data);

@@ -60,6 +60,7 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
           ServiceWorkerRequestHandler::GetHandler(request)) {
     handler->GetExtraResponseInfo(
         &response->head.was_fetched_via_service_worker,
+        &response->head.was_fallback_required_by_service_worker,
         &response->head.original_url_via_service_worker,
         &response->head.service_worker_fetch_start,
         &response->head.service_worker_fetch_ready,
