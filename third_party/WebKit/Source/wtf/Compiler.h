@@ -51,7 +51,6 @@
 #define WTF_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES __has_extension(cxx_rvalue_references) && __has_extension(cxx_nonstatic_member_init)
 
 #define WTF_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS __has_extension(cxx_deleted_functions)
-#define WTF_COMPILER_SUPPORTS_CXX_NULLPTR __has_feature(cxx_nullptr)
 #define WTF_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS __has_feature(cxx_explicit_conversions)
 #define WTF_COMPILER_SUPPORTS_BLOCKS __has_feature(blocks)
 #define WTF_COMPILER_SUPPORTS_C_STATIC_ASSERT __has_extension(c_static_assert)
@@ -71,10 +70,6 @@
 #define WTF_COMPILER_MSVC 1
 
 /* Specific compiler features */
-#if !COMPILER(CLANG) && _MSC_VER >= 1600
-#define WTF_COMPILER_SUPPORTS_CXX_NULLPTR 1
-#endif
-
 #if COMPILER(CLANG)
 /* Keep strong enums turned off when building with clang-cl: We cannot yet build all of Blink without fallback to cl.exe, and strong enums are exposed at ABI boundaries. */
 #undef WTF_COMPILER_SUPPORTS_CXX_STRONG_ENUMS
@@ -113,7 +108,6 @@
 #define WTF_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS 1
 #endif
 #if GCC_VERSION_AT_LEAST(4, 6, 0)
-#define WTF_COMPILER_SUPPORTS_CXX_NULLPTR 1
 /* Strong enums should work from gcc 4.4, but doesn't seem to support some operators */
 #define WTF_COMPILER_SUPPORTS_CXX_STRONG_ENUMS 1
 #endif

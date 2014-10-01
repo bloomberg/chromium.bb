@@ -534,7 +534,7 @@ private:
     // If we are currently animating, stop
     if (scrollbarPartAnimation) {
         [scrollbarPartAnimation.get() stopAnimation];
-        scrollbarPartAnimation = nil;
+        scrollbarPartAnimation = nullptr;
     }
 
     if (part == blink::ThumbPart && _scrollbar->orientation() == VerticalScrollbar) {

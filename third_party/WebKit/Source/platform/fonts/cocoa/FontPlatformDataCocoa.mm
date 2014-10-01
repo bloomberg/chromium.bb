@@ -171,7 +171,7 @@ void FontPlatformData::setFont(NSFont *font)
 #endif
     }
 #endif
-    m_CTFont = 0;
+    m_CTFont = nullptr;
 }
 
 bool FontPlatformData::roundsGlyphAdvances() const

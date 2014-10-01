@@ -84,7 +84,6 @@
             'NonCopyingSort.h',
             'Noncopyable.h',
             'NotFound.h',
-            'NullPtr.cpp',
             'NullPtr.h',
             'OwnPtr.h',
             'OwnPtrCommon.h',
