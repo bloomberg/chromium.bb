@@ -181,5 +181,6 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SourceRange);
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSPropertySourceData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSMediaQueryExpSourceData);
 
 #endif // CSSPropertySourceData_h

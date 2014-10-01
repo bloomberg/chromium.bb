@@ -117,6 +117,7 @@ void CSSRuleSourceData::trace(Visitor* visitor)
     visitor->trace(selectorRanges);
     visitor->trace(styleSourceData);
     visitor->trace(childRules);
+    visitor->trace(mediaSourceData);
 }
 
 } // namespace blink
