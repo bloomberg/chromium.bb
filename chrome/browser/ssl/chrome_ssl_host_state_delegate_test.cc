@@ -232,6 +232,68 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
   EXPECT_TRUE(state->DidHostRunInsecureContent("example.com", 42));
 }
 
+// QueryPolicyExpired unit tests to make sure that if a certificate decision has
+// expired, the return value from QueryPolicy returns the correct vaule.
+IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, PRE_QueryPolicyExpired) {
+  scoped_refptr<net::X509Certificate> google_cert = GetGoogleCert();
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  bool expired_previous_decision;
+
+  // The certificate has never been seen before, so it should be UNKNOWN and
+  // should also indicate that it hasn't expired.
+  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
+            state->QueryPolicy(kWWWGoogleHost,
+                               *google_cert.get(),
+                               net::CERT_STATUS_DATE_INVALID,
+                               &expired_previous_decision));
+  EXPECT_FALSE(expired_previous_decision);
+
+  // After allowing the certificate, a query should say that it is allowed and
+  // also specify that it hasn't expired.
+  state->AllowCert(
+      kWWWGoogleHost, *google_cert.get(), net::CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
+            state->QueryPolicy(kWWWGoogleHost,
+                               *google_cert.get(),
+                               net::CERT_STATUS_DATE_INVALID,
+                               &expired_previous_decision));
+  EXPECT_FALSE(expired_previous_decision);
+}
+
+// Since this is being checked on a browser instance that expires security
+// decisions after restart, the test needs to  wait until after a restart to
+// verify that the expiration state is correct.
+IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicyExpired) {
+  scoped_refptr<net::X509Certificate> google_cert = GetGoogleCert();
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  bool expired_previous_decision;
+
+  // The browser content has restart thus expiring the user decision made above,
+  // so it should indicate that the certificate and error are DENIED but also
+  // that they expired since the last query.
+  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
+            state->QueryPolicy(kWWWGoogleHost,
+                               *google_cert.get(),
+                               net::CERT_STATUS_DATE_INVALID,
+                               &expired_previous_decision));
+  EXPECT_TRUE(expired_previous_decision);
+
+  // However, with a new query, it should indicate that no new expiration has
+  // occurred.
+  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
+            state->QueryPolicy(kWWWGoogleHost,
+                               *google_cert.get(),
+                               net::CERT_STATUS_DATE_INVALID,
+                               &expired_previous_decision));
+  EXPECT_FALSE(expired_previous_decision);
+}
+
 // Tests the basic behavior of cert memory in incognito.
 class IncognitoSSLHostStateDelegateTest
     : public ChromeSSLHostStateDelegateTest {
@@ -463,8 +525,10 @@ IN_PROC_BROWSER_TEST_F(RememberSSLHostStateDelegateTest, AfterRestart) {
                                &unused_value));
 }
 
-// QueryPolicyExpired unit tests to make sure that if a certificate decision has
-// expired, the return value from QueryPolicy returns the correct vaule.
+// The same test as ChromeSSLHostStateDelegateTest.QueryPolicyExpired but now
+// applied to a browser context that expires based on time, not restart. This
+// unit tests to make sure that if a certificate decision has expired, the
+// return value from QueryPolicy returns the correct vaule.
 IN_PROC_BROWSER_TEST_F(RememberSSLHostStateDelegateTest, QueryPolicyExpired) {
   scoped_refptr<net::X509Certificate> google_cert = GetGoogleCert();
   content::WebContents* tab =

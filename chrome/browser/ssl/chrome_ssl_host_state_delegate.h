@@ -117,6 +117,29 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // same-origin frames in one processs but cannot jump between processes.
   std::set<BrokenHostEntry> ran_insecure_content_hosts_;
 
+  // This is a GUID to mark this unique session. Whenever a certificate decision
+  // expiration is set, the GUID is saved as well so Chrome can tell if it was
+  // last set during the current session. This is used by the
+  // FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END experimental group to
+  // determine if the expired_previous_decision bit should be set on queries.
+  //
+  // Why not just iterate over the set of current extensions and mark them all
+  // as expired when the session starts, rather than storing a GUID for the
+  // current session? Glad you asked! Unfortunately, content settings does not
+  // currently support iterating over all current *compound* content setting
+  // values (iteration only works for simple content settings). While this could
+  // be added, it would be a fair amount of work for what amounts to a temporary
+  // measurement problem, so it's not worth the complexity.
+  //
+  // TODO(jww): This is only used by the default and disable groups of the
+  // certificate memory decisions experiment to tell if a decision has expired
+  // since the last session. Since this is only used for UMA purposes, this
+  // should be removed after the experiment has finished, and a call to Clear()
+  // should be added to the constructor and destructor for members of the
+  // FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END groups. See
+  // https://crbug.com/418631 for more details.
+  const std::string current_expiration_guid_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeSSLHostStateDelegate);
 };
 

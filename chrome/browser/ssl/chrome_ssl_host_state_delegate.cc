@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
@@ -46,6 +47,7 @@ const char kRememberCertificateErrorDecisionsFieldTrialLengthParam[] = "length";
 const char kSSLCertDecisionCertErrorMapKey[] = "cert_exceptions_map";
 const char kSSLCertDecisionExpirationTimeKey[] = "decision_expiration_time";
 const char kSSLCertDecisionVersionKey[] = "version";
+const char kSSLCertDecisionGUIDKey[] = "guid";
 
 const int kDefaultSSLCertDecisionVersion = 1;
 
@@ -217,7 +219,19 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     // better to store the value as a string.
     dict->SetString(kSSLCertDecisionExpirationTimeKey,
                     base::Int64ToString(expiration_time.ToInternalValue()));
+  } else if (should_remember_ssl_decisions_ ==
+             FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END) {
+    if (dict->HasKey(kSSLCertDecisionGUIDKey)) {
+      std::string old_expiration_guid;
+      success = dict->GetString(kSSLCertDecisionGUIDKey, &old_expiration_guid);
+      if (old_expiration_guid.compare(current_expiration_guid_) != 0) {
+        *expired_previous_decision = true;
+        expired = true;
+      }
+    }
   }
+
+  dict->SetString(kSSLCertDecisionGUIDKey, current_expiration_guid_);
 
   // Extract the map of certificate fingerprints to errors from the setting.
   base::DictionaryValue* cert_error_dict = NULL;  // Will be owned by dict
@@ -236,18 +250,19 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
 
 // If |should_remember_ssl_decisions_| is
 // FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END, that means that all invalid
-// certificate proceed decisions should be forgotten when the session ends. At
-// attempt is made in the destructor to remove the entries, but in the case that
-// things didn't shut down cleanly, on start, Clear is called to guarantee a
-// clean state.
+// certificate proceed decisions should be forgotten when the session ends. To
+// simulate that, Chrome keeps track of a guid to represent the current browser
+// session and stores it in decision entries. See the comment for
+// |current_expiration_guid_| for more information.
 ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
-    : clock_(new base::DefaultClock()), profile_(profile) {
+    : clock_(new base::DefaultClock()),
+      profile_(profile),
+      current_expiration_guid_(base::GenerateGUID()) {
   int64 expiration_delta = GetExpirationDelta();
   if (expiration_delta == kForgetAtSessionEndSwitchValue) {
     should_remember_ssl_decisions_ =
         FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END;
     expiration_delta = 0;
-    Clear();
   } else {
     should_remember_ssl_decisions_ = REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA;
   }
@@ -256,9 +271,6 @@ ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
 }
 
 ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() {
-  if (should_remember_ssl_decisions_ ==
-      FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END)
-    Clear();
 }
 
 void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
