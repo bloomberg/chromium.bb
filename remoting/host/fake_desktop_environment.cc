@@ -48,11 +48,11 @@ scoped_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
 }
 
 scoped_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
-  return scoped_ptr<InputInjector>(new FakeInputInjector());
+  return make_scoped_ptr(new FakeInputInjector());
 }
 
 scoped_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
-  return scoped_ptr<ScreenControls>(new FakeScreenControls());
+  return make_scoped_ptr(new FakeScreenControls());
 }
 
 scoped_ptr<webrtc::DesktopCapturer>
@@ -65,7 +65,7 @@ FakeDesktopEnvironment::CreateVideoCapturer() {
 
 scoped_ptr<webrtc::MouseCursorMonitor>
 FakeDesktopEnvironment::CreateMouseCursorMonitor() {
-  return scoped_ptr<webrtc::MouseCursorMonitor>(new FakeMouseCursorMonitor());
+  return make_scoped_ptr(new FakeMouseCursorMonitor());
 }
 
 std::string FakeDesktopEnvironment::GetCapabilities() const {

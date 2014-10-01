@@ -168,7 +168,7 @@ scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
 scoped_ptr<ChannelAuthenticator>
 FakeAuthenticator::CreateChannelAuthenticator() const {
   EXPECT_EQ(ACCEPTED, state());
-  return scoped_ptr<ChannelAuthenticator>(
+  return make_scoped_ptr(
       new FakeChannelAuthenticator(action_ != REJECT_CHANNEL, async_));
 }
 

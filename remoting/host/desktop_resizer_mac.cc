@@ -167,7 +167,7 @@ bool DesktopResizerMac::GetSoleDisplayId(CGDirectDisplayID* display) {
 }
 
 scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return scoped_ptr<DesktopResizer>(new DesktopResizerMac);
+  return make_scoped_ptr(new DesktopResizerMac);
 }
 
 }  // namespace remoting

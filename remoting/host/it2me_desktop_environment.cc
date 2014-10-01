@@ -85,11 +85,10 @@ scoped_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return scoped_ptr<DesktopEnvironment>(
-      new It2MeDesktopEnvironment(caller_task_runner(),
-                                  input_task_runner(),
-                                  ui_task_runner(),
-                                  client_session_control));
+  return make_scoped_ptr(new It2MeDesktopEnvironment(caller_task_runner(),
+                                                     input_task_runner(),
+                                                     ui_task_runner(),
+                                                     client_session_control));
 }
 
 }  // namespace remoting

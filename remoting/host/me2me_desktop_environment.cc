@@ -36,8 +36,7 @@ Me2MeDesktopEnvironment::~Me2MeDesktopEnvironment() {
 scoped_ptr<ScreenControls> Me2MeDesktopEnvironment::CreateScreenControls() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return scoped_ptr<ScreenControls>(
-      new ResizingHostObserver(DesktopResizer::Create()));
+  return make_scoped_ptr(new ResizingHostObserver(DesktopResizer::Create()));
 }
 
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
@@ -61,8 +60,7 @@ scoped_ptr<GnubbyAuthHandler> Me2MeDesktopEnvironment::CreateGnubbyAuthHandler(
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   if (gnubby_auth_enabled_)
-    return scoped_ptr<GnubbyAuthHandler>(
-        GnubbyAuthHandler::Create(client_stub));
+    return GnubbyAuthHandler::Create(client_stub);
 
   HOST_LOG << "gnubby auth is not enabled";
   return nullptr;

@@ -150,8 +150,7 @@ void HostEventLoggerWin::LogString(WORD type,
 scoped_ptr<HostEventLogger> HostEventLogger::Create(
     base::WeakPtr<HostStatusMonitor> monitor,
     const std::string& application_name) {
-  return scoped_ptr<HostEventLogger>(
-      new HostEventLoggerWin(monitor, application_name));
+  return make_scoped_ptr(new HostEventLoggerWin(monitor, application_name));
 }
 
 }  // namespace remoting

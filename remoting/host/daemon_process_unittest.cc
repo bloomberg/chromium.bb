@@ -100,7 +100,7 @@ scoped_ptr<DesktopSession> MockDaemonProcess::DoCreateDesktopSession(
     int terminal_id,
     const ScreenResolution& resolution,
     bool virtual_terminal) {
-  return scoped_ptr<DesktopSession>(DoCreateDesktopSessionPtr(terminal_id));
+  return make_scoped_ptr(DoCreateDesktopSessionPtr(terminal_id));
 }
 
 bool MockDaemonProcess::OnMessageReceived(const IPC::Message& message) {

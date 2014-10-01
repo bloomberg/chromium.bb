@@ -129,7 +129,7 @@ void ContinueWindowWin::EndDialog() {
 
 // static
 scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return scoped_ptr<HostWindow>(new ContinueWindowWin());
+  return make_scoped_ptr(new ContinueWindowWin());
 }
 
 }  // namespace remoting

@@ -85,8 +85,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
 
   void CreatePairingRegistry(bool with_paired_client) {
     pairing_registry_ = new SynchronousPairingRegistry(
-        scoped_ptr<PairingRegistry::Delegate>(
-            new MockPairingRegistryDelegate()));
+        make_scoped_ptr(new MockPairingRegistryDelegate()));
     if (with_paired_client) {
       PairingRegistry::Pairing pairing(
           base::Time(), kTestClientName, kTestClientId, kTestPairedSecret);

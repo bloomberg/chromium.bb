@@ -76,8 +76,7 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory());
     if (!memory->CreateAndMapAnonymous(size))
       return nullptr;
-    return scoped_ptr<SharedBuffer>(
-        new SharedBuffer(agent, memory.Pass(), size, id));
+    return make_scoped_ptr(new SharedBuffer(agent, memory.Pass(), size, id));
   }
 
   virtual ~SharedBuffer() {

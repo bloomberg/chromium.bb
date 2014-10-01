@@ -71,7 +71,7 @@ void ServerLogEntry::AddEventNameField(const char* name) {
 
 // static
 scoped_ptr<XmlElement> ServerLogEntry::MakeStanza() {
-  return scoped_ptr<XmlElement>(
+  return make_scoped_ptr(
       new XmlElement(QName(kChromotingXmlNamespace, kLogCommand)));
 }
 

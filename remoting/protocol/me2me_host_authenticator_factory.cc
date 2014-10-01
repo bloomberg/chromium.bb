@@ -80,7 +80,7 @@ Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
   result->key_pair_ = key_pair;
   result->shared_secret_hash_ = shared_secret_hash;
   result->pairing_registry_ = pairing_registry;
-  return scoped_ptr<AuthenticatorFactory>(result.Pass());
+  return result.Pass();
 }
 
 
@@ -100,13 +100,13 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
   result->token_validator_factory_ = token_validator_factory.Pass();
-  return scoped_ptr<AuthenticatorFactory>(result.Pass());
+  return result.Pass();
 }
 
 // static
 scoped_ptr<AuthenticatorFactory>
     Me2MeHostAuthenticatorFactory::CreateRejecting() {
-  return scoped_ptr<AuthenticatorFactory>(new Me2MeHostAuthenticatorFactory());
+  return make_scoped_ptr(new Me2MeHostAuthenticatorFactory());
 }
 
 Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {
@@ -130,7 +130,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     size_t slash_pos = local_jid.find('/');
     if (slash_pos == std::string::npos) {
       LOG(DFATAL) << "Invalid local JID:" << local_jid;
-      return scoped_ptr<Authenticator>(new RejectingAuthenticator());
+      return make_scoped_ptr(new RejectingAuthenticator());
     }
     remote_jid_prefix = local_jid.substr(0, slash_pos);
   } else {
@@ -144,7 +144,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
   if (!base::IsStringASCII(remote_jid) ||
       !StartsWithASCII(remote_jid, remote_jid_prefix + '/', false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
-    return scoped_ptr<Authenticator>(new RejectingAuthenticator());
+    return make_scoped_ptr(new RejectingAuthenticator());
   }
 
   if (!local_cert_.empty() && key_pair_.get()) {
@@ -160,7 +160,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
         shared_secret_hash_.hash_function, pairing_registry_);
   }
 
-  return scoped_ptr<Authenticator>(new RejectingAuthenticator());
+  return make_scoped_ptr(new RejectingAuthenticator());
 }
 
 }  // namespace protocol

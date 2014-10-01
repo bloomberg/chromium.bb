@@ -135,7 +135,7 @@ BOOL DesktopShapeTrackerWin::EnumWindowsCallback(HWND window, LPARAM lparam) {
 // static
 scoped_ptr<DesktopShapeTracker> DesktopShapeTracker::Create(
     webrtc::DesktopCaptureOptions options) {
-  return scoped_ptr<DesktopShapeTracker>(new DesktopShapeTrackerWin());
+  return make_scoped_ptr(new DesktopShapeTrackerWin());
 }
 
 }  // namespace remoting

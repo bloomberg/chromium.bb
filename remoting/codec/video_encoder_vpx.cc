@@ -215,12 +215,12 @@ void CreateImage(bool use_i444,
 
 // static
 scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP8() {
-  return scoped_ptr<VideoEncoderVpx>(new VideoEncoderVpx(false));
+  return make_scoped_ptr(new VideoEncoderVpx(false));
 }
 
 // static
 scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
-  return scoped_ptr<VideoEncoderVpx>(new VideoEncoderVpx(true));
+  return make_scoped_ptr(new VideoEncoderVpx(true));
 }
 
 VideoEncoderVpx::~VideoEncoderVpx() {}

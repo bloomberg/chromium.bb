@@ -245,8 +245,7 @@ void AudioCapturerWin::DoCapture() {
     if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) == 0 &&
         !silence_detector_.IsSilence(
             reinterpret_cast<const int16*>(data), frames * kChannels)) {
-      scoped_ptr<AudioPacket> packet =
-          scoped_ptr<AudioPacket>(new AudioPacket());
+      scoped_ptr<AudioPacket> packet(new AudioPacket());
       packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
       packet->set_encoding(AudioPacket::ENCODING_RAW);
       packet->set_sampling_rate(sampling_rate_);
@@ -279,7 +278,7 @@ bool AudioCapturer::IsSupported() {
 }
 
 scoped_ptr<AudioCapturer> AudioCapturer::Create() {
-  return scoped_ptr<AudioCapturer>(new AudioCapturerWin());
+  return make_scoped_ptr(new AudioCapturerWin());
 }
 
 }  // namespace remoting

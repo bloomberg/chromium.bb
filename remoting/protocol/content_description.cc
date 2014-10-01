@@ -234,7 +234,7 @@ scoped_ptr<ContentDescription> ContentDescription::ParseXml(
   if (child)
     authenticator_message.reset(new XmlElement(*child));
 
-  return scoped_ptr<ContentDescription>(
+  return make_scoped_ptr(
       new ContentDescription(config.Pass(), authenticator_message.Pass()));
 }
 

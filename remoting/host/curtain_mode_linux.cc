@@ -103,7 +103,7 @@ scoped_ptr<CurtainMode> CurtainMode::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return scoped_ptr<CurtainMode>(new CurtainModeLinux());
+  return make_scoped_ptr(new CurtainModeLinux());
 }
 
 }  // namespace remoting

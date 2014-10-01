@@ -117,7 +117,7 @@ void ClipboardMac::CheckClipboardForChanges() {
 }
 
 scoped_ptr<Clipboard> Clipboard::Create() {
-  return scoped_ptr<Clipboard>(new ClipboardMac());
+  return make_scoped_ptr(new ClipboardMac());
 }
 
 }  // namespace remoting

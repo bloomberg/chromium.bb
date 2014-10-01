@@ -338,7 +338,7 @@ InputInjectorMac::Core::~Core() {}
 scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return scoped_ptr<InputInjector>(new InputInjectorMac(main_task_runner));
+  return make_scoped_ptr(new InputInjectorMac(main_task_runner));
 }
 
 }  // namespace remoting

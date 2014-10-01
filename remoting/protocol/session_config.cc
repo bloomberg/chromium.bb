@@ -145,12 +145,12 @@ bool CandidateSessionConfig::IsChannelConfigSupported(
 }
 
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::Clone() const {
-  return scoped_ptr<CandidateSessionConfig>(new CandidateSessionConfig(*this));
+  return make_scoped_ptr(new CandidateSessionConfig(*this));
 }
 
 // static
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateEmpty() {
-  return scoped_ptr<CandidateSessionConfig>(new CandidateSessionConfig());
+  return make_scoped_ptr(new CandidateSessionConfig());
 }
 
 // static

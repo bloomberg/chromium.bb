@@ -345,7 +345,7 @@ void VideoScheduler::SendKeepAlivePacket() {
     return;
 
   video_stub_->ProcessVideoPacket(
-      scoped_ptr<VideoPacket>(new VideoPacket()),
+      make_scoped_ptr(new VideoPacket()),
       base::Bind(&VideoScheduler::OnKeepAlivePacketSent, this));
 }
 

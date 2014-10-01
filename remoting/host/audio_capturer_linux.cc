@@ -84,7 +84,7 @@ scoped_ptr<AudioCapturer> AudioCapturer::Create() {
       g_pulseaudio_pipe_sink_reader.Get();
   if (!reader.get())
     return nullptr;
-  return scoped_ptr<AudioCapturer>(new AudioCapturerLinux(reader));
+  return make_scoped_ptr(new AudioCapturerLinux(reader));
 }
 
 }  // namespace remoting

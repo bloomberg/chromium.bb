@@ -46,9 +46,8 @@ scoped_ptr<HostStarter> HostStarter::Create(
           chromoting_hosts_url, url_request_context_getter));
   scoped_refptr<remoting::DaemonController> daemon_controller(
       remoting::DaemonController::Create());
-  return scoped_ptr<HostStarter>(
-      new HostStarter(oauth_client.Pass(), service_client.Pass(),
-                      daemon_controller));
+  return make_scoped_ptr(new HostStarter(
+      oauth_client.Pass(), service_client.Pass(), daemon_controller));
 }
 
 void HostStarter::StartHost(

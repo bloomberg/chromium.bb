@@ -279,7 +279,7 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
     return nullptr;
   }
 
-  return scoped_ptr<base::DictionaryValue>(
+  return make_scoped_ptr(
       static_cast<base::DictionaryValue*>(message.release()));
 }
 

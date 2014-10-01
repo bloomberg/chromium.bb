@@ -481,10 +481,9 @@ void ClientSession::SetGnubbyAuthHandlerForTesting(
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK(CalledOnValidThread());
 
-  return scoped_ptr<protocol::ClipboardStub>(
-      new protocol::ClipboardThreadProxy(
-          client_clipboard_factory_.GetWeakPtr(),
-          base::MessageLoopProxy::current()));
+  return make_scoped_ptr(
+      new protocol::ClipboardThreadProxy(client_clipboard_factory_.GetWeakPtr(),
+                                         base::MessageLoopProxy::current()));
 }
 
 // TODO(sergeyu): Move this to SessionManager?
@@ -511,9 +510,9 @@ scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
   const protocol::ChannelConfig& audio_config = config.audio_config();
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
+    return make_scoped_ptr(new AudioEncoderVerbatim());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return scoped_ptr<AudioEncoder>(new AudioEncoderOpus());
+    return make_scoped_ptr(new AudioEncoderOpus());
   }
 
   NOTREACHED();

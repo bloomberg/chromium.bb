@@ -45,7 +45,7 @@ scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithSharedSecret(
   if (pairing_registry.get()) {
     result->AddMethod(AuthenticationMethod::Spake2Pair());
   }
-  return scoped_ptr<Authenticator>(result.Pass());
+  return result.Pass();
 }
 
 // static
@@ -58,7 +58,7 @@ NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
       new NegotiatingHostAuthenticator(local_cert, key_pair));
   result->token_validator_ = token_validator.Pass();
   result->AddMethod(AuthenticationMethod::ThirdParty());
-  return scoped_ptr<Authenticator>(result.Pass());
+  return result.Pass();
 }
 
 NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {

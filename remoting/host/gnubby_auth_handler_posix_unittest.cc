@@ -141,7 +141,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
 
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
   auth_handler_posix_->GetGnubbySocketForTesting(socket)
-      ->SetTimerForTesting(scoped_ptr<base::Timer>(mock_timer));
+      ->SetTimerForTesting(make_scoped_ptr(mock_timer));
   delegate_->DidRead(socket, reinterpret_cast<const char*>(request_data), 1);
   mock_timer->Fire();
 

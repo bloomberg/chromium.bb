@@ -16,9 +16,9 @@ scoped_ptr<AudioDecoder> AudioDecoder::CreateAudioDecoder(
   const protocol::ChannelConfig& audio_config = config.audio_config();
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return scoped_ptr<AudioDecoder>(new AudioDecoderVerbatim());
+    return make_scoped_ptr(new AudioDecoderVerbatim());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return scoped_ptr<AudioDecoder>(new AudioDecoderOpus());
+    return make_scoped_ptr(new AudioDecoderOpus());
   }
 
   NOTIMPLEMENTED();

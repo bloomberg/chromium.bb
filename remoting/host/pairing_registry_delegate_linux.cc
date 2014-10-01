@@ -157,8 +157,7 @@ void PairingRegistryDelegateLinux::SetRegistryPathForTesting(
 
 
 scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
-  return scoped_ptr<PairingRegistry::Delegate>(
-      new PairingRegistryDelegateLinux());
+  return make_scoped_ptr(new PairingRegistryDelegateLinux());
 }
 
 }  // namespace remoting

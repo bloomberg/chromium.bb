@@ -75,7 +75,7 @@ void DisconnectWindowMac::Start(
 
 // static
 scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return scoped_ptr<HostWindow>(new DisconnectWindowMac());
+  return make_scoped_ptr(new DisconnectWindowMac());
 }
 
 }  // namespace remoting

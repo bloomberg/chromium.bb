@@ -90,7 +90,7 @@ class ChromotingHostTest : public testing::Test {
     host_.reset(new ChromotingHost(
         &signal_strategy_,
         desktop_environment_factory_.get(),
-        scoped_ptr<protocol::SessionManager>(session_manager_),
+        make_scoped_ptr(session_manager_),
         task_runner_,   // Audio
         task_runner_,   // Input
         task_runner_,   // Video capture

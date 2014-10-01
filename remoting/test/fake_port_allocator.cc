@@ -95,7 +95,7 @@ scoped_ptr<FakePortAllocator> FakePortAllocator::Create(
   scoped_ptr<rtc::NetworkManager> network_manager(
       new FakeNetworkManager(socket_factory->GetAddress()));
 
-  return scoped_ptr<FakePortAllocator>(
+  return make_scoped_ptr(
       new FakePortAllocator(network_manager.Pass(), socket_factory.Pass()));
 }
 

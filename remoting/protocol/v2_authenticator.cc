@@ -38,7 +38,7 @@ bool V2Authenticator::IsEkeMessage(const buzz::XmlElement* message) {
 scoped_ptr<Authenticator> V2Authenticator::CreateForClient(
     const std::string& shared_secret,
     Authenticator::State initial_state) {
-  return scoped_ptr<Authenticator>(new V2Authenticator(
+  return make_scoped_ptr(new V2Authenticator(
       P224EncryptedKeyExchange::kPeerTypeClient, shared_secret, initial_state));
 }
 
@@ -52,7 +52,7 @@ scoped_ptr<Authenticator> V2Authenticator::CreateForHost(
       P224EncryptedKeyExchange::kPeerTypeServer, shared_secret, initial_state));
   result->local_cert_ = local_cert;
   result->local_key_pair_ = key_pair;
-  return scoped_ptr<Authenticator>(result.Pass());
+  return result.Pass();
 }
 
 V2Authenticator::V2Authenticator(
@@ -191,13 +191,11 @@ V2Authenticator::CreateChannelAuthenticator() const {
   CHECK(!auth_key_.empty());
 
   if (is_host_side()) {
-    return scoped_ptr<ChannelAuthenticator>(
-        SslHmacChannelAuthenticator::CreateForHost(
-            local_cert_, local_key_pair_, auth_key_).Pass());
+    return SslHmacChannelAuthenticator::CreateForHost(
+        local_cert_, local_key_pair_, auth_key_);
   } else {
-    return scoped_ptr<ChannelAuthenticator>(
-        SslHmacChannelAuthenticator::CreateForClient(
-            remote_cert_, auth_key_).Pass());
+    return SslHmacChannelAuthenticator::CreateForClient(
+        remote_cert_, auth_key_);
   }
 }
 

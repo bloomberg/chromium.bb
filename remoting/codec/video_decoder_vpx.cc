@@ -59,7 +59,7 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP8() {
     return nullptr;
   }
 
-  return scoped_ptr<VideoDecoderVpx>(new VideoDecoderVpx(codec.Pass()));
+  return make_scoped_ptr(new VideoDecoderVpx(codec.Pass()));
 }
 
 // static
@@ -79,7 +79,7 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
     return nullptr;
   }
 
-  return scoped_ptr<VideoDecoderVpx>(new VideoDecoderVpx(codec.Pass()));
+  return make_scoped_ptr(new VideoDecoderVpx(codec.Pass()));
 }
 
 VideoDecoderVpx::~VideoDecoderVpx() {}

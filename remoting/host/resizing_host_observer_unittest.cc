@@ -256,10 +256,9 @@ TEST_F(ResizingHostObserverTest, SelectWidest) {
 TEST_F(ResizingHostObserverTest, NoSetSizeForSameSize) {
   ScreenResolution supported_sizes[] = { MakeResolution(640, 480),
                                          MakeResolution(480, 640) };
-  FakeDesktopResizer* desktop_resizer =
-      new FakeDesktopResizer(MakeResolution(480, 640), false,
-                             supported_sizes, arraysize(supported_sizes), NULL);
-  SetDesktopResizer(scoped_ptr<FakeDesktopResizer>(desktop_resizer));
+  SetDesktopResizer(make_scoped_ptr(new FakeDesktopResizer(
+      MakeResolution(480, 640), false,
+      supported_sizes, arraysize(supported_sizes), NULL)));
 
   ScreenResolution client_sizes[] = { MakeResolution(640, 640),
                                       MakeResolution(1024, 768),
@@ -268,15 +267,14 @@ TEST_F(ResizingHostObserverTest, NoSetSizeForSameSize) {
                                         MakeResolution(640, 480),
                                         MakeResolution(640, 480) };
   VerifySizes(client_sizes, expected_sizes, arraysize(client_sizes));
-  EXPECT_EQ(desktop_resizer->set_resolution_call_count(), 1);
+  EXPECT_EQ(desktop_resizer_->set_resolution_call_count(), 1);
 }
 
 // Check that desktop resizes are rate-limited, and that if multiple resize
 // requests are received in the time-out period, the most recent is respected.
 TEST_F(ResizingHostObserverTest, RateLimited) {
-  FakeDesktopResizer* desktop_resizer =
-      new FakeDesktopResizer(MakeResolution(640, 480), true, NULL, 0, NULL);
-  SetDesktopResizer(scoped_ptr<FakeDesktopResizer>(desktop_resizer));
+  SetDesktopResizer(make_scoped_ptr(
+      new FakeDesktopResizer(MakeResolution(640, 480), true, NULL, 0, NULL)));
   resizing_host_observer_->SetNowFunctionForTesting(
       base::Bind(&ResizingHostObserverTest::GetTime, base::Unretained(this)));
 

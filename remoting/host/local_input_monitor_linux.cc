@@ -322,10 +322,8 @@ scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return scoped_ptr<LocalInputMonitor>(
-      new LocalInputMonitorLinux(caller_task_runner,
-                                 input_task_runner,
-                                 client_session_control));
+  return make_scoped_ptr(new LocalInputMonitorLinux(
+      caller_task_runner, input_task_runner, client_session_control));
 }
 
 }  // namespace remoting

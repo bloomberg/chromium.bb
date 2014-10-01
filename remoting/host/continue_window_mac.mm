@@ -73,7 +73,7 @@ void ContinueWindowMac::HideUi() {
 
 // static
 scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return scoped_ptr<HostWindow>(new ContinueWindowMac());
+  return make_scoped_ptr(new ContinueWindowMac());
 }
 
 }  // namespace remoting

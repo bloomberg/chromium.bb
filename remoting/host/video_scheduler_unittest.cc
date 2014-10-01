@@ -66,9 +66,8 @@ class MockVideoEncoder : public VideoEncoder {
   MockVideoEncoder() {}
   virtual ~MockVideoEncoder() {}
 
-  scoped_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) {
-    return scoped_ptr<VideoPacket>(EncodePtr(frame));
+  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
+    return make_scoped_ptr(EncodePtr(frame));
   }
   MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame& frame));
 

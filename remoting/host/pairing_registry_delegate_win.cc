@@ -65,8 +65,7 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
     return nullptr;
   }
 
-  return scoped_ptr<base::DictionaryValue>(
-      static_cast<base::DictionaryValue*>(value.release()));
+  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
 }
 
 // Serializes |value| into a JSON string and writes it as value |value_name|
@@ -263,8 +262,7 @@ bool PairingRegistryDelegateWin::Delete(const std::string& client_id) {
 }
 
 scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
-  return scoped_ptr<PairingRegistry::Delegate>(
-      new PairingRegistryDelegateWin());
+  return make_scoped_ptr(new PairingRegistryDelegateWin());
 }
 
 }  // namespace remoting

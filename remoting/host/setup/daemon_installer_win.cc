@@ -367,23 +367,24 @@ scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
                          IID_IDispatch,
                          update3.ReceiveVoid());
   }
-  if (SUCCEEDED(result)) {
-    // The machine instance of Omaha is available and we successfully passed
-    // the UAC prompt.
-    return scoped_ptr<DaemonInstallerWin>(
-        new DaemonComInstallerWin(update3, done));
-  } else if (result == CO_E_CLASSSTRING) {
+
+  if (result == CO_E_CLASSSTRING) {
     // The machine instance of Omaha is not available so we will have to run
     // GoogleUpdate.exe manually passing "needsadmin=True". This will cause
     // Omaha to install the machine instance first and then install Chromoting
     // Host.
-    return scoped_ptr<DaemonInstallerWin>(
-        new DaemonCommandLineInstallerWin(done));
-  } else {
+    return make_scoped_ptr(new DaemonCommandLineInstallerWin(done));
+  }
+
+  if (!SUCCEEDED(result)) {
     // The user declined the UAC prompt or some other error occured.
     done.Run(result);
     return nullptr;
   }
+
+  // The machine instance of Omaha is available and we successfully passed
+  // the UAC prompt.
+  return make_scoped_ptr(new DaemonComInstallerWin(update3, done));
 }
 
 HWND GetTopLevelWindow(HWND window) {

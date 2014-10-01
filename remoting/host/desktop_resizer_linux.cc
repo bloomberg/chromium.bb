@@ -324,7 +324,7 @@ void DesktopResizerLinux::SwitchToMode(const char* name) {
 }
 
 scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return scoped_ptr<DesktopResizer>(new DesktopResizerLinux);
+  return make_scoped_ptr(new DesktopResizerLinux);
 }
 
 }  // namespace remoting

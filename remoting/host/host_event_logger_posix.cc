@@ -106,8 +106,7 @@ void HostEventLoggerPosix::Log(const std::string& message) {
 scoped_ptr<HostEventLogger> HostEventLogger::Create(
     base::WeakPtr<HostStatusMonitor> monitor,
     const std::string& application_name) {
-  return scoped_ptr<HostEventLogger>(
-      new HostEventLoggerPosix(monitor, application_name));
+  return make_scoped_ptr(new HostEventLoggerPosix(monitor, application_name));
 }
 
 }  // namespace remoting

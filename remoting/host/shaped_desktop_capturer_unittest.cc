@@ -57,8 +57,8 @@ class ShapedDesktopCapturerTest : public testing::Test,
 // Verify that captured frame have shape.
 TEST_F(ShapedDesktopCapturerTest, Basic) {
   ShapedDesktopCapturer capturer(
-      scoped_ptr<webrtc::DesktopCapturer>(new FakeDesktopCapturer()),
-      scoped_ptr<DesktopShapeTracker>(new FakeDesktopShapeTracker()));
+      make_scoped_ptr(new FakeDesktopCapturer()),
+      make_scoped_ptr(new FakeDesktopShapeTracker()));
   capturer.Start(this);
   capturer.Capture(webrtc::DesktopRegion());
   ASSERT_TRUE(last_frame_.get());

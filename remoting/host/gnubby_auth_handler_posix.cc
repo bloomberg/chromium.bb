@@ -99,7 +99,7 @@ GnubbyAuthHandlerPosix::~GnubbyAuthHandlerPosix() {
 // static
 scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
     protocol::ClientStub* client_stub) {
-  return scoped_ptr<GnubbyAuthHandler>(new GnubbyAuthHandlerPosix(client_stub));
+  return make_scoped_ptr(new GnubbyAuthHandlerPosix(client_stub));
 }
 
 // static

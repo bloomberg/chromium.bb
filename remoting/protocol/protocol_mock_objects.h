@@ -202,8 +202,8 @@ class MockSessionManager : public SessionManager {
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
       scoped_ptr<CandidateSessionConfig> config) {
-    return scoped_ptr<Session>(ConnectPtr(
-        host_jid, authenticator.get(), config.get()));
+    return make_scoped_ptr(
+        ConnectPtr(host_jid, authenticator.get(), config.get()));
   }
   virtual void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) {

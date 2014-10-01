@@ -121,7 +121,7 @@ scoped_ptr<protocol::TokenValidator>
 TokenValidatorFactoryImpl::CreateTokenValidator(
     const std::string& local_jid,
     const std::string& remote_jid) {
-  return scoped_ptr<protocol::TokenValidator>(
+  return make_scoped_ptr(
       new TokenValidatorImpl(third_party_auth_config_,
                              key_pair_, local_jid, remote_jid,
                              request_context_getter_));

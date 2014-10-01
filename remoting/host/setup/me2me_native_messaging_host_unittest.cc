@@ -167,7 +167,7 @@ DaemonController::State MockDaemonControllerDelegate::GetState() {
 }
 
 scoped_ptr<base::DictionaryValue> MockDaemonControllerDelegate::GetConfig() {
-  return scoped_ptr<base::DictionaryValue>(new base::DictionaryValue());
+  return make_scoped_ptr(new base::DictionaryValue());
 }
 
 void MockDaemonControllerDelegate::InstallHost(
@@ -316,12 +316,11 @@ void Me2MeNativeMessagingHostTest::StartHost() {
 
   daemon_controller_delegate_ = new MockDaemonControllerDelegate();
   scoped_refptr<DaemonController> daemon_controller(
-      new DaemonController(
-          scoped_ptr<DaemonController::Delegate>(daemon_controller_delegate_)));
+      new DaemonController(make_scoped_ptr(daemon_controller_delegate_)));
 
   scoped_refptr<PairingRegistry> pairing_registry =
-      new SynchronousPairingRegistry(scoped_ptr<PairingRegistry::Delegate>(
-          new MockPairingRegistryDelegate()));
+      new SynchronousPairingRegistry(
+          make_scoped_ptr(new MockPairingRegistryDelegate()));
 
   scoped_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(input_read_file.Pass(),
@@ -399,7 +398,7 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
     return nullptr;
   }
 
-  return scoped_ptr<base::DictionaryValue>(
+  return make_scoped_ptr(
       static_cast<base::DictionaryValue*>(message.release()));
 }
 
@@ -425,8 +424,7 @@ void Me2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   WriteMessageToInputPipe(good_message);
 
   // Read from output pipe, and verify responses.
-  scoped_ptr<base::DictionaryValue> response =
-      ReadMessageFromOutputPipe();
+  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   VerifyHelloResponse(response.Pass());
 
   response = ReadMessageFromOutputPipe();
@@ -529,8 +527,7 @@ TEST_F(Me2MeNativeMessagingHostTest, Id) {
   message.SetString("id", "42");
   WriteMessageToInputPipe(message);
 
-  scoped_ptr<base::DictionaryValue> response =
-      ReadMessageFromOutputPipe();
+  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
   EXPECT_TRUE(response);
   std::string value;
   EXPECT_FALSE(response->GetString("id", &value));

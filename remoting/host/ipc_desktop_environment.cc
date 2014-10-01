@@ -104,7 +104,7 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<DesktopEnvironment>(
+  return make_scoped_ptr(
       new IpcDesktopEnvironment(audio_task_runner_,
                                 caller_task_runner_,
                                 capture_task_runner_,

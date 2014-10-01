@@ -26,8 +26,7 @@ AudioReader::~AudioReader() {
 scoped_ptr<AudioReader> AudioReader::Create(const SessionConfig& config) {
   if (!config.is_audio_enabled())
     return nullptr;
-  // TODO(kxing): Support different session configurations.
-  return scoped_ptr<AudioReader>(new AudioReader(AudioPacket::ENCODING_RAW));
+  return make_scoped_ptr(new AudioReader(AudioPacket::ENCODING_RAW));
 }
 
 void AudioReader::OnInitialized() {
@@ -36,7 +35,7 @@ void AudioReader::OnInitialized() {
 }
 
 void AudioReader::OnNewData(scoped_ptr<AudioPacket> packet,
-                                    const base::Closure& done_task) {
+                            const base::Closure& done_task) {
   audio_stub_->ProcessAudioPacket(packet.Pass(), done_task);
 }
 

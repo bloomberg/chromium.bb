@@ -171,8 +171,7 @@ PamAuthorizationFactory::CreateAuthenticator(
     const buzz::XmlElement* first_message) {
   scoped_ptr<protocol::Authenticator> authenticator(
       underlying_->CreateAuthenticator(local_jid, remote_jid, first_message));
-  return scoped_ptr<protocol::Authenticator>(
-      new PamAuthorizer(authenticator.Pass()));
+  return make_scoped_ptr(new PamAuthorizer(authenticator.Pass()));
 }
 
 

@@ -128,7 +128,7 @@ void ClipboardX11::PumpXEvents() {
 }
 
 scoped_ptr<Clipboard> Clipboard::Create() {
-  return scoped_ptr<Clipboard>(new ClipboardX11());
+  return make_scoped_ptr(new ClipboardX11());
 }
 
 }  // namespace remoting

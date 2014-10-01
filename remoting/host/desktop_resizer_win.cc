@@ -185,7 +185,7 @@ ScreenResolution DesktopResizerWin::GetModeResolution(const DEVMODE& mode) {
 }
 
 scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return scoped_ptr<DesktopResizer>(new DesktopResizerWin);
+  return make_scoped_ptr(new DesktopResizerWin);
 }
 
 }  // namespace remoting

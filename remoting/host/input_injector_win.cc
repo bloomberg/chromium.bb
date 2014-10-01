@@ -325,7 +325,7 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
 scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return scoped_ptr<InputInjector>(
+  return make_scoped_ptr(
       new InputInjectorWin(main_task_runner, ui_task_runner));
 }
 

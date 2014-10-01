@@ -191,7 +191,7 @@ scoped_ptr<HostExtensionSession>
 VideoFrameRecorderHostExtension::CreateExtensionSession(
     ClientSessionControl* client_session_control,
     protocol::ClientStub* client_stub) {
-  return scoped_ptr<HostExtensionSession>(
+  return make_scoped_ptr(
       new VideoFrameRecorderHostExtensionSession(max_content_bytes_));
 }
 

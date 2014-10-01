@@ -394,7 +394,7 @@ bool DisconnectWindowWin::SetStrings() {
 
 // static
 scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return scoped_ptr<HostWindow>(new DisconnectWindowWin());
+  return make_scoped_ptr(new DisconnectWindowWin());
 }
 
 }  // namespace remoting

@@ -115,7 +115,7 @@ void ContinueWindowGtk::OnResponse(GtkDialog* dialog, int response_id) {
 
 // static
 scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return scoped_ptr<HostWindow>(new ContinueWindowGtk());
+  return make_scoped_ptr(new ContinueWindowGtk());
 }
 
 }  // namespace remoting

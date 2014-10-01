@@ -99,7 +99,7 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
         FROM_HERE,
         base::Bind(&MessageReader::RunCallback,
                    weak_factory_.GetWeakPtr(),
-                   base::Passed(scoped_ptr<CompoundBuffer>(buffer))));
+                   base::Passed(make_scoped_ptr(buffer))));
   }
 }
 

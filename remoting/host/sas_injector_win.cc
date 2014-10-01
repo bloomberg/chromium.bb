@@ -220,9 +220,9 @@ bool SasInjectorXp::InjectSas() {
 
 scoped_ptr<SasInjector> SasInjector::Create() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return scoped_ptr<SasInjector>(new SasInjectorXp());
+    return make_scoped_ptr(new SasInjectorXp());
   } else {
-    return scoped_ptr<SasInjector>(new SasInjectorWin());
+    return make_scoped_ptr(new SasInjectorWin());
   }
 }
 

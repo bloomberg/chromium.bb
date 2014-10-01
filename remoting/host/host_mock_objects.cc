@@ -23,31 +23,31 @@ MockDesktopEnvironment::MockDesktopEnvironment() {}
 MockDesktopEnvironment::~MockDesktopEnvironment() {}
 
 scoped_ptr<AudioCapturer> MockDesktopEnvironment::CreateAudioCapturer() {
-  return scoped_ptr<AudioCapturer>(CreateAudioCapturerPtr());
+  return make_scoped_ptr(CreateAudioCapturerPtr());
 }
 
 scoped_ptr<InputInjector> MockDesktopEnvironment::CreateInputInjector() {
-  return scoped_ptr<InputInjector>(CreateInputInjectorPtr());
+  return make_scoped_ptr(CreateInputInjectorPtr());
 }
 
 scoped_ptr<ScreenControls> MockDesktopEnvironment::CreateScreenControls() {
-  return scoped_ptr<ScreenControls>(CreateScreenControlsPtr());
+  return make_scoped_ptr(CreateScreenControlsPtr());
 }
 
 scoped_ptr<webrtc::DesktopCapturer>
 MockDesktopEnvironment::CreateVideoCapturer() {
-  return scoped_ptr<webrtc::DesktopCapturer>(CreateVideoCapturerPtr());
+  return make_scoped_ptr(CreateVideoCapturerPtr());
 }
 
 scoped_ptr<GnubbyAuthHandler>
 MockDesktopEnvironment::CreateGnubbyAuthHandler(
     protocol::ClientStub* client_stub) {
-  return scoped_ptr<GnubbyAuthHandler>(CreateGnubbyAuthHandlerPtr(client_stub));
+  return make_scoped_ptr(CreateGnubbyAuthHandlerPtr(client_stub));
 }
 
 scoped_ptr<webrtc::MouseCursorMonitor>
 MockDesktopEnvironment::CreateMouseCursorMonitor() {
-  return scoped_ptr<webrtc::MouseCursorMonitor>(CreateMouseCursorMonitorPtr());
+  return make_scoped_ptr(CreateMouseCursorMonitorPtr());
 }
 
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
@@ -56,7 +56,7 @@ MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
 
 scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return scoped_ptr<DesktopEnvironment>(CreatePtr());
+  return make_scoped_ptr(CreatePtr());
 }
 
 MockInputInjector::MockInputInjector() {}

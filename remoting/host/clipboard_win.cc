@@ -272,7 +272,7 @@ bool ClipboardWin::HandleMessage(
 }
 
 scoped_ptr<Clipboard> Clipboard::Create() {
-  return scoped_ptr<Clipboard>(new ClipboardWin());
+  return make_scoped_ptr(new ClipboardWin());
 }
 
 }  // namespace remoting
