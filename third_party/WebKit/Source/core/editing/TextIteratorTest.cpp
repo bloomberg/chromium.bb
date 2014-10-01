@@ -550,4 +550,19 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     EXPECT_EQ(3, TextIterator::rangeLength(range.get()));
 }
 
+TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
+{
+    static const char* bodyContent =
+        "<div id=\"div\" contenteditable=\"true\">1<img src=\"foo.png\">345</div>";
+    setBodyInnerHTML(bodyContent);
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+
+    Node* divNode = document().getElementById("div");
+    RefPtrWillBeRawPtr<Range> entireRange = Range::create(document(), divNode, 0, divNode, 3);
+
+    RefPtrWillBeRawPtr<Range> subrange = TextIterator::subrange(entireRange.get(), 2, 3);
+    EXPECT_EQ(0, subrange->startOffset());
+    EXPECT_EQ(3, subrange->endOffset());
+}
+
 }

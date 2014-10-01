@@ -2256,7 +2256,7 @@ int TextIterator::rangeLength(const Position& start, const Position& end, bool f
 
 PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
-    CharacterIterator entireRangeIterator(entireRange);
+    CharacterIterator entireRangeIterator(entireRange, TextIteratorEmitsObjectReplacementCharacter);
     Position start;
     Position end;
     calculateCharacterSubrange(entireRangeIterator, characterOffset, characterCount, start, end);
@@ -2265,7 +2265,7 @@ PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int cha
 
 void TextIterator::subrange(Position& start, Position& end, int characterOffset, int characterCount)
 {
-    CharacterIterator entireRangeIterator(start, end);
+    CharacterIterator entireRangeIterator(start, end, TextIteratorEmitsObjectReplacementCharacter);
     calculateCharacterSubrange(entireRangeIterator, characterOffset, characterCount, start, end);
 }
 
