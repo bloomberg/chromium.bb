@@ -56,7 +56,6 @@
           '<(PRODUCT_DIR)/nacl_test_data/',
           '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/pnacl/',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
           '<(PRODUCT_DIR)/pseudo_locales/',
@@ -84,6 +83,14 @@
         ],
       },
     }],
+    [('(OS=="linux" or OS=="mac" or OS=="win") and '
+         '(target_arch=="x64" or target_arch=="ia32")'), {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
+        ],
+      },
+    }],
     ['OS=="win" or (OS=="linux" and target_arch=="x64")', {
       'variables': {
         'files': [
@@ -91,6 +98,16 @@
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
+        ],
+      },
+    }],
+    ['OS=="mac" and target_arch=="ia32"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/lib32/',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
         ],
       },
     }],
@@ -104,16 +121,6 @@
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
           '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
-        ],
-      },
-    }],
-    ['OS=="mac" and target_arch=="ia32"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/lib32/',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
         ],
       },
     }],
