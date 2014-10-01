@@ -3879,6 +3879,9 @@ create_xdg_surface(struct shell_client *owner, void *shell,
 	struct shell_surface *shsurf;
 
 	shsurf = create_common_surface(owner, shell, surface, client);
+	if (!shsurf)
+		return NULL;
+
 	shsurf->type = SHELL_SURFACE_TOPLEVEL;
 
 	return shsurf;
@@ -3963,6 +3966,9 @@ create_xdg_popup(struct shell_client *owner, void *shell,
 	struct shell_surface *shsurf;
 
 	shsurf = create_common_surface(owner, shell, surface, client);
+	if (!shsurf)
+		return NULL;
+
 	shsurf->type = SHELL_SURFACE_POPUP;
 	shsurf->popup.shseat = seat;
 	shsurf->popup.serial = serial;
