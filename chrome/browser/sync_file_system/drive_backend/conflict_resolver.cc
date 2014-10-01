@@ -49,8 +49,7 @@ void ConflictResolver::RunExclusive(scoped_ptr<SyncTaskToken> token) {
 
   // Conflict resolution should be invoked on clean tree.
   if (metadata_database()->HasDirtyTracker()) {
-    NOTREACHED();
-    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_RETRY);
     return;
   }
 

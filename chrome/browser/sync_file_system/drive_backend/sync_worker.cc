@@ -620,7 +620,7 @@ bool SyncWorker::MaybeStartFetchChanges() {
 void SyncWorker::DidResolveConflict(SyncStatusCode status) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (status == SYNC_STATUS_OK)
+  if (status == SYNC_STATUS_OK || status == SYNC_STATUS_RETRY)
     should_check_conflict_ = true;
 }
 
