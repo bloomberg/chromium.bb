@@ -2308,12 +2308,6 @@
     # The path to the ANGLE library.
     'angle_path': '<(DEPTH)/third_party/angle',
 
-    # TODO(jmadill): remove angle_gyp. http://crbug.com/415983
-    # This temporary variable lets us change the name of the gyp file
-    # in blink and in chromium simultaneously. It should go away after
-    # we're done changing the path.
-    'angle_gyp': 'angle.gyp',
-
     # List of default apps to install in new profiles.  The first list contains
     # the source files as found in svn.  The second list, used only for linux,
     # contains the destination location for each of the files.  When a crx
