@@ -6,7 +6,6 @@
 /** @const */ var BookmarkList = bmm.BookmarkList;
 /** @const */ var BookmarkTree = bmm.BookmarkTree;
 /** @const */ var Command = cr.ui.Command;
-/** @const */ var CommandBinding = cr.ui.CommandBinding;
 /** @const */ var LinkKind = cr.LinkKind;
 /** @const */ var ListItem = cr.ui.ListItem;
 /** @const */ var Menu = cr.ui.Menu;
@@ -17,7 +16,7 @@
 /**
  * An array containing the BookmarkTreeNodes that were deleted in the last
  * deletion action. This is used for implementing undo.
- * @type {Array.<BookmarkTreeNode>}
+ * @type {Array.<Array.<BookmarkTreeNode>>}
  */
 var lastDeletedNodes;
 
@@ -38,7 +37,7 @@ var performGlobalUndo;
 /**
  * Holds a link controller singleton. Use getLinkController() rarther than
  * accessing this variabie.
- * @type {LinkController}
+ * @type {cr.LinkController}
  */
 var linkController;
 
@@ -142,7 +141,7 @@ function loadLocalizedStrings(data) {
  * Updates the location hash to reflect the current state of the application.
  */
 function updateHash() {
-  window.location.hash = tree.selectedItem.bookmarkId;
+  window.location.hash = bmm.tree.selectedItem.bookmarkId;
   updateAllCommands();
 }
 
@@ -162,6 +161,7 @@ function navigateTo(id, opt_callback) {
       'BookmarkManager_NavigateTo_' + metricsId);
 
   if (opt_callback) {
+    var list = getRequiredElement('list');
     if (list.parentId == id)
       opt_callback();
     else
@@ -175,11 +175,11 @@ function navigateTo(id, opt_callback) {
  */
 function updateParentId(id) {
   // Setting list.parentId fires 'load' event.
-  list.parentId = id;
+  bmm.list.parentId = id;
 
   // When tree.selectedItem changed, tree view calls navigatTo() then it
   // calls updateHash() when list view displayed specified folder.
-  tree.selectedItem = bmm.treeLookup[id] || tree.selectedItem;
+  bmm.tree.selectedItem = bmm.treeLookup[id] || bmm.tree.selectedItem;
 }
 
 // Process the location hash. This is called by onhashchange and when the page
@@ -188,7 +188,7 @@ function processHash() {
   var id = window.location.hash.slice(1);
   if (!id) {
     // If we do not have a hash, select first item in the tree.
-    id = tree.items[0].bookmarkId;
+    id = bmm.tree.items[0].bookmarkId;
   }
 
   var valid = false;
@@ -203,16 +203,17 @@ function processHash() {
       var bookmarkNode = bookmarkNodes[0];
 
       // After the list reloads, edit the desired bookmark.
-      var editBookmark = function(e) {
-        var index = list.dataModel.findIndexById(bookmarkNode.id);
+      var editBookmark = function() {
+        var index = bmm.list.dataModel.findIndexById(bookmarkNode.id);
         if (index != -1) {
-          var sm = list.selectionModel;
+          var sm = bmm.list.selectionModel;
           sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
           scrollIntoViewAndMakeEditable(index);
         }
       };
 
-      navigateTo(bookmarkNode.parentId, editBookmark);
+      var parentId = assert(bookmarkNode.parentId);
+      navigateTo(parentId, editBookmark);
     });
 
     // We handle the two cases of navigating to the bookmark to be edited
@@ -273,12 +274,12 @@ function setSearch(searchText) {
     input.value = searchText;
 
   if (searchText) {
-    tree.add(searchTreeItem);
-    tree.selectedItem = searchTreeItem;
+    bmm.tree.add(searchTreeItem);
+    bmm.tree.selectedItem = searchTreeItem;
   } else {
     // Go "home".
-    tree.selectedItem = tree.items[0];
-    id = tree.selectedItem.bookmarkId;
+    bmm.tree.selectedItem = bmm.tree.items[0];
+    id = bmm.tree.selectedItem.bookmarkId;
   }
 
   navigateTo(id);
@@ -291,7 +292,7 @@ function setSearch(searchText) {
  * @return {string} The path to the the bookmark,
  */
 function getFolder(parentId) {
-  var parentNode = tree.getBookmarkNodeById(parentId);
+  var parentNode = bmm.tree.getBookmarkNodeById(parentId);
   if (parentNode) {
     var s = parentNode.title;
     if (parentNode.parentId != bmm.ROOT_ID) {
@@ -331,7 +332,7 @@ function getAllUrls(nodes) {
 
   // Get a future promise for the nodes.
   var promises = nodes.map(function(node) {
-    if (bmm.isFolder(node))
+    if (bmm.isFolder(assert(node)))
       return bmm.loadSubtree(node.id);
     // Not a folder so we already have all the data we need.
     return Promise.resolve(node);
@@ -345,26 +346,26 @@ function getAllUrls(nodes) {
 
 /**
  * Returns the nodes (non recursive) to use for the open commands.
- * @param {HTMLElement} target .
- * @return {Array.<BookmarkTreeNode>} .
+ * @param {HTMLElement} target
+ * @return {!Array.<BookmarkTreeNode>}
  */
 function getNodesForOpen(target) {
-  if (target == tree) {
-    if (tree.selectedItem != searchTreeItem)
-      return tree.selectedFolders;
+  if (target == bmm.tree) {
+    if (bmm.tree.selectedItem != searchTreeItem)
+      return bmm.tree.selectedFolders;
     // Fall through to use all nodes in the list.
   } else {
-    var items = list.selectedItems;
+    var items = bmm.list.selectedItems;
     if (items.length)
       return items;
   }
 
   // The list starts off with a null dataModel. We can get here during startup.
-  if (!list.dataModel)
+  if (!bmm.list.dataModel)
     return [];
 
   // Return an array based on the dataModel.
-  return list.dataModel.slice();
+  return bmm.list.dataModel.slice();
 }
 
 /**
@@ -397,6 +398,8 @@ function updateOpenCommand(e, command, singularId, pluralId, commandDisabled) {
     // The command label reflects the selection which might not reflect
     // how many bookmarks will be opened. For example if you right click an
     // empty area in a folder with 1 bookmark the text should still say "all".
+    assert(!e.target || e.target instanceof BookmarkList ||
+        e.target instanceof BookmarkTree);
     var selectedNodes = getSelectedBookmarkNodes(e.target).filter(notNewNode);
     var singular = selectedNodes.length == 1 && !bmm.isFolder(selectedNodes[0]);
     command.label = loadTimeData.getString(singular ? singularId : pluralId);
@@ -408,7 +411,8 @@ function updateOpenCommand(e, command, singularId, pluralId, commandDisabled) {
     return;
   }
 
-  getUrlsForOpenCommands(e.target).then(function(urls) {
+  getUrlsForOpenCommands(assertInstanceof(e.target, HTMLElement)).then(
+      function(urls) {
     var disabled = !urls.length;
     command.disabled = disabled;
     e.canExecute = !disabled;
@@ -430,10 +434,10 @@ function updatePasteCommand(opt_f) {
       opt_f();
   }
   // We cannot paste into search view.
-  if (list.isSearch())
+  if (bmm.list.isSearch())
     update(false);
   else
-    chrome.bookmarkManagerPrivate.canPaste(list.parentId, update);
+    chrome.bookmarkManagerPrivate.canPaste(bmm.list.parentId, update);
 }
 
 function handleCanExecuteForDocument(e) {
@@ -447,9 +451,9 @@ function handleCanExecuteForDocument(e) {
       e.canExecute = true;
       break;
     case 'sort-command':
-      e.canExecute = !list.isSearch() &&
-          list.dataModel && list.dataModel.length > 1 &&
-          !isUnmodifiable(tree.getBookmarkNodeById(list.parentId));
+      e.canExecute = !bmm.list.isSearch() &&
+          bmm.list.dataModel && bmm.list.dataModel.length > 1 &&
+          !isUnmodifiable(bmm.tree.getBookmarkNodeById(bmm.list.parentId));
       break;
     case 'undo-command':
       // If the search box is active, pass the undo command through
@@ -466,7 +470,7 @@ function handleCanExecuteForDocument(e) {
 
 /**
  * Helper function for handling canExecute for the list and the tree.
- * @param {!Event} e Can execute event object.
+ * @param {!cr.ui.CanExecuteEvent} e Can execute event object.
  * @param {boolean} isSearch Whether the user is trying to do a command on
  *     search.
  */
@@ -482,7 +486,8 @@ function canExecuteShared(e, isSearch) {
     case 'add-new-bookmark-command':
     case 'new-folder-command':
       var parentId = computeParentFolderForNewItem();
-      var unmodifiable = isUnmodifiable(tree.getBookmarkNodeById(parentId));
+      var unmodifiable = isUnmodifiable(
+          bmm.tree.getBookmarkNodeById(parentId));
       e.canExecute = !isSearch && canEdit && !unmodifiable;
       break;
 
@@ -513,18 +518,18 @@ function canExecuteShared(e, isSearch) {
 
 /**
  * Helper function for handling canExecute for the list and document.
- * @param {!Event} e Can execute event object.
+ * @param {!cr.ui.CanExecuteEvent} e Can execute event object.
  */
 function canExecuteForList(e) {
   var command = e.command;
   var commandId = command.id;
 
   function hasSelected() {
-    return !!list.selectedItem;
+    return !!bmm.list.selectedItem;
   }
 
   function hasSingleSelected() {
-    return list.selectedItems.length == 1;
+    return bmm.list.selectedItems.length == 1;
   }
 
   function canCopyItem(item) {
@@ -532,18 +537,18 @@ function canExecuteForList(e) {
   }
 
   function canCopyItems() {
-    var selectedItems = list.selectedItems;
+    var selectedItems = bmm.list.selectedItems;
     return selectedItems && selectedItems.some(canCopyItem);
   }
 
   function isSearch() {
-    return list.isSearch();
+    return bmm.list.isSearch();
   }
 
   switch (commandId) {
     case 'rename-folder-command':
       // Show rename if a single folder is selected.
-      var items = list.selectedItems;
+      var items = bmm.list.selectedItems;
       if (items.length != 1) {
         e.canExecute = false;
         command.hidden = true;
@@ -556,7 +561,7 @@ function canExecuteForList(e) {
 
     case 'edit-command':
       // Show the edit command if not a folder.
-      var items = list.selectedItems;
+      var items = bmm.list.selectedItems;
       if (items.length != 1) {
         e.canExecute = false;
         command.hidden = false;
@@ -574,7 +579,7 @@ function canExecuteForList(e) {
     case 'delete-command':
     case 'cut-command':
       e.canExecute = canCopyItems() && canEdit &&
-          !hasUnmodifiable(list.selectedItems);
+          !hasUnmodifiable(bmm.list.selectedItems);
       break;
 
     case 'copy-command':
@@ -592,13 +597,13 @@ function canExecuteForList(e) {
 
 // Update canExecute for the commands when the list is the active element.
 function handleCanExecuteForList(e) {
-  if (e.target != list) return;
+  if (e.target != bmm.list) return;
   canExecuteForList(e);
 }
 
 // Update canExecute for the commands when the tree is the active element.
 function handleCanExecuteForTree(e) {
-  if (e.target != tree) return;
+  if (e.target != bmm.tree) return;
 
   var command = e.command;
   var commandId = command.id;
@@ -613,14 +618,14 @@ function handleCanExecuteForTree(e) {
   }
 
   function isTopLevelItem() {
-    return e.target.selectedItem.parentNode == tree;
+    return e.target.selectedItem.parentNode == bmm.tree;
   }
 
   switch (commandId) {
     case 'rename-folder-command':
       command.hidden = false;
       e.canExecute = hasSelected() && !isTopLevelItem() && canEdit &&
-          !hasUnmodifiable(tree.selectedFolders);
+          !hasUnmodifiable(bmm.tree.selectedFolders);
       break;
 
     case 'edit-command':
@@ -631,7 +636,7 @@ function handleCanExecuteForTree(e) {
     case 'delete-command':
     case 'cut-command':
       e.canExecute = hasSelected() && !isTopLevelItem() && canEdit &&
-          !hasUnmodifiable(tree.selectedFolders);
+          !hasUnmodifiable(bmm.tree.selectedFolders);
       break;
 
     case 'copy-command':
@@ -669,7 +674,7 @@ function updateEditingCommands() {
 }
 
 function handleChangeForTree(e) {
-  navigateTo(tree.selectedItem.bookmarkId);
+  navigateTo(bmm.tree.selectedItem.bookmarkId);
 }
 
 function handleOrganizeButtonClick(e) {
@@ -696,22 +701,22 @@ function handleEdit(e) {
     context.url = bookmarkNode.url;
 
   if (bookmarkNode.id == 'new') {
-    selectItemsAfterUserAction(list);
+    selectItemsAfterUserAction(/** @type {BookmarkList} */(bmm.list));
 
     // New page
     context.parentId = bookmarkNode.parentId;
     chrome.bookmarks.create(context, function(node) {
       // A new node was created and will get added to the list due to the
       // handler.
-      var dataModel = list.dataModel;
+      var dataModel = bmm.list.dataModel;
       var index = dataModel.indexOf(bookmarkNode);
       dataModel.splice(index, 1);
 
       // Select new item.
       var newIndex = dataModel.findIndexById(node.id);
       if (newIndex != -1) {
-        var sm = list.selectionModel;
-        list.scrollIndexIntoView(newIndex);
+        var sm = bmm.list.selectionModel;
+        bmm.list.scrollIndexIntoView(newIndex);
         sm.leadIndex = sm.anchorIndex = sm.selectedIndex = newIndex;
       }
     });
@@ -726,7 +731,7 @@ function handleCancelEdit(e) {
   var item = e.target;
   var bookmarkNode = item.bookmarkNode;
   if (bookmarkNode.id == 'new') {
-    var dataModel = list.dataModel;
+    var dataModel = bmm.list.dataModel;
     var index = dataModel.findIndexById('new');
     dataModel.splice(index, 1);
   }
@@ -737,19 +742,19 @@ function handleCancelEdit(e) {
  * used for the show-in-folder command.
  */
 function showInFolder() {
-  var bookmarkNode = list.selectedItem;
+  var bookmarkNode = bmm.list.selectedItem;
   if (!bookmarkNode)
     return;
   var parentId = bookmarkNode.parentId;
 
   // After the list is loaded we should select the revealed item.
   function selectItem() {
-    var index = list.dataModel.findIndexById(bookmarkNode.id);
+    var index = bmm.list.dataModel.findIndexById(bookmarkNode.id);
     if (index == -1)
       return;
-    var sm = list.selectionModel;
+    var sm = bmm.list.selectionModel;
     sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
-    list.scrollIndexIntoView(index);
+    bmm.list.scrollIndexIntoView(index);
   }
 
   var treeItem = bmm.treeLookup[parentId];
@@ -771,12 +776,12 @@ function getLinkController() {
  * Returns the selected bookmark nodes of the provided tree or list.
  * If |opt_target| is not provided or null the active element is used.
  * Only call this if the list or the tree is focused.
- * @param {BookmarkList|BookmarkTree} opt_target The target list or tree.
+ * @param {(BookmarkList|BookmarkTree)=} opt_target The target list or tree.
  * @return {!Array} Array of bookmark nodes.
  */
 function getSelectedBookmarkNodes(opt_target) {
-  return (opt_target || document.activeElement) == tree ?
-      tree.selectedFolders : list.selectedItems;
+  return (opt_target || document.activeElement) == bmm.tree ?
+      bmm.tree.selectedFolders : bmm.list.selectedItems;
 }
 
 /**
@@ -795,11 +800,11 @@ function getSelectedBookmarkIds() {
  * @return {boolean} Whether the given node is unmodifiable.
  */
 function isUnmodifiable(node) {
-  return node && node.unmodifiable;
+  return !!(node && node.unmodifiable);
 }
 
 /**
- * @param {BookmarkList} A list of BookmarkNodes.
+ * @param {Array.<BookmarkTreeNode>} nodes A list of BookmarkTreeNodes.
  * @return {boolean} Whether any of the nodes is managed.
  */
 function hasUnmodifiable(nodes) {
@@ -808,17 +813,17 @@ function hasUnmodifiable(nodes) {
 
 /**
  * Opens the selected bookmarks.
- * @param {LinkKind} kind The kind of link we want to open.
- * @param {HTMLElement} opt_eventTarget The target of the user initiated event.
+ * @param {cr.LinkKind} kind The kind of link we want to open.
+ * @param {HTMLElement=} opt_eventTarget The target of the user initiated event.
  */
 function openBookmarks(kind, opt_eventTarget) {
   // If we have selected any folders, we need to find all the bookmarks one
   // level down. We use multiple async calls to getSubtree instead of getting
   // the whole tree since we would like to minimize the amount of data sent.
 
-  var urlsP = getUrlsForOpenCommands(opt_eventTarget);
+  var urlsP = getUrlsForOpenCommands(opt_eventTarget ? opt_eventTarget : null);
   urlsP.then(function(urls) {
-    getLinkController().openUrls(urls, kind);
+    getLinkController().openUrls(assert(urls), kind);
     chrome.bookmarkManagerPrivate.recordLaunch();
   });
 }
@@ -840,9 +845,8 @@ function openItem() {
  * This ensures children of deleted folders do not remain in results
  */
 function updateSearchResults() {
-  if (list.isSearch()) {
-    list.reload();
-  }
+  if (bmm.list.isSearch())
+    bmm.list.reload();
 }
 
 /**
@@ -879,12 +883,13 @@ function deleteBookmarks() {
 /**
  * Restores a tree of bookmarks under a specified folder.
  * @param {BookmarkTreeNode} node The node to restore.
- * @param {=string} parentId The ID of the folder to restore under. If not
- *     specified, the original parentId of the node will be used.
+ * @param {(string|number)=} opt_parentId If a string is passed, it's the ID of
+ *     the folder to restore under. If not specified or a number is passed, the
+ *     original parentId of the node will be used.
  */
-function restoreTree(node, parentId) {
+function restoreTree(node, opt_parentId) {
   var bookmarkInfo = {
-    parentId: parentId || node.parentId,
+    parentId: typeof opt_parentId == 'string' ? opt_parentId : node.parentId,
     title: node.title,
     index: node.index,
     url: node.url
@@ -926,11 +931,11 @@ function undoDelete() {
  * @return {string} The id of folder node where we'll create new page/folder.
  */
 function computeParentFolderForNewItem() {
-  if (document.activeElement == tree)
-    return list.parentId;
-  var selectedItem = list.selectedItem;
+  if (document.activeElement == bmm.tree)
+    return bmm.list.parentId;
+  var selectedItem = bmm.list.selectedItem;
   return selectedItem && bmm.isFolder(selectedItem) ?
-      selectedItem.id : list.parentId;
+      selectedItem.id : bmm.list.parentId;
 }
 
 /**
@@ -938,10 +943,10 @@ function computeParentFolderForNewItem() {
  * selected item.
  */
 function editSelectedItem() {
-  if (document.activeElement == tree) {
-    tree.selectedItem.editing = true;
+  if (document.activeElement == bmm.tree) {
+    bmm.tree.selectedItem.editing = true;
   } else {
-    var li = list.getListItem(list.selectedItem);
+    var li = bmm.list.getListItem(bmm.list.selectedItem);
     if (li)
       li.editing = true;
   }
@@ -964,7 +969,7 @@ function newFolder() {
     }, callback);
   }
 
-  if (document.activeElement == tree) {
+  if (document.activeElement == bmm.tree) {
     createFolder(function(newNode) {
       navigateTo(newNode.id, function() {
         bmm.treeLookup[newNode.id].editing = true;
@@ -975,8 +980,8 @@ function newFolder() {
 
   function editNewFolderInList() {
     createFolder(function() {
-      var index = list.dataModel.length - 1;
-      var sm = list.selectionModel;
+      var index = bmm.list.dataModel.length - 1;
+      var sm = bmm.list.selectionModel;
       sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
       scrollIntoViewAndMakeEditable(index);
     });
@@ -990,14 +995,14 @@ function newFolder() {
  * @param {number} index The index of the item to make editable.
  */
 function scrollIntoViewAndMakeEditable(index) {
-  list.scrollIndexIntoView(index);
+  bmm.list.scrollIndexIntoView(index);
   // onscroll is now dispatched asynchronously so we have to postpone
   // the rest.
   setTimeout(function() {
-    var item = list.getListItemByIndex(index);
+    var item = bmm.list.getListItemByIndex(index);
     if (item)
       item.editing = true;
-  });
+  }, 0);
 }
 
 /**
@@ -1014,10 +1019,10 @@ function addPage() {
       parentId: parentId,
       id: 'new'
     };
-    var dataModel = list.dataModel;
+    var dataModel = bmm.list.dataModel;
     var length = dataModel.length;
     dataModel.splice(length, 0, fakeNode);
-    var sm = list.selectionModel;
+    var sm = bmm.list.selectionModel;
     sm.anchorIndex = sm.leadIndex = sm.selectedIndex = length;
     scrollIntoViewAndMakeEditable(length);
   };
@@ -1029,7 +1034,7 @@ function addPage() {
  * This function is used to select items after a user action such as paste, drop
  * add page etc.
  * @param {BookmarkList|BookmarkTree} target The target of the user action.
- * @param {=string} opt_selectedTreeId If provided, then select that tree id.
+ * @param {string=} opt_selectedTreeId If provided, then select that tree id.
  */
 function selectItemsAfterUserAction(target, opt_selectedTreeId) {
   // We get one onCreated event per item so we delay the handling until we get
@@ -1040,7 +1045,7 @@ function selectItemsAfterUserAction(target, opt_selectedTreeId) {
 
   function handle(id, bookmarkNode) {
     clearTimeout(timer);
-    if (opt_selectedTreeId || list.parentId == bookmarkNode.parentId)
+    if (opt_selectedTreeId || bmm.list.parentId == bookmarkNode.parentId)
       ids.push(id);
     timer = setTimeout(handleTimeout, 50);
   }
@@ -1052,25 +1057,25 @@ function selectItemsAfterUserAction(target, opt_selectedTreeId) {
     if (opt_selectedTreeId && ids.indexOf(opt_selectedTreeId) != -1) {
       var index = ids.indexOf(opt_selectedTreeId);
       if (index != -1 && opt_selectedTreeId in bmm.treeLookup) {
-        tree.selectedItem = bmm.treeLookup[opt_selectedTreeId];
+        bmm.tree.selectedItem = bmm.treeLookup[opt_selectedTreeId];
       }
-    } else if (target == list) {
-      var dataModel = list.dataModel;
+    } else if (target == bmm.list) {
+      var dataModel = bmm.list.dataModel;
       var firstIndex = dataModel.findIndexById(ids[0]);
       var lastIndex = dataModel.findIndexById(ids[ids.length - 1]);
       if (firstIndex != -1 && lastIndex != -1) {
-        var selectionModel = list.selectionModel;
+        var selectionModel = bmm.list.selectionModel;
         selectionModel.selectedIndex = -1;
         selectionModel.selectRange(firstIndex, lastIndex);
         selectionModel.anchorIndex = selectionModel.leadIndex = lastIndex;
-        list.focus();
+        bmm.list.focus();
       }
     }
 
-    list.endBatchUpdates();
+    bmm.list.endBatchUpdates();
   }
 
-  list.startBatchUpdates();
+  bmm.list.startBatchUpdates();
 
   chrome.bookmarks.onCreated.addListener(handle);
   chrome.bookmarks.onMoved.addListener(handle);
@@ -1091,11 +1096,11 @@ function recordUserAction(name) {
  *     tree view or list view).
  */
 function getSelectedId() {
-  if (document.activeElement == tree)
-    return tree.selectedItem.bookmarkId;
-  var selectedItem = list.selectedItem;
+  if (document.activeElement == bmm.tree)
+    return bmm.tree.selectedItem.bookmarkId;
+  var selectedItem = bmm.list.selectedItem;
   return selectedItem && bmm.isFolder(selectedItem) ?
-      selectedItem.id : tree.selectedItem.bookmarkId;
+      selectedItem.id : bmm.tree.selectedItem.bookmarkId;
 }
 
 /**
@@ -1105,7 +1110,7 @@ function getSelectedId() {
  */
 function pasteBookmark(id) {
   recordUserAction('Paste');
-  selectItemsAfterUserAction(list);
+  selectItemsAfterUserAction(/** @type {BookmarkList} */(bmm.list));
   chrome.bookmarkManagerPrivate.paste(id, getSelectedBookmarkIds());
 }
 
@@ -1130,7 +1135,8 @@ function hasSelectedAncestor(parentNode) {
     return true;
 
   // Keep digging.
-  return hasSelectedAncestor(tree.getBookmarkNodeById(parentNode.parentId));
+  return hasSelectedAncestor(
+      bmm.tree.getBookmarkNodeById(parentNode.parentId));
 }
 
 function getFilteredSelectedBookmarkIds() {
@@ -1140,7 +1146,7 @@ function getFilteredSelectedBookmarkIds() {
   var nodes = getSelectedBookmarkNodes();
 
   for (var i = 0; i < nodes.length; i++)
-    if (!hasSelectedAncestor(tree.getBookmarkNodeById(nodes[i].parentId)))
+    if (!hasSelectedAncestor(bmm.tree.getBookmarkNodeById(nodes[i].parentId)))
       filteredIds.splice(0, 0, nodes[i].id);
 
   return filteredIds;
@@ -1178,15 +1184,18 @@ function handleCommand(e) {
     case 'open-in-new-tab-command':
     case 'open-in-background-tab-command':
       recordUserAction('OpenInNewTab');
-      openBookmarks(LinkKind.BACKGROUND_TAB, e.target);
+      openBookmarks(LinkKind.BACKGROUND_TAB,
+          assertInstanceof(e.target, HTMLElement));
       break;
     case 'open-in-new-window-command':
       recordUserAction('OpenInNewWindow');
-      openBookmarks(LinkKind.WINDOW, e.target);
+      openBookmarks(LinkKind.WINDOW,
+          assertInstanceof(e.target, HTMLElement));
       break;
     case 'open-incognito-window-command':
       recordUserAction('OpenIncognito');
-      openBookmarks(LinkKind.INCOGNITO, e.target);
+      openBookmarks(LinkKind.INCOGNITO,
+          assertInstanceof(e.target, HTMLElement));
       break;
     case 'delete-command':
       recordUserAction('Delete');
@@ -1206,14 +1215,14 @@ function handleCommand(e) {
                                         });
       break;
     case 'paste-from-organize-menu-command':
-      pasteBookmark(list.parentId);
+      pasteBookmark(bmm.list.parentId);
       break;
     case 'paste-from-context-menu-command':
       pasteBookmark(getSelectedId());
       break;
     case 'sort-command':
       recordUserAction('Sort');
-      chrome.bookmarkManagerPrivate.sortChildren(list.parentId);
+      chrome.bookmarkManagerPrivate.sortChildren(bmm.list.parentId);
       break;
     case 'rename-folder-command':
       editSelectedItem();
@@ -1246,7 +1255,8 @@ function handleCommand(e) {
 // shortcuts for these commands.
 function installEventHandlerForCommand(eventName, commandId) {
   function handle(e) {
-    if (document.activeElement != list && document.activeElement != tree)
+    if (document.activeElement != bmm.list &&
+        document.activeElement != bmm.tree)
       return;
     var command = $(commandId);
     if (!command.disabled) {
@@ -1271,11 +1281,13 @@ function initializeSplitter() {
   Splitter.decorate(splitter);
 
   // The splitter persists the size of the left component in the local store.
-  if ('treeWidth' in localStorage)
-    splitter.previousElementSibling.style.width = localStorage['treeWidth'];
+  if ('treeWidth' in window.localStorage)
+    splitter.previousElementSibling.style.width =
+        window.localStorage['treeWidth'];
 
   splitter.addEventListener('resize', function(e) {
-    localStorage['treeWidth'] = splitter.previousElementSibling.style.width;
+    window.localStorage['treeWidth'] =
+        splitter.previousElementSibling.style.width;
   });
 }
 
@@ -1295,36 +1307,38 @@ function continueInitializeBookmarkManager(localizedStrings) {
   cr.ui.decorate('menu', Menu);
   cr.ui.decorate('button[menu]', MenuButton);
   cr.ui.decorate('command', Command);
-  BookmarkList.decorate(list);
-  BookmarkTree.decorate(tree);
+  BookmarkList.decorate($('list'));
+  BookmarkTree.decorate($('tree'));
 
-  list.addEventListener('canceledit', handleCancelEdit);
-  list.addEventListener('canExecute', handleCanExecuteForList);
-  list.addEventListener('change', updateAllCommands);
-  list.addEventListener('contextmenu', updateEditingCommands);
-  list.addEventListener('dblclick', handleDoubleClickForList);
-  list.addEventListener('edit', handleEdit);
-  list.addEventListener('rename', handleRename);
-  list.addEventListener('urlClicked', handleUrlClickedForList);
+  bmm.list.addEventListener('canceledit', handleCancelEdit);
+  bmm.list.addEventListener('canExecute', handleCanExecuteForList);
+  bmm.list.addEventListener('change', updateAllCommands);
+  bmm.list.addEventListener('contextmenu', updateEditingCommands);
+  bmm.list.addEventListener('dblclick', handleDoubleClickForList);
+  bmm.list.addEventListener('edit', handleEdit);
+  bmm.list.addEventListener('rename', handleRename);
+  bmm.list.addEventListener('urlClicked', handleUrlClickedForList);
 
-  tree.addEventListener('canExecute', handleCanExecuteForTree);
-  tree.addEventListener('change', handleChangeForTree);
-  tree.addEventListener('contextmenu', updateEditingCommands);
-  tree.addEventListener('rename', handleRename);
-  tree.addEventListener('load', handleLoadForTree);
+  bmm.tree.addEventListener('canExecute', handleCanExecuteForTree);
+  bmm.tree.addEventListener('change', handleChangeForTree);
+  bmm.tree.addEventListener('contextmenu', updateEditingCommands);
+  bmm.tree.addEventListener('rename', handleRename);
+  bmm.tree.addEventListener('load', handleLoadForTree);
 
-  cr.ui.contextMenuHandler.addContextMenuProperty(tree);
-  list.contextMenu = $('context-menu');
-  tree.contextMenu = $('context-menu');
+  cr.ui.contextMenuHandler.addContextMenuProperty(
+      /** @type {!Element} */(bmm.tree));
+  bmm.list.contextMenu = $('context-menu');
+  bmm.tree.contextMenu = $('context-menu');
 
   // We listen to hashchange so that we can update the currently shown folder
   // when // the user goes back and forward in the history.
   window.addEventListener('hashchange', processHash);
 
-  document.querySelector('header form').onsubmit = function(e) {
+  document.querySelector('header form').onsubmit =
+      /** @type {function(Event=)} */(function(e) {
     setSearch($('term').value);
     e.preventDefault();
-  };
+  });
 
   $('term').addEventListener('search', handleSearch);
 
@@ -1371,7 +1385,7 @@ function continueInitializeBookmarkManager(localizedStrings) {
   initializeSplitter();
   bmm.addBookmarkModelListeners();
   dnd.init(selectItemsAfterUserAction);
-  tree.reload();
+  bmm.tree.reload();
 }
 
 initializeBookmarkManager();

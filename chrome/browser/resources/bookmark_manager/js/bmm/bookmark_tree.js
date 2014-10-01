@@ -13,22 +13,23 @@ cr.define('bmm', function() {
 
   /** @const */ var Tree = cr.ui.Tree;
   /** @const */ var TreeItem = cr.ui.TreeItem;
+  /** @const */ var localStorage = window.localStorage;
 
   var treeLookup = {};
-  var tree;
 
   // Manager for persisting the expanded state.
-  var expandedManager = {
+  var expandedManager = /** @type {EventListener} */({
     /**
      * A map of the collapsed IDs.
      * @type {Object}
      */
     map: 'bookmarkTreeState' in localStorage ?
-        JSON.parse(localStorage['bookmarkTreeState']) : {},
+        /** @type {Object} */(JSON.parse(localStorage['bookmarkTreeState'])) :
+        {},
 
     /**
      * Set the collapsed state for an ID.
-     * @param {string} The bookmark ID of the tree item that was expanded or
+     * @param {string} id The bookmark ID of the tree item that was expanded or
      *     collapsed.
      * @param {boolean} expanded Whether the tree item was expanded.
      */
@@ -83,7 +84,7 @@ cr.define('bmm', function() {
         localStorage['bookmarkTreeState'] = JSON.stringify(map);
       }, 100);
     }
-  };
+  });
 
   // Clean up once per session but wait until things settle down a bit.
   setTimeout(expandedManager.cleanUp.bind(expandedManager), 1e4);
@@ -131,12 +132,16 @@ cr.define('bmm', function() {
    *
    * @param {!cr.ui.TreeItem} parent The parent tree item.
    * @param {!cr.ui.TreeItem} treeItem The tree item to add.
-   * @param {Function=} f A function which gets called after the item has been
-   *     added at the right index.
+   * @param {Function=} opt_f A function which gets called after the item has
+   *     been added at the right index.
    */
   function addTreeItem(parent, treeItem, opt_f) {
     chrome.bookmarks.getChildren(parent.bookmarkNode.id, function(children) {
-      var index = children.filter(bmm.isFolder).map(function(item) {
+      var isFolder = /**
+                      * @type {function (BookmarkTreeNode, number,
+                      *                  Array.<(BookmarkTreeNode)>)}
+                      */(bmm.isFolder);
+      var index = children.filter(isFolder).map(function(item) {
         return item.id;
       }).indexOf(treeItem.bookmarkNode.id);
       parent.addAt(treeItem, index);
@@ -151,7 +156,7 @@ cr.define('bmm', function() {
    * Creates a new bookmark list.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLButtonElement}
+   * @extends {cr.ui.Tree}
    */
   var BookmarkTree = cr.ui.define('tree');
 
@@ -172,6 +177,10 @@ cr.define('bmm', function() {
         treeItem.label = treeItem.bookmarkNode.title = changeInfo.title;
     },
 
+    /**
+     * @param {string} id
+     * @param {ReorderInfo} reorderInfo
+     */
     handleChildrenReordered: function(id, reorderInfo) {
       var parentItem = treeLookup[id];
       // The tree only contains folders.
@@ -190,6 +199,10 @@ cr.define('bmm', function() {
       }
     },
 
+    /**
+     * @param {string} id
+     * @param {MoveInfo} moveInfo
+     */
     handleMoved: function(id, moveInfo) {
       var treeItem = treeLookup[id];
       if (treeItem) {
@@ -262,7 +275,8 @@ cr.define('bmm', function() {
             hasDirectories = true;
             var item = new BookmarkTreeItem(bookmarkNode);
             parentTreeItem.add(item);
-            var anyChildren = buildTreeItems(item, bookmarkNode.children);
+            var children = assert(bookmarkNode.children);
+            var anyChildren = buildTreeItems(item, children);
             item.expanded = anyChildren && expandedManager.get(bookmarkNode.id);
           }
         }
@@ -301,7 +315,7 @@ cr.define('bmm', function() {
     BookmarkTree: BookmarkTree,
     BookmarkTreeItem: BookmarkTreeItem,
     treeLookup: treeLookup,
-    tree: tree,
+    tree: /** @type {Element} */(null),  // Set when decorated.
     ROOT_ID: ROOT_ID
   };
 });

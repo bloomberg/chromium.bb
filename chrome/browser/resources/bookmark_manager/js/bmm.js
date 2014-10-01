@@ -64,7 +64,7 @@ cr.define('bmm', function() {
    * Loads the entire bookmark tree and returns a {@code Promise} that will
    * be fulfilled when done. This reuses multiple loads so that we do not load
    * the same tree more than once at the same time.
-   * @return {!Promise.<Node>} The future promise for the load.
+   * @return {!Promise.<!BookmarkTreeNode>} The future promise for the load.
    */
   function loadTree() {
     return loadSubtree('');
@@ -169,7 +169,7 @@ cr.define('bmm', function() {
   /**
    * Callback for when a bookmark node is removed.
    * @param {string} id The id of the removed bookmark node.
-   * @param {!Object} bookmarkNode The information about removed.
+   * @param {!Object} removeInfo The information about removed.
    */
   function handleRemoved(id, removeInfo) {
     if (bmm.list)

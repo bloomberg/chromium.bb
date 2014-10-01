@@ -124,25 +124,35 @@ function createMouseEvent(type) {
 
 TEST_F('StartupPageListWebUITest', 'testDropFromOutsideSource', function() {
   /** @const */ var NEW_PAGE = 'http://google.com';
-
+  console.warn('VPDBG: 127');
   var mockDropEvent = createMouseEvent('drop');
+  console.warn('VPDBG: 129');
   mockDropEvent.dataTransfer.setData('url', NEW_PAGE);
+  console.warn('VPDBG: 131');
 
   this.mockHandler.expects(once()).addStartupPage([NEW_PAGE, 0]);
+  console.warn('VPDBG: 134');
 
   this.getList().items[0].dispatchEvent(mockDropEvent);
+  console.warn('VPDBG: 137');
 
   expectTrue(mockDropEvent.defaultPrevented);
+  console.warn('VPDBG: 140');
 });
 
 TEST_F('StartupPageListWebUITest', 'testDropToReorder', function() {
   // TODO(dbeam): mock4js doesn't handle complex arguments well. Fix this.
+  console.warn('VPDBG: 145');
   this.mockHandler.expects(once()).dragDropStartupPage([0, [1].join()]);
+  console.warn('VPDBG: 147');
 
   this.getList().selectionModel.selectedIndex = 1;
+  console.warn('VPDBG: 150');
   expectEquals(1, this.getList().selectionModel.selectedIndexes.length);
+  console.warn('VPDBG: 152');
 
   this.getList().items[0].dispatchEvent(createMouseEvent('drop'));
+  console.warn('VPDBG: 155');
 });
 
 }());

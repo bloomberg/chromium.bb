@@ -5,13 +5,28 @@
 // TODO(arv): Now that this is driven by a data model, implement a data model
 //            that handles the loading and the events from the bookmark backend.
 
+/**
+ * @typedef {{childIds: Array.<string>}}
+ *
+ * @see chrome/common/extensions/api/bookmarks.json
+ */
+var ReorderInfo;
+
+/**
+ * @typedef {{parentId: string,
+ *            index: number,
+ *            oldParentId: string,
+ *            oldIndex: number}}
+ *
+ * @see chrome/common/extensions/api/bookmarks.json
+ */
+var MoveInfo;
+
 cr.define('bmm', function() {
   var List = cr.ui.List;
   var ListItem = cr.ui.ListItem;
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var ContextMenuButton = cr.ui.ContextMenuButton;
-
-  var list;
 
   /**
    * Basic array data model for use with bookmarks.
@@ -57,7 +72,7 @@ cr.define('bmm', function() {
    * Creates a new bookmark list.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLButtonElement}
+   * @extends {cr.ui.List}
    */
   var BookmarkList = cr.ui.define('list');
 
@@ -79,6 +94,10 @@ cr.define('bmm', function() {
       bmm.list = this;
     },
 
+    /**
+     * @param {!BookmarkTreeNode} bookmarkNode
+     * @override
+     */
     createItem: function(bookmarkNode) {
       return new BookmarkListItem(bookmarkNode);
     },
@@ -198,9 +217,10 @@ cr.define('bmm', function() {
      * Handles mousedown events so that we can prevent the auto scroll as
      * necessary.
      * @private
-     * @param {!MouseEvent} e The mousedown event object.
+     * @param {!Event} e The mousedown event object.
      */
     handleMouseDown_: function(e) {
+      e = /** @type {!MouseEvent} */(e);
       if (e.button == 1) {
         // WebKit no longer fires click events for middle clicks so we manually
         // listen to mouse up to dispatch a click event.
@@ -220,9 +240,10 @@ cr.define('bmm', function() {
      * WebKit no longer dispatches click events for middle clicks so we need
      * to emulate it.
      * @private
-     * @param {!MouseEvent} e The mouse up event object.
+     * @param {!Event} e The mouse up event object.
      */
     handleMiddleMouseUp_: function(e) {
+      e = /** @type {!MouseEvent} */(e);
       this.removeEventListener('mouseup', this.handleMiddleMouseUp_);
       if (e.button == 1) {
         var el = e.target;
@@ -250,6 +271,10 @@ cr.define('bmm', function() {
       }
     },
 
+    /**
+     * @param {string} id
+     * @param {ReorderInfo} reorderInfo
+     */
     handleChildrenReordered: function(id, reorderInfo) {
       if (this.parentId == id) {
         // We create a new data model with updated items in the right order.
@@ -274,6 +299,10 @@ cr.define('bmm', function() {
         this.dataModel.splice(bookmarkNode.index, 0, bookmarkNode);
     },
 
+    /**
+     * @param {string} id
+     * @param {MoveInfo} moveInfo
+     */
     handleMoved: function(id, moveInfo) {
       if (moveInfo.parentId == this.parentId ||
           moveInfo.oldParentId == this.parentId) {
@@ -344,7 +373,6 @@ cr.define('bmm', function() {
 
   /**
    * The ID of the bookmark folder we are displaying.
-   * @type {string}
    */
   cr.defineProperty(BookmarkList, 'parentId', cr.PropertyKind.JS,
                     function() {
@@ -353,9 +381,10 @@ cr.define('bmm', function() {
 
   /**
    * The contextMenu property.
-   * @type {cr.ui.Menu}
    */
   cr.ui.contextMenuHandler.addContextMenuProperty(BookmarkList);
+  /** @type {cr.ui.Menu} */
+  BookmarkList.prototype.contextMenu;
 
   /**
    * Creates a new bookmark list item.
@@ -507,14 +536,14 @@ cr.define('bmm', function() {
         this.setAttribute('editing', '');
         this.draggable = false;
 
-        labelInput = doc.createElement('input');
+        labelInput = /** @type {HTMLElement} */(doc.createElement('input'));
         labelInput.placeholder =
             loadTimeData.getString('name_input_placeholder');
         replaceAllChildren(labelEl, labelInput);
         labelInput.value = title;
 
         if (!isFolder) {
-          urlInput = doc.createElement('input');
+          urlInput = /** @type {HTMLElement} */(doc.createElement('input'));
           urlInput.type = 'url';
           urlInput.required = true;
           urlInput.placeholder =
@@ -522,13 +551,13 @@ cr.define('bmm', function() {
 
           // We also need a name for the input for the CSS to work.
           urlInput.name = '-url-input-' + cr.createUid();
-          replaceAllChildren(urlEl, urlInput);
+          replaceAllChildren(assert(urlEl), urlInput);
           urlInput.value = url;
         }
 
-        function stopPropagation(e) {
+        var stopPropagation = function(e) {
           e.stopPropagation();
-        }
+        };
 
         var eventsToStop =
             ['mousedown', 'mouseup', 'contextmenu', 'dblclick', 'paste'];
@@ -601,6 +630,6 @@ cr.define('bmm', function() {
 
   return {
     BookmarkList: BookmarkList,
-    list: list
+    list: /** @type {Element} */(null),  // Set when decorated.
   };
 });

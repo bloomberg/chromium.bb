@@ -313,11 +313,11 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
         for (Node keyNode : objectLit.children()) {
             String key = keyNode.getString();
 
-            // TODO(vitalyp): Can dict value be other than a simple NAME? What if NAME doesn't
-            // refer to a function/constructor?
-            String value = keyNode.getFirstChild().getString();
-
-            res.put(value, key);
+            Node valueNode = keyNode.getFirstChild();
+            if (valueNode.isName()) {
+                String value = keyNode.getFirstChild().getString();
+                res.put(value, key);
+            }
         }
 
         return res;

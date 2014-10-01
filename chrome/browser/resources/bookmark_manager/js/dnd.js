@@ -47,7 +47,7 @@ cr.define('dnd', function() {
 
   /**
     * The style that was applied to indicate the drop location.
-    * @type {string}
+    * @type {?string}
     */
   var lastIndicatorClassName;
 
@@ -194,7 +194,7 @@ cr.define('dnd', function() {
 
   /**
    * External function to select folders or bookmarks after a drop action.
-   * @type {function}
+   * @type {?Function}
    */
   var selectItemsAfterUserAction = null;
 
@@ -208,7 +208,7 @@ cr.define('dnd', function() {
   // If we are over the list and the list is showing search result, we cannot
   // drop.
   function isOverSearch(overElement) {
-    return list.isSearch() && list.contains(overElement);
+    return bmm.list.isSearch() && bmm.list.contains(overElement);
   }
 
   /**
@@ -219,7 +219,7 @@ cr.define('dnd', function() {
    */
   function calculateValidDropTargets(overElement) {
     // Don't allow dropping if there is an ephemeral item being edited.
-    if (list.hasEphemeral())
+    if (bmm.list.hasEphemeral())
       return DropPosition.NONE;
 
     if (!dragInfo.isDragValid() || isOverSearch(overElement))
@@ -302,7 +302,7 @@ cr.define('dnd', function() {
       // We are trying to drop an item past the last item. This is
       // only allowed if dragged item is different from the last item
       // in the list.
-      var listItems = list.items;
+      var listItems = bmm.list.items;
       var len = listItems.length;
       if (!len || !dragInfo.isDraggingBookmark(listItems[len - 1].bookmarkId))
         return true;
@@ -333,7 +333,7 @@ cr.define('dnd', function() {
 
     // Do not allow dragging if there is an ephemeral item being edited at the
     // moment.
-    if (list.hasEphemeral())
+    if (bmm.list.hasEphemeral())
       return;
 
     if (draggedNodes.length) {
@@ -371,7 +371,7 @@ cr.define('dnd', function() {
       return;
 
     var overElement = getBookmarkElement(e.target) ||
-                      (e.target == list ? list : null);
+                      (e.target == bmm.list ? bmm.list : null);
     if (!overElement)
       return;
 
@@ -450,16 +450,16 @@ cr.define('dnd', function() {
     if (overElement instanceof ListItem) {
       dropInfoResult.relatedIndex =
           overElement.parentNode.dataModel.indexOf(relatedNode);
-      dropInfoResult.selectTarget = list;
+      dropInfoResult.selectTarget = bmm.list;
     } else if (overElement instanceof BookmarkList) {
       dropInfoResult.relatedIndex = overElement.dataModel.length - 1;
-      dropInfoResult.selectTarget = list;
+      dropInfoResult.selectTarget = bmm.list;
     } else {
       // Tree
       dropInfoResult.relatedIndex = relatedNode.index;
-      dropInfoResult.selectTarget = tree;
+      dropInfoResult.selectTarget = bmm.tree;
       dropInfoResult.selectedTreeId =
-          tree.selectedItem ? tree.selectedItem.bookmarkId : null;
+          bmm.tree.selectedItem ? bmm.tree.selectedItem.bookmarkId : null;
     }
 
     if (dropPos == DropPosition.ABOVE)
@@ -508,7 +508,7 @@ cr.define('dnd', function() {
 
   function init(selectItemsAfterUserActionFunction) {
     function deferredClearData() {
-      setTimeout(clearDragData);
+      setTimeout(clearDragData, 0);
     }
 
     selectItemsAfterUserAction = selectItemsAfterUserActionFunction;
