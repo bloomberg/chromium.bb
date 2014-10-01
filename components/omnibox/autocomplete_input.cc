@@ -283,9 +283,9 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
       }
     }
     // Could be a broken IP address, etc.
+    CHECK(false);
     return metrics::OmniboxInputType::QUERY;
   }
-
 
   // See if the hostname is valid.  While IE and GURL allow hostnames to contain
   // many other characters (perhaps for weird intranet machines), it's extremely
@@ -321,34 +321,38 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
         metrics::OmniboxInputType::UNKNOWN : metrics::OmniboxInputType::QUERY;
   }
 
+  // If there's no known TLD on the input and the user wishes to add a
+  // desired_tld, the fixup code will oblige; thus this is a URL.
+  if ((registry_length == 0) && !desired_tld.empty())
+    return metrics::OmniboxInputType::URL;
+
+  // For hostnames that look like IP addresses, distinguish between IPv6
+  // addresses, which are basically guaranteed to be navigations, and IPv4
+  // addresses, which are much fuzzier.
+  if (host_info.family == url::CanonHostInfo::IPV6)
+    return metrics::OmniboxInputType::URL;
+  if (host_info.family == url::CanonHostInfo::IPV4) {
+    // The host may be a real IP address, or something that looks a bit like it
+    // (e.g. "1.2" or "3232235521").  We check whether it was convertible to an
+    // IP with a non-zero first octet; IPs with first octet zero are "source
+    // IPs" and are never navigable as destination addresses.
+    if (host_info.address[0] == 0)
+      return metrics::OmniboxInputType::QUERY;
+    // This is theoretically a navigable IP.  We have three cases:
+    // * If the user typed four distinct components, this is an IP for sure.
+    // * If the user typed two or three components, this is almost certainly a
+    //   query, especially for two components (as in "13.5/7.25"), but we'll
+    //   allow navigation for an explicit scheme or trailing slash below.
+    // * If the user typed one component, this is likely a query, but could be
+    //   a non-dotted-quad version of an IP address.
+    if (host_info.num_ipv4_components == 4)
+      return metrics::OmniboxInputType::URL;
+  }
+
   // Now that we've ruled out all schemes other than http or https and done a
   // little more sanity checking, the presence of a scheme means this is likely
   // a URL.
   if (parts->scheme.is_nonempty())
-    return metrics::OmniboxInputType::URL;
-
-  // See if the host is an IP address.
-  if (host_info.family == url::CanonHostInfo::IPV6)
-    return metrics::OmniboxInputType::URL;
-  // If the user originally typed a host that looks like an IP address (a
-  // dotted quad), they probably want to open it.  If the original input was
-  // something else (like a single number), they probably wanted to search for
-  // it, unless they explicitly typed a scheme.  This is true even if the URL
-  // appears to have a path: "1.2/45" is more likely a search (for the answer
-  // to a math problem) than a URL.  However, if there are more non-host
-  // components, then maybe this really was intended to be a navigation.  For
-  // this reason we only check the dotted-quad case here, and save the "other
-  // IP addresses" case for after we check the number of non-host components
-  // below.
-  if ((host_info.family == url::CanonHostInfo::IPV4) &&
-      (host_info.num_ipv4_components == 4))
-    return metrics::OmniboxInputType::URL;
-
-  // Presence of a password means this is likely a URL.  Note that unless the
-  // user has typed an explicit "http://" or similar, we'll probably think that
-  // the username is some unknown scheme, and bail out in the scheme-handling
-  // code above.
-  if (parts->password.is_nonempty())
     return metrics::OmniboxInputType::URL;
 
   // Trailing slashes force the input to be treated as a URL.
@@ -358,39 +362,34 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
       return metrics::OmniboxInputType::URL;
   }
 
+  // Handle the cases we detected in the IPv4 code above as "almost certainly a
+  // query" now that we know the user hasn't tried to force navigation via a
+  // scheme/trailing slash.
+  if ((host_info.family == url::CanonHostInfo::IPV4) &&
+      (host_info.num_ipv4_components > 1))
+    return metrics::OmniboxInputType::QUERY;
+
   // If there is more than one recognized non-host component, this is likely to
   // be a URL, even if the TLD is unknown (in which case this is likely an
   // intranet URL).
   if (NumNonHostComponents(*parts) > 1)
     return metrics::OmniboxInputType::URL;
 
-  // If the host has a known TLD or a port, it's probably a URL, with the
-  // following exceptions:
-  // * Any "IP addresses" that make it here are more likely searches
-  //   (see above).
-  // * If we reach here with a username, our input looks like "user@host[.tld]".
-  //   Because there is no scheme explicitly specified, we think this is more
-  //   likely an email address than an HTTP auth attempt.  Hence, we search by
-  //   default and let users correct us on a case-by-case basis.
-  // Note that we special-case "localhost" as a known hostname.
-  if ((host_info.family != url::CanonHostInfo::IPV4) &&
-      ((registry_length != 0) || (host == base::ASCIIToUTF16("localhost") ||
-       parts->port.is_nonempty()))) {
-    return parts->username.is_nonempty() ? metrics::OmniboxInputType::UNKNOWN :
-                                           metrics::OmniboxInputType::URL;
-  }
+  // If we reach here with a username, our input looks something like
+  // "user@host".  Because there is no scheme explicitly specified, we think
+  // this is more likely an email address than an HTTP auth attempt.  Hence, we
+  // search by default and let users correct us on a case-by-case basis.
+  if (parts->username.is_nonempty())
+    return metrics::OmniboxInputType::UNKNOWN;
 
-  // If we reach this point, we know there's no known TLD on the input, so if
-  // the user wishes to add a desired_tld, the fixup code will oblige; thus this
-  // is a URL.
-  if (!desired_tld.empty())
+  // If the host has a known TLD or a port, it's probably a URL.  Note that we
+  // special-case "localhost" as a known hostname.
+  if ((registry_length != 0) || (host == base::ASCIIToUTF16("localhost")) ||
+      parts->port.is_nonempty())
     return metrics::OmniboxInputType::URL;
 
-  // No scheme, password, port, path, and no known TLD on the host.
+  // No scheme, username, port, and no known TLD on the host.
   // This could be:
-  // * An "incomplete IP address"; likely a search (see above).
-  // * An email-like input like "user@host", where "host" has no known TLD.
-  //   It's not clear what the user means here and searching seems reasonable.
   // * A single word "foo"; possibly an intranet site, but more likely a search.
   //   This is ideally an UNKNOWN, and we can let the Alternate Nav URL code
   //   catch our mistakes.
