@@ -253,7 +253,7 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     // Shorthand and 4-values properties
     switch (propertyID) {
     case CSSPropertyAnimation:
-        return getLayeredShorthandValue(animationShorthand());
+        return getLayeredShorthandValue(animationShorthand(), true);
     case CSSPropertyBorderSpacing:
         return borderSpacingValue(borderSpacingShorthand());
     case CSSPropertyBackgroundPosition:
@@ -305,7 +305,7 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyPadding:
         return get4Values(paddingShorthand());
     case CSSPropertyTransition:
-        return getLayeredShorthandValue(transitionShorthand());
+        return getLayeredShorthandValue(transitionShorthand(), true);
     case CSSPropertyListStyle:
         return getShorthandValue(listStyleShorthand());
     case CSSPropertyWebkitMaskPosition:
@@ -322,9 +322,9 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyWebkitTransformOrigin:
         return getShorthandValue(webkitTransformOriginShorthand());
     case CSSPropertyWebkitTransition:
-        return getLayeredShorthandValue(webkitTransitionShorthand());
+        return getLayeredShorthandValue(webkitTransitionShorthand(), true);
     case CSSPropertyWebkitAnimation:
-        return getLayeredShorthandValue(webkitAnimationShorthand());
+        return getLayeredShorthandValue(webkitAnimationShorthand(), true);
     case CSSPropertyMarker: {
         RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart);
         if (value)
@@ -476,7 +476,7 @@ String StylePropertySerializer::get4Values(const StylePropertyShorthand& shortha
     return result.toString();
 }
 
-String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShorthand& shorthand) const
+String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShorthand& shorthand, bool checkShorthandAvailable) const
 {
     StringBuilder result;
 
@@ -494,8 +494,11 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
             } else {
                 numLayers = std::max<size_t>(1U, numLayers);
             }
+        } else if (checkShorthandAvailable) {
+            return String();
         }
     }
+
 
     String commonValue;
     bool commonValueInitialized = false;

@@ -40,7 +40,7 @@ private:
     String getCommonValue(const StylePropertyShorthand&) const;
     enum CommonValueMode { OmitUncommonValues, ReturnNullOnUncommonValues };
     String borderPropertyValue(CommonValueMode) const;
-    String getLayeredShorthandValue(const StylePropertyShorthand&) const;
+    String getLayeredShorthandValue(const StylePropertyShorthand&, bool checkShorthandAvailable = false) const;
     String get4Values(const StylePropertyShorthand&) const;
     String borderSpacingValue(const StylePropertyShorthand&) const;
     String getShorthandValue(const StylePropertyShorthand&) const;
