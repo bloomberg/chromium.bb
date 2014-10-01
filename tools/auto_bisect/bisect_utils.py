@@ -506,14 +506,7 @@ def RunProcessAndRetrieveOutput(command, cwd=None):
 
 
 def IsStringInt(string_to_check):
-  """Checks whether or not the given string can be converted to a integer.
-
-  Args:
-    string_to_check: Input string to check if it can be converted to an int.
-
-  Returns:
-    True if the string can be converted to an int.
-  """
+  """Checks whether or not the given string can be converted to an int."""
   try:
     int(string_to_check)
     return True
@@ -522,15 +515,7 @@ def IsStringInt(string_to_check):
 
 
 def IsStringFloat(string_to_check):
-  """Checks whether or not the given string can be converted to a floating
-  point number.
-
-  Args:
-    string_to_check: Input string to check if it can be converted to a float.
-
-  Returns:
-    True if the string can be converted to a float.
-  """
+  """Checks whether or not the given string can be converted to a float."""
   try:
     float(string_to_check)
     return True
@@ -539,43 +524,21 @@ def IsStringFloat(string_to_check):
 
 
 def IsWindowsHost():
-  """Checks whether or not the script is running on Windows.
-
-  Returns:
-    True if running on Windows.
-  """
   return sys.platform == 'cygwin' or sys.platform.startswith('win')
 
 
 def Is64BitWindows():
-  """Returns whether or not Windows is a 64-bit version.
-
-  Returns:
-    True if Windows is 64-bit, False if 32-bit.
-  """
-  platform = os.environ['PROCESSOR_ARCHITECTURE']
-  try:
-    platform = os.environ['PROCESSOR_ARCHITEW6432']
-  except KeyError:
-    # Must not be running in WoW64, so PROCESSOR_ARCHITECTURE is correct
-    pass
-
-  return platform in ['AMD64', 'I64']
+  """Checks whether or not Windows is a 64-bit version."""
+  platform = os.environ.get('PROCESSOR_ARCHITEW6432')
+  if not platform:
+    # Must not be running in WoW64, so PROCESSOR_ARCHITECTURE is correct.
+    platform = os.environ.get('PROCESSOR_ARCHITECTURE')
+  return platform and platform in ['AMD64', 'I64']
 
 
 def IsLinuxHost():
-  """Checks whether or not the script is running on Linux.
-
-  Returns:
-    True if running on Linux.
-  """
   return sys.platform.startswith('linux')
 
 
 def IsMacHost():
-  """Checks whether or not the script is running on Mac.
-
-  Returns:
-    True if running on Mac.
-  """
   return sys.platform.startswith('darwin')
