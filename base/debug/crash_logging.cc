@@ -36,7 +36,8 @@ ClearCrashKeyValueFuncT g_clear_key_func_ = NULL;
 // For a given |length|, computes the number of chunks a value of that size
 // will occupy.
 size_t NumChunksForLength(size_t length) {
-  return std::ceil(length / static_cast<float>(g_chunk_max_length_));
+  // Compute (length / g_chunk_max_length_), rounded up.
+  return (length + g_chunk_max_length_ - 1) / g_chunk_max_length_;
 }
 
 // The longest max_length allowed by the system.

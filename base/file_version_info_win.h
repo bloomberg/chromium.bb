@@ -17,7 +17,7 @@ typedef tagVS_FIXEDFILEINFO VS_FIXEDFILEINFO;
 
 class FileVersionInfoWin : public FileVersionInfo {
  public:
-  BASE_EXPORT FileVersionInfoWin(void* data, int language, int code_page);
+  BASE_EXPORT FileVersionInfoWin(void* data, WORD language, WORD code_page);
   BASE_EXPORT ~FileVersionInfoWin();
 
   // Accessors to the different version properties.
@@ -51,8 +51,8 @@ class FileVersionInfoWin : public FileVersionInfo {
 
  private:
   scoped_ptr<char, base::FreeDeleter> data_;
-  int language_;
-  int code_page_;
+  WORD language_;
+  WORD code_page_;
   // This is a pointer into the data_ if it exists. Otherwise NULL.
   VS_FIXEDFILEINFO* fixed_file_info_;
 

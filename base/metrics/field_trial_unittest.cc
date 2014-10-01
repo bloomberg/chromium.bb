@@ -114,10 +114,11 @@ TEST_F(FieldTrialTest, AbsoluteProbabilities) {
   char default_always_false[] = " default always false";
   for (int i = 1; i < 250; ++i) {
     // Try lots of names, by changing the first character of the name.
-    always_true[0] = i;
-    default_always_true[0] = i;
-    always_false[0] = i;
-    default_always_false[0] = i;
+    char c = static_cast<char>(i);
+    always_true[0] = c;
+    default_always_true[0] = c;
+    always_false[0] = c;
+    default_always_false[0] = c;
 
     scoped_refptr<FieldTrial> trial_true =
         CreateFieldTrial(always_true, 10, default_always_true, NULL);
@@ -190,8 +191,9 @@ TEST_F(FieldTrialTest, MiddleProbabilities) {
   bool false_event_seen = false;
   bool true_event_seen = false;
   for (int i = 1; i < 250; ++i) {
-    name[0] = i;
-    default_group_name[0] = i;
+    char c = static_cast<char>(i);
+    name[0] = c;
+    default_group_name[0] = c;
     scoped_refptr<FieldTrial> trial =
         CreateFieldTrial(name, 10, default_group_name, NULL);
     int might_win = trial->AppendGroup("MightWin", 5);

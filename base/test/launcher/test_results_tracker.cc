@@ -288,7 +288,8 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
 
         test_result_value->SetString("status", test_result.StatusAsString());
         test_result_value->SetInteger(
-            "elapsed_time_ms", test_result.elapsed_time.InMilliseconds());
+            "elapsed_time_ms",
+            static_cast<int>(test_result.elapsed_time.InMilliseconds()));
 
         // There are no guarantees about character encoding of the output
         // snippet. Escape it and record whether it was losless.

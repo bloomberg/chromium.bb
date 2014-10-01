@@ -187,7 +187,8 @@ bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
 bool WaitForExitCodeWithTimeout(ProcessHandle handle,
                                 int* exit_code,
                                 base::TimeDelta timeout) {
-  if (::WaitForSingleObject(handle, timeout.InMilliseconds()) != WAIT_OBJECT_0)
+  if (::WaitForSingleObject(
+      handle, static_cast<DWORD>(timeout.InMilliseconds())) != WAIT_OBJECT_0)
     return false;
   DWORD temp_code;  // Don't clobber out-parameters in case of failure.
   if (!::GetExitCodeProcess(handle, &temp_code))
@@ -206,8 +207,9 @@ bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
   NamedProcessIterator iter(executable_name, filter);
   for (const ProcessEntry* entry = iter.NextProcessEntry(); entry;
        entry = iter.NextProcessEntry()) {
-    DWORD remaining_wait = std::max<int64>(
-        0, wait.InMilliseconds() - (GetTickCount() - start_time));
+    DWORD remaining_wait = static_cast<DWORD>(std::max(
+        static_cast<int64>(0),
+        wait.InMilliseconds() - (GetTickCount() - start_time)));
     HANDLE process = OpenProcess(SYNCHRONIZE,
                                  FALSE,
                                  entry->th32ProcessID);

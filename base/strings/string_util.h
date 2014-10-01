@@ -358,14 +358,14 @@ inline bool IsHexDigit(Char c) {
 }
 
 template <typename Char>
-inline Char HexDigitToInt(Char c) {
+inline char HexDigitToInt(Char c) {
   DCHECK(IsHexDigit(c));
   if (c >= '0' && c <= '9')
-    return c - '0';
+    return static_cast<char>(c - '0');
   if (c >= 'A' && c <= 'F')
-    return c - 'A' + 10;
+    return static_cast<char>(c - 'A' + 10);
   if (c >= 'a' && c <= 'f')
-    return c - 'a' + 10;
+    return static_cast<char>(c - 'a' + 10);
   return 0;
 }
 

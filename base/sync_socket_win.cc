@@ -151,9 +151,10 @@ size_t CancelableFileOperation(Function operation,
         HANDLE events[] = { io_event->handle(), cancel_event->handle() };
         const int wait_result = WaitForMultipleObjects(
             ARRAYSIZE_UNSAFE(events), events, FALSE,
-            timeout_in_ms == INFINITE
-                ? timeout_in_ms
-                : (finish_time - current_time).InMilliseconds());
+            timeout_in_ms == INFINITE ?
+                timeout_in_ms :
+                static_cast<DWORD>(
+                    (finish_time - current_time).InMilliseconds()));
         if (wait_result != WAIT_OBJECT_0 + 0) {
           // CancelIo() doesn't synchronously cancel outstanding IO, only marks
           // outstanding IO for cancellation. We must call GetOverlappedResult()
@@ -328,7 +329,8 @@ size_t CancelableSyncSocket::ReceiveWithTimeout(void* buffer,
                                                 TimeDelta timeout) {
   return CancelableFileOperation(
       &ReadFile, handle_, reinterpret_cast<char*>(buffer), length,
-      &file_operation_, &shutdown_event_, this, timeout.InMilliseconds());
+      &file_operation_, &shutdown_event_, this,
+      static_cast<DWORD>(timeout.InMilliseconds()));
 }
 
 // static

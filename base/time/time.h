@@ -538,7 +538,7 @@ inline TimeDelta TimeDelta::FromSecondsD(double secs) {
   // Preserve max to prevent overflow.
   if (secs == std::numeric_limits<double>::infinity())
     return Max();
-  return TimeDelta(secs * Time::kMicrosecondsPerSecond);
+  return TimeDelta(static_cast<int64>(secs * Time::kMicrosecondsPerSecond));
 }
 
 // static
@@ -546,7 +546,7 @@ inline TimeDelta TimeDelta::FromMillisecondsD(double ms) {
   // Preserve max to prevent overflow.
   if (ms == std::numeric_limits<double>::infinity())
     return Max();
-  return TimeDelta(ms * Time::kMicrosecondsPerMillisecond);
+  return TimeDelta(static_cast<int64>(ms * Time::kMicrosecondsPerMillisecond));
 }
 
 // static

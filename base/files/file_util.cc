@@ -75,7 +75,7 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 
     if ((file1.eof() != file2.eof()) ||
         (file1.gcount() != file2.gcount()) ||
-        (memcmp(buffer1, buffer2, file1.gcount()))) {
+        (memcmp(buffer1, buffer2, static_cast<size_t>(file1.gcount())))) {
       file1.close();
       file2.close();
       return false;

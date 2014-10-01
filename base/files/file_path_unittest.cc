@@ -770,16 +770,16 @@ TEST_F(FilePathTest, Extension2) {
     FilePath path(cases[i].input);
     FilePath::StringType extension = path.Extension();
     FilePath::StringType final_extension = path.FinalExtension();
-    EXPECT_STREQ(cases[i].expected, extension.c_str()) << "i: " << i <<
-        ", path: " << path.value();
-    EXPECT_STREQ(cases[i].expected, final_extension.c_str()) << "i: " << i <<
-        ", path: " << path.value();
+    EXPECT_STREQ(cases[i].expected, extension.c_str())
+        << "i: " << i << ", path: " << path.value();
+    EXPECT_STREQ(cases[i].expected, final_extension.c_str())
+        << "i: " << i << ", path: " << path.value();
   }
   for (unsigned int i = 0; i < arraysize(double_extension_cases); ++i) {
-    FilePath path(cases[i].input);
+    FilePath path(double_extension_cases[i].input);
     FilePath::StringType extension = path.Extension();
-    EXPECT_STREQ(cases[i].expected, extension.c_str()) << "i: " << i <<
-        ", path: " << path.value();
+    EXPECT_STREQ(double_extension_cases[i].expected, extension.c_str())
+        << "i: " << i << ", path: " << path.value();
   }
 }
 

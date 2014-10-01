@@ -109,7 +109,7 @@ void HistogramBase::WriteJSON(std::string* output) const {
   DictionaryValue root;
   root.SetString("name", histogram_name());
   root.SetInteger("count", count);
-  root.SetDouble("sum", sum);
+  root.SetDouble("sum", static_cast<double>(sum));
   root.SetInteger("flags", flags());
   root.Set("params", parameters.release());
   root.Set("buckets", buckets.release());

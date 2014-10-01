@@ -44,7 +44,7 @@ bool LogEventProvider::LogMessage(logging::LogSeverity severity,
         break;
     }
   } else {  // severity < 0 is VLOG verbosity levels.
-    level = TRACE_LEVEL_INFORMATION - severity;
+    level = static_cast<EtwEventLevel>(TRACE_LEVEL_INFORMATION - severity);
   }
 
   // Bail if we're not logging, not at that level,

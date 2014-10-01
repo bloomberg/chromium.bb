@@ -687,7 +687,7 @@ void LogMessage::Init(const char* file, int line) {
 
   stream_ << ":" << filename << "(" << line << ")] ";
 
-  message_start_ = stream_.tellp();
+  message_start_ = stream_.str().length();
 }
 
 #if defined(OS_WIN)

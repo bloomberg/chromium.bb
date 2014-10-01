@@ -227,14 +227,14 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
   // Create the system struct representing our exploded time. It will either be
   // in local time or UTC.
   SYSTEMTIME st;
-  st.wYear = exploded.year;
-  st.wMonth = exploded.month;
-  st.wDayOfWeek = exploded.day_of_week;
-  st.wDay = exploded.day_of_month;
-  st.wHour = exploded.hour;
-  st.wMinute = exploded.minute;
-  st.wSecond = exploded.second;
-  st.wMilliseconds = exploded.millisecond;
+  st.wYear = static_cast<WORD>(exploded.year);
+  st.wMonth = static_cast<WORD>(exploded.month);
+  st.wDayOfWeek = static_cast<WORD>(exploded.day_of_week);
+  st.wDay = static_cast<WORD>(exploded.day_of_month);
+  st.wHour = static_cast<WORD>(exploded.hour);
+  st.wMinute = static_cast<WORD>(exploded.minute);
+  st.wSecond = static_cast<WORD>(exploded.second);
+  st.wMilliseconds = static_cast<WORD>(exploded.millisecond);
 
   FILETIME ft;
   bool success = true;

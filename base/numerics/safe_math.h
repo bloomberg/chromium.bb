@@ -205,9 +205,10 @@ class CheckedNumeric {
           lhs.ValueUnsafe() OP rhs.ValueUnsafe(),                             \
           GetRangeConstraint(rhs.validity() | lhs.validity()));               \
     RangeConstraint validity = RANGE_VALID;                                   \
-    T result = Checked##NAME(static_cast<Promotion>(lhs.ValueUnsafe()),       \
-                             static_cast<Promotion>(rhs.ValueUnsafe()),       \
-                             &validity);                                      \
+    T result = static_cast<T>(Checked##NAME(                                  \
+        static_cast<Promotion>(lhs.ValueUnsafe()),                            \
+        static_cast<Promotion>(rhs.ValueUnsafe()),                            \
+        &validity));                                                          \
     return CheckedNumeric<Promotion>(                                         \
         result,                                                               \
         GetRangeConstraint(validity | lhs.validity() | rhs.validity()));      \

@@ -128,8 +128,9 @@ HistogramBase* Histogram::FactoryTimeGet(const string& name,
                                          TimeDelta maximum,
                                          size_t bucket_count,
                                          int32 flags) {
-  return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
-                    bucket_count, flags);
+  return FactoryGet(name, static_cast<Sample>(minimum.InMilliseconds()),
+                    static_cast<Sample>(maximum.InMilliseconds()), bucket_count,
+                    flags);
 }
 
 // Calculate what range of values are held in each bucket.
@@ -528,8 +529,9 @@ HistogramBase* LinearHistogram::FactoryTimeGet(const string& name,
                                                TimeDelta maximum,
                                                size_t bucket_count,
                                                int32 flags) {
-  return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
-                    bucket_count, flags);
+  return FactoryGet(name, static_cast<Sample>(minimum.InMilliseconds()),
+                    static_cast<Sample>(maximum.InMilliseconds()), bucket_count,
+                    flags);
 }
 
 HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(

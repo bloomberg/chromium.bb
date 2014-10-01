@@ -121,7 +121,7 @@ TEST(TimeTicks, SubMillisecondTimers) {
   bool saw_submillisecond_timer = false;
 
   // Run kRetries attempts to see a sub-millisecond timer.
-  for (int index = 0; index < 1000; index++) {
+  for (int index = 0; index < kRetries; index++) {
     TimeTicks last_time = TimeTicks::HighResNow();
     TimeDelta delta;
     // Spin until the clock has detected a change.
@@ -170,10 +170,6 @@ TEST(TimeTicks, TimerPerformance) {
   // Verify that various timer mechanisms can always complete quickly.
   // Note:  This is a somewhat arbitrary test.
   const int kLoops = 10000;
-  // Due to the fact that these run on bbots, which are horribly slow,
-  // we can't really make any guarantees about minimum runtime.
-  // Really, we want these to finish in ~10ms, and that is generous.
-  const int kMaxTime = 35;  // Maximum acceptible milliseconds for test.
 
   typedef TimeTicks (*TestFunc)();
   struct TestCase {
@@ -203,6 +199,7 @@ TEST(TimeTicks, TimerPerformance) {
     // The reason to remove the check is because the tests run on many
     // buildbots, some of which are VMs.  These machines can run horribly
     // slow, and there is really no value for checking against a max timer.
+    //const int kMaxTime = 35;  // Maximum acceptible milliseconds for test.
     //EXPECT_LT((stop - start).InMilliseconds(), kMaxTime);
     printf("%s: %1.2fus per call\n", cases[test_case].description,
       (stop - start).InMillisecondsF() * 1000 / kLoops);

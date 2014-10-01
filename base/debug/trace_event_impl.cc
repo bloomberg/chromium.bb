@@ -1319,8 +1319,8 @@ void TraceLog::UpdateSyntheticDelaysFromCategoryFilter() {
       char* duration_end;
       double target_duration = strtod(token.c_str(), &duration_end);
       if (duration_end != token.c_str()) {
-        delay->SetTargetDuration(
-            TimeDelta::FromMicroseconds(target_duration * 1e6));
+        delay->SetTargetDuration(TimeDelta::FromMicroseconds(
+            static_cast<int64>(target_duration * 1e6)));
       } else if (token == "static") {
         delay->SetMode(TraceEventSyntheticDelay::STATIC);
       } else if (token == "oneshot") {

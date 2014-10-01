@@ -178,9 +178,9 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
           std::string test_time_str;
           if (!xml_reader.NodeAttribute("time", &test_time_str))
             return false;
-          result.elapsed_time =
-              TimeDelta::FromMicroseconds(strtod(test_time_str.c_str(), NULL) *
-                                          Time::kMicrosecondsPerSecond);
+          result.elapsed_time = TimeDelta::FromMicroseconds(
+              static_cast<int64>(strtod(test_time_str.c_str(), NULL) *
+                  Time::kMicrosecondsPerSecond));
 
           result.status = TestResult::TEST_SUCCESS;
 

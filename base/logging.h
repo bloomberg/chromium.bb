@@ -618,12 +618,12 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 // variable warnings if the only use of a variable is in a DCHECK.
 // This behavior is different from DLOG_IF et al.
 
-#define DCHECK(condition)                                         \
-  LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON && !(condition))   \
+#define DCHECK(condition)                                               \
+  LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON ? !(condition) : false)  \
   << "Check failed: " #condition ". "
 
-#define DPCHECK(condition)                                        \
-  LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON && !(condition))  \
+#define DPCHECK(condition)                                              \
+  LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON ? !(condition) : false) \
   << "Check failed: " #condition ". "
 
 // Helper macro for binary operators.

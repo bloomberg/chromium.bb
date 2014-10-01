@@ -277,7 +277,7 @@ typename enable_if<
 CheckedAbs(T value, RangeConstraint* validity) {
   *validity =
       value != std::numeric_limits<T>::min() ? RANGE_VALID : RANGE_OVERFLOW;
-  return std::abs(value);
+  return static_cast<T>(std::abs(value));
 }
 
 template <typename T>
@@ -359,7 +359,7 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
 
   template <typename Src>
   CheckedNumericState(Src value, RangeConstraint validity)
-      : value_(value),
+      : value_(static_cast<T>(value)),
         validity_(GetRangeConstraint(validity |
                                      DstRangeRelationToSrcRange<T>(value))) {
     COMPILE_ASSERT(std::numeric_limits<Src>::is_specialized,

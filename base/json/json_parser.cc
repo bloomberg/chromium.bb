@@ -652,7 +652,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
           NextChar();
 
           if (hex_digit < kExtendedASCIIStart)
-            string.Append(hex_digit);
+            string.Append(static_cast<char>(hex_digit));
           else
             DecodeUTF8(hex_digit, &string);
           break;
@@ -714,7 +714,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       return true;
     } else {
       if (next_char < kExtendedASCIIStart)
-        string.Append(next_char);
+        string.Append(static_cast<char>(next_char));
       else
         DecodeUTF8(next_char, &string);
     }
@@ -791,7 +791,7 @@ void JSONParser::DecodeUTF8(const int32& point, StringBuilder* dest) {
   // Anything outside of the basic ASCII plane will need to be decoded from
   // int32 to a multi-byte sequence.
   if (point < kExtendedASCIIStart) {
-    dest->Append(point);
+    dest->Append(static_cast<char>(point));
   } else {
     char utf8_units[4] = { 0 };
     int offset = 0;

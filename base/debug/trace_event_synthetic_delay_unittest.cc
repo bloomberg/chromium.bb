@@ -41,19 +41,19 @@ class TraceEventSyntheticDelayTest : public testing::Test,
 
   void AdvanceTime(base::TimeDelta delta) { now_ += delta; }
 
-  int TestFunction() {
+  int64 TestFunction() {
     base::TimeTicks start = Now();
     { TRACE_EVENT_SYNTHETIC_DELAY("test.Delay"); }
     return (Now() - start).InMilliseconds();
   }
 
-  int AsyncTestFunctionBegin() {
+  int64 AsyncTestFunctionBegin() {
     base::TimeTicks start = Now();
     { TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("test.AsyncDelay"); }
     return (Now() - start).InMilliseconds();
   }
 
-  int AsyncTestFunctionEnd() {
+  int64 AsyncTestFunctionEnd() {
     base::TimeTicks start = Now();
     { TRACE_EVENT_SYNTHETIC_DELAY_END("test.AsyncDelay"); }
     return (Now() - start).InMilliseconds();
