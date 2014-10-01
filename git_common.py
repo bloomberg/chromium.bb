@@ -319,15 +319,6 @@ def branches(*args):
     yield line.split()[-1]
 
 
-def run_with_retcode(*cmd, **kwargs):
-  """Run a command but only return the status code."""
-  try:
-    run(*cmd, **kwargs)
-    return 0
-  except subprocess2.CalledProcessError as cpe:
-    return cpe.returncode
-
-
 def config(option, default=None):
   try:
     return run('config', '--get', option) or default
@@ -551,6 +542,15 @@ def run(*cmd, **kwargs):
   return run_with_stderr(*cmd, **kwargs)[0]
 
 
+def run_with_retcode(*cmd, **kwargs):
+  """Run a command but only return the status code."""
+  try:
+    run(*cmd, **kwargs)
+    return 0
+  except subprocess2.CalledProcessError as cpe:
+    return cpe.returncode
+
+
 def run_stream(*cmd, **kwargs):
   """Runs a git command. Returns stdout as a PIPE (file-like object).
 
@@ -599,6 +599,7 @@ def set_branch_config(branch, option, value, scope='local'):
 
 def set_config(option, value, scope='local'):
   run('config', '--' + scope, option, value)
+
 
 def squash_current_branch(header=None, merge_base=None):
   header = header or 'git squash commit.'
@@ -722,6 +723,7 @@ def upstream(branch):
                branch+'@{upstream}')
   except subprocess2.CalledProcessError:
     return None
+
 
 def get_git_version():
   """Returns a tuple that contains the numeric components of the current git

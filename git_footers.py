@@ -11,9 +11,11 @@ from collections import defaultdict
 
 import git_common as git
 
+
 FOOTER_PATTERN = re.compile(r'^\s*([\w-]+): (.*)$')
 CHROME_COMMIT_POSITION_PATTERN = re.compile(r'^([\w/-]+)@{#(\d+)}$')
 GIT_SVN_ID_PATTERN = re.compile('^([^\s@]+)@(\d+)')
+
 
 def normalize_name(header):
   return '-'.join([ word.title() for word in header.strip().split('-') ])

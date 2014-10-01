@@ -23,6 +23,7 @@ ensure_in_path() {
 }
 
 ensure_in_path xmlto
+ensure_in_path hg
 
 DFLT_CATALOG_PATH="/usr/local/etc/xml/catalog"
 if [[ ! $XML_CATALOG_FILES && -f "$DFLT_CATALOG_PATH" ]]
