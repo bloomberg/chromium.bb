@@ -416,11 +416,11 @@ class PackageBuilder(object):
     parser.add_option(
         '--trybot', dest='trybot',
         default=False, action='store_true',
-        help='Run and cache as if on trybot.')
+        help='Clean source dirs, run and cache as if on trybot.')
     parser.add_option(
         '--buildbot', dest='buildbot',
         default=False, action='store_true',
-        help='Run and cache as if on a non-trybot buildbot.')
+        help='Clean source dirs, run and cache as if on a non-trybot buildbot.')
     parser.add_option(
         '--clobber-source', dest='clobber_source',
         default=False, action='store_true',

@@ -284,17 +284,12 @@ def GetGitSyncCmdsCallback(revisions):
     git_url = GIT_BASE_URL + GIT_REPOS[component]
     git_push_url = GIT_PUSH_URL + GIT_REPOS[component]
 
-    # This replaces build.sh's newlib-nacl-headers-clean step by cleaning the
-    # the newlib repo on checkout (while silently blowing away any local
-    # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
-    is_newlib = component == 'nacl-newlib'
     return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[component],
-                                    clean=is_newlib,
                                     git_cache='%(git_cache_dir)s',
                                     push_url=git_push_url,
                                     known_mirrors=KNOWN_MIRRORS,
                                     push_mirrors=PUSH_MIRRORS) +
-            [command.Runnable(None,
+            [command.Runnable(lambda opts: opts.IsBot(),
                               pnacl_commands.CmdCheckoutGitBundleForTrybot,
                               component, '%(output)s')])
 

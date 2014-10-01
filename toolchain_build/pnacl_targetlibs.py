@@ -180,7 +180,9 @@ def TargetLibsSrc(GitSyncCmds):
           'commands': [
               # Clean any headers exported from the NaCl tree before syncing.
               command.CleanGitWorkingDir(
-                  '%(output)s', os.path.join('newlib', 'libc', 'include'))] +
+                  '%(output)s',
+                  reset=False,
+                  path=os.path.join('newlib', 'libc', 'include'))] +
               GitSyncCmds('nacl-newlib') +
               # Remove newlib versions of headers that will be replaced by
               # headers from the NaCl tree.

@@ -93,8 +93,8 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False, logger=None):
       file_tools.RemoveDirectoryIfPresent(directory)
 
 
-def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
-                pathspec=None, git_cache=None, push_url=None, logger=None):
+def SyncGitRepo(url, destination, revision, reclone=False, pathspec=None,
+                git_cache=None, push_url=None, logger=None):
   """Sync an individual git repo.
 
   Args:
@@ -103,8 +103,6 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
   revision: Pinned revision to check out. If None, do not check out a
             pinned revision.
   reclone: If True, delete the destination directory and re-clone the repo.
-  clean: If True, discard local changes and untracked files.
-         Otherwise the checkout will fail if there are uncommitted changes.
   pathspec: If not None, add the path to the git checkout command, which
             causes it to just update the working tree without switching
             branches.
@@ -160,11 +158,6 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
 
     if url != push_url:
       GitSetRemoteRepo(url, destination, push_url=push_url, logger=logger)
-  elif clean:
-    log_tools.CheckCall(git + ['clean', '-dffx'],
-                        logger=logger, cwd=destination)
-    log_tools.CheckCall(git + ['reset', '--hard', 'HEAD'],
-                        logger=logger, cwd=destination)
 
   # If a git cache URL is supplied, make sure it is setup as a git alternate.
   if git_cache_url:
@@ -178,22 +171,27 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     logger.info('Checking out pinned revision...')
     log_tools.CheckCall(git + ['fetch', '--all'],
                         logger=logger, cwd=destination)
-    checkout_flags = ['-f'] if clean else []
     path = [pathspec] if pathspec else []
     log_tools.CheckCall(
-        git + ['checkout'] + checkout_flags + [revision] + path,
+        git + ['checkout', revision] + path,
         logger=logger, cwd=destination)
 
 
-def CleanGitWorkingDir(directory, path, logger=None):
-  """Clean a particular path of an existing git checkout.
+def CleanGitWorkingDir(directory, reset=False, path=None, logger=None):
+  """Clean all or part of an existing git checkout.
 
      Args:
      directory: Directory where the git repo is currently checked out
-     path: path to clean, relative to the repo directory
+     reset: If True, also reset the working directory to HEAD
+     path: path to clean, relative to the repo directory. If None,
+           clean the whole working directory
   """
-  log_tools.CheckCall(GitCmd() + ['clean', '-f', path],
+  repo_path = [path] if path else []
+  log_tools.CheckCall(GitCmd() + ['clean', '-dffx'] + repo_path,
                       logger=logger, cwd=directory)
+  if reset:
+    log_tools.CheckCall(GitCmd() + ['reset', '--hard', 'HEAD'],
+                        logger=logger, cwd=directory)
 
 
 def PopulateGitCache(cache_dir, url_list, logger=None):

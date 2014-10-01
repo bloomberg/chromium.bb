@@ -348,8 +348,8 @@ def WriteData(data, dst, run_cond=None):
 
 
 def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
-                    reclone=False, clean=False, pathspec=None, git_cache=None,
-                    push_url=None, known_mirrors=[], push_mirrors=[],
+                    reclone=False, pathspec=None, git_cache=None, push_url=None,
+                    known_mirrors=[], push_mirrors=[],
                     run_cond=None):
   """Returns a list of commands to sync and validate a git repo.
 
@@ -359,8 +359,6 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
     revision: If not None, will sync the git repository to this revision.
     clobber_invalid_repo: Always True for bots, but can be forced for users.
     reclone: If True, delete the destination directory and re-clone the repo.
-    clean: If True, discard local changes and untracked files.
-           Otherwise the checkout will fail if there are uncommitted changes.
     pathspec: If not None, add the path to the git checkout command, which
               causes it to just update the working tree without switching
               branches.
@@ -437,8 +435,8 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                                       clobber_mismatch=True,
                                       logger=logger)
 
-  def sync(logger, subst, url, dest, revision, reclone, clean, pathspec,
-           git_cache, push_url):
+  def sync(logger, subst, url, dest, revision, reclone, pathspec, git_cache,
+           push_url):
     abs_dest = subst.SubstituteAbsPaths(dest)
     if git_cache:
       git_cache = subst.SubstituteAbsPaths(git_cache)
@@ -446,7 +444,7 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
     logger.debug('Syncing Git Repo: %s [%s]', abs_dest, url)
     try:
       pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision,
-                                    reclone=reclone, clean=clean,
+                                    reclone=reclone,
                                     pathspec=pathspec, git_cache=git_cache,
                                     push_url=push_url, logger=logger)
     except pynacl.repo_tools.InvalidRepoException, e:
@@ -473,7 +471,14 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
       return True
     return cmd_opts.IsBot()
 
-  commands = []
+  def CleanOnBotCondition(cmd_opts):
+    # Check if caller passed their own run_cond
+    if run_cond and not run_cond(cmd_opts):
+      return False
+    return cmd_opts.IsBot()
+
+  commands = [CleanGitWorkingDir(destination, reset=True, path=None,
+                                 run_cond=CleanOnBotCondition)]
   if git_cache:
     commands.append(Runnable(run_cond, populate_cache, git_cache, url))
 
@@ -482,18 +487,18 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                    Runnable(ClobberInvalidRepoCondition, validate, url,
                             destination),
                    Runnable(run_cond, sync, url, destination, revision, reclone,
-                            clean, pathspec, git_cache, push_url)])
+                            pathspec, git_cache, push_url)])
   return commands
 
 
-def CleanGitWorkingDir(directory, path, run_cond=None):
+def CleanGitWorkingDir(directory, reset=False, path=None, run_cond=None):
   """Clean a path in a git checkout, if the checkout directory exists."""
-  def clean(logger, subst, directory, path):
+  def clean(logger, subst, directory, reset, path):
     directory = subst.SubstituteAbsPaths(directory)
     logger.debug('Cleaning Git Working Directory: %s', directory)
     if os.path.exists(directory) and len(os.listdir(directory)) > 0:
-      pynacl.repo_tools.CleanGitWorkingDir(directory, path, logger=logger)
-  return Runnable(run_cond, clean, directory, path)
+      pynacl.repo_tools.CleanGitWorkingDir(directory, reset, path,logger=logger)
+  return Runnable(run_cond, clean, directory, reset, path)
 
 
 def GenerateGitPatches(git_dir, info, run_cond=None):
