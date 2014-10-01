@@ -57,7 +57,10 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         UseCounter::count(currentExecutionContext(isolate), UseCounter::UseAsm);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        // V8 may be a newer version that has some use counters we don't know
+        // about yet. FIXME: Add support for v8::Isolate::kBreakIterator and
+        // UseCounter::BreakIterator.
+        break;
     }
 }
 
