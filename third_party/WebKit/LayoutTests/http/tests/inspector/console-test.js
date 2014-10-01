@@ -23,7 +23,7 @@ InspectorTest.addConsoleViewSniffer = function(override, opt_sticky)
         override(viewMessage);
     };
 
-    InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage", sniffer, opt_sticky);
+    InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_consoleMessageAddedForTest", sniffer, opt_sticky);
 }
 
 InspectorTest.evaluateInConsoleAndDump = function(code, callback)
@@ -77,7 +77,10 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
     formatter = formatter || InspectorTest.prepareConsoleMessageText;
     var result = [];
     InspectorTest.disableConsoleViewport();
-    var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var consoleView = WebInspector.ConsolePanel._view();
+    if (consoleView._needsFullUpdate)
+        consoleView._updateMessageList();
+    var viewMessages = consoleView._visibleViewMessages;
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
         var message = uiMessage.consoleMessage();

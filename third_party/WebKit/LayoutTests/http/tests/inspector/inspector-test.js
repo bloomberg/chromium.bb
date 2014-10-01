@@ -20,17 +20,17 @@ console.assert = function(condition, object)
 }
 
 InspectorTest.Output = {   // override in window.initialize_yourName
-    testComplete: function() 
+    testComplete: function()
     {
         RuntimeAgent.evaluate("didEvaluateForTestInFrontend(" + InspectorTest.completeTestCallId + ", \"\")", "test");
     },
 
-    addResult: function(text) 
+    addResult: function(text)
     {
         InspectorTest.evaluateInPage("output(unescape('" + escape(text) + "'))");
     },
-    
-    clearResults: function() 
+
+    clearResults: function()
     {
         InspectorTest.evaluateInPage("clearOutput()");
     }
