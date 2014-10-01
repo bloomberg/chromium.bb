@@ -11,7 +11,7 @@ vars = {
     'gyp_rev':
          '1927',
     'tools_rev':
-         '13077',
+         '13800',
     'native_client_trunk':
          'http://src.chromium.org/native_client/trunk',
     'lcov_rev':
@@ -42,7 +42,7 @@ deps = {
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
-        Var('git_url') + '/native_client/src/third_party.git@293473a038f9e4e8239dc12856a31c2a12a5806b',
+        Var('git_url') + '/native_client/src/third_party.git@7e4c04567bd393069233676fc648333885e18da9',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'third_party/lss':
