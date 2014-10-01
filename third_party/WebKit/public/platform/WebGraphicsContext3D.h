@@ -127,14 +127,6 @@ public:
         virtual ~WebGraphicsErrorMessageCallback() { }
     };
 
-    class WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
-    public:
-        virtual void onSwapBuffersComplete() = 0;
-
-    protected:
-        virtual ~WebGraphicsSwapBuffersCompleteCallbackCHROMIUM() { }
-    };
-
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
@@ -190,9 +182,6 @@ public:
     // GL_CHROMIUM_framebuffer_multisample
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) = 0;
     virtual void renderbufferStorageMultisampleCHROMIUM(WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) = 0;
-
-    // GL_CHROMIUM_swapbuffers_complete_callback
-    virtual void setSwapBuffersCompleteCallbackCHROMIUM(WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) { }
 
     // GL_CHROMIUM_rate_limit_offscreen_context
     virtual void rateLimitOffscreenContextCHROMIUM() { }
