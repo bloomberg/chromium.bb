@@ -81,7 +81,7 @@
 }
 
 #destination-search .invitation-text {
-  -webkit-padding-after: 12px;
+  padding-bottom: 12px;
   text-align: center;
 }
 
