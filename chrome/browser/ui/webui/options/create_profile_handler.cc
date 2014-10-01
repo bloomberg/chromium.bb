@@ -304,7 +304,7 @@ std::string CreateProfileHandler::GetJavascriptMethodName(
 bool CreateProfileHandler::ProcessSupervisedCreateProfileArgs(
     const base::ListValue* args, std::string* supervised_user_id) {
   bool supervised_user = false;
-  if (args->GetSize() == 4) {
+  if (args->GetSize() >= 5) {
       bool success = args->GetBoolean(3, &supervised_user);
       DCHECK(success);
 
