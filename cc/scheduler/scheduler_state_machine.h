@@ -17,7 +17,7 @@
 
 namespace base {
 namespace debug {
-class ConvertableToTraceForamt;
+class ConvertableToTraceFormat;
 class TracedValue;
 }
 class Value;
