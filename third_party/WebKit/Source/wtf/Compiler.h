@@ -44,7 +44,6 @@
 #define CLANG_PRAGMA(PRAGMA) _Pragma(PRAGMA)
 
 /* Specific compiler features */
-#define WTF_COMPILER_SUPPORTS_CXX_VARIADIC_TEMPLATES __has_extension(cxx_variadic_templates)
 
 /* There is a bug in clang that comes with Xcode 4.2 where AtomicStrings can't be implicitly converted to Strings
    in the presence of move constructors and/or move assignment operators. This bug has been fixed in Xcode 4.3 clang, so we
@@ -106,7 +105,6 @@
 #if GCC_VERSION_AT_LEAST(4, 3, 0)
 #define WTF_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES 1
 #define WTF_COMPILER_SUPPORTS_CXX_STATIC_ASSERT 1
-#define WTF_COMPILER_SUPPORTS_CXX_VARIADIC_TEMPLATES 1
 #endif
 #if GCC_VERSION_AT_LEAST(4, 4, 0)
 #define WTF_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS 1
