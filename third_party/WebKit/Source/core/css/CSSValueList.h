@@ -75,34 +75,19 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());
 
-// Objects of this class are intended to be stack-allocated and scoped to a single function.
-// Please take care not to pass these around as they do hold onto a raw pointer.
-class CSSValueListInspector {
-    STACK_ALLOCATED();
-public:
-    CSSValueListInspector(CSSValue* value) : m_list((value && value->isValueList()) ? toCSSValueList(value) : 0) { }
-    CSSValue* item(size_t index) const { ASSERT_WITH_SECURITY_IMPLICATION(index < length()); return m_list->item(index); }
-    CSSValue* first() const { return item(0); }
-    CSSValue* second() const { return item(1); }
-    size_t length() const { return m_list ? m_list->length() : 0; }
-private:
-    RawPtrWillBeMember<CSSValueList> m_list;
-};
-
-// Wrapper that can be used to iterate over any CSSValue. Non-list values and 0 behave as zero-length lists.
-// Objects of this class are intended to be stack-allocated and scoped to a single function.
-// Please take care not to pass these around as they do hold onto a raw pointer.
+// FIXME: We should add begin() and end() to CSSValueList and use range-based
+// for loops instead of having an iterator class.
 class CSSValueListIterator {
     STACK_ALLOCATED();
 public:
-    CSSValueListIterator(CSSValue* value) : m_inspector(value), m_position(0) { }
-    bool hasMore() const { return m_position < m_inspector.length(); }
-    CSSValue* value() const { return m_inspector.item(m_position); }
+    CSSValueListIterator(CSSValue* value) : m_list(toCSSValueList(value)), m_position(0) { }
+    bool hasMore() const { return m_position < m_list->length(); }
+    CSSValue* value() const { return m_list->item(m_position); }
     bool isPrimitiveValue() const { return value()->isPrimitiveValue(); }
-    void advance() { m_position++; ASSERT(m_position <= m_inspector.length());}
+    void advance() { m_position++; ASSERT(m_position <= m_list->length());}
     size_t index() const { return m_position; }
 private:
-    CSSValueListInspector m_inspector;
+    RawPtrWillBeMember<CSSValueList> m_list;
     size_t m_position;
 };
 

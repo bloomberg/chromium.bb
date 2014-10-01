@@ -427,14 +427,12 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
     Length width;
     Length height;
     PageSizeType pageSizeType = PAGE_SIZE_AUTO;
-    CSSValueListInspector inspector(value);
-    switch (inspector.length()) {
+    CSSValueList* list = toCSSValueList(value);
+    switch (list->length()) {
     case 2: {
         // <length>{2} | <page-size> <orientation>
-        if (!inspector.first()->isPrimitiveValue() || !inspector.second()->isPrimitiveValue())
-            return;
-        CSSPrimitiveValue* first = toCSSPrimitiveValue(inspector.first());
-        CSSPrimitiveValue* second = toCSSPrimitiveValue(inspector.second());
+        CSSPrimitiveValue* first = toCSSPrimitiveValue(list->item(0));
+        CSSPrimitiveValue* second = toCSSPrimitiveValue(list->item(1));
         if (first->isLength()) {
             // <length>{2}
             if (!second->isLength())
@@ -452,9 +450,7 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
     }
     case 1: {
         // <length> | auto | <page-size> | [ portrait | landscape]
-        if (!inspector.first()->isPrimitiveValue())
-            return;
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(inspector.first());
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
         if (primitiveValue->isLength()) {
             // <length>
             pageSizeType = PAGE_SIZE_RESOLVED;

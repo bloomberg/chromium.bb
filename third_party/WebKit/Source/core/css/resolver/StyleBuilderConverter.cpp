@@ -543,12 +543,10 @@ EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSVal
 {
     if (cssPaintOrder->isValueList()) {
         int paintOrder = 0;
-        CSSValueListInspector iter(cssPaintOrder);
-        for (size_t i = 0; i < iter.length(); i++) {
-            CSSPrimitiveValue* value = toCSSPrimitiveValue(iter.item(i));
-
+        const CSSValueList& list = *toCSSValueList(cssPaintOrder);
+        for (size_t i = 0; i < list.length(); ++i) {
             EPaintOrderType paintOrderType = PT_NONE;
-            switch (value->getValueID()) {
+            switch (toCSSPrimitiveValue(list.item(i))->getValueID()) {
             case CSSValueFill:
                 paintOrderType = PT_FILL;
                 break;
