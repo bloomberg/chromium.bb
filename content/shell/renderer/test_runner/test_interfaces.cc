@@ -103,6 +103,9 @@ void TestInterfaces::SetTestIsRunning(bool running) {
 void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
                                              bool generate_pixels) {
   std::string spec = GURL(test_url).spec();
+  size_t path_start = spec.rfind("LayoutTests/");
+  if (path_start != std::string::npos)
+    spec = spec.substr(path_start);
   test_runner_->setShouldGeneratePixelResults(generate_pixels);
   if (spec.find("loading/") != std::string::npos)
     test_runner_->setShouldDumpFrameLoadCallbacks(true);
