@@ -87,7 +87,7 @@ void It2MeNativeMessagingHost::Start(const base::Closure& quit_closure) {
 void It2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  if (message->GetType() != base::Value::TYPE_DICTIONARY) {
+  if (!message->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Received a message that's not a dictionary.";
     channel_->SendMessage(nullptr);
     return;

@@ -188,7 +188,7 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateWin::GetConfig() {
       base::JSONReader::Read(base::UTF16ToUTF8(file_content),
           base::JSON_ALLOW_TRAILING_COMMAS));
 
-  if (!config || config->GetType() != base::Value::TYPE_DICTIONARY)
+  if (!config || !config->IsType(base::Value::TYPE_DICTIONARY))
     return nullptr;
 
   return scoped_ptr<base::DictionaryValue>(

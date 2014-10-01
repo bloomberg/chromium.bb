@@ -60,7 +60,7 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
     return nullptr;
   }
 
-  if (value->GetType() != base::Value::TYPE_DICTIONARY) {
+  if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Failed to parse '" << value_name << "': not a dictionary.";
     return nullptr;
   }
