@@ -12,7 +12,7 @@ vars = {
   "breakpad_rev": "1338",
 
   "lcov_rev": "149720",
-  "tools_rev": "13077",
+  "tools_rev": "13800",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
