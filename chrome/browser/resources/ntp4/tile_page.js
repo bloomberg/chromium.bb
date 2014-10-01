@@ -534,7 +534,7 @@ cr.define('ntp', function() {
     get contentPadding() {
       if (typeof this.contentPadding_ == 'undefined') {
         this.contentPadding_ =
-            parseInt(getComputedStyle(this.content_).paddingTop, 10);
+            parseInt(window.getComputedStyle(this.content_).paddingTop, 10);
       }
       return this.contentPadding_;
     },
@@ -607,7 +607,7 @@ cr.define('ntp', function() {
     /**
      * Notify interested subscribers that a tile has been removed from this
      * page.
-     * @param {Tile} tile The newly added tile.
+     * @param {ntp.Tile} tile The newly added tile.
      * @param {number} index The index of the tile that was added.
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
@@ -643,7 +643,7 @@ cr.define('ntp', function() {
     /**
      * Notify interested subscribers that a tile has been removed from this
      * page.
-     * @param {Tile} tile The tile that was removed.
+     * @param {ntp.Tile} tile The tile that was removed.
      * @param {number} oldIndex Where the tile was positioned before removal.
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
@@ -705,7 +705,8 @@ cr.define('ntp', function() {
      * @private
      */
     handleMouseDown_: function(e) {
-      var focusable = findAncestorByClass(e.target, 'focusable');
+      var focusable = findAncestorByClass(/** @type {Element} */(e.target),
+                                          'focusable');
       if (focusable) {
         this.focusElementIndex_ =
             Array.prototype.indexOf.call(this.focusableElements_,
@@ -882,16 +883,16 @@ cr.define('ntp', function() {
     /**
      * Calculates the x/y coordinates for an element and moves it there.
      * @param {number} index The index of the element to be positioned.
-     * @param {number} indexOffset If provided, this is added to |index| when
-     *     positioning the tile. The effect is that the tile will be positioned
-     *     in a non-default location.
+     * @param {number=} opt_indexOffset If provided, this is added to |index|
+     *     when positioning the tile. The effect is that the tile will be
+     *     positioned in a non-default location.
      * @private
      */
-    positionTile_: function(index, indexOffset) {
+    positionTile_: function(index, opt_indexOffset) {
       var grid = this.gridValues_;
       var layout = this.layoutValues_;
 
-      indexOffset = typeof indexOffset != 'undefined' ? indexOffset : 0;
+      var indexOffset = opt_indexOffset || 0;
       // Add the offset _after_ the modulus division. We might want to show the
       // tile off the side of the grid.
       var col = index % layout.numRowTiles + indexOffset;
@@ -943,6 +944,7 @@ cr.define('ntp', function() {
      *     |this|.
      * @param {number} y The y coordinate, in pixels, relative to the top of
      *     |this|.
+     * @return {number}
      * @private
      */
     getWouldBeIndexForPoint_: function(x, y) {
@@ -1319,19 +1321,19 @@ cr.define('ntp', function() {
 
     /**
      * Reposition all the tiles (possibly ignoring one).
-     * @param {?Node} ignoreNode An optional node to ignore.
+     * @param {Node=} opt_ignoreNode An optional node to ignore.
      * @private
      */
-    repositionTiles_: function(ignoreNode) {
+    repositionTiles_: function(opt_ignoreNode) {
       for (var i = 0; i < this.tileElements_.length; i++) {
-        if (!ignoreNode || ignoreNode !== this.tileElements_[i])
+        if (!opt_ignoreNode || opt_ignoreNode !== this.tileElements_[i])
           this.positionTile_(i);
       }
     },
 
     /**
      * Updates the visual indicator for the drop location for the active drag.
-     * @param {Event} e A MouseEvent for the drag.
+     * @param {number} newDragIndex
      * @private
      */
     updateDropIndicator_: function(newDragIndex) {
@@ -1397,6 +1399,8 @@ cr.define('ntp', function() {
   return {
     getCurrentlyDraggingTile: getCurrentlyDraggingTile,
     setCurrentDropEffect: setCurrentDropEffect,
+    // Not used outside, just for usage in JSDoc inside this file.
+    Tile: Tile,
     TilePage: TilePage,
   };
 });

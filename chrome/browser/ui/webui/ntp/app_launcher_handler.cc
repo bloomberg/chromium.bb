@@ -108,6 +108,9 @@ void AppLauncherHandler::CreateAppInfo(
     const Extension* extension,
     ExtensionService* service,
     base::DictionaryValue* value) {
+  // The items which are to be written into |value| are also described in
+  // chrome/browser/resources/ntp4/page_list_view.js in @typedef for AppInfo.
+  // Please update it whenever you add or remove any keys here.
   value->Clear();
 
   // The Extension class 'helpfully' wraps bidi control characters that

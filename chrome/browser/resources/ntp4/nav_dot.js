@@ -13,10 +13,10 @@ cr.define('ntp', function() {
 
   /**
    * Creates a new navigation dot.
-   * @param {TilePage} page The associated TilePage.
+   * @param {ntp.TilePage} page The associated TilePage.
    * @param {string} title The title of the navigation dot.
-   * @param {bool} titleIsEditable If true, the title can be changed.
-   * @param {bool} animate If true, animates into existence.
+   * @param {boolean} titleIsEditable If true, the title can be changed.
+   * @param {boolean} animate If true, animates into existence.
    * @constructor
    * @extends {HTMLLIElement}
    */
@@ -73,7 +73,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * @return {TilePage} The associated TilePage.
+     * @return {ntp.TilePage} The associated TilePage.
      */
     get page() {
       return this.page_;

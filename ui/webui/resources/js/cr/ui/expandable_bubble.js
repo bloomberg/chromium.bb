@@ -15,7 +15,8 @@ cr.define('cr.ui', function() {
    * fixed width, but variable height. Currently the arrow is always positioned
    * at the bottom right and points down.
    * @constructor
-   * @extends {cr.ui.div}
+   * @extends {HTMLDivElement}
+   * @implements {EventListener}
    */
   var ExpandableBubble = cr.ui.define('div');
 
@@ -40,7 +41,7 @@ cr.define('cr.ui', function() {
     /**
      * Sets the title of the bubble. The title is always visible when the
      * bubble is visible.
-     * @type {Node} An HTML element to set as the title.
+     * @param {Node} node An HTML element to set as the title.
      */
     set contentTitle(node) {
       var bubbleTitle = this.querySelector('.expandable-bubble-title');
@@ -51,7 +52,7 @@ cr.define('cr.ui', function() {
     /**
      * Sets the content node of the bubble. The content node is only visible
      * when the bubble is expanded.
-     * @param {Node} An HTML element.
+     * @param {Node} node An HTML element.
      */
     set content(node) {
       var bubbleMain = this.querySelector('.expandable-bubble-main');
@@ -74,7 +75,7 @@ cr.define('cr.ui', function() {
     /**
      * Handles the close event which is triggered when the close button
      * is clicked. By default is set to this.hide.
-     * @param {function} A function with no parameters
+     * @param {Function} func A function with no parameters.
      */
     set handleCloseEvent(func) {
       this.handleCloseEvent_ = func;
@@ -101,7 +102,7 @@ cr.define('cr.ui', function() {
         this.hidden = false;
       }
       this.bubbleSuppressed = suppress;
-      this.resizeAndReposition(this);
+      this.resizeAndReposition();
     },
 
     /**
@@ -115,7 +116,7 @@ cr.define('cr.ui', function() {
       // have).
       var offset = 0;
       if (!this.expanded)
-        offset = (clientRect.width - parseInt(this.style.width)) / 2;
+        offset = (clientRect.width - parseInt(this.style.width, 10)) / 2;
       this.style.left = this.style.right = clientRect.left + offset + 'px';
 
       var top = Math.max(0, clientRect.top - 4);
@@ -165,7 +166,7 @@ cr.define('cr.ui', function() {
       this.reposition_();
     },
 
-    /*
+    /**
      * Expand the bubble (bringing the full content into view).
      * @private
      */
@@ -192,9 +193,12 @@ cr.define('cr.ui', function() {
      * The onclick handler for the notification (expands the bubble).
      * @param {Event} e The event.
      * @private
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove suppression when the extern
+     * Node.prototype.contains() will be fixed.
      */
     onNotificationClick_: function(e) {
-      if (!this.contains(e.target))
+      if (!this.contains(/** @type {!Node} */(e.target)))
         return;
 
       if (!this.expanded) {
@@ -227,8 +231,8 @@ cr.define('cr.ui', function() {
       this.eventTracker_.add(this, 'click', this.onNotificationClick_);
 
       var doc = this.ownerDocument;
-      this.eventTracker_.add(doc, 'keydown', this, true);
-      this.eventTracker_.add(doc, 'mousedown', this, true);
+      this.eventTracker_.add(assert(doc), 'keydown', this, true);
+      this.eventTracker_.add(assert(doc), 'mousedown', this, true);
     },
 
     /**
@@ -246,6 +250,9 @@ cr.define('cr.ui', function() {
      * necessary.
      * @param {Event} e The event.
      * @private
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove suppression when the extern
+     * Node.prototype.contains() will be fixed.
      */
     handleEvent: function(e) {
       var handled = false;
@@ -263,7 +270,7 @@ cr.define('cr.ui', function() {
           if (e.target == this.querySelector('.expandable-bubble-close')) {
             this.handleCloseEvent_();
             handled = true;
-          } else if (!this.contains(e.target)) {
+          } else if (!this.contains(/** @type {!Node} */(e.target))) {
             if (this.expanded) {
               this.collapseBubble_();
               handled = true;
@@ -284,7 +291,6 @@ cr.define('cr.ui', function() {
 
   /**
    * Whether the bubble is expanded or not.
-   * @type {boolean}
    */
   cr.defineProperty(ExpandableBubble, 'expanded', cr.PropertyKind.BOOL_ATTR);
 
@@ -293,7 +299,6 @@ cr.define('cr.ui', function() {
    * to the user that part of the text is clipped. This is only used when the
    * bubble is collapsed and the title doesn't fit because it is maxed out in
    * width within the anchored node.
-   * @type {boolean}
    */
   cr.defineProperty(ExpandableBubble, 'masked', cr.PropertyKind.BOOL_ATTR);
 

@@ -10,6 +10,39 @@
  * Note that you need to have AppLauncherHandler in your WebUI to use this code.
  */
 
+/**
+ * @typedef {{app_launch_ordinal: string,
+ *            description: string,
+ *            detailsUrl: string,
+ *            direction: string,
+ *            enabled: boolean,
+ *            full_name: string,
+ *            full_name_direction: string,
+ *            homepageUrl: string,
+ *            icon_big: string,
+ *            icon_big_exists: boolean,
+ *            icon_small: string,
+ *            icon_small_exists: boolean,
+ *            id: string,
+ *            is_component: boolean,
+ *            is_webstore: boolean,
+ *            kioskEnabled: boolean,
+ *            kioskOnly: boolean,
+ *            launch_container: number,
+ *            launch_type: number,
+ *            mayDisable: boolean,
+ *            name: string,
+ *            offlineEnabled: boolean,
+ *            optionsUrl: string,
+ *            packagedApp: boolean,
+ *            page_index: number,
+ *            title: string,
+ *            url: string,
+ *            version: string}}
+ * @see chrome/browser/ui/webui/ntp/app_launcher_handler.cc
+ */
+var AppInfo;
+
 cr.define('ntp', function() {
   'use strict';
 
@@ -24,7 +57,7 @@ cr.define('ntp', function() {
   PageListView.prototype = {
     /**
      * The CardSlider object to use for changing app pages.
-     * @type {CardSlider|undefined}
+     * @type {cr.ui.CardSlider|undefined}
      */
     cardSlider: undefined,
 
@@ -72,7 +105,7 @@ cr.define('ntp', function() {
 
     /**
      * The left and right paging buttons.
-     * @type {!Element|undefined}
+     * @type {!ntp.PageSwitcher|undefined}
      */
     pageSwitcherStart: undefined,
     pageSwitcherEnd: undefined,
@@ -120,10 +153,10 @@ cr.define('ntp', function() {
      * @param {!Element} cardSliderFrame The card slider frame that hosts
      *     pageList and switcher buttons.
      * @param {!Element|undefined} opt_trash Optional trash element.
-     * @param {!Element|undefined} opt_pageSwitcherStart Optional start page
-     *     switcher button.
-     * @param {!Element|undefined} opt_pageSwitcherEnd Optional end page
-     *     switcher button.
+     * @param {!ntp.PageSwitcher|undefined} opt_pageSwitcherStart Optional start
+     *     page switcher button.
+     * @param {!ntp.PageSwitcher|undefined} opt_pageSwitcherEnd Optional end
+     *     page switcher button.
      */
     initialize: function(pageList, dotList, cardSliderFrame, opt_trash,
                          opt_pageSwitcherStart, opt_pageSwitcherEnd) {
@@ -216,11 +249,11 @@ cr.define('ntp', function() {
     /**
      * Appends a tile page.
      *
-     * @param {TilePage} page The page element.
+     * @param {!ntp.TilePage} page The page element.
      * @param {string} title The title of the tile page.
      * @param {boolean} titleIsEditable If true, the title can be changed.
-     * @param {TilePage} opt_refNode Optional reference node to insert in front
-     *     of.
+     * @param {ntp.TilePage=} opt_refNode Optional reference node to insert in
+     *     front of.
      * When opt_refNode is falsey, |page| will just be appended to the end of
      * the page list.
      */
@@ -262,7 +295,7 @@ cr.define('ntp', function() {
 
     /**
      * Called by chrome when an app has changed positions.
-     * @param {Object} appData The data for the app. This contains page and
+     * @param {AppInfo} appData The data for the app. This contains page and
      *     position indices.
      */
     appMoved: function(appData) {
@@ -278,8 +311,8 @@ cr.define('ntp', function() {
     /**
      * Called by chrome when an existing app has been disabled or
      * removed/uninstalled from chrome.
-     * @param {Object} appData A data structure full of relevant information for
-     *     the app.
+     * @param {AppInfo} appData A data structure full of relevant information
+     *     for the app.
      * @param {boolean} isUninstall True if the app is being uninstalled;
      *     false if the app is being disabled.
      * @param {boolean} fromPage True if the removal was from the current page.
@@ -317,8 +350,8 @@ cr.define('ntp', function() {
      * Note that calls to this function can occur at any time, not just in
      * response to a getApps request. For example, when a user
      * installs/uninstalls an app on another synchronized devices.
-     * @param {Object} data An object with all the data on available
-     *        applications.
+     * @param {{apps: Array.<AppInfo>, appPageNames: Array.<string>}} data
+     *     An object with all the data on available applications.
      */
     getAppsCallback: function(data) {
       assert(loadTimeData.getBoolean('showApps'));
@@ -418,8 +451,8 @@ cr.define('ntp', function() {
     /**
      * Called by chrome when a new app has been added to chrome or has been
      * enabled if previously disabled.
-     * @param {Object} appData A data structure full of relevant information for
-     *     the app.
+     * @param {AppInfo} appData A data structure full of relevant information
+     *     for the app.
      * @param {boolean=} opt_highlight Whether the app about to be added should
      *     be highlighted.
      */
@@ -558,7 +591,8 @@ cr.define('ntp', function() {
      * Invoked whenever some app is released
      */
     leaveRearrangeMode: function() {
-      var tempPage = document.querySelector('.tile-page.temporary');
+      var tempPage = /** @type {ntp.AppsPage} */(
+          document.querySelector('.tile-page.temporary'));
       if (tempPage) {
         var dot = tempPage.navigationDot;
         if (!tempPage.tileCount &&
@@ -633,7 +667,7 @@ cr.define('ntp', function() {
 
     /**
      * Returns the index of the given apps page.
-     * @param {AppsPage} page The AppsPage we wish to find.
+     * @param {ntp.AppsPage} page The AppsPage we wish to find.
      * @return {number} The index of |page| or -1 if it is not in the
      *    collection.
      */
@@ -675,8 +709,8 @@ cr.define('ntp', function() {
 
     /**
      * Saves/updates the newly selected page to open when first loading the NTP.
-     * @type {number} shownPage The new shown page type.
-     * @type {number} shownPageIndex The new shown page index.
+     * @param {number} shownPage The new shown page type.
+     * @param {number} shownPageIndex The new shown page index.
      * @private
      */
     setShownPage_: function(shownPage, shownPageIndex) {
@@ -725,7 +759,7 @@ cr.define('ntp', function() {
     /**
      * Save the name of an apps page.
      * Store the apps page name into the preferences store.
-     * @param {AppsPage} appsPage The app page for which we wish to save.
+     * @param {ntp.AppsPage} appPage The app page for which we wish to save.
      * @param {string} name The name of the page.
      */
     saveAppPageName: function(appPage, name) {
@@ -751,7 +785,7 @@ cr.define('ntp', function() {
     updateOfflineEnabledApps_: function() {
       var apps = document.querySelectorAll('.app');
       for (var i = 0; i < apps.length; ++i) {
-        if (apps[i].appData.enabled && !apps[i].appData.offline_enabled) {
+        if (apps[i].appData.enabled && !apps[i].appData.offlineEnabled) {
           apps[i].setIcon();
           apps[i].loadIcon();
         }
@@ -786,7 +820,7 @@ cr.define('ntp', function() {
 
     /**
      * Returns the index of a given tile page.
-     * @param {TilePage} page The TilePage we wish to find.
+     * @param {ntp.TilePage} page The TilePage we wish to find.
      * @return {number} The index of |page| or -1 if it is not in the
      *    collection.
      */
@@ -796,7 +830,7 @@ cr.define('ntp', function() {
 
     /**
      * Removes a page and navigation dot (if the navdot exists).
-     * @param {TilePage} page The page to be removed.
+     * @param {ntp.TilePage} page The page to be removed.
      * @param {boolean=} opt_animate If the removal should be animated.
      */
     removeTilePageAndDot_: function(page, opt_animate) {

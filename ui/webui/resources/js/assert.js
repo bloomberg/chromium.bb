@@ -54,11 +54,14 @@ function assertNotReached(opt_message) {
 /**
  * @param {*} value The value to check.
  * @param {function(new: T, ...)} type A user-defined constructor.
+ * @param {string=} opt_message A message to show when this is hit.
  * @return {T}
  * @template T
  */
-function assertInstanceof(value, type) {
-  if (!(value instanceof type))
-    throw new Error(value + ' is not a[n] ' + (type.name || typeof type));
+function assertInstanceof(value, type, opt_message) {
+  if (!(value instanceof type)) {
+    throw new Error(opt_message ||
+                    value + ' is not a[n] ' + (type.name || typeof type));
+  }
   return value;
 }

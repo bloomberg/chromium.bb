@@ -324,6 +324,8 @@ cr.define('cr.ui', function() {
    * outside the bubble after it has been shown for at least the specified
    * amount of time (making it less likely that the user will unintentionally
    * dismiss the bubble). The bubble repositions itself on layout changes.
+   * @constructor
+   * @extends {cr.ui.BubbleBase}
    */
   var Bubble = cr.ui.define('div');
 
@@ -394,6 +396,9 @@ cr.define('cr.ui', function() {
     /**
      * Handle keyboard and mouse events, dismissing the bubble if necessary.
      * @param {Event} event The event.
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove suppression when the extern
+     * Node.prototype.contains() will be fixed.
      */
     handleEvent: function(event) {
       BubbleBase.prototype.handleEvent.call(this, event);
@@ -477,6 +482,9 @@ cr.define('cr.ui', function() {
      * outside the bubble and its target element, scrolls the underlying
      * document or resizes the window.
      * @param {Event} event The event.
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove suppression when the extern
+     * Node.prototype.contains() will be fixed.
      */
     handleEvent: function(event) {
       BubbleBase.prototype.handleEvent.call(this, event);
@@ -503,9 +511,8 @@ cr.define('cr.ui', function() {
         // bubble target and is not inside the bubble.
         case 'elementFocused':
           var target = assertInstanceof(event.target, Node);
-          if (!this.anchorNode_.contains(target) && !this.contains(target)) {
+          if (!this.anchorNode_.contains(target) && !this.contains(target))
             this.hide();
-          }
           break;
       }
     },

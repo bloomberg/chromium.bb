@@ -252,6 +252,10 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       const std::string& session_tag = session->session_tag;
       scoped_ptr<base::DictionaryValue> session_data(
           new base::DictionaryValue());
+      // The items which are to be written into |session_data| are also
+      // described in chrome/browser/resources/ntp4/other_sessions.js in
+      // @typedef for SessionData. Please update it whenever you add or remove
+      // any keys here.
       session_data->SetString("tag", session_tag);
       session_data->SetString("name", session->session_name);
       session_data->SetString("deviceType", session->DeviceTypeAsString());
@@ -400,6 +404,9 @@ bool ForeignSessionHandler::SessionWindowToValue(
   }
   if (tab_values->GetSize() == 0)
     return false;
+  // The items which are to be written into |dictionary| are also described in
+  // chrome/browser/resources/ntp4/other_sessions.js in @typedef for WindowData.
+  // Please update it whenever you add or remove any keys here.
   dictionary->SetString("type", "window");
   dictionary->SetDouble("timestamp", modification_time.ToInternalValue());
   const base::TimeDelta last_synced = base::Time::Now() - modification_time;

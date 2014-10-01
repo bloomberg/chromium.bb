@@ -6,6 +6,27 @@
  * @fileoverview The menu that shows tabs from sessions on other devices.
  */
 
+/**
+ * @typedef {{collapsed: boolean,
+ *            deviceType: string,
+ *            modifiedTime: string,
+ *            name: string,
+ *            tag: string,
+ *            windows: Array.<WindowData>}}
+ * @see chrome/browser/ui/webui/ntp/foreign_session_handler.cc
+ */
+var SessionData;
+
+/**
+ * @typedef {{sessionId: number,
+ *            tabs: Array,
+ *            timestamp: number,
+ *            type: string,
+ *            userVisibleTimestamp: string}}
+ * @see chrome/browser/ui/webui/ntp/foreign_session_handler.cc
+ */
+var WindowData;
+
 cr.define('ntp', function() {
   'use strict';
 
@@ -13,7 +34,12 @@ cr.define('ntp', function() {
   /** @const */ var Menu = cr.ui.Menu;
   /** @const */ var MenuItem = cr.ui.MenuItem;
   /** @const */ var MenuButton = cr.ui.MenuButton;
-  /** @const */ var OtherSessionsMenuButton = cr.ui.define('button');
+
+  /**
+   * @constructor
+   * @extends {cr.ui.MenuButton}
+   */
+  var OtherSessionsMenuButton = cr.ui.define('button');
 
   // Histogram buckets for UMA tracking of menu usage.
   /** @const */ var HISTOGRAM_EVENT = {
@@ -153,7 +179,7 @@ cr.define('ntp', function() {
 
     /**
      * Add the UI for a foreign session to the menu.
-     * @param {Object} session Object describing the foreign session.
+     * @param {SessionData} session Object describing the foreign session.
      */
     addSession_: function(session) {
       var doc = this.ownerDocument;
@@ -192,7 +218,7 @@ cr.define('ntp', function() {
 
     /**
      * Create the DOM tree representing the tabs and windows in a session.
-     * @param {Object} session The session model object.
+     * @param {SessionData} session The session model object.
      * @return {Element} A single div containing the list of tabs & windows.
      * @private
      */
@@ -231,8 +257,8 @@ cr.define('ntp', function() {
      * foreign sessions, or tab sync is disabled for this profile.
      * |isTabSyncEnabled| makes it possible to distinguish between the cases.
      *
-     * @param {Array} sessionList Array of objects describing the sessions
-     *     from other devices.
+     * @param {Array.<SessionData>} sessionList Array of objects describing the
+     *     sessions from other devices.
      * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
      */
     setForeignSessions: function(sessionList, isTabSyncEnabled) {

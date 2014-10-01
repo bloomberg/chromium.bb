@@ -8,6 +8,15 @@
  * browsers.  For now this is still a prototype.
  */
 
+/**
+ * @typedef {{direction: string,
+ *            filler: (boolean|undefined),
+ *            title: string,
+ *            url: string}}
+ * @see chrome/browser/ui/webui/ntp/most_visited_handler.cc
+ */
+var PageData;
+
 // Use an anonymous function to enable strict mode just for this file (which
 // will be concatenated with other files when embedded in Chrome
 cr.define('ntp', function() {
@@ -29,14 +38,14 @@ cr.define('ntp', function() {
    * If non-null, an info bubble for showing messages to the user. It points at
    * the Most Visited label, and is used to draw more attention to the
    * navigation dot UI.
-   * @type {!Element|undefined}
+   * @type {!cr.ui.Bubble|undefined}
    */
   var promoBubble;
 
   /**
    * If non-null, an bubble confirming that the user has signed into sync. It
    * points at the login status at the top of the page.
-   * @type {!Element|undefined}
+   * @type {!cr.ui.Bubble|undefined}
    */
   var loginBubble;
 
@@ -48,7 +57,7 @@ cr.define('ntp', function() {
 
   /**
    * The 'other-sessions-menu-button' element.
-   * @type {!Element|undefined}
+   * @type {!ntp.OtherSessionsMenuButton|undefined}
    */
   var otherSessionsButton;
 
@@ -82,14 +91,16 @@ cr.define('ntp', function() {
    * Creates a NewTabView object. NewTabView extends PageListView with
    * new tab UI specific logics.
    * @constructor
-   * @extends {PageListView}
+   * @extends {ntp.PageListView}
    */
   function NewTabView() {
-    var pageSwitcherStart = null;
-    var pageSwitcherEnd = null;
+    var pageSwitcherStart;
+    var pageSwitcherEnd;
     if (loadTimeData.getValue('showApps')) {
-      pageSwitcherStart = getRequiredElement('page-switcher-start');
-      pageSwitcherEnd = getRequiredElement('page-switcher-end');
+      pageSwitcherStart = /** @type {!ntp.PageSwitcher} */(
+          getRequiredElement('page-switcher-start'));
+      pageSwitcherEnd = /** @type {!ntp.PageSwitcher} */(
+          getRequiredElement('page-switcher-end'));
     }
     this.initialize(getRequiredElement('page-list'),
                     getRequiredElement('dot-list'),
@@ -140,14 +151,16 @@ cr.define('ntp', function() {
         'webkitTransitionEnd', onNotificationTransitionEnd);
 
     if (loadTimeData.getBoolean('showRecentlyClosed')) {
-      cr.ui.decorate($('recently-closed-menu-button'), ntp.RecentMenuButton);
+      cr.ui.decorate(getRequiredElement('recently-closed-menu-button'),
+          ntp.RecentMenuButton);
       chrome.send('getRecentlyClosedTabs');
     } else {
       $('recently-closed-menu-button').hidden = true;
     }
 
     if (loadTimeData.getBoolean('showOtherSessionsMenu')) {
-      otherSessionsButton = getRequiredElement('other-sessions-menu-button');
+      otherSessionsButton = /** @type {!ntp.OtherSessionsMenuButton} */(
+          getRequiredElement('other-sessions-menu-button'));
       cr.ui.decorate(otherSessionsButton, ntp.OtherSessionsMenuButton);
       otherSessionsButton.initialize(loadTimeData.getBoolean('isUserSignedIn'));
     } else {
@@ -301,7 +314,7 @@ cr.define('ntp', function() {
                  ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
-  /*
+  /**
    * The number of sections to wait on.
    * @type {number}
    */
@@ -309,7 +322,7 @@ cr.define('ntp', function() {
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.
-   * @type {array}
+   * @type {Array}
    */
   var readyCallbacks = [];
 
@@ -330,7 +343,7 @@ cr.define('ntp', function() {
    * jQuery or Y.on('domready') in YUI. If all sections are ready, the callback
    * is fired right away. If all pages are not ready yet, the function is queued
    * for later execution.
-   * @param {function} callback The work to be done when ready.
+   * @param {Function} callback The work to be done when ready.
    */
   function doWhenAllSectionsReady(callback) {
     assert(typeof callback == 'function');
@@ -388,6 +401,9 @@ cr.define('ntp', function() {
       menu.style.WebkitFlex = '0 1 ' + logoImg.width + 'px';
   }
 
+  /**
+   * @param {boolean=} opt_hasAttribution
+   */
   function themeChanged(opt_hasAttribution) {
     $('themecss').href = 'chrome://theme/css/new_tab_theme.css?' + Date.now();
 
@@ -429,8 +445,9 @@ cr.define('ntp', function() {
    *     records describing the links in the notification. Each record should
    *     have a 'text' attribute (the display string) and an 'action' attribute
    *     (a function to run when the link is activated).
-   * @param {Function} opt_closeHandler The callback invoked if the user
+   * @param {Function=} opt_closeHandler The callback invoked if the user
    *     manually dismisses the notification.
+   * @param {number=} opt_timeout
    */
   function showNotification(message, links, opt_closeHandler, opt_timeout) {
     window.clearTimeout(notificationTimeout);
@@ -541,6 +558,10 @@ cr.define('ntp', function() {
     layoutFooter();
   }
 
+  /**
+   * @param {Array.<PageData>} data
+   * @param {boolean} hasBlacklistedUrls
+   */
   function setMostVisitedPages(data, hasBlacklistedUrls) {
     newTabView.mostVisitedPage.data = data;
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
@@ -627,33 +648,64 @@ cr.define('ntp', function() {
   /**
    * Wrappers to forward the callback to corresponding PageListView member.
    */
-  function appAdded() {
-    return newTabView.appAdded.apply(newTabView, arguments);
+
+  /**
+   * Called by chrome when a new app has been added to chrome or has been
+   * enabled if previously disabled.
+   * @param {Object} appData A data structure full of relevant information for
+   *     the app.
+   * @param {boolean=} opt_highlight Whether the app about to be added should
+   *     be highlighted.
+   */
+  function appAdded(appData, opt_highlight) {
+    newTabView.appAdded(appData, opt_highlight);
   }
 
-  function appMoved() {
-    return newTabView.appMoved.apply(newTabView, arguments);
+  /**
+   * Called by chrome when an app has changed positions.
+   * @param {Object} appData The data for the app. This contains page and
+   *     position indices.
+   */
+  function appMoved(appData) {
+    newTabView.appMoved(appData);
   }
 
-  function appRemoved() {
-    return newTabView.appRemoved.apply(newTabView, arguments);
+  /**
+   * Called by chrome when an existing app has been disabled or
+   * removed/uninstalled from chrome.
+   * @param {Object} appData A data structure full of relevant information for
+   *     the app.
+   * @param {boolean} isUninstall True if the app is being uninstalled;
+   *     false if the app is being disabled.
+   * @param {boolean} fromPage True if the removal was from the current page.
+   */
+  function appRemoved(appData, isUninstall, fromPage) {
+    newTabView.appRemoved(appData, isUninstall, fromPage);
   }
 
-  function appsPrefChangeCallback() {
-    return newTabView.appsPrefChangedCallback.apply(newTabView, arguments);
+  /**
+   * Callback invoked by chrome whenever an app preference changes.
+   * @param {Object} data An object with all the data on available
+   *     applications.
+   */
+  function appsPrefChangeCallback(data) {
+    newTabView.appsPrefChangedCallback(data);
   }
 
-  function appLauncherPromoPrefChangeCallback() {
-    return newTabView.appLauncherPromoPrefChangeCallback.apply(newTabView,
-                                                               arguments);
+  /**
+   * Callback invoked by chrome whenever the app launcher promo pref changes.
+   * @param {boolean} show Identifies if we should show or hide the promo.
+   */
+  function appLauncherPromoPrefChangeCallback(show) {
+    newTabView.appLauncherPromoPrefChangeCallback(show);
   }
 
-  function appsReordered() {
-    return newTabView.appsReordered.apply(newTabView, arguments);
-  }
-
+  /**
+   * Called whenever tiles should be re-arranging themselves out of the way
+   * of a moving or insert tile.
+   */
   function enterRearrangeMode() {
-    return newTabView.enterRearrangeMode.apply(newTabView, arguments);
+    newTabView.enterRearrangeMode();
   }
 
   function setForeignSessions(sessionList, isTabSyncEnabled) {
@@ -663,24 +715,47 @@ cr.define('ntp', function() {
     }
   }
 
-  function getAppsCallback() {
-    return newTabView.getAppsCallback.apply(newTabView, arguments);
+  /**
+   * Callback invoked by chrome with the apps available.
+   *
+   * Note that calls to this function can occur at any time, not just in
+   * response to a getApps request. For example, when a user
+   * installs/uninstalls an app on another synchronized devices.
+   * @param {Object} data An object with all the data on available
+   *        applications.
+   */
+  function getAppsCallback(data) {
+    newTabView.getAppsCallback(data);
   }
 
-  function getAppsPageIndex() {
-    return newTabView.getAppsPageIndex.apply(newTabView, arguments);
+  /**
+   * Return the index of the given apps page.
+   * @param {ntp.AppsPage} page The AppsPage we wish to find.
+   * @return {number} The index of |page| or -1 if it is not in the collection.
+   */
+  function getAppsPageIndex(page) {
+    return newTabView.getAppsPageIndex(page);
   }
 
   function getCardSlider() {
     return newTabView.cardSlider;
   }
 
+  /**
+   * Invoked whenever some app is released
+   */
   function leaveRearrangeMode() {
-    return newTabView.leaveRearrangeMode.apply(newTabView, arguments);
+    newTabView.leaveRearrangeMode();
   }
 
-  function saveAppPageName() {
-    return newTabView.saveAppPageName.apply(newTabView, arguments);
+  /**
+   * Save the name of an apps page.
+   * Store the apps page name into the preferences store.
+   * @param {ntp.AppsPage} appPage The app page for which we wish to save.
+   * @param {string} name The name of the page.
+   */
+  function saveAppPageName(appPage, name) {
+    newTabView.saveAppPageName(appPage, name);
   }
 
   function setAppToBeHighlighted(appId) {

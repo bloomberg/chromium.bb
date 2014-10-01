@@ -217,6 +217,10 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
   history::MostVisitedURLList top_sites(data);
   for (size_t i = 0; i < top_sites.size(); i++) {
     const history::MostVisitedURL& url = top_sites[i];
+
+    // The items which are to be written into |page_value| are also described in
+    // chrome/browser/resources/ntp4/new_tab.js in @typedef for PageData. Please
+    // update it whenever you add or remove any keys here.
     base::DictionaryValue* page_value = new base::DictionaryValue();
     if (url.url.is_empty()) {
       page_value->SetBoolean("filler", true);

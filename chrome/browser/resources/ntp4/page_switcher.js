@@ -9,14 +9,18 @@
  */
 cr.define('ntp', function() {
 
+  /**
+   * @constructor
+   * @extends {HTMLButtonElement}
+   */
   function PageSwitcher() {
   }
 
-  PageSwitcher.template = {
+  PageSwitcher.prototype = {
     __proto__: HTMLButtonElement.prototype,
 
     decorate: function(el) {
-      el.__proto__ = PageSwitcher.template;
+      el.__proto__ = PageSwitcher.prototype;
 
       el.addEventListener('click', el.activate_);
 
@@ -145,7 +149,11 @@ cr.define('ntp', function() {
 
   };
 
+  /** @const */
+  var initializePageSwitcher = PageSwitcher.prototype.decorate;
+
   return {
-    initializePageSwitcher: PageSwitcher.template.decorate
+    initializePageSwitcher: initializePageSwitcher,
+    PageSwitcher: PageSwitcher
   };
 });

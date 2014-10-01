@@ -37,8 +37,7 @@ cr.define('cr.ui', function() {
      * @param {!cr.ui.Menu} menu The menu to show.
      */
     showMenu: function(e, menu) {
-      e.currentTarget = assertInstanceof(e.currentTarget, Node);
-      menu.updateCommands(e.currentTarget);
+      menu.updateCommands(assertInstanceof(e.currentTarget, Node));
       if (!menu.hasVisibleItems())
         return;
 

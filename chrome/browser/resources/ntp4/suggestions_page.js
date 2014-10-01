@@ -74,7 +74,10 @@ cr.define('ntp', function() {
 
     /**
      * Update the appearance of this tile according to |data|.
-     * @param {Object} data A dictionary of relevant data for the page.
+     * @param {{score: number, url: string, title: string, direction: string,
+     *     filler: boolean}} data A dictionary of relevant data for the page.
+     * @see chrome/browser/ui/webui/ntp/suggestions_source_top_sites.cc
+     * @see chrome/browser/ui/webui/ntp/most_visited_handler.cc
      */
     updateForData: function(data) {
       if (this.classList.contains('blacklisted') && data) {
@@ -240,7 +243,7 @@ cr.define('ntp', function() {
     /**
      * Called when a drag is starting on the tile. Updates dataTransfer with
      * data for this tile (for dragging outside of the NTP).
-     * @param {Event.DataTransfer} dataTransfer The drag event data store.
+     * @param {DataTransfer} dataTransfer The drag event data store.
      */
     setDragData: function(dataTransfer) {
       dataTransfer.setData('Text', this.data_.title);
@@ -307,7 +310,7 @@ cr.define('ntp', function() {
      */
     createTiles_: function() {
       for (var i = 0; i < THUMBNAIL_COUNT; i++) {
-        this.appendTile(new Suggestion());
+        this.appendTile(new Suggestion(), false);
       }
     },
 
@@ -392,7 +395,7 @@ cr.define('ntp', function() {
         .contains('suggestions-page')) {
       chrome.send('suggestedSitesSelected');
     }
-  }
+  };
 
   /**
    * We've gotten additional data for Suggestions page. Update our old data with

@@ -168,7 +168,7 @@ function setQueryParam(location, key, value) {
 }
 
 /**
- * @param {Element} el An element to search for ancestors with |className|.
+ * @param {Node} el A node to search for ancestors with |className|.
  * @param {string} className A class to search for.
  * @return {Element} A node with class of |className| or null if none is found.
  */
@@ -254,12 +254,11 @@ function isRTL() {
  * calling getElementById and not checking the result because this lets us
  * satisfy the JSCompiler type system.
  * @param {string} id The identifier name.
- * @return {!Element} the Element.
+ * @return {!HTMLElement} the Element.
  */
 function getRequiredElement(id) {
-  var element = $(id);
-  assert(element, 'Missing required element: ' + id);
-  return /** @type {!Element} */(element);
+  return assertInstanceof($(id), HTMLElement,
+                          'Missing required element: ' + id);
 }
 
 // Handle click on a link. If the link points to a chrome: or file: url, then

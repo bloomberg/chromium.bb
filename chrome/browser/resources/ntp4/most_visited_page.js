@@ -74,7 +74,7 @@ cr.define('ntp', function() {
 
     /**
      * Update the appearance of this tile according to |data|.
-     * @param {Object} data A dictionary of relevant data for the page.
+     * @param {PageData} data A dictionary of relevant data for the page.
      */
     updateForData: function(data) {
       if (this.classList.contains('blacklisted') && data) {
@@ -197,7 +197,7 @@ cr.define('ntp', function() {
       var doUndo = function() {
         chrome.send('removeURLsFromMostVisitedBlacklist', [data.url]);
         self.updateForData(data);
-      }
+      };
 
       var undo = {
         action: doUndo,
@@ -299,7 +299,7 @@ cr.define('ntp', function() {
   /**
    * Creates a new MostVisitedPage object.
    * @constructor
-   * @extends {TilePage}
+   * @extends {ntp.TilePage}
    */
   function MostVisitedPage() {
     var el = new TilePage(mostVisitedPageGridValues);
@@ -327,7 +327,7 @@ cr.define('ntp', function() {
      */
     createTiles_: function() {
       for (var i = 0; i < THUMBNAIL_COUNT; i++) {
-        this.appendTile(new MostVisited());
+        this.appendTile(new MostVisited(), false);
       }
     },
 
@@ -370,7 +370,7 @@ cr.define('ntp', function() {
 
     /**
      * Array of most visited data objects.
-     * @type {Array}
+     * @type {Array.<PageData>}
      */
     get data() {
       return this.data_;
@@ -412,7 +412,7 @@ cr.define('ntp', function() {
         .contains('most-visited-page')) {
       chrome.send('mostVisitedSelected');
     }
-  }
+  };
 
   /**
    * We've gotten additional Most Visited data. Update our old data with the

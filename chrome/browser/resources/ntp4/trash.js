@@ -10,6 +10,9 @@
 cr.define('ntp', function() {
   'use strict';
 
+  /**
+   * @constructor
+   */
   function Trash(trash) {
     trash.__proto__ = Trash.prototype;
     trash.initialize();
