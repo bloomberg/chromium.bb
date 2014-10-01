@@ -8,6 +8,8 @@
     'instrumented_libraries_jobs%': 1,
   },
 
+  'ubuntu_release': '<!(lsb_release -cs)',
+
   'conditions': [
     ['asan==1', {
       'sanitizer_type': 'asan',
@@ -220,7 +222,13 @@
         # From debian/rules.
         '--with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts',
       ],
-      'patch': 'patches/libfontconfig.diff',
+      'conditions': [
+        ['"<(_ubuntu_release)"=="precise"', {
+          'patch': 'patches/libfontconfig.precise.diff',
+        }, {
+          'patch': 'patches/libfontconfig.trusty.diff',
+        }],
+      ],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -506,7 +514,13 @@
           '--with-xinput=yes',
       ],
       'dependencies=': [],
-      'patch': 'patches/libgtk2.0-0.diff',
+      'conditions': [
+        ['"<(_ubuntu_release)"=="precise"', {
+          'patch': 'patches/libgtk2.0-0.precise.diff',
+        }, {
+          'patch': 'patches/libgtk2.0-0.trusty.diff',
+        }],
+      ],
       'run_before_build': 'scripts/libgtk2.0-0.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
