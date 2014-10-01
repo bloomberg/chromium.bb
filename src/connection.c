@@ -934,6 +934,11 @@ wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 		     count + 2, &ffi_type_void, ffi_types);
 
 	implementation = target->implementation;
+	if (!implementation[opcode]) {
+		wl_log("listener function for opcode %u of %s is NULL\n",
+			opcode, target->interface->name);
+		abort();
+	}
 	ffi_call(&cif, implementation[opcode], NULL, ffi_args);
 }
 
