@@ -181,6 +181,31 @@ class MediaCodecBridge {
         return codecInfos.toArray(new CodecInfo[codecInfos.size()]);
     }
 
+    /**
+     * Get a name of default android codec.
+     */
+    @SuppressWarnings("deprecation")
+    @CalledByNative
+    private static String getDefaultCodecName(String mime, int direction) {
+        String codecName = "";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            try {
+                MediaCodec mediaCodec = null;
+                if (direction == MEDIA_CODEC_ENCODER) {
+                    mediaCodec = MediaCodec.createEncoderByType(mime);
+                } else {
+                    mediaCodec = MediaCodec.createDecoderByType(mime);
+                }
+                codecName = mediaCodec.getName();
+                mediaCodec.release();
+            } catch (Exception e) {
+                Log.w(TAG, "getDefaultCodecName: Failed to create MediaCodec: " +
+                        mime + ", direction: " + direction, e);
+            }
+        }
+        return codecName;
+    }
+
     @SuppressWarnings("deprecation")
     private static String getDecoderNameForMime(String mime) {
         int count = MediaCodecList.getCodecCount();
