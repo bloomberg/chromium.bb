@@ -54,8 +54,17 @@ void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
 }
 
 void ContentCredentialManagerDispatcher::OnNotifySignedIn(
-    int request_id, const CredentialInfo&) {
-  // TODO(mkwst): This is a stub.
+    int request_id,
+    const password_manager::CredentialInfo& credential) {
+  scoped_ptr<autofill::PasswordForm> form(
+      CreatePasswordFormFromCredentialInfo(credential,
+          web_contents()->GetLastCommittedURL().GetOrigin()));
+
+  // TODO(mkwst): This is a stub; we should be checking the PasswordStore to
+  // determine whether or not the credential exists, and calling UpdateLogin
+  // accordingly. Also, of course, the user should be somehow involved.
+  GetPasswordStore()->AddLogin(*form);
+
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));

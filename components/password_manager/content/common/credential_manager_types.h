@@ -37,6 +37,9 @@ struct CredentialInfo {
   CredentialInfo(const autofill::PasswordForm& form);
   ~CredentialInfo();
 
+  scoped_ptr<autofill::PasswordForm> CreatePasswordForm(
+      const GURL& origin) const;
+
   CredentialType type;
 
   // An identifier (username, email address, etc). Corresponds to
@@ -58,6 +61,12 @@ struct CredentialInfo {
   // origin serialized as a URL (e.g. "https://example.com/").
   GURL federation;
 };
+
+// Create a new autofill::PasswordForm object based on |info|, valid in the
+// context of |origin|.
+scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
+    const CredentialInfo& info,
+    const GURL& origin);
 
 }  // namespace password_manager
 

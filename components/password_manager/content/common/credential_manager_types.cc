@@ -34,4 +34,19 @@ CredentialInfo::CredentialInfo(const autofill::PasswordForm& form)
 CredentialInfo::~CredentialInfo() {
 }
 
+scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
+    const CredentialInfo& info,
+    const GURL& origin) {
+  scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm);
+  form->avatar_url = info.avatar;
+  form->display_name = info.name;
+  form->federation_url = info.federation;
+  form->origin = origin;
+  form->password_value = info.password;
+  form->scheme = autofill::PasswordForm::SCHEME_HTML;
+  form->signon_realm = origin.spec();
+  form->username_value = info.id;
+  return form.Pass();
+}
+
 }  // namespace password_manager

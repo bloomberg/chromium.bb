@@ -72,6 +72,9 @@ class ContentCredentialManagerDispatcherTest
     form_.origin = web_contents()->GetLastCommittedURL().GetOrigin();
     form_.signon_realm = form_.origin.spec();
     form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+
+    store_->Clear();
+    EXPECT_TRUE(store_->IsEmpty());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -104,9 +107,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
 
 TEST_F(ContentCredentialManagerDispatcherTest,
        CredentialManagerOnNotifySignedIn) {
-  CredentialInfo info(base::ASCIIToUTF16("id"),
-                      base::ASCIIToUTF16("name"),
-                      GURL("https://example.com/image.png"));
+  CredentialInfo info(form_);
   dispatcher()->OnNotifySignedIn(kRequestId, info);
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
@@ -114,6 +115,20 @@ TEST_F(ContentCredentialManagerDispatcherTest,
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
   process()->sink().ClearMessages();
+
+  // Make sure that the PasswordStore has a chance to update.
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
+  const autofill::PasswordForm& new_form = passwords[form_.signon_realm][0];
+  EXPECT_EQ(form_.username_value, new_form.username_value);
+  EXPECT_EQ(form_.display_name, new_form.display_name);
+  EXPECT_EQ(form_.password_value, new_form.password_value);
+  EXPECT_EQ(form_.origin, new_form.origin);
+  EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
+  EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
 TEST_F(ContentCredentialManagerDispatcherTest,
