@@ -7,6 +7,7 @@
 
 import optparse
 import os
+import re
 import sys
 
 import chrome_paths
@@ -26,8 +27,17 @@ def main():
 
   version = open(options.version_file, 'r').read().strip()
   revision = lastchange.FetchVersionInfo(None).revision
+
   if revision:
-    version += '.' + revision.strip()
+    match = re.match('([0-9a-fA-F]+)(-refs/heads/master@{#(\d+)})?', revision)
+    if match:
+      git_hash = match.group(1)
+      commit_position = match.group(3)
+      if commit_position:
+        version += '.' + commit_position
+      version += ' (%s)' % git_hash
+    else:
+      version += ' (%s)' % revision
 
   global_string_map = {
       'kChromeDriverVersion': version
