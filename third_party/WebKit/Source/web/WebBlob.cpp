@@ -41,7 +41,7 @@ namespace blink {
 
 WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, long long size)
 {
-    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(uuid, type, size));
+    Blob* blob = Blob::create(BlobDataHandle::create(uuid, type, size));
     return WebBlob(blob);
 }
 
@@ -49,7 +49,7 @@ WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(path);
-    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
+    Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
     return WebBlob(blob);
 }
 
@@ -88,12 +88,12 @@ v8::Handle<v8::Value> WebBlob::toV8Value(v8::Handle<v8::Object> creationContext,
     return toV8(m_private.get(), creationContext, isolate);
 }
 
-WebBlob::WebBlob(const PassRefPtrWillBeRawPtr<Blob>& blob)
+WebBlob::WebBlob(Blob* blob)
     : m_private(blob)
 {
 }
 
-WebBlob& WebBlob::operator=(const PassRefPtrWillBeRawPtr<Blob>& blob)
+WebBlob& WebBlob::operator=(Blob* blob)
 {
     m_private = blob;
     return *this;

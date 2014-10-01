@@ -120,7 +120,7 @@ private:
     long long m_numAborts;
     long long m_recursionDepth;
     double m_lastProgressNotificationTimeMS;
-    RefPtrWillBeMember<Blob> m_blobBeingWritten;
+    Member<Blob> m_blobBeingWritten;
     int m_asyncOperationId;
 };
 

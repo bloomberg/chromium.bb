@@ -105,7 +105,7 @@ void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
         end = size;
 }
 
-PassRefPtrWillBeRawPtr<Blob> Blob::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
+Blob* Blob::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
 {
     if (hasBeenClosed()) {
         exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");

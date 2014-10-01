@@ -47,12 +47,12 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileReader FINAL : public RefCountedWillBeGarbageCollectedFinalized<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
+class FileReader FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(FileReader);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileReader>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 public:
-    static PassRefPtrWillBeRawPtr<FileReader> create(ExecutionContext*);
+    static FileReader* create(ExecutionContext*);
 
     virtual ~FileReader();
 

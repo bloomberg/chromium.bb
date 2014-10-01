@@ -96,9 +96,9 @@ WebVector<WebDragData::Item> WebDragData::items() const
                 item.storageType = Item::StorageTypeBinaryData;
                 item.binaryData = originalItem->sharedBuffer();
             } else if (originalItem->isFilename()) {
-                RefPtrWillBeRawPtr<Blob> blob = originalItem->getAsFile();
+                Blob* blob = originalItem->getAsFile();
                 if (blob->isFile()) {
-                    File* file = toFile(blob.get());
+                    File* file = toFile(blob);
                     if (file->hasBackingFile()) {
                         if (file->userVisibility() == File::IsUserVisible) {
                             item.storageType = Item::StorageTypeFilename;

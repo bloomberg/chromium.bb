@@ -87,7 +87,7 @@ public:
 
         bool m_failed;
         int m_code;
-        RefPtrWillBeMember<File> m_file;
+        Member<File> m_file;
 
         void trace(Visitor* visitor)
         {
@@ -149,7 +149,7 @@ private:
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
+File* DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     CreateFileHelper::CreateFileResult* result(CreateFileHelper::CreateFileResult::create());

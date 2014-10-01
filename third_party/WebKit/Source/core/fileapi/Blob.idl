@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     CustomConstructor,
     CustomConstructor(sequence<any> blobParts, optional BlobPropertyBag options),
     Exposed=(Window,Worker),

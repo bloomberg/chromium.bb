@@ -212,7 +212,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionState& exce
     }
 }
 
-void RTCDataChannel::send(PassRefPtrWillBeRawPtr<Blob> data, ExceptionState& exceptionState)
+void RTCDataChannel::send(Blob* data, ExceptionState& exceptionState)
 {
     // FIXME: implement
     throwNoBlobSupportException(exceptionState);

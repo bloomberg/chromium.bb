@@ -103,7 +103,7 @@ PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(const String& data, const
     return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(PassRefPtrWillBeRawPtr<File> file)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(File* file)
 {
     if (!file)
         return nullptr;
@@ -204,7 +204,7 @@ Vector<String> DataObject::filenames() const
     Vector<String> results;
     for (size_t i = 0; i < m_itemList.size(); ++i) {
         if (m_itemList[i]->isFilename())
-            results.append(static_cast<File*>(m_itemList[i]->getAsFile().get())->path());
+            results.append(toFile(m_itemList[i]->getAsFile())->path());
     }
     return results;
 }

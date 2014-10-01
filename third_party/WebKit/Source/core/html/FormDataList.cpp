@@ -45,7 +45,7 @@ void FormDataList::appendString(const CString& string)
     m_items.append(string);
 }
 
-void FormDataList::appendBlob(PassRefPtrWillBeRawPtr<Blob> blob, const String& filename)
+void FormDataList::appendBlob(Blob* blob, const String& filename)
 {
     m_items.append(Item(blob, filename));
 }
@@ -71,7 +71,7 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
 
     Vector<char> encodedData;
 
-    const WillBeHeapVector<Item>& items = this->items();
+    const FormDataListItems& items = this->items();
     size_t formDataListSize = items.size();
     ASSERT(!(formDataListSize % 2));
     for (size_t i = 0; i < formDataListSize; i += 2) {

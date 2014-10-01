@@ -103,7 +103,7 @@ public:
     KURL createFileSystemURL(const String& fullPath) const;
     static bool pathToAbsolutePath(FileSystemType, const EntryBase*, String path, String& absolutePath);
     static bool pathPrefixToFileSystemType(const String& pathPrefix, FileSystemType&);
-    static PassRefPtrWillBeRawPtr<File> createFile(const FileMetadata&, const KURL& fileSystemURL, FileSystemType, const String name);
+    static File* createFile(const FileMetadata&, const KURL& fileSystemURL, FileSystemType, const String name);
 
     // Actual FileSystem API implementations. All the validity checks on virtual paths are done at this level.
     void getMetadata(const EntryBase*, MetadataCallback*, ErrorCallback*, SynchronousType = Asynchronous);

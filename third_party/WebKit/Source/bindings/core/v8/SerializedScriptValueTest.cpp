@@ -33,12 +33,12 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
 {
     String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
     filePath.append("/Source/bindings/core/v8/SerializedScriptValueTest.cpp");
-    RefPtrWillBeRawPtr<File> originalFile = File::create(filePath);
+    File* originalFile = File::create(filePath);
     ASSERT_TRUE(originalFile->hasBackingFile());
     ASSERT_EQ(File::IsUserVisible, originalFile->userVisibility());
     ASSERT_EQ(filePath, originalFile->path());
 
-    v8::Handle<v8::Value> v8OriginalFile = toV8(originalFile.get(), creationContext(), isolate());
+    v8::Handle<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
     RefPtr<SerializedScriptValue> serializedScriptValue =
         SerializedScriptValue::create(v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION, isolate());
     v8::Handle<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
@@ -53,12 +53,12 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
 TEST_F(SerializedScriptValueTest, FileConstructorFile)
 {
     RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
-    RefPtrWillBeRawPtr<File> originalFile = File::create("hello.txt", 12345678.0, blobDataHandle);
+    File* originalFile = File::create("hello.txt", 12345678.0, blobDataHandle);
     ASSERT_FALSE(originalFile->hasBackingFile());
     ASSERT_EQ(File::IsNotUserVisible, originalFile->userVisibility());
     ASSERT_EQ("hello.txt", originalFile->name());
 
-    v8::Handle<v8::Value> v8OriginalFile = toV8(originalFile.get(), creationContext(), isolate());
+    v8::Handle<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
     RefPtr<SerializedScriptValue> serializedScriptValue =
         SerializedScriptValue::create(v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION, isolate());
     v8::Handle<v8::Value> v8File = serializedScriptValue->deserialize(isolate());

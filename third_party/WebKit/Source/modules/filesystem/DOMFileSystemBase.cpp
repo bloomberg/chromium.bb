@@ -189,7 +189,7 @@ bool DOMFileSystemBase::pathPrefixToFileSystemType(const String& pathPrefix, Fil
     return false;
 }
 
-PassRefPtrWillBeRawPtr<File> DOMFileSystemBase::createFile(const FileMetadata& metadata, const KURL& fileSystemURL, FileSystemType type, const String name)
+File* DOMFileSystemBase::createFile(const FileMetadata& metadata, const KURL& fileSystemURL, FileSystemType type, const String name)
 {
     // For regular filesystem types (temporary or persistent), we should not cache file metadata as it could change File semantics.
     // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem.

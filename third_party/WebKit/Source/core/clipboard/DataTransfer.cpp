@@ -193,21 +193,21 @@ Vector<String> DataTransfer::types() const
     return types;
 }
 
-PassRefPtrWillBeRawPtr<FileList> DataTransfer::files() const
+FileList* DataTransfer::files() const
 {
-    RefPtrWillBeRawPtr<FileList> files = FileList::create();
+    FileList* files = FileList::create();
     if (!canReadData())
-        return files.release();
+        return files;
 
     for (size_t i = 0; i < m_dataObject->length(); ++i) {
         if (m_dataObject->item(i)->kind() == DataObjectItem::FileKind) {
-            RefPtrWillBeRawPtr<Blob> blob = m_dataObject->item(i)->getAsFile();
+            Blob* blob = m_dataObject->item(i)->getAsFile();
             if (blob && blob->isFile())
-                files->append(toFile(blob.get()));
+                files->append(toFile(blob));
         }
     }
 
-    return files.release();
+    return files;
 }
 
 void DataTransfer::setDragImage(Element* image, int x, int y, ExceptionState& exceptionState)
@@ -487,7 +487,7 @@ bool DataTransfer::hasFileOfType(const String& type) const
     if (!canReadTypes())
         return false;
 
-    RefPtrWillBeRawPtr<FileList> fileList = files();
+    FileList* fileList = files();
     if (fileList->isEmpty())
         return false;
 

@@ -72,7 +72,7 @@ public:
     void send(const String&, ExceptionState&);
     void send(PassRefPtr<ArrayBuffer>, ExceptionState&);
     void send(PassRefPtr<ArrayBufferView>, ExceptionState&);
-    void send(PassRefPtrWillBeRawPtr<Blob>, ExceptionState&);
+    void send(Blob*, ExceptionState&);
 
     void close();
 

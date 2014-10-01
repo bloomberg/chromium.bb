@@ -46,7 +46,7 @@ PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromString(const St
     return item.release();
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromFile(PassRefPtrWillBeRawPtr<File> file)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromFile(File* file)
 {
     RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(FileKind, file->type()));
     item->m_file = file;
@@ -100,7 +100,7 @@ DataObjectItem::DataObjectItem(Kind kind, const String& type, uint64_t sequenceN
 {
 }
 
-PassRefPtrWillBeRawPtr<Blob> DataObjectItem::getAsFile() const
+Blob* DataObjectItem::getAsFile() const
 {
     if (kind() != FileKind)
         return nullptr;

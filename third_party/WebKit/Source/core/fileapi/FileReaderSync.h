@@ -44,12 +44,12 @@ class ExceptionState;
 class FileReaderLoader;
 class ExecutionContext;
 
-class FileReaderSync FINAL : public RefCountedWillBeGarbageCollected<FileReaderSync>, public ScriptWrappable {
+class FileReaderSync FINAL : public GarbageCollected<FileReaderSync>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<FileReaderSync> create()
+    static FileReaderSync* create()
     {
-        return adoptRefWillBeNoop(new FileReaderSync());
+        return new FileReaderSync();
     }
 
     PassRefPtr<ArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);

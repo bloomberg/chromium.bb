@@ -57,7 +57,7 @@ public:
     void deleteItem(unsigned long index, ExceptionState&);
     void clear();
     PassRefPtrWillBeRawPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&);
-    PassRefPtrWillBeRawPtr<DataTransferItem> add(PassRefPtrWillBeRawPtr<File>);
+    PassRefPtrWillBeRawPtr<DataTransferItem> add(File*);
 
     void trace(Visitor*);
 

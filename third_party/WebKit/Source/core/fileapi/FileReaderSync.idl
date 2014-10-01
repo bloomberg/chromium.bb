@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     Exposed=Worker,
     Constructor
 ] interface FileReaderSync {

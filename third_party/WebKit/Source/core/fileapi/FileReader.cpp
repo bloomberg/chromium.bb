@@ -74,6 +74,9 @@ const CString utf8FilePath(Blob* blob)
 static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
 
+typedef PersistentHeapDequeWillBeHeapDeque<Member<FileReader> > FileReaderDeque;
+typedef PersistentHeapHashSetWillBeHeapHashSet<Member<FileReader> > FileReaderHashSet;
+
 // FIXME: Oilpan: if ExecutionContext is moved to the heap, consider
 // making this object an ExecutionContext supplement (only.)
 class FileReader::ThrottlingController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FileReader::ThrottlingController>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
@@ -174,13 +177,13 @@ private:
 
     FinishReaderType removeReader(FileReader* reader)
     {
-        WillBeHeapHashSet<RawPtrWillBeMember<FileReader> >::const_iterator hashIter = m_runningReaders.find(reader);
+        FileReaderHashSet::const_iterator hashIter = m_runningReaders.find(reader);
         if (hashIter != m_runningReaders.end()) {
             m_runningReaders.remove(hashIter);
             return RunPendingReaders;
         }
-        WillBeHeapDeque<RawPtrWillBeMember<FileReader> >::const_iterator dequeEnd = m_pendingReaders.end();
-        for (WillBeHeapDeque<RawPtrWillBeMember<FileReader> >::const_iterator it = m_pendingReaders.begin(); it != dequeEnd; ++it) {
+        FileReaderDeque::const_iterator dequeEnd = m_pendingReaders.end();
+        for (FileReaderDeque::const_iterator it = m_pendingReaders.begin(); it != dequeEnd; ++it) {
             if (*it == reader) {
                 m_pendingReaders.remove(it);
                 break;
@@ -209,15 +212,15 @@ private:
     static const char* supplementName() { return "FileReaderThrottlingController"; }
 
     const size_t m_maxRunningReaders;
-    WillBeHeapDeque<RawPtrWillBeMember<FileReader> > m_pendingReaders;
-    WillBeHeapHashSet<RawPtrWillBeMember<FileReader> > m_runningReaders;
+    FileReaderDeque m_pendingReaders;
+    FileReaderHashSet m_runningReaders;
 };
 
-PassRefPtrWillBeRawPtr<FileReader> FileReader::create(ExecutionContext* context)
+FileReader* FileReader::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<FileReader> fileReader(adoptRefWillBeNoop(new FileReader(context)));
+    FileReader* fileReader = adoptRefCountedGarbageCollectedWillBeNoop(new FileReader(context));
     fileReader->suspendIfNeeded();
-    return fileReader.release();
+    return fileReader;
 }
 
 FileReader::FileReader(ExecutionContext* context)

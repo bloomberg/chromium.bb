@@ -77,7 +77,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return true;
 }
 
-bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtrWillBeRawPtr<Blob>& data, int& payloadLength)
+bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, Blob* data, int& payloadLength)
 {
     ASSERT(data);
     unsigned long long entitySize = data->size();
@@ -89,7 +89,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
 
     RefPtr<FormData> entityBody = FormData::create();
     if (data->hasBackingFile())
-        entityBody->appendFile(toFile(data.get())->path());
+        entityBody->appendFile(toFile(data)->path());
     else
         entityBody->appendBlob(data->uuid(), data->blobDataHandle());
 

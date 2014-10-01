@@ -56,7 +56,7 @@ public:
     String type() const;
 
     void getAsString(ExecutionContext*, StringCallback*) const;
-    PassRefPtrWillBeRawPtr<Blob> getAsFile() const;
+    Blob* getAsFile() const;
 
     DataTransfer* dataTransfer() { return m_dataTransfer.get(); }
     DataObjectItem* dataObjectItem() { return m_item.get(); }

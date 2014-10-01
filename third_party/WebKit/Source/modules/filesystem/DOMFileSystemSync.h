@@ -59,7 +59,7 @@ public:
 
     DirectoryEntrySync* root();
 
-    PassRefPtrWillBeRawPtr<File> createFile(const FileEntrySync*, ExceptionState&);
+    File* createFile(const FileEntrySync*, ExceptionState&);
     FileWriterSync* createWriter(const FileEntrySync*, ExceptionState&);
 
 private:

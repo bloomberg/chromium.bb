@@ -28,7 +28,7 @@ public:
 
     static bool sendBeacon(ExecutionContext*, Navigator&, const String&, const String&, ExceptionState&);
     static bool sendBeacon(ExecutionContext*, Navigator&, const String&, PassRefPtr<WTF::ArrayBufferView>, ExceptionState&);
-    static bool sendBeacon(ExecutionContext*, Navigator&, const String&, PassRefPtrWillBeRawPtr<Blob>, ExceptionState&);
+    static bool sendBeacon(ExecutionContext*, Navigator&, const String&, Blob*, ExceptionState&);
     static bool sendBeacon(ExecutionContext*, Navigator&, const String&, PassRefPtrWillBeRawPtr<DOMFormData>, ExceptionState&);
 
 private:
@@ -38,7 +38,7 @@ private:
 
     bool sendBeacon(ExecutionContext*, const String&, const String&, ExceptionState&);
     bool sendBeacon(ExecutionContext*, const String&, PassRefPtr<WTF::ArrayBufferView>, ExceptionState&);
-    bool sendBeacon(ExecutionContext*, const String&, PassRefPtrWillBeRawPtr<Blob>, ExceptionState&);
+    bool sendBeacon(ExecutionContext*, const String&, Blob*, ExceptionState&);
     bool sendBeacon(ExecutionContext*, const String&, PassRefPtrWillBeRawPtr<DOMFormData>, ExceptionState&);
 
     bool canSendBeacon(ExecutionContext*, const KURL&, ExceptionState&);

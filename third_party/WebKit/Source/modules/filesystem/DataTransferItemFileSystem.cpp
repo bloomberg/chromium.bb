@@ -54,7 +54,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionC
         return 0;
 
     // For dragged files getAsFile must be pretty lightweight.
-    Blob* file = item.getAsFile().get();
+    Blob* file = item.getAsFile();
     // The clipboard may not be in a readable state.
     if (!file)
         return 0;

@@ -2151,7 +2151,7 @@ private:
     {
         if (m_version < 3)
             return false;
-        RefPtrWillBeRawPtr<Blob> blob;
+        Blob* blob = nullptr;
         if (isIndexed) {
             if (m_version < 6)
                 return false;
@@ -2175,7 +2175,7 @@ private:
                 return false;
             blob = Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
         }
-        *value = toV8(blob.release(), m_scriptState->context()->Global(), isolate());
+        *value = toV8(blob, m_scriptState->context()->Global(), isolate());
         return true;
     }
 
@@ -2197,7 +2197,7 @@ private:
 
     bool readFile(v8::Handle<v8::Value>* value, bool isIndexed)
     {
-        RefPtrWillBeRawPtr<File> file;
+        File* file = nullptr;
         if (isIndexed) {
             if (m_version < 6)
                 return false;
@@ -2207,7 +2207,7 @@ private:
         }
         if (!file)
             return false;
-        *value = toV8(file.release(), m_scriptState->context()->Global(), isolate());
+        *value = toV8(file, m_scriptState->context()->Global(), isolate());
         return true;
     }
 
@@ -2218,9 +2218,9 @@ private:
         uint32_t length;
         if (!doReadUint32(&length))
             return false;
-        RefPtrWillBeRawPtr<FileList> fileList = FileList::create();
+        FileList* fileList = FileList::create();
         for (unsigned i = 0; i < length; ++i) {
-            RefPtrWillBeRawPtr<File> file;
+            File* file = nullptr;
             if (isIndexed) {
                 if (m_version < 6)
                     return false;
@@ -2230,9 +2230,9 @@ private:
             }
             if (!file)
                 return false;
-            fileList->append(file.release());
+            fileList->append(file);
         }
-        *value = toV8(fileList.release(), m_scriptState->context()->Global(), isolate());
+        *value = toV8(fileList, m_scriptState->context()->Global(), isolate());
         return true;
     }
 
@@ -2287,7 +2287,7 @@ private:
         return true;
     }
 
-    PassRefPtrWillBeRawPtr<File> readFileHelper()
+    File* readFileHelper()
     {
         if (m_version < 3)
             return nullptr;
@@ -2325,7 +2325,7 @@ private:
         return File::createFromSerialization(path, name, relativePath, userVisibility, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
     }
 
-    PassRefPtrWillBeRawPtr<File> readFileIndexHelper()
+    File* readFileIndexHelper()
     {
         if (m_version < 3)
             return nullptr;

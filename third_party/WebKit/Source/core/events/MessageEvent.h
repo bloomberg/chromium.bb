@@ -70,7 +70,7 @@ public:
     {
         return adoptRefWillBeNoop(new MessageEvent(data, origin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtrWillBeRawPtr<Blob> data, const String& origin = String())
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(Blob* data, const String& origin = String())
     {
         return adoptRefWillBeNoop(new MessageEvent(data, origin));
     }
@@ -125,13 +125,13 @@ private:
     MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>);
 
     MessageEvent(const String& data, const String& origin);
-    MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& origin);
+    MessageEvent(Blob* data, const String& origin);
     MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin);
 
     DataType m_dataType;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
-    RefPtrWillBeMember<Blob> m_dataAsBlob;
+    PersistentWillBeMember<Blob> m_dataAsBlob;
     RefPtr<ArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;

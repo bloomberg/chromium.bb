@@ -243,7 +243,7 @@ private:
     // using case insensitive comparison functions if needed.
     AtomicString m_mimeTypeOverride;
     unsigned long m_timeoutMilliseconds;
-    RefPtrWillBeMember<Blob> m_responseBlob;
+    PersistentWillBeMember<Blob> m_responseBlob;
     RefPtrWillBeMember<Stream> m_responseLegacyStream;
     PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> > > m_responseStream;
     PersistentWillBeMember<UnderlyingSource> m_streamSource;

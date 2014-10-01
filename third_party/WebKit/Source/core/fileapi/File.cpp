@@ -86,11 +86,11 @@ static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSyste
     return blobData.release();
 }
 
-PassRefPtrWillBeRawPtr<File> File::createWithRelativePath(const String& path, const String& relativePath)
+File* File::createWithRelativePath(const String& path, const String& relativePath)
 {
-    RefPtrWillBeRawPtr<File> file = adoptRefWillBeNoop(new File(path, File::AllContentTypes, File::IsUserVisible));
+    File* file = new File(path, File::AllContentTypes, File::IsUserVisible);
     file->m_relativePath = relativePath;
-    return file.release();
+    return file;
 }
 
 File::File(const String& path, ContentTypeLookupPolicy policy, UserVisibility userVisibility)
@@ -210,7 +210,7 @@ unsigned long long File::size() const
     return static_cast<unsigned long long>(size);
 }
 
-PassRefPtrWillBeRawPtr<Blob> File::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
+Blob* File::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
 {
     if (hasBeenClosed()) {
         exceptionState.throwDOMException(InvalidStateError, "File has been closed.");

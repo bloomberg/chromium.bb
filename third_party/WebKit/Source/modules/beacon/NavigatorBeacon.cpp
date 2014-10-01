@@ -120,12 +120,12 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
     return beaconResult(context, result, bytes);
 }
 
-bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, PassRefPtrWillBeRawPtr<Blob> data, ExceptionState& exceptionState)
+bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, Blob* data, ExceptionState& exceptionState)
 {
     return NavigatorBeacon::from(navigator).sendBeacon(context, urlstring, data, exceptionState);
 }
 
-bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstring, PassRefPtrWillBeRawPtr<Blob> data, ExceptionState& exceptionState)
+bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstring, Blob* data, ExceptionState& exceptionState)
 {
     KURL url = context->completeURL(urlstring);
     if (!canSendBeacon(context, url, exceptionState))

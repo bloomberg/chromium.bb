@@ -1460,7 +1460,7 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
         return;
     }
 
-    RefPtrWillBeRawPtr<FileList> fileList = FileList::create();
+    FileList* fileList = FileList::create();
     for (JSONArray::const_iterator iter = files->begin(); iter != files->end(); ++iter) {
         String path;
         if (!(*iter)->asString(&path)) {

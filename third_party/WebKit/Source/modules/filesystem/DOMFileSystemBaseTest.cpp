@@ -33,7 +33,7 @@ TEST_F(DOMFileSystemBaseTest, externalFilesystemFilesAreUserVisible)
 {
     KURL rootUrl = DOMFileSystemBase::createFileSystemRootURL("http://chromium.org/", FileSystemTypeExternal);
 
-    RefPtrWillBeRawPtr<File> file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypeExternal, "DOMFileSystemBaseTest.cpp");
+    File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypeExternal, "DOMFileSystemBaseTest.cpp");
     EXPECT_TRUE(file);
     EXPECT_TRUE(file->hasBackingFile());
     EXPECT_EQ(File::IsUserVisible, file->userVisibility());
@@ -45,7 +45,7 @@ TEST_F(DOMFileSystemBaseTest, temporaryFilesystemFilesAreNotUserVisible)
 {
     KURL rootUrl = DOMFileSystemBase::createFileSystemRootURL("http://chromium.org/", FileSystemTypeTemporary);
 
-    RefPtrWillBeRawPtr<File> file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypeTemporary, "UserVisibleName.txt");
+    File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypeTemporary, "UserVisibleName.txt");
     EXPECT_TRUE(file);
     EXPECT_TRUE(file->hasBackingFile());
     EXPECT_EQ(File::IsNotUserVisible, file->userVisibility());
@@ -57,7 +57,7 @@ TEST_F(DOMFileSystemBaseTest, persistentFilesystemFilesAreNotUserVisible)
 {
     KURL rootUrl = DOMFileSystemBase::createFileSystemRootURL("http://chromium.org/", FileSystemTypePersistent);
 
-    RefPtrWillBeRawPtr<File> file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypePersistent, "UserVisibleName.txt");
+    File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl, FileSystemTypePersistent, "UserVisibleName.txt");
     EXPECT_TRUE(file);
     EXPECT_TRUE(file->hasBackingFile());
     EXPECT_EQ(File::IsNotUserVisible, file->userVisibility());

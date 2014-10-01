@@ -40,8 +40,8 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "Blob", info.Holder(), info.GetIsolate());
     if (!info.Length()) {
-        RefPtrWillBeRawPtr<Blob> blob = Blob::create();
-        v8SetReturnValue(info, blob.release());
+        Blob* blob = Blob::create();
+        v8SetReturnValue(info, blob);
         return;
     }
 
@@ -72,8 +72,8 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
 
     long long blobSize = blobData->length();
-    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), blobSize));
-    v8SetReturnValue(info, blob.release());
+    Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), blobSize));
+    v8SetReturnValue(info, blob);
 }
 
 } // namespace blink

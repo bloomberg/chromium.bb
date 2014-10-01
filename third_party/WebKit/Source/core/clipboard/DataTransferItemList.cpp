@@ -88,7 +88,7 @@ PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(const String&
     return DataTransferItem::create(m_dataTransfer, item);
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(PassRefPtrWillBeRawPtr<File> file)
+PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(File* file)
 {
     if (!m_dataTransfer->canWriteData())
         return nullptr;

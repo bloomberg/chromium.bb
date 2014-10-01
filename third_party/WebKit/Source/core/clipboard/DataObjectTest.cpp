@@ -34,9 +34,9 @@ TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle)
     RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->item(0);
     EXPECT_EQ(DataObjectItem::FileKind, item->kind());
 
-    RefPtrWillBeRawPtr<Blob> blob = item->getAsFile();
+    Blob* blob = item->getAsFile();
     ASSERT_TRUE(blob->isFile());
-    RefPtrWillBeRawPtr<File> file = toFile(blob.get());
+    File* file = toFile(blob);
     EXPECT_TRUE(file->hasBackingFile());
     EXPECT_EQ(File::IsUserVisible, file->userVisibility());
     EXPECT_EQ(filePath, file->path());
@@ -53,9 +53,9 @@ TEST_F(DataObjectTest, addItemWithFilenameAndTitle)
     RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->item(0);
     EXPECT_EQ(DataObjectItem::FileKind, item->kind());
 
-    RefPtrWillBeRawPtr<Blob> blob = item->getAsFile();
+    Blob* blob = item->getAsFile();
     ASSERT_TRUE(blob->isFile());
-    RefPtrWillBeRawPtr<File> file = toFile(blob.get());
+    File* file = toFile(blob);
     EXPECT_TRUE(file->hasBackingFile());
     EXPECT_EQ(File::IsUserVisible, file->userVisibility());
     EXPECT_EQ(filePath, file->path());

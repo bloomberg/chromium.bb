@@ -217,9 +217,9 @@ void FileInputType::setValue(const String&, bool valueChanged, TextFieldEventBeh
     element().setNeedsValidityCheck();
 }
 
-PassRefPtrWillBeRawPtr<FileList> FileInputType::createFileList(const Vector<FileChooserFileInfo>& files) const
+FileList* FileInputType::createFileList(const Vector<FileChooserFileInfo>& files) const
 {
-    RefPtrWillBeRawPtr<FileList> fileList(FileList::create());
+    FileList* fileList(FileList::create());
     size_t size = files.size();
 
     // If a directory is being selected, the UI allows a directory to be chosen
@@ -274,7 +274,7 @@ void FileInputType::multipleAttributeChanged()
         button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
 }
 
-void FileInputType::setFiles(PassRefPtrWillBeRawPtr<FileList> files)
+void FileInputType::setFiles(FileList* files)
 {
     if (!files)
         return;

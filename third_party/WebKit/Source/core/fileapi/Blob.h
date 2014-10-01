@@ -45,34 +45,34 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
-class Blob : public RefCountedWillBeGarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
+class Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Blob> create()
+    static Blob* create()
     {
-        return adoptRefWillBeNoop(new Blob(BlobDataHandle::create()));
+        return new Blob(BlobDataHandle::create());
     }
 
-    static PassRefPtrWillBeRawPtr<Blob> create(PassRefPtr<BlobDataHandle> blobDataHandle)
+    static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRefWillBeNoop(new Blob(blobDataHandle));
+        return new Blob(blobDataHandle);
     }
 
     virtual ~Blob();
 
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
-    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start, long long end, const String& contentType, ExceptionState&) const;
+    virtual Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const;
 
     // To allow ExceptionState to be passed in last, manually enumerate the optional argument overloads.
-    PassRefPtrWillBeRawPtr<Blob> slice(ExceptionState& exceptionState) const
+    Blob* slice(ExceptionState& exceptionState) const
     {
         return slice(0, std::numeric_limits<long long>::max(), String(), exceptionState);
     }
-    PassRefPtrWillBeRawPtr<Blob> slice(long long start, ExceptionState& exceptionState) const
+    Blob* slice(long long start, ExceptionState& exceptionState) const
     {
         return slice(start, std::numeric_limits<long long>::max(), String(), exceptionState);
     }
-    PassRefPtrWillBeRawPtr<Blob> slice(long long start, long long end, ExceptionState& exceptionState) const
+    Blob* slice(long long start, long long end, ExceptionState& exceptionState) const
     {
         return slice(start, end, String(), exceptionState);
     }

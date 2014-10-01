@@ -51,7 +51,7 @@ public:
 
     virtual bool isFile() const OVERRIDE { return true; }
 
-    PassRefPtrWillBeRawPtr<File> file(ExceptionState&);
+    File* file(ExceptionState&);
     FileWriterSync* createWriter(ExceptionState&);
 
     virtual void trace(Visitor*) OVERRIDE;

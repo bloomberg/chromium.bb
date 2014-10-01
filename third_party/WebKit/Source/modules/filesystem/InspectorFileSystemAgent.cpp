@@ -434,7 +434,7 @@ private:
     String m_mimeType;
     String m_charset;
 
-    RefPtrWillBePersistent<FileReader> m_reader;
+    Persistent<FileReader> m_reader;
 };
 
 void FileContentRequest::start(ExecutionContext* executionContext)
@@ -472,11 +472,11 @@ bool FileContentRequest::didGetEntry(Entry* entry)
 
 bool FileContentRequest::didGetFile(File* file)
 {
-    RefPtrWillBeRawPtr<Blob> blob = static_cast<Blob*>(file)->slice(m_start, m_end, IGNORE_EXCEPTION);
+    Blob* blob = file->Blob::slice(m_start, m_end, IGNORE_EXCEPTION);
     m_reader->setOnload(this);
     m_reader->setOnerror(this);
 
-    m_reader->readAsArrayBuffer(blob.get(), IGNORE_EXCEPTION);
+    m_reader->readAsArrayBuffer(blob, IGNORE_EXCEPTION);
     return true;
 }
 

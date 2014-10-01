@@ -79,7 +79,7 @@ void DataTransferItem::getAsString(ExecutionContext* context, StringCallback* ca
     StringCallback::scheduleCallback(callback, context, m_item->getAsString(), "DataTransferItem.getAsString");
 }
 
-PassRefPtrWillBeRawPtr<Blob> DataTransferItem::getAsFile() const
+Blob* DataTransferItem::getAsFile() const
 {
     if (!m_dataTransfer->canReadData())
         return nullptr;

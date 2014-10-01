@@ -503,7 +503,7 @@ FileList* InputType::files()
     return 0;
 }
 
-void InputType::setFiles(PassRefPtrWillBeRawPtr<FileList>)
+void InputType::setFiles(FileList*)
 {
 }
 

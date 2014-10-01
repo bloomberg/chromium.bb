@@ -30,7 +30,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     ActiveDOMObject,
     Constructor,
     ConstructorCallWith=ExecutionContext,

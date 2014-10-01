@@ -60,7 +60,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual bool canSetStringValue() const OVERRIDE;
     virtual FileList* files() OVERRIDE;
-    virtual void setFiles(PassRefPtrWillBeRawPtr<FileList>) OVERRIDE;
+    virtual void setFiles(FileList*) OVERRIDE;
     virtual bool canSetValue(const String&) OVERRIDE;
     virtual bool getTypeSpecificValue(String&) OVERRIDE; // Checked first, before internal storage or the value attribute.
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
@@ -74,10 +74,10 @@ private:
     // FileChooserClient implementation.
     virtual void filesChosen(const Vector<FileChooserFileInfo>&) OVERRIDE;
 
-    PassRefPtrWillBeRawPtr<FileList> createFileList(const Vector<FileChooserFileInfo>& files) const;
+    FileList* createFileList(const Vector<FileChooserFileInfo>& files) const;
     void receiveDropForDirectoryUpload(const Vector<String>&);
 
-    RefPtrWillBeMember<FileList> m_fileList;
+    PersistentWillBeMember<FileList> m_fileList;
 
     String m_droppedFileSystemId;
 };

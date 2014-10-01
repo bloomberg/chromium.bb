@@ -78,7 +78,7 @@ public:
 
     // extensions beyond IE's API
     Vector<String> types() const;
-    PassRefPtrWillBeRawPtr<FileList> files() const;
+    FileList* files() const;
 
     IntPoint dragLocation() const { return m_dragLoc; }
     void setDragImage(Element*, int x, int y, ExceptionState&);

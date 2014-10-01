@@ -77,8 +77,8 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value>  toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebBlob(const PassRefPtrWillBeRawPtr<Blob>&);
-    WebBlob& operator=(const PassRefPtrWillBeRawPtr<Blob>&);
+    WebBlob(Blob*);
+    WebBlob& operator=(Blob*);
 #endif
 
 protected:
