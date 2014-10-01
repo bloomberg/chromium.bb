@@ -170,7 +170,7 @@ libc++::re/re.traits/translate_nocase.pass.cpp
 libc++::language.support/support.dynamic/new.delete/new.delete.single/new_replace.pass.cpp
 libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp
 libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_assign.pass.cpp
-libc++::test/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F.pass.cpp
+libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F.pass.cpp
 libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_function.pass.cpp
 libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_rfunction.pass.cpp
 libc++::utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_assign.pass.cpp
@@ -189,3 +189,4 @@ libc++::input.output/iostream.objects/narrow.stream.objects/clog.pass.cpp
 libc++::thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
 libc++::experimental/string.view/string.view.access/at.pass.cpp
 libc++::atomics/atomics.types.generic/trivially_copyable.pass.cpp
+libc++::language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
