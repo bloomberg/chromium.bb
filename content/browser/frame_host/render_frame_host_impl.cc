@@ -309,6 +309,7 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
 }
 
 ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
+  static_cast<RenderProcessHostImpl*>(GetProcess())->EnsureMojoActivated();
   return &service_registry_;
 }
 

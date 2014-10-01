@@ -30,9 +30,11 @@ class MojoApplicationHost {
   //  1- Init makes service_registry() available synchronously.
   //  2- Activate establishes the actual connection to the peer process.
   bool Init();
-  void Activate(IPC::Sender* sender, base::ProcessHandle process_handle);
+  bool Activate(IPC::Sender* sender, base::ProcessHandle process_handle);
 
   void WillDestroySoon();
+
+  bool did_activate() const { return did_activate_; }
 
   ServiceRegistry* service_registry() { return &service_registry_; }
 

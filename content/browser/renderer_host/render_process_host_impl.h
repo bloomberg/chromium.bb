@@ -256,6 +256,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // immediately after receiving response headers.
   void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
 
+  // Activates Mojo for this process. Does nothing if Mojo is already activated.
+  void EnsureMojoActivated();
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
@@ -284,6 +287,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class VisitRelayingRenderProcessHost;
 
+  void MaybeActivateMojo();
   bool ShouldUseMojoChannel() const;
   scoped_ptr<IPC::ChannelProxy> CreateChannelProxy(
       const std::string& channel_id);
@@ -331,6 +335,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
+  bool mojo_activation_required_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
