@@ -91,7 +91,7 @@ static const struct nacl_irt_ext_struct nacl_irt_ext_structs[] = {
 
 size_t nacl_interface_ext_supply(const char *interface_ident,
                                const void *table, size_t tablesize) {
-  for (int i = 0; i < NACL_ARRAY_SIZE(nacl_irt_ext_structs); i++) {
+  for (size_t i = 0; i < NACL_ARRAY_SIZE(nacl_irt_ext_structs); i++) {
     if (nacl_irt_ext_structs[i].tablesize == tablesize &&
         strcmp(nacl_irt_ext_structs[i].interface_ident, interface_ident) == 0) {
       /*

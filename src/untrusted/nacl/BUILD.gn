@@ -161,6 +161,7 @@ static_library("nacl") {
       "mprotect.c",
       "munmap.c",
       "nacl_add_tp.c",
+      "nacl_ext_supply.c",
       "nacl_interface_query.c",
       "nacl_irt_fdio.c",
       "nacl_irt_filename.c",

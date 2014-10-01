@@ -40,6 +40,7 @@
       'mprotect.c',
       'munmap.c',
       'nanosleep.c',
+      'nacl_ext_supply.c',
       'nacl_interface_query.c',
       'nacl_irt_fdio.c',
       'nacl_irt_filename.c',
