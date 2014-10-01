@@ -77,6 +77,9 @@ public:
     bool hasObjectOrNullMember() const { return !(m_objectOrNullMember.isEmpty() || m_objectOrNullMember.isNull() || m_objectOrNullMember.isUndefined()); }
     ScriptValue objectOrNullMember() const { return m_objectOrNullMember; }
     void setObjectOrNullMember(ScriptValue value) { m_objectOrNullMember = value; }
+    bool hasCreateMember() const { return !m_createMember.isNull(); }
+    bool createMember() const { return m_createMember.get(); }
+    void setCreateMember(bool value) { m_createMember = value; }
 
     void trace(Visitor*);
 
@@ -100,6 +103,7 @@ private:
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMember;
+    Nullable<bool> m_createMember;
 
     friend class V8TestDictionary;
 };

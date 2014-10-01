@@ -54,7 +54,7 @@ v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> creationC
     {% for member in members %}
     if (impl->{{member.has_method_name}}()) {
         {% if member.is_object %}
-        ASSERT(impl->{{member.name}}().isObject());
+        ASSERT(impl->{{member.cpp_name}}().isObject());
         {% endif %}
         v8Object->Set(v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}});
     {% if member.v8_default_value %}

@@ -25,11 +25,13 @@ DICTIONARY_CPP_INCLUDES = frozenset([
 
 
 def setter_name_for_dictionary_member(member):
-    return 'set%s' % v8_utilities.capitalize(member.name)
+    name = v8_utilities.cpp_name(member)
+    return 'set%s' % v8_utilities.capitalize(name)
 
 
 def has_method_name_for_dictionary_member(member):
-    return 'has%s' % v8_utilities.capitalize(member.name)
+    name = v8_utilities.cpp_name(member)
+    return 'has%s' % v8_utilities.capitalize(name)
 
 
 def unwrap_nullable_if_needed(idl_type):
@@ -70,12 +72,14 @@ def member_context(member):
         return cpp_default_value, v8_default_value
 
     cpp_default_value, v8_default_value = default_values()
+    cpp_name = v8_utilities.cpp_name(member)
 
     return {
         'cpp_default_value': cpp_default_value,
+        'cpp_name': cpp_name,
         'cpp_type': idl_type.cpp_type,
         'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
-            cpp_value='impl->%s()' % member.name, isolate='isolate',
+            cpp_value='impl->%s()' % cpp_name, isolate='isolate',
             creation_context='creationContext',
             extended_attributes=member.extended_attributes),
         'enum_validation_expression': idl_type.enum_validation_expression,
@@ -104,19 +108,20 @@ def dictionary_impl_context(dictionary, interfaces_info):
 def member_impl_context(member, interfaces_info, header_includes):
     idl_type = unwrap_nullable_if_needed(member.idl_type)
     is_object = idl_type.name == 'Object'
+    cpp_name = v8_utilities.cpp_name(member)
 
     def getter_expression():
         if idl_type.impl_should_use_nullable_container:
-            return 'm_%s.get()' % member.name
-        return 'm_%s' % member.name
+            return 'm_%s.get()' % cpp_name
+        return 'm_%s' % cpp_name
 
     def has_method_expression():
         if idl_type.impl_should_use_nullable_container or idl_type.is_enum or idl_type.is_string_type:
-            return '!m_%s.isNull()' % member.name
+            return '!m_%s.isNull()' % cpp_name
         elif is_object:
-            return '!(m_{0}.isEmpty() || m_{0}.isNull() || m_{0}.isUndefined())'.format(member.name)
+            return '!(m_{0}.isEmpty() || m_{0}.isNull() || m_{0}.isUndefined())'.format(cpp_name)
         else:
-            return 'm_%s' % member.name
+            return 'm_%s' % cpp_name
 
     def member_cpp_type():
         member_cpp_type = idl_type.cpp_type_args(used_in_cpp_sequence=True)
@@ -131,6 +136,7 @@ def member_impl_context(member, interfaces_info, header_includes):
     header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
     return {
         'cpp_default_value': cpp_default_value,
+        'cpp_name': cpp_name,
         'getter_expression': getter_expression(),
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
@@ -138,7 +144,6 @@ def member_impl_context(member, interfaces_info, header_includes):
         'is_traceable': (idl_type.is_garbage_collected or
                          idl_type.is_will_be_garbage_collected),
         'member_cpp_type': member_cpp_type(),
-        'name': member.name,
         'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'setter_name': setter_name_for_dictionary_member(member),
     }

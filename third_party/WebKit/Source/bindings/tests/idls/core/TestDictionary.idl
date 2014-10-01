@@ -24,4 +24,5 @@ enum TestEnum { "foo", "bar", "baz" };
     Element? elementOrNullMember;
     object objectMember;
     object? objectOrNullMember;
+    [ImplementedAs=createMember] boolean create;
 };

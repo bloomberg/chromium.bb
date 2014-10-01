@@ -35,6 +35,13 @@ TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Va
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+    bool create;
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "create", create)) {
+        impl->setCreateMember(create);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
+    }
     double doubleOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "doubleOrNullMember", doubleOrNullMember)) {
         impl->setDoubleOrNullMember(doubleOrNullMember);
@@ -168,6 +175,9 @@ v8::Handle<v8::Value> toV8(TestDictionary* impl, v8::Handle<v8::Object> creation
     v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
     if (impl->hasBooleanMember()) {
         v8Object->Set(v8String(isolate, "booleanMember"), v8Boolean(impl->booleanMember(), isolate));
+    }
+    if (impl->hasCreateMember()) {
+        v8Object->Set(v8String(isolate, "create"), v8Boolean(impl->createMember(), isolate));
     }
     if (impl->hasDoubleOrNullMember()) {
         v8Object->Set(v8String(isolate, "doubleOrNullMember"), v8::Number::New(isolate, impl->doubleOrNullMember()));
