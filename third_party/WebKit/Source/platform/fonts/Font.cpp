@@ -663,11 +663,13 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
+float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo,
+    GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
 {
     float initialAdvance;
 
-    SimpleShaper shaper(this, runInfo.run, 0, false, forTextEmphasis);
+    SimpleShaper shaper(this, runInfo.run, 0 /* fallbackFonts */,
+        0 /* GlyphBounds */, forTextEmphasis);
     shaper.advance(runInfo.from);
     float beforeWidth = shaper.runWidthSoFar();
     shaper.advance(runInfo.to, &glyphBuffer);
@@ -816,14 +818,15 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
 {
-    SimpleShaper shaper(this, run, fallbackFonts, glyphBounds);
+    SimpleShaper::GlyphBounds bounds;
+    SimpleShaper shaper(this, run, fallbackFonts, glyphBounds ? &bounds : 0);
     shaper.advance(run.length());
 
     if (glyphBounds) {
-        glyphBounds->setTop(floorf(-shaper.minGlyphBoundingBoxY()));
-        glyphBounds->setBottom(ceilf(shaper.maxGlyphBoundingBoxY()));
-        glyphBounds->setLeft(floorf(shaper.firstGlyphOverflow()));
-        glyphBounds->setRight(ceilf(shaper.lastGlyphOverflow()));
+        glyphBounds->setTop(floorf(-bounds.minGlyphBoundingBoxY));
+        glyphBounds->setBottom(ceilf(bounds.maxGlyphBoundingBoxY));
+        glyphBounds->setLeft(floorf(bounds.firstGlyphOverflow));
+        glyphBounds->setRight(ceilf(bounds.lastGlyphOverflow));
     }
 
     return shaper.runWidthSoFar();
@@ -839,7 +842,8 @@ FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float
 
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
-    SimpleShaper shaper(this, run, 0, accountForGlyphBounds);
+    SimpleShaper::GlyphBounds bounds;
+    SimpleShaper shaper(this, run, 0, accountForGlyphBounds ? &bounds : 0);
     shaper.advance(from);
     float fromX = shaper.runWidthSoFar();
     shaper.advance(to);
@@ -855,8 +859,8 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
     }
 
     return pixelSnappedSelectionRect(point.x() + fromX, point.x() + toX,
-        accountForGlyphBounds ? shaper.minGlyphBoundingBoxY() : point.y(),
-        accountForGlyphBounds ? shaper.maxGlyphBoundingBoxY() - shaper.minGlyphBoundingBoxY() : h);
+        accountForGlyphBounds ? bounds.minGlyphBoundingBoxY : point.y(),
+        accountForGlyphBounds ? bounds.maxGlyphBoundingBoxY - bounds.minGlyphBoundingBoxY : h);
 }
 
 int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool includePartialGlyphs) const

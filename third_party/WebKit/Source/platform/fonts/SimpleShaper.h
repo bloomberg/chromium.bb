@@ -41,15 +41,25 @@ struct GlyphData;
 struct PLATFORM_EXPORT SimpleShaper {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, bool accountForGlyphBounds = false, bool forTextEmphasis = false);
+    class GlyphBounds {
+    public:
+        GlyphBounds()
+        {
+            maxGlyphBoundingBoxY = std::numeric_limits<float>::min();
+            minGlyphBoundingBoxY = std::numeric_limits<float>::max();
+            firstGlyphOverflow = 0;
+            lastGlyphOverflow = 0;
+        }
+        float maxGlyphBoundingBoxY;
+        float minGlyphBoundingBoxY;
+        float firstGlyphOverflow;
+        float lastGlyphOverflow;
+    };
+
+    SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphBounds* = 0, bool forTextEmphasis = false);
 
     unsigned advance(unsigned to, GlyphBuffer* = 0);
     bool advanceOneCharacter(float& width);
-
-    float maxGlyphBoundingBoxY() const { ASSERT(m_accountForGlyphBounds); return m_maxGlyphBoundingBoxY; }
-    float minGlyphBoundingBoxY() const { ASSERT(m_accountForGlyphBounds); return m_minGlyphBoundingBoxY; }
-    float firstGlyphOverflow() const { ASSERT(m_accountForGlyphBounds); return m_firstGlyphOverflow; }
-    float lastGlyphOverflow() const { ASSERT(m_accountForGlyphBounds); return m_lastGlyphOverflow; }
 
     const TextRun& run() const { return m_run; }
     float runWidthSoFar() const { return m_runWidthSoFar; }
@@ -87,12 +97,7 @@ private:
     unsigned advanceInternal(TextIterator&, GlyphBuffer*);
 
     HashSet<const SimpleFontData*>* m_fallbackFonts;
-    float m_maxGlyphBoundingBoxY;
-    float m_minGlyphBoundingBoxY;
-    float m_firstGlyphOverflow;
-    float m_lastGlyphOverflow;
-
-    bool m_accountForGlyphBounds : 1;
+    GlyphBounds* m_bounds;
     bool m_forTextEmphasis : 1;
 };
 

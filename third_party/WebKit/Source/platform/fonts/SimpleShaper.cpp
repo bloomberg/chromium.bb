@@ -37,18 +37,16 @@ using namespace Unicode;
 
 namespace blink {
 
-SimpleShaper::SimpleShaper(const Font* font, const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, bool accountForGlyphBounds, bool forTextEmphasis)
+SimpleShaper::SimpleShaper(const Font* font, const TextRun& run,
+    HashSet<const SimpleFontData*>* fallbackFonts, GlyphBounds* bounds,
+    bool forTextEmphasis)
     : m_font(font)
     , m_run(run)
     , m_currentCharacter(0)
     , m_runWidthSoFar(0)
     , m_isAfterExpansion(!run.allowsLeadingExpansion())
     , m_fallbackFonts(fallbackFonts)
-    , m_maxGlyphBoundingBoxY(std::numeric_limits<float>::min())
-    , m_minGlyphBoundingBoxY(std::numeric_limits<float>::max())
-    , m_firstGlyphOverflow(0)
-    , m_lastGlyphOverflow(0)
-    , m_accountForGlyphBounds(accountForGlyphBounds)
+    , m_bounds(bounds)
     , m_forTextEmphasis(forTextEmphasis)
 {
     // If the padding is non-zero, count the number of spaces in the run
@@ -167,11 +165,12 @@ void SimpleShaper::updateGlyphBounds(const GlyphData& glyphData, float width, bo
     ASSERT(glyphData.fontData);
     FloatRect bounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
 
+    ASSERT(m_bounds);
     if (firstCharacter)
-        m_firstGlyphOverflow = std::max<float>(0, -bounds.x());
-    m_lastGlyphOverflow = std::max<float>(0, bounds.maxX() - width);
-    m_maxGlyphBoundingBoxY = std::max(m_maxGlyphBoundingBoxY, bounds.maxY());
-    m_minGlyphBoundingBoxY = std::min(m_minGlyphBoundingBoxY, bounds.y());
+        m_bounds->firstGlyphOverflow = std::max<float>(0, -bounds.x());
+    m_bounds->lastGlyphOverflow = std::max<float>(0, bounds.maxX() - width);
+    m_bounds->maxGlyphBoundingBoxY = std::max(m_bounds->maxGlyphBoundingBoxY, bounds.maxY());
+    m_bounds->minGlyphBoundingBoxY = std::min(m_bounds->minGlyphBoundingBoxY, bounds.y());
 }
 
 template <typename TextIterator>
@@ -213,7 +212,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         if (hasExtraSpacing)
             width = adjustSpacing(width, charData, *fontData, glyphBuffer);
 
-        if (m_accountForGlyphBounds)
+        if (m_bounds)
             updateGlyphBounds(glyphData, width, !charData.characterOffset);
 
         if (m_forTextEmphasis && !Character::canReceiveTextEmphasis(charData.character))

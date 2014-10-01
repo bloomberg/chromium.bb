@@ -752,7 +752,7 @@ void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, Ha
         RenderStyle* style = renderer->style(box->isFirstLineStyle());
         const Font& font = style->font();
         TextRun run = box->constructTextRunForInspector(style, font);
-        SimpleShaper shaper(&font, run, 0, false);
+        SimpleShaper shaper(&font, run);
         GlyphBuffer glyphBuffer;
         shaper.advance(run.length(), &glyphBuffer);
         for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
