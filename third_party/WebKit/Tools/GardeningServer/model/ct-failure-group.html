@@ -7,9 +7,12 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 
 <script>
-function CTFailureGroup(key, data, category) {
+function CTFailureGroup(key, tree, data, category) {
   this.key = key;
+  this.tree = tree;
+  this.examineUrl = this.tree + '/failure/' + encodeURIComponent(this.key);
   this.data = data;
+
   this._annotation = CTFailureGroup._mergeAnnotations(data.getAnnotations());
   this._originalCategory = category || 'default';
   this._computeProperties();

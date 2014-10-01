@@ -23,7 +23,7 @@ describe('ct-step-failure-card', function() {
   beforeEach(function(done) {
     card = document.createElement('ct-step-failure-card');
     var cl = new CTCommitListMock();
-    group = new CTFailureGroup('', new CTStepFailureGroupData([
+    group = new CTFailureGroup('', 'blink', new CTStepFailureGroupData([
         new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
                       {'blink':158544})], cl));
     card.group = group.data;

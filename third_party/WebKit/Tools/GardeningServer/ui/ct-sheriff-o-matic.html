@@ -14,8 +14,11 @@ found in the LICENSE file.
 <link rel="import" href="../model/ct-failures.html">
 <link rel="import" href="../model/ct-tree-list.html">
 <link rel="import" href="ct-results-panel.html">
+<link rel="import" href="ct-router.html">
 <link rel="import" href="ct-tree-select.html">
 <link rel="import" href="ct-unexpected-failures.html">
+<link rel="import" href="ct-view.html">
+<link rel="import" href="ct-view-handler.html">
 
 <polymer-element name="ct-sheriff-o-matic">
   <template>
@@ -38,7 +41,7 @@ found in the LICENSE file.
         padding: 0 5px;
         white-space: nowrap;
       }
-      header a, header span {
+      header span {
         color: white;
         display: inline-block;
         padding: 0.25em 4px;
@@ -58,11 +61,15 @@ found in the LICENSE file.
       core-animated-pages > * {
         overflow: auto;
       }
+      ct-router {
+        flex: 1;
+      }
     </style>
+    <ct-view-handler></ct-view-handler>
 
     <header>
       <div>
-        <img src="../favicon.ico"> <span>Sheriff-o-matic</span>
+        <a href="{{ tree }}"><img src="../favicon.ico"> <span>Sheriff-o-matic</span></a>
       </div>
       <div id="right-toolbar">
         <ct-last-updated date="{{ failures.lastUpdateDate }}"></ct-last-updated>
@@ -70,10 +77,14 @@ found in the LICENSE file.
       </div>
     </header>
 
-    <core-animated-pages selected="{{ selected }}" transitions="slide-from-right">
-      <ct-unexpected-failures id="unexpected" tree="{{ tree }}" commitLog="{{ commitLog }}" failures="{{ failures }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
-      <ct-results-panel group="{{ examinedFailureGroup }}"></ct-results-panel>
-    </core-animated-pages>
+    <ct-router id="router" defaultPath="{{ _defaultPath }}">
+      <ct-view path="/{tree}" default>
+        <ct-unexpected-failures id="unexpected" tree="{{ tree }}" commitLog="{{ commitLog }}" failures="{{ failures }}"></ct-unexpected-failures>
+      </ct-view>
+      <ct-view path="/{tree}/failure/{failureGroupKey}">
+        <ct-results-panel id="resultsPanel" group="{{ examinedFailureGroup }}" failureGroupKey="{{ failureGroupKey }}" tree="{{ tree }}"></ct-results-panel>
+      </ct-view>
+    </ct-router>
   </template>
   <script>
     var kUpdateFrequency = 1000 * 30;
@@ -81,54 +92,15 @@ found in the LICENSE file.
     Polymer({
       tree: '',
       treeList: null,
-      selected: 0,
       examinedFailureGroup: null,
       _pendingFailureGroupKey: '',
 
-      updateFromHistoryState: function(state) {
-        this._pendingFailureGroupKey = state.examinedFailureGroupKey;
-        if ('selected' in state)
-          this.selected = state.selected;
-      },
-
-      onPopState: function(e) {
-        this.updateFromHistoryState(e.state);
-      },
-
-      onExamine: function(event) {
-        window.history.pushState({
-          examinedFailureGroupKey: event.detail.key,
-          selected: 1,
-        });
-
-
-        this.examinedFailureGroup = event.detail;
-        this.selected = 1;
-      },
-
       created: function() {
         this.treeList = new CTTreeList();
-        this.tree = this.treeList.defaultValue();
+        this._defaultPath = '/' + this.treeList.defaultValue();
         this.commitLog = new CTCommitLog();
         this.failures = new CTFailures(this.commitLog);
         this._updater = new CTScheduledUpdater(this.update.bind(this), kUpdateFrequency);
-
-        // History API handling:
-        // If we have a current state, we should make sure the view is shown
-        // accordingly.
-        // Otherwise, we should inject a state using replaceState() so we can
-        // handle history navigation cleanly.
-        // Either way, the object will react to popstate events.
-        if (window.history.state) {
-          // Will be a no-op if the current state is already being used.
-          this.updateFromHistoryState(window.history.state);
-        } else {
-          window.history.replaceState({
-            selected: 0,
-          });
-        }
-
-        window.addEventListener('popstate', this.onPopState.bind(this));
       },
 
       ready: function() {
@@ -138,24 +110,40 @@ found in the LICENSE file.
       update: function() {
         if (this._promise)
           return;
+
         this._promise = Promise.all(
           [this.commitLog.update(),
            this.failures.update()]).then(this._updateCompleted.bind(this));
       },
 
+      failureGroupKeyChanged: function() {
+        this.examinedFailureGroup = null;
+        this._pendingFailureGroupKey = this.failureGroupKey;
+        this._updateCompleted();
+      },
+
       _updateCompleted: function() {
         this._promise = null;
         this.$.unexpected.update();
+
         if (!this.failures.failures)
           return;
         if (!this._pendingFailureGroupKey)
           return;
+
         this.examinedFailureGroup = this.failures.failures[this.tree].find(function(group) {
           return group.key == this._pendingFailureGroupKey;
         }.bind(this));
+
+        if (!this.examinedFailureGroup) {
+          this.asyncFire('navigate', {
+            url: this.tree,
+            replaceState: true
+          });
+        }
+
         this._pendingFailureGroupKey = '';
       },
-
     });
   </script>
 </polymer-element>

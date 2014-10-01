@@ -1,0 +1,97 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!--
+Handles navigations by showing the appropriate ct-view. Use the "default" attribute on a ct-view to show
+that view when no view matches the current path.
+pathPrefix: The prefix of the path that is not used for navigation, if any.
+defaultPath: If specified, the root URL will be routed using defaultPath, without changing the actual URL.
+             Gives the app a "landing page."
+-->
+<polymer-element name="ct-router" attributes="pathPrefix defaultPath">
+  <template>
+    <style>
+      :host {
+        display: block;
+        /* Position the container so it captures its absolutely postioned children. */
+        position: relative;
+      }
+    </style>
+    <content select="ct-view"></content>
+  </template>
+  <script>
+    Polymer('ct-router', {
+      activeView: null,
+      pathPrefix: '',
+      currentPath: '',
+      defaultPath: '/',
+
+      created: function() {
+        this._routeChanged = this._routeChanged.bind(this);
+        this._handleNavigate = this._handleNavigate.bind(this);
+        // This ensures we can run from any subdirectory.
+        this.pathPrefix = document.location.pathname + '/';
+      },
+
+      attached: function() {
+        // Use setTimeout instead of this.async since raf won't fire in
+        // background tabs and we want to bootstrap the inital view even
+        // for those tabs.
+        setTimeout(this._replaceInitialUrl.bind(this), 0);
+        window.addEventListener('popstate', this._routeChanged);
+        document.addEventListener('navigate', this._handleNavigate);
+
+        this.defaultView = this.querySelector('ct-view[default]');
+        if (!this.defaultView)
+          this.defaultView = this.querySelector('ct-view');
+      },
+
+      detached: function() {
+        window.removeEventListener('popstate', this._routeChanged);
+        document.removeEventListener('navigate', this._handleNavigate);
+      },
+
+      _replaceInitialUrl: function() {
+        var url = window.location.pathname + window.location.search + window.location.hash;
+        if (url.startsWith(this.pathPrefix))
+          url = url.replace(this.pathPrefix, '');
+        // Multiple slashes at the beginning of the URL would be interpreted as another domain.
+        url = url.replace(/^\/\/+/, '/');
+        window.history.replaceState(null, null, url);
+        this._routeChanged();
+      },
+
+      _handleNavigate: function(event) {
+        var historyFn = event.detail.replaceState ? window.history.replaceState : window.history.pushState;
+        historyFn.call(window.history, null, null, event.detail.url);
+        this.async(this._routeChanged);
+      },
+
+      _routeChanged: function() {
+        var path = window.location.pathname;
+        if (path == this.currentPath)
+          return;
+        this.currentPath = path;
+        var views = this.querySelectorAll('ct-view').array();
+        for (var i = 0; i < views.length; ++i) {
+          var nextView = views[i].showView(path);
+          if (!nextView)
+            continue;
+          this._swapViews(nextView);
+          return;
+        }
+        this._swapViews(this.defaultView.showView(this.defaultPath));
+      },
+
+      _swapViews: function(nextView) {
+        if (this.activeView)
+          this.activeView.hidden = true;
+        this.activeView = nextView;
+        this.activeView.hidden = false;
+      }
+    });
+  </script>
+</polymer-element>

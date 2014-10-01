@@ -6,6 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../model/ct-builder-list.html">
 <link rel="import" href="ct-button.html">
+<link rel="import" href="ct-view-handler.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
@@ -28,7 +29,10 @@ found in the LICENSE file.
         color: red;
       }
     </style>
-    <ct-button id="examine" on-tap="{{ examine }}" label="Examine"></ct-button>
+    <ct-view-handler></ct-view-handler>
+    <a href="{{ group.examineUrl }}">
+      <ct-button id="examine" label="Examine"></ct-button>
+    </a>
     <template if="{{ !group.isSnoozed }}">
       <ct-button id="snooze" on-tap="{{ snooze }}" label="Snooze"></ct-button>
     </template>
@@ -57,10 +61,6 @@ found in the LICENSE file.
     Polymer({
       group: null,
       _fileBugClicked: false,
-
-      examine: function() {
-        this.fire('ct-examine-failures', this.group);
-      },
 
       snooze: function() {
         this.group.snoozeUntil(Date.now() + 60 * 60 * 1000);

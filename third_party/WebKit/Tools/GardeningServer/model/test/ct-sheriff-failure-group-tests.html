@@ -28,12 +28,12 @@ describe('ct-sheriff-failure-group', function() {
 
   describe('category', function() {
     it('should be "default" by default', function() {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([]));
       assert.equal(group.category, 'default');
     });
 
     it('should be "snoozed" when snoozed', function() {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData(
           [newFailureWithAnnotation({snoozeTime: Date.now() + 1000 * 1000})]));
       assert.equal(group.category, 'snoozed');
     });
@@ -41,7 +41,7 @@ describe('ct-sheriff-failure-group', function() {
     it('should be "failedOnce" when there is only one failure', function() {
       var failure = newFailureWithAnnotation();
       failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
-      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData(
           [failure]));
       assert.equal(group.category, 'failedOnce');
     });
@@ -51,7 +51,7 @@ describe('ct-sheriff-failure-group', function() {
       failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
       var failure2 = newFailureWithAnnotation();
       failure2.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
-      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData(
           [failure, failure2]));
       assert.equal(group.category, 'failedOnce');
     });
@@ -60,7 +60,7 @@ describe('ct-sheriff-failure-group', function() {
       var failure = newFailureWithAnnotation();
       failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1},
                                       other_key: {failingBuildCount: 1}}
-      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData(
           [failure]));
       assert.equal(group.category, 'default');
     });
@@ -68,7 +68,7 @@ describe('ct-sheriff-failure-group', function() {
 
   describe('snooze', function() {
     it('should set isSnoozed', function(done) {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation()]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([newFailureWithAnnotation()]));
       group.snoozeUntil(Date.now() + 1000 * 1000).then(function() {
         assert.isTrue(group.isSnoozed);
         done();
@@ -78,7 +78,7 @@ describe('ct-sheriff-failure-group', function() {
 
   describe('unsnooze', function() {
     it('should clear isSnoozed', function(done) {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation()]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([newFailureWithAnnotation()]));
       group.snoozeUntil(Date.now() + 1000 * 1000).then(function() {
         group.unsnooze().then(function() {
           assert.isFalse(group.isSnoozed);
@@ -90,7 +90,7 @@ describe('ct-sheriff-failure-group', function() {
 
   describe('setBug', function() {
     it('should store the bug', function(done) {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation()]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([newFailureWithAnnotation()]));
       group.setBug('123').then(function() {
         assert.equal(group.bug, 'https://crbug.com/123');
         assert.equal(group._annotation.bug, 'https://crbug.com/123');
@@ -100,7 +100,7 @@ describe('ct-sheriff-failure-group', function() {
     });
 
     it('should support URLs', function(done) {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation()]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([newFailureWithAnnotation()]));
       group.setBug('https://foobar.com/?id=876&x=y').then(function() {
         assert.equal(group.bug, 'https://foobar.com/?id=876&x=y');
         assert.equal(group._annotation.bug, 'https://foobar.com/?id=876&x=y');
@@ -112,7 +112,7 @@ describe('ct-sheriff-failure-group', function() {
 
   describe('clearBug', function() {
     it('should work', function(done) {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([]));
       group.setBug('123').then(function() {
         group.clearBug().then(function() {
           assert.isUndefined(group.bug);
@@ -126,7 +126,7 @@ describe('ct-sheriff-failure-group', function() {
 
   describe('annotations', function() {
     it('should have sensible defaults', function() {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([]));
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([]));
       assert.deepEqual(group._annotation, {});
       assert.isFalse(group.isSnoozed);
       assert.isUndefined(group.bug);
@@ -134,20 +134,20 @@ describe('ct-sheriff-failure-group', function() {
     });
 
     it('should compute properties', function() {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([newFailureWithAnnotation(
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData([newFailureWithAnnotation(
           {snoozeTime: Date.now() + 1000 * 1000, bug: 'https://crbug.com/123'})]));
       assert.isTrue(group.isSnoozed);
       assert.equal(group.bug, 'https://crbug.com/123');
     });
 
     it('should ignore snoozeTime unless it is present on all alerts', function() {
-      var notSnoozedMultipleAlerts = new CTFailureGroup('', new CTStepFailureGroupData([
+      var notSnoozedMultipleAlerts = new CTFailureGroup('', '', new CTStepFailureGroupData([
         new CTStepFailure('step', 'reason', [
           {key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}},
           {key: 'b',},
         ])
       ]));
-      var notSnoozedMultipleFailures = new CTFailureGroup('', new CTStepFailureGroupData([
+      var notSnoozedMultipleFailures = new CTFailureGroup('', '', new CTStepFailureGroupData([
         new CTStepFailure('step', 'reason', [
           {key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}},
         ]),
@@ -155,13 +155,13 @@ describe('ct-sheriff-failure-group', function() {
           {key: 'b'},
         ]),
       ]));
-      var snoozedMultipleAlerts = new CTFailureGroup('', new CTStepFailureGroupData([
+      var snoozedMultipleAlerts = new CTFailureGroup('', '', new CTStepFailureGroupData([
         new CTStepFailure('step', 'reason', [
           {key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}},
           {key: 'b', annotation: {snoozeTime: Date.now() + 1000 * 1000}},
         ])
       ]));
-      var snoozedMultipleFailures = new CTFailureGroup('', new CTStepFailureGroupData([
+      var snoozedMultipleFailures = new CTFailureGroup('', '', new CTStepFailureGroupData([
         new CTStepFailure('step', 'reason', [
           {key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}},
         ]),
@@ -179,7 +179,7 @@ describe('ct-sheriff-failure-group', function() {
       var timeFuture = Date.now() + 1000 * 1000;
       var timePast = Date.now() - 1000 * 1000;
 
-      var notSnoozed = new CTFailureGroup('', new CTStepFailureGroupData([
+      var notSnoozed = new CTFailureGroup('', '', new CTStepFailureGroupData([
         new CTStepFailure('step', 'reason', [
           {key: 'a', annotation: {snoozeTime: timeFuture}},
           {key: 'b', annotation: {snoozeTime: timePast}},
@@ -190,7 +190,7 @@ describe('ct-sheriff-failure-group', function() {
     });
 
     it('should be persisted', function(done) {
-      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+      var group = new CTFailureGroup('', '', new CTStepFailureGroupData(
           [newFailureWithAnnotation(), newFailureWithAnnotation()]));
       group.snoozeUntil(123).then(function() {
         group.setBug('456').then(function() {

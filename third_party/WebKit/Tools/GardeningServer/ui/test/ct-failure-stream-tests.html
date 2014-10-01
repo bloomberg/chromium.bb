@@ -26,8 +26,8 @@ describe('ct-failure-stream', function() {
       // ct-failure-stream will give these values to ct-commit-data,
       // which will hit the network unless we figure out how to mock
       // out ct-commit-data in a better way.
-      stream.groups = [new CTFailureGroup('', new CTStepFailureGroupData([])),
-          new CTFailureGroup('', new CTStepFailureGroupData([]))];
+      stream.groups = [new CTFailureGroup('', '', new CTStepFailureGroupData([])),
+          new CTFailureGroup('', '', new CTStepFailureGroupData([]))];
       stream.category = 'default';
       setTimeout(function() {
         var cards = stream.shadowRoot.querySelectorAll('ct-step-failure-card');
@@ -41,8 +41,8 @@ describe('ct-failure-stream', function() {
 
     it('should only show failure groups for the specified category', function(done) {
       var failures = [new CTStepFailure('step', 'reason', [{key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}}])];
-      var snoozed = new CTFailureGroup('', new CTStepFailureGroupData(failures));
-      stream.groups = [new CTFailureGroup('', new CTStepFailureGroupData([])), snoozed];
+      var snoozed = new CTFailureGroup('', '', new CTStepFailureGroupData(failures));
+      stream.groups = [new CTFailureGroup('', '', new CTStepFailureGroupData([])), snoozed];
       stream.category = 'snoozed';
       setTimeout(function() {
         var cards = stream.shadowRoot.querySelectorAll('ct-step-failure-card');
@@ -54,13 +54,13 @@ describe('ct-failure-stream', function() {
 
     it('should select the correct card type', function(done) {
       var failures = [new CTStepFailure('step', 'reason', [{key: 'a', annotation: {}}])];
-      var failureGroup = new CTFailureGroup('', new CTStepFailureGroupData(failures));
-      stream.groups = [new CTFailureGroup('', new CTStepFailureGroupData([])), failureGroup];
+      var failureGroup = new CTFailureGroup('', '', new CTStepFailureGroupData(failures));
+      stream.groups = [new CTFailureGroup('', '', new CTStepFailureGroupData([])), failureGroup];
       stream.category = 'default';
       setTimeout(function() {
         assert(stream.shadowRoot.querySelector('ct-step-failure-card') != null,
             'missing sheriff card');
-        stream.groups = [new CTFailureGroup('', new CTTrooperFailureGroupData(
+        stream.groups = [new CTFailureGroup('', '', new CTTrooperFailureGroupData(
             'details', 'url', {percent_over_median_slo: '6%',
             percent_over_max_slo: '7%'}, 'cq_latency', ''))];
         setTimeout(function() {
@@ -83,7 +83,7 @@ describe('ct-failure-stream', function() {
 
     it('adding a bug number should show bugs link', function(done) {
       var cl = new CTCommitListMock();
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([
+      var group = new CTFailureGroup('', 'blink', new CTStepFailureGroupData([
           new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a', failingBuildCount: 2}},
               {'blink':158547}, {'blink':158544}),
         ], cl));
@@ -102,7 +102,7 @@ describe('ct-failure-stream', function() {
 
     it('should not show bugs link without a bug number', function(done) {
       var cl = new CTCommitListMock();
-      var group = new CTFailureGroup('', new CTStepFailureGroupData([
+      var group = new CTFailureGroup('', 'blink', new CTStepFailureGroupData([
         new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
                       {'blink':158544})], cl));
 

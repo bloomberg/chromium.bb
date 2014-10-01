@@ -1,0 +1,67 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!--
+Makes all links in a component view navigation aware. This will trap
+clicks to links in that component and then redirect the navigation to the
+<ct-router> component by dispatching a "navigate" event.
+
+To use, just add the component to the <template> inside all components that
+use <a href> where the link should switch to a different view.
+
+ex.
+  <ct-view-handler></ct-view-handler>
+-->
+<polymer-element name="ct-view-handler">
+  <template>
+    <style>
+      :host { display: none; }
+    </style>
+  </template>
+  <script>
+    Polymer("ct-view-handler", {
+      created: function() {
+        this.handleClick = this.handleClick.bind(this);
+      },
+
+      attached: function() {
+        this.scope = this.enclosingTreeScope();
+        this.scope.addEventListener("click", this.handleClick);
+      },
+
+      detached: function() {
+        this.scope.removeEventListener("click", this.handleClick);
+      },
+
+      handleClick: function(event) {
+        if (event.metaKey || event.ctrlKey || event.button == 1)
+          return;
+        var a = this.findEnclosingLink(event.target);
+        if (!a)
+          return;
+        if (!a.href.startsWith(window.location.origin))
+          return;
+        event.preventDefault();
+        this.asyncFire("navigate", {
+          url: a.pathname + a.search + a.hash
+        });
+      },
+
+      findEnclosingLink: function(node) {
+        while (node && node.nodeName != "A")
+          node = node.parentNode;
+        return node;
+      },
+
+      enclosingTreeScope: function() {
+        var scope = this;
+        while (scope.parentNode)
+          scope = scope.parentNode;
+        return scope;
+      },
+    });
+  </script>
+</polymer-element>

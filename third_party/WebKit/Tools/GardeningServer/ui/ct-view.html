@@ -1,0 +1,74 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-view" attributes="path" hidden="true">
+  <template>
+    <style>
+      ::content > * {
+        /* For independent scrolling of the view within a positioned element. */
+        position: absolute;
+        overflow: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+    </style>
+    <content select="*"></content>
+  </template>
+  <script>
+    Polymer("ct-view", {
+      parts: null,
+      regex: null,
+
+      pathChanged: function(oldValue, newValue) {
+        var self = this;
+        this.parts = [];
+        var regex = newValue.replace(/\{([\w\d]+)\}/g, function(match, name) {
+          self.parts.push(name);
+          return "([^\/]+)";
+        });
+        regex = regex.replace(/\*([\w\d]+)/g, function(match, name) {
+          self.parts.push(name);
+          return "(.*)";
+        });
+        this.regex = new RegExp("^" + regex + "/?$", "i");
+      },
+
+      showView: function(path) {
+        if (path) {
+          var params = this._matchPath(path);
+          if (!params)
+            return null;
+        }
+        if (!this.children.length)
+          return null;
+        if (!this.view)
+          this.view = this.children[0];
+        if (params) {
+          Object.keys(params).forEach(function(name) {
+            this.view.setAttribute(name, decodeURIComponent(params[name]));
+          }, this);
+        }
+        this.hidden = false;
+        return this.view;
+      },
+
+      _matchPath: function(path) {
+        if (!this.regex || !this.parts)
+          return null;
+        var match = path.match(this.regex);
+        if (!match)
+          return null;
+        var result = {};
+        this.parts.forEach(function(name, i) {
+          result[name] = match[i + 1];
+        });
+        return result;
+      },
+    });
+  </script>
+</polymer-element>

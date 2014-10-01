@@ -56,31 +56,6 @@ describe('ct-tree-select', function() {
       });
     });
   });
-
-  describe('storage', function() {
-    beforeEach(function(done) {
-      var treeList = new CTTreeList();
-      treeList.trees = [new CTTree("tree1", "Tree 1"), new CTTree("tree2", "Tree 2")];
-
-      // This represents initialization that should be normally be done on this component.
-      select.treeList = treeList;
-      select.tree = treeList.defaultValue();
-      assert.equal('tree1', select.tree);
-
-      setTimeout(done);
-    });
-
-    it('a change in storage should change select.tree', function() {
-      var storage = select.shadowRoot.querySelector('core-localstorage');
-      var newTree = 'tree2';
-      window.localStorage.setItem(storage.name, newTree);
-      storage.load();
-
-      assert.equal(newTree, select.tree);
-      assert.equal(storage.value, newTree);
-      assert.equal(window.localStorage.getItem(storage.name), newTree);
-    });
-  });
 });
 
 })()

@@ -43,10 +43,10 @@ describe('ct-failures', function() {
       var cl2 = new CTCommitList(undefined, ['chromium:2', 'blink:1']);
       var cl3 = new CTCommitList(undefined, ['chromium:2', 'blink:2']);
       var cl4 = new CTCommitList(undefined, []);
-      var group1 = new CTFailureGroup('', new CTStepFailureGroupData([], cl1));
-      var group2 = new CTFailureGroup('', new CTStepFailureGroupData([], cl2));
-      var group3 = new CTFailureGroup('', new CTStepFailureGroupData([], cl3));
-      var group4 = new CTFailureGroup('', new CTStepFailureGroupData([], cl4));
+      var group1 = new CTFailureGroup('', '', new CTStepFailureGroupData([], cl1));
+      var group2 = new CTFailureGroup('', '', new CTStepFailureGroupData([], cl2));
+      var group3 = new CTFailureGroup('', '', new CTStepFailureGroupData([], cl3));
+      var group4 = new CTFailureGroup('', '', new CTStepFailureGroupData([], cl4));
 
       // Sort by last revision first.
       assert(analyzer._failureByTreeListComparator('chromium', group1, group2) > 0);

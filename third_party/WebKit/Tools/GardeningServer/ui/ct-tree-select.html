@@ -3,14 +3,12 @@ Copyright 2014 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
-<link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 
 <polymer-element name="ct-tree-select" attributes="tree treeList">
   <template>
-    <core-localstorage name="ct-tree-select-storage" value="{{ tree }}"></core-localstorage>
-    <select on-change="{{ _updateTree }}">
+    <select id='treeSelect' on-change="{{ _updateTree }}" value="{{ tree }}">
       <template repeat="{{ s in treeList.trees }}">
-        <option value="{{ s.name }}" selected?="{{ s.name == tree }}">{{ s.displayName }}</option>
+        <option value="{{ s.name }}">{{ s.displayName }}</option>
       </template>
     </select>
   </template>
@@ -24,7 +22,24 @@ found in the LICENSE file.
       },
 
       _updateTree: function(event) {
-        this.tree = event.target.selectedOptions[0].value;
+        this.asyncFire('navigate', {
+          url: event.target.value
+        });
+      },
+
+      treeChanged: function() {
+        if (!this.tree.length)
+          return;
+
+        // Enforce the tree list, so we don't show a blank select value.
+        var option = this.$.treeSelect.querySelector('option[value="' + this.tree + '"]');
+        if (!option) {
+          // URL is incorrect. Replace with the root so we use the default tree.
+          this.asyncFire('navigate', {
+            url: '/',
+            replaceState: true
+          });
+        }
       },
     });
   })();

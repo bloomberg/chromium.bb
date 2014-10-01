@@ -1,0 +1,58 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-view.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-view', function() {
+  var view;
+
+  beforeEach(function() {
+    view = document.createElement('ct-view');
+    view.appendChild(document.createElement('div'));
+  });
+
+  it('should match path', function(done) {
+    view.path = "/test/path";
+    setTimeout(function() {
+      var div = view.showView("/test/path");
+      assert.ok(div);
+      assert(!div.hidden);
+
+      done();
+    });
+  });
+
+  it('should not match incorrect path', function(done) {
+    view.path = "/other/path";
+    setTimeout(function() {
+      var div = view.showView("/test/path");
+      assert.notOk(div);
+
+      done();
+    });
+  });
+
+  it('should assign variables to child', function(done) {
+    view.path = "/{var1}/test/{var2}";
+    setTimeout(function() {
+      var div = view.showView("/value1/test/value2");
+      assert.ok(div);
+      assert.equal(div.getAttribute('var1'), 'value1');
+      assert.equal(div.getAttribute('var2'), 'value2');
+
+      done();
+    });
+  });
+
+});
+
+})();
+</script>
