@@ -34,9 +34,11 @@ void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void WebRtcContentBrowserTest::SetUp() {
+  // This is needed lest we break on some virtual machines and weird bot
+  // configs, like ChromeOS and Win x64 swarming.
   EnablePixelOutput();
 #if defined(OS_CHROMEOS)
-    chromeos::CrasAudioHandler::InitializeForTesting();
+  chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
   ContentBrowserTest::SetUp();
 }

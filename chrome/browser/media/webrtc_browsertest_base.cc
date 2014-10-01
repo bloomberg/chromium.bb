@@ -82,8 +82,6 @@ WebRtcTestBase::WebRtcTestBase(): detect_errors_in_javascript_(false) {
   // set operation is idempotent.
   logging::SetLogMessageHandler(&JavascriptErrorDetectingLogHandler);
   hit_javascript_errors_.Get() = false;
-
-  EnablePixelOutput();
 }
 
 WebRtcTestBase::~WebRtcTestBase() {
