@@ -284,9 +284,6 @@ class DepGraphGenerator(object):
       os.environ["PORTAGE_CONFIGROOT"] = sysroot
       os.environ["PORTAGE_SYSROOT"] = sysroot
       os.environ["SYSROOT"] = sysroot
-      # This enables licensing in gen-package-licenses.sh.
-      # TODO(dgarrett): Remove when it's no longer optional.
-      os.environ["ENABLE_LICENSING"] = "Y"
 
       # Although CHROMEOS_ROOT isn't specific to boards, it's normally setup
       # inside emerge-${BOARD}, so we set it up here for compatibility. It
