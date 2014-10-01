@@ -114,7 +114,7 @@ VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
 
   std::vector<media::VideoCodecProfile> hw_profiles =
       VaapiWrapper::GetSupportedEncodeProfiles(
-          x_display_, base::Bind(&ReportToUMA, VAAPI_ERROR));
+          x_display_, base::Bind(&base::DoNothing));
 
   media::VideoEncodeAccelerator::SupportedProfile profile;
   profile.max_resolution.SetSize(1920, 1088);
