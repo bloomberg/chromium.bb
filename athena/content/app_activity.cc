@@ -218,7 +218,7 @@ void AppActivity::HideContentProxy() {
 
 void AppActivity::ShowContentProxy() {
   if (!content_proxy_.get() && web_view_)
-    content_proxy_.reset(new ContentProxy(web_view_, this));
+    content_proxy_.reset(new ContentProxy(web_view_));
 }
 
 }  // namespace athena

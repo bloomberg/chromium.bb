@@ -17,7 +17,6 @@ class WebView;
 
 namespace athena {
 
-class Activity;
 class ProxyImageData;
 
 // This object creates and holds proxy content which gets shown instead of the
@@ -29,9 +28,8 @@ class ProxyImageData;
 // and then the link to the |web_view_| will get severed.
 class ContentProxy {
  public:
-  // Creates the object by creating a sized down |web_view| layer and making it
-  // visible inside |activity|'s window.
-  ContentProxy(views::WebView* web_view, Activity* activity);
+  // Creates the object by creating a sized down |web_view| layer.
+  explicit ContentProxy(views::WebView* web_view);
   // TODO(skuhne): Add a function to create this object from a passed PNG, so
   // that we can create it from a session restore.
 

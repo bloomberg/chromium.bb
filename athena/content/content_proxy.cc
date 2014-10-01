@@ -4,8 +4,6 @@
 
 #include "athena/content/content_proxy.h"
 
-#include "athena/activity/public/activity.h"
-#include "athena/activity/public/activity_view_model.h"
 #include "base/bind.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/render_view_host.h"
@@ -60,7 +58,7 @@ class ProxyImageData : public base::RefCountedThreadSafe<ProxyImageData> {
   DISALLOW_COPY_AND_ASSIGN(ProxyImageData);
 };
 
-ContentProxy::ContentProxy(views::WebView* web_view, Activity* activity)
+ContentProxy::ContentProxy(views::WebView* web_view)
     : web_view_(web_view),
       content_visible_(true),
       content_loaded_(true),
@@ -71,8 +69,8 @@ ContentProxy::ContentProxy(views::WebView* web_view, Activity* activity)
 }
 
 ContentProxy::~ContentProxy() {
-  // If we still have a connection to the original Activity, we make it visible
-  // again.
+  // If we still have a connection to the original web contents, we make it
+  // visible again.
   ShowOriginalContent();
 }
 
