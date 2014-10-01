@@ -128,9 +128,6 @@ class WizardController : public ScreenObserver, public ScreenManager {
   // reworked at hackaton.
   void EnableUserImageScreenReturnToPreviousHack();
 
-  // Callback for enrollment auth token.
-  void OnEnrollmentAuthTokenReceived(const std::string& auth_token);
-
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }

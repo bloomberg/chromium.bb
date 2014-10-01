@@ -82,7 +82,10 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
     }
     case HostPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
-      desired_page = kPageEnrollmentIntroduction;
+      controller_->RemoveObserver(this);
+      get_screen_observer()->OnExit(
+          WizardController::HOST_PAIRING_FINISHED);
+      // TODO(achuith, zork): Remove the rest of the stages.
       break;
     }
     case HostPairingController::STAGE_ENROLLING: {
@@ -120,9 +123,7 @@ void HostPairingScreen::ConfigureHost(bool accepted_eula,
 }
 
 void HostPairingScreen::EnrollHost(const std::string& auth_token) {
-  controller_->RemoveObserver(this);
-  WizardController::default_controller()->OnEnrollmentAuthTokenReceived(
-      auth_token);
+  NOTREACHED();
 }
 
 void HostPairingScreen::OnActorDestroyed(HostPairingScreenActor* actor) {

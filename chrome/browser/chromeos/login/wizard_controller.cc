@@ -640,17 +640,6 @@ void WizardController::EnableUserImageScreenReturnToPreviousHack() {
   user_image_screen_return_to_previous_hack_ = true;
 }
 
-void WizardController::OnEnrollmentAuthTokenReceived(const std::string& token) {
-  VLOG(1) << "OnEnrollmentAuthTokenReceived " << token;
-  if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment()) {
-    StartupUtils::MarkEulaAccepted();
-    auth_token_ = token;
-    ShowEnrollmentScreen();
-  } else {
-    LOG(WARNING) << "Not in device enrollment.";
-  }
-}
-
 void WizardController::OnUserImageSelected() {
   if (user_image_screen_return_to_previous_hack_) {
     user_image_screen_return_to_previous_hack_ = false;
@@ -757,10 +746,11 @@ void WizardController::OnControllerPairingFinished() {
 }
 
 void WizardController::OnHostPairingFinished() {
-  ShowAutoEnrollmentCheckScreen();
+  InitiateOOBEUpdate();
 }
 
 void WizardController::InitiateOOBEUpdate() {
+  VLOG(1) << "InitiateOOBEUpdate";
   PerformPostEulaActions();
   SetCurrentScreenSmooth(GetScreen(kUpdateScreenName), true);
   UpdateScreen::Get(this)->StartNetworkCheck();
@@ -1264,6 +1254,7 @@ void WizardController::MaybeStartListeningForSharkConnection() {
 
 void WizardController::OnSharkConnected(
     scoped_ptr<pairing_chromeos::HostPairingController> pairing_controller) {
+  VLOG(1) << "OnSharkConnected";
   host_pairing_controller_ = pairing_controller.Pass();
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, shark_connection_listener_.release());
