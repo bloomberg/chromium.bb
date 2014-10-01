@@ -12,16 +12,16 @@
  */
 
 /**
- * 
+ *
  * File Name:  armSP.h
  * OpenMAX DL: v1.0.2
  * Last Modified Revision:   7014
  * Last Modified Date:       Wed, 01 Aug 2007
- * 
+ *
  * (c) Copyright 2007-2008 ARM Limited. All Rights Reserved.
- * 
- * 
- *   
+ *
+ *
+ *
  * File: armSP.h
  * Brief: Declares API's/Basic Data types used across the OpenMAX Signal Processing domain
  *
@@ -41,35 +41,35 @@ extern "C" {
 extern  OMX_S32 armSP_FFT_S32TwiddleTable[1026];
 extern OMX_F32 armSP_FFT_F32TwiddleTable[];
 
-typedef struct  ARMsFFTSpec_SC32_Tag 
+typedef struct  ARMsFFTSpec_SC32_Tag
 {
     OMX_U32     N;
-    OMX_U16     *pBitRev;    
+    OMX_U16     *pBitRev;
     OMX_SC32    *pTwiddle;
     OMX_SC32    *pBuf;
 }ARMsFFTSpec_SC32;
 
 
-typedef struct  ARMsFFTSpec_SC16_Tag 
+typedef struct  ARMsFFTSpec_SC16_Tag
 {
     OMX_U32     N;
-    OMX_U16     *pBitRev;    
+    OMX_U16     *pBitRev;
     OMX_SC16    *pTwiddle;
     OMX_SC16    *pBuf;
 }ARMsFFTSpec_SC16;
 
-typedef struct  ARMsFFTSpec_R_SC32_Tag 
+typedef struct  ARMsFFTSpec_R_SC32_Tag
 {
     OMX_U32     N;
-    OMX_U16     *pBitRev;    
+    OMX_U16     *pBitRev;
     OMX_SC32    *pTwiddle;
     OMX_S32     *pBuf;
 }ARMsFFTSpec_R_SC32;
 
-typedef struct  ARMsFFTSpec_R_SC16_Tag 
+typedef struct  ARMsFFTSpec_R_SC16_Tag
 {
     OMX_U32     N;
-    OMX_U16     *pBitRev;    
+    OMX_U16     *pBitRev;
     OMX_SC16    *pTwiddle;
     OMX_S16     *pBuf;
 } ARMsFFTSpec_R_SC16;
