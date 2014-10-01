@@ -712,6 +712,12 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReas
     if (!inActiveDocument())
         return;
 
+    TRACE_EVENT_INSTANT1(
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+        "StyleRecalcInvalidationTracking",
+        "data",
+        InspectorStyleRecalcInvalidationTrackingEvent::data(this, reason));
+
     StyleChangeType existingChangeType = styleChangeType();
     if (changeType > existingChangeType)
         setStyleChange(changeType);

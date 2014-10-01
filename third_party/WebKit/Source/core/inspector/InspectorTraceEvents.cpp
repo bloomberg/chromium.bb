@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -56,6 +57,25 @@ String toHexString(const void* p)
     return String::format("0x%" PRIx64, static_cast<uint64>(reinterpret_cast<intptr_t>(p)));
 }
 
+void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = 0)
+{
+    value->setInteger(idFieldName, InspectorNodeIds::idForNode(node));
+    if (nameFieldName)
+        value->setString(nameFieldName, node->debugName());
+}
+
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleRecalcInvalidationTrackingEvent::data(Node* node, const StyleChangeReasonForTracing& reason)
+{
+    ASSERT(node);
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(node->document().frame()));
+    setNodeInfo(value.get(), node, "nodeId", "nodeName");
+    value->setString("reason", reason.reasonString());
+    value->setString("extraData", reason.extraData());
+    return value.release();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::beginData(FrameView* frameView)
@@ -95,9 +115,8 @@ static void setGeneratingNodeInfo(TracedValue* value, const RenderObject* render
         node = renderer->generatingNode();
     if (!node)
         return;
-    value->setInteger(idFieldName, InspectorNodeIds::idForNode(node));
-    if (nameFieldName)
-        value->setString(nameFieldName, node->debugName());
+
+    setNodeInfo(value, node, idFieldName, nameFieldName);
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(RenderObject* rootForThisLayout)

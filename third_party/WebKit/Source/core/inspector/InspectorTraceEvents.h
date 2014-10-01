@@ -20,13 +20,15 @@ class GraphicsLayer;
 class KURL;
 class LayoutRect;
 class LocalFrame;
+class Node;
 class RenderImage;
 class RenderLayer;
 class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
-class ScriptSourceCode;
 class ScriptCallStack;
+class ScriptSourceCode;
+class StyleChangeReasonForTracing;
 class WorkerThread;
 class XMLHttpRequest;
 
@@ -34,6 +36,11 @@ class InspectorLayoutEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(RenderObject* rootForThisLayout);
+};
+
+class InspectorStyleRecalcInvalidationTrackingEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
 };
 
 class InspectorLayoutInvalidationTrackingEvent {
