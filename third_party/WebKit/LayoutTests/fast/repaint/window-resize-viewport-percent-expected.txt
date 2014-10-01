@@ -36,6 +36,7 @@
       "drawsContent": true,
       "repaintRects": [
         [25, 0, 5, 30],
+        [0, 250, 300, 50],
         [0, 25, 30, 5]
       ]
     }

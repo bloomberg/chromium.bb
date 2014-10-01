@@ -29,7 +29,9 @@
     {
       "bounds": [300, 250],
       "drawsContent": true,
-      "repaintRects": []
+      "repaintRects": [
+        [0, 250, 300, 50]
+      ]
     }
   ]
 }

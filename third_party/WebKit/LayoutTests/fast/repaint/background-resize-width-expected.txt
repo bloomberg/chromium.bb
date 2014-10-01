@@ -14,7 +14,9 @@
           "bounds": [55, 40],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": []
+          "repaintRects": [
+            [55, 0, 5, 40]
+          ]
         },
         {
           "position": [58, 8],
@@ -22,7 +24,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -32,7 +34,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -41,7 +43,9 @@
           "bounds": [55, 40],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": []
+          "repaintRects": [
+            [55, 0, 5, 40]
+          ]
         },
         {
           "position": [208, 8],
@@ -49,7 +53,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -58,7 +62,9 @@
           "bounds": [55, 40],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": []
+          "repaintRects": [
+            [55, 0, 5, 40]
+          ]
         },
         {
           "position": [308, 8],
@@ -66,7 +72,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -76,7 +82,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -85,7 +91,9 @@
           "bounds": [55, 40],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": []
+          "repaintRects": [
+            [55, 0, 5, 40]
+          ]
         },
         {
           "position": [458, 8],
@@ -93,7 +101,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -103,7 +111,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -113,7 +121,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -123,7 +131,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -133,7 +141,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -142,7 +150,9 @@
           "bounds": [55, 40],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": []
+          "repaintRects": [
+            [55, 0, 5, 40]
+          ]
         },
         {
           "position": [208, 108],
@@ -150,7 +160,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -160,7 +170,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -170,7 +180,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -180,7 +190,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -190,7 +200,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -200,7 +210,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         },
@@ -210,7 +220,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 55, 40],
+            [0, 0, 60, 40],
             [0, 0, 55, 40]
           ]
         }

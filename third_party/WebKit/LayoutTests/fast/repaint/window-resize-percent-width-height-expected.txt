@@ -34,6 +34,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [0, 250, 300, 50],
         [0, 125, 150, 25]
       ]
     }

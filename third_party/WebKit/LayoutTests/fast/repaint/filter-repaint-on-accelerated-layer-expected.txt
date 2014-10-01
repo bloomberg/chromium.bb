@@ -17,7 +17,9 @@
               "contentsOpaque": true,
               "drawsContent": true,
               "backgroundColor": "#008000",
-              "repaintRects": []
+              "repaintRects": [
+                [100, 0, 100, 200]
+              ]
             }
           ]
         }
