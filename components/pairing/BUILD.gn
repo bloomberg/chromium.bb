@@ -34,6 +34,7 @@ source_set("pairing") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "message_buffer_unittest.cc",
   ]
