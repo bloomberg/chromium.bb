@@ -75,11 +75,11 @@ button:hover {
 }
 
 h1 {
-  -webkit-margin-after: 16px;
   color: #585858;
   font-size: 1.6em;
   font-weight: normal;
   line-height: 1.25em;
+  margin-bottom: 16px;
 }
 
 h2 {
