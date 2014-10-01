@@ -40,7 +40,7 @@ struct TaskBlocker;
 // describes which task can run in parallel.  When a task start running as a
 // background task, SyncTaskManager checks if any running background task
 // doesn't block the new background task, and queues it up if it can't run.
-class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
+class SyncTaskManager {
  public:
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
   typedef base::Callback<void(scoped_ptr<SyncTaskToken> token)> Continuation;
@@ -196,6 +196,8 @@ class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::SequenceChecker sequence_checker_;
+
+  base::WeakPtrFactory<SyncTaskManager> weak_ptr_factory_;;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskManager);
 };

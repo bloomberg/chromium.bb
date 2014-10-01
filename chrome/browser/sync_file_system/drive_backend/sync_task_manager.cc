@@ -60,10 +60,13 @@ SyncTaskManager::SyncTaskManager(
       maximum_background_task_(maximum_background_task),
       pending_task_seq_(0),
       task_token_seq_(SyncTaskToken::kMinimumBackgroundTaskTokenID),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      weak_ptr_factory_(this) {
 }
 
 SyncTaskManager::~SyncTaskManager() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   client_.reset();
   token_.reset();
 }
@@ -72,7 +75,8 @@ void SyncTaskManager::Initialize(SyncStatusCode status) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!token_);
   NotifyTaskDone(
-      SyncTaskToken::CreateForForegroundTask(AsWeakPtr(), task_runner_.get()),
+      SyncTaskToken::CreateForForegroundTask(
+          weak_ptr_factory_.GetWeakPtr(), task_runner_.get()),
       status);
 }
 
@@ -99,7 +103,8 @@ void SyncTaskManager::ScheduleSyncTask(
   scoped_ptr<SyncTaskToken> token(GetToken(from_here, callback));
   if (!token) {
     PushPendingTask(
-        base::Bind(&SyncTaskManager::ScheduleSyncTask, AsWeakPtr(), from_here,
+        base::Bind(&SyncTaskManager::ScheduleSyncTask,
+                   weak_ptr_factory_.GetWeakPtr(), from_here,
                    base::Passed(&task), priority, callback),
         priority);
     return;
@@ -248,7 +253,7 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncTaskManager::MaybeStartNextForegroundTask,
-                 AsWeakPtr(), base::Passed(&token)));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
 
 void SyncTaskManager::UpdateTaskBlockerBody(
@@ -284,7 +289,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
     if (!foreground_task_token) {
       PushPendingTask(
           base::Bind(&SyncTaskManager::UpdateTaskBlockerBody,
-                     AsWeakPtr(),
+                     weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&foreground_task_token),
                      base::Passed(&background_task_token),
                      base::Passed(&task_log),
@@ -310,7 +315,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
     // Wait for NotifyTaskDone to release a |task_blocker|.
     pending_backgrounding_task_ =
         base::Bind(&SyncTaskManager::UpdateTaskBlockerBody,
-                   AsWeakPtr(),
+                   weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&foreground_task_token),
                    base::Passed(&background_task_token),
                    base::Passed(&task_log),
@@ -327,7 +332,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
     foreground_task_token->clear_callback();
 
     background_task_token =
-        SyncTaskToken::CreateForBackgroundTask(AsWeakPtr(),
+        SyncTaskToken::CreateForBackgroundTask(weak_ptr_factory_.GetWeakPtr(),
                                                task_runner_.get(),
                                                task_token_seq_++,
                                                task_blocker.Pass());
