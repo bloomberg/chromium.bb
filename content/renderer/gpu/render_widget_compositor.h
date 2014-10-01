@@ -25,6 +25,7 @@ struct LatencyInfo;
 }
 
 namespace cc {
+class CopyOutputRequest;
 class InputHandler;
 class Layer;
 class LayerTreeHost;
@@ -160,6 +161,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool threaded_;
   RenderWidget* widget_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
+
+  scoped_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
 
   bool send_v8_idle_notification_after_commit_;
   base::TimeTicks begin_main_frame_time_;

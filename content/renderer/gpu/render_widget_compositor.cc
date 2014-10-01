@@ -704,15 +704,18 @@ void CompositeAndReadbackAsyncCallback(
 
 void RenderWidgetCompositor::compositeAndReadbackAsync(
     blink::WebCompositeAndReadbackAsyncCallback* callback) {
-  DCHECK(layer_tree_host_->root_layer());
-  scoped_ptr<cc::CopyOutputRequest> request =
+  DCHECK(!temporary_copy_output_request_);
+  temporary_copy_output_request_ =
       cc::CopyOutputRequest::CreateBitmapRequest(
           base::Bind(&CompositeAndReadbackAsyncCallback, callback));
-  layer_tree_host_->root_layer()->RequestCopyOfOutput(request.Pass());
-
+  // Force a commit to happen. The temporary copy output request will
+  // be installed after layout which will happen as a part of the commit, when
+  // there is guaranteed to be a root layer.
   if (!threaded_ &&
       !layer_tree_host_->settings().single_thread_proxy_scheduler) {
     layer_tree_host_->Composite(gfx::FrameTime::Now());
+  } else {
+    layer_tree_host_->SetNeedsCommit();
   }
 }
 
@@ -782,6 +785,12 @@ void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
 
 void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
+
+  DCHECK(layer_tree_host_->root_layer());
+  if (temporary_copy_output_request_) {
+    layer_tree_host_->root_layer()->RequestCopyOfOutput(
+        temporary_copy_output_request_.Pass());
+  }
 }
 
 void RenderWidgetCompositor::ApplyViewportDeltas(
@@ -818,6 +827,7 @@ void RenderWidgetCompositor::WillCommit() {
 }
 
 void RenderWidgetCompositor::DidCommit() {
+  DCHECK(!temporary_copy_output_request_);
   if (send_v8_idle_notification_after_commit_) {
     base::TimeDelta idle_time = begin_main_frame_time_ +
                                 begin_main_frame_interval_ -
