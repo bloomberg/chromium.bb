@@ -163,8 +163,7 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
   DCHECK(!supported_versions.empty());
   quic_version_ = supported_versions_[0];
   decrypter_.reset(QuicDecrypter::Create(kNULL));
-  encrypter_[ENCRYPTION_NONE].reset(
-      QuicEncrypter::Create(kNULL));
+  encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(kNULL));
 }
 
 QuicFramer::~QuicFramer() {}
