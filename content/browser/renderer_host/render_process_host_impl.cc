@@ -1893,6 +1893,11 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
   RendererClosedDetails details(GetHandle(), status, exit_code);
+  mojo_application_host_->WillDestroySoon();
+
+  child_process_launcher_.reset();
+  channel_.reset();
+
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -1903,10 +1908,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
                     RenderProcessExited(this, GetHandle(), status, exit_code));
   within_process_died_observer_ = false;
 
-  mojo_application_host_->WillDestroySoon();
-
-  child_process_launcher_.reset();
-  channel_.reset();
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
   RemoveUserData(kSessionStorageHolderKey);
