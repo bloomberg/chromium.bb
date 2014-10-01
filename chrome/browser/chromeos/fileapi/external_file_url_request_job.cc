@@ -43,18 +43,20 @@ storage::FileSystemURL CreateIsolatedURLFromVirtualPath(
     const storage::FileSystemContext& context,
     const base::FilePath& virtual_path) {
   std::string file_system_id;
-  storage::FileSystemType file_system_type;
+  storage::FileSystemType file_system_type = storage::kFileSystemTypeUnknown;
   base::FilePath path;
   {
     std::string cracked_id;
     storage::FileSystemMountOption option;
-    storage::ExternalMountPoints::GetSystemInstance()->CrackVirtualPath(
-        virtual_path,
-        &file_system_id,
-        &file_system_type,
-        &cracked_id,
-        &path,
-        &option);
+    if (!storage::ExternalMountPoints::GetSystemInstance()->CrackVirtualPath(
+            virtual_path,
+            &file_system_id,
+            &file_system_type,
+            &cracked_id,
+            &path,
+            &option)) {
+      return storage::FileSystemURL();
+    }
   }
   if (!IsExternalFileURLType(file_system_type))
     return storage::FileSystemURL();
