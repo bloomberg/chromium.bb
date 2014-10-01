@@ -105,10 +105,16 @@ std::string LowerASCIIOnWindows(const std::string& string) {
 
 #if defined(OS_WIN)
 // Quote a string as necessary for CommandLineToArgvW compatiblity *on Windows*.
-base::string16 QuoteForCommandLineToArgvW(const base::string16& arg) {
+base::string16 QuoteForCommandLineToArgvW(const base::string16& arg,
+                                          bool quote_placeholders) {
   // We follow the quoting rules of CommandLineToArgvW.
   // http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
-  if (arg.find_first_of(L" \\\"") == base::string16::npos) {
+  base::string16 quotable_chars(L" \\\"");
+  // We may also be required to quote '%', which is commonly used in a command
+  // line as a placeholder. (It may be substituted for a string with spaces.)
+  if (quote_placeholders)
+    quotable_chars.push_back(L'%');
+  if (arg.find_first_of(quotable_chars) == base::string16::npos) {
     // No quoting necessary.
     return arg;
   }
@@ -245,49 +251,6 @@ void CommandLine::InitFromArgv(const StringVector& argv) {
   begin_args_ = 1;
   SetProgram(argv.empty() ? FilePath() : FilePath(argv[0]));
   AppendSwitchesAndArguments(*this, argv);
-}
-
-CommandLine::StringType CommandLine::GetCommandLineString() const {
-  StringType string(argv_[0]);
-#if defined(OS_WIN)
-  string = QuoteForCommandLineToArgvW(string);
-#endif
-  StringType params(GetArgumentsString());
-  if (!params.empty()) {
-    string.append(StringType(FILE_PATH_LITERAL(" ")));
-    string.append(params);
-  }
-  return string;
-}
-
-CommandLine::StringType CommandLine::GetArgumentsString() const {
-  StringType params;
-  // Append switches and arguments.
-  bool parse_switches = true;
-  for (size_t i = 1; i < argv_.size(); ++i) {
-    StringType arg = argv_[i];
-    StringType switch_string;
-    StringType switch_value;
-    parse_switches &= arg != kSwitchTerminator;
-    if (i > 1)
-      params.append(StringType(FILE_PATH_LITERAL(" ")));
-    if (parse_switches && IsSwitch(arg, &switch_string, &switch_value)) {
-      params.append(switch_string);
-      if (!switch_value.empty()) {
-#if defined(OS_WIN)
-        switch_value = QuoteForCommandLineToArgvW(switch_value);
-#endif
-        params.append(kSwitchValueSeparator + switch_value);
-      }
-    }
-    else {
-#if defined(OS_WIN)
-      arg = QuoteForCommandLineToArgvW(arg);
-#endif
-      params.append(arg);
-    }
-  }
-  return params;
 }
 
 FilePath CommandLine::GetProgram() const {
@@ -438,5 +401,51 @@ void CommandLine::ParseFromString(const base::string16& command_line) {
   LocalFree(args);
 }
 #endif
+
+CommandLine::StringType CommandLine::GetCommandLineStringInternal(
+    bool quote_placeholders) const {
+  StringType string(argv_[0]);
+#if defined(OS_WIN)
+  string = QuoteForCommandLineToArgvW(string, quote_placeholders);
+#endif
+  StringType params(GetArgumentsStringInternal(quote_placeholders));
+  if (!params.empty()) {
+    string.append(StringType(FILE_PATH_LITERAL(" ")));
+    string.append(params);
+  }
+  return string;
+}
+
+CommandLine::StringType CommandLine::GetArgumentsStringInternal(
+    bool quote_placeholders) const {
+  StringType params;
+  // Append switches and arguments.
+  bool parse_switches = true;
+  for (size_t i = 1; i < argv_.size(); ++i) {
+    StringType arg = argv_[i];
+    StringType switch_string;
+    StringType switch_value;
+    parse_switches &= arg != kSwitchTerminator;
+    if (i > 1)
+      params.append(StringType(FILE_PATH_LITERAL(" ")));
+    if (parse_switches && IsSwitch(arg, &switch_string, &switch_value)) {
+      params.append(switch_string);
+      if (!switch_value.empty()) {
+#if defined(OS_WIN)
+        switch_value =
+            QuoteForCommandLineToArgvW(switch_value, quote_placeholders);
+#endif
+        params.append(kSwitchValueSeparator + switch_value);
+      }
+    }
+    else {
+#if defined(OS_WIN)
+      arg = QuoteForCommandLineToArgvW(arg, quote_placeholders);
+#endif
+      params.append(arg);
+    }
+  }
+  return params;
+}
 
 }  // namespace base

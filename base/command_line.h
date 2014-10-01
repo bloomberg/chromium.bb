@@ -98,12 +98,41 @@ class BASE_EXPORT CommandLine {
   // Constructs and returns the represented command line string.
   // CAUTION! This should be avoided on POSIX because quoting behavior is
   // unclear.
-  StringType GetCommandLineString() const;
+  StringType GetCommandLineString() const {
+    return GetCommandLineStringInternal(false);
+  }
+
+#if defined(OS_WIN)
+  // Constructs and returns the represented command line string. Assumes the
+  // command line contains placeholders (eg, %1) and quotes any program or
+  // argument with a '%' in it. This should be avoided unless the placeholder is
+  // required by an external interface (eg, the Windows registry), because it is
+  // not generally safe to replace it with an arbitrary string. If possible,
+  // placeholders should be replaced *before* converting the command line to a
+  // string.
+  StringType GetCommandLineStringWithPlaceholders() const {
+    return GetCommandLineStringInternal(true);
+  }
+#endif
 
   // Constructs and returns the represented arguments string.
   // CAUTION! This should be avoided on POSIX because quoting behavior is
   // unclear.
-  StringType GetArgumentsString() const;
+  StringType GetArgumentsString() const {
+    return GetArgumentsStringInternal(false);
+  }
+
+#if defined(OS_WIN)
+  // Constructs and returns the represented arguments string. Assumes the
+  // command line contains placeholders (eg, %1) and quotes any argument with a
+  // '%' in it. This should be avoided unless the placeholder is required by an
+  // external interface (eg, the Windows registry), because it is not generally
+  // safe to replace it with an arbitrary string. If possible, placeholders
+  // should be replaced *before* converting the arguments to a string.
+  StringType GetArgumentsStringWithPlaceholders() const {
+    return GetArgumentsStringInternal(true);
+  }
+#endif
 
   // Returns the original command line string as a vector of strings.
   const StringVector& argv() const { return argv_; }
@@ -173,6 +202,14 @@ class BASE_EXPORT CommandLine {
   // process's command line and then add some flags to it. For example:
   //   CommandLine cl(*CommandLine::ForCurrentProcess());
   //   cl.AppendSwitch(...);
+
+  // Internal version of GetCommandLineString. If |quote_placeholders| is true,
+  // also quotes parts with '%' in them.
+  StringType GetCommandLineStringInternal(bool quote_placeholders) const;
+
+  // Internal version of GetArgumentsString. If |quote_placeholders| is true,
+  // also quotes parts with '%' in them.
+  StringType GetArgumentsStringInternal(bool quote_placeholders) const;
 
   // The singleton CommandLine representing the current process's command line.
   static CommandLine* current_process_commandline_;
