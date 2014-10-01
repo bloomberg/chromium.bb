@@ -65,8 +65,8 @@ inline double parseDouble(const UChar* string, size_t length, size_t& parsedLeng
     if (length > conversionBufferSize)
         return Internal::parseDoubleFromLongString(string, length, parsedLength);
     LChar conversionBuffer[conversionBufferSize];
-    for (int i = 0; i < static_cast<int>(length); ++i)
-        conversionBuffer[i] = isASCII(string[i]) ? string[i] : 0;
+    for (size_t i = 0; i < length; ++i)
+        conversionBuffer[i] = isASCII(string[i]) ? static_cast<LChar>(string[i]) : 0;
     return parseDouble(conversionBuffer, length, parsedLength);
 }
 

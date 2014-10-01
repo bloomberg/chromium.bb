@@ -135,7 +135,7 @@ namespace double_conversion {
         int number_length = 0;
         // We fill the digits in reverse order and exchange them afterwards.
         while (number != 0) {
-            int digit = number % 10;
+            char digit = number % 10;
             number /= 10;
             buffer[(*length) + number_length] = '0' + digit;
             number_length++;
@@ -256,7 +256,7 @@ namespace double_conversion {
                 // and any further multiplication of fractionals by 5 will not overflow.
                 fractionals *= 5;
                 point--;
-                int digit = static_cast<int>(fractionals >> point);
+                char digit = static_cast<char>(fractionals >> point);
                 buffer[*length] = '0' + digit;
                 (*length)++;
                 fractionals -= static_cast<uint64_t>(digit) << point;
@@ -277,7 +277,7 @@ namespace double_conversion {
                 // This multiplication will not overflow for the same reasons as before.
                 fractionals128.Multiply(5);
                 point--;
-                int digit = fractionals128.DivModPowerOf2(point);
+                char digit = static_cast<char>(fractionals128.DivModPowerOf2(point));
                 buffer[*length] = '0' + digit;
                 (*length)++;
             }

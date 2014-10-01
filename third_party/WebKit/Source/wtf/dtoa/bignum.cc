@@ -511,7 +511,7 @@ namespace double_conversion {
             ASSERT(other.bigits_[other.used_digits_ - 1] >= ((1 << kBigitSize) / 16));
             // Remove the multiples of the first digit.
             // Example this = 23 and other equals 9. -> Remove 2 multiples.
-            result += bigits_[used_digits_ - 1];
+            result += static_cast<uint16_t>(bigits_[used_digits_ - 1]);
             SubtractTimes(other, bigits_[used_digits_ - 1]);
         }
 
@@ -525,14 +525,14 @@ namespace double_conversion {
 
         if (other.used_digits_ == 1) {
             // Shortcut for easy (and common) case.
-            int quotient = this_bigit / other_bigit;
+            uint16_t quotient = static_cast<uint16_t>(this_bigit / other_bigit);
             bigits_[used_digits_ - 1] = this_bigit - other_bigit * quotient;
             result += quotient;
             Clamp();
             return result;
         }
 
-        int division_estimate = this_bigit / (other_bigit + 1);
+        uint16_t division_estimate = static_cast<uint16_t>(this_bigit / (other_bigit + 1));
         result += division_estimate;
         SubtractTimes(other, division_estimate);
 
@@ -562,7 +562,7 @@ namespace double_conversion {
     }
 
 
-    static char HexCharOfValue(int value) {
+    static char HexCharOfValue(uint8_t value) {
         ASSERT(0 <= value && value <= 16);
         if (value < 10) return value + '0';
         return value - 10 + 'A';

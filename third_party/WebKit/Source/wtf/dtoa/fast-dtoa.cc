@@ -432,7 +432,7 @@ namespace double_conversion {
         // with the divisor exponent + 1. And the divisor is the biggest power of ten
         // that is smaller than integrals.
         while (*kappa > 0) {
-            int digit = integrals / divisor;
+            char digit = static_cast<char>(integrals / divisor);
             buffer[*length] = '0' + digit;
             (*length)++;
             integrals %= divisor;
@@ -467,7 +467,7 @@ namespace double_conversion {
             unit *= 10;
             unsafe_interval.set_f(unsafe_interval.f() * 10);
             // Integer division by one.
-            int digit = static_cast<int>(fractionals >> -one.e());
+            char digit = static_cast<char>(fractionals >> -one.e());
             buffer[*length] = '0' + digit;
             (*length)++;
             fractionals &= one.f() - 1;  // Modulo by one.
@@ -541,7 +541,7 @@ namespace double_conversion {
         // with the divisor exponent + 1. And the divisor is the biggest power of ten
         // that is smaller than 'integrals'.
         while (*kappa > 0) {
-            int digit = integrals / divisor;
+            char digit = static_cast<char>(integrals / divisor);
             buffer[*length] = '0' + digit;
             (*length)++;
             requested_digits--;
@@ -574,7 +574,7 @@ namespace double_conversion {
             fractionals *= 10;
             w_error *= 10;
             // Integer division by one.
-            int digit = static_cast<int>(fractionals >> -one.e());
+            char digit = static_cast<char>(fractionals >> -one.e());
             buffer[*length] = '0' + digit;
             (*length)++;
             requested_digits--;
