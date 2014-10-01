@@ -45,6 +45,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
+#include "core/paint/LayerPainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/testing/URLTestHelpers.h"
@@ -353,7 +354,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     RenderLayer* rootLayer = view->renderView()->layer();
     IntRect paintRect(0, 0, kWidth, kHeight);
     LayerPaintingInfo paintingInfo(rootLayer, paintRect, PaintBehaviorNormal, LayoutSize());
-    rootLayer->paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
 
     // The result should be a blend of red and green.
     SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);

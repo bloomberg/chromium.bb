@@ -55,6 +55,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/LayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -2465,10 +2466,12 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     RenderObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->renderer());
 #endif
 
-    rootLayer->paint(p, rect, m_paintBehavior, renderer);
+    LayerPainter layerPainter(*rootLayer);
+
+    layerPainter.paint(p, rect, m_paintBehavior, renderer);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        rootLayer->paintOverlayScrollbars(p, rect, m_paintBehavior, renderer);
+        layerPainter.paintOverlayScrollbars(p, rect, m_paintBehavior, renderer);
 
     m_isPainting = false;
 

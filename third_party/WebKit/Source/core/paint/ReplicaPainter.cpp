@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/ReplicaPainter.h"
 
+#include "core/paint/LayerPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
@@ -27,7 +28,7 @@ void ReplicaPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         RenderLayer* rootPaintingLayer = m_renderReplica.layer()->transform() ? m_renderReplica.layer()->parent() : m_renderReplica.layer()->enclosingTransformedAncestor();
         LayerPaintingInfo paintingInfo(rootPaintingLayer, paintInfo.rect, PaintBehaviorNormal, LayoutSize(), 0);
         PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects | PaintLayerPaintingReflection;
-        m_renderReplica.layer()->parent()->paintLayer(paintInfo.context, paintingInfo, flags);
+        LayerPainter(*m_renderReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
     } else if (paintInfo.phase == PaintPhaseMask) {
         m_renderReplica.paintMask(paintInfo, adjustedPaintOffset);
     }

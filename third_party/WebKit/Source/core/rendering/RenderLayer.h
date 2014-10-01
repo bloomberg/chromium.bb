@@ -46,7 +46,6 @@
 #define RenderLayer_h
 
 #include "core/rendering/LayerFragment.h"
-#include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayerClipper.h"
 #include "core/rendering/RenderLayerFilterInfo.h"
@@ -70,7 +69,6 @@ class RenderLayerCompositor;
 class RenderStyle;
 class TransformationMatrix;
 
-enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
 enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
 
 enum CompositingQueryMode {
@@ -120,7 +118,6 @@ public:
 
     bool isTransparent() const { return renderer()->isTransparent() || renderer()->hasMask(); }
     RenderLayer* transparentPaintingAncestor();
-    void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
     bool isReflection() const { return renderer()->isReplica(); }
     RenderLayerReflectionInfo* reflectionInfo() { return m_reflectionInfo.get(); }
@@ -192,6 +189,7 @@ public:
     bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
 
     bool usedTransparency() const { return m_usedTransparency; }
+    void setUsedTransparency(bool usedTransparency) { m_usedTransparency = usedTransparency; }
 
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
@@ -222,15 +220,9 @@ public:
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint&) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutRect&) const;
 
-    // The two main functions that use the layer system.  The paint method
-    // paints the layers that intersect the damage rect from back to
-    // front.  The hitTest method looks for mouse events by walking
-    // layers that intersect the point from front to back.
-    // paint() assumes that the caller will clip to the bounds of damageRect if necessary.
-    void paint(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior = PaintBehaviorNormal, RenderObject* paintingRoot = 0, PaintLayerFlags = 0);
+    // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
     bool hitTest(const HitTestRequest&, HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
-    void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, RenderObject* paintingRoot = 0);
 
     // Pass offsetFromRoot if known.
     bool intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot = 0) const;
@@ -264,6 +256,9 @@ public:
     bool hasTransform() const { return renderer()->hasTransform(); }
     // Note that this transform has the transform-origin baked in.
     TransformationMatrix* transform() const { return m_transform.get(); }
+    void setTransform(PassOwnPtr<TransformationMatrix> transform) { m_transform = transform; }
+    void clearTransform() { m_transform.clear(); }
+
     // currentTransform computes a transform which takes accelerated animations into account. The
     // resulting transform has transform-origin baked in. If the layer does not have a transform,
     // returns the identity matrix.
@@ -392,9 +387,6 @@ public:
         return isRootLayer() || layerRenderer->isPositioned() || hasTransform();
     }
 
-    // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
-    void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-
     bool scrollsOverflow() const;
 
     CompositingReasons potentialCompositingReasonsFromStyle() const { return m_potentialCompositingReasonsFromStyle; }
@@ -513,15 +505,40 @@ public:
 
     void updateSelfPaintingLayer();
 
-    // paintLayerContents() assumes that the caller will clip to the bounds of the painting dirty rect if necessary.
-    void paintLayerContents(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-
     RenderLayer* enclosingTransformedAncestor() const;
     LayoutPoint computeOffsetFromTransformedAncestor() const;
 
     void didUpdateNeedsCompositedScrolling();
 
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+
+    bool hasSelfPaintingLayerDescendant() const
+    {
+        if (m_hasSelfPaintingLayerDescendantDirty)
+            updateHasSelfPaintingLayerDescendant();
+        ASSERT(!m_hasSelfPaintingLayerDescendantDirty);
+        return m_hasSelfPaintingLayerDescendant;
+    }
+    LayoutRect paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
+    void collectFragments(LayerFragments&, const RenderLayer* rootLayer, const LayoutRect& dirtyRect,
+        ClipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize,
+        ShouldRespectOverflowClip = RespectOverflowClip, const LayoutPoint* offsetFromRoot = 0,
+        const LayoutSize& subPixelAccumulation = LayoutSize(), const LayoutRect* layerBoundingBox = 0);
+
+    LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
+
+    enum TransparencyClipBoxBehavior {
+        PaintingTransparencyClipBox,
+        HitTestingTransparencyClipBox
+    };
+
+    enum TransparencyClipBoxMode {
+        DescendantsOfTransparencyClipBox,
+        RootOfTransparencyClipBox
+    };
+
+    static LayoutRect transparencyClipBox(const RenderLayer*, const RenderLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
+        TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, PaintBehavior = 0);
 
 private:
     // Bounding box in the coordinates of this layer.
@@ -532,9 +549,6 @@ private:
     void setAncestorChainHasSelfPaintingLayerDescendant();
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
-    void clipToRect(const LayerPaintingInfo&, GraphicsContext*, const ClipRect&, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
-    void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
-
     void updateLayerPositionRecursive();
 
     void setNextSibling(RenderLayer* next) { m_next = next; }
@@ -543,44 +557,6 @@ private:
     void setLastChild(RenderLayer* last) { m_last = last; }
 
     void updateHasSelfPaintingLayerDescendant() const;
-
-    bool hasSelfPaintingLayerDescendant() const
-    {
-        if (m_hasSelfPaintingLayerDescendantDirty)
-            updateHasSelfPaintingLayerDescendant();
-        ASSERT(!m_hasSelfPaintingLayerDescendantDirty);
-        return m_hasSelfPaintingLayerDescendant;
-    }
-
-    LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
-
-    void paintLayerContentsAndReflection(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintLayerByApplyingTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& translationOffset = LayoutPoint());
-
-    // Returns whether this layer should be painted during sofware painting (i.e., not via calls from CompositedLayerMapping to draw into composited
-    // layers).
-    bool shouldPaintLayerInSoftwareMode(const LayerPaintingInfo&, PaintLayerFlags paintFlags);
-
-    void paintChildren(unsigned childrenToVisit, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const Vector<RenderLayer*>& columnLayers, size_t columnIndex);
-
-    void collectFragments(LayerFragments&, const RenderLayer* rootLayer, const LayoutRect& dirtyRect,
-        ClipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize,
-        ShouldRespectOverflowClip = RespectOverflowClip, const LayoutPoint* offsetFromRoot = 0,
-        const LayoutSize& subPixelAccumulation = LayoutSize(), const LayoutRect* layerBoundingBox = 0);
-    void updatePaintingInfoForFragments(LayerFragments&, const LayerPaintingInfo&, PaintLayerFlags, bool shouldPaintContent, const LayoutPoint* offsetFromRoot);
-    void paintBackgroundForFragments(const LayerFragments&, GraphicsContext*, GraphicsContext* transparencyLayerContext,
-        const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags);
-    void paintForegroundForFragments(const LayerFragments&, GraphicsContext*, GraphicsContext* transparencyLayerContext,
-        const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer,
-        bool selectionOnly, PaintLayerFlags);
-    void paintForegroundForFragmentsWithPhase(PaintPhase, const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags);
-    void paintOutlineForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags);
-    void paintOverflowControlsForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
-    void paintMaskForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, RenderObject* paintingRootForRenderer, PaintLayerFlags);
-    void paintChildClippingMaskForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, RenderObject* paintingRootForRenderer, PaintLayerFlags);
-    void paintTransformedLayerIntoFragments(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     RenderLayer* hitTestLayer(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
                               const LayoutRect& hitTestRect, const HitTestLocation&, bool appliedTransform,
@@ -635,8 +611,6 @@ private:
     bool update3DTransformedDescendantStatus();
 
     void updateOrRemoveFilterClients();
-
-    LayoutRect paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
     void updatePaginationRecursive(bool needsPaginationUpdate = false);
     void updatePagination();
