@@ -1465,3 +1465,5 @@ crbug.com/418091 [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ Pass F
 crbug.com/418091 [ SnowLeopard ] fast/text/text-shadow-no-default-color.html [ Pass Failure ]
 
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
+
+crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
