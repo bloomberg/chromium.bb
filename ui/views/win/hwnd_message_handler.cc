@@ -870,6 +870,10 @@ void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
 
 void HWNDMessageHandler::SizeConstraintsChanged() {
   LONG style = GetWindowLong(hwnd(), GWL_STYLE);
+  // Ignore if this is not a standard window.
+  if (!(style & WS_OVERLAPPED))
+    return;
+
   if (delegate_->CanResize()) {
     style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
     if (!delegate_->CanMaximize())
