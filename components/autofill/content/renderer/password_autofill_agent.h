@@ -153,30 +153,9 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // If |only_visible| is true, only forms visible in the layout are sent.
   void SendPasswordForms(blink::WebFrame* frame, bool only_visible);
 
-  void GetSuggestions(const PasswordFormFillData& fill_data,
-                      const base::string16& input,
-                      std::vector<base::string16>* suggestions,
-                      std::vector<base::string16>* realms,
-                      bool show_all);
-
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
                            const blink::WebInputElement& user_input,
                            bool show_all);
-
-  // Attempts to fill |username_element| and |password_element| with the
-  // |fill_data|.  Will use the data corresponding to the preferred username,
-  // unless the |username_element| already has a value set.  In that case,
-  // attempts to fill the password matching the already filled username, if
-  // such a password exists.
-  void FillFormOnPasswordRecieved(const PasswordFormFillData& fill_data,
-                                  blink::WebInputElement username_element,
-                                  blink::WebInputElement password_element);
-
-  bool FillUserNameAndPassword(blink::WebInputElement* username_element,
-                               blink::WebInputElement* password_element,
-                               const PasswordFormFillData& fill_data,
-                               bool exact_username_match,
-                               bool set_selection);
 
   // Fills |login_input| and |password| with the most relevant suggestion from
   // |fill_data| and shows a popup with other suggestions.
