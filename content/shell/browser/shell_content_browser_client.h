@@ -81,7 +81,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      std::vector<FileDescriptorInfo>* mappings) OVERRIDE;
+      FileDescriptorInfo* mappings) OVERRIDE;
 #endif
 #if defined(OS_WIN)
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,

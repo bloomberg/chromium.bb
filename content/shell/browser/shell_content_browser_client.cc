@@ -357,7 +357,7 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,
     int child_process_id,
-    std::vector<FileDescriptorInfo>* mappings) {
+    FileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath pak_file;
@@ -371,8 +371,8 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     NOTREACHED() << "Failed to open file when creating renderer process: "
                  << "content_shell.pak";
   }
-  mappings->push_back(
-      FileDescriptorInfo(kShellPakDescriptor, base::FileDescriptor(f.Pass())));
+
+  mappings->Transfer(kShellPakDescriptor, base::ScopedFD(f.TakePlatformFile()));
 
   if (breakpad::IsCrashReporterEnabled()) {
     f = breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
@@ -381,16 +381,14 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
                  << "be disabled for this process.";
     } else {
-      mappings->push_back(
-          FileDescriptorInfo(kAndroidMinidumpDescriptor,
-                             base::FileDescriptor(f.Pass())));
+      mappings->Transfer(kAndroidMinidumpDescriptor,
+                         base::ScopedFD(f.TakePlatformFile()));
     }
   }
 #else  // !defined(OS_ANDROID)
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
-    mappings->push_back(FileDescriptorInfo(
-        kCrashDumpSignal, base::FileDescriptor(crash_signal_fd, false)));
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 #endif  // defined(OS_ANDROID)
 }

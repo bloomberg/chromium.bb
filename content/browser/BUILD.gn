@@ -125,7 +125,11 @@ source_set("browser") {
     ]
     deps += [ "//third_party/power_gadget" ]
   } else {
-    sources += [ "power_profiler/power_data_provider_dummy.cc" ]
+    sources += [
+      "power_profiler/power_data_provider_dummy.cc",
+      "file_descriptor_info_impl.cc",
+      "file_descriptor_info_impl.h",
+    ]
     sources -= [ "renderer_host/web_input_event_aurawin.cc" ]
   }
 

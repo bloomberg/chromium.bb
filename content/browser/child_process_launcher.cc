@@ -45,6 +45,7 @@
 #if defined(OS_POSIX)
 #include "base/metrics/stats_table.h"
 #include "base/posix/global_descriptors.h"
+#include "content/browser/file_descriptor_info_impl.h"
 #endif
 
 namespace content {
@@ -201,17 +202,17 @@ class ChildProcessLauncher::Context
 #elif defined(OS_POSIX)
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    std::vector<FileDescriptorInfo> files_to_register;
-    files_to_register.push_back(
-        FileDescriptorInfo(kPrimaryIPCChannel,
-                           base::FileDescriptor(ipcfd, false)));
+    scoped_ptr<FileDescriptorInfo> files_to_register(
+        FileDescriptorInfoImpl::Create());
+    files_to_register->Share(kPrimaryIPCChannel, ipcfd);
     base::StatsTable* stats_table = base::StatsTable::current();
     if (stats_table &&
         base::SharedMemory::IsHandleValid(
             stats_table->GetSharedMemoryHandle())) {
-      files_to_register.push_back(
-          FileDescriptorInfo(kStatsTableSharedMemFd,
-                             stats_table->GetSharedMemoryHandle()));
+      base::FileDescriptor fd = stats_table->GetSharedMemoryHandle();
+      DCHECK(fd.auto_close);
+      files_to_register->Transfer(kStatsTableSharedMemFd,
+                                  base::ScopedFD(fd.fd));
     }
 #endif
 
@@ -220,13 +221,17 @@ class ChildProcessLauncher::Context
     // when running in single process mode.
     CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
 
-    GetContentClient()->browser()->
-        GetAdditionalMappedFilesForChildProcess(*cmd_line, child_process_id,
-                                                &files_to_register);
+    GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
+        *cmd_line, child_process_id, files_to_register.get());
 
-    StartChildProcess(cmd_line->argv(), child_process_id, files_to_register,
+    StartChildProcess(
+        cmd_line->argv(),
+        child_process_id,
+        files_to_register.Pass(),
         base::Bind(&ChildProcessLauncher::Context::OnChildProcessStarted,
-                   this_object, client_thread_id, begin_launch_time));
+                   this_object,
+                   client_thread_id,
+                   begin_launch_time));
 
 #elif defined(OS_POSIX)
     base::ProcessHandle handle = base::kNullProcessHandle;
@@ -235,25 +240,19 @@ class ChildProcessLauncher::Context
     base::ScopedFD ipcfd_closer(ipcfd);
 
 #if !defined(OS_MACOSX)
-    GetContentClient()->browser()->
-        GetAdditionalMappedFilesForChildProcess(*cmd_line, child_process_id,
-                                                &files_to_register);
+    GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
+        *cmd_line, child_process_id, files_to_register.get());
     if (use_zygote) {
-      handle = ZygoteHostImpl::GetInstance()->ForkRequest(cmd_line->argv(),
-                                                          files_to_register,
-                                                          process_type);
+      handle = ZygoteHostImpl::GetInstance()->ForkRequest(
+          cmd_line->argv(), files_to_register.Pass(), process_type);
     } else
     // Fall through to the normal posix case below when we're not zygoting.
 #endif  // !defined(OS_MACOSX)
     {
       // Convert FD mapping to FileHandleMappingVector
-      base::FileHandleMappingVector fds_to_map;
-      for (size_t i = 0; i < files_to_register.size(); ++i) {
-        fds_to_map.push_back(std::make_pair(
-            files_to_register[i].fd.fd,
-            files_to_register[i].id +
-                base::GlobalDescriptors::kBaseDescriptor));
-      }
+      base::FileHandleMappingVector fds_to_map =
+          files_to_register->GetMappingWithIDAdjustment(
+              base::GlobalDescriptors::kBaseDescriptor);
 
 #if !defined(OS_MACOSX)
       if (process_type == switches::kRendererProcess) {

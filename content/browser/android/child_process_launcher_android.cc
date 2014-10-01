@@ -102,7 +102,7 @@ static void OnChildProcessStarted(JNIEnv*,
 void StartChildProcess(
     const base::CommandLine::StringVector& argv,
     int child_process_id,
-    const std::vector<content::FileDescriptorInfo>& files_to_register,
+    scoped_ptr<content::FileDescriptorInfo> files_to_register,
     const StartChildProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
@@ -110,7 +110,7 @@ void StartChildProcess(
   // Create the Command line String[]
   ScopedJavaLocalRef<jobjectArray> j_argv = ToJavaArrayOfStrings(env, argv);
 
-  size_t file_count = files_to_register.size();
+  size_t file_count = files_to_register->GetMappingSize();
   DCHECK(file_count > 0);
 
   ScopedJavaLocalRef<jintArray> j_file_ids(env, env->NewIntArray(file_count));
@@ -128,10 +128,14 @@ void StartChildProcess(
       env->GetBooleanArrayElements(j_file_auto_close.obj(), NULL);
   base::android::CheckException(env);
   for (size_t i = 0; i < file_count; ++i) {
-    const content::FileDescriptorInfo& fd_info = files_to_register[i];
-    file_ids[i] = fd_info.id;
-    file_fds[i] = fd_info.fd.fd;
-    file_auto_close[i] = fd_info.fd.auto_close;
+    // Owners of passed descriptors can outlive this function and we don't know
+    // when it is safe to close() them. So we pass dup()-ed FD and
+    // let ChildProcessLauncher in java take care of their lifetimes.
+    // TODO(morrita): Drop FileDescriptorInfo.mAutoClose on Java side.
+    file_auto_close[i] = true;  // This indicates ownership transfer.
+    file_ids[i] = files_to_register->GetIDAt(i);
+    file_fds[i] = dup(files_to_register->GetFDAt(i));
+    PCHECK(0 <= file_fds[i]);
   }
   env->ReleaseIntArrayElements(j_file_ids.obj(), file_ids, 0);
   env->ReleaseIntArrayElements(j_file_fds.obj(), file_fds, 0);

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -2434,7 +2435,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,
     int child_process_id,
-    std::vector<FileDescriptorInfo>* mappings) {
+    FileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
   base::FilePath data_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &data_path);
@@ -2445,30 +2446,30 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       data_path.AppendASCII("chrome_100_percent.pak");
   base::File file(chrome_resources_pak, flags);
   DCHECK(file.IsValid());
-  mappings->push_back(FileDescriptorInfo(kAndroidChrome100PercentPakDescriptor,
-                                         FileDescriptor(file.Pass())));
+  mappings->Transfer(kAndroidChrome100PercentPakDescriptor,
+                     base::ScopedFD(file.TakePlatformFile()));
 
   const std::string locale = GetApplicationLocale();
   base::FilePath locale_pak = ResourceBundle::GetSharedInstance().
       GetLocaleFilePath(locale, false);
   file.Initialize(locale_pak, flags);
   DCHECK(file.IsValid());
-  mappings->push_back(FileDescriptorInfo(kAndroidLocalePakDescriptor,
-                                         FileDescriptor(file.Pass())));
+  mappings->Transfer(kAndroidLocalePakDescriptor,
+                     base::ScopedFD(file.TakePlatformFile()));
 
   base::FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   file.Initialize(resources_pack_path, flags);
   DCHECK(file.IsValid());
-  mappings->push_back(FileDescriptorInfo(kAndroidUIResourcesPakDescriptor,
-                                         FileDescriptor(file.Pass())));
+  mappings->Transfer(kAndroidUIResourcesPakDescriptor,
+                     base::ScopedFD(file.TakePlatformFile()));
 
   if (breakpad::IsCrashReporterEnabled()) {
     file = breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
                child_process_id);
     if (file.IsValid()) {
-      mappings->push_back(FileDescriptorInfo(kAndroidMinidumpDescriptor,
-                                             FileDescriptor(file.Pass())));
+      mappings->Transfer(kAndroidMinidumpDescriptor,
+                         base::ScopedFD(file.TakePlatformFile()));
     } else {
       LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
                  "be disabled for this process.";
@@ -2484,15 +2485,13 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       app_data_path.AppendASCII("icudtl.dat");
   base::File icudata_file(icudata_path, flags);
   DCHECK(icudata_file.IsValid());
-  mappings->push_back(FileDescriptorInfo(kAndroidICUDataDescriptor,
-                                         FileDescriptor(icudata_file.Pass())));
+  mappings->Transfer(kAndroidICUDataDescriptor,
+                     base::ScopedFD(icudata_file.TakePlatformFile()));
 
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
-    mappings->push_back(FileDescriptorInfo(kCrashDumpSignal,
-                                           FileDescriptor(crash_signal_fd,
-                                                          false)));
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 #endif  // defined(OS_ANDROID)
 }

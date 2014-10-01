@@ -34,7 +34,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   // Returns its pid on success, otherwise
   // base::kNullProcessHandle;
   pid_t ForkRequest(const std::vector<std::string>& command_line,
-                    const std::vector<FileDescriptorInfo>& mapping,
+                    scoped_ptr<FileDescriptorInfo> mapping,
                     const std::string& process_type);
   void EnsureProcessTerminated(pid_t process);
 

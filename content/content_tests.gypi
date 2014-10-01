@@ -768,6 +768,11 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
+        ['OS != "win"', {
+          'sources': [
+            'browser/file_descriptor_info_impl_unittest.cc',
+          ],
+        }],
         ['enable_plugins==0', {
           'sources/': [
             ['exclude', '^browser/renderer_host/pepper/'],

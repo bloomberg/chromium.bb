@@ -1569,7 +1569,9 @@
       ]
     }, { # os != "win"
       'sources': [
-        'browser/power_profiler/power_data_provider_dummy.cc'
+        'browser/power_profiler/power_data_provider_dummy.cc',
+        'browser/file_descriptor_info_impl.h',
+        'browser/file_descriptor_info_impl.cc',
       ]
     }],
     ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
