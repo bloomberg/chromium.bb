@@ -304,8 +304,6 @@ enum QuoteType {
     OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE
 };
 
-enum EBorderFit { BorderFitBorder, BorderFitLines };
-
 enum EAnimPlayState {
     AnimPlayStatePlaying,
     AnimPlayStatePaused

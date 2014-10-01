@@ -236,7 +236,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitBorderEndColor: return 191;
     case CSSPropertyWebkitBorderEndStyle: return 192;
     case CSSPropertyWebkitBorderEndWidth: return 193;
-    case CSSPropertyWebkitBorderFit: return 194;
+    // CSSPropertyWebkitBorderFit was 194
     case CSSPropertyWebkitBorderHorizontalSpacing: return 195;
     case CSSPropertyWebkitBorderImage: return 196;
     case CSSPropertyWebkitBorderRadius: return 197;

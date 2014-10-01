@@ -1217,8 +1217,6 @@ const char* invalidationReasonToString(InvalidationReason reason)
         return "incremental";
     case InvalidationFull:
         return "full";
-    case InvalidationBorderFitLines:
-        return "border fit lines";
     case InvalidationBorderBoxChange:
         return "border box change";
     case InvalidationBoundsChange:
@@ -1320,10 +1318,6 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
 {
     if (shouldDoFullPaintInvalidation())
         return m_bitfields.fullPaintInvalidationReason();
-
-    // Presumably a background or a border exists if border-fit:lines was specified.
-    if (style()->borderFit() == BorderFitLines)
-        return InvalidationBorderFitLines;
 
     if (compositingState() != PaintsIntoOwnBacking && newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking)
         return InvalidationLocationChange;
