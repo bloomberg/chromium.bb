@@ -7,6 +7,7 @@ import cStringIO
 import hashlib
 import json
 import logging
+import optparse
 import os
 import shutil
 import sys
@@ -108,8 +109,14 @@ class IsolateTest(IsolateBase):
     self.assertEqual(expected, saved_state.flatten())
 
   def test_variable_arg(self):
-    parser = isolate.OptionParserIsolate()
-    parser.require_isolated = False
+    parser = optparse.OptionParser()
+    isolate.add_isolate_options(parser)
+    options, args = parser.parse_args(
+        ['--config-variable', 'Foo', 'bar',
+          '--path-variable', 'Baz=sub=string',
+          '--extra-variable', 'biz', 'b uz=a'])
+    isolate.process_isolate_options(parser, options, require_isolated=False)
+
     expected_path = {
       'Baz': 'sub=string',
     }
@@ -120,18 +127,14 @@ class IsolateTest(IsolateBase):
       'biz': 'b uz=a',
       'EXECUTABLE_SUFFIX': '.exe' if sys.platform == 'win32' else '',
     }
-
-    options, args = parser.parse_args(
-        ['--config-variable', 'Foo', 'bar',
-          '--path-variable', 'Baz=sub=string',
-          '--extra-variable', 'biz', 'b uz=a'])
     self.assertEqual(expected_path, options.path_variables)
     self.assertEqual(expected_config, options.config_variables)
     self.assertEqual(expected_extra, options.extra_variables)
     self.assertEqual([], args)
 
   def test_variable_arg_fail(self):
-    parser = isolate.OptionParserIsolate()
+    parser = optparse.OptionParser()
+    isolate.add_isolate_options(parser)
     self.mock(sys, 'stderr', cStringIO.StringIO())
     with self.assertRaises(SystemExit):
       parser.parse_args(['--config-variable', 'Foo'])
@@ -1161,7 +1164,7 @@ class IsolateCommand(IsolateBase):
         '--isolate-server', 'http://localhost:1',
         '--config-variable', 'OS', 'dendy',
     ]
-    self.assertEqual(0, isolate.CMDarchive(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDarchive(optparse.OptionParser(), cmd))
     expected = [
         {
           'base_url': 'http://localhost:1',
@@ -1185,6 +1188,118 @@ class IsolateCommand(IsolateBase):
     actual[0]['infiles']['foo'].pop('t')
     self.assertEqual(expected, actual)
 
+  def test_CMDbatcharchive(self):
+    # Same as test_CMDarchive but via code path that parses *.gen.json files.
+    actual = []
+    self.mock(
+        isolate.isolateserver, 'upload_tree',
+        lambda **kwargs: actual.append(kwargs))
+
+    # First isolate: x.isolate.
+    isolate_file_x = os.path.join(self.cwd, 'x.isolate')
+    isolated_file_x = os.path.join(self.cwd, 'x.isolated')
+    with open(isolate_file_x, 'wb') as f:
+      f.write(
+          '# Foo\n'
+          '{'
+          '  \'conditions\':['
+          '    [\'OS=="dendy"\', {'
+          '      \'variables\': {'
+          '        \'isolate_dependency_tracked\': [\'foo\'],'
+          '      },'
+          '    }],'
+          '  ],'
+          '}')
+    with open(os.path.join(self.cwd, 'foo'), 'wb') as f:
+      f.write('fooo')
+    with open(os.path.join(self.cwd, 'x.isolated.gen.json'), 'wb') as f:
+      json.dump({
+        'args': [
+          '-i', isolate_file_x,
+          '-s', isolated_file_x,
+          '--config-variable', 'OS', 'dendy',
+        ],
+        'dir': self.cwd,
+        'version': 1,
+      }, f)
+
+    # Second isolate: y.isolate.
+    isolate_file_y = os.path.join(self.cwd, 'y.isolate')
+    isolated_file_y = os.path.join(self.cwd, 'y.isolated')
+    with open(isolate_file_y, 'wb') as f:
+      f.write(
+          '# Foo\n'
+          '{'
+          '  \'conditions\':['
+          '    [\'OS=="dendy"\', {'
+          '      \'variables\': {'
+          '        \'isolate_dependency_tracked\': [\'bar\'],'
+          '      },'
+          '    }],'
+          '  ],'
+          '}')
+    with open(os.path.join(self.cwd, 'bar'), 'wb') as f:
+      f.write('barr')
+    with open(os.path.join(self.cwd, 'y.isolated.gen.json'), 'wb') as f:
+      json.dump({
+        'args': [
+          '-i', isolate_file_y,
+          '-s', isolated_file_y,
+          '--config-variable', 'OS', 'dendy',
+        ],
+        'dir': self.cwd,
+        'version': 1,
+      }, f)
+
+    self.mock(sys, 'stdout', cStringIO.StringIO())
+    cmd = [
+      '--isolate-server', 'http://localhost:1',
+      os.path.join(self.cwd, 'x.isolated.gen.json'),
+      os.path.join(self.cwd, 'y.isolated.gen.json'),
+    ]
+    self.assertEqual(
+        0, isolate.CMDbatcharchive(tools.OptionParserWithLogging(), cmd))
+    expected = [
+        {
+          'base_url': 'http://localhost:1',
+          'indir': self.cwd,
+          'infiles': {
+            isolated_file_x: {
+              'priority': '0',
+            },
+            u'foo': {
+              'h': '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0',
+              's': 4,
+            },
+          },
+          'namespace': 'default-gzip',
+        },
+        {
+          'base_url': 'http://localhost:1',
+          'indir': self.cwd,
+          'infiles': {
+            isolated_file_y: {
+              'priority': '0',
+            },
+            u'bar': {
+              'h': 'e918b3a3f9597e3cfdc62ce20ecf5756191cb3ec',
+              's': 4,
+            },
+          },
+          'namespace': 'default-gzip',
+        },
+    ]
+    # These always change.
+    actual[0]['infiles'][isolated_file_x].pop('h')
+    actual[0]['infiles'][isolated_file_x].pop('s')
+    actual[0]['infiles']['foo'].pop('m')
+    actual[0]['infiles']['foo'].pop('t')
+    actual[1]['infiles'][isolated_file_y].pop('h')
+    actual[1]['infiles'][isolated_file_y].pop('s')
+    actual[1]['infiles']['bar'].pop('m')
+    actual[1]['infiles']['bar'].pop('t')
+    self.assertEqual(expected, actual)
+
   def test_CMDcheck_empty(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     isolated_file = os.path.join(self.cwd, 'x.isolated')
@@ -1193,7 +1308,7 @@ class IsolateCommand(IsolateBase):
 
     self.mock(sys, 'stdout', cStringIO.StringIO())
     cmd = ['-i', isolate_file, '-s', isolated_file]
-    isolate.CMDcheck(isolate.OptionParserIsolate(), cmd)
+    isolate.CMDcheck(optparse.OptionParser(), cmd)
 
   def test_CMDcheck_stale_version(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
@@ -1217,7 +1332,7 @@ class IsolateCommand(IsolateBase):
         '-s', isolated_file,
         '--config-variable', 'OS=dendy',
     ]
-    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     with open(isolate_file, 'rb') as f:
       actual = f.read()
@@ -1252,14 +1367,14 @@ class IsolateCommand(IsolateBase):
     with open(isolated_file + '.state', 'wb') as f:
       isolated_state_data['version'] = '100.42'
       json.dump(isolated_state_data, f)
-    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     # Now edit the .isolated file to break the version number and make
     # sure it doesn't crash.
     with open(isolated_file, 'wb') as f:
       isolated_data['version'] = '100.42'
       json.dump(isolated_data, f)
-    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     # Make sure the files were regenerated.
     with open(isolated_file, 'rb') as f:
@@ -1295,7 +1410,7 @@ class IsolateCommand(IsolateBase):
       f.write('yeah')
 
     self.mock(sys, 'stdout', cStringIO.StringIO())
-    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
 
     # Now add a new config variable.
     with open(isolate_file, 'wb') as f:
@@ -1324,7 +1439,7 @@ class IsolateCommand(IsolateBase):
     self.assertEqual(
         0,
         isolate.CMDcheck(
-            isolate.OptionParserIsolate(),
+            optparse.OptionParser(),
             cmd + ['--config-variable', 'foo=bar']))
 
   def test_CMDcheck_isolate_copied(self):
@@ -1336,7 +1451,7 @@ class IsolateCommand(IsolateBase):
     cmd = ['-i', x_isolate_file, '-s', isolated_file]
     with open(x_isolate_file, 'wb') as f:
       f.write('{}')
-    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
     self.assertTrue(os.path.isfile(isolated_file + '.state'))
     with open(isolated_file + '.state', 'rb') as f:
       self.assertEqual(json.load(f)['isolate_file'], 'x.isolate')
@@ -1345,7 +1460,7 @@ class IsolateCommand(IsolateBase):
     y_isolate_file = os.path.join(self.cwd, 'Y.isolate')
     shutil.copyfile(x_isolate_file, y_isolate_file)
     cmd = ['-i', y_isolate_file, '-s', isolated_file]
-    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDcheck(optparse.OptionParser(), cmd))
     with open(isolated_file + '.state', 'rb') as f:
       self.assertEqual(json.load(f)['isolate_file'], 'Y.isolate')
 
@@ -1357,7 +1472,7 @@ class IsolateCommand(IsolateBase):
     ]
     self.mock(isolate, 'load_complete_state', self.load_complete_state)
     self.mock(isolate.subprocess, 'call', lambda *_, **_kwargs: 0)
-    self.assertEqual(0, isolate.CMDrun(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDrun(optparse.OptionParser(), cmd))
 
   def test_CMDrun_no_isolated(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
@@ -1371,7 +1486,7 @@ class IsolateCommand(IsolateBase):
     self.mock(isolate.subprocess, 'call', expect_call)
 
     cmd = ['run', '--isolate', isolate_file]
-    self.assertEqual(0, isolate.CMDrun(isolate.OptionParserIsolate(), cmd))
+    self.assertEqual(0, isolate.CMDrun(optparse.OptionParser(), cmd))
 
 
 def clear_env_vars():

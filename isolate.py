@@ -13,7 +13,7 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4'
+__version__ = '0.4.1'
 
 import datetime
 import logging
@@ -35,6 +35,10 @@ from third_party.depot_tools import subcommand
 
 from utils import file_path
 from utils import tools
+
+
+# Supported version of *.isolated.gen.json files consumed by CMDbatcharchive.
+ISOLATED_GEN_JSON_VERSION = 1
 
 
 class ExecutionError(Exception):
@@ -608,7 +612,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
   .isolated file.
 
   Arguments:
-    options: Options instance generated with OptionParserIsolate. For either
+    options: Options instance generated with process_isolate_options. For either
              options.isolate and options.isolated, if the value is set, it is an
              absolute path.
     cwd: base directory to be used when loading the .isolate file.
@@ -742,26 +746,11 @@ def prepare_for_archival(options, cwd):
   return complete_state, infiles, isolated_hash
 
 
-### Commands.
+def isolate_and_archive(options, cwd, isolate_server, namespace):
+  """Isolates and uploads isolated tree.
 
-
-def CMDarchive(parser, args):
-  """Creates a .isolated file and uploads the tree to an isolate server.
-
-  All the files listed in the .isolated file are put in the isolate server
-  cache via isolateserver.py.
+  Uses parsed options object.
   """
-  add_subdir_option(parser)
-  isolateserver.add_isolate_server_options(parser, False)
-  auth.add_auth_options(parser)
-  options, args = parser.parse_args(args)
-  auth.process_auth_options(parser, options)
-  isolateserver.process_isolate_server_options(parser, options)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
-  if file_path.is_url(options.isolate_server):
-    auth.ensure_logged_in(options.isolate_server)
-  cwd = os.getcwd()
   with tools.Profiler('GenerateHashtable'):
     success = False
     try:
@@ -771,26 +760,129 @@ def CMDarchive(parser, args):
                    len(infiles))
 
       isolateserver.upload_tree(
-          base_url=options.isolate_server,
+          base_url=isolate_server,
           indir=complete_state.root_dir,
           infiles=infiles,
-          namespace=options.namespace)
+          namespace=namespace)
       success = True
       print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
+    except Exception:
+      logging.exception(
+          'Exception when archiving %s', os.path.basename(options.isolated))
+      success = False
     finally:
       # If the command failed, delete the .isolated file if it exists. This is
       # important so no stale swarm job is executed.
       if not success and os.path.isfile(options.isolated):
         os.remove(options.isolated)
-  return int(not success)
+  return success
 
 
-def CMDcheck(parser, args):
-  """Checks that all the inputs are present and generates .isolated."""
+def parse_archive_command_line(args, cwd):
+  """Given list of arguments for 'archive' command returns parsed options.
+
+  Used by CMDbatcharchive to parse options passed via JSON. See also CMDarchive.
+  """
+  parser = optparse.OptionParser()
+  add_isolate_options(parser)
   add_subdir_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
+  process_isolate_options(parser, options, cwd)
+  return options
+
+
+### Commands.
+
+
+def CMDarchive(parser, args):
+  """Creates a .isolated file and uploads the tree to an isolate server.
+
+  All the files listed in the .isolated file are put in the isolate server
+  cache via isolateserver.py.
+  """
+  add_isolate_options(parser)
+  add_subdir_option(parser)
+  isolateserver.add_isolate_server_options(parser, False)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  process_isolate_options(parser, options)
+  auth.process_auth_options(parser, options)
+  isolateserver.process_isolate_server_options(parser, options)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  if not file_path.is_url(options.isolate_server):
+    parser.error('Not a valid server URL: %s' % options.isolate_server)
+  auth.ensure_logged_in(options.isolate_server)
+  success = isolate_and_archive(
+      options, os.getcwd(), options.isolate_server, options.namespace)
+  return int(not success)
+
+
+@subcommand.usage('-- GEN_JSON_1 GEN_JSON_2 ...')
+def CMDbatcharchive(parser, args):
+  """Archives multiple isolated trees at once.
+
+  Using single command instead of multiple sequential invocations allows to cut
+  redundant work when isolated trees share common files (e.g. file hashes are
+  checked only once, their presence on the server is checked only once, and
+  so on).
+
+  Takes a list of paths to *.isolated.gen.json files that describe what trees to
+  isolate. Format of files is:
+  {
+    'version': 1,
+    'dir': <absolute path to a directory all other paths are relative to>,
+    'arg': [list of command line arguments for single 'archive' command]
+  }
+  """
+  isolateserver.add_isolate_server_options(parser, False)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  auth.process_auth_options(parser, options)
+  isolateserver.process_isolate_server_options(parser, options)
+  if not file_path.is_url(options.isolate_server):
+    parser.error('Not a valid server URL: %s' % options.isolate_server)
+  auth.ensure_logged_in(options.isolate_server)
+
+  # Validate all incoming options, prepare what needs to be archived as a list
+  # of tuples (working directory, archival options).
+  work_units = []
+  for gen_json_path in args:
+    # Validate JSON format of a *.isolated.gen.json file.
+    data = tools.read_json(gen_json_path)
+    if data.get('version') != ISOLATED_GEN_JSON_VERSION:
+      parser.error('Invalid version in %s' % gen_json_path)
+    cwd = data.get('dir')
+    if not isinstance(cwd, unicode) or not os.path.isdir(cwd):
+      parser.error('Invalid dir in %s' % gen_json_path)
+    args = data.get('args')
+    if (not isinstance(args, list) or
+        not all(isinstance(x, unicode) for x in args)):
+      parser.error('Invalid args in %s' % gen_json_path)
+    # Convert command line (embedded in JSON) to Options object.
+    work_units.append((cwd, parse_archive_command_line(args, cwd)))
+
+  # Perform the archival.
+  # TODO(vadimsh): Start optimizing this by removing redundant work.
+  failed = False
+  for cwd, opts in work_units:
+    success = isolate_and_archive(
+        opts, cwd, options.isolate_server, options.namespace)
+    failed = failed or not success
+
+  return int(failed)
+
+
+def CMDcheck(parser, args):
+  """Checks that all the inputs are present and generates .isolated."""
+  add_isolate_options(parser)
+  add_subdir_option(parser)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  process_isolate_options(parser, options)
 
   complete_state = load_complete_state(
       options, os.getcwd(), options.subdir, False)
@@ -806,13 +898,14 @@ def CMDremap(parser, args):
   Useful to test manually why a test is failing. The target executable is not
   run.
   """
-  parser.require_isolated = False
+  add_isolate_options(parser)
   add_outdir_options(parser)
   add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
   cwd = os.getcwd()
+  process_isolate_options(parser, options, cwd, require_isolated=False)
   process_outdir_options(parser, options, cwd)
   complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
@@ -842,10 +935,10 @@ def CMDrun(parser, args):
   command line of the target to run. For example, use:
     isolate.py run --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
-  parser.require_isolated = False
+  add_isolate_options(parser)
   add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
-
+  process_isolate_options(parser, options, require_isolated=False)
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
   cmd = complete_state.saved_state.command + args
@@ -951,6 +1044,23 @@ def add_variable_option(parser):
            'paths in the .isolate file but are not considered relative paths.')
 
 
+def add_isolate_options(parser):
+  """Adds --isolate, --isolated, --out and --<foo>-variable options."""
+  group = optparse.OptionGroup(parser, 'Common options')
+  group.add_option(
+      '-i', '--isolate',
+      metavar='FILE',
+      help='.isolate file to load the dependency data from')
+  add_variable_option(group)
+  group.add_option(
+      '--ignore_broken_items', action='store_true',
+      default=bool(os.environ.get('ISOLATE_IGNORE_BROKEN_ITEMS')),
+      help='Indicates that invalid entries in the isolated file to be '
+           'only be logged and not stop processing. Defaults to True if '
+           'env var ISOLATE_IGNORE_BROKEN_ITEMS is set')
+  parser.add_option_group(group)
+
+
 def add_subdir_option(parser):
   parser.add_option(
       '--subdir',
@@ -992,8 +1102,15 @@ def process_outdir_options(parser, options, cwd):
   # case there's errors in the command line.
 
 
-def parse_isolated_option(parser, options, cwd, require_isolated):
-  """Processes --isolated."""
+def process_isolate_options(parser, options, cwd=None, require_isolated=True):
+  """Handles options added with 'add_isolate_options'.
+
+  Mutates |options| in place, by normalizing path to isolate file, values of
+  variables, etc.
+  """
+  cwd = file_path.get_native_path_case(unicode(cwd or os.getcwd()))
+
+  # Parse --isolated option.
   if options.isolated:
     options.isolated = os.path.normpath(
         os.path.join(cwd, options.isolated.replace('/', os.path.sep)))
@@ -1002,11 +1119,7 @@ def parse_isolated_option(parser, options, cwd, require_isolated):
   if options.isolated and not options.isolated.endswith('.isolated'):
     parser.error('--isolated value must end with \'.isolated\'')
 
-
-def parse_variable_option(options):
-  """Processes all the --<foo>-variable flags."""
-  # TODO(benrg): Maybe we should use a copy of gyp's NameValueListToDict here,
-  # but it wouldn't be backward compatible.
+  # Processes all the --<foo>-variable flags.
   def try_make_int(s):
     """Converts a value to int if possible, converts to unicode otherwise."""
     try:
@@ -1018,60 +1131,20 @@ def parse_variable_option(options):
   options.path_variables = dict(options.path_variables)
   options.extra_variables = dict(options.extra_variables)
 
-
-class OptionParserIsolate(tools.OptionParserWithLogging):
-  """Adds automatic --isolate, --isolated, --out and --<foo>-variable handling.
-  """
-  # Set it to False if it is not required, e.g. it can be passed on but do not
-  # fail if not given.
-  require_isolated = True
-
-  def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(
-        self,
-        verbose=int(os.environ.get('ISOLATE_DEBUG', 0)),
-        **kwargs)
-    group = optparse.OptionGroup(self, "Common options")
-    group.add_option(
-        '-i', '--isolate',
-        metavar='FILE',
-        help='.isolate file to load the dependency data from')
-    add_variable_option(group)
-    group.add_option(
-        '--ignore_broken_items', action='store_true',
-        default=bool(os.environ.get('ISOLATE_IGNORE_BROKEN_ITEMS')),
-        help='Indicates that invalid entries in the isolated file to be '
-             'only be logged and not stop processing. Defaults to True if '
-             'env var ISOLATE_IGNORE_BROKEN_ITEMS is set')
-    self.add_option_group(group)
-
-  def parse_args(self, *args, **kwargs):
-    """Makes sure the paths make sense.
-
-    On Windows, / and \ are often mixed together in a path.
-    """
-    options, args = tools.OptionParserWithLogging.parse_args(
-        self, *args, **kwargs)
-    if not self.allow_interspersed_args and args:
-      self.error('Unsupported argument: %s' % args)
-
-    cwd = file_path.get_native_path_case(unicode(os.getcwd()))
-    parse_isolated_option(self, options, cwd, self.require_isolated)
-    parse_variable_option(options)
-
-    if options.isolate:
-      # TODO(maruel): Work with non-ASCII.
-      # The path must be in native path case for tracing purposes.
-      options.isolate = unicode(options.isolate).replace('/', os.path.sep)
-      options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
-      options.isolate = file_path.get_native_path_case(options.isolate)
-
-    return options, args
+  # Normalize the path in --isolate.
+  if options.isolate:
+    # TODO(maruel): Work with non-ASCII.
+    # The path must be in native path case for tracing purposes.
+    options.isolate = unicode(options.isolate).replace('/', os.path.sep)
+    options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
+    options.isolate = file_path.get_native_path_case(options.isolate)
 
 
 def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  return dispatcher.execute(OptionParserIsolate(version=__version__), argv)
+  parser = tools.OptionParserWithLogging(
+        version=__version__, verbose=int(os.environ.get('ISOLATE_DEBUG', 0)))
+  return dispatcher.execute(parser, argv)
 
 
 if __name__ == '__main__':

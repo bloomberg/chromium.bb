@@ -174,6 +174,7 @@ class Isolate(unittest.TestCase):
     modes = [m.group(1) for m in modes if m]
     EXPECTED_MODES = (
         'archive',
+        'batcharchive',
         'check',
         'help',
         'remap',
@@ -754,13 +755,13 @@ class IsolateOther(IsolateTempdir):
         sys.executable, 'isolate.py', 'check',
         '-s', os.path.join(self.tempdir, 'out.isolated'),
     ]
-    subprocess.check_call(cmd + ['-i', a_isolate])
+    subprocess.check_call(cmd + ['-i', a_isolate], cwd=ROOT_DIR)
 
     # Move the .isolate file aside and rerun the command with the new source but
     # same destination.
     b_isolate = os.path.join(self.tempdir, 'b.isolate')
     os.rename(a_isolate, b_isolate)
-    subprocess.check_call(cmd + ['-i', b_isolate])
+    subprocess.check_call(cmd + ['-i', b_isolate], cwd=ROOT_DIR)
 
 
 if __name__ == '__main__':
