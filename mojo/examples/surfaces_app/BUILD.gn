@@ -122,6 +122,7 @@ mojom("bindings") {
   deps = [
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/interfaces/surfaces:surface_id",
   ]
 
   sources = [ "child.mojom" ]
