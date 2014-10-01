@@ -194,6 +194,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDate, DateRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDateTime, DateTimeRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDefinition, DefinitionRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionListDetail, DescriptionListDetailRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionList, DescriptionListRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDescriptionListTerm, DescriptionListTermRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDetails, DetailsRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleDialog, DialogRole);

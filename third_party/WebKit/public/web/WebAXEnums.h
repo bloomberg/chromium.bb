@@ -94,6 +94,7 @@ enum WebAXRole {
     WebAXRoleDateTime,
     WebAXRoleDefinition,
     WebAXRoleDescriptionListDetail,
+    WebAXRoleDescriptionList,
     WebAXRoleDescriptionListTerm,
     WebAXRoleDetails,
     WebAXRoleDialog,

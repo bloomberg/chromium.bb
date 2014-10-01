@@ -82,6 +82,7 @@ enum AccessibilityRole {
     DateTimeRole,
     DefinitionRole,
     DescriptionListDetailRole,
+    DescriptionListRole,
     DescriptionListTermRole,
     DetailsRole,
     DialogRole,

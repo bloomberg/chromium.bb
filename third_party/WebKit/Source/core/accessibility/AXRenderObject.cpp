@@ -357,6 +357,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(ddTag))
         return DescriptionListDetailRole;
 
+    if (node && node->hasTagName(dlTag))
+        return DescriptionListRole;
+
     if (node && node->hasTagName(dtTag))
         return DescriptionListTermRole;
 
