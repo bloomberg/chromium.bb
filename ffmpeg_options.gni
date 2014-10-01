@@ -40,6 +40,8 @@ if (cpu_arch == "x86") {
 }
 
 os_config = os
-if (is_linux && is_msan) {
+if ((is_linux || is_chromeos) && is_msan) {
   os_config = "linux-noasm"
+} else if (is_chromeos) {
+  os_config = "linux"
 }
