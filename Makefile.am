@@ -128,6 +128,9 @@ pkgconfig_DATA += breakpad-client.pc
 src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/crash_generation/crash_generation_server.cc \
+	src/client/linux/dump_writer_common/seccomp_unwinder.cc \
+	src/client/linux/dump_writer_common/thread_info.cc \
+	src/client/linux/dump_writer_common/ucontext_reader.cc \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
@@ -440,10 +443,13 @@ src_client_linux_linux_client_unittest_shlib_LDFLAGS = \
 	-shared \
 	-Wl,-h,linux_client_unittest_shlib
 src_client_linux_linux_client_unittest_shlib_LDADD = \
+	src/client/linux/crash_generation/crash_generation_client.o \
+	src/client/linux/dump_writer_common/seccomp_unwinder.o \
+	src/client/linux/dump_writer_common/thread_info.o \
+	src/client/linux/dump_writer_common/ucontext_reader.o \
 	src/client/linux/handler/exception_handler.o \
 	src/client/linux/handler/minidump_descriptor.o \
 	src/client/linux/log/log.o \
-	src/client/linux/crash_generation/crash_generation_client.o \
 	src/client/linux/minidump_writer/linux_dumper.o \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.o \
 	src/client/linux/minidump_writer/minidump_writer.o \

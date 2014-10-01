@@ -44,14 +44,12 @@
 #include <sys/types.h>
 #include <sys/user.h>
 
+#include "client/linux/dump_writer_common/mapping_info.h"
+#include "client/linux/dump_writer_common/thread_info.h"
 #include "common/memory.h"
 #include "google_breakpad/common/minidump_format.h"
 
 namespace google_breakpad {
-
-#if defined(__i386) || defined(__x86_64)
-typedef typeof(((struct user*) 0)->u_debugreg[0]) debugreg_t;
-#endif
 
 // Typedef for our parsing of the auxv variables in /proc/pid/auxv.
 #if defined(__i386) || defined(__ARM_EABI__) || defined(__mips__)
@@ -66,50 +64,6 @@ typedef typeof(((elf_aux_entry*) 0)->a_un.a_val) elf_aux_val_t;
 // is the name we use for it when writing it to the minidump.
 // This should always be less than NAME_MAX!
 const char kLinuxGateLibraryName[] = "linux-gate.so";
-
-// We produce one of these structures for each thread in the crashed process.
-struct ThreadInfo {
-  pid_t tgid;   // thread group id
-  pid_t ppid;   // parent process
-
-  uintptr_t stack_pointer;  // thread stack pointer
-
-
-#if defined(__i386) || defined(__x86_64)
-  user_regs_struct regs;
-  user_fpregs_struct fpregs;
-  static const unsigned kNumDebugRegisters = 8;
-  debugreg_t dregs[8];
-#if defined(__i386)
-  user_fpxregs_struct fpxregs;
-#endif  // defined(__i386)
-
-#elif defined(__ARM_EABI__)
-  // Mimicking how strace does this(see syscall.c, search for GETREGS)
-  struct user_regs regs;
-  struct user_fpregs fpregs;
-#elif defined(__aarch64__)
-  // Use the structures defined in <asm/ptrace.h>
-  struct user_pt_regs regs;
-  struct user_fpsimd_state fpregs;
-#elif defined(__mips__)
-  user_regs_struct regs;
-  user_fpregs_struct fpregs;
-  uint32_t hi[3];
-  uint32_t lo[3];
-  uint32_t dsp_control;
-#endif
-};
-
-// One of these is produced for each mapping in the process (i.e. line in
-// /proc/$x/maps).
-struct MappingInfo {
-  uintptr_t start_addr;
-  size_t size;
-  size_t offset;  // offset into the backed file.
-  bool exec;  // true if the mapping has the execute bit set.
-  char name[NAME_MAX];
-};
 
 class LinuxDumper {
  public:
