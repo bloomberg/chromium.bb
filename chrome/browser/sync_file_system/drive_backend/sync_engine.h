@@ -178,6 +178,7 @@ class SyncEngine : public RemoteFileSyncService,
   // Called by WorkerObserver.
   void OnPendingFileListUpdated(int item_count);
   void OnFileStatusChanged(const storage::FileSystemURL& url,
+                           SyncFileType file_type,
                            SyncFileStatus file_status,
                            SyncAction sync_action,
                            SyncDirection direction);

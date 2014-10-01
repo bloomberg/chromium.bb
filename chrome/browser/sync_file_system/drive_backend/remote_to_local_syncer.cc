@@ -94,6 +94,7 @@ storage::ScopedFile CreateTemporaryFile(
 
 RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
     : sync_context_(sync_context),
+      file_type_(SYNC_FILE_TYPE_UNKNOWN),
       sync_action_(SYNC_ACTION_NONE),
       prepared_(false),
       sync_root_deletion_(false),
@@ -451,6 +452,7 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
   // Check if the local file exists.
   if (local_metadata_->file_type == SYNC_FILE_TYPE_UNKNOWN ||
       (!local_changes_->empty() && local_changes_->back().IsDelete())) {
+    file_type_ = SYNC_FILE_TYPE_FILE;
     sync_action_ = SYNC_ACTION_ADDED;
     // Missing local file case.
     // Download the file and add it to local as a new file.
@@ -461,6 +463,7 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
   DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
   if (local_changes_->empty()) {
     if (local_metadata_->file_type == SYNC_FILE_TYPE_FILE) {
+      file_type_ = SYNC_FILE_TYPE_FILE;
       sync_action_ = SYNC_ACTION_UPDATED;
       // Download the file and overwrite the existing local file.
       DownloadFile(token.Pass());
@@ -517,6 +520,7 @@ void RemoteToLocalSyncer::DidPrepareForFolderUpdate(
   // Check if the local file exists.
   if (local_metadata_->file_type == SYNC_FILE_TYPE_UNKNOWN ||
       (!local_changes_->empty() && local_changes_->back().IsDelete())) {
+    file_type_ = SYNC_FILE_TYPE_DIRECTORY;
     sync_action_ = SYNC_ACTION_ADDED;
     // No local file exists at the path.
     CreateFolder(token.Pass());
@@ -535,6 +539,7 @@ void RemoteToLocalSyncer::DidPrepareForFolderUpdate(
   }
 
   DCHECK_EQ(SYNC_FILE_TYPE_FILE, local_metadata_->file_type);
+  file_type_ = SYNC_FILE_TYPE_DIRECTORY;
   sync_action_ = SYNC_ACTION_ADDED;
   // Got a remote folder for existing local file.
   // Our policy prioritize folders in this case.
@@ -595,6 +600,7 @@ void RemoteToLocalSyncer::DidPrepareForDeletion(
 
   DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
   if (local_changes_->empty()) {
+    file_type_ = SYNC_FILE_TYPE_UNKNOWN;
     sync_action_ = SYNC_ACTION_DELETED;
     DeleteLocalFile(token.Pass());
     return;

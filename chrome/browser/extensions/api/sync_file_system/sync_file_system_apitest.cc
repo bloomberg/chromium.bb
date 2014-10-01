@@ -94,12 +94,13 @@ ACTION_P2(UpdateRemoteChangeQueue, origin, mock_remote_service) {
   mock_remote_service->NotifyRemoteChangeQueueUpdated(1);
 }
 
-ACTION_P5(ReturnWithFakeFileAddedStatus,
+ACTION_P6(ReturnWithFakeFileAddedStatus,
           origin,
           mock_remote_service,
-          sync_direction,
+          file_type,
           sync_file_status,
-          sync_action_taken) {
+          sync_action_taken,
+          sync_direction) {
   FileSystemURL mock_url = sync_file_system::CreateSyncableFileSystemURL(
       *origin,
       base::FilePath(FILE_PATH_LITERAL("foo.txt")));
@@ -109,7 +110,11 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
                             sync_file_system::SYNC_STATUS_OK,
                             mock_url));
   mock_remote_service->NotifyFileStatusChanged(
-      mock_url, sync_direction, sync_file_status, sync_action_taken);
+      mock_url,
+      file_type,
+      sync_file_status,
+      sync_action_taken,
+      sync_direction);
 }
 
 }  // namespace
@@ -140,6 +145,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
       .WillOnce(ReturnWithFakeFileAddedStatus(
           &origin,
           mock_remote_service(),
+          sync_file_system::SYNC_FILE_TYPE_FILE,
           sync_file_system::SYNC_FILE_STATUS_SYNCED,
           sync_file_system::SYNC_ACTION_ADDED,
           sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL));
@@ -156,6 +162,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
       .WillOnce(ReturnWithFakeFileAddedStatus(
           &origin,
           mock_remote_service(),
+          sync_file_system::SYNC_FILE_TYPE_FILE,
           sync_file_system::SYNC_FILE_STATUS_SYNCED,
           sync_file_system::SYNC_ACTION_DELETED,
           sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL));

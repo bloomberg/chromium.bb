@@ -52,6 +52,7 @@ class LocalToRemoteSyncer : public SyncTask {
 
   const storage::FileSystemURL& url() const { return url_; }
   const base::FilePath& target_path() const { return target_path_; }
+  SyncFileType file_type() const { return file_type_; }
   SyncAction sync_action() const { return sync_action_; }
   bool needs_remote_change_listing() const {
     return needs_remote_change_listing_;
@@ -111,6 +112,7 @@ class LocalToRemoteSyncer : public SyncTask {
   bool local_is_missing_;
   base::FilePath local_path_;
   storage::FileSystemURL url_;
+  SyncFileType file_type_;
   SyncAction sync_action_;
 
   scoped_ptr<FileTracker> remote_file_tracker_;

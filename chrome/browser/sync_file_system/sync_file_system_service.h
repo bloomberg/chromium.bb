@@ -153,6 +153,7 @@ class SyncFileSystemService
 
   // SyncFileStatusObserver implementation.
   virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
+                                   SyncFileType file_type,
                                    SyncFileStatus sync_status,
                                    SyncAction action_taken,
                                    SyncDirection direction) OVERRIDE;

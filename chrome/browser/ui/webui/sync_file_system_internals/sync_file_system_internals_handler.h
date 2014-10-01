@@ -37,6 +37,7 @@ class SyncFileSystemInternalsHandler
       sync_file_system::SyncServiceState state,
       const std::string& description) OVERRIDE;
   virtual void OnFileSynced(const storage::FileSystemURL& url,
+                            sync_file_system::SyncFileType file_type,
                             sync_file_system::SyncFileStatus status,
                             sync_file_system::SyncAction action,
                             sync_file_system::SyncDirection direction) OVERRIDE;

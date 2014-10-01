@@ -48,6 +48,7 @@ class SyncWorkerInterface {
    public:
     virtual void OnPendingFileListUpdated(int item_count) = 0;
     virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
+                                     SyncFileType file_type,
                                      SyncFileStatus file_status,
                                      SyncAction sync_action,
                                      SyncDirection direction) = 0;

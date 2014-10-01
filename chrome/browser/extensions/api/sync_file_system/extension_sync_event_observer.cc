@@ -86,15 +86,14 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 
 void ExtensionSyncEventObserver::OnFileSynced(
     const storage::FileSystemURL& url,
+    sync_file_system::SyncFileType file_type,
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
     sync_file_system::SyncDirection direction) {
   scoped_ptr<base::ListValue> params(new base::ListValue());
 
-  // For now we always assume events come only for files (not directories).
   scoped_ptr<base::DictionaryValue> entry(
-      CreateDictionaryValueForFileSystemEntry(
-          url, sync_file_system::SYNC_FILE_TYPE_FILE));
+      CreateDictionaryValueForFileSystemEntry(url, file_type));
   if (!entry)
     return;
   params->Append(entry.release());

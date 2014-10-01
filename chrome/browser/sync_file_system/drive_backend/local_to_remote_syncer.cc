@@ -81,6 +81,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
       local_is_missing_(IsLocalFileMissing(local_metadata, local_change)),
       local_path_(local_path),
       url_(url),
+      file_type_(SYNC_FILE_TYPE_UNKNOWN),
       sync_action_(SYNC_ACTION_NONE),
       remote_file_change_id_(0),
       retry_on_success_(false),
@@ -453,6 +454,7 @@ void LocalToRemoteSyncer::DeleteRemoteFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
 
+  file_type_ = SYNC_FILE_TYPE_UNKNOWN;
   sync_action_ = SYNC_ACTION_DELETED;
   drive_service()->DeleteResource(
       remote_file_tracker_->file_id(),
@@ -500,6 +502,7 @@ void LocalToRemoteSyncer::UploadExistingFile(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
+  file_type_ = SYNC_FILE_TYPE_FILE;
   sync_action_ = SYNC_ACTION_UPDATED;
 
   drive::DriveUploader::UploadExistingFileOptions options;
@@ -624,6 +627,7 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
 void LocalToRemoteSyncer::UploadNewFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
+  file_type_ = SYNC_FILE_TYPE_FILE;
   sync_action_ = SYNC_ACTION_ADDED;
   base::FilePath title = storage::VirtualPath::BaseName(target_path_);
   drive_uploader()->UploadNewFile(
@@ -667,6 +671,7 @@ void LocalToRemoteSyncer::CreateRemoteFolder(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
   base::FilePath title = storage::VirtualPath::BaseName(target_path_);
+  file_type_ = SYNC_FILE_TYPE_DIRECTORY;
   sync_action_ = SYNC_ACTION_ADDED;
 
   DCHECK(!folder_creator_);

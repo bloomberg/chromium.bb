@@ -53,6 +53,7 @@ class RemoteToLocalSyncer : public SyncTask {
   void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
   const storage::FileSystemURL& url() const { return url_; }
+  SyncFileType file_type() const { return file_type_; }
   SyncAction sync_action() const { return sync_action_; }
 
   bool is_sync_root_deletion() const { return sync_root_deletion_; }
@@ -203,6 +204,7 @@ class RemoteToLocalSyncer : public SyncTask {
   scoped_ptr<FileMetadata> remote_metadata_;
 
   storage::FileSystemURL url_;
+  SyncFileType file_type_;
   SyncAction sync_action_;
 
   bool prepared_;

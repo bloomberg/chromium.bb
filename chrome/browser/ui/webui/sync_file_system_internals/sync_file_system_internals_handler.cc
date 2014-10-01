@@ -87,6 +87,7 @@ void SyncFileSystemInternalsHandler::OnSyncStateUpdated(
 
 void SyncFileSystemInternalsHandler::OnFileSynced(
     const storage::FileSystemURL& url,
+    sync_file_system::SyncFileType file_type,
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
     sync_file_system::SyncDirection direction) {

@@ -90,8 +90,9 @@ class MockSyncEventObserver : public SyncEventObserver {
                void(const GURL& app_origin,
                     SyncServiceState state,
                     const std::string& description));
-  MOCK_METHOD4(OnFileSynced,
+  MOCK_METHOD5(OnFileSynced,
                void(const storage::FileSystemURL& url,
+                    SyncFileType file_type,
                     SyncFileStatus status,
                     SyncAction action,
                     SyncDirection direction));

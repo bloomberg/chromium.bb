@@ -109,13 +109,14 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
   }
 
   virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
+                                   SyncFileType file_type,
                                    SyncFileStatus file_status,
                                    SyncAction sync_action,
                                    SyncDirection direction) OVERRIDE {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->OnFileStatusChanged(
-            url, file_status, sync_action, direction);
+            url, file_type, file_status, sync_action, direction);
       return;
     }
 
@@ -124,7 +125,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
         FROM_HERE,
         base::Bind(&SyncEngine::OnFileStatusChanged,
                    sync_engine_,
-                   url, file_status, sync_action, direction));
+                   url, file_type, file_status, sync_action, direction));
   }
 
   virtual void UpdateServiceState(RemoteServiceState state,
@@ -780,13 +781,14 @@ void SyncEngine::OnPendingFileListUpdated(int item_count) {
 }
 
 void SyncEngine::OnFileStatusChanged(const storage::FileSystemURL& url,
+                                     SyncFileType file_type,
                                      SyncFileStatus file_status,
                                      SyncAction sync_action,
                                      SyncDirection direction) {
   FOR_EACH_OBSERVER(FileStatusObserver,
                     file_status_observers_,
                     OnFileStatusChanged(
-                        url, file_status, sync_action, direction));
+                        url, file_type, file_status, sync_action, direction));
 }
 
 void SyncEngine::UpdateServiceState(RemoteServiceState state,

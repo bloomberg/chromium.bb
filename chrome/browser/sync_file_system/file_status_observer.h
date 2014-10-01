@@ -9,6 +9,7 @@
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "chrome/browser/sync_file_system/sync_file_status.h"
+#include "chrome/browser/sync_file_system/sync_file_type.h"
 
 namespace storage {
 class FileSystemURL;
@@ -22,6 +23,7 @@ class FileStatusObserver {
   virtual ~FileStatusObserver() {}
 
   virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
+                                   SyncFileType file_type,
                                    SyncFileStatus sync_status,
                                    SyncAction action_taken,
                                    SyncDirection direction) = 0;

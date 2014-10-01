@@ -716,12 +716,13 @@ void SyncFileSystemService::OnStateChanged() {
 
 void SyncFileSystemService::OnFileStatusChanged(
     const FileSystemURL& url,
+    SyncFileType file_type,
     SyncFileStatus sync_status,
     SyncAction action_taken,
     SyncDirection direction) {
   FOR_EACH_OBSERVER(
       SyncEventObserver, observers_,
-      OnFileSynced(url, sync_status, action_taken, direction));
+      OnFileSynced(url, file_type, sync_status, action_taken, direction));
 }
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(

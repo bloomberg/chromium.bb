@@ -71,11 +71,12 @@ void MockRemoteFileSyncService::NotifyRemoteServiceStateUpdated(
 
 void MockRemoteFileSyncService::NotifyFileStatusChanged(
     const storage::FileSystemURL& url,
+    SyncFileType file_type,
     SyncFileStatus sync_status,
     SyncAction action_taken,
     SyncDirection direction) {
   FOR_EACH_OBSERVER(FileStatusObserver, file_status_observers_,
-                    OnFileStatusChanged(url, sync_status,
+                    OnFileStatusChanged(url, file_type, sync_status,
                                         action_taken, direction));
 }
 

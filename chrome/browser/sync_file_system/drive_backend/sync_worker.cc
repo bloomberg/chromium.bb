@@ -514,6 +514,7 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
           Observer, observers_,
           OnFileStatusChanged(
               syncer->url(),
+              syncer->file_type(),
               SYNC_FILE_STATUS_SYNCED,
               syncer->sync_action(),
               SYNC_DIRECTION_REMOTE_TO_LOCAL));
@@ -544,6 +545,7 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
     }
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnFileStatusChanged(updated_url,
+                                          syncer->file_type(),
                                           SYNC_FILE_STATUS_SYNCED,
                                           syncer->sync_action(),
                                           SYNC_DIRECTION_LOCAL_TO_REMOTE));
