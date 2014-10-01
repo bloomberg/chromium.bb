@@ -406,6 +406,40 @@ function testCannotMutateEventName() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadstop event fires when loading a webview
+// accessible resource from a partition that is privileged if the src URL
+// is not fully qualified.
+function testChromeExtensionRelativePath() {
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'guest_with_inline_script.html');
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the loadstop event fires when loading a webview
+// accessible resource from a partition that is privileged.
+function testChromeExtensionURL() {
+  var localResource = chrome.runtime.getURL('guest_with_inline_script.html');
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', localResource);
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the load event fires when the a new page is
 // loaded.
 // TODO(fsamuel): Add a test to verify that subframe loads within a guest
@@ -508,6 +542,30 @@ function testDisplayNoneWebviewRemoveChild() {
     // This should trigger loadstop.
     document.body.appendChild(webview);
   }, 0);
+}
+
+// This test verifies that the loadstart, loadstop, and exit events fire as
+// expected.
+function testEventName() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('partition', arguments.callee.name);
+
+  webview.addEventListener('loadstart', function(evt) {
+    embedder.test.assertEq('loadstart', evt.type);
+  });
+
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq('loadstop', evt.type);
+    webview.terminate();
+  });
+
+  webview.addEventListener('exit', function(evt) {
+    embedder.test.assertEq('exit', evt.type);
+    embedder.test.succeed();
+  });
+
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
 }
 
 function testExecuteScript() {
@@ -1119,6 +1177,110 @@ function testReloadAfterTerminate() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that <webview> restores the src attribute if it is
+// removed after navigation.
+function testRemoveSrcAttribute() {
+  var dataUrl = 'data:text/html,test page';
+  var webview = document.createElement('webview');
+  webview.setAttribute('partition', arguments.callee.name);
+  var terminated = false;
+  webview.addEventListener('loadstop', function(evt) {
+    webview.removeAttribute('src');
+    setTimeout(function() {
+      embedder.test.assertEq(dataUrl, webview.getAttribute('src'));
+      embedder.test.succeed();
+    }, 0);
+  });
+  webview.setAttribute('src', dataUrl);
+  document.body.appendChild(webview);
+}
+
+function testRemoveWebviewAfterNavigation() {
+  var webview = document.createElement('webview');
+  document.body.appendChild(webview);
+  webview.src = 'data:text/html,trigger navigation';
+  document.body.removeChild(webview);
+  setTimeout(function() {
+    embedder.test.succeed();
+  }, 0);
+}
+
+function testResizeWebviewResizesContent() {
+  var webview = document.createElement('webview');
+  webview.src = 'about:blank';
+  webview.addEventListener('loadstop', function(e) {
+    webview.executeScript(
+      {file: 'inject_resize_test.js'},
+      function(results) {
+        window.console.log('The resize test has been injected into webview.');
+      }
+    );
+    webview.executeScript(
+      {file: 'inject_comm_channel.js'},
+      function(results) {
+        window.console.log('The guest script for a two-way comm channel has ' +
+            'been injected into webview.');
+        // Establish a communication channel with the guest.
+        var msg = ['connect'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      }
+    );
+  });
+  window.addEventListener('message', function(e) {
+    var data = JSON.parse(e.data);
+    if (data[0] == 'connected') {
+      console.log('A communication channel has been established with webview.');
+      console.log('Resizing <webview> width from 300px to 400px.');
+      webview.style.width = '400px';
+      return;
+    }
+    if (data[0] == 'resize') {
+      var width = data[1];
+      var height = data[2];
+      embedder.test.assertEq(400, width);
+      embedder.test.assertEq(300, height);
+      embedder.test.succeed();
+      return;
+    }
+    console.log('Unexpected message: \'' + data[0]  + '\'');
+    embedder.test.fail();
+  });
+  document.body.appendChild(webview);
+}
+
+// This test calls terminate() on guest after it has already been
+// terminated. This makes sure we ignore the call gracefully.
+function testTerminateAfterExit() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('partition', arguments.callee.name);
+  var loadstopSucceedsTest = false;
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq('loadstop', evt.type);
+    if (loadstopSucceedsTest) {
+      embedder.test.succeed();
+      return;
+    }
+
+    webview.terminate();
+  });
+
+  webview.addEventListener('exit', function(evt) {
+    embedder.test.assertEq('exit', evt.type);
+    // Call terminate again.
+    webview.terminate();
+    // Load another page. The test would pass when loadstop is called on
+    // this second page. This would hopefully catch if call to
+    // webview.terminate() caused a browser crash.
+    setTimeout(function() {
+      loadstopSucceedsTest = true;
+      webview.setAttribute('src', 'data:text/html,test second page');
+    }, 0);
+  });
+
+  webview.setAttribute('src', 'data:text/html,test terminate() crash.');
+  document.body.appendChild(webview);
+}
+
 
 // Tests end.
 
@@ -1132,10 +1294,13 @@ embedder.test.testList = {
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,
   'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
   'testCannotMutateEventName': testCannotMutateEventName,
+  'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
+  'testChromeExtensionURL': testChromeExtensionURL,
   'testContentLoadEvent': testContentLoadEvent,
   'testDestroyOnEventListener': testDestroyOnEventListener,
   'testDisplayNoneWebviewLoad': testDisplayNoneWebviewLoad,
   'testDisplayNoneWebviewRemoveChild': testDisplayNoneWebviewRemoveChild,
+  'testEventName': testEventName,
   'testExecuteScript': testExecuteScript,
   'testExecuteScriptFail': testExecuteScriptFail,
   'testExecuteScriptIsAbortedWhenWebViewSourceIsChanged':
@@ -1165,7 +1330,11 @@ embedder.test.testList = {
       testPartitionRemovalAfterNavigationFails,
   'testReassignSrcAttribute': testReassignSrcAttribute,
   'testReload': testReload,
-  'testReloadAfterTerminate': testReloadAfterTerminate
+  'testReloadAfterTerminate': testReloadAfterTerminate,
+  'testRemoveSrcAttribute': testRemoveSrcAttribute,
+  'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
+  'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
+  'testTerminateAfterExit': testTerminateAfterExit
 };
 
 onload = function() {

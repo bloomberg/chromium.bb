@@ -94,6 +94,14 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCannotMutateEventName) {
   RunTest("testCannotMutateEventName", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestChromeExtensionRelativePath) {
+  RunTest("testChromeExtensionRelativePath", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestChromeExtensionURL) {
+  RunTest("testChromeExtensionURL", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContentLoadEvent) {
   RunTest("testContentLoadEvent", "web_view/apitest");
 }
@@ -106,11 +114,15 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewLoad) {
   RunTest("testDisplayNoneWebviewLoad", "web_view/apitest");
 }
 
-// TODO(lfg) Re-enable this test once the fix for webview leaking
-// RenderProcessHost has landed.
+// TODO(lfg): Re-enable this test once the fix for webview leaking
+// RenderProcessHost has landed. See http://crbug.com/419020 .
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,
                        DISABLED_TestDisplayNoneWebviewRemoveChild) {
   RunTest("testDisplayNoneWebviewRemoveChild", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestEventName) {
+  RunTest("testEventName", "web_view/apitest");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScript) {
@@ -217,6 +229,25 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReload) {
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReloadAfterTerminate) {
   RunTest("testReloadAfterTerminate", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveSrcAttribute) {
+  RunTest("testRemoveSrcAttribute", "web_view/apitest");
+}
+
+// TODO(lfg): Re-enable this test once the fix for webview leaking
+// RenderProcessHost has landed. See http://crbug.com/419020 .
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       DISABLED_TestRemoveWebviewAfterNavigation) {
+  RunTest("testRemoveWebviewAfterNavigation", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestResizeWebviewResizesContent) {
+  RunTest("testResizeWebviewResizesContent", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestTerminateAfterExit) {
+  RunTest("testTerminateAfterExit", "web_view/apitest");
 }
 
 }  // namespace extensions
