@@ -506,8 +506,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host() == chrome::kChromeUIDNSHost ||
       url.host() == chrome::kChromeUIMemoryHost ||
       url.host() == chrome::kChromeUIMemoryRedirectHost ||
-      url.host() == chrome::kChromeUIStatsHost ||
-      url.host() == chrome::kChromeUITermsHost
+      url.host() == chrome::kChromeUIStatsHost
+#if !defined(OS_ANDROID)
+      || url.host() == chrome::kChromeUITermsHost
+#endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
       || url.host() == chrome::kChromeUILinuxProxyConfigHost
       || url.host() == chrome::kChromeUISandboxHost

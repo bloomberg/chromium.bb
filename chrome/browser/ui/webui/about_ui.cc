@@ -1041,12 +1041,14 @@ void AboutUIHTMLSource::StartDataRequest(
 #endif
   } else if (source_name_ == chrome::kChromeUIStatsHost) {
     response = AboutStats(path);
+#if !defined(OS_ANDROID)
   } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
     ChromeOSTermsHandler::Start(path, callback);
     return;
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
+#endif
 #endif
   }
 
