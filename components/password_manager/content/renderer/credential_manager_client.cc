@@ -20,8 +20,7 @@ void ClearCallbacksMapWithErrors(T* callbacks_map) {
   typename T::iterator iter(callbacks_map);
   while (!iter.IsAtEnd()) {
     blink::WebCredentialManagerError reason(
-        blink::WebCredentialManagerError::ErrorTypeUnknown,
-        "An unknown error occurred.");
+        blink::WebCredentialManagerError::ErrorTypeUnknown);
     iter.GetCurrentValue()->onError(&reason);
     callbacks_map->Remove(iter.GetCurrentKey());
     iter.Advance();
