@@ -912,23 +912,16 @@
 <body>
   <table border="0">
     <tr>
-      <td>Local Preview</td>
-      <td>Remote Stream for Connection 1</td>
-      <td>Remote Stream for Connection 2</td>
-      <td>Remote Stream for Connection 3</td>
-      <td>Remote Stream for Connection 4</td>
-    </tr>
-    <tr>
-      <td><video width="320" height="240" id="local-view" autoplay muted>
-          </video></td>
-      <td><video width="320" height="240" id="remote-view-1" autoplay>
-          </video></td>
-      <td><video width="320" height="240" id="remote-view-2" autoplay>
-          </video></td>
-      <td><video width="320" height="240" id="remote-view-3" autoplay>
-          </video></td>
-      <td><video width="320" height="240" id="remote-view-4" autoplay>
-          </video></td>
+      <td><video width="320" height="240" id="local-view" style="display:none"
+          autoplay muted></video></td>
+      <td><video width="320" height="240" id="remote-view-1"
+          style="display:none" autoplay></video></td>
+      <td><video width="320" height="240" id="remote-view-2"
+          style="display:none" autoplay></video></td>
+      <td><video width="320" height="240" id="remote-view-3"
+        style="display:none" autoplay></video></td>
+      <td><video width="320" height="240" id="remote-view-4"
+        style="display:none" autoplay></video></td>
       <!-- Canvases are named after their corresponding video elements. -->
       <td><canvas width="320" height="240" id="remote-view-1-canvas"
           style="display:none"></canvas></td>
