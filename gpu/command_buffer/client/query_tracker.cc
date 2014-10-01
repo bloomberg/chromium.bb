@@ -157,7 +157,8 @@ bool QueryTracker::Query::CheckResultsAvailable(
                              static_cast<uint64>(0xFFFFFFFFL));
           break;
         case GL_LATENCY_QUERY_CHROMIUM:
-          DCHECK(info_.sync->result >= client_begin_time_us_);
+          // Disabled DCHECK because of http://crbug.com/419236.
+          //DCHECK(info_.sync->result >= client_begin_time_us_);
           result_ = std::min(info_.sync->result - client_begin_time_us_,
                              static_cast<uint64>(0xFFFFFFFFL));
           break;
