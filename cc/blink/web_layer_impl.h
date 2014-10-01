@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
+#include "third_party/WebKit/public/platform/WebDoublePoint.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -102,8 +103,12 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void pauseAnimation(int animation_id, double time_offset);
   virtual bool hasActiveAnimation();
   virtual void setForceRenderSurface(bool force);
+  // TODO(miletus): Add the WebDoublePoint version to WebLayer and then remove
+  // the WebPoint version from WebLayer and WebLayerImpl.
   virtual void setScrollPosition(blink::WebPoint position);
   virtual blink::WebPoint scrollPosition() const;
+  virtual void setScrollPositionDouble(blink::WebDoublePoint position);
+  virtual blink::WebDoublePoint scrollPositionDouble() const;
   virtual void setScrollClipLayer(blink::WebLayer* clip_layer);
   virtual bool scrollable() const;
   virtual void setUserScrollable(bool horizontal, bool vertical);

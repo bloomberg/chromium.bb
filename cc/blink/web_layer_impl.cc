@@ -277,6 +277,15 @@ blink::WebPoint WebLayerImpl::scrollPosition() const {
       gfx::ScrollOffsetToFlooredVector2d(layer_->scroll_offset()));
 }
 
+void WebLayerImpl::setScrollPositionDouble(blink::WebDoublePoint position) {
+  layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
+}
+
+blink::WebDoublePoint WebLayerImpl::scrollPositionDouble() const {
+  return blink::WebDoublePoint(layer_->scroll_offset().x(),
+                               layer_->scroll_offset().y());
+}
+
 void WebLayerImpl::setScrollClipLayer(WebLayer* clip_layer) {
   if (!clip_layer) {
     layer_->SetScrollClipLayerId(Layer::INVALID_ID);
