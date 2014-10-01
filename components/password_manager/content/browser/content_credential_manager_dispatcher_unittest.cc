@@ -12,7 +12,6 @@
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -63,15 +62,6 @@ class ContentCredentialManagerDispatcherTest
     client_.reset(new TestPasswordManagerClient(store_.get()));
     dispatcher_.reset(
         new ContentCredentialManagerDispatcher(web_contents(), client_.get()));
-
-    NavigateAndCommit(GURL("https://example.com/test.html"));
-
-    form_.username_value = base::ASCIIToUTF16("Username");
-    form_.display_name = base::ASCIIToUTF16("Display Name");
-    form_.password_value = base::ASCIIToUTF16("Password");
-    form_.origin = web_contents()->GetLastCommittedURL().GetOrigin();
-    form_.signon_realm = form_.origin.spec();
-    form_.scheme = autofill::PasswordForm::SCHEME_HTML;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -81,8 +71,7 @@ class ContentCredentialManagerDispatcherTest
 
   ContentCredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
 
- protected:
-  autofill::PasswordForm form_;
+ private:
   scoped_refptr<TestPasswordStore> store_;
   scoped_ptr<ContentCredentialManagerDispatcher> dispatcher_;
   scoped_ptr<TestPasswordManagerClient> client_;
@@ -128,23 +117,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
 }
 
 TEST_F(ContentCredentialManagerDispatcherTest,
-       CredentialManagerOnRequestCredentialWithEmptyPasswordStore) {
-  std::vector<GURL> federations;
-  dispatcher()->OnRequestCredential(kRequestId, false, federations);
-
-  RunAllPendingTasks();
-
-  const uint32 kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
-}
-
-TEST_F(ContentCredentialManagerDispatcherTest,
-       CredentialManagerOnRequestCredentialWithFullPasswordStore) {
-  store_->AddLogin(form_);
-
+       CredentialManagerOnRequestCredential) {
   std::vector<GURL> federations;
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
 
@@ -159,8 +132,6 @@ TEST_F(ContentCredentialManagerDispatcherTest,
 
 TEST_F(ContentCredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWhileRequestPending) {
-  store_->AddLogin(form_);
-
   std::vector<GURL> federations;
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
