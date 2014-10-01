@@ -1251,9 +1251,8 @@ bool RenderFrameHostManager::InitRenderView(
     render_view_host->AllowBindings(pending_web_ui()->GetBindings());
   } else {
     // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
-    // process unless it's swapped out or we run in single-process mode.
-    if (render_view_host->is_active()
-        && !RenderProcessHost::run_renderer_in_process()) {
+    // process unless it's swapped out.
+    if (render_view_host->is_active()) {
       CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
                 render_view_host->GetProcess()->GetID()));
     }
