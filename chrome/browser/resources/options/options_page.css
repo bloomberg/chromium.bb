@@ -315,11 +315,14 @@ list > :not([editing]) [displaymode='edit'] {
 }
 
 list > [editing] [displaymode='static'] {
-  /* Don't use display:none because we need to keep an element focusable. */
-  left: 0;
+  /* Don't use display:none or visibility:hidden because we need to keep an
+   * element focusable.
+   * We shrink only height.  We don't shrink width to avoid to change the size
+   * of containing boxes.
+   */
+  height: 0;
+  overflow: hidden;
   pointer-events: none;
-  position: absolute;
-  visibility: hidden;
 }
 
 list > [editing] input:invalid {

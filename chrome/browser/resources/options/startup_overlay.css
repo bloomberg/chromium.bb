@@ -24,6 +24,10 @@
   max-width: 700px;
 }
 
+#startupPagesList .url input {
+  width: 100%;
+}
+
 #startupPagesListDropmarker {
   background-clip: padding-box;
   background-color: hsl(214, 91%, 65%);
