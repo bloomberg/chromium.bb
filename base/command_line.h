@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -31,7 +32,7 @@ class BASE_EXPORT CommandLine {
  public:
 #if defined(OS_WIN)
   // The native command line string type.
-  typedef std::wstring StringType;
+  typedef base::string16 StringType;
 #elif defined(OS_POSIX)
   typedef std::string StringType;
 #endif
@@ -87,7 +88,7 @@ class BASE_EXPORT CommandLine {
   static bool InitializedForCurrentProcess();
 
 #if defined(OS_WIN)
-  static CommandLine FromString(const std::wstring& command_line);
+  static CommandLine FromString(const base::string16& command_line);
 #endif
 
   // Initialize from an argv vector.
@@ -162,7 +163,7 @@ class BASE_EXPORT CommandLine {
 #if defined(OS_WIN)
   // Initialize by parsing the given command line string.
   // The program name is assumed to be the first item in the string.
-  void ParseFromString(const std::wstring& command_line);
+  void ParseFromString(const base::string16& command_line);
 #endif
 
  private:

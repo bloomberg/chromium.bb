@@ -105,15 +105,15 @@ std::string LowerASCIIOnWindows(const std::string& string) {
 
 #if defined(OS_WIN)
 // Quote a string as necessary for CommandLineToArgvW compatiblity *on Windows*.
-std::wstring QuoteForCommandLineToArgvW(const std::wstring& arg) {
+base::string16 QuoteForCommandLineToArgvW(const base::string16& arg) {
   // We follow the quoting rules of CommandLineToArgvW.
   // http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
-  if (arg.find_first_of(L" \\\"") == std::wstring::npos) {
+  if (arg.find_first_of(L" \\\"") == base::string16::npos) {
     // No quoting necessary.
     return arg;
   }
 
-  std::wstring out;
+  base::string16 out;
   out.push_back(L'"');
   for (size_t i = 0; i < arg.size(); ++i) {
     if (arg[i] == '\\') {
@@ -224,7 +224,7 @@ bool CommandLine::InitializedForCurrentProcess() {
 
 #if defined(OS_WIN)
 // static
-CommandLine CommandLine::FromString(const std::wstring& command_line) {
+CommandLine CommandLine::FromString(const base::string16& command_line) {
   CommandLine cmd(NO_PROGRAM);
   cmd.ParseFromString(command_line);
   return cmd;
@@ -422,8 +422,8 @@ void CommandLine::PrependWrapper(const CommandLine::StringType& wrapper) {
 }
 
 #if defined(OS_WIN)
-void CommandLine::ParseFromString(const std::wstring& command_line) {
-  std::wstring command_line_string;
+void CommandLine::ParseFromString(const base::string16& command_line) {
+  base::string16 command_line_string;
   TrimWhitespace(command_line, TRIM_ALL, &command_line_string);
   if (command_line_string.empty())
     return;
