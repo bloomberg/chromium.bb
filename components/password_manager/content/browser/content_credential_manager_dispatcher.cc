@@ -46,8 +46,7 @@ bool ContentCredentialManagerDispatcher::OnMessageReceived(
 }
 
 void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
-    int request_id,
-    const password_manager::CredentialInfo&) {
+    int request_id, const CredentialInfo&) {
   // TODO(mkwst): This is a stub.
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeFailedSignIn(
@@ -55,8 +54,7 @@ void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
 }
 
 void ContentCredentialManagerDispatcher::OnNotifySignedIn(
-    int request_id,
-    const password_manager::CredentialInfo&) {
+    int request_id, const CredentialInfo&) {
   // TODO(mkwst): This is a stub.
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(
@@ -97,11 +95,22 @@ void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
     const std::vector<autofill::PasswordForm*>& results) {
   DCHECK(pending_request_id_);
 
-  // TODO(mkwst): This is a stub. We should be looking at |results| here. Baby
-  // steps.
-  password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
-                                        base::ASCIIToUTF16("name"),
-                                        GURL("https://example.com/image.png"));
+  if (results.empty()) {
+    // TODO(mkwst): This should be a separate message from above in
+    // OnRequestCredential. Waiting on a Blink-side change to make that
+    // possible.
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_RejectCredentialRequest(
+            web_contents()->GetRenderViewHost()->GetRoutingID(),
+            pending_request_id_));
+    return;
+  }
+
+  // TODO(mkwst): This is a stub. We're just grabbing the first result and
+  // piping it down into Blink. Really, we should be kicking off some sort
+  // of UI full of magic moments and delight. Also, we should deal with
+  // federated login types.
+  CredentialInfo info(*results[0]);
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),

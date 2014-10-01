@@ -12,6 +12,10 @@
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
+namespace autofill {
+struct PasswordForm;
+}
+
 namespace password_manager {
 
 // Limit the size of the federations array that we pass to the browser to
@@ -30,6 +34,7 @@ struct CredentialInfo {
   CredentialInfo(const base::string16& id,
                  const base::string16& name,
                  const GURL& avatar);
+  CredentialInfo(const autofill::PasswordForm& form);
   ~CredentialInfo();
 
   CredentialType type;
