@@ -85,12 +85,39 @@ unsigned WorkerThread::workerThreadCount()
     return workerThreads().size();
 }
 
+class WorkerThreadCancelableTask FINAL : public ExecutionContextTask {
+    WTF_MAKE_NONCOPYABLE(WorkerThreadCancelableTask); WTF_MAKE_FAST_ALLOCATED;
+public:
+    static PassOwnPtr<WorkerThreadCancelableTask> create(const Closure& closure)
+    {
+        return adoptPtr(new WorkerThreadCancelableTask(closure));
+    }
+
+    virtual void performTask(ExecutionContext*) OVERRIDE
+    {
+        if (!m_taskCanceled)
+            m_closure();
+    }
+
+    void cancelTask() { m_taskCanceled = true; }
+
+private:
+    explicit WorkerThreadCancelableTask(const Closure& closure)
+    : m_closure(closure)
+    , m_taskCanceled(false)
+    { }
+
+    Closure m_closure;
+    bool m_taskCanceled;
+};
+
 class WorkerSharedTimer : public SharedTimer {
 public:
     explicit WorkerSharedTimer(WorkerThread* workerThread)
         : m_workerThread(workerThread)
         , m_nextFireTime(0.0)
         , m_running(false)
+        , m_lastQueuedTask(0)
     { }
 
     typedef void (*SharedTimerFunction)();
@@ -116,12 +143,19 @@ public:
 
         m_running = true;
         m_nextFireTime = currentTime() + interval;
-        m_workerThread->postDelayedTask(createSameThreadTask(&WorkerSharedTimer::OnTimeout, this), delay);
+
+        if (m_lastQueuedTask)
+            m_lastQueuedTask->cancelTask();
+
+        // Now queue the task as a cancellable one.
+        m_lastQueuedTask = WorkerThreadCancelableTask::create(bind(&WorkerSharedTimer::OnTimeout, this)).leakPtr();
+        m_workerThread->postDelayedTask(adoptPtr(m_lastQueuedTask), delay);
     }
 
     virtual void stop()
     {
         m_running = false;
+        m_lastQueuedTask = 0;
     }
 
     double nextFireTime() { return m_nextFireTime; }
@@ -130,6 +164,9 @@ private:
     void OnTimeout()
     {
         ASSERT(m_workerThread->workerGlobalScope());
+
+        m_lastQueuedTask = 0;
+
         if (m_sharedTimerFunction && m_running && !m_workerThread->workerGlobalScope()->isClosing())
             m_sharedTimerFunction();
     }
@@ -138,6 +175,7 @@ private:
     SharedTimerFunction m_sharedTimerFunction;
     double m_nextFireTime;
     bool m_running;
+    WorkerThreadCancelableTask* m_lastQueuedTask;
 };
 
 class WorkerThreadTask : public blink::WebThread::Task {
