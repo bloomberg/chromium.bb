@@ -274,7 +274,7 @@ class CBuildbotMetadata(object):
   def GetReportMetadataDict(builder_run, get_changes_from_pool,
                             get_statuses_from_slaves, config=None, stage=None,
                             final_status=None, sync_instance=None,
-                            completion_instance=None):
+                            completion_instance=None, child_configs_list=None):
     """Return a metadata dictionary summarizing a build.
 
     This method replaces code that used to exist in the ArchivingStageMixin
@@ -303,6 +303,8 @@ class CBuildbotMetadata(object):
                            information will be included. It not None, this
                            should be a derivative of
                            MasterSlaveSyncCompletionStage.
+      child_configs_list: The list of child config metadata.  If specified it
+                          should be added to the metadata.
 
     Returns:
        A metadata dictionary suitable to be json-serialized.
@@ -344,6 +346,9 @@ class CBuildbotMetadata(object):
           'description': entry.description,
           'log': builder_run.ConstructDashboardURL(stage=entry.name),
       })
+
+    if child_configs_list:
+      metadata['child-configs'] = child_configs_list
 
     if get_changes_from_pool:
       changes = []

@@ -91,6 +91,15 @@ class ManifestVersionedSyncCompletionStageTest(
     self.assertTrue('TacoStage' in msg.reason)
     self.assertTrue(str(exception) in msg.reason)
 
+  def testGetBuilderSuccessMap(self):
+    """Tests that the builder success map is properly created."""
+    board_runattrs = self._run.GetBoardRunAttrs('x86-mario')
+    board_runattrs.SetParallel('success', True)
+    builder_success_map = completion_stages.GetBuilderSuccessMap(
+        self._run, True)
+    expected_map = {self.BOT_ID: True}
+    self.assertEqual(expected_map, builder_success_map)
+
 
 class MasterSlaveSyncCompletionStageTest(
     generic_stages_unittest.AbstractStageTest):

@@ -193,6 +193,20 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
     self.assertTrue(metadata_dict.has_key('builder-name'))
     self.assertTrue(metadata_dict.has_key('bot-hostname'))
 
+  def testGetChildConfigsMetadataList(self):
+    """Test that GetChildConfigListMetadata generates child config metadata."""
+    child_configs = [{'name': 'config1', 'boards': ['board1']},
+                     {'name': 'config2', 'boards': ['board2']}]
+    config_status_map = {'config1': True,
+                         'config2': False}
+    expected = [{'name': 'config1', 'boards': ['board1'],
+                 'status': constants.FINAL_STATUS_PASSED},
+                {'name': 'config2', 'boards': ['board2'],
+                 'status': constants.FINAL_STATUS_FAILED}]
+    child_config_list = report_stages.GetChildConfigListMetadata(child_configs,
+        config_status_map)
+    self.assertEqual(expected, child_config_list)
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

@@ -24,6 +24,38 @@ from chromite.lib import git
 from chromite.lib import portage_util
 
 
+def GetBuilderSuccessMap(builder_run, overall_success):
+  """Get the pass/fail status of all builders.
+
+  A builder is marked as passed if all of its steps ran all of the way to
+  completion. We determine this by looking at whether all of the steps for
+  all of the constituent boards ran to completion.
+
+  In cases where a builder does not have any boards, or has child boards, we
+  fall back and instead just look at whether the entire build was successful.
+
+  Args:
+    builder_run: The builder run we wish to get the status of.
+    overall_success: The overall status of the build.
+
+  Returns:
+    A dict, mapping the builder names to whether they succeeded.
+  """
+  success_map = {}
+  for run in [builder_run] + builder_run.GetChildren():
+    if run.config.boards and not run.config.child_configs:
+      success_map[run.config.name] = True
+      for board in run.config.boards:
+        board_runattrs = run.GetBoardRunAttrs(board)
+        if not board_runattrs.HasParallel('success'):
+          success_map[run.config.name] = False
+    else:
+      # If a builder does not have boards, or if it has child configs, we
+      # will just use the overall status instead.
+      success_map[run.config.name] = overall_success
+  return success_map
+
+
 def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
   """Creates a message summarizing the failures.
 
@@ -84,36 +116,6 @@ class ManifestVersionedSyncCompletionStage(
                                      self._run.config.name,
                                      self._run.ConstructDashboardURL())
 
-  def _GetBuilderSuccessMap(self):
-    """Get the pass/fail status of all builders.
-
-    A builder is marked as passed if all of its steps ran all of the way to
-    completion. We determine this by looking at whether all of the steps for
-    all of the constituent boards ran to completion.
-
-    In cases where a builder does not have any boards, or has child boards, we
-    fall back and instead just look at whether the entire build was successful.
-
-    Args:
-      config_name: The name of the builder we wish to get the status of.
-
-    Returns:
-      A dict, mapping the builder names to whether they succeeded.
-    """
-    success_map = {}
-    for run in [self._run] + self._run.GetChildren():
-      if run.config.boards and not run.config.child_configs:
-        success_map[run.config.name] = True
-        for board in run.config.boards:
-          board_runattrs = run.GetBoardRunAttrs(board)
-          if not board_runattrs.HasParallel('success'):
-            success_map[run.config.name] = False
-      else:
-        # If a builder does not have boards, or if it has child configs, we
-        # will just use the overall status instead.
-        success_map[run.config.name] = self.success
-    return success_map
-
   def PerformStage(self):
     if not self.success:
       self.message = self.GetBuildFailureMessage()
@@ -123,8 +125,8 @@ class ManifestVersionedSyncCompletionStage(
       # repo. Suite scheduler checks the build status to schedule
       # suites.
       self._run.attrs.manifest_manager.UpdateStatus(
-          success_map=self._GetBuilderSuccessMap(), message=self.message,
-          dashboard_url=self.ConstructDashboardURL())
+          success_map=GetBuilderSuccessMap(self._run, self.success),
+          message=self.message, dashboard_url=self.ConstructDashboardURL())
 
 
 class ImportantBuilderFailedException(failures_lib.StepFailure):

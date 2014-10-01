@@ -67,6 +67,34 @@ def WriteBasicMetadata(builder_run):
   builder_run.attrs.metadata.UpdateWithDict(metadata)
 
 
+def GetChildConfigListMetadata(child_configs, config_status_map):
+  """Creates a list for the child configs metadata.
+
+  This creates a list of child config dictionaries from the given child
+  configs, optionally adding the final status if the success map is
+  specified.
+
+  Args:
+    child_configs: The list of child configs for this build.
+    config_status_map: The map of config name to final build status.
+
+  Returns:
+    List of child config dictionaries, with optional final status
+  """
+  child_config_list = []
+  for c in child_configs:
+    pass_fail_status = None
+    if config_status_map:
+      if config_status_map[c['name']]:
+        pass_fail_status = constants.FINAL_STATUS_PASSED
+      else:
+        pass_fail_status = constants.FINAL_STATUS_FAILED
+    child_config_list.append({'name': c['name'],
+                              'boards': c['boards'],
+                              'status': pass_fail_status})
+  return child_config_list
+
+
 class BuildStartStage(generic_stages.BuilderStage):
   """The first stage to run.
 
@@ -146,8 +174,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     # Flat list of all child config boards. Since child configs
     # are not allowed to have children, it is not necessary to search
     # deeper than one generation.
-    child_configs = [{'name': c['name'], 'boards' : c['boards']}
-                     for c in config['child_configs']]
+    child_configs = GetChildConfigListMetadata(
+        child_configs=config['child_configs'], config_status_map=None)
 
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
         os.path.join(build_root, constants.SDK_VERSION_FILE),
@@ -416,10 +444,15 @@ class ReportStage(generic_stages.BuilderStage,
                    completion_stages.MasterSlaveSyncCompletionStage)
     )
 
+    child_configs_list = GetChildConfigListMetadata(
+        child_configs=config['child_configs'],
+        config_status_map=completion_stages.GetBuilderSuccessMap(self._run,
+                                                                 final_status))
+
     return metadata_lib.CBuildbotMetadata.GetReportMetadataDict(
         builder_run, get_changes_from_pool,
         get_statuses_from_slaves, config, stage, final_status, sync_instance,
-        completion_instance)
+        completion_instance, child_configs_list)
 
   def PerformStage(self):
     # Make sure local archive directory is prepared, if it was not already.
