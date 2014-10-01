@@ -78,10 +78,6 @@ class FakeProductState : public ProductState {
                            const char* version,
                            int channel_modifiers,
                            Vehicle vehicle);
-  void AddInstallExtensionCommand(BrowserDistribution::Type dist_type,
-                                  Level install_level,
-                                  const char* version,
-                                  int channel_modifiers);
   void AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
                            Level install_level,
                            const char* version,
@@ -207,26 +203,6 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
   }
   if (vehicle == MSI)
     uninstall_command_.AppendSwitch(installer::switches::kMsi);
-}
-
-// Adds the "install-extension" Google Update product command.
-void FakeProductState::AddInstallExtensionCommand(
-    BrowserDistribution::Type dist_type,
-    Level install_level,
-    const char* version,
-    int channel_modifiers) {
-  // Right now only Chrome browser uses this.
-  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BROWSER);
-
-  CommandLine cmd_line(GetSetupPath(dist_type, install_level,
-                                    channel_modifiers).
-                           Append(installer::kChromeExe));
-  cmd_line.AppendSwitchASCII(::switches::kLimitedInstallFromWebstore, "%1");
-  AppCommand app_cmd(cmd_line.GetCommandLineString());
-  app_cmd.set_sends_pings(true);
-  app_cmd.set_is_web_accessible(true);
-  app_cmd.set_is_run_as_user(true);
-  commands_.Set(installer::kCmdInstallExtension, app_cmd);
 }
 
 // Adds the "on-os-upgrade" Google Update product command.
@@ -492,10 +468,6 @@ void InstallationValidatorTest::MakeProductState(
                                install_level,
                                chrome::kChromeVersion,
                                channel_modifiers);
-    state->AddInstallExtensionCommand(prod_type,
-                                      install_level,
-                                      chrome::kChromeVersion,
-                                      channel_modifiers);
   }
 }
 

@@ -214,8 +214,6 @@ extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeMetroDll[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
-extern const wchar_t kCmdInstallApp[];
-extern const wchar_t kCmdInstallExtension[];
 extern const wchar_t kCmdOnOsUpgrade[];
 extern const wchar_t kCmdQueryEULAAcceptance[];
 extern const wchar_t kCmdQuickEnableApplicationHost[];

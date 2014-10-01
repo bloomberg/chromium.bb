@@ -192,18 +192,6 @@ class InstallationValidator {
       const std::set<base::string16>& flags_expected,
       const base::string16& name,
       bool* is_valid);
-  static void ValidateInstallCommand(const ProductContext& ctx,
-                                     const AppCommand& app_cmd,
-                                     const wchar_t* expected_command,
-                                     const wchar_t* expected_app_name,
-                                     const char* expected_switch,
-                                     bool* is_valid);
-  static void ValidateInstallAppCommand(const ProductContext& ctx,
-                                        const AppCommand& app_cmd,
-                                        bool* is_valid);
-  static void ValidateInstallExtensionCommand(const ProductContext& ctx,
-                                              const AppCommand& app_cmd,
-                                              bool* is_valid);
   static void ValidateOnOsUpgradeCommand(const ProductContext& ctx,
                                          const AppCommand& app_cmd,
                                          bool* is_valid);
