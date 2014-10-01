@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/browser_compositor_view_private_mac.h"
+#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
 
 #include <map>
 
@@ -22,16 +22,16 @@
 namespace content {
 namespace {
 
-typedef std::map<gfx::AcceleratedWidget,BrowserCompositorViewMacInternal*>
+typedef std::map<gfx::AcceleratedWidget,BrowserCompositorCALayerTreeMac*>
     WidgetToInternalsMap;
 base::LazyInstance<WidgetToInternalsMap> g_widget_to_internals_map;
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserCompositorViewMacInternal
+// BrowserCompositorCALayerTreeMac
 
-BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
+BrowserCompositorCALayerTreeMac::BrowserCompositorCALayerTreeMac()
     : client_(NULL),
       accelerated_output_surface_id_(0) {
   // Disable the fade-in animation as the layers are added.
@@ -63,12 +63,12 @@ BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
   compositor_->SetVisible(false);
 }
 
-BrowserCompositorViewMacInternal::~BrowserCompositorViewMacInternal() {
+BrowserCompositorCALayerTreeMac::~BrowserCompositorCALayerTreeMac() {
   DCHECK(!client_);
   g_widget_to_internals_map.Pointer()->erase(native_widget_);
 }
 
-void BrowserCompositorViewMacInternal::SetClient(
+void BrowserCompositorCALayerTreeMac::SetClient(
     BrowserCompositorViewMacClient* client) {
   // Disable the fade-in animation as the view is added.
   ScopedCAActionDisabler disabler;
@@ -84,7 +84,7 @@ void BrowserCompositorViewMacInternal::SetClient(
   compositor_->SetVisible(true);
 }
 
-void BrowserCompositorViewMacInternal::ResetClient() {
+void BrowserCompositorCALayerTreeMac::ResetClient() {
   if (!client_)
     return;
 
@@ -105,26 +105,26 @@ void BrowserCompositorViewMacInternal::ResetClient() {
   client_ = NULL;
 }
 
-bool BrowserCompositorViewMacInternal::HasFrameOfSize(
+bool BrowserCompositorCALayerTreeMac::HasFrameOfSize(
     const gfx::Size& dip_size) const {
   return last_swap_size_dip_ == dip_size;
 }
 
-int BrowserCompositorViewMacInternal::GetRendererID() const {
+int BrowserCompositorCALayerTreeMac::GetRendererID() const {
   if (io_surface_layer_)
     return [io_surface_layer_ rendererID];
   return 0;
 }
 
-void BrowserCompositorViewMacInternal::BeginPumpingFrames() {
+void BrowserCompositorCALayerTreeMac::BeginPumpingFrames() {
   [io_surface_layer_ beginPumpingFrames];
 }
 
-void BrowserCompositorViewMacInternal::EndPumpingFrames() {
+void BrowserCompositorCALayerTreeMac::EndPumpingFrames() {
   [io_surface_layer_ endPumpingFrames];
 }
 
-void BrowserCompositorViewMacInternal::GotAcceleratedFrame(
+void BrowserCompositorCALayerTreeMac::GotAcceleratedFrame(
     uint64 surface_handle, int output_surface_id,
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::Size pixel_size, float scale_factor) {
@@ -161,7 +161,7 @@ void BrowserCompositorViewMacInternal::GotAcceleratedFrame(
   }
 }
 
-void BrowserCompositorViewMacInternal::GotAcceleratedCAContextFrame(
+void BrowserCompositorCALayerTreeMac::GotAcceleratedCAContextFrame(
     CAContextID ca_context_id,
     gfx::Size pixel_size,
     float scale_factor) {
@@ -194,7 +194,7 @@ void BrowserCompositorViewMacInternal::GotAcceleratedCAContextFrame(
   DestroySoftwareLayer();
 }
 
-void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
+void BrowserCompositorCALayerTreeMac::GotAcceleratedIOSurfaceFrame(
     IOSurfaceID io_surface_id,
     gfx::Size pixel_size,
     float scale_factor) {
@@ -264,7 +264,7 @@ void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
   DestroySoftwareLayer();
 }
 
-void BrowserCompositorViewMacInternal::GotSoftwareFrame(
+void BrowserCompositorCALayerTreeMac::GotSoftwareFrame(
     cc::SoftwareFrameData* frame_data,
     float scale_factor,
     SkCanvas* canvas) {
@@ -296,7 +296,7 @@ void BrowserCompositorViewMacInternal::GotSoftwareFrame(
   DestroyIOSurfaceLayer(io_surface_layer_);
 }
 
-void BrowserCompositorViewMacInternal::DestroyCAContextLayer(
+void BrowserCompositorCALayerTreeMac::DestroyCAContextLayer(
     base::scoped_nsobject<CALayerHost> ca_context_layer) {
   if (!ca_context_layer)
     return;
@@ -305,7 +305,7 @@ void BrowserCompositorViewMacInternal::DestroyCAContextLayer(
     ca_context_layer_.reset();
 }
 
-void BrowserCompositorViewMacInternal::DestroyIOSurfaceLayer(
+void BrowserCompositorCALayerTreeMac::DestroyIOSurfaceLayer(
     base::scoped_nsobject<IOSurfaceLayer> io_surface_layer) {
   if (!io_surface_layer)
     return;
@@ -315,14 +315,14 @@ void BrowserCompositorViewMacInternal::DestroyIOSurfaceLayer(
     io_surface_layer_.reset();
 }
 
-void BrowserCompositorViewMacInternal::DestroySoftwareLayer() {
+void BrowserCompositorCALayerTreeMac::DestroySoftwareLayer() {
   if (!software_layer_)
     return;
   [software_layer_ removeFromSuperlayer];
   software_layer_.reset();
 }
 
-bool BrowserCompositorViewMacInternal::IOSurfaceLayerShouldAckImmediately()
+bool BrowserCompositorCALayerTreeMac::IOSurfaceLayerShouldAckImmediately()
     const {
   // If there is no client then the accelerated layer is not in the hierarchy
   // and will never draw.
@@ -331,7 +331,7 @@ bool BrowserCompositorViewMacInternal::IOSurfaceLayerShouldAckImmediately()
   return client_->BrowserCompositorViewShouldAckImmediately();
 }
 
-void BrowserCompositorViewMacInternal::IOSurfaceLayerDidDrawFrame() {
+void BrowserCompositorCALayerTreeMac::IOSurfaceLayerDidDrawFrame() {
   if (accelerated_output_surface_id_) {
     content::ImageTransportFactory::GetInstance()->OnSurfaceDisplayed(
         accelerated_output_surface_id_);
@@ -344,7 +344,7 @@ void BrowserCompositorViewMacInternal::IOSurfaceLayerDidDrawFrame() {
   accelerated_latency_info_.clear();
 }
 
-void BrowserCompositorViewMacInternal::IOSurfaceLayerHitError() {
+void BrowserCompositorCALayerTreeMac::IOSurfaceLayerHitError() {
   // Perform all acks that would have been done if the frame had succeeded, to
   // un-block the compositor and renderer.
   IOSurfaceLayerDidDrawFrame();
@@ -355,7 +355,7 @@ void BrowserCompositorViewMacInternal::IOSurfaceLayerHitError() {
 }
 
 // static
-BrowserCompositorViewMacInternal* BrowserCompositorViewMacInternal::
+BrowserCompositorCALayerTreeMac* BrowserCompositorCALayerTreeMac::
     FromAcceleratedWidget(gfx::AcceleratedWidget widget) {
   WidgetToInternalsMap::const_iterator found =
       g_widget_to_internals_map.Pointer()->find(widget);

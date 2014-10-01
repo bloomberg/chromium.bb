@@ -15,7 +15,7 @@
 
 namespace content {
 
-class BrowserCompositorViewMacInternal;
+class BrowserCompositorCALayerTreeMac;
 
 // The interface through which BrowserCompositorViewMac calls back into
 // RenderWidgetHostViewMac (or any other structure that wishes to draw a
@@ -79,7 +79,7 @@ class BrowserCompositorViewMac {
 
  private:
   BrowserCompositorViewMacClient* client_;
-  scoped_ptr<BrowserCompositorViewMacInternal> internal_view_;
+  scoped_ptr<BrowserCompositorCALayerTreeMac> ca_layer_tree_;
 };
 
 // A class to keep around whenever a BrowserCompositorViewMac may be created.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_LAYER_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_LAYER_MAC_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_LAYER_MAC_H_
+#define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_LAYER_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -15,8 +15,8 @@
 @class IOSurfaceLayer;
 
 namespace content {
-class CompositingIOSurfaceMac;
-class CompositingIOSurfaceContext;
+class IOSurfaceTexture;
+class IOSurfaceContext;
 
 // The interface through which the IOSurfaceLayer calls back into
 // the structrue that created it (RenderWidgetHostViewMac or
@@ -116,8 +116,8 @@ class IOSurfaceLayerHelper {
 // The CoreAnimation layer for drawing accelerated content.
 @interface IOSurfaceLayer : CAOpenGLLayer {
  @private
-  scoped_refptr<content::CompositingIOSurfaceMac> iosurface_;
-  scoped_refptr<content::CompositingIOSurfaceContext> context_;
+  scoped_refptr<content::IOSurfaceTexture> iosurface_;
+  scoped_refptr<content::IOSurfaceContext> context_;
 
   scoped_ptr<content::IOSurfaceLayerHelper> helper_;
 }
@@ -158,4 +158,4 @@ class IOSurfaceLayerHelper {
 - (void)endPumpingFrames;
 @end
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_LAYER_MAC_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_LAYER_MAC_H_

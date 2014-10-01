@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_PRIVATE_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_PRIVATE_MAC_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_CA_LAYER_TREE_MAC_H_
+#define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_CA_LAYER_TREE_MAC_H_
 
 #include <IOSurface/IOSurfaceAPI.h>
 
@@ -15,14 +15,15 @@
 
 namespace content {
 
-// BrowserCompositorViewMacInternal owns a NSView and a ui::Compositor that
-// draws that view.
-class BrowserCompositorViewMacInternal
+// BrowserCompositorCALayerTreeMac owns tree of CALayer and a ui::Compositor
+// that is used to draw the layers. The CALayer tree can be attached to the
+// NSView of a BrowserCompositorViewMac
+class BrowserCompositorCALayerTreeMac
     : public IOSurfaceLayerClient {
  public:
-  BrowserCompositorViewMacInternal();
-  virtual ~BrowserCompositorViewMacInternal();
-  static BrowserCompositorViewMacInternal* FromAcceleratedWidget(
+  BrowserCompositorCALayerTreeMac();
+  virtual ~BrowserCompositorCALayerTreeMac();
+  static BrowserCompositorCALayerTreeMac* FromAcceleratedWidget(
       gfx::AcceleratedWidget widget);
 
   void SetClient(BrowserCompositorViewMacClient* client);
@@ -111,4 +112,4 @@ private:
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_PRIVATE_MAC_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_CA_LAYER_TREE_MAC_H_

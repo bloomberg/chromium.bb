@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_TEXTURE_MAC_H_
+#define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_TEXTURE_MAC_H_
 
 #include <deque>
 #include <list>
@@ -34,22 +34,22 @@ class Rect;
 
 namespace content {
 
-class CompositingIOSurfaceContext;
+class IOSurfaceContext;
 class RenderWidgetHostViewFrameSubscriber;
 class RenderWidgetHostViewMac;
 
-// This class manages an OpenGL context and IOSurface for the accelerated
+// This class manages an OpenGL context and IOSurfaceTexture for the accelerated
 // compositing code path. The GL context is attached to
-// RenderWidgetHostViewCocoa for blitting the IOSurface.
-class CompositingIOSurfaceMac
-    : public base::RefCounted<CompositingIOSurfaceMac> {
+// RenderWidgetHostViewCocoa for blitting the IOSurfaceTexture.
+class IOSurfaceTexture
+    : public base::RefCounted<IOSurfaceTexture> {
  public:
-  // Returns NULL if IOSurface or GL API calls fail.
-  static scoped_refptr<CompositingIOSurfaceMac> Create();
+  // Returns NULL if IOSurfaceTexture or GL API calls fail.
+  static scoped_refptr<IOSurfaceTexture> Create();
 
-  // Set IOSurface that will be drawn on the next NSView drawRect.
+  // Set IOSurfaceTexture that will be drawn on the next NSView drawRect.
   bool SetIOSurfaceWithContextCurrent(
-      scoped_refptr<CompositingIOSurfaceContext> current_context,
+      scoped_refptr<IOSurfaceContext> current_context,
       IOSurfaceID io_surface_handle,
       const gfx::Size& size,
       float scale_factor) WARN_UNUSED_RESULT;
@@ -62,32 +62,9 @@ class CompositingIOSurfaceMac
   // larger than the IOSurface, the remaining right and bottom edges will be
   // white. |window_scale_factor| is 1 in normal views, 2 in HiDPI views.
   bool DrawIOSurface(
-      scoped_refptr<CompositingIOSurfaceContext> drawing_context,
+      scoped_refptr<IOSurfaceContext> drawing_context,
       const gfx::Rect& window_rect,
       float window_scale_factor) WARN_UNUSED_RESULT;
-
-  // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
-  // into |out|. The copied region is specified with |src_pixel_subrect| and
-  // the data is transformed so that it fits in |dst_pixel_size|.
-  // |src_pixel_subrect| and |dst_pixel_size| are not in DIP but in pixel.
-  // Caller must ensure that |out| is allocated to dimensions that match
-  // dst_pixel_size, with no additional padding.
-  // |callback| is invoked when the operation is completed or failed.
-  // Do no call this method again before |callback| is invoked.
-  void CopyTo(const gfx::Rect& src_pixel_subrect,
-              const gfx::Size& dst_pixel_size,
-              const base::Callback<void(bool, const SkBitmap&)>& callback);
-
-  // Transfer the contents of the surface to an already-allocated YV12
-  // VideoFrame, and invoke a callback to indicate success or failure.
-  void CopyToVideoFrame(
-      const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback);
-
-  // Unref the IOSurface and delete the associated GL texture. If the GPU
-  // process is no longer referencing it, this will delete the IOSurface.
-  void UnrefIOSurface();
 
   bool HasIOSurface() { return !!io_surface_.get(); }
 
@@ -111,7 +88,11 @@ class CompositingIOSurfaceMac
   bool HasBeenPoisoned() const;
 
  private:
-  friend class base::RefCounted<CompositingIOSurfaceMac>;
+  // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
+  // process is no longer referencing it, this will delete the IOSurfaceTexture.
+  void UnrefIOSurface();
+
+  friend class base::RefCounted<IOSurfaceTexture>;
 
   // Vertex structure for use in glDraw calls.
   struct SurfaceVertex {
@@ -167,13 +148,13 @@ class CompositingIOSurfaceMac
     SurfaceVertex verts_[4];
   };
 
-  CompositingIOSurfaceMac(
-      const scoped_refptr<CompositingIOSurfaceContext>& context);
-  ~CompositingIOSurfaceMac();
+  IOSurfaceTexture(
+      const scoped_refptr<IOSurfaceContext>& context);
+  ~IOSurfaceTexture();
 
-  // Returns true if IOSurface is ready to render. False otherwise.
+  // Returns true if IOSurfaceTexture is ready to render. False otherwise.
   bool MapIOSurfaceToTextureWithContextCurrent(
-      const scoped_refptr<CompositingIOSurfaceContext>& current_context,
+      const scoped_refptr<IOSurfaceContext>& current_context,
       const gfx::Size pixel_size,
       float scale_factor,
       IOSurfaceID io_surface_handle) WARN_UNUSED_RESULT;
@@ -189,9 +170,9 @@ class CompositingIOSurfaceMac
   // Offscreen context used for all operations other than drawing to the
   // screen. This is in the same share group as the contexts used for
   // drawing, and is the same for all IOSurfaces in all windows.
-  scoped_refptr<CompositingIOSurfaceContext> offscreen_context_;
+  scoped_refptr<IOSurfaceContext> offscreen_context_;
 
-  // IOSurface data.
+  // IOSurfaceTexture data.
   IOSurfaceID io_surface_handle_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
@@ -219,7 +200,7 @@ class CompositingIOSurfaceMac
   enum {
     kMaximumUnevictedSurfaces = 8,
   };
-  typedef std::list<CompositingIOSurfaceMac*> EvictionQueue;
+  typedef std::list<IOSurfaceTexture*> EvictionQueue;
   void EvictionMarkUpdated();
   void EvictionMarkEvicted();
   EvictionQueue::iterator eviction_queue_iterator_;
@@ -233,4 +214,4 @@ class CompositingIOSurfaceMac
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_TEXTURE_MAC_H_

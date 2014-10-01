@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
+#include "content/browser/compositor/io_surface_context_mac.h"
 
 #include <OpenGL/gl.h>
 #include <OpenGL/OpenGL.h>
@@ -19,19 +19,18 @@
 namespace content {
 
 // static
-scoped_refptr<CompositingIOSurfaceContext>
-CompositingIOSurfaceContext::Get(int window_number) {
-  TRACE_EVENT0("browser", "CompositingIOSurfaceContext::Get");
+scoped_refptr<IOSurfaceContext>
+IOSurfaceContext::Get(Type type) {
+  TRACE_EVENT0("browser", "IOSurfaceContext::Get");
 
-  // Return the context for this window_number, if it exists.
-  WindowMap::iterator found = window_map()->find(window_number);
-  if (found != window_map()->end()) {
+  // Return the context for this type, if it exists.
+  TypeMap::iterator found = type_map()->find(type);
+  if (found != type_map()->end()) {
     DCHECK(!found->second->poisoned_);
     return found->second;
   }
 
-  base::ScopedTypeRef<CGLContextObj> cgl_context_strong;
-  CGLContextObj cgl_context = NULL;
+  base::ScopedTypeRef<CGLContextObj> cgl_context;
   CGLError error = kCGLNoError;
 
   // Create the pixel format object for the context.
@@ -56,66 +55,54 @@ CompositingIOSurfaceContext::Get(int window_number) {
   // Create all contexts in the same share group so that the textures don't
   // need to be recreated when transitioning contexts.
   CGLContextObj share_context = NULL;
-  if (!window_map()->empty())
-    share_context = window_map()->begin()->second->cgl_context();
+  if (!type_map()->empty())
+    share_context = type_map()->begin()->second->cgl_context();
   error = CGLCreateContext(
-      pixel_format, share_context, cgl_context_strong.InitializeInto());
+      pixel_format, share_context, cgl_context.InitializeInto());
   if (error != kCGLNoError) {
     LOG(ERROR) << "Failed to create context object.";
     return NULL;
   }
-  cgl_context = cgl_context_strong;
 
-  // Note that VSync is ignored because CoreAnimation will automatically
-  // rate limit draws.
-
-  return new CompositingIOSurfaceContext(
-      window_number,
-      cgl_context_strong,
-      cgl_context);
+  return new IOSurfaceContext(type, cgl_context);
 }
 
-void CompositingIOSurfaceContext::PoisonContextAndSharegroup() {
+void IOSurfaceContext::PoisonContextAndSharegroup() {
   if (poisoned_)
     return;
 
-  for (WindowMap::iterator it = window_map()->begin();
-       it != window_map()->end();
+  for (TypeMap::iterator it = type_map()->begin();
+       it != type_map()->end();
        ++it) {
     it->second->poisoned_ = true;
   }
-  window_map()->clear();
+  type_map()->clear();
 }
 
-CompositingIOSurfaceContext::CompositingIOSurfaceContext(
-    int window_number,
-    base::ScopedTypeRef<CGLContextObj> cgl_context_strong,
-    CGLContextObj cgl_context)
-    : window_number_(window_number),
-      cgl_context_strong_(cgl_context_strong),
-      cgl_context_(cgl_context),
-      poisoned_(false) {
-  DCHECK(window_map()->find(window_number_) == window_map()->end());
-  window_map()->insert(std::make_pair(window_number_, this));
+IOSurfaceContext::IOSurfaceContext(
+    Type type, base::ScopedTypeRef<CGLContextObj> cgl_context)
+    : type_(type), cgl_context_(cgl_context), poisoned_(false) {
+  DCHECK(type_map()->find(type_) == type_map()->end());
+  type_map()->insert(std::make_pair(type_, this));
 
   GpuDataManager::GetInstance()->AddObserver(this);
 }
 
-CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
+IOSurfaceContext::~IOSurfaceContext() {
   GpuDataManager::GetInstance()->RemoveObserver(this);
 
   if (!poisoned_) {
-    DCHECK(window_map()->find(window_number_) != window_map()->end());
-    DCHECK(window_map()->find(window_number_)->second == this);
-    window_map()->erase(window_number_);
+    DCHECK(type_map()->find(type_) != type_map()->end());
+    DCHECK(type_map()->find(type_)->second == this);
+    type_map()->erase(type_);
   } else {
-    WindowMap::const_iterator found = window_map()->find(window_number_);
-    if (found != window_map()->end())
+    TypeMap::const_iterator found = type_map()->find(type_);
+    if (found != type_map()->end())
       DCHECK(found->second != this);
   }
 }
 
-void CompositingIOSurfaceContext::OnGpuSwitching() {
+void IOSurfaceContext::OnGpuSwitching() {
   // Recreate all browser-side GL contexts whenever the GPU switches. If this
   // is not done, performance will suffer.
   // http://crbug.com/361493
@@ -123,13 +110,13 @@ void CompositingIOSurfaceContext::OnGpuSwitching() {
 }
 
 // static
-CompositingIOSurfaceContext::WindowMap*
-    CompositingIOSurfaceContext::window_map() {
-  return window_map_.Pointer();
+IOSurfaceContext::TypeMap*
+    IOSurfaceContext::type_map() {
+  return type_map_.Pointer();
 }
 
 // static
-base::LazyInstance<CompositingIOSurfaceContext::WindowMap>
-    CompositingIOSurfaceContext::window_map_;
+base::LazyInstance<IOSurfaceContext::TypeMap>
+    IOSurfaceContext::type_map_;
 
 }  // namespace content

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_CONTEXT_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_CONTEXT_MAC_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
+#define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
 
 #import <AppKit/NSOpenGL.h>
 #include <OpenGL/OpenGL.h>
@@ -19,60 +19,55 @@
 
 namespace content {
 
-class CompositingIOSurfaceContext
-    : public base::RefCounted<CompositingIOSurfaceContext>,
+class IOSurfaceContext
+    : public base::RefCounted<IOSurfaceContext>,
       public content::GpuDataManagerObserver {
  public:
-  enum {
+  enum Type {
     // The number used to look up the context used for async readback and for
     // initializing the IOSurface.
-    kOffscreenContextWindowNumber = -2,
+    kOffscreenContext = -2,
     // The number used to look up the context used by CAOpenGLLayers.
-    kCALayerContextWindowNumber = -3,
+    kCALayerContext = -3,
   };
 
-  // Get or create a GL context for the specified window with the specified
-  // surface ordering. Share these GL contexts as much as possible because
-  // creating and destroying them can be expensive
+  // Get or create a GL context of the specified type. Share these GL contexts
+  // as much as possible because creating and destroying them can be expensive.
   // http://crbug.com/180463
-  static scoped_refptr<CompositingIOSurfaceContext> Get(int window_number);
+  static scoped_refptr<IOSurfaceContext> Get(Type type);
 
   // Mark that all the GL contexts in the same sharegroup as this context as
   // invalid, so they shouldn't be returned anymore by Get, but rather, new
   // contexts should be created. This is called as a precaution when unexpected
-  // GL errors occur.
+  // GL errors occur, or after a GPU switch.
   void PoisonContextAndSharegroup();
   bool HasBeenPoisoned() const { return poisoned_; }
 
   CGLContextObj cgl_context() const { return cgl_context_; }
-  int window_number() const { return window_number_; }
 
   // content::GpuDataManagerObserver implementation.
   virtual void OnGpuSwitching() OVERRIDE;
 
  private:
-  friend class base::RefCounted<CompositingIOSurfaceContext>;
+  friend class base::RefCounted<IOSurfaceContext>;
 
-  CompositingIOSurfaceContext(
-      int window_number,
-      base::ScopedTypeRef<CGLContextObj> clg_context_strong,
-      CGLContextObj clg_context);
-  virtual ~CompositingIOSurfaceContext();
+  IOSurfaceContext(
+      Type type,
+      base::ScopedTypeRef<CGLContextObj> clg_context_strong);
+  virtual ~IOSurfaceContext();
 
-  int window_number_;
-  base::ScopedTypeRef<CGLContextObj> cgl_context_strong_;
-  // Weak, backed by |cgl_context_strong_|.
-  CGLContextObj cgl_context_;
+  Type type_;
+  base::ScopedTypeRef<CGLContextObj> cgl_context_;
 
   bool poisoned_;
 
   // The global map from window number and window ordering to
   // context data.
-  typedef std::map<int, CompositingIOSurfaceContext*> WindowMap;
-  static base::LazyInstance<WindowMap> window_map_;
-  static WindowMap* window_map();
+  typedef std::map<Type, IOSurfaceContext*> TypeMap;
+  static base::LazyInstance<TypeMap> type_map_;
+  static TypeMap* type_map();
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_CONTEXT_MAC_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_

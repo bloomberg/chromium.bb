@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/compositing_iosurface_mac.h"
+#include "content/browser/compositor/io_surface_texture_mac.h"
 
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/CGLRenderers.h>
@@ -16,8 +16,8 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "content/browser/compositor/io_surface_context_mac.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/common/content_constants_internal.h"
@@ -46,20 +46,20 @@
 namespace content {
 
 // static
-scoped_refptr<CompositingIOSurfaceMac> CompositingIOSurfaceMac::Create() {
-  scoped_refptr<CompositingIOSurfaceContext> offscreen_context =
-      CompositingIOSurfaceContext::Get(
-          CompositingIOSurfaceContext::kOffscreenContextWindowNumber);
+scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create() {
+  scoped_refptr<IOSurfaceContext> offscreen_context =
+      IOSurfaceContext::Get(
+          IOSurfaceContext::kOffscreenContext);
   if (!offscreen_context.get()) {
     LOG(ERROR) << "Failed to create context for offscreen operations";
     return NULL;
   }
 
-  return new CompositingIOSurfaceMac(offscreen_context);
+  return new IOSurfaceTexture(offscreen_context);
 }
 
-CompositingIOSurfaceMac::CompositingIOSurfaceMac(
-    const scoped_refptr<CompositingIOSurfaceContext>& offscreen_context)
+IOSurfaceTexture::IOSurfaceTexture(
+    const scoped_refptr<IOSurfaceContext>& offscreen_context)
     : offscreen_context_(offscreen_context),
       io_surface_handle_(0),
       scale_factor_(1.f),
@@ -70,7 +70,7 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
   CHECK(offscreen_context_.get());
 }
 
-CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
+IOSurfaceTexture::~IOSurfaceTexture() {
   {
     gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
         offscreen_context_->cgl_context());
@@ -80,8 +80,8 @@ CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   DCHECK(eviction_queue_iterator_ == eviction_queue_.Get().end());
 }
 
-bool CompositingIOSurfaceMac::SetIOSurfaceWithContextCurrent(
-    scoped_refptr<CompositingIOSurfaceContext> current_context,
+bool IOSurfaceTexture::SetIOSurfaceWithContextCurrent(
+    scoped_refptr<IOSurfaceContext> current_context,
     IOSurfaceID io_surface_handle,
     const gfx::Size& size,
     float scale_factor) {
@@ -91,7 +91,7 @@ bool CompositingIOSurfaceMac::SetIOSurfaceWithContextCurrent(
   return result;
 }
 
-int CompositingIOSurfaceMac::GetRendererID() {
+int IOSurfaceTexture::GetRendererID() {
   GLint current_renderer_id = -1;
   if (CGLGetParameter(offscreen_context_->cgl_context(),
                       kCGLCPCurrentRendererID,
@@ -100,14 +100,14 @@ int CompositingIOSurfaceMac::GetRendererID() {
   return -1;
 }
 
-bool CompositingIOSurfaceMac::DrawIOSurface(
-    scoped_refptr<CompositingIOSurfaceContext> drawing_context,
+bool IOSurfaceTexture::DrawIOSurface(
+    scoped_refptr<IOSurfaceContext> drawing_context,
     const gfx::Rect& window_rect,
     float window_scale_factor) {
   DCHECK_EQ(CGLGetCurrentContext(), drawing_context->cgl_context());
 
   bool has_io_surface = HasIOSurface();
-  TRACE_EVENT1("browser", "CompositingIOSurfaceMac::DrawIOSurface",
+  TRACE_EVENT1("browser", "IOSurfaceTexture::DrawIOSurface",
                "has_io_surface", has_io_surface);
 
   gfx::Rect pixel_window_rect =
@@ -152,7 +152,7 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
         DrawQuad(filler_quad);
       }
       if (window_rect.height() > dip_io_surface_size_.height()) {
-        // Draw bottom gutter to the width of the IOSurface.
+        // Draw bottom gutter to the width of the IOSurfaceTexture.
         filler_quad.set_rect(
             0.0f, dip_io_surface_size_.height(),
             dip_io_surface_size_.width(), window_rect.height());
@@ -198,12 +198,12 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   return result;
 }
 
-bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
-    const scoped_refptr<CompositingIOSurfaceContext>& current_context,
+bool IOSurfaceTexture::MapIOSurfaceToTextureWithContextCurrent(
+    const scoped_refptr<IOSurfaceContext>& current_context,
     const gfx::Size pixel_size,
     float scale_factor,
     IOSurfaceID io_surface_handle) {
-  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::MapIOSurfaceToTexture");
+  TRACE_EVENT0("browser", "IOSurfaceTexture::MapIOSurfaceToTexture");
 
   if (!io_surface_ || io_surface_handle != io_surface_handle_)
     UnrefIOSurfaceWithContextCurrent();
@@ -265,14 +265,14 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
   return true;
 }
 
-void CompositingIOSurfaceMac::UnrefIOSurface() {
+void IOSurfaceTexture::UnrefIOSurface() {
   gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
       offscreen_context_->cgl_context());
   UnrefIOSurfaceWithContextCurrent();
 }
 
-void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
-  TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::DrawQuad");
+void IOSurfaceTexture::DrawQuad(const SurfaceQuad& quad) {
+  TRACE_EVENT0("gpu", "IOSurfaceTexture::DrawQuad");
 
   glEnableClientState(GL_VERTEX_ARRAY); CHECK_AND_SAVE_GL_ERROR();
   glEnableClientState(GL_TEXTURE_COORD_ARRAY); CHECK_AND_SAVE_GL_ERROR();
@@ -285,7 +285,7 @@ void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
+void IOSurfaceTexture::UnrefIOSurfaceWithContextCurrent() {
   if (texture_) {
     glDeleteTextures(1, &texture_);
     texture_ = 0;
@@ -303,18 +303,18 @@ void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
   EvictionMarkEvicted();
 }
 
-bool CompositingIOSurfaceMac::HasBeenPoisoned() const {
+bool IOSurfaceTexture::HasBeenPoisoned() const {
   return offscreen_context_->HasBeenPoisoned();
 }
 
-GLenum CompositingIOSurfaceMac::GetAndSaveGLError() {
+GLenum IOSurfaceTexture::GetAndSaveGLError() {
   GLenum gl_error = glGetError();
   if (gl_error_ == GL_NO_ERROR)
     gl_error_ = gl_error;
   return gl_error;
 }
 
-void CompositingIOSurfaceMac::EvictionMarkUpdated() {
+void IOSurfaceTexture::EvictionMarkUpdated() {
   EvictionMarkEvicted();
   eviction_queue_.Get().push_back(this);
   eviction_queue_iterator_ = --eviction_queue_.Get().end();
@@ -322,7 +322,7 @@ void CompositingIOSurfaceMac::EvictionMarkUpdated() {
   EvictionScheduleDoEvict();
 }
 
-void CompositingIOSurfaceMac::EvictionMarkEvicted() {
+void IOSurfaceTexture::EvictionMarkEvicted() {
   if (eviction_queue_iterator_ == eviction_queue_.Get().end())
     return;
   eviction_queue_.Get().erase(eviction_queue_iterator_);
@@ -331,7 +331,7 @@ void CompositingIOSurfaceMac::EvictionMarkEvicted() {
 }
 
 // static
-void CompositingIOSurfaceMac::EvictionScheduleDoEvict() {
+void IOSurfaceTexture::EvictionScheduleDoEvict() {
   if (eviction_scheduled_)
     return;
   if (eviction_queue_.Get().size() <= kMaximumUnevictedSurfaces)
@@ -340,17 +340,17 @@ void CompositingIOSurfaceMac::EvictionScheduleDoEvict() {
   eviction_scheduled_ = true;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CompositingIOSurfaceMac::EvictionDoEvict));
+      base::Bind(&IOSurfaceTexture::EvictionDoEvict));
 }
 
 // static
-void CompositingIOSurfaceMac::EvictionDoEvict() {
+void IOSurfaceTexture::EvictionDoEvict() {
   eviction_scheduled_ = false;
   // Walk the list of allocated surfaces from least recently used to most
   // recently used.
   for (EvictionQueue::iterator it = eviction_queue_.Get().begin();
        it != eviction_queue_.Get().end();) {
-    CompositingIOSurfaceMac* surface = *it;
+    IOSurfaceTexture* surface = *it;
     ++it;
 
     // If the number of IOSurfaces allocated is less than the threshold,
@@ -368,10 +368,10 @@ void CompositingIOSurfaceMac::EvictionDoEvict() {
 }
 
 // static
-base::LazyInstance<CompositingIOSurfaceMac::EvictionQueue>
-    CompositingIOSurfaceMac::eviction_queue_;
+base::LazyInstance<IOSurfaceTexture::EvictionQueue>
+    IOSurfaceTexture::eviction_queue_;
 
 // static
-bool CompositingIOSurfaceMac::eviction_scheduled_ = false;
+bool IOSurfaceTexture::eviction_scheduled_ = false;
 
 }  // namespace content

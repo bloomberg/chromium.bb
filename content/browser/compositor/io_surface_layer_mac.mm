@@ -12,10 +12,10 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "content/browser/compositor/io_surface_context_mac.h"
+#include "content/browser/compositor/io_surface_texture_mac.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
-#include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
-#include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -168,11 +168,11 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 
 @implementation IOSurfaceLayer
 
-- (content::CompositingIOSurfaceMac*)iosurface {
+- (content::IOSurfaceTexture*)iosurface {
   return iosurface_.get();
 }
 
-- (content::CompositingIOSurfaceContext*)context {
+- (content::IOSurfaceContext*)context {
   return context_.get();
 }
 
@@ -181,9 +181,9 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
   if (self = [super init]) {
     helper_.reset(new content::IOSurfaceLayerHelper(client, self));
 
-    iosurface_ = content::CompositingIOSurfaceMac::Create();
-    context_ = content::CompositingIOSurfaceContext::Get(
-        content::CompositingIOSurfaceContext::kCALayerContextWindowNumber);
+    iosurface_ = content::IOSurfaceTexture::Create();
+    context_ = content::IOSurfaceContext::Get(
+        content::IOSurfaceContext::kCALayerContext);
     if (!iosurface_.get() || !context_.get()) {
       LOG(ERROR) << "Failed create CompositingIOSurface or context";
       [self resetClient];
