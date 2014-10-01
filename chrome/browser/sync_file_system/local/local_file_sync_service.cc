@@ -204,11 +204,13 @@ void LocalFileSyncService::PromoteDemotedChanges(
 
   base::Closure completion_callback =
       base::Bind(&InvokeCallbackOnNthInvocation,
-                 base::Owned(new int(origin_to_contexts_.size())), callback);
+                 base::Owned(new int(origin_to_contexts_.size() + 1)),
+                 callback);
   for (OriginToContext::iterator iter = origin_to_contexts_.begin();
        iter != origin_to_contexts_.end(); ++iter)
     sync_context_->PromoteDemotedChanges(iter->first, iter->second,
                                          completion_callback);
+  completion_callback.Run();
 }
 
 void LocalFileSyncService::GetLocalFileMetadata(

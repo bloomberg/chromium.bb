@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -225,11 +226,11 @@ class LocalFileSyncContext
   void ScheduleNotifyChangesUpdatedOnIOThread(const base::Closure& callback);
 
   // Called by the internal timer on IO thread to notify changes to UI thread.
-  void NotifyAvailableChangesOnIOThread(const base::Closure& callback);
+  void NotifyAvailableChangesOnIOThread();
 
   // Called from NotifyAvailableChangesOnIOThread.
   void NotifyAvailableChanges(const std::set<GURL>& origins,
-                              const base::Closure& callback);
+                              const std::vector<base::Closure>& callbacks);
 
   // Helper routines for MaybeInitializeFileSystemContext.
   void InitializeFileSystemContextOnIOThread(
@@ -360,6 +361,7 @@ class LocalFileSyncContext
   // Used only on IO thread for available changes notifications.
   base::Time last_notified_changes_;
   scoped_ptr<base::OneShotTimer<LocalFileSyncContext> > timer_on_io_;
+  std::vector<base::Closure> pending_completion_callbacks_;
   std::set<GURL> origins_with_pending_changes_;
 
   // Populated while root directory deletion is being handled for

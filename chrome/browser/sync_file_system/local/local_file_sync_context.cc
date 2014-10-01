@@ -590,35 +590,41 @@ void LocalFileSyncContext::ScheduleNotifyChangesUpdatedOnIOThread(
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (shutdown_on_io_)
     return;
+  pending_completion_callbacks_.push_back(callback);
   if (base::Time::Now() > last_notified_changes_ + NotifyChangesDuration()) {
-    NotifyAvailableChangesOnIOThread(callback);
+    NotifyAvailableChangesOnIOThread();
   } else if (!timer_on_io_->IsRunning()) {
     timer_on_io_->Start(
         FROM_HERE, NotifyChangesDuration(),
         base::Bind(&LocalFileSyncContext::NotifyAvailableChangesOnIOThread,
-                   base::Unretained(this), callback));
+                   base::Unretained(this)));
   }
 }
 
-void LocalFileSyncContext::NotifyAvailableChangesOnIOThread(
-    const base::Closure& callback) {
+void LocalFileSyncContext::NotifyAvailableChangesOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (shutdown_on_io_)
     return;
+
+  std::vector<base::Closure> completion_callbacks;
+  completion_callbacks.swap(pending_completion_callbacks_);
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::NotifyAvailableChanges,
-                 this, origins_with_pending_changes_, callback));
+                 this, origins_with_pending_changes_,
+                 completion_callbacks));
   last_notified_changes_ = base::Time::Now();
   origins_with_pending_changes_.clear();
 }
 
 void LocalFileSyncContext::NotifyAvailableChanges(
     const std::set<GURL>& origins,
-    const base::Closure& callback) {
+    const std::vector<base::Closure>& callbacks) {
   FOR_EACH_OBSERVER(LocalOriginChangeObserver, origin_change_observers_,
                     OnChangesAvailableInOrigins(origins));
-  callback.Run();
+  for (const auto& callback : callbacks)
+    callback.Run();
 }
 
 void LocalFileSyncContext::ShutdownOnIOThread() {
