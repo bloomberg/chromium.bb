@@ -20,7 +20,11 @@
         'out_pnacl_newlib_x86_32': '>(tc_lib_dir_pnacl_translate)/lib-x86-32/>(nlib_target)',
         'out_pnacl_newlib_x86_64': '>(tc_lib_dir_pnacl_translate)/lib-x86-64/>(nlib_target)',
         'out_pnacl_newlib_mips': '>(tc_lib_dir_pnacl_translate)/lib-mips32/>(nlib_target)',
+        # TODO(hidehiko): When crrev.com/524573002 is submitted and NaCl
+        # repository is rolled out with the CL, then we can simply remove this
+        # variable, as it is no longer used.
         'out_pnacl_newlib_x86_32_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi/>(nlib_target)',
+        'out_newlib32_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi/>(nlib_target)',
         'build_glibc': 0,
         'build_newlib': 0,
         'build_pnacl_newlib': 1,
