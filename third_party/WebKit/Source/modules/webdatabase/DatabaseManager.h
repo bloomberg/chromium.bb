@@ -32,7 +32,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -63,7 +62,7 @@ public:
 
     static void throwExceptionForDatabaseError(DatabaseError, const String& errorMessage, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<Database> openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, DatabaseCallback*, DatabaseError&, String& errorMessage);
+    Database* openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, DatabaseCallback*, DatabaseError&, String& errorMessage);
 
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
@@ -78,13 +77,13 @@ private:
     // it already exist previously. Otherwise, it returns 0.
     DatabaseContext* existingDatabaseContextFor(ExecutionContext*);
 
-    PassRefPtrWillBeRawPtr<Database> openDatabaseInternal(ExecutionContext*,
+    Database* openDatabaseInternal(ExecutionContext*,
         const String& name, const String& expectedVersion, const String& displayName,
         unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     static void logErrorMessage(ExecutionContext*, const String& message);
 
-    typedef WillBePersistentHeapHashMap<ExecutionContext*, RefPtrWillBeMember<DatabaseContext> > ContextMap;
+    typedef PersistentHeapHashMap<ExecutionContext*, Member<DatabaseContext> > ContextMap;
     ContextMap m_contextMap;
 #if ENABLE(ASSERT)
     int m_databaseContextRegisteredCount;

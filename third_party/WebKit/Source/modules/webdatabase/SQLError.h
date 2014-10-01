@@ -30,7 +30,6 @@
 #define SQLError_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -64,10 +63,10 @@ private:
     String m_message;
 };
 
-class SQLError : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLError>, public ScriptWrappable {
+class SQLError : public GarbageCollectedFinalized<SQLError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SQLError> create(const SQLErrorData& data) { return adoptRefWillBeNoop(new SQLError(data)); }
+    static SQLError* create(const SQLErrorData& data) { return new SQLError(data); }
     void trace(Visitor*) { }
 
     unsigned code() const { return m_data.code(); }

@@ -65,7 +65,7 @@ DatabaseManager::~DatabaseManager()
 
 class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, DatabaseCallback* creationCallback)
+    static PassOwnPtr<DatabaseCreationCallbackTask> create(Database* database, DatabaseCallback* creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
@@ -81,13 +81,13 @@ public:
     }
 
 private:
-    DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, DatabaseCallback* callback)
+    DatabaseCreationCallbackTask(Database* database, DatabaseCallback* callback)
         : m_database(database)
         , m_creationCallback(callback)
     {
     }
 
-    RefPtrWillBePersistent<Database> m_database;
+    Persistent<Database> m_database;
     Persistent<DatabaseCallback> m_creationCallback;
 };
 
@@ -103,10 +103,7 @@ DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
 {
     if (DatabaseContext* databaseContext = existingDatabaseContextFor(context))
         return databaseContext;
-    // We don't need to hold a reference returned by DatabaseContext::create
-    // because DatabaseContext::create calls registerDatabaseContext, and the
-    // DatabaseManager holds a reference.
-    return DatabaseContext::create(context).get();
+    return DatabaseContext::create(context);
 }
 
 void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
@@ -163,7 +160,7 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
         context->securityOrigin()->toString().ascii().data());
 }
 
-PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabaseInternal(ExecutionContext* context,
+Database* DatabaseManager::openDatabaseInternal(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
@@ -171,9 +168,9 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabaseInternal(Execution
 
     DatabaseContext* backendContext = databaseContextFor(context)->backend();
     if (DatabaseTracker::tracker().canEstablishDatabase(backendContext, name, displayName, estimatedSize, error)) {
-        RefPtrWillBeRawPtr<Database> backend = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
+        Database* backend = new Database(backendContext, name, expectedVersion, displayName, estimatedSize);
         if (backend->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
-            return backend.release();
+            return backend;
     }
 
     ASSERT(error != DatabaseError::None);
@@ -192,7 +189,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabaseInternal(Execution
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
+Database* DatabaseManager::openDatabase(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, DatabaseCallback* creationCallback,
     DatabaseError& error, String& errorMessage)
@@ -200,7 +197,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    RefPtrWillBeRawPtr<Database> database = openDatabaseInternal(context, name,
+    Database* database = openDatabaseInternal(context, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!database)
         return nullptr;
@@ -209,12 +206,12 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
     DatabaseClient::from(context)->didOpenDatabase(database, context->securityOrigin()->host(), name, expectedVersion);
 
     if (database->isNew() && creationCallback) {
-        WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
+        WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database);
         database->executionContext()->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
     }
 
     ASSERT(database);
-    return database.release();
+    return database;
 }
 
 String DatabaseManager::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)

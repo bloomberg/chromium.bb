@@ -33,14 +33,13 @@
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class SQLResultSetRowList : public RefCountedWillBeGarbageCollectedFinalized<SQLResultSetRowList>, public ScriptWrappable {
+class SQLResultSetRowList : public GarbageCollectedFinalized<SQLResultSetRowList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SQLResultSetRowList> create() { return adoptRefWillBeNoop(new SQLResultSetRowList); }
+    static SQLResultSetRowList* create() { return new SQLResultSetRowList; }
     void trace(Visitor*) { }
 
     const Vector<String>& columnNames() const { return m_columns; }

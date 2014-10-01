@@ -46,7 +46,7 @@ class SQLTransaction;
 class SQLTransactionBackend;
 class SQLValue;
 
-class SQLTransactionWrapper : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLTransactionWrapper> {
+class SQLTransactionWrapper : public GarbageCollectedFinalized<SQLTransactionWrapper> {
 public:
     virtual ~SQLTransactionWrapper() { }
     virtual void trace(Visitor*) { }
@@ -56,10 +56,9 @@ public:
     virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) = 0;
 };
 
-class SQLTransactionBackend FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLTransactionBackend>, public SQLTransactionStateMachine<SQLTransactionBackend> {
+class SQLTransactionBackend final : public GarbageCollectedFinalized<SQLTransactionBackend>, public SQLTransactionStateMachine<SQLTransactionBackend> {
 public:
-    static PassRefPtrWillBeRawPtr<SQLTransactionBackend> create(Database*,
-        PassRefPtrWillBeRawPtr<SQLTransaction>, PassRefPtrWillBeRawPtr<SQLTransactionWrapper>, bool readOnly);
+    static SQLTransactionBackend* create(Database*, SQLTransaction*, SQLTransactionWrapper*, bool readOnly);
 
     virtual ~SQLTransactionBackend();
     void trace(Visitor*);
@@ -76,16 +75,14 @@ public:
     SQLErrorData* transactionError();
     SQLStatement* currentStatement();
     void setShouldRetryCurrentStatement(bool);
-    void executeSQL(PassOwnPtrWillBeRawPtr<SQLStatement>, const String& statement,
-        const Vector<SQLValue>& arguments, int permissions);
+    void executeSQL(SQLStatement*, const String& statement, const Vector<SQLValue>& arguments, int permissions);
 
 private:
-    SQLTransactionBackend(Database*, PassRefPtrWillBeRawPtr<SQLTransaction>,
-        PassRefPtrWillBeRawPtr<SQLTransactionWrapper>, bool readOnly);
+    SQLTransactionBackend(Database*, SQLTransaction*, SQLTransactionWrapper*, bool readOnly);
 
     void doCleanup();
 
-    void enqueueStatementBackend(PassRefPtrWillBeRawPtr<SQLStatementBackend>);
+    void enqueueStatementBackend(SQLStatementBackend*);
 
     // State Machine functions:
     virtual StateFunction stateFunctionFor(SQLTransactionState) OVERRIDE;
@@ -108,11 +105,11 @@ private:
 
     void getNextStatement();
 
-    RefPtrWillBeMember<SQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
-    RefPtrWillBeMember<SQLStatementBackend> m_currentStatementBackend;
+    Member<SQLTransaction> m_frontend;
+    Member<SQLStatementBackend> m_currentStatementBackend;
 
-    RefPtrWillBeMember<Database> m_database;
-    RefPtrWillBeMember<SQLTransactionWrapper> m_wrapper;
+    Member<Database> m_database;
+    Member<SQLTransactionWrapper> m_wrapper;
     OwnPtr<SQLErrorData> m_transactionError;
 
     bool m_hasCallback;
@@ -125,7 +122,7 @@ private:
     bool m_hasVersionMismatch;
 
     Mutex m_statementMutex;
-    Deque<RefPtrWillBeMember<SQLStatementBackend> > m_statementQueue;
+    HeapDeque<Member<SQLStatementBackend> > m_statementQueue;
 
     OwnPtr<SQLiteTransaction> m_sqliteTransaction;
 };

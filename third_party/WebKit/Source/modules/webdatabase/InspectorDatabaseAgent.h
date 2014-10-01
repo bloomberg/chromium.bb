@@ -68,7 +68,7 @@ public:
     virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names) OVERRIDE;
     virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtrWillBeRawPtr<ExecuteSQLCallback>) OVERRIDE;
 
-    void didOpenDatabase(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
+    void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
 private:
     explicit InspectorDatabaseAgent();
 
@@ -76,7 +76,7 @@ private:
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
     InspectorFrontend::Database* m_frontend;
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorDatabaseResource> > DatabaseResourcesHeapMap;
+    typedef PersistentHeapHashMapWillBeHeapHashMap<String, Member<InspectorDatabaseResource> > DatabaseResourcesHeapMap;
     DatabaseResourcesHeapMap m_resources;
     bool m_enabled;
 };

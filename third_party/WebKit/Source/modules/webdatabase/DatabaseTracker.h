@@ -30,6 +30,7 @@
 #define DatabaseTracker_h
 
 #include "modules/webdatabase/DatabaseError.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -78,6 +79,9 @@ private:
     void closeOneDatabaseImmediately(const String& originIdentifier, const String& name, Database*);
 
     Mutex m_openDatabaseMapGuard;
+    // This map contains raw pointers to a garbage-collected class. We can't
+    // make this traceable because it is updated by multiple database threads.
+    GC_PLUGIN_IGNORE("crbug.com/417990")
     mutable OwnPtr<DatabaseOriginMap> m_openDatabaseMap;
 };
 

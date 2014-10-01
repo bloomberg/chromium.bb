@@ -30,8 +30,6 @@
 
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLError.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

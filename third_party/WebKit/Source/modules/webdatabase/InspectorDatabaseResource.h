@@ -34,27 +34,26 @@
 #include "core/InspectorFrontend.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 class Database;
 class InspectorFrontend;
 
-class InspectorDatabaseResource : public RefCountedWillBeGarbageCollectedFinalized<InspectorDatabaseResource> {
+class InspectorDatabaseResource : public GarbageCollectedFinalized<InspectorDatabaseResource> {
 public:
-    static PassRefPtrWillBeRawPtr<InspectorDatabaseResource> create(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
+    static InspectorDatabaseResource* create(Database*, const String& domain, const String& name, const String& version);
     void trace(Visitor*);
 
     void bind(InspectorFrontend::Database*);
     Database* database() { return m_database.get(); }
-    void setDatabase(PassRefPtrWillBeRawPtr<Database> database) { m_database = database; }
+    void setDatabase(Database* database) { m_database = database; }
     String id() const { return m_id; }
 
 private:
-    InspectorDatabaseResource(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
+    InspectorDatabaseResource(Database*, const String& domain, const String& name, const String& version);
 
-    RefPtrWillBeMember<Database> m_database;
+    Member<Database> m_database;
     String m_id;
     String m_domain;
     String m_name;

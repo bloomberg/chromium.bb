@@ -231,9 +231,9 @@
 //
 //     At birth (in Database::runTransaction()):
 //     ====================================================
-//     Database                           // Deque<RefPtr<SQLTransactionBackend> > m_transactionQueue points to ...
-//     --> SQLTransactionBackend          // RefPtr<SQLTransaction> m_frontend points to ...
-//         --> SQLTransaction             // RefPtr<SQLTransactionBackend> m_backend points to ...
+//     Database                           // HeapDeque<Member<SQLTransactionBackend> > m_transactionQueue points to ...
+//     --> SQLTransactionBackend          // Member<SQLTransaction> m_frontend points to ...
+//         --> SQLTransaction             // Member<SQLTransactionBackend> m_backend points to ...
 //             --> SQLTransactionBackend  // which is a circular reference.
 //
 //     Note: there's a circular reference between the SQLTransaction front-end and
@@ -247,17 +247,17 @@
 //     After scheduling the transaction with the DatabaseThread (Database::scheduleTransaction()):
 //     ======================================================================================================
 //     DatabaseThread                         // MessageQueue<DatabaseTask> m_queue points to ...
-//     --> DatabaseTransactionTask            // RefPtr<SQLTransactionBackend> m_transaction points to ...
-//         --> SQLTransactionBackend          // RefPtr<SQLTransaction> m_frontend points to ...
-//             --> SQLTransaction             // RefPtr<SQLTransactionBackend> m_backend points to ...
+//     --> DatabaseTransactionTask            // Member<SQLTransactionBackend> m_transaction points to ...
+//         --> SQLTransactionBackend          // Member<SQLTransaction> m_frontend points to ...
+//             --> SQLTransaction             // Member<SQLTransactionBackend> m_backend points to ...
 //                 --> SQLTransactionBackend  // which is a circular reference.
 //
 //     When executing the transaction (in DatabaseThread::databaseThread()):
 //     ====================================================================
 //     OwnPtr<DatabaseTask> task;             // points to ...
-//     --> DatabaseTransactionTask            // RefPtr<SQLTransactionBackend> m_transaction points to ...
-//         --> SQLTransactionBackend          // RefPtr<SQLTransaction> m_frontend;
-//             --> SQLTransaction             // RefPtr<SQLTransactionBackend> m_backend points to ...
+//     --> DatabaseTransactionTask            // Member<SQLTransactionBackend> m_transaction points to ...
+//         --> SQLTransactionBackend          // Member<SQLTransaction> m_frontend;
+//             --> SQLTransaction             // Member<SQLTransactionBackend> m_backend points to ...
 //                 --> SQLTransactionBackend  // which is a circular reference.
 //
 //     At the end of cleanupAndTerminate():
@@ -267,7 +267,7 @@
 //     chain looks like this:
 //
 //     JSObjectWrapper
-//     --> SQLTransaction             // in RefPtr<SQLTransactionBackend> m_backend points to ...
+//     --> SQLTransaction             // in Member<SQLTransactionBackend> m_backend points to ...
 //         --> SQLTransactionBackend  // which no longer points back to its SQLTransaction.
 //
 //     When the GC collects the corresponding JSObject, the above chain will be cleaned up
@@ -339,18 +339,12 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SQLTransactionBackend> SQLTransactionBackend::create(Database* db,
-    PassRefPtrWillBeRawPtr<SQLTransaction> frontend,
-    PassRefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper,
-    bool readOnly)
+SQLTransactionBackend* SQLTransactionBackend::create(Database* db, SQLTransaction* frontend, SQLTransactionWrapper* wrapper, bool readOnly)
 {
-    return adoptRefWillBeNoop(new SQLTransactionBackend(db, frontend, wrapper, readOnly));
+    return new SQLTransactionBackend(db, frontend, wrapper, readOnly);
 }
 
-SQLTransactionBackend::SQLTransactionBackend(Database* db,
-    PassRefPtrWillBeRawPtr<SQLTransaction> frontend,
-    PassRefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper,
-    bool readOnly)
+SQLTransactionBackend::SQLTransactionBackend(Database* db, SQLTransaction* frontend, SQLTransactionWrapper* wrapper, bool readOnly)
     : m_frontend(frontend)
     , m_database(db)
     , m_wrapper(wrapper)
@@ -472,7 +466,7 @@ SQLTransactionBackend::StateFunction SQLTransactionBackend::stateFunctionFor(SQL
     return stateFunctions[static_cast<int>(state)];
 }
 
-void SQLTransactionBackend::enqueueStatementBackend(PassRefPtrWillBeRawPtr<SQLStatementBackend> statementBackend)
+void SQLTransactionBackend::enqueueStatementBackend(SQLStatementBackend* statementBackend)
 {
     MutexLocker locker(m_statementMutex);
     m_statementQueue.append(statementBackend);
@@ -524,7 +518,7 @@ void SQLTransactionBackend::performNextStep()
     runStateMachine();
 }
 
-void SQLTransactionBackend::executeSQL(PassOwnPtrWillBeRawPtr<SQLStatement> statement,
+void SQLTransactionBackend::executeSQL(SQLStatement* statement,
     const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions)
 {
     enqueueStatementBackend(SQLStatementBackend::create(statement, sqlStatement, arguments, permissions));

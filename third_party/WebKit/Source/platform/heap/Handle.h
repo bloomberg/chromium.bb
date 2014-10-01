@@ -1053,6 +1053,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeHeapTerminatedArray blink::HeapTerminatedArray
 #define WillBeHeapTerminatedArrayBuilder blink::HeapTerminatedArrayBuilder
 #define WillBeHeapLinkedStack blink::HeapLinkedStack
+#define PersistentHeapHashMapWillBeHeapHashMap blink::HeapHashMap
 #define PersistentHeapHashSetWillBeHeapHashSet blink::HeapHashSet
 #define PersistentHeapDequeWillBeHeapDeque blink::HeapDeque
 #define PersistentHeapVectorWillBeHeapVector blink::HeapVector
@@ -1171,6 +1172,7 @@ public:
 #define WillBeHeapTerminatedArray WTF::TerminatedArray
 #define WillBeHeapTerminatedArrayBuilder WTF::TerminatedArrayBuilder
 #define WillBeHeapLinkedStack WTF::LinkedStack
+#define PersistentHeapHashMapWillBeHeapHashMap blink::PersistentHeapHashMap
 #define PersistentHeapHashSetWillBeHeapHashSet blink::PersistentHeapHashSet
 #define PersistentHeapDequeWillBeHeapDeque blink::PersistentHeapDeque
 #define PersistentHeapVectorWillBeHeapVector blink::PersistentHeapVector

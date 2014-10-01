@@ -49,7 +49,7 @@ class SQLTransactionCoordinator;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-class Database FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<Database>, public ScriptWrappable {
+class Database final : public GarbageCollectedFinalized<Database>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Database();
@@ -58,7 +58,7 @@ public:
     bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
     void close();
 
-    PassRefPtrWillBeRawPtr<SQLTransactionBackend> runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction>, bool readOnly, const ChangeVersionData*);
+    SQLTransactionBackend* runTransaction(SQLTransaction*, bool readOnly, const ChangeVersionData*);
     void scheduleTransactionStep(SQLTransactionBackend*);
     void inProgressTransactionCompleted();
 
@@ -153,7 +153,7 @@ private:
 
     RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;
     RefPtr<SecurityOrigin> m_databaseThreadSecurityOrigin;
-    RefPtrWillBeMember<DatabaseContext> m_databaseContext; // Associated with m_executionContext.
+    Member<DatabaseContext> m_databaseContext; // Associated with m_executionContext.
 
     String m_name;
     String m_expectedVersion;
@@ -167,9 +167,9 @@ private:
 
     SQLiteDatabase m_sqliteDatabase;
 
-    RefPtrWillBeMember<DatabaseAuthorizer> m_databaseAuthorizer;
+    Member<DatabaseAuthorizer> m_databaseAuthorizer;
 
-    Deque<RefPtrWillBeMember<SQLTransactionBackend> > m_transactionQueue;
+    HeapDeque<Member<SQLTransactionBackend> > m_transactionQueue;
     Mutex m_transactionInProgressMutex;
     bool m_transactionInProgress;
     bool m_isTransactionQueueEnabled;

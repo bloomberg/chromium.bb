@@ -282,7 +282,7 @@ void Database::close()
         // Clean up transactions that have not been scheduled yet:
         // Transaction phase 1 cleanup. See comment on "What happens if a
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
-        RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = nullptr;
+        SQLTransactionBackend* transaction = nullptr;
         while (!m_transactionQueue.isEmpty()) {
             transaction = m_transactionQueue.takeFirst();
             transaction->notifyDatabaseThreadIsShuttingDown();
@@ -296,18 +296,17 @@ void Database::close()
     databaseContext()->databaseThread()->recordDatabaseClosed(this);
 }
 
-PassRefPtrWillBeRawPtr<SQLTransactionBackend> Database::runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction> transaction,
-    bool readOnly, const ChangeVersionData* data)
+SQLTransactionBackend* Database::runTransaction(SQLTransaction* transaction, bool readOnly, const ChangeVersionData* data)
 {
     MutexLocker locker(m_transactionInProgressMutex);
     if (!m_isTransactionQueueEnabled)
         return nullptr;
 
-    RefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper = nullptr;
+    SQLTransactionWrapper* wrapper = nullptr;
     if (data)
         wrapper = ChangeVersionWrapper::create(data->oldVersion(), data->newVersion());
 
-    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = SQLTransactionBackend::create(this, transaction, wrapper.release(), readOnly);
+    SQLTransactionBackend* transactionBackend = SQLTransactionBackend::create(this, transaction, wrapper, readOnly);
     m_transactionQueue.append(transactionBackend);
     if (!m_transactionInProgress)
         scheduleTransaction();
@@ -325,7 +324,7 @@ void Database::inProgressTransactionCompleted()
 void Database::scheduleTransaction()
 {
     ASSERT(!m_transactionInProgressMutex.tryLock()); // Locked by caller.
-    RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = nullptr;
+    SQLTransactionBackend* transaction = nullptr;
 
     if (m_isTransactionQueueEnabled && !m_transactionQueue.isEmpty())
         transaction = m_transactionQueue.takeFirst();
@@ -400,6 +399,7 @@ String Database::version() const
 }
 
 class DoneCreatingDatabaseOnExitCaller {
+    STACK_ALLOCATED();
 public:
     DoneCreatingDatabaseOnExitCaller(Database* database)
         : m_database(database)
@@ -415,7 +415,7 @@ public:
     void setOpenSucceeded() { m_openSucceeded = true; }
 
 private:
-    Database* m_database;
+    Member<Database> m_database;
     bool m_openSucceeded;
 };
 
@@ -818,8 +818,7 @@ void Database::readTransaction(
 
 static void callTransactionErrorCallback(ExecutionContext*, SQLTransactionErrorCallback* callback, PassOwnPtr<SQLErrorData> errorData)
 {
-    RefPtrWillBeRawPtr<SQLError> error = SQLError::create(*errorData);
-    callback->handleEvent(error.get());
+    callback->handleEvent(SQLError::create(*errorData));
 }
 
 void Database::runTransaction(
@@ -836,8 +835,8 @@ void Database::runTransaction(
 #if ENABLE(ASSERT)
     SQLTransactionErrorCallback* originalErrorCallback = errorCallback;
 #endif
-    RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
-    RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = runTransaction(transaction, readOnly, changeVersionData);
+    SQLTransaction* transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
+    SQLTransactionBackend* transactionBackend = runTransaction(transaction, readOnly, changeVersionData);
     if (!transactionBackend) {
         SQLTransactionErrorCallback* callback = transaction->releaseErrorCallback();
         ASSERT(callback == originalErrorCallback);
@@ -852,7 +851,7 @@ void Database::runTransaction(
 // context thread.
 class DeliverPendingCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtrWillBeRawPtr<SQLTransaction> transaction)
+    static PassOwnPtr<DeliverPendingCallbackTask> create(SQLTransaction* transaction)
     {
         return adoptPtr(new DeliverPendingCallbackTask(transaction));
     }
@@ -863,12 +862,12 @@ public:
     }
 
 private:
-    DeliverPendingCallbackTask(PassRefPtrWillBeRawPtr<SQLTransaction> transaction)
+    DeliverPendingCallbackTask(SQLTransaction* transaction)
         : m_transaction(transaction)
     {
     }
 
-    RefPtrWillBeCrossThreadPersistent<SQLTransaction> m_transaction;
+    CrossThreadPersistent<SQLTransaction> m_transaction;
 };
 
 void Database::scheduleTransactionCallback(SQLTransaction* transaction)

@@ -51,9 +51,7 @@ SQLTransactionCoordinator::SQLTransactionCoordinator()
 
 void SQLTransactionCoordinator::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_coordinationInfoMap);
-#endif
 }
 
 void SQLTransactionCoordinator::processPendingTransactions(CoordinationInfo& info)
@@ -61,7 +59,7 @@ void SQLTransactionCoordinator::processPendingTransactions(CoordinationInfo& inf
     if (info.activeWriteTransaction || info.pendingTransactions.isEmpty())
         return;
 
-    RefPtrWillBeRawPtr<SQLTransactionBackend> firstPendingTransaction = info.pendingTransactions.first();
+    SQLTransactionBackend* firstPendingTransaction = info.pendingTransactions.first();
     if (firstPendingTransaction->isReadOnly()) {
         do {
             firstPendingTransaction = info.pendingTransactions.takeFirst();
@@ -133,7 +131,7 @@ void SQLTransactionCoordinator::shutdown()
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
         if (info.activeWriteTransaction)
             info.activeWriteTransaction->notifyDatabaseThreadIsShuttingDown();
-        for (WillBeHeapHashSet<RefPtrWillBeMember<SQLTransactionBackend> >::iterator activeReadTransactionsIterator =
+        for (HeapHashSet<Member<SQLTransactionBackend>>::iterator activeReadTransactionsIterator =
                      info.activeReadTransactions.begin();
              activeReadTransactionsIterator != info.activeReadTransactions.end();
              ++activeReadTransactionsIterator) {
@@ -144,7 +142,7 @@ void SQLTransactionCoordinator::shutdown()
         // Transaction phase 3 cleanup. See comment on "What happens if a
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
         while (!info.pendingTransactions.isEmpty()) {
-            RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = info.pendingTransactions.takeFirst();
+            SQLTransactionBackend* transaction = info.pendingTransactions.takeFirst();
             transaction->notifyDatabaseThreadIsShuttingDown();
         }
     }

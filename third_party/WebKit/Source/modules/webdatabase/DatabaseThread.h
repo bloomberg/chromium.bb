@@ -35,9 +35,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
@@ -51,9 +48,9 @@ class SQLTransactionClient;
 class SQLTransactionCoordinator;
 class TaskSynchronizer;
 
-class DatabaseThread : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseThread> {
+class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
 public:
-    static PassRefPtrWillBeRawPtr<DatabaseThread> create() { return adoptRefWillBeNoop(new DatabaseThread); }
+    static DatabaseThread* create() { return new DatabaseThread; }
     ~DatabaseThread();
     void trace(Visitor*);
 
@@ -84,10 +81,10 @@ private:
     // This set keeps track of the open databases that have been used on this thread.
     // This must be updated in the database thread though it is constructed and
     // destructed in the context thread.
-    WillBeHeapHashSet<RefPtrWillBeMember<Database> > m_openDatabaseSet;
+    HeapHashSet<Member<Database> > m_openDatabaseSet;
 
     OwnPtr<SQLTransactionClient> m_transactionClient;
-    OwnPtrWillBeMember<SQLTransactionCoordinator> m_transactionCoordinator;
+    Member<SQLTransactionCoordinator> m_transactionCoordinator;
     TaskSynchronizer* m_cleanupSync;
 
     mutable Mutex m_terminationRequestedMutex;

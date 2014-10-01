@@ -32,16 +32,15 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
-#include "wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
 
 class ExceptionState;
 
-class SQLResultSet FINAL : public ThreadSafeRefCountedWillBeGarbageCollected<SQLResultSet>, public ScriptWrappable {
+class SQLResultSet final : public GarbageCollected<SQLResultSet>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SQLResultSet> create() { return adoptRefWillBeNoop(new SQLResultSet); }
+    static SQLResultSet* create() { return new SQLResultSet; }
     void trace(Visitor*);
 
     SQLResultSetRowList* rows() const;
@@ -57,7 +56,7 @@ public:
 private:
     SQLResultSet();
 
-    RefPtrWillBeMember<SQLResultSetRowList> m_rows;
+    Member<SQLResultSetRowList> m_rows;
     int64_t m_insertId;
     int m_rowsAffected;
     bool m_insertIdSet;

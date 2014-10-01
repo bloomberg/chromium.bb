@@ -38,8 +38,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -65,7 +63,7 @@ private:
     virtual void doPerformTask() = 0;
     virtual void taskCancelled() { }
 
-    RefPtrWillBeCrossThreadPersistent<Database> m_database;
+    CrossThreadPersistent<Database> m_database;
     TaskSynchronizer* m_synchronizer;
 
 #if !LOG_DISABLED
@@ -116,7 +114,7 @@ public:
     virtual ~DatabaseTransactionTask();
 
     // Transaction task is never synchronous, so no 'synchronizer' parameter.
-    static PassOwnPtr<DatabaseTransactionTask> create(PassRefPtrWillBeRawPtr<SQLTransactionBackend> transaction)
+    static PassOwnPtr<DatabaseTransactionTask> create(SQLTransactionBackend* transaction)
     {
         return adoptPtr(new DatabaseTransactionTask(transaction));
     }
@@ -124,7 +122,7 @@ public:
     SQLTransactionBackend* transaction() const { return m_transaction.get(); }
 
 private:
-    explicit DatabaseTransactionTask(PassRefPtrWillBeRawPtr<SQLTransactionBackend>);
+    explicit DatabaseTransactionTask(SQLTransactionBackend*);
 
     virtual void doPerformTask() OVERRIDE;
     virtual void taskCancelled() OVERRIDE;
@@ -132,7 +130,7 @@ private:
     virtual const char* debugTaskName() const OVERRIDE;
 #endif
 
-    RefPtrWillBeCrossThreadPersistent<SQLTransactionBackend> m_transaction;
+    CrossThreadPersistent<SQLTransactionBackend> m_transaction;
 };
 
 class Database::DatabaseTableNamesTask FINAL : public DatabaseTask {

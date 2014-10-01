@@ -129,7 +129,7 @@ private:
     bool m_sharable;
 
     Mutex m_authorizerLock;
-    RefPtrWillBeMember<DatabaseAuthorizer> m_authorizer;
+    Member<DatabaseAuthorizer> m_authorizer;
 
     ThreadIdentifier m_openingThread;
 

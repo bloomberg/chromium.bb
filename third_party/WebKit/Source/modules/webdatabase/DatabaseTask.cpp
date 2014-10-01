@@ -131,7 +131,7 @@ const char* Database::DatabaseCloseTask::debugTaskName() const
 // *** DatabaseTransactionTask ***
 // Starts a transaction that will report its results via a callback.
 
-Database::DatabaseTransactionTask::DatabaseTransactionTask(PassRefPtrWillBeRawPtr<SQLTransactionBackend> transaction)
+Database::DatabaseTransactionTask::DatabaseTransactionTask(SQLTransactionBackend* transaction)
     : DatabaseTask(transaction->database(), 0)
     , m_transaction(transaction)
 {

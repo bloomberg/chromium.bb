@@ -49,11 +49,10 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SQLTransaction> SQLTransaction::create(Database* db, SQLTransactionCallback* callback,
-    VoidCallback* successCallback, SQLTransactionErrorCallback* errorCallback,
-    bool readOnly)
+SQLTransaction* SQLTransaction::create(Database* db, SQLTransactionCallback* callback,
+    VoidCallback* successCallback, SQLTransactionErrorCallback* errorCallback, bool readOnly)
 {
-    return adoptRefWillBeNoop(new SQLTransaction(db, callback, successCallback, errorCallback, readOnly));
+    return new SQLTransaction(db, callback, successCallback, errorCallback, readOnly);
 }
 
 SQLTransaction::SQLTransaction(Database* db, SQLTransactionCallback* callback,
@@ -189,8 +188,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
             m_transactionError = SQLErrorData::create(*m_backend->transactionError());
         }
         ASSERT(m_transactionError);
-        RefPtrWillBeRawPtr<SQLError> error = SQLError::create(*m_transactionError);
-        errorCallback->handleEvent(error.get());
+        errorCallback->handleEvent(SQLError::create(*m_transactionError));
 
         m_transactionError = nullptr;
     }
@@ -289,8 +287,8 @@ void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValu
     else if (m_readOnly)
         permissions |= DatabaseAuthorizer::ReadOnlyMask;
 
-    OwnPtrWillBeRawPtr<SQLStatement> statement = SQLStatement::create(m_database.get(), callback, callbackError);
-    m_backend->executeSQL(statement.release(), sqlStatement, arguments, permissions);
+    SQLStatement* statement = SQLStatement::create(m_database.get(), callback, callbackError);
+    m_backend->executeSQL(statement, sqlStatement, arguments, permissions);
 }
 
 bool SQLTransaction::computeNextStateAndCleanupIfNeeded()

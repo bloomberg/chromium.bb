@@ -31,7 +31,6 @@
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -43,9 +42,9 @@ class SQLResultSet;
 class SQLStatement;
 class SQLTransactionBackend;
 
-class SQLStatementBackend FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLStatementBackend> {
+class SQLStatementBackend final : public GarbageCollectedFinalized<SQLStatementBackend> {
 public:
-    static PassRefPtrWillBeRawPtr<SQLStatementBackend> create(PassOwnPtrWillBeRawPtr<SQLStatement>,
+    static SQLStatementBackend* create(SQLStatement*,
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
     void trace(Visitor*);
 
@@ -62,20 +61,19 @@ public:
     SQLResultSet* sqlResultSet() const;
 
 private:
-    SQLStatementBackend(PassOwnPtrWillBeRawPtr<SQLStatement>, const String& statement,
-        const Vector<SQLValue>& arguments, int permissions);
+    SQLStatementBackend(SQLStatement*, const String& statement, const Vector<SQLValue>& arguments, int permissions);
 
     void setFailureDueToQuota(Database*);
     void clearFailureDueToQuota();
 
-    OwnPtrWillBeMember<SQLStatement> m_frontend;
+    Member<SQLStatement> m_frontend;
     String m_statement;
     Vector<SQLValue> m_arguments;
     bool m_hasCallback;
     bool m_hasErrorCallback;
 
     OwnPtr<SQLErrorData> m_error;
-    RefPtrWillBeMember<SQLResultSet> m_resultSet;
+    Member<SQLResultSet> m_resultSet;
 
     int m_permissions;
 };

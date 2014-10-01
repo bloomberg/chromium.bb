@@ -45,8 +45,8 @@ namespace blink {
 // ... in other words, who's keeping the DatabaseContext alive and how long does
 // it need to stay alive?
 //
-// The DatabaseContext is referenced from RefPtrs in:
-// 1. ExecutionContext
+// The DatabaseContext is referenced from:
+// 1. DatabaseManager
 // 2. Database
 //
 // At Birth:
@@ -54,8 +54,9 @@ namespace blink {
 // We create a DatabaseContext only when there is a need i.e. the script tries to
 // open a Database via DatabaseManager::openDatabase().
 //
-// The DatabaseContext constructor will call ref(). This lets DatabaseContext keep itself alive.
-// Note that paired deref() is called from contextDestroyed().
+// The DatabaseContext constructor will register itself to DatabaseManager. This
+// lets DatabaseContext keep itself alive until it is unregisterd in
+// contextDestroyed().
 //
 // Once a DatabaseContext is associated with a ExecutionContext, it will
 // live until after the ExecutionContext destructs. This is true even if
@@ -77,21 +78,22 @@ namespace blink {
 // 2. "outlive" the Databases.
 //    - This is because they may make use of the DatabaseContext to execute a close
 //      task and shutdown in an orderly manner. When the Databases are destructed,
-//      they will deref the DatabaseContext from the DatabaseThread.
+//      they will release the DatabaseContext reference from the DatabaseThread.
 //
 // During shutdown, the ExecutionContext is shutting down on the script thread
 // while the Databases are shutting down on the DatabaseThread. Hence, there can be
 // a race condition as to whether the ExecutionContext or the Databases
 // destruct first.
 //
-// The RefPtrs in the Databases and ExecutionContext will ensure that the
-// DatabaseContext will outlive both regardless of which of the 2 destructs first.
+// The Members in the Databases and DatabaseManager will ensure that the
+// DatabaseContext will outlive Database and ExecutionContext regardless of
+// which of the 2 destructs first.
 
-PassRefPtrWillBeRawPtr<DatabaseContext> DatabaseContext::create(ExecutionContext* context)
+DatabaseContext* DatabaseContext::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<DatabaseContext> self = adoptRefWillBeNoop(new DatabaseContext(context));
-    DatabaseManager::manager().registerDatabaseContext(self.get());
-    return self.release();
+    DatabaseContext* self = new DatabaseContext(context);
+    DatabaseManager::manager().registerDatabaseContext(self);
+    return self;
 }
 
 DatabaseContext::DatabaseContext(ExecutionContext* context)
@@ -116,9 +118,7 @@ DatabaseContext::~DatabaseContext()
 
 void DatabaseContext::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_databaseThread);
-#endif
 }
 
 // This is called if the associated ExecutionContext is destructing while
@@ -128,7 +128,6 @@ void DatabaseContext::trace(Visitor* visitor)
 // It is not safe to just delete the context here.
 void DatabaseContext::contextDestroyed()
 {
-    RefPtrWillBeRawPtr<DatabaseContext> protector(this);
     stopDatabases();
     DatabaseManager::manager().unregisterDatabaseContext(this);
     ActiveDOMObject::contextDestroyed();

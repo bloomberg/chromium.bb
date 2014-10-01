@@ -50,7 +50,7 @@ public:
 
     virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) = 0;
 
-    void didOpenDatabase(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
+    void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
 
     static DatabaseClient* from(ExecutionContext*);
     static const char* supplementName();

@@ -53,7 +53,7 @@ const char* DatabaseClient::supplementName()
     return "DatabaseClient";
 }
 
-void DatabaseClient::didOpenDatabase(PassRefPtrWillBeRawPtr<Database> database, const String& domain, const String& name, const String& version)
+void DatabaseClient::didOpenDatabase(Database* database, const String& domain, const String& name, const String& version)
 {
     if (m_inspectorAgent)
         m_inspectorAgent->didOpenDatabase(database, domain, name, version);

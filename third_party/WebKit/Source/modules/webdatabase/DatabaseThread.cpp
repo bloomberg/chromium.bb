@@ -42,7 +42,7 @@ namespace blink {
 
 DatabaseThread::DatabaseThread()
     : m_transactionClient(adoptPtr(new SQLTransactionClient()))
-    , m_transactionCoordinator(adoptPtrWillBeNoop(new SQLTransactionCoordinator()))
+    , m_transactionCoordinator(new SQLTransactionCoordinator())
     , m_cleanupSync(0)
     , m_terminationRequested(false)
 {
@@ -56,10 +56,8 @@ DatabaseThread::~DatabaseThread()
 
 void DatabaseThread::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_openDatabaseSet);
     visitor->trace(m_transactionCoordinator);
-#endif
 }
 
 void DatabaseThread::start()
@@ -110,10 +108,10 @@ void DatabaseThread::cleanupDatabaseThread()
     // inconsistent or locked state.
     if (m_openDatabaseSet.size() > 0) {
         // As the call to close will modify the original set, we must take a copy to iterate over.
-        WillBeHeapHashSet<RefPtrWillBeMember<Database> > openSetCopy;
+        HeapHashSet<Member<Database> > openSetCopy;
         openSetCopy.swap(m_openDatabaseSet);
-        WillBeHeapHashSet<RefPtrWillBeMember<Database> >::iterator end = openSetCopy.end();
-        for (WillBeHeapHashSet<RefPtrWillBeMember<Database> >::iterator it = openSetCopy.begin(); it != end; ++it)
+        HeapHashSet<Member<Database> >::iterator end = openSetCopy.end();
+        for (HeapHashSet<Member<Database> >::iterator it = openSetCopy.begin(); it != end; ++it)
             (*it)->close();
     }
 

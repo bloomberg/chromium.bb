@@ -43,14 +43,14 @@
 //
 //     At birth (in SQLTransactionBackend::executeSQL()):
 //     =================================================
-//     SQLTransactionBackend           // Deque<RefPtr<SQLStatementBackend> > m_statementQueue points to ...
-//     --> SQLStatementBackend         // OwnPtr<SQLStatement> m_frontend points to ...
+//     SQLTransactionBackend           // HeapDeque<Member<SQLStatementBackend> > m_statementQueue points to ...
+//     --> SQLStatementBackend         // Member<SQLStatement> m_frontend points to ...
 //         --> SQLStatement
 //
 //     After grabbing the statement for execution (in SQLTransactionBackend::getNextStatement()):
 //     =========================================================================================
-//     SQLTransactionBackend           // RefPtr<SQLStatementBackend> m_currentStatementBackend points to ...
-//     --> SQLStatementBackend         // OwnPtr<SQLStatement> m_frontend points to ...
+//     SQLTransactionBackend           // Member<SQLStatementBackend> m_currentStatementBackend points to ...
+//     --> SQLStatementBackend         // Member<SQLStatement> m_frontend points to ...
 //         --> SQLStatement
 //
 //     Then we execute the statement in SQLTransactionBackend::runCurrentStatementAndGetNextState().
@@ -71,13 +71,13 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SQLStatementBackend> SQLStatementBackend::create(PassOwnPtrWillBeRawPtr<SQLStatement> frontend,
+SQLStatementBackend* SQLStatementBackend::create(SQLStatement* frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
 {
-    return adoptRefWillBeNoop(new SQLStatementBackend(frontend, statement, arguments, permissions));
+    return new SQLStatementBackend(frontend, statement, arguments, permissions);
 }
 
-SQLStatementBackend::SQLStatementBackend(PassOwnPtrWillBeRawPtr<SQLStatement> frontend,
+SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
     : m_frontend(frontend)
     , m_statement(statement.isolatedCopy())

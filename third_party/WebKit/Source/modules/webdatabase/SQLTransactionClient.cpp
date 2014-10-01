@@ -56,7 +56,7 @@ void SQLTransactionClient::didCommitWriteTransaction(Database* database)
 {
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(createCrossThreadTask(&databaseModified, PassRefPtrWillBeRawPtr<Database>(database)));
+        executionContext->postTask(createCrossThreadTask(&databaseModified, database));
         return;
     }
 

@@ -107,7 +107,7 @@ void DatabaseTracker::addOpenDatabase(Database* database)
 
 class NotifyDatabaseObserverOnCloseTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtrWillBeRawPtr<Database> database)
+    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(Database* database)
     {
         return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
     }
@@ -123,12 +123,12 @@ public:
     }
 
 private:
-    explicit NotifyDatabaseObserverOnCloseTask(PassRefPtrWillBeRawPtr<Database> database)
+    explicit NotifyDatabaseObserverOnCloseTask(Database* database)
         : m_database(database)
     {
     }
 
-    RefPtrWillBeCrossThreadPersistent<Database> m_database;
+    CrossThreadPersistent<Database> m_database;
 };
 
 void DatabaseTracker::removeOpenDatabase(Database* database)
@@ -197,6 +197,7 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* databa
     return databaseSize + spaceAvailable;
 }
 
+// FIXME: This can be removed by createCrossThreadTask().
 class DatabaseTracker::CloseOneDatabaseImmediatelyTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, Database* database)
@@ -219,7 +220,7 @@ private:
 
     String m_originIdentifier;
     String m_name;
-    Database* m_database; // Intentionally a raw pointer.
+    CrossThreadPersistent<Database> m_database;
 };
 
 void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, const String& name)
@@ -236,9 +237,7 @@ void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, 
     if (!databaseSet)
         return;
 
-    // We have to call closeImmediately() on the context thread and we cannot safely add a reference to
-    // the database in our collection when not on the context thread (which is always the case given
-    // current usage).
+    // We have to call closeImmediately() on the context thread.
     for (DatabaseSet::iterator it = databaseSet->begin(); it != databaseSet->end(); ++it)
         (*it)->databaseContext()->executionContext()->postTask(CloseOneDatabaseImmediatelyTask::create(originIdentifier, name, *it));
 }

@@ -42,10 +42,9 @@ class SQLStatementCallback;
 class SQLStatementErrorCallback;
 class SQLTransaction;
 
-class SQLStatement FINAL : public NoBaseWillBeGarbageCollectedFinalized<SQLStatement> {
+class SQLStatement final : public GarbageCollectedFinalized<SQLStatement> {
 public:
-    static PassOwnPtrWillBeRawPtr<SQLStatement> create(Database*,
-        SQLStatementCallback*, SQLStatementErrorCallback*);
+    static SQLStatement* create(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
     ~SQLStatement();
     void trace(Visitor*);
 
@@ -62,10 +61,10 @@ private:
     // The SQLStatementBackend owns the SQLStatement. Hence, the backend is
     // guaranteed to be outlive the SQLStatement, and it is safe for us to refer
     // to the backend using a raw pointer here.
-    RawPtrWillBeMember<SQLStatementBackend> m_backend;
+    Member<SQLStatementBackend> m_backend;
 
-    CrossThreadPersistentWillBeMember<SQLStatementCallback> m_statementCallback;
-    CrossThreadPersistentWillBeMember<SQLStatementErrorCallback> m_statementErrorCallback;
+    Member<SQLStatementCallback> m_statementCallback;
+    Member<SQLStatementErrorCallback> m_statementErrorCallback;
     int m_asyncOperationId;
 };
 
