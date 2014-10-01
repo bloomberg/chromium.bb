@@ -7,6 +7,7 @@
       'target_name': 'extensions',
       'variables': {
         'depends': [
+          '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           '../../../../ui/webui/resources/js/assert.js',
           '../../../../ui/webui/resources/js/assert.js',
           '../../../../ui/webui/resources/js/cr.js',

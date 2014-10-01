@@ -40,6 +40,7 @@
  *            manifestErrors: (Array.<RuntimeError>|undefined),
  *            name: string,
  *            offlineEnabled: boolean,
+ *            optionsOpenInTab: boolean,
  *            optionsUrl: string,
  *            order: number,
  *            packagedApp: boolean,

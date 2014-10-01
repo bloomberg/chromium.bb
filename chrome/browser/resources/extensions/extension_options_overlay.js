@@ -67,6 +67,10 @@ cr.define('extensions', function() {
      * @param {string} extensionName The name of the extension, which is used
      *     as the header of the overlay.
      * @param {string} extensionIcon The URL of the extension's icon.
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove the suppression after adding
+     * chrome/renderer/resources/extensions/extension_options.js
+     * to dependencies.
      */
     setExtensionAndShowOverlay: function(extensionId,
                                          extensionName,
@@ -76,7 +80,7 @@ cr.define('extensions', function() {
 
       this.setVisible_(true);
 
-      var extensionoptions = new ExtensionOptions();
+      var extensionoptions = new window.ExtensionOptions();
       extensionoptions.extension = extensionId;
       extensionoptions.autosize = 'on';
 
@@ -87,12 +91,12 @@ cr.define('extensions', function() {
       // max height for the extension options.
       var headerHeight = $('extension-options-overlay-header').offsetHeight;
       var overlayMaxHeight =
-          parseInt($('extension-options-overlay').style.maxHeight);
+          parseInt($('extension-options-overlay').style.maxHeight, 10);
       extensionoptions.maxheight = overlayMaxHeight - headerHeight;
 
       extensionoptions.minwidth =
           parseInt(window.getComputedStyle($('extension-options-overlay'))
-              .minWidth);
+              .minWidth, 10);
 
       extensionoptions.setDeferAutoSize(true);
 
@@ -100,12 +104,18 @@ cr.define('extensions', function() {
         cr.dispatchSimpleEvent($('overlay'), 'cancelOverlay');
       }.bind(this);
 
-      // Resize the overlay if the <extensionoptions> changes size.
+      /**
+       * Resize the overlay if the <extensionoptions> changes size.
+       * @param {{newHeight: number,
+       *          newWidth: number,
+       *          oldHeight: number,
+       *          oldWidth: number}} evt
+       */
       extensionoptions.onsizechanged = function(evt) {
         var overlayStyle =
             window.getComputedStyle($('extension-options-overlay'));
-        var oldWidth = parseInt(overlayStyle.width);
-        var oldHeight = parseInt(overlayStyle.height);
+        var oldWidth = parseInt(overlayStyle.width, 10);
+        var oldHeight = parseInt(overlayStyle.height, 10);
 
         // animationTime is the amount of time in ms that will be used to resize
         // the overlay. It is calculated by multiplying the pythagorean distance
