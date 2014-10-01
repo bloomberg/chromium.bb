@@ -114,6 +114,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.requestor_pid = origin_pid;
   request_info.request_type = RESOURCE_TYPE_OBJECT;
   request_info.routing_id = render_view_id;
+  // ServiceWorker is disabled for NPAPI.
+  request_info.skip_service_worker = true;
 
   RequestExtraData extra_data;
   extra_data.set_render_frame_id(render_frame_id);

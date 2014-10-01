@@ -734,6 +734,8 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
   request.setFirstPartyForCookies(
       webframe_->document().firstPartyForCookies());
   request.setHasUserGesture(popups_allowed);
+  // ServiceWorker is disabled for NPAPI.
+  request.setSkipServiceWorker(true);
   if (len > 0) {
     if (!SetPostData(&request, buf, len)) {
       // Uhoh - we're in trouble.  There isn't a good way
@@ -1288,6 +1290,8 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   // (RequestContextPlugin)?
   info.request.setRequestContext(WebURLRequest::RequestContextPlugin);
   info.request.setHTTPMethod(WebString::fromUTF8(method));
+  // ServiceWorker is disabled for NPAPI.
+  info.request.setSkipServiceWorker(true);
   info.pending_failure_notification = false;
   info.notify_redirects = notify_redirects;
   info.is_plugin_src_load = is_plugin_src_load;
