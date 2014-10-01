@@ -45,10 +45,10 @@ TEST_F(BrowserWindowLayoutTest, TestAllViews) {
 
   EXPECT_TRUE(
       NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(508, 590, 63, 27),
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(502, 590, 63, 27),
                            output.tabStripLayout.avatarFrame));
   EXPECT_EQ(70, output.tabStripLayout.leftIndent);
-  EXPECT_EQ(92, output.tabStripLayout.rightIndent);
+  EXPECT_EQ(98, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 553, 600, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame));
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.fullscreenBackingBarFrame));
@@ -94,6 +94,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
   // Content view has same size as window in AppKit Fullscreen.
   [layout setContentViewSize:NSMakeSize(600, 622)];
   [layout setInAnyFullscreen:YES];
+  [layout setFullscreenButtonFrame:NSZeroRect];
   [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
   [layout setFullscreenMenubarOffset:-10];
   [layout setFullscreenToolbarFraction:0];
@@ -140,4 +141,33 @@ TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.downloadShelfFrame));
   EXPECT_TRUE(
       NSEqualRects(NSMakeRect(0, 0, 600, 495), output.contentAreaFrame));
+}
+
+// Old style avatar button is on the right of the fullscreen button.
+// The tab strip's right indent goes up to the left side of the fullscreen
+// button.
+TEST_F(BrowserWindowLayoutTest, TestOldStyleAvatarButton) {
+  NSRect fullscreenButtonFrame = NSMakeRect(510, 596, 16, 17);
+  [layout setFullscreenButtonFrame:fullscreenButtonFrame];
+  [layout setShouldUseNewAvatar:NO];
+
+  chrome::TabStripLayout tabStripLayout = [layout computeLayout].tabStripLayout;
+
+  EXPECT_LE(NSMaxX(fullscreenButtonFrame), NSMinX(tabStripLayout.avatarFrame));
+  EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(fullscreenButtonFrame),
+            tabStripLayout.rightIndent);
+}
+
+// New style avatar button is on the left of the fullscreen button.
+// The tab strip's right indent goes up to the left side of the avatar button.
+TEST_F(BrowserWindowLayoutTest, TestNewStyleAvatarButton) {
+  NSRect fullscreenButtonFrame = NSMakeRect(575, 596, 16, 17);
+  [layout setFullscreenButtonFrame:fullscreenButtonFrame];
+  [layout setShouldUseNewAvatar:YES];
+
+  chrome::TabStripLayout tabStripLayout = [layout computeLayout].tabStripLayout;
+
+  EXPECT_LE(NSMaxX(tabStripLayout.avatarFrame), NSMinX(fullscreenButtonFrame));
+  EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
+            tabStripLayout.rightIndent);
 }
