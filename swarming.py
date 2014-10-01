@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.16'
+__version__ = '0.5'
 
 import getpass
 import hashlib
@@ -48,10 +48,44 @@ DEFAULT_SHARD_WAIT_TIME = 80 * 60.
 # How often to print status updates to stdout in 'collect'.
 STATUS_UPDATE_INTERVAL = 15 * 60.
 
+class State(object):
+  """States in which a task can be.
 
-NO_OUTPUT_FOUND = (
-  'No output produced by the task, it may have failed to run.\n'
-  '\n')
+  WARNING: Copy-pasted from appengine/swarming/server/task_result.py. These
+  values are part of the API so if they change, the API changed.
+
+  It's in fact an enum. Values should be in decreasing order of importance.
+  """
+  RUNNING = 0x10
+  PENDING = 0x20
+  EXPIRED = 0x30
+  TIMED_OUT = 0x40
+  BOT_DIED = 0x50
+  CANCELED = 0x60
+  COMPLETED = 0x70
+
+  STATES = (RUNNING, PENDING, EXPIRED, TIMED_OUT, BOT_DIED, CANCELED, COMPLETED)
+  STATES_RUNNING = (RUNNING, PENDING)
+  STATES_NOT_RUNNING = (EXPIRED, TIMED_OUT, BOT_DIED, CANCELED, COMPLETED)
+  STATES_DONE = (TIMED_OUT, COMPLETED)
+  STATES_ABANDONED = (EXPIRED, BOT_DIED, CANCELED)
+
+  _NAMES = {
+    RUNNING: 'Running',
+    PENDING: 'Pending',
+    EXPIRED: 'Expired',
+    TIMED_OUT: 'Execution timed out',
+    BOT_DIED: 'Bot died',
+    CANCELED: 'User canceled',
+    COMPLETED: 'Completed',
+  }
+
+  @classmethod
+  def to_string(cls, state):
+    """Returns a user-readable string representing a State."""
+    if state not in cls._NAMES:
+      raise ValueError('Invalid state %s' % state)
+    return cls._NAMES[state]
 
 
 class Failure(Exception):
@@ -189,9 +223,13 @@ class TaskOutputCollector(object):
 
     result = result.copy()
 
-    isolated_files_location = extract_output_files_location(result['output'])
-    if isolated_files_location:
-      result['isolated_out'] = isolated_files_location
+    result['isolated_out'] = None
+    for output in result['outputs']:
+      isolated_files_location = extract_output_files_location(output)
+      if isolated_files_location:
+        if result['isolated_out']:
+          raise ValueError('Unexpected two task with output')
+        result['isolated_out'] = isolated_files_location
 
     # Store result dict of that shard, ignore results we've already seen.
     with self._lock:
@@ -222,7 +260,6 @@ class TaskOutputCollector(object):
     with self._lock:
       # Write an array of shard results with None for missing shards.
       summary = {
-        'task_name': self.task_name,
         'shards': [
           self._per_shard_results.get(i) for i in xrange(self.shard_count)
         ],
@@ -264,30 +301,6 @@ def now():
   return time.time()
 
 
-def get_task_keys(swarm_base_url, task_name):
-  """Returns the Swarming task key for each shards of task_name."""
-  key_data = urllib.urlencode([('name', task_name)])
-  url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
-
-  for _ in net.retry_loop(max_attempts=net.URL_OPEN_MAX_ATTEMPTS):
-    result = net.url_read(url, retry_404=True)
-    if result is None:
-      raise Failure(
-          'Error: Unable to find any task with the name, %s, on swarming server'
-          % task_name)
-
-    # TODO(maruel): Compare exact string.
-    if 'No matching' in result:
-      logging.warning('Unable to find any task with the name, %s, on swarming '
-                      'server' % task_name)
-      continue
-    return json.loads(result)
-
-  raise Failure(
-      'Error: Unable to find any task with the name, %s, on swarming server'
-      % task_name)
-
-
 def extract_output_files_location(task_log):
   """Task log -> location of task output files to fetch.
 
@@ -298,6 +311,8 @@ def extract_output_files_location(task_log):
     Tuple (isolate server URL, namespace, isolated hash) on success.
     None if information is missing or can not be parsed.
   """
+  if not task_log:
+    return None
   match = re.search(
       r'\[run_isolated_out_hack\](.*)\[/run_isolated_out_hack\]',
       task_log,
@@ -334,16 +349,17 @@ def extract_output_files_location(task_log):
 
 
 def retrieve_results(
-    base_url, shard_index, task_key, timeout, should_stop, output_collector):
-  """Retrieves results for a single task_key.
+    base_url, shard_index, task_id, timeout, should_stop, output_collector):
+  """Retrieves results for a single task ID.
 
   Returns:
     <result dict> on success.
     None on failure.
   """
   assert isinstance(timeout, float), timeout
-  params = [('r', task_key)]
-  result_url = '%s/get_result?%s' % (base_url, urllib.urlencode(params))
+  result_url = '%s/swarming/api/v1/client/task/%s' % (base_url, task_id)
+  output_url = '%s/swarming/api/v1/client/task/%s/output/all' % (
+      base_url, task_id)
   started = now()
   deadline = started + timeout if timeout else None
   attempt = 0
@@ -370,28 +386,17 @@ def retrieve_results(
         if should_stop.is_set():
           return None
 
-    # Disable internal retries in net.url_read, since we are doing retries
-    # ourselves. Do not use retry_404 so should_stop is polled more often.
-    response = net.url_read(result_url, retry_404=False, retry_50x=False)
-
-    # Request failed. Try again.
-    if response is None:
+    # Disable internal retries in net.url_read_json, since we are doing retries
+    # ourselves.
+    # TODO(maruel): We'd need to know if it's a 404 and not retry at all.
+    result = net.url_read_json(result_url, retry_50x=False)
+    if not result:
       continue
-
-    # Got some response, ensure it is JSON dict, retry if not.
-    try:
-      result = json.loads(response) or {}
-      if not isinstance(result, dict):
-        raise ValueError()
-    except (ValueError, TypeError):
-      logging.warning(
-          'Received corrupted or invalid data for task_key %s, retrying: %r',
-          task_key, response)
-      continue
-
-    # Swarming server uses non-empty 'output' value as a flag that task has
-    # finished. How to wait for tasks that produce no output is a mystery.
-    if result.get('output'):
+    if result['state'] in State.STATES_NOT_RUNNING:
+      out = net.url_read_json(output_url)
+      result['outputs'] = (out or {}).get('outputs', [])
+      if not result['outputs']:
+        logging.error('No output found for task %s', task_id)
       # Record the result, try to fetch attached output files (if any).
       if output_collector:
         # TODO(vadimsh): Respect |should_stop| and |deadline| when fetching.
@@ -400,8 +405,8 @@ def retrieve_results(
 
 
 def yield_results(
-    swarm_base_url, task_keys, timeout, max_threads,
-    print_status_updates, output_collector):
+    swarm_base_url, task_ids, timeout, max_threads, print_status_updates,
+    output_collector):
   """Yields swarming task results from the swarming server as (index, result).
 
   Duplicate shards are ignored. Shards are yielded in order of completion.
@@ -420,7 +425,7 @@ def yield_results(
     GetRunnerResults() function in services/swarming/server/test_runner.py.
   """
   number_threads = (
-      min(max_threads, len(task_keys)) if max_threads else len(task_keys))
+      min(max_threads, len(task_ids)) if max_threads else len(task_ids))
   should_stop = threading.Event()
   results_channel = threading_utils.TaskChannel()
 
@@ -428,20 +433,19 @@ def yield_results(
     try:
       # Adds a task to the thread pool to call 'retrieve_results' and return
       # the results together with shard_index that produced them (as a tuple).
-      def enqueue_retrieve_results(shard_index, task_key):
+      def enqueue_retrieve_results(shard_index, task_id):
         task_fn = lambda *args: (shard_index, retrieve_results(*args))
         pool.add_task(
-            0, results_channel.wrap_task(task_fn),
-            swarm_base_url, shard_index, task_key, timeout,
-            should_stop, output_collector)
+            0, results_channel.wrap_task(task_fn), swarm_base_url, shard_index,
+            task_id, timeout, should_stop, output_collector)
 
       # Enqueue 'retrieve_results' calls for each shard key to run in parallel.
-      for shard_index, task_key in enumerate(task_keys):
-        enqueue_retrieve_results(shard_index, task_key)
+      for shard_index, task_id in enumerate(task_ids):
+        enqueue_retrieve_results(shard_index, task_id)
 
       # Wait for all of them to finish.
-      shards_remaining = range(len(task_keys))
-      active_task_count = len(task_keys)
+      shards_remaining = range(len(task_ids))
+      active_task_count = len(task_ids)
       while active_task_count:
         shard_index, result = None, None
         try:
@@ -781,78 +785,65 @@ def trigger(
 
 def decorate_shard_output(shard_index, result, shard_exit_code):
   """Returns wrapped output for swarming task shard."""
-  tag = 'index %s (machine tag: %s, id: %s)' % (
-      shard_index,
-      result['machine_id'],
-      result.get('machine_tag', 'unknown'))
-  return (
-    '\n'
-    '================================================================\n'
-    'Begin output from shard %s\n'
-    '================================================================\n'
-    '\n'
-    '%s'
-    '================================================================\n'
-    'End output from shard %s.\nExit code %d (%s).\n'
-    '================================================================\n') % (
-        tag, result['output'] or NO_OUTPUT_FOUND, tag,
-        shard_exit_code, hex(0xffffffff & shard_exit_code))
+  tag_shard = '%d (Bot: %s)' % (shard_index, result['bot_id'])
+  tag_header = 'Shard %s' % tag_shard
+  tag_footer = 'End of shard %s; exit code %d' % (tag_shard, shard_exit_code)
+
+  tag_len = max(len(tag_header), len(tag_footer))
+  dash_pad = '+-%s-+\n' % ('-' * tag_len)
+  tag_header = '| %s |\n' % tag_header.ljust(tag_len)
+  tag_footer = '| %s |\n' % tag_footer.ljust(tag_len)
+
+  header = dash_pad + tag_header + dash_pad
+  footer = dash_pad + tag_footer + dash_pad[:-1]
+  output = '\n'.join(o for o in result['outputs'] if o).rstrip() + '\n'
+  return header + output + footer
 
 
 def collect(
-    url, task_name, shards, timeout, decorate,
-    print_status_updates, task_summary_json, task_output_dir):
+    url, task_name, task_ids, timeout, decorate, print_status_updates,
+    task_summary_json, task_output_dir):
   """Retrieves results of a Swarming task."""
-  # Grab task keys for each shard. Order is important, used to figure out
-  # shard index based on the key.
-  # TODO(vadimsh): Simplify this once server support is added.
-  task_keys = []
-  for index in xrange(shards):
-    shard_task_name = get_shard_task_name(task_name, shards, index)
-    logging.info('Collecting %s', shard_task_name)
-    shard_task_keys = get_task_keys(url, shard_task_name)
-    if not shard_task_keys:
-      raise Failure('No task keys to get results with: %s' % shard_task_name)
-    if len(shard_task_keys) != 1:
-      raise Failure('Expecting only one shard for a task: %s' % shard_task_name)
-    task_keys.append(shard_task_keys[0])
-
   # Collect summary JSON and output files (if task_output_dir is not None).
   output_collector = TaskOutputCollector(
-      task_output_dir, task_name, len(task_keys))
+      task_output_dir, task_name, len(task_ids))
 
   seen_shards = set()
   exit_codes = []
-
   try:
     for index, output in yield_results(
-        url, task_keys, timeout, None, print_status_updates, output_collector):
+        url, task_ids, timeout, None, print_status_updates, output_collector):
       seen_shards.add(index)
 
       # Grab first non-zero exit code as an overall shard exit code.
       shard_exit_code = 0
-      for code in map(int, (output['exit_codes'] or '1').split(',')):
+      for code in output['exit_codes']:
         if code:
           shard_exit_code = code
           break
       exit_codes.append(shard_exit_code)
 
       if decorate:
-        print decorate_shard_output(index, output, shard_exit_code)
+        print(decorate_shard_output(index, output, shard_exit_code))
+        if len(seen_shards) < len(task_ids):
+          print('')
       else:
-        print(
-            '%s/%s: %s' % (
-                output['machine_id'],
-                output['machine_tag'],
-                output['exit_codes']))
-        print(''.join('  %s\n' % l for l in output['output'].splitlines()))
+        print('%s: %s' %
+            (output['bot_id'], ','.join(str(e) for e in output['exit_codes'])))
+        # TODO(maruel): Print the command.
+        for output in output['outputs']:
+          if not output:
+            continue
+          output = output.rstrip()
+          if output:
+            print(''.join('  %s\n' % l for l in output.splitlines()))
   finally:
     summary = output_collector.finalize()
     if task_summary_json:
       tools.write_json(task_summary_json, summary, False)
 
-  if len(seen_shards) != len(task_keys):
-    missing_shards = [x for x in range(len(task_keys)) if x not in seen_shards]
+  if len(seen_shards) != len(task_ids):
+    missing_shards = [x for x in range(len(task_ids)) if x not in seen_shards]
     print >> sys.stderr, ('Results from some shards are missing: %s' %
         ', '.join(map(str, missing_shards)))
     return 1
@@ -1024,27 +1015,39 @@ def CMDbots(parser, args):
   return 0
 
 
-@subcommand.usage('task_name')
+@subcommand.usage('--json file | task_id...')
 def CMDcollect(parser, args):
-  """Retrieves results of a Swarming task.
+  """Retrieves results of one or multiple Swarming task by its ID.
 
   The result can be in multiple part if the execution was sharded. It can
   potentially have retries.
   """
   add_collect_options(parser)
-  add_sharding_options(parser)
+  parser.add_option(
+      '-j', '--json',
+      help='Load the task ids from .json as saved by trigger --dump-json')
   (options, args) = parser.parse_args(args)
-  if not args:
-    parser.error('Must specify one task name.')
-  elif len(args) > 1:
-    parser.error('Must specify only one task name.')
+  if not args and not options.json:
+    parser.error('Must specify at least one task id or --json.')
+  if args and options.json:
+    parser.error('Only use one of task id or --json.')
+
+  if options.json:
+    with open(options.json) as f:
+      tasks = sorted(
+          json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
+      args = [t['task_id'] for t in tasks]
+  else:
+    valid = frozenset('0123456789abcdef')
+    if any(not valid.issuperset(task_id) for task_id in args):
+      parser.error('Task ids are 0-9a-f.')
 
   auth.ensure_logged_in(options.swarming)
   try:
     return collect(
         options.swarming,
-        args[0],
-        options.shards,
+        None,
+        args,
         options.timeout,
         options.decorate,
         options.print_status_updates,
@@ -1153,12 +1156,15 @@ def CMDrun(parser, args):
     return 1
   if task_name != options.task_name:
     print('Triggered task: %s' % task_name)
+  task_ids = [
+    t['task_id']
+    for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
+  ]
   try:
-    # TODO(maruel): Use task_ids, it's much more efficient!
     return collect(
         options.swarming,
         task_name,
-        options.shards,
+        task_ids,
         options.timeout,
         options.decorate,
         options.print_status_updates,
@@ -1219,6 +1225,17 @@ def CMDtrigger(parser, args):
           'tasks': tasks,
         }
         tools.write_json(options.dump_json, data, True)
+        print('To collect results, use:')
+        print('  swarming.py collect -S %s --json %s' %
+            (options.swarming, options.dump_json))
+      else:
+        task_ids = [
+          t['task_id']
+          for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
+        ]
+        print('To collect results, use:')
+        print('  swarming.py collect -S %s %s' %
+            (options.swarming, ' '.join(task_ids)))
     return int(not tasks)
   except Failure:
     on_error.report(None)

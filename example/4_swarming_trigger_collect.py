@@ -45,35 +45,34 @@ def main():
           ], options.verbose)
       with open(isolated, 'rb') as f:
         hashval = hashlib.sha1(f.read()).hexdigest()
+
+      json_file = os.path.join(tempdir, 'task.json')
+      common.note('Running on %s' % options.swarming)
+      cmd = [
+        'swarming.py',
+        'trigger',
+        '--swarming', options.swarming,
+        '--isolate-server', options.isolate_server,
+        '--dimension', 'os', options.swarming_os,
+        '--task-name', options.task_name,
+        '--dump-json', json_file,
+        hashval,
+      ]
+      if options.priority is not None:
+        cmd.extend(('--priority', str(options.priority)))
+      common.run(cmd, options.verbose)
+
+      common.note('Getting results from %s' % options.swarming)
+      common.run(
+          [
+            'swarming.py',
+            'collect',
+            '--swarming', options.swarming,
+            '--json', json_file,
+          ], options.verbose)
+      return 0
     finally:
       shutil.rmtree(tempdir)
-
-    # At this point, the temporary directory is not needed anymore.
-    tempdir = None
-
-    common.note('Running on %s' % options.swarming)
-    cmd = [
-      'swarming.py',
-      'trigger',
-      '--swarming', options.swarming,
-      '--isolate-server', options.isolate_server,
-      '--dimension', 'os', options.swarming_os,
-      '--task-name', options.task_name,
-      hashval,
-    ]
-    if options.priority is not None:
-      cmd.extend(('--priority', str(options.priority)))
-    common.run(cmd, options.verbose)
-
-    common.note('Getting results from %s' % options.swarming)
-    common.run(
-        [
-          'swarming.py',
-          'collect',
-          '--swarming', options.swarming,
-          options.task_name,
-        ], options.verbose)
-    return 0
   except subprocess.CalledProcessError as e:
     print e.returncode or 1
 
