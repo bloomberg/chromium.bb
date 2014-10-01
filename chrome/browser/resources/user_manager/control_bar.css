@@ -7,12 +7,12 @@
 * that are needed by the desktop user chooser screen
 */
 #login-header-bar {
-  -webkit-padding-after: 16px;
-  -webkit-padding-before: 16px;
   background-color: white;
   border-top: 1px solid #e2e2e2;
   bottom: 0;
   left: 0;
+  padding-bottom: 16px;
+  padding-top: 16px;
   position: absolute;
   right: 0;
 }
