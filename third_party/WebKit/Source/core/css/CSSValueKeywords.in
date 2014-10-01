@@ -761,6 +761,8 @@ ease-in-out
 step-start
 step-middle
 step-end
+steps
+cubic-bezier
 
 //
 // zoom
@@ -932,6 +934,9 @@ no-drag
 // grid-{column|row}-{start|end}
 span
 
+// grid-template-{columns|rows}
+minmax
+
 // text-indent
 each-line
 //hanging   // hanging exists in SVGCSSValueKeywords.in
@@ -997,3 +1002,80 @@ scroll-position
 // initial
 // inherit
 unset
+
+// background-image, etc.
+linear-gradient
+radial-gradient
+repeating-linear-gradient
+repeating-radial-gradient
+-webkit-canvas
+-webkit-cross-fade
+-webkit-gradient
+-webkit-linear-gradient
+-webkit-radial-gradient
+-webkit-repeating-linear-gradient
+-webkit-repeating-radial-gradient
+-webkit-image-set
+
+// deprecated gradients
+from
+to
+color-stop
+radial
+
+// content
+attr
+counter
+counters
+
+// clip
+rect
+
+// shapes
+polygon
+
+// @font-face src
+format
+
+// (-webkit-)filter
+grayscale
+sepia
+saturate
+hue-rotate
+opacity
+brightness
+contrast
+blur
+drop-shadow
+
+// colors
+rgb
+rgba
+hsl
+hsla
+
+// transform
+matrix
+matrix3d
+perspective
+rotate
+rotatex
+rotatey
+rotatez
+rotate3d
+scale
+scalex
+scaley
+scalez
+scale3d
+skew
+skewx
+skewy
+translate
+translatex
+translatey
+translatez
+translate3d
+
+calc
+-webkit-calc

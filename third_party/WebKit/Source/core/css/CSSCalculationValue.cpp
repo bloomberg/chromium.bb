@@ -748,14 +748,10 @@ PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode
         CalcAdd);
 }
 
-PassRefPtrWillBeRawPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, ValueRange range)
+PassRefPtrWillBeRawPtr<CSSCalcValue> CSSCalcValue::create(CSSParserValueList* parserValueList, ValueRange range)
 {
     CSSCalcExpressionNodeParser parser;
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression = nullptr;
-
-    if (equalIgnoringCase(name, "calc") || equalIgnoringCase(name, "-webkit-calc"))
-        expression = parser.parseCalc(parserValueList);
-    // FIXME calc (http://webkit.org/b/16662) Add parsing for min and max here
+    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression = parser.parseCalc(parserValueList);
 
     return expression ? adoptRefWillBeNoop(new CSSCalcValue(expression, range)) : nullptr;
 }

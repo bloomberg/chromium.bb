@@ -33,6 +33,7 @@ namespace blink {
 
 class CSSFilterValue : public CSSValueList {
 public:
+    // FIXME: Can we just use the CSSValueID enum?
     // NOTE: these have to match the values in the IDL
     enum FilterOperationType {
         UnknownFilterOperation,

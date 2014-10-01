@@ -247,11 +247,10 @@ void MediaQueryData::addParserValue(MediaQueryTokenType type, const MediaQueryTo
         value.id = CSSValueInvalid;
         value.isInt = false;
     } else {
-        CSSParserFunction* function = new CSSParserFunction;
-        function->name.init(token.value());
-        value.setFromFunction(function);
         CSSParserString tokenValue;
         tokenValue.init(token.value());
+        value.unit = CSSPrimitiveValue::CSS_IDENT;
+        value.string = tokenValue;
         value.id = cssValueKeywordID(tokenValue);
     }
     m_valueList.addValue(value);

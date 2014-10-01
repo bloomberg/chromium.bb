@@ -1136,122 +1136,111 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
 
 class TransformOperationInfo {
 public:
-    TransformOperationInfo(const CSSParserString& name)
+    TransformOperationInfo(CSSValueID id)
         : m_type(CSSTransformValue::UnknownTransformOperation)
         , m_argCount(1)
         , m_allowSingleArgument(false)
         , m_unit(CSSPropertyParser::FUnknown)
     {
-        const UChar* characters;
-        unsigned nameLength = name.length();
-
-        const unsigned longestNameLength = 11;
-        UChar characterBuffer[longestNameLength];
-        if (name.is8Bit()) {
-            unsigned length = std::min(longestNameLength, nameLength);
-            const LChar* characters8 = name.characters8();
-            for (unsigned i = 0; i < length; ++i)
-                characterBuffer[i] = characters8[i];
-            characters = characterBuffer;
-        } else
-            characters = name.characters16();
-
-        SWITCH(characters, nameLength) {
-            CASE("skew") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::SkewTransformOperation;
-                m_allowSingleArgument = true;
-                m_argCount = 3;
-            }
-            CASE("scale") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::ScaleTransformOperation;
-                m_allowSingleArgument = true;
-                m_argCount = 3;
-            }
-            CASE("skewx") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::SkewXTransformOperation;
-            }
-            CASE("skewy") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::SkewYTransformOperation;
-            }
-            CASE("matrix") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::MatrixTransformOperation;
-                m_argCount = 11;
-            }
-            CASE("rotate") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::RotateTransformOperation;
-            }
-            CASE("scalex") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::ScaleXTransformOperation;
-            }
-            CASE("scaley") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::ScaleYTransformOperation;
-            }
-            CASE("scalez") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::ScaleZTransformOperation;
-            }
-            CASE("scale3d") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::Scale3DTransformOperation;
-                m_argCount = 5;
-            }
-            CASE("rotatex") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::RotateXTransformOperation;
-            }
-            CASE("rotatey") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::RotateYTransformOperation;
-            }
-            CASE("rotatez") {
-                m_unit = CSSPropertyParser::FAngle;
-                m_type = CSSTransformValue::RotateZTransformOperation;
-            }
-            CASE("matrix3d") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::Matrix3DTransformOperation;
-                m_argCount = 31;
-            }
-            CASE("rotate3d") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::Rotate3DTransformOperation;
-                m_argCount = 7;
-            }
-            CASE("translate") {
-                m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-                m_type = CSSTransformValue::TranslateTransformOperation;
-                m_allowSingleArgument = true;
-                m_argCount = 3;
-            }
-            CASE("translatex") {
-                m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-                m_type = CSSTransformValue::TranslateXTransformOperation;
-            }
-            CASE("translatey") {
-                m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-                m_type = CSSTransformValue::TranslateYTransformOperation;
-            }
-            CASE("translatez") {
-                m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-                m_type = CSSTransformValue::TranslateZTransformOperation;
-            }
-            CASE("perspective") {
-                m_unit = CSSPropertyParser::FNumber;
-                m_type = CSSTransformValue::PerspectiveTransformOperation;
-            }
-            CASE("translate3d") {
-                m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-                m_type = CSSTransformValue::Translate3DTransformOperation;
-                m_argCount = 5;
-            }
+        switch (id) {
+        case CSSValueSkew:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::SkewTransformOperation;
+            m_allowSingleArgument = true;
+            m_argCount = 3;
+            break;
+        case CSSValueScale:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::ScaleTransformOperation;
+            m_allowSingleArgument = true;
+            m_argCount = 3;
+            break;
+        case CSSValueSkewx:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::SkewXTransformOperation;
+            break;
+        case CSSValueSkewy:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::SkewYTransformOperation;
+            break;
+        case CSSValueMatrix:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::MatrixTransformOperation;
+            m_argCount = 11;
+            break;
+        case CSSValueRotate:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::RotateTransformOperation;
+            break;
+        case CSSValueScalex:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::ScaleXTransformOperation;
+            break;
+        case CSSValueScaley:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::ScaleYTransformOperation;
+            break;
+        case CSSValueScalez:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::ScaleZTransformOperation;
+            break;
+        case CSSValueScale3d:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::Scale3DTransformOperation;
+            m_argCount = 5;
+            break;
+        case CSSValueRotatex:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::RotateXTransformOperation;
+            break;
+        case CSSValueRotatey:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::RotateYTransformOperation;
+            break;
+        case CSSValueRotatez:
+            m_unit = CSSPropertyParser::FAngle;
+            m_type = CSSTransformValue::RotateZTransformOperation;
+            break;
+        case CSSValueMatrix3d:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::Matrix3DTransformOperation;
+            m_argCount = 31;
+            break;
+        case CSSValueRotate3d:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::Rotate3DTransformOperation;
+            m_argCount = 7;
+            break;
+        case CSSValueTranslate:
+            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
+            m_type = CSSTransformValue::TranslateTransformOperation;
+            m_allowSingleArgument = true;
+            m_argCount = 3;
+            break;
+        case CSSValueTranslatex:
+            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
+            m_type = CSSTransformValue::TranslateXTransformOperation;
+            break;
+        case CSSValueTranslatey:
+            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
+            m_type = CSSTransformValue::TranslateYTransformOperation;
+            break;
+        case CSSValueTranslatez:
+            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
+            m_type = CSSTransformValue::TranslateZTransformOperation;
+            break;
+        case CSSValuePerspective:
+            m_unit = CSSPropertyParser::FNumber;
+            m_type = CSSTransformValue::PerspectiveTransformOperation;
+            break;
+        case CSSValueTranslate3d:
+            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
+            m_type = CSSTransformValue::Translate3DTransformOperation;
+            m_argCount = 5;
+            break;
+        default:
+            m_type = CSSTransformValue::UnknownTransformOperation;
+            break;
         }
     }
 
@@ -1269,6 +1258,7 @@ private:
     CSSPropertyParser::Units m_unit;
 };
 
+// FIXME: This should be in CSSPropertyParser.cpp
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(CSSPropertyID propId)
 {
     if (!m_valueList)
@@ -1286,6 +1276,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(CSSProper
     return list.release();
 }
 
+// FIXME: This should be in CSSPropertyParser.cpp
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPropertyID propId, CSSParserValue *value)
 {
     if (value->unit != CSSParserValue::Function || !value->function)
@@ -1297,7 +1288,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPrope
         return nullptr;
 
     // See if the specified primitive is one we understand.
-    TransformOperationInfo info(value->function->name);
+    TransformOperationInfo info(value->function->id);
     if (info.unknown())
         return nullptr;
 
@@ -1417,17 +1408,11 @@ PassOwnPtr<CSSParserValueList> BisonCSSParser::sinkFloatingValueList(CSSParserVa
     return adoptPtr(list);
 }
 
-CSSParserFunction* BisonCSSParser::createFloatingFunction()
+CSSParserFunction* BisonCSSParser::createFloatingFunction(const CSSParserString& name, PassOwnPtr<CSSParserValueList> args)
 {
     CSSParserFunction* function = new CSSParserFunction;
     m_floatingFunctions.append(function);
-    return function;
-}
-
-CSSParserFunction* BisonCSSParser::createFloatingFunction(const CSSParserString& name, PassOwnPtr<CSSParserValueList> args)
-{
-    CSSParserFunction* function = createFloatingFunction();
-    function->name = name;
+    function->id = cssValueKeywordID(name);
     function->args = args;
     return function;
 }

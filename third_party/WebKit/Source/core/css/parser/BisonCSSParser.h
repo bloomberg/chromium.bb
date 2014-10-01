@@ -107,7 +107,6 @@ public:
     CSSParserValueList* createFloatingValueList();
     PassOwnPtr<CSSParserValueList> sinkFloatingValueList(CSSParserValueList*);
 
-    CSSParserFunction* createFloatingFunction();
     CSSParserFunction* createFloatingFunction(const CSSParserString& name, PassOwnPtr<CSSParserValueList> args);
     PassOwnPtr<CSSParserFunction> sinkFloatingFunction(CSSParserFunction*);
 

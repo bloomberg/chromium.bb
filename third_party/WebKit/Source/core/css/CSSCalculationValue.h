@@ -102,7 +102,7 @@ protected:
 
 class CSSCalcValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, ValueRange);
+    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(CSSParserValueList*, ValueRange);
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
 
     static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, bool isInteger = false);

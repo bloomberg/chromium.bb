@@ -204,7 +204,7 @@ private:
 struct CSSParserFunction {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    CSSParserString name;
+    CSSValueID id;
     OwnPtr<CSSParserValueList> args;
 };
 
