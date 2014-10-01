@@ -269,9 +269,10 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
       GetTrayIndex() >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
-  content::BrowserContext* context = session_state_delegate->
-      GetBrowserContextByIndex(GetTrayIndex());
-  avatar_->SetImage(session_state_delegate->GetUserInfo(context)->GetImage(),
+  const user_manager::UserInfo* user_info =
+      session_state_delegate->GetUserInfo(GetTrayIndex());
+  CHECK(user_info);
+  avatar_->SetImage(user_info->GetImage(),
                     gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
 
   // Unit tests might come here with no images for some users.

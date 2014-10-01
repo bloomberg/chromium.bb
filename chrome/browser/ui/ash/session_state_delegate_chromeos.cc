@@ -55,7 +55,7 @@ content::BrowserContext* SessionStateDelegateChromeos::GetBrowserContextByIndex(
   DCHECK_LT(index, NumberOfLoggedInUsers());
   user_manager::User* user =
       user_manager::UserManager::Get()->GetLRULoggedInUsers()[index];
-  DCHECK(user);
+  CHECK(user);
   return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
 }
 
