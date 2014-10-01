@@ -1476,3 +1476,5 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/remove-zero-length-ru
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/text-combine-shrink-to-fit.html [ Pass Failure ]
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
+
+crbug.com/419515 battery-status/page-visibility.html [ Crash ]
