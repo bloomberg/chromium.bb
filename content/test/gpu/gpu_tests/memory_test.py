@@ -13,7 +13,7 @@ from telemetry.timeline import model
 
 MEMORY_LIMIT_MB = 192
 SINGLE_TAB_LIMIT_MB = 192
-WIGGLE_ROOM_MB = 12
+WIGGLE_ROOM_MB = 24
 
 test_harness_script = r"""
   var domAutomationController = {};
