@@ -37,7 +37,7 @@ function test()
         ]}
     ];
 
-    var panel = WebInspector.inspectorView._showPanel("timeline");
+    var panel = WebInspector.panels.timeline;
     var view = panel._currentViews[0];
     var model = view._presentationModel;
 

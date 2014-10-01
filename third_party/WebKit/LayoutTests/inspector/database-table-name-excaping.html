@@ -6,7 +6,6 @@
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("resources");
     var tableName = "table-name-with-dashes-and-\"quotes\"";
     var escapedTableName = WebInspector.DatabaseTableView.prototype._escapeTableName(tableName, "", true);
     InspectorTest.addResult("Original value: " + tableName);

@@ -7,7 +7,7 @@
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.inspectorView._showPanel("sources");
+    var panel = WebInspector.panels.sources;
     var scriptFormatter;
 
     InspectorTest.runDebuggerTestSuite([

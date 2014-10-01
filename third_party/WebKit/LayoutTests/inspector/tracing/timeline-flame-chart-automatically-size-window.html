@@ -8,10 +8,9 @@
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("console");
     var timelineData = InspectorTest.timelineData();
 
-    var timeline = WebInspector.inspectorView._showPanel("timeline");
+    var timeline = WebInspector.panels.timeline;
     timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
     timeline._flameChartEnabledSetting.set(true);
     timeline._onModeChanged();

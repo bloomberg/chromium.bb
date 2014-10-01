@@ -21,7 +21,6 @@ function onload()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("sources");
     WebInspector.inspectorView.showViewInDrawer("search");
     InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
 

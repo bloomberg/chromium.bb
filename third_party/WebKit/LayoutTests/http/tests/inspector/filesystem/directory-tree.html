@@ -9,7 +9,7 @@
 document.addEventListener("DOMContentLoaded", runTest);
 function test()
 {
-    var resourcesPanel = WebInspector.inspectorView._showPanel("resources");
+    var resourcesPanel = WebInspector.panels.resources;
     var fileSystemListTreeElement = resourcesPanel.fileSystemListTreeElement;
     if (!fileSystemListTreeElement) {
         fileSystemListTreeElement = new WebInspector.FileSystemListTreeElement(resourcesPanel);

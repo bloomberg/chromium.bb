@@ -7,7 +7,6 @@ console.log("message from page!");
 
 function test()
 {
-    InspectorTest.showConsolePanel();
     var checkbox = WebInspector.ConsolePanel._view()._showAllMessagesCheckbox.inputElement;
 
     //we can't use usual InspectorTest.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe

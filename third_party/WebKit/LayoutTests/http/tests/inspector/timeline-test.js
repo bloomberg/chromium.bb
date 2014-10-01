@@ -107,7 +107,7 @@ InspectorTest.invokeAsyncWithTimeline = function(functionName, doneCallback)
 
 InspectorTest.loadTimelineRecords = function(records)
 {
-    var model = WebInspector.inspectorView._showPanel("timeline")._model;
+    var model = WebInspector.panels.timeline._model;
     model.reset();
     records.forEach(model._addRecord, model);
 }

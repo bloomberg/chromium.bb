@@ -28,7 +28,6 @@ function test()
             InspectorTest.assertEquals(0, section.children.length, "All children has been removed");
             InspectorTest.completeProfilerTest();
         }
-        WebInspector.inspectorView._showPanel("profiles");
         InspectorTest.evaluateInPage("pageFunction()", function() {});
         InspectorTest.showProfileWhenAdded("p2");
         InspectorTest.waitUntilProfileViewIsShown("p2", setTimeout.bind(null, viewLoaded, 0));

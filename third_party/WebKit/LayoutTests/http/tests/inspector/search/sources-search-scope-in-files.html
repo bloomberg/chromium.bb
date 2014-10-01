@@ -38,8 +38,6 @@ function test()
             manager.fileSystemWorkspaceBinding._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
         }
     }
-
-    WebInspector.inspectorView._showPanel("sources");
     WebInspector.inspectorView.showViewInDrawer("search");
 
     InspectorTest.createWorkspace();

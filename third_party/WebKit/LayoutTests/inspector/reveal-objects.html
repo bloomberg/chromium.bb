@@ -31,7 +31,6 @@ function test() {
     InspectorTest.runTestSuite([
         function init(next)
         {
-            WebInspector.inspectorView._showPanel("elements");
             installHooks();
 
             WebInspector.resourceTreeModel.forAllResources(function(r) {

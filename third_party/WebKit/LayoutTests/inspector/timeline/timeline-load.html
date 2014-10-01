@@ -8,7 +8,6 @@ function test()
 {
     function runTestWithDataAndCheck(input, expectedOutput)
     {
-        WebInspector.inspectorView._showPanel("timeline");
         var model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
 
         function createFileReader(file, delegate)

@@ -10,7 +10,6 @@
 var test = function()
 {
     var worker = Runtime.startWorker("script_formatter_worker");
-    WebInspector.inspectorView._showPanel("sources");
 
     InspectorTest.runTestSuite([
         function testScriptFormatterWorker(next)

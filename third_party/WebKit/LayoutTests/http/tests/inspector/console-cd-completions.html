@@ -6,7 +6,6 @@
 
 function test()
 {
-    InspectorTest.showConsolePanel();
     InspectorTest.changeExecutionContext("myIFrame");
 
     WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("", "myGlob", false, checkCompletions.bind(this));

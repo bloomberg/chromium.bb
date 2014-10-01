@@ -12,8 +12,6 @@ function test()
     var rule;
     var matchedRules;
 
-    WebInspector.inspectorView._showPanel("elements");
-
     InspectorTest.runTestSuite([
         function testSetUp(next) {
             InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);

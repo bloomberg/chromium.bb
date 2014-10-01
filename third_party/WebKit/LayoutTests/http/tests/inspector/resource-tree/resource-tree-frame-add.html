@@ -23,7 +23,6 @@ function onIframeLoad()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("resources");
     InspectorTest.runAfterResourcesAreFinished(["resource-tree-frame-add.html", "resource-tree-test.js", "styles-initial.css"], step1);
 
     function step1()

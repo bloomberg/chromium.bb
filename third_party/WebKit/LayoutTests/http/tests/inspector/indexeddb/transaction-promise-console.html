@@ -7,7 +7,6 @@ function test()
 {
     testRunner.waitUntilDone();
     testRunner.showWebInspector();
-    WebInspector.inspectorView._showPanel("console");
 
     var dbname = location.href;
     indexedDB.deleteDatabase(dbname).onsuccess = function() {

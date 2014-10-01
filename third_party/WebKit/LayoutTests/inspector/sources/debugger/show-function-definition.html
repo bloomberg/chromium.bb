@@ -12,7 +12,7 @@ function jumpToMe()
 
 function test()
 {
-    var panel = WebInspector.inspectorView._showPanel("sources");
+    var panel = WebInspector.panels.sources;
 
     InspectorTest.runTestSuite([
         function testRevealFunctionDefinition(next)

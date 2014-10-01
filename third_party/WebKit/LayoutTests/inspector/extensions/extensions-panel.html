@@ -48,7 +48,6 @@ function initialize_extensionsPanelTest()
 
     InspectorTest.clickOnURL = function()
     {
-        WebInspector.inspectorView._showPanel("console");
         InspectorTest.disableConsoleViewport();
         var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]", WebInspector.ConsolePanel._view()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
         var click = document.createEvent("MouseEvent");

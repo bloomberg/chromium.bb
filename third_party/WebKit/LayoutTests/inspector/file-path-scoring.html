@@ -20,8 +20,6 @@ function test()
         ["froscr", "./Source/devtools/front_end/Script.pl"],
         ["adscon", "./Source/devtools/front_end/AdvancedSearchController.pl"]
     ];
-
-    WebInspector.inspectorView._showPanel("sources");
     InspectorTest.evaluateInPage("blinkFilePaths()", step1);
     InspectorTest.addResult("Expected score must be equal to the actual score");
 

@@ -47,7 +47,7 @@ function test()
 
     function step3()
     {
-        var panel = WebInspector.inspectorView._showPanel("sources");
+        var panel = WebInspector.panels.sources;
         var uiSourceCodes = WebInspector.workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Network);
         var urls = uiSourceCodes.map(function(uiSourceCode) { return uiSourceCode.name(); });
         urls.sort();
