@@ -1445,7 +1445,6 @@ body[drive='error'] #unmounted-panel > .error,
 }
 
 list.autocomplete-suggestions {
-  -webkit-margin-before: -7px;
   -webkit-margin-start: -38px;
   background-color: rgb(250, 250, 250);
   border-radius: 3px;
@@ -1453,6 +1452,7 @@ list.autocomplete-suggestions {
   box-sizing: border-box;  /* To match the width with the search box's. */
   color: rgb(34, 34, 34);
   flex: none;
+  margin-top: -7px;
   overflow: hidden;
   padding: 5px 0;
   position: fixed;
@@ -1554,10 +1554,7 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 }
 
 #suggest-app-dialog .cr-dialog-text {
-  -webkit-padding-after: 10px;
-  -webkit-padding-before: 0;
-  -webkit-padding-end: 20px;
-  -webkit-padding-start: 20px;
+  padding: 0 20px 10px;
   margin: 0;
 }
 
@@ -1567,8 +1564,6 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 }
 
 #suggest-app-dialog #buttons > #webstore-button {
-  -webkit-padding-after: 10px;
-  -webkit-padding-before: 10px;
   -webkit-padding-end: 10px;
   -webkit-padding-start: 36px;
   background-image: -webkit-image-set(
@@ -1580,6 +1575,8 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
   cursor: pointer;
   display: inline-block;
   height: 16px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 .cr-dialog-frame.error-dialog-frame {
@@ -1609,7 +1606,7 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 }
 
 #multi-profile-share-dialog .cr-dialog-title {
-  -webkit-margin-after: 0;
+  margin-bottom: 0;
 }
 
 #multi-profile-share-dialog .cr-dialog-text {

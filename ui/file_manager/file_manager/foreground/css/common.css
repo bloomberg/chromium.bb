@@ -452,10 +452,10 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-title {
-  -webkit-margin-after: 10px;
   -webkit-margin-end: 20px;
   display: block;
   font-size: 125%;
+  margin-bottom: 10px;
   white-space: nowrap;
   word-wrap: normal;
 }
