@@ -668,6 +668,7 @@
             '../ui/resources/ui_resources.gyp:ui_resources',
             '../ui/resources/ui_resources.gyp:ui_test_pak',
             '../ui/views/views.gyp:views',
+            '../ui/wm/wm.gyp:wm',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_base.gyp:mojo_cpp_bindings',
             'mojo_base.gyp:mojo_utility',

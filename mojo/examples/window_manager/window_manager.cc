@@ -29,6 +29,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/wm/core/focus_rules.h"
 
 #if defined CreateWindow
 #undef CreateWindow
@@ -44,6 +45,64 @@ namespace {
 const int kBorderInset = 25;
 const int kControlPanelWidth = 200;
 const int kTextfieldHeight = 25;
+
+class WMFocusRules : public wm::FocusRules {
+ public:
+  WMFocusRules(mojo::WindowManagerApp* window_manager_app,
+               mojo::View* window_container)
+      : window_container_(window_container),
+        window_manager_app_(window_manager_app) {}
+  virtual ~WMFocusRules() {}
+
+ private:
+  // Overridden from wm::FocusRules:
+  virtual bool IsToplevelWindow(aura::Window* window) const override {
+    return mojo::WindowManagerApp::GetViewForWindow(window)->parent() ==
+        window_container_;
+  }
+  virtual bool CanActivateWindow(aura::Window* window) const override {
+    return mojo::WindowManagerApp::GetViewForWindow(window)->parent() ==
+        window_container_;
+  }
+  virtual bool CanFocusWindow(aura::Window* window) const override {
+    return true;
+  }
+  virtual aura::Window* GetToplevelWindow(aura::Window* window) const override {
+    mojo::View* view = mojo::WindowManagerApp::GetViewForWindow(window);
+    while (view->parent() != window_container_) {
+      view = view->parent();
+      // Unparented hierarchy, there is no "top level" window.
+      if (!view)
+        return NULL;
+    }
+
+    return window_manager_app_->GetWindowForViewId(view->id());
+  }
+  virtual aura::Window* GetActivatableWindow(
+      aura::Window* window) const override {
+    return GetToplevelWindow(window);
+  }
+  virtual aura::Window* GetFocusableWindow(
+      aura::Window* window) const override {
+    return window;
+  }
+  virtual aura::Window* GetNextActivatableWindow(
+      aura::Window* ignore) const override {
+    aura::Window* activatable = GetActivatableWindow(ignore);
+    const aura::Window::Windows& children = activatable->parent()->children();
+    for (aura::Window::Windows::const_reverse_iterator it = children.rbegin();
+         it != children.rend(); ++it) {
+      if (*it != ignore)
+        return *it;
+    }
+    return NULL;
+  }
+
+  mojo::View* window_container_;
+  mojo::WindowManagerApp* window_manager_app_;
+
+  DISALLOW_COPY_AND_ASSIGN(WMFocusRules);
+};
 
 }  // namespace
 
@@ -385,6 +444,9 @@ class WindowManager
     root->AddObserver(root_layout_manager_.get());
 
     window_manager_app_->host()->window()->AddPreTargetHandler(this);
+
+    window_manager_app_->InitFocus(new WMFocusRules(window_manager_app_.get(),
+                                                    view));
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
     DCHECK_EQ(view_manager_, view_manager);

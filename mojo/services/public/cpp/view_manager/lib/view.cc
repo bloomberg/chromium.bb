@@ -256,10 +256,14 @@ void View::RemoveChild(View* child) {
 }
 
 void View::MoveToFront() {
+  if (!parent_ || parent_->children_.back() == this)
+    return;
   Reorder(parent_->children_.back(), ORDER_DIRECTION_ABOVE);
 }
 
 void View::MoveToBack() {
+  if (!parent_ || parent_->children_.front() == this)
+    return;
   Reorder(parent_->children_.front(), ORDER_DIRECTION_BELOW);
 }
 

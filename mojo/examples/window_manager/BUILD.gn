@@ -42,6 +42,7 @@ shared_library("window_manager") {
     "//ui/gl",
     "//ui/resources",
     "//ui/views",
+    "//ui/wm",
   ]
 }
 
