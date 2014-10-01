@@ -1457,6 +1457,13 @@ crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hy
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
 
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/012.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/013.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/014.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/018.html [ NeedsManualRebaseline ]
+
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ Pass Failure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ellipsis-stroked.html [ Pass Failure ]
