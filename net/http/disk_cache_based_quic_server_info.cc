@@ -92,6 +92,10 @@ bool DiskCacheBasedQuicServerInfo::IsDataReady() {
 }
 
 bool DiskCacheBasedQuicServerInfo::IsReadyToPersist() {
+  // TODO(rtenneti): Handle updates while a write is pending. Change
+  // Persist() to save the data to be written into a temporary buffer
+  // and then persist that data when we are ready to persist.
+  //
   // The data can be persisted if it has been loaded from the disk cache
   // and there are no pending writes.
   return ready_ && new_data_.empty();
@@ -213,9 +217,7 @@ int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoWriteComplete(int rv) {
-  // Keep the entry open for future writes.
-  new_data_.clear();
-  state_ = NONE;
+  state_ = SET_DONE;
   return OK;
 }
 
@@ -223,8 +225,11 @@ int DiskCacheBasedQuicServerInfo::DoCreateOrOpenComplete(int rv) {
   if (rv != OK) {
     state_ = SET_DONE;
   } else {
-    if (!entry_)
+    if (!entry_) {
       entry_ = data_shim_->entry;
+      found_entry_ = true;
+    }
+    DCHECK(entry_);
     state_ = WRITE;
   }
   return OK;
