@@ -53,9 +53,6 @@ int main() {
   CheckTypeAndSizeAndAlignOf<ptrdiff_t, int>("ptrdiff_t", 4, 4);
   CheckSizeAndAlignOf<wchar_t>("wchar_t", 4, 4);
 
-  // stdarg.h
-  CheckSizeAndAlignOf<va_list>("va_list", 16, 4);
-
   // sys/types.h
   CheckTypeAndSizeAndAlignOf<ssize_t, int>("ssize_t", 4, 4);
   // TODO(eaeltsin): add more types

@@ -95,7 +95,6 @@ int CheckSizes(void) {
 
   CHECK_SIZEOF(struct NaClAbiNaClImcMsgHdr, 20);
 
-  CHECK_SIZEOF(va_list, 16);
 #ifdef PNACL_ABI_TEST
   /* BUG: http://code.google.com/p/nativeclient/issues/detail?id=2203 */
   /* the idea behind picking such an insanely high value
@@ -134,7 +133,6 @@ int CheckAlignment(void) {
   CHECK_ALIGNMENT(struct timeval, 8);
   CHECK_ALIGNMENT(struct timespec, 8);
 
-  CHECK_ALIGNMENT(va_list, 4);
 #ifdef PNACL_ABI_TEST
   /* BUG: http://code.google.com/p/nativeclient/issues/detail?id=2203 */
   /* TODO: we may want to switch this 16 (used by Itanium) */
