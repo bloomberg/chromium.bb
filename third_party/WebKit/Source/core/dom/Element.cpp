@@ -3252,15 +3252,16 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creatio
     if (!isUpgradedCustomElement() || DOMWrapperWorld::world(context).isIsolatedWorld())
         return ContainerNode::wrap(creationContext, isolate);
 
-    V8PerContextData* perContextData = V8PerContextData::from(context);
-    if (!perContextData)
-        return v8::Handle<v8::Object>();
-
-    CustomElementBinding* binding = perContextData->customElementBinding(customElementDefinition());
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toScriptWrappableBase(), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();
+
+    V8PerContextData* perContextData = V8PerContextData::from(context);
+    if (!perContextData)
+        return wrapper;
+
+    CustomElementBinding* binding = perContextData->customElementBinding(customElementDefinition());
 
     wrapper->SetPrototype(binding->prototype());
 
