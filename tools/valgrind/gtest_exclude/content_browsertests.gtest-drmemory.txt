@@ -6,3 +6,6 @@ PluginTest.PluginSingleRangeRequest
 PluginTest.PluginThreadAsyncCall
 PluginTest.PrivateDisabled
 PluginTest.ScheduleTimer
+
+# crbug.com/419396
+WebRtcBrowserTest.CallWithDataAndMedia
