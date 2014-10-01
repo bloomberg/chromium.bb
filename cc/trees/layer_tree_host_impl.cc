@@ -440,7 +440,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   if (!InnerViewportScrollLayer())
     return;
 
-  gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
+  gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size =
       active_tree_->InnerViewportContainerLayer()->bounds();
@@ -449,8 +449,9 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   scoped_ptr<TimingFunction> timing_function =
       CubicBezierTimingFunction::Create(.8, 0, .3, .9);
 
+  // TODO(miletus) : Pass in ScrollOffset.
   page_scale_animation_ =
-      PageScaleAnimation::Create(scroll_total,
+      PageScaleAnimation::Create(ScrollOffsetToVector2dF(scroll_total),
                                  active_tree_->total_page_scale_factor(),
                                  viewport_size,
                                  scaled_scrollable_size,
@@ -1492,7 +1493,9 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   if (!InnerViewportScrollLayer())
     return metadata;
 
-  metadata.root_scroll_offset = active_tree_->TotalScrollOffset();
+  // TODO(miletus) : Change the metadata to hold ScrollOffset.
+  metadata.root_scroll_offset = gfx::ScrollOffsetToVector2dF(
+      active_tree_->TotalScrollOffset());
 
   return metadata;
 }
@@ -2384,8 +2387,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     ScrollOffsetAnimationCurve* curve =
         animation->curve()->ToScrollOffsetAnimationCurve();
 
-    gfx::Vector2dF new_target = curve->target_value() + scroll_delta;
-    new_target.SetToMax(gfx::Vector2dF());
+    gfx::ScrollOffset new_target =
+        gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
+    new_target.SetToMax(gfx::ScrollOffset());
     new_target.SetToMin(layer_impl->MaxScrollOffset());
 
     curve->UpdateTarget(animation->TrimTimeToCurrentIteration(
@@ -2405,11 +2409,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       if (!layer_impl->scrollable())
         continue;
 
-      gfx::Vector2dF current_offset = layer_impl->TotalScrollOffset();
-      gfx::Vector2dF target_offset = current_offset + pending_delta;
-      target_offset.SetToMax(gfx::Vector2dF());
+      gfx::ScrollOffset current_offset = layer_impl->TotalScrollOffset();
+      gfx::ScrollOffset target_offset =
+          ScrollOffsetWithDelta(current_offset, pending_delta);
+      target_offset.SetToMax(gfx::ScrollOffset());
       target_offset.SetToMin(layer_impl->MaxScrollOffset());
-      gfx::Vector2dF actual_delta = target_offset - current_offset;
+      gfx::Vector2dF actual_delta = target_offset.DeltaFrom(current_offset);
 
       const float kEpsilon = 0.1f;
       bool can_layer_scroll = (std::abs(actual_delta.x()) > kEpsilon ||
@@ -2630,7 +2635,7 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
     float angle_threshold = 45;
     if (MathUtil::SmallestAngleBetweenVectors(
             applied_delta, pending_delta) < angle_threshold) {
-      pending_delta = gfx::Vector2d();
+      pending_delta = gfx::Vector2dF();
       break;
     }
 
@@ -2987,7 +2992,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   if (!page_scale_animation_)
     return;
 
-  gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
+  gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
 
   if (!page_scale_animation_->IsAnimationStarted())
     page_scale_animation_->StartAnimation(monotonic_time);
@@ -2995,10 +3000,10 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   active_tree_->SetPageScaleDelta(
       page_scale_animation_->PageScaleFactorAtTime(monotonic_time) /
       active_tree_->page_scale_factor());
-  gfx::Vector2dF next_scroll =
-      page_scale_animation_->ScrollOffsetAtTime(monotonic_time);
+  gfx::ScrollOffset next_scroll = gfx::ScrollOffset(
+      page_scale_animation_->ScrollOffsetAtTime(monotonic_time));
 
-  ScrollViewportInnerFirst(next_scroll - scroll_total);
+  ScrollViewportInnerFirst(next_scroll.DeltaFrom(scroll_total));
   SetNeedsRedraw();
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {

@@ -43,17 +43,18 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
       : layer_(layer), delegate_(delegate), layer_tree_impl_(layer_tree) {}
   virtual ~LayerScrollOffsetDelegateProxy() {}
 
-  gfx::Vector2dF last_set_scroll_offset() const {
+  gfx::ScrollOffset last_set_scroll_offset() const {
     return last_set_scroll_offset_;
   }
 
   // LayerScrollOffsetDelegate implementation.
-  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_offset) OVERRIDE {
+  virtual void SetTotalScrollOffset(
+      const gfx::ScrollOffset& new_offset) OVERRIDE {
     last_set_scroll_offset_ = new_offset;
     layer_tree_impl_->UpdateScrollOffsetDelegate();
   }
 
-  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
+  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE {
     return layer_tree_impl_->GetDelegatedScrollOffset(layer_);
   }
 
@@ -65,7 +66,7 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
   LayerImpl* layer_;
   LayerScrollOffsetDelegate* delegate_;
   LayerTreeImpl* layer_tree_impl_;
-  gfx::Vector2dF last_set_scroll_offset_;
+  gfx::ScrollOffset last_set_scroll_offset_;
 };
 
 LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
@@ -142,8 +143,8 @@ LayerImpl* LayerTreeImpl::OuterViewportScrollLayer() const {
   return outer_viewport_scroll_layer_;
 }
 
-gfx::Vector2dF LayerTreeImpl::TotalScrollOffset() const {
-  gfx::Vector2dF offset;
+gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
+  gfx::ScrollOffset offset;
 
   if (inner_viewport_scroll_layer_)
     offset += inner_viewport_scroll_layer_->TotalScrollOffset();
@@ -154,8 +155,8 @@ gfx::Vector2dF LayerTreeImpl::TotalScrollOffset() const {
   return offset;
 }
 
-gfx::Vector2dF LayerTreeImpl::TotalMaxScrollOffset() const {
-  gfx::Vector2dF offset;
+gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
+  gfx::ScrollOffset offset;
 
   if (inner_viewport_scroll_layer_)
     offset += inner_viewport_scroll_layer_->MaxScrollOffset();
@@ -928,7 +929,7 @@ void LayerTreeImpl::UpdateScrollOffsetDelegate() {
   DCHECK(InnerViewportScrollLayer());
   DCHECK(root_layer_scroll_offset_delegate_);
 
-  gfx::Vector2dF offset =
+  gfx::ScrollOffset offset =
       inner_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
 
   if (OuterViewportScrollLayer())
@@ -943,7 +944,7 @@ void LayerTreeImpl::UpdateScrollOffsetDelegate() {
       max_page_scale_factor());
 }
 
-gfx::Vector2dF LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
+gfx::ScrollOffset LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
   DCHECK(root_layer_scroll_offset_delegate_);
   DCHECK(InnerViewportScrollLayer());
   if (layer == InnerViewportScrollLayer() && !OuterViewportScrollLayer())
@@ -953,13 +954,13 @@ gfx::Vector2dF LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
   // the scroll offset between them.
   DCHECK(inner_viewport_scroll_delegate_proxy_);
   DCHECK(outer_viewport_scroll_delegate_proxy_);
-  gfx::Vector2dF inner_viewport_offset =
+  gfx::ScrollOffset inner_viewport_offset =
       inner_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
-  gfx::Vector2dF outer_viewport_offset =
+  gfx::ScrollOffset outer_viewport_offset =
       outer_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
 
   // It may be nothing has changed.
-  gfx::Vector2dF delegate_offset =
+  gfx::ScrollOffset delegate_offset =
       root_layer_scroll_offset_delegate_->GetTotalScrollOffset();
   if (inner_viewport_offset + outer_viewport_offset == delegate_offset) {
     if (layer == InnerViewportScrollLayer())
@@ -968,12 +969,12 @@ gfx::Vector2dF LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
       return outer_viewport_offset;
   }
 
-  gfx::Vector2d max_outer_viewport_scroll_offset =
+  gfx::ScrollOffset max_outer_viewport_scroll_offset =
       OuterViewportScrollLayer()->MaxScrollOffset();
 
   outer_viewport_offset = delegate_offset - inner_viewport_offset;
   outer_viewport_offset.SetToMin(max_outer_viewport_scroll_offset);
-  outer_viewport_offset.SetToMax(gfx::Vector2d());
+  outer_viewport_offset.SetToMax(gfx::ScrollOffset());
 
   if (layer == OuterViewportScrollLayer())
     return outer_viewport_offset;

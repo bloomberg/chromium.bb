@@ -852,7 +852,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     scroll_layer_->SetIsContainerForFixedPositionLayers(true);
     scroll_layer_->SetBounds(gfx::Size(2 * root_layer->bounds().width(),
                                        2 * root_layer->bounds().height()));
-    scroll_layer_->SetScrollOffset(gfx::Vector2d());
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset());
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
     // This test requires the page_scale and inner viewport layers to be
     // identified.
@@ -866,8 +866,9 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float scale,
                                    float) OVERRIDE {
-    gfx::Vector2d offset = scroll_layer_->scroll_offset();
-    scroll_layer_->SetScrollOffset(offset + scroll_delta);
+    gfx::ScrollOffset offset = scroll_layer_->scroll_offset();
+    scroll_layer_->SetScrollOffset(ScrollOffsetWithDelta(offset,
+                                                         scroll_delta));
     layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
   }
 

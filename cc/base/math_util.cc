@@ -778,6 +778,12 @@ void MathUtil::AddToTracedValue(const gfx::Vector2dF& v,
   res->AppendDouble(v.y());
 }
 
+void MathUtil::AddToTracedValue(const gfx::ScrollOffset& v,
+                                base::debug::TracedValue* res) {
+  res->AppendDouble(v.x());
+  res->AppendDouble(v.y());
+}
+
 void MathUtil::AddToTracedValue(const gfx::QuadF& q,
                                 base::debug::TracedValue* res) {
   res->AppendDouble(q.p1().x());

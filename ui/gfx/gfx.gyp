@@ -51,6 +51,8 @@
         'geometry/r_tree_base.cc',
         'geometry/r_tree_base.h',
         'geometry/safe_integer_conversions.h',
+        'geometry/scroll_offset.cc',
+        'geometry/scroll_offset.h',
         'geometry/size.cc',
         'geometry/size.h',
         'geometry/size_base.h',

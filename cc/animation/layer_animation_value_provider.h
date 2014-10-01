@@ -6,9 +6,10 @@
 #define CC_ANIMATION_LAYER_ANIMATION_VALUE_PROVIDER_H_
 
 #include "cc/base/cc_export.h"
-#include "ui/gfx/vector2d_f.h"
 
 namespace cc {
+
+class ScrollOffset;
 
 // A LayerAnimationValueProvider is used for determining the starting value
 // for animations that start at their 'current' value rather than at a
@@ -17,7 +18,7 @@ class CC_EXPORT LayerAnimationValueProvider {
  public:
   virtual ~LayerAnimationValueProvider() {}
 
-  virtual gfx::Vector2dF ScrollOffsetForAnimation() const = 0;
+  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const = 0;
 };
 
 }  // namespace cc

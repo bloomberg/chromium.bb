@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
@@ -261,9 +262,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return draw_properties_.num_unclipped_descendants;
   }
 
-  void SetScrollOffset(gfx::Vector2d scroll_offset);
-  gfx::Vector2d scroll_offset() const { return scroll_offset_; }
-  void SetScrollOffsetFromImplSide(const gfx::Vector2d& scroll_offset);
+  void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
+  gfx::ScrollOffset scroll_offset() const { return scroll_offset_; }
+  void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
 
   void SetScrollClipLayerId(int clip_layer_id);
   bool scrollable() const { return scroll_clip_layer_id_ != INVALID_ID; }
@@ -309,10 +310,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetForceRenderSurface(bool force_render_surface);
   bool force_render_surface() const { return force_render_surface_; }
 
-  gfx::Vector2d ScrollDelta() const { return gfx::Vector2d(); }
-  gfx::Vector2dF TotalScrollOffset() const {
-    // Floating point to match the LayerImpl version.
-    return scroll_offset() + ScrollDelta();
+  gfx::Vector2dF ScrollDelta() const { return gfx::Vector2dF(); }
+  gfx::ScrollOffset TotalScrollOffset() const {
+    return ScrollOffsetWithDelta(scroll_offset(), ScrollDelta());
   }
 
   void SetDoubleSided(bool double_sided);
@@ -552,14 +552,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void RemoveChildOrDependent(Layer* child);
 
   // LayerAnimationValueProvider implementation.
-  virtual gfx::Vector2dF ScrollOffsetForAnimation() const OVERRIDE;
+  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const OVERRIDE;
 
   // LayerAnimationValueObserver implementation.
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
   virtual void OnScrollOffsetAnimated(
-      const gfx::Vector2dF& scroll_offset) OVERRIDE;
+      const gfx::ScrollOffset& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 
@@ -584,7 +584,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Layer properties.
   gfx::Size bounds_;
 
-  gfx::Vector2d scroll_offset_;
+  gfx::ScrollOffset scroll_offset_;
   // This variable indicates which ancestor layer (if any) whose size,
   // transformed relative to this layer, defines the maximum scroll offset for
   // this layer.

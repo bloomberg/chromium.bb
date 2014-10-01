@@ -611,7 +611,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
                           test_layer->SetScrollClipLayerId(test_layer->id()));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetUserScrollable(true, false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollOffset(
-      gfx::Vector2d(10, 10)));
+      gfx::ScrollOffset(10, 10)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetShouldScrollOnMainThread(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
       Region(gfx::Rect(1, 1, 2, 2))));

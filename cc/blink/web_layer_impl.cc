@@ -27,6 +27,7 @@
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 using cc::Animation;
 using cc::Layer;
@@ -268,11 +269,12 @@ void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
 }
 
 void WebLayerImpl::setScrollPosition(blink::WebPoint position) {
-  layer_->SetScrollOffset(gfx::Point(position).OffsetFromOrigin());
+  layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
 }
 
 blink::WebPoint WebLayerImpl::scrollPosition() const {
-  return gfx::PointAtOffsetFromOrigin(layer_->scroll_offset());
+  return gfx::PointAtOffsetFromOrigin(
+      gfx::ScrollOffsetToFlooredVector2d(layer_->scroll_offset()));
 }
 
 void WebLayerImpl::setScrollClipLayer(WebLayer* clip_layer) {

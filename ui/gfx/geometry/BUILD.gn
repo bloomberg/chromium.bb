@@ -39,6 +39,8 @@ component("geometry") {
     "r_tree_base.cc",
     "r_tree_base.h",
     "safe_integer_conversions.h",
+    "scroll_offset.cc",
+    "scroll_offset.h",
     "size.cc",
     "size.h",
     "size_base.h",

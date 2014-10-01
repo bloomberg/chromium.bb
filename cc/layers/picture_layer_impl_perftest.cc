@@ -97,7 +97,8 @@ class PictureLayerImplPerfTest : public testing::Test {
   void RunRasterIteratorConstructTest(const std::string& test_name,
                                       const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
-    pending_layer_->SetScrollOffset(gfx::Vector2d(viewport.x(), viewport.y()));
+    pending_layer_->SetScrollOffset(
+        gfx::ScrollOffset(viewport.x(), viewport.y()));
     host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
@@ -150,7 +151,8 @@ class PictureLayerImplPerfTest : public testing::Test {
   void RunEvictionIteratorConstructTest(const std::string& test_name,
                                         const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
-    pending_layer_->SetScrollOffset(gfx::Vector2d(viewport.x(), viewport.y()));
+    pending_layer_->SetScrollOffset(
+        gfx::ScrollOffset(viewport.x(), viewport.y()));
     host_impl_.pending_tree()->UpdateDrawProperties();
 
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,

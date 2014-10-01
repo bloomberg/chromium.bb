@@ -216,7 +216,7 @@ void FakeLayerAnimationValueObserver::OnTransformAnimated(
 }
 
 void FakeLayerAnimationValueObserver::OnScrollOffsetAnimated(
-    const gfx::Vector2dF& scroll_offset) {
+    const gfx::ScrollOffset& scroll_offset) {
   scroll_offset_ = scroll_offset;
 }
 
@@ -232,7 +232,7 @@ bool FakeInactiveLayerAnimationValueObserver::IsActive() const {
   return false;
 }
 
-gfx::Vector2dF FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
+gfx::ScrollOffset FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
     const {
   return scroll_offset_;
 }

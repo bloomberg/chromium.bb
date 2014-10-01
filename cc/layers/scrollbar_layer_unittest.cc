@@ -139,7 +139,7 @@ TEST(PaintedScrollbarLayerTest, ScrollOffsetSynchronization) {
   // Choose bounds to give max_scroll_offset = (30, 50).
   layer_tree_root->SetBounds(gfx::Size(70, 150));
   scroll_layer->SetScrollClipLayerId(layer_tree_root->id());
-  scroll_layer->SetScrollOffset(gfx::Vector2d(10, 20));
+  scroll_layer->SetScrollOffset(gfx::ScrollOffset(10, 20));
   scroll_layer->SetBounds(gfx::Size(100, 200));
   content_layer->SetBounds(gfx::Size(100, 200));
 
@@ -165,7 +165,7 @@ TEST(PaintedScrollbarLayerTest, ScrollOffsetSynchronization) {
   layer_tree_root->SetBounds(gfx::Size(700, 1500));
   layer_tree_root->SavePaintProperties();
   scroll_layer->SetBounds(gfx::Size(1000, 2000));
-  scroll_layer->SetScrollOffset(gfx::Vector2d(100, 200));
+  scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 200));
   scroll_layer->SavePaintProperties();
   content_layer->SetBounds(gfx::Size(1000, 2000));
   content_layer->SavePaintProperties();
@@ -216,7 +216,7 @@ TEST(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
   root_layer->AddChild(content_layer);
   root_layer->AddChild(scrollbar_layer);
 
-  root_layer->SetScrollOffset(gfx::Vector2d(0, 0));
+  root_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
   scrollbar_layer->SetBounds(gfx::Size(70, 10));
   scrollbar_layer->SetScrollLayer(root_layer->id());
   scrollbar_layer->SetClipLayer(root_clip_layer->id());
@@ -261,7 +261,7 @@ TEST(ScrollbarLayerTest, ThumbRect) {
   root_layer->AddChild(content_layer);
   root_layer->AddChild(scrollbar_layer);
 
-  root_layer->SetScrollOffset(gfx::Vector2d(0, 0));
+  root_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
   scrollbar_layer->SetBounds(gfx::Size(70, 10));
   scrollbar_layer->SetScrollLayer(root_layer->id());
   scrollbar_layer->SetClipLayer(root_clip_layer->id());
@@ -282,14 +282,14 @@ TEST(ScrollbarLayerTest, ThumbRect) {
             scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
 
   // Under-scroll (thumb position should clamp and be unchanged).
-  root_layer->SetScrollOffset(gfx::Vector2d(-5, 0));
+  root_layer->SetScrollOffset(gfx::ScrollOffset(-5, 0));
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(10, 0, 4, 10).ToString(),
             scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
 
   // Over-scroll (thumb position should clamp on the far side).
-  root_layer->SetScrollOffset(gfx::Vector2d(85, 0));
+  root_layer->SetScrollOffset(gfx::ScrollOffset(85, 0));
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(56, 0, 4, 10).ToString(),
@@ -728,7 +728,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public testing::Test {
 
     scrollbar_layer->SetIsDrawable(true);
     scrollbar_layer->SetBounds(gfx::Size(100, 100));
-    layer_tree_root->SetScrollOffset(gfx::Vector2d(10, 20));
+    layer_tree_root->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
     scrollbar_layer->draw_properties().content_bounds = gfx::Size(100, 200);

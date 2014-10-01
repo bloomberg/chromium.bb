@@ -1085,8 +1085,9 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
     } else if (layer == inner_viewport_scroll_layer_.get()) {
       inner_viewport_scroll_delta += info->scrolls[i].scroll_delta;
     } else {
-      layer->SetScrollOffsetFromImplSide(layer->scroll_offset() +
-                                         info->scrolls[i].scroll_delta);
+      layer->SetScrollOffsetFromImplSide(
+          gfx::ScrollOffsetWithDelta(layer->scroll_offset(),
+                                     info->scrolls[i].scroll_delta));
     }
   }
 
@@ -1103,12 +1104,14 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
     // it to the client.  If the client comes back and sets it to the same
     // value, then the layer can early out without needing a full commit.
     inner_viewport_scroll_layer_->SetScrollOffsetFromImplSide(
-        inner_viewport_scroll_layer_->scroll_offset() +
-        inner_viewport_scroll_delta);
+        gfx::ScrollOffsetWithDelta(
+            inner_viewport_scroll_layer_->scroll_offset(),
+            inner_viewport_scroll_delta));
     if (outer_viewport_scroll_layer_.get()) {
       outer_viewport_scroll_layer_->SetScrollOffsetFromImplSide(
-          outer_viewport_scroll_layer_->scroll_offset() +
-          outer_viewport_scroll_delta);
+          gfx::ScrollOffsetWithDelta(
+              outer_viewport_scroll_layer_->scroll_offset(),
+              outer_viewport_scroll_delta));
     }
 
     ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);

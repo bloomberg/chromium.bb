@@ -136,8 +136,8 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* InnerViewportScrollLayer() const;
   // This function may return NULL, it is the caller's responsibility to check.
   LayerImpl* OuterViewportScrollLayer() const;
-  gfx::Vector2dF TotalScrollOffset() const;
-  gfx::Vector2dF TotalMaxScrollOffset() const;
+  gfx::ScrollOffset TotalScrollOffset() const;
+  gfx::ScrollOffset TotalMaxScrollOffset() const;
   gfx::Vector2dF TotalScrollDelta() const;
 
   LayerImpl* InnerViewportContainerLayer() const;
@@ -247,7 +247,7 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
   void UpdateScrollOffsetDelegate();
-  gfx::Vector2dF GetDelegatedScrollOffset(LayerImpl* layer);
+  gfx::ScrollOffset GetDelegatedScrollOffset(LayerImpl* layer);
 
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/size.h"
@@ -211,6 +212,8 @@ class CC_EXPORT MathUtil {
   static void AddToTracedValue(const gfx::Vector2d& v,
                                base::debug::TracedValue* res);
   static void AddToTracedValue(const gfx::Vector2dF& v,
+                               base::debug::TracedValue* res);
+  static void AddToTracedValue(const gfx::ScrollOffset& v,
                                base::debug::TracedValue* res);
   static void AddToTracedValue(const gfx::QuadF& q,
                                base::debug::TracedValue* res);

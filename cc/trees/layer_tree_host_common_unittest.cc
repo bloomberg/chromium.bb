@@ -284,7 +284,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
-  const gfx::Vector2d kScrollOffset(50, 100);
+  const gfx::ScrollOffset kScrollOffset(50, 100);
   const gfx::Vector2dF kScrollDelta(2.34f, 5.67f);
   const gfx::Vector2d kMaxScrollOffset(200, 200);
   const gfx::PointF kScrollLayerPosition(-kScrollOffset.x(),
@@ -6587,7 +6587,7 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   intervening->SetMasksToBounds(true);
   clip_parent->SetMasksToBounds(true);
   intervening->SetScrollClipLayerId(clip_parent->id());
-  intervening->SetScrollOffset(gfx::Vector2d(3, 3));
+  intervening->SetScrollOffset(gfx::ScrollOffset(3, 3));
 
   render_surface1->SetForceRenderSurface(true);
   render_surface2->SetForceRenderSurface(true);

@@ -663,8 +663,8 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
   controller->AddValueObserver(&dummy);
   controller->set_value_provider(&dummy_provider);
 
-  gfx::Vector2dF initial_value(100.f, 300.f);
-  gfx::Vector2dF target_value(300.f, 200.f);
+  gfx::ScrollOffset initial_value(100.f, 300.f);
+  gfx::ScrollOffset target_value(300.f, 200.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value,
@@ -745,8 +745,8 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   controller->AddValueObserver(&dummy);
   controller->set_value_provider(&dummy_provider);
 
-  gfx::Vector2dF initial_value(500.f, 100.f);
-  gfx::Vector2dF target_value(300.f, 200.f);
+  gfx::ScrollOffset initial_value(500.f, 100.f);
+  gfx::ScrollOffset target_value(300.f, 200.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value,
@@ -819,8 +819,8 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
   scoped_ptr<AnimationEventsVector> events(
       make_scoped_ptr(new AnimationEventsVector));
 
-  gfx::Vector2dF initial_value(100.f, 300.f);
-  gfx::Vector2dF target_value(300.f, 200.f);
+  gfx::ScrollOffset initial_value(100.f, 300.f);
+  gfx::ScrollOffset target_value(300.f, 200.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value,

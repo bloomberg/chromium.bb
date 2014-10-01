@@ -256,11 +256,15 @@ void SynchronousCompositorImpl::DidActivatePendingTree() {
     compositor_client_->DidUpdateContent();
 }
 
-gfx::Vector2dF SynchronousCompositorImpl::GetTotalScrollOffset() {
+gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
   DCHECK(CalledOnValidThread());
-  if (compositor_client_)
-    return compositor_client_->GetTotalRootLayerScrollOffset();
-  return gfx::Vector2dF();
+  if (compositor_client_) {
+    // TODO(miletus): Make GetTotalRootLayerScrollOffset return
+    // ScrollOffset. crbug.com/414283.
+    return gfx::ScrollOffset(
+        compositor_client_->GetTotalRootLayerScrollOffset());
+  }
+  return gfx::ScrollOffset();
 }
 
 bool SynchronousCompositorImpl::IsExternalFlingActive() const {
@@ -271,8 +275,8 @@ bool SynchronousCompositorImpl::IsExternalFlingActive() const {
 }
 
 void SynchronousCompositorImpl::UpdateRootLayerState(
-    const gfx::Vector2dF& total_scroll_offset,
-    const gfx::Vector2dF& max_scroll_offset,
+    const gfx::ScrollOffset& total_scroll_offset,
+    const gfx::ScrollOffset& max_scroll_offset,
     const gfx::SizeF& scrollable_size,
     float page_scale_factor,
     float min_page_scale_factor,
@@ -281,12 +285,14 @@ void SynchronousCompositorImpl::UpdateRootLayerState(
   if (!compositor_client_)
     return;
 
-  compositor_client_->UpdateRootLayerState(total_scroll_offset,
-                                           max_scroll_offset,
-                                           scrollable_size,
-                                           page_scale_factor,
-                                           min_page_scale_factor,
-                                           max_page_scale_factor);
+  // TODO(miletus): Pass in ScrollOffset. crbug.com/414283.
+  compositor_client_->UpdateRootLayerState(
+      gfx::ScrollOffsetToVector2dF(total_scroll_offset),
+      gfx::ScrollOffsetToVector2dF(max_scroll_offset),
+      scrollable_size,
+      page_scale_factor,
+      min_page_scale_factor,
+      max_page_scale_factor);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

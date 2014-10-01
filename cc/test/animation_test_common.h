@@ -79,14 +79,14 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
   virtual void OnScrollOffsetAnimated(
-      const gfx::Vector2dF& scroll_offset) OVERRIDE;
+      const gfx::ScrollOffset& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 
   const FilterOperations& filters() const { return filters_; }
   float opacity() const  { return opacity_; }
   const gfx::Transform& transform() const { return transform_; }
-  gfx::Vector2dF scroll_offset() { return scroll_offset_; }
+  gfx::ScrollOffset scroll_offset() { return scroll_offset_; }
 
   bool animation_waiting_for_deletion() {
     return animation_waiting_for_deletion_;
@@ -96,7 +96,7 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   FilterOperations filters_;
   float opacity_;
   gfx::Transform transform_;
-  gfx::Vector2dF scroll_offset_;
+  gfx::ScrollOffset scroll_offset_;
   bool animation_waiting_for_deletion_;
 };
 
@@ -108,14 +108,14 @@ class FakeInactiveLayerAnimationValueObserver
 
 class FakeLayerAnimationValueProvider : public LayerAnimationValueProvider {
  public:
-  virtual gfx::Vector2dF ScrollOffsetForAnimation() const OVERRIDE;
+  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const OVERRIDE;
 
-  void set_scroll_offset(const gfx::Vector2dF& scroll_offset) {
+  void set_scroll_offset(const gfx::ScrollOffset& scroll_offset) {
     scroll_offset_ = scroll_offset;
   }
 
  private:
-  gfx::Vector2dF scroll_offset_;
+  gfx::ScrollOffset scroll_offset_;
 };
 
 int AddOpacityTransitionToController(LayerAnimationController* controller,

@@ -534,7 +534,7 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
 
     // Scroll animations always start at the current scroll offset.
     if (animations_[i]->target_property() == Animation::ScrollOffset) {
-      gfx::Vector2dF current_scroll_offset;
+      gfx::ScrollOffset current_scroll_offset;
       if (controller_impl->value_provider_) {
         current_scroll_offset =
             controller_impl->value_provider_->ScrollOffsetForAnimation();
@@ -889,7 +889,7 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
         case Animation::ScrollOffset: {
           const ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
               animations_[i]->curve()->ToScrollOffsetAnimationCurve();
-          const gfx::Vector2dF scroll_offset =
+          const gfx::ScrollOffset scroll_offset =
               scroll_offset_animation_curve->GetValue(trimmed);
           NotifyObserversScrollOffsetAnimated(
               scroll_offset,
@@ -977,7 +977,7 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
 }
 
 void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
-    const gfx::Vector2dF& scroll_offset,
+    const gfx::ScrollOffset& scroll_offset,
     bool notify_active_observers,
     bool notify_pending_observers) {
   if (value_observers_.might_have_observers()) {

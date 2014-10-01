@@ -1029,7 +1029,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     scroll_layer_ = FakeContentLayer::Create(&client_);
     scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
     scroll_layer_->SetBounds(gfx::Size(1000, 1000));
-    scroll_layer_->SetScrollOffset(gfx::Vector2d(10, 20));
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
   }
 
@@ -1042,7 +1042,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
       case 1: {
         scoped_ptr<ScrollOffsetAnimationCurve> curve(
             ScrollOffsetAnimationCurve::Create(
-                gfx::Vector2dF(500.f, 550.f),
+                gfx::ScrollOffset(500.f, 550.f),
                 EaseInOutTimingFunction::Create()));
         scoped_ptr<Animation> animation(
             Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));

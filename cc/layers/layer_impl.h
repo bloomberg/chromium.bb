@@ -30,6 +30,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
@@ -77,8 +78,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // of the layer.
   class ScrollOffsetDelegate {
    public:
-    virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) = 0;
-    virtual gfx::Vector2dF GetTotalScrollOffset() = 0;
+    virtual void SetTotalScrollOffset(const gfx::ScrollOffset& new_value) = 0;
+    virtual gfx::ScrollOffset GetTotalScrollOffset() = 0;
     virtual bool IsExternalFlingActive() const = 0;
   };
 
@@ -97,14 +98,14 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int id() const { return layer_id_; }
 
   // LayerAnimationValueProvider implementation.
-  virtual gfx::Vector2dF ScrollOffsetForAnimation() const OVERRIDE;
+  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const OVERRIDE;
 
   // LayerAnimationValueObserver implementation.
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
   virtual void OnScrollOffsetAnimated(
-      const gfx::Vector2dF& scroll_offset) OVERRIDE;
+      const gfx::ScrollOffset& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 
@@ -377,22 +378,22 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetScrollOffsetDelegate(ScrollOffsetDelegate* scroll_offset_delegate);
   bool IsExternalFlingActive() const;
 
-  void SetScrollOffset(const gfx::Vector2d& scroll_offset);
-  void SetScrollOffsetAndDelta(const gfx::Vector2d& scroll_offset,
+  void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
+  void SetScrollOffsetAndDelta(const gfx::ScrollOffset& scroll_offset,
                                const gfx::Vector2dF& scroll_delta);
-  gfx::Vector2d scroll_offset() const { return scroll_offset_; }
+  gfx::ScrollOffset scroll_offset() const { return scroll_offset_; }
 
-  gfx::Vector2d MaxScrollOffset() const;
+  gfx::ScrollOffset MaxScrollOffset() const;
   gfx::Vector2dF ClampScrollToMaxScrollOffset();
   void SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
                             LayerImpl* scrollbar_clip_layer) const;
   void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
   gfx::Vector2dF ScrollDelta() const;
 
-  gfx::Vector2dF TotalScrollOffset() const;
+  gfx::ScrollOffset TotalScrollOffset() const;
 
-  void SetSentScrollDelta(const gfx::Vector2d& sent_scroll_delta);
-  gfx::Vector2d sent_scroll_delta() const { return sent_scroll_delta_; }
+  void SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta);
+  gfx::Vector2dF sent_scroll_delta() const { return sent_scroll_delta_; }
 
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
@@ -607,7 +608,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Point3F transform_origin_;
   gfx::Size bounds_;
   gfx::Vector2dF bounds_delta_;
-  gfx::Vector2d scroll_offset_;
+  gfx::ScrollOffset scroll_offset_;
   ScrollOffsetDelegate* scroll_offset_delegate_;
   LayerImpl* scroll_clip_layer_;
   bool scrollable_ : 1;
@@ -650,8 +651,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   LayerPositionConstraint position_constraint_;
 
   gfx::Vector2dF scroll_delta_;
-  gfx::Vector2d sent_scroll_delta_;
-  gfx::Vector2dF last_scroll_offset_;
+  gfx::Vector2dF sent_scroll_delta_;
+  gfx::ScrollOffset last_scroll_offset_;
 
   int num_descendants_that_draw_content_;
 

@@ -48,7 +48,7 @@ TEST(SafeIntegerConversions, ToFlooredInt) {
   EXPECT_EQ(int_max, ToFlooredInt(max + 100));
 
   EXPECT_EQ(-101, ToFlooredInt(-100.5f));
-  EXPECT_EQ(0, ToFlooredInt(0));
+  EXPECT_EQ(0, ToFlooredInt(0.f));
   EXPECT_EQ(100, ToFlooredInt(100.5f));
 
   EXPECT_EQ(int_min, ToFlooredInt(-infinity));
@@ -71,7 +71,7 @@ TEST(SafeIntegerConversions, ToCeiledInt) {
   EXPECT_EQ(int_max, ToCeiledInt(max + 100));
 
   EXPECT_EQ(-100, ToCeiledInt(-100.5f));
-  EXPECT_EQ(0, ToCeiledInt(0));
+  EXPECT_EQ(0, ToCeiledInt(0.f));
   EXPECT_EQ(101, ToCeiledInt(100.5f));
 
   EXPECT_EQ(int_min, ToCeiledInt(-infinity));

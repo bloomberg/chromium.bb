@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
 
@@ -17,15 +18,15 @@ class TimingFunction;
 class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:
   static scoped_ptr<ScrollOffsetAnimationCurve> Create(
-      const gfx::Vector2dF& target_value,
+      const gfx::ScrollOffset& target_value,
       scoped_ptr<TimingFunction> timing_function);
 
   virtual ~ScrollOffsetAnimationCurve();
 
-  void SetInitialValue(const gfx::Vector2dF& initial_value);
-  gfx::Vector2dF GetValue(double t) const;
-  gfx::Vector2dF target_value() const { return target_value_; }
-  void UpdateTarget(double t, const gfx::Vector2dF& new_target);
+  void SetInitialValue(const gfx::ScrollOffset& initial_value);
+  gfx::ScrollOffset GetValue(double t) const;
+  gfx::ScrollOffset target_value() const { return target_value_; }
+  void UpdateTarget(double t, const gfx::ScrollOffset& new_target);
 
   // AnimationCurve implementation
   virtual double Duration() const OVERRIDE;
@@ -33,11 +34,11 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
 
  private:
-  ScrollOffsetAnimationCurve(const gfx::Vector2dF& target_value,
+  ScrollOffsetAnimationCurve(const gfx::ScrollOffset& target_value,
                              scoped_ptr <TimingFunction> timing_function);
 
-  gfx::Vector2dF initial_value_;
-  gfx::Vector2dF target_value_;
+  gfx::ScrollOffset initial_value_;
+  gfx::ScrollOffset target_value_;
   base::TimeDelta total_animation_duration_;
 
   // Time from animation start to most recent UpdateTarget.

@@ -160,7 +160,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetDoubleSided(false));  // constructor initializes it to "true".
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollDelta(gfx::Vector2d()));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollOffset(arbitrary_vector2d));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->SetScrollOffset(gfx::ScrollOffset(arbitrary_vector2d)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetHideLayerAndSubtree(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetOpacity(arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBlendMode(arbitrary_blend_mode));
@@ -219,7 +220,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetScrollDelta(gfx::Vector2d()));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetScrollOffset(arbitrary_vector2d));
+      root->SetScrollOffset(gfx::ScrollOffset(arbitrary_vector2d)));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetContentBounds(arbitrary_size));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
@@ -291,9 +292,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetScrollDelta(arbitrary_vector2d));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetScrollOffset(arbitrary_vector2d));
+      layer->SetScrollOffset(gfx::ScrollOffset(arbitrary_vector2d)));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetScrollOffset(arbitrary_vector2d));
+      layer->SetScrollOffset(gfx::ScrollOffset(arbitrary_vector2d)));
 
   // Unrelated functions, always set to new values, always set needs update.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -464,7 +465,7 @@ TEST_F(LayerImplScrollTest, ScrollByWithZeroOffset) {
 }
 
 TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   layer()->SetScrollOffset(scroll_offset);
 
   EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
@@ -474,23 +475,26 @@ TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
   layer()->ScrollBy(gfx::Vector2dF(-100, 100));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
 
-  EXPECT_VECTOR_EQ(layer()->ScrollDelta() + scroll_offset,
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset,
+                                              layer()->ScrollDelta()),
                    layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 
   layer()->ScrollBy(gfx::Vector2dF(100, -100));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), layer()->TotalScrollOffset());
 
-  EXPECT_VECTOR_EQ(layer()->ScrollDelta() + scroll_offset,
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset,
+                                              layer()->ScrollDelta()),
                    layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 }
 
 class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
  public:
-  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) OVERRIDE {}
-  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
-    return fixed_offset_;
+  virtual void SetTotalScrollOffset(
+      const gfx::ScrollOffset& new_value) OVERRIDE {}
+  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE {
+    return gfx::ScrollOffset(fixed_offset_);
   }
   virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
 
@@ -503,7 +507,7 @@ class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
 };
 
 TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   layer()->SetScrollOffset(scroll_offset);
 
   EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
@@ -537,20 +541,21 @@ TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
 
 class ScrollDelegateAccept : public LayerImpl::ScrollOffsetDelegate {
  public:
-  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) OVERRIDE {
+  virtual void SetTotalScrollOffset(
+      const gfx::ScrollOffset& new_value) OVERRIDE {
     current_offset_ = new_value;
   }
-  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
+  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE {
     return current_offset_;
   }
   virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
 
  private:
-  gfx::Vector2dF current_offset_;
+  gfx::ScrollOffset current_offset_;
 };
 
 TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   layer()->SetScrollOffset(scroll_offset);
 
   EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
@@ -582,7 +587,7 @@ TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
 }
 
 TEST_F(LayerImplScrollTest, ApplySentScrollsNoDelegate) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
   gfx::Vector2d sent_scroll_delta(12, -3);
 
@@ -590,21 +595,24 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoDelegate) {
   layer()->ScrollBy(scroll_delta);
   layer()->SetSentScrollDelta(sent_scroll_delta);
 
-  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, scroll_delta),
+                   layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_delta, layer()->ScrollDelta());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
   EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
 
   layer()->ApplySentScrollDeltasFromAbortedCommit();
 
-  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, scroll_delta),
+                   layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_delta - sent_scroll_delta, layer()->ScrollDelta());
-  EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, sent_scroll_delta),
+                   layer()->scroll_offset());
   EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
 }
 
 TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2d sent_scroll_delta(12, -3);
   gfx::Vector2dF fixed_offset(32, 12);
 
@@ -621,12 +629,13 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
   layer()->ApplySentScrollDeltasFromAbortedCommit();
 
   EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
-  EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, sent_scroll_delta),
+                   layer()->scroll_offset());
   EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
 }
 
 TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2d sent_scroll_delta(12, -3);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
 
@@ -636,21 +645,24 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
   layer()->ScrollBy(scroll_delta);
   layer()->SetSentScrollDelta(sent_scroll_delta);
 
-  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, scroll_delta),
+                   layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
   EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
 
   layer()->ApplySentScrollDeltasFromAbortedCommit();
 
-  EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
-  EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, scroll_delta),
+                   layer()->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, sent_scroll_delta),
+                   layer()->scroll_offset());
   EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
 }
 
 // The user-scrollability breaks for zoomed-in pages. So disable this.
 // http://crbug.com/322223
 TEST_F(LayerImplScrollTest, DISABLED_ScrollUserUnscrollableLayer) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
 
   layer()->set_user_scrollable_vertical(false);
@@ -662,7 +674,7 @@ TEST_F(LayerImplScrollTest, DISABLED_ScrollUserUnscrollableLayer) {
 }
 
 TEST_F(LayerImplScrollTest, SetNewScrollbarParameters) {
-  gfx::Vector2d scroll_offset(10, 5);
+  gfx::ScrollOffset scroll_offset(10, 5);
   layer()->SetScrollOffset(scroll_offset);
 
   scoped_ptr<PaintedScrollbarLayerImpl> vertical_scrollbar(

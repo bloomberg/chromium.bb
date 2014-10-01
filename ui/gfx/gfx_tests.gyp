@@ -52,6 +52,7 @@
         'geometry/r_tree_unittest.cc',
         'geometry/rect_unittest.cc',
         'geometry/safe_integer_conversions_unittest.cc',
+        'geometry/scroll_offset_unittest.cc',
         'geometry/size_unittest.cc',
         'geometry/vector2d_unittest.cc',
         'geometry/vector3d_unittest.cc',

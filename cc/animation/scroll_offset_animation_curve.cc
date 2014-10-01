@@ -44,14 +44,14 @@ static scoped_ptr<TimingFunction> EaseOutWithInitialVelocity(double velocity) {
 }  // namespace
 
 scoped_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
-    const gfx::Vector2dF& target_value,
+    const gfx::ScrollOffset& target_value,
     scoped_ptr<TimingFunction> timing_function) {
   return make_scoped_ptr(
       new ScrollOffsetAnimationCurve(target_value, timing_function.Pass()));
 }
 
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
-    const gfx::Vector2dF& target_value,
+    const gfx::ScrollOffset& target_value,
     scoped_ptr<TimingFunction> timing_function)
     : target_value_(target_value), timing_function_(timing_function.Pass()) {
 }
@@ -59,12 +59,13 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
 ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
 
 void ScrollOffsetAnimationCurve::SetInitialValue(
-    const gfx::Vector2dF& initial_value) {
+    const gfx::ScrollOffset& initial_value) {
   initial_value_ = initial_value;
-  total_animation_duration_ = DurationFromDelta(target_value_ - initial_value_);
+  total_animation_duration_ = DurationFromDelta(
+      target_value_.DeltaFrom(initial_value_));
 }
 
-gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(double t) const {
+gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(double t) const {
   double duration = (total_animation_duration_ - last_retarget_).InSecondsF();
   t -= last_retarget_.InSecondsF();
 
@@ -75,10 +76,11 @@ gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(double t) const {
     return target_value_;
 
   double progress = (timing_function_->GetValue(t / duration));
-  return gfx::Vector2dF(gfx::Tween::FloatValueBetween(
-                            progress, initial_value_.x(), target_value_.x()),
-                        gfx::Tween::FloatValueBetween(
-                            progress, initial_value_.y(), target_value_.y()));
+  return gfx::ScrollOffset(
+      gfx::Tween::FloatValueBetween(
+          progress, initial_value_.x(), target_value_.x()),
+      gfx::Tween::FloatValueBetween(
+          progress, initial_value_.y(), target_value_.y()));
 }
 
 double ScrollOffsetAnimationCurve::Duration() const {
@@ -102,10 +104,10 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
 
 void ScrollOffsetAnimationCurve::UpdateTarget(
     double t,
-    const gfx::Vector2dF& new_target) {
-  gfx::Vector2dF current_position = GetValue(t);
-  gfx::Vector2dF old_delta = target_value_ - initial_value_;
-  gfx::Vector2dF new_delta = new_target - current_position;
+    const gfx::ScrollOffset& new_target) {
+  gfx::ScrollOffset current_position = GetValue(t);
+  gfx::Vector2dF old_delta = target_value_.DeltaFrom(initial_value_);
+  gfx::Vector2dF new_delta = new_target.DeltaFrom(current_position);
 
   double old_duration =
       (total_animation_duration_ - last_retarget_).InSecondsF();

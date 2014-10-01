@@ -6,8 +6,8 @@
 #define CC_INPUT_LAYER_SCROLL_OFFSET_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/size_f.h"
-#include "ui/gfx/vector2d_f.h"
 
 namespace cc {
 
@@ -24,7 +24,7 @@ class LayerScrollOffsetDelegate {
   // The return value is not required to be related to the values passed in to
   // the SetTotalScrollOffset method in any way however it is required to be no
   // more than the value passed to the most recent SetMaxScrollOffset call.
-  virtual gfx::Vector2dF GetTotalScrollOffset() = 0;
+  virtual gfx::ScrollOffset GetTotalScrollOffset() = 0;
 
   // This is called by the compositor to notify the delegate of any change to
   // the following parameters:
@@ -34,12 +34,13 @@ class LayerScrollOffsetDelegate {
   // |page_scale_factor| current page scale,
   // |min_page_scale_factor| page scale lower limit,
   // |max_page_scale_factor| page scale upper limit.
-  virtual void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset,
-                                    const gfx::Vector2dF& max_scroll_offset,
-                                    const gfx::SizeF& scrollable_size,
-                                    float page_scale_factor,
-                                    float min_page_scale_factor,
-                                    float max_page_scale_factor) = 0;
+  virtual void UpdateRootLayerState(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) = 0;
 
   // This is called by the compositor to check whether a delegate-managed fling
   // is active or not.

@@ -15,6 +15,7 @@
 #include "cc/animation/layer_animation_event_observer.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -182,9 +183,10 @@ class CC_EXPORT LayerAnimationController
   void NotifyObserversFilterAnimated(const FilterOperations& filter,
                                      bool notify_active_observers,
                                      bool notify_pending_observers);
-  void NotifyObserversScrollOffsetAnimated(const gfx::Vector2dF& scroll_offset,
-                                           bool notify_active_observers,
-                                           bool notify_pending_observers);
+  void NotifyObserversScrollOffsetAnimated(
+      const gfx::ScrollOffset& scroll_offset,
+      bool notify_active_observers,
+      bool notify_pending_observers);
 
   void NotifyObserversAnimationWaitingForDeletion();
 

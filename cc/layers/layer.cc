@@ -654,7 +654,7 @@ void Layer::RemoveClipChild(Layer* child) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
+void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
 
   if (scroll_offset_ == scroll_offset)
@@ -663,7 +663,8 @@ void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollOffsetFromImplSide(const gfx::Vector2d& scroll_offset) {
+void Layer::SetScrollOffsetFromImplSide(
+    const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
   // This function only gets called during a BeginMainFrame, so there
   // is no need to call SetNeedsUpdate here.
@@ -963,8 +964,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetScrollOffset(scroll_offset_);
   } else {
     layer->SetScrollOffsetAndDelta(
-        scroll_offset_, layer->ScrollDelta() - layer->sent_scroll_delta());
-    layer->SetSentScrollDelta(gfx::Vector2d());
+        scroll_offset_,
+        layer->ScrollDelta() - layer->sent_scroll_delta());
+    layer->SetSentScrollDelta(gfx::Vector2dF());
   }
 
   // Wrap the copy_requests_ in a PostTask to the main thread.
@@ -1093,7 +1095,7 @@ void Layer::ClearRenderSurfaceLayerList() {
     draw_properties_.render_surface->layer_list().clear();
 }
 
-gfx::Vector2dF Layer::ScrollOffsetForAnimation() const {
+gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {
   return TotalScrollOffset();
 }
 
@@ -1116,7 +1118,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   transform_is_invertible_ = transform.IsInvertible();
 }
 
-void Layer::OnScrollOffsetAnimated(const gfx::Vector2dF& scroll_offset) {
+void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   // Do nothing. Scroll deltas will be sent from the compositor thread back
   // to the main thread in the same manner as during non-animated
   // compositor-driven scrolling.
