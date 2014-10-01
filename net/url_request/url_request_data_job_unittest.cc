@@ -63,12 +63,17 @@ TEST(BuildResponseTest, InvalidMimeType) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(std::string()));
 
-  // MIME type contains delimiters. Must be rejected.
+  // MIME type contains delimiters. Must be accepted but Content-Type header
+  // should be generated as if the mediatype was text/plain.
   EXPECT_EQ(
-      net::ERR_INVALID_URL,
+      net::OK,
       URLRequestDataJob::BuildResponse(
           GURL("data:f(o/b)r,test"),
           &mime_type, &charset, &data, headers.get()));
+
+  std::string value;
+  EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &value));
+  EXPECT_EQ(value, "text/plain;charset=US-ASCII");
 }
 
 TEST(BuildResponseTest, InvalidCharset) {

@@ -63,6 +63,28 @@ TEST(DataURLTest, Parse) {
       "US-ASCII",
       "hello world" },
 
+    // Allow invalid mediatype for backward compatibility but set mime_type to
+    // "text/plain" instead of the invalid mediatype.
+    { "data:foo,boo",
+      true,
+      "text/plain",
+      "US-ASCII",
+      "boo" },
+
+    // When accepting an invalid mediatype, override charset with "US-ASCII"
+    { "data:foo;charset=UTF-8,boo",
+      true,
+      "text/plain",
+      "US-ASCII",
+      "boo" },
+
+    // Invalid mediatype. Includes a slash but the type part is not a token.
+    { "data:f(oo/bar;baz=1;charset=kk,boo",
+      true,
+      "text/plain",
+      "US-ASCII",
+      "boo" },
+
     { "data:foo/bar;baz=1;charset=kk,boo",
       true,
       "foo/bar",
@@ -87,13 +109,6 @@ TEST(DataURLTest, Parse) {
       "text/html",
       "US-ASCII",
       "<html><body><b>hello world</b></body></html>" },
-
-    // Bad mime type
-    { "data:f(oo/bar;baz=1;charset=kk,boo",
-      false,
-      "",
-      "",
-      "" },
 
     // the comma cannot be url-escaped!
     { "data:%2Cblah",
