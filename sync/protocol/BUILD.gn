@@ -19,6 +19,7 @@ proto_library("protocol") {
     "device_info_specifics.proto",
     "dictionary_specifics.proto",
     "encryption.proto",
+    "enhanced_bookmark_specifics.proto",
     "experiments_specifics.proto",
     "extension_setting_specifics.proto",
     "extension_specifics.proto",

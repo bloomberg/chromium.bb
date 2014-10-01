@@ -473,6 +473,7 @@
         'protocol/device_info_specifics.proto',
         'protocol/dictionary_specifics.proto',
         'protocol/encryption.proto',
+        'protocol/enhanced_bookmark_specifics.proto',
         'protocol/experiments_specifics.proto',
         'protocol/extension_setting_specifics.proto',
         'protocol/extension_specifics.proto',
