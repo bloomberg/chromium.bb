@@ -1,6 +1,7 @@
 {
   "base": {
     "exclusions": [
+      ".\\.isolate",
       "build/.*gyp[i]?",
       "build/android/pylib/.*",
       "build/compiler_version.py",

@@ -33,6 +33,8 @@
           # don't have to be preinstalled on the target machine.
           '<(PRODUCT_DIR)/msvcp120.dll',
           '<(PRODUCT_DIR)/msvcr120.dll',
+          '<(PRODUCT_DIR)/x64/msvcp120.dll',
+          '<(PRODUCT_DIR)/x64/msvcr120.dll',
         ],
       },
     }],
