@@ -605,8 +605,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         o = o->nextInPreOrder();
     }
 
-    if (blockPaintInvalidationMode != PaintInvalidationNothing)
-        layer()->clearBlockSelectionGapsBounds();
+    layer()->clearBlockSelectionGapsBounds();
 
     // Now that the selection state has been updated for the new objects, walk them again and
     // put them in the new objects list.
@@ -629,7 +628,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         o = getNextOrPrevRenderObjectBasedOnDirection(o, stop, continueExploring, exploringBackwards);
     }
 
-    if (!m_frameView || blockPaintInvalidationMode == PaintInvalidationNothing)
+    if (!m_frameView)
         return;
 
     // For querying RenderLayer::compositingState()
