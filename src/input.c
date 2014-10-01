@@ -1640,14 +1640,11 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	if (pointer->focus_serial - serial > UINT32_MAX / 2)
 		return;
 
-	if (surface && pointer->sprite && surface != pointer->sprite->surface) {
-		if (surface->configure) {
-			wl_resource_post_error(surface->resource,
-					       WL_DISPLAY_ERROR_INVALID_OBJECT,
-					       "surface->configure already "
-					       "set");
+	if (surface) {
+		if (weston_surface_set_role(surface, "wl_pointer-cursor",
+					    resource,
+					    WL_POINTER_ERROR_ROLE) < 0)
 			return;
-		}
 	}
 
 	if (pointer->sprite)

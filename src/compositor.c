@@ -2764,6 +2764,31 @@ weston_surface_get_main_surface(struct weston_surface *surface)
 	return surface;
 }
 
+WL_EXPORT int
+weston_surface_set_role(struct weston_surface *surface,
+			const char *role_name,
+			struct wl_resource *error_resource,
+			uint32_t error_code)
+{
+	assert(role_name);
+
+	if (surface->role_name == NULL ||
+	    surface->role_name == role_name ||
+	    strcmp(surface->role_name, role_name) == 0) {
+		surface->role_name = role_name;
+
+		return 0;
+	}
+
+	wl_resource_post_error(error_resource, error_code,
+			       "Cannot assign role %s to wl_surface@%d,"
+			       " already has role %s\n",
+			       role_name,
+			       wl_resource_get_id(surface->resource),
+			       surface->role_name);
+	return -1;
+}
+
 static void
 subsurface_set_position(struct wl_client *client,
 			struct wl_resource *resource, int32_t x, int32_t y)
@@ -3099,13 +3124,9 @@ subcompositor_get_subsurface(struct wl_client *client,
 		return;
 	}
 
-	if (surface->configure) {
-		wl_resource_post_error(resource,
-			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
-			"%s%d: wl_surface@%d already has a role",
-			where, id, wl_resource_get_id(surface_resource));
+	if (weston_surface_set_role(surface, "wl_subsurface", resource,
+				    WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE) < 0)
 		return;
-	}
 
 	if (weston_surface_get_main_surface(parent) == surface) {
 		wl_resource_post_error(resource,

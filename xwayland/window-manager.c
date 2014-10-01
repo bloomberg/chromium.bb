@@ -2303,6 +2303,13 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 	if (!shell_interface->get_primary_view)
 		return;
 
+	if (window->surface->configure) {
+		weston_log("warning, unexpected in %s: "
+			   "surface's configure hook is already set.\n",
+			   __func__);
+		return;
+	}
+
 	window->shsurf = 
 		shell_interface->create_shell_surface(shell_interface->shell,
 						      window->surface,

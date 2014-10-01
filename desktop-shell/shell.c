@@ -3463,10 +3463,7 @@ create_common_surface(struct shell_client *owner, void *shell,
 {
 	struct shell_surface *shsurf;
 
-	if (surface->configure) {
-		weston_log("surface->configure already set\n");
-		return NULL;
-	}
+	assert(surface->configure == NULL);
 
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
@@ -3579,18 +3576,13 @@ shell_get_shell_surface(struct wl_client *client,
 	struct desktop_shell *shell = sc->shell;
 	struct shell_surface *shsurf;
 
-	if (get_shell_surface(surface)) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "desktop_shell::get_shell_surface already requested");
+	if (weston_surface_set_role(surface, "wl_shell_surface",
+				    resource, WL_SHELL_ERROR_ROLE) < 0)
 		return;
-	}
 
 	shsurf = create_common_surface(sc, shell, surface, &shell_client);
 	if (!shsurf) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
+		wl_resource_post_no_memory(surface_resource);
 		return;
 	}
 
@@ -3899,18 +3891,13 @@ xdg_get_xdg_surface(struct wl_client *client,
 	struct desktop_shell *shell = sc->shell;
 	struct shell_surface *shsurf;
 
-	if (get_shell_surface(surface)) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "xdg_shell::get_xdg_surface already requested");
+	if (weston_surface_set_role(surface, "xdg_surface",
+				    resource, XDG_SHELL_ERROR_ROLE) < 0)
 		return;
-	}
 
 	shsurf = create_xdg_surface(sc, shell, surface, &xdg_client);
 	if (!shsurf) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
+		wl_resource_post_no_memory(surface_resource);
 		return;
 	}
 
@@ -3997,12 +3984,9 @@ xdg_get_xdg_popup(struct wl_client *client,
 	struct weston_surface *parent;
 	struct shell_seat *seat;
 
-	if (get_shell_surface(surface)) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "xdg_shell::get_xdg_popup already requested");
+	if (weston_surface_set_role(surface, "xdg_popup",
+				    resource, XDG_SHELL_ERROR_ROLE) < 0)
 		return;
-	}
 
 	if (!parent_resource) {
 		wl_resource_post_error(surface_resource,
@@ -4017,9 +4001,7 @@ xdg_get_xdg_popup(struct wl_client *client,
 	shsurf = create_xdg_popup(sc, shell, surface, &xdg_popup_client,
 				  parent, seat, serial, x, y);
 	if (!shsurf) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
+		wl_resource_post_no_memory(surface_resource);
 		return;
 	}
 

@@ -666,11 +666,12 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		source = wl_resource_get_user_data(source_resource);
 	if (icon_resource)
 		icon = wl_resource_get_user_data(icon_resource);
-	if (icon && icon->configure) {
-		wl_resource_post_error(icon_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
-		return;
+
+	if (icon) {
+		if (weston_surface_set_role(icon, "wl_data_device-icon",
+					    resource,
+					    WL_DATA_DEVICE_ERROR_ROLE) < 0)
+			return;
 	}
 
 	if (is_pointer_grab)

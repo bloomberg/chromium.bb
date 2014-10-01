@@ -908,6 +908,15 @@ struct weston_surface {
 	 */
 	struct wl_list subsurface_list; /* weston_subsurface::parent_link */
 	struct wl_list subsurface_list_pending; /* ...::parent_link_pending */
+
+	/*
+	 * For tracking protocol role assignments. Different roles may
+	 * have the same configure hook, e.g. in shell.c. Configure hook
+	 * may get reset, this will not.
+	 * XXX: map configure functions 1:1 to roles, and never reset it,
+	 * and replace role_name with configure.
+	 */
+	const char *role_name;
 };
 
 struct weston_subsurface {
@@ -1230,6 +1239,12 @@ weston_surface_unmap(struct weston_surface *surface);
 
 struct weston_surface *
 weston_surface_get_main_surface(struct weston_surface *surface);
+
+int
+weston_surface_set_role(struct weston_surface *surface,
+			const char *role_name,
+			struct wl_resource *error_resource,
+			uint32_t error_code);
 
 struct weston_buffer *
 weston_buffer_from_resource(struct wl_resource *resource);
