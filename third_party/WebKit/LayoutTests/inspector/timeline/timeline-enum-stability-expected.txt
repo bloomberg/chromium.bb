@@ -18,7 +18,6 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     GCEvent : "GCEvent"
     GPUTask : "GPUTask"
     InvalidateLayout : "InvalidateLayout"
-    JSFrame : "JSFrame"
     Layout : "Layout"
     MarkDOMContent : "MarkDOMContent"
     MarkFirstPaint : "MarkFirstPaint"
