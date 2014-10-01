@@ -113,7 +113,7 @@ TopSitesImpl::TopSitesImpl(Profile* profile)
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources());
   }
-  for (size_t i = 0; i < arraysize(kPrepopulatedPages); i++) {
+  for (int i = 0; i < kPrepopulatedPagesCount; i++) {
     int url_id = kPrepopulatedPages[i].url_id;
     prepopulated_page_urls_.push_back(
         GURL(l10n_util::GetStringUTF8(url_id)));
@@ -245,7 +245,7 @@ bool TopSitesImpl::GetPageThumbnail(
   }
 
   // Resource bundle is thread safe.
-  for (size_t i = 0; i < arraysize(kPrepopulatedPages); i++) {
+  for (int i = 0; i < kPrepopulatedPagesCount; i++) {
     if (url == prepopulated_page_urls_[i]) {
       *bytes = ResourceBundle::GetSharedInstance().
           LoadDataResourceBytesForScale(
@@ -590,8 +590,8 @@ int TopSitesImpl::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
 
 MostVisitedURLList TopSitesImpl::GetPrepopulatePages() {
   MostVisitedURLList urls;
-  urls.resize(arraysize(kPrepopulatedPages));
-  for (size_t i = 0; i < urls.size(); ++i) {
+  urls.resize(kPrepopulatedPagesCount);
+  for (int i = 0; i < kPrepopulatedPagesCount; ++i) {
     MostVisitedURL& url = urls[i];
     url.url = GURL(prepopulated_page_urls_[i]);
     url.redirects.push_back(url.url);
@@ -727,7 +727,7 @@ std::string TopSitesImpl::GetURLHash(const GURL& url) {
 }
 
 base::TimeDelta TopSitesImpl::GetUpdateDelay() {
-  if (cache_->top_sites().size() <= arraysize(kPrepopulatedPages))
+  if (cache_->top_sites().size() <= kPrepopulatedPagesCount)
     return base::TimeDelta::FromSeconds(30);
 
   int64 range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;

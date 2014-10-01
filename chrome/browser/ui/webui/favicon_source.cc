@@ -97,7 +97,7 @@ void FaviconSource::StartDataRequest(
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages.
-    for (size_t i = 0; i < arraysize(history::kPrepopulatedPages); i++) {
+    for (int i = 0; i < history::kPrepopulatedPagesCount; i++) {
       if (url.spec() ==
           l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
         ui::ScaleFactor resource_scale_factor =

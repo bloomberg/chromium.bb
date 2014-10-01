@@ -97,7 +97,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
 
   GURL url(path);
   // Intercept requests for prepopulated pages.
-  for (size_t i = 0; i < arraysize(history::kPrepopulatedPages); i++) {
+  for (size_t i = 0; i < history::kPrepopulatedPagesCount; i++) {
     if (url.spec() ==
         l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
       base::StringValue dom_id_value(dom_id);

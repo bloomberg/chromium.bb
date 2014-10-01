@@ -1195,8 +1195,74 @@ TEST_F(TopSitesImplTest, AddTemporaryThumbnail) {
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, out.get()));
 }
 
-// Tests variations of blacklisting.
-TEST_F(TopSitesImplTest, Blacklisting) {
+// Tests variations of blacklisting without testing prepopulated page
+// blacklisting.
+TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
+  MostVisitedURLList pages;
+  MostVisitedURL url, url1;
+  url.url = GURL("http://bbc.com/");
+  url.redirects.push_back(url.url);
+  pages.push_back(url);
+  url1.url = GURL("http://google.com/");
+  url1.redirects.push_back(url1.url);
+  pages.push_back(url1);
+
+  SetTopSites(pages);
+  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://bbc.com/")));
+
+  // Blacklist google.com.
+  top_sites()->AddBlacklistedURL(GURL("http://google.com/"));
+
+  EXPECT_TRUE(top_sites()->HasBlacklistedItems());
+  EXPECT_TRUE(top_sites()->IsBlacklisted(GURL("http://google.com/")));
+  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://bbc.com/")));
+
+  // Make sure the blacklisted site isn't returned in the results.
+  {
+    TopSitesQuerier q;
+    q.QueryTopSites(top_sites(), true);
+    EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
+  }
+
+  // Recreate top sites and make sure blacklisted url was correctly read.
+  RecreateTopSitesAndBlock();
+  {
+    TopSitesQuerier q;
+    q.QueryTopSites(top_sites(), true);
+    EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
+  }
+
+  // Mark google as no longer blacklisted.
+  top_sites()->RemoveBlacklistedURL(GURL("http://google.com/"));
+  EXPECT_FALSE(top_sites()->HasBlacklistedItems());
+  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://google.com/")));
+
+  // Make sure google is returned now.
+  {
+    TopSitesQuerier q;
+    q.QueryTopSites(top_sites(), true);
+    EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
+    EXPECT_EQ("http://google.com/", q.urls()[1].url.spec());
+  }
+
+  // Remove all blacklisted sites.
+  top_sites()->ClearBlacklistedURLs();
+  EXPECT_FALSE(top_sites()->HasBlacklistedItems());
+
+  {
+    TopSitesQuerier q;
+    q.QueryTopSites(top_sites(), true);
+    EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
+    EXPECT_EQ("http://google.com/", q.urls()[1].url.spec());
+    ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(q, 2));
+  }
+}
+
+#if !defined(OS_ANDROID)
+// Tests variations of blacklisting including blacklisting prepopulated pages.
+// This test is disable for Android because Android does not have any
+// prepopulated pages.
+TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
@@ -1285,6 +1351,7 @@ TEST_F(TopSitesImplTest, Blacklisting) {
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(q, 2));
   }
 }
+#endif
 
 // Makes sure prepopulated pages exist.
 TEST_F(TopSitesImplTest, AddPrepopulatedPages) {
