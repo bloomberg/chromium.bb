@@ -125,7 +125,10 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, Grap
     }
 
     // Draw the track and its thumb.
-    gfx::SkiaBitLocker bitLocker(drawingContext->canvas(), ThemeMac::inflateRectForAA(scrollbar->frameRect()));
+    gfx::SkiaBitLocker bitLocker(
+        drawingContext->canvas(),
+        ThemeMac::inflateRectForAA(scrollbar->frameRect()),
+        drawingContext->deviceScaleFactor());
     CGContextRef cgContext = bitLocker.cgContext();
     HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 

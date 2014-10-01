@@ -47,7 +47,7 @@ private:
 class PLATFORM_EXPORT ContextContainer {
     WTF_MAKE_NONCOPYABLE(ContextContainer);
 public:
-    ContextContainer(GraphicsContext*);
+    ContextContainer(GraphicsContext*, IntRect clipRect);
 
     // This synchronizes the CGContext to reflect the current SkCanvas state.
     // The implementation may not return the same CGContext each time.
