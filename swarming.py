@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.5'
+__version__ = '0.5.1'
 
 import getpass
 import hashlib
@@ -211,6 +211,8 @@ class TaskOutputCollector(object):
   def process_shard_result(self, shard_index, result):
     """Stores results of a single task shard, fetches output files if necessary.
 
+    Modifies |result| in place.
+
     Called concurrently from multiple threads.
     """
     # Sanity check index is in expected range.
@@ -221,8 +223,7 @@ class TaskOutputCollector(object):
           shard_index, self.shard_count - 1)
       return
 
-    result = result.copy()
-
+    assert not 'isolated_out' in result
     result['isolated_out'] = None
     for output in result['outputs']:
       isolated_files_location = extract_output_files_location(output)
@@ -239,21 +240,20 @@ class TaskOutputCollector(object):
       self._per_shard_results[shard_index] = result
 
     # Fetch output files if necessary.
-    if self.task_output_dir:
-      if isolated_files_location:
-        storage = self._get_storage(
-            isolated_files_location['server'],
-            isolated_files_location['namespace'])
-        if storage:
-          # Output files are supposed to be small and they are not reused across
-          # tasks. So use MemoryCache for them instead of on-disk cache. Make
-          # files writable, so that calling script can delete them.
-          isolateserver.fetch_isolated(
-              isolated_files_location['hash'],
-              storage,
-              isolateserver.MemoryCache(file_mode_mask=0700),
-              os.path.join(self.task_output_dir, str(shard_index)),
-              False)
+    if self.task_output_dir and result['isolated_out']:
+      storage = self._get_storage(
+          result['isolated_out']['server'],
+          result['isolated_out']['namespace'])
+      if storage:
+        # Output files are supposed to be small and they are not reused across
+        # tasks. So use MemoryCache for them instead of on-disk cache. Make
+        # files writable, so that calling script can delete them.
+        isolateserver.fetch_isolated(
+            result['isolated_out']['hash'],
+            storage,
+            isolateserver.MemoryCache(file_mode_mask=0700),
+            os.path.join(self.task_output_dir, str(shard_index)),
+            False)
 
   def finalize(self):
     """Assembles and returns task summary JSON, shutdowns underlying Storage."""
