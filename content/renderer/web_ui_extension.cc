@@ -12,6 +12,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "content/renderer/chrome_object_extensions_utils.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "gin/arguments.h"
 #include "gin/function_template.h"
@@ -69,13 +70,8 @@ void WebUIExtension::Install(blink::WebFrame* frame) {
 
   v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Object> global = context->Global();
-  v8::Handle<v8::Object> chrome =
-      global->Get(gin::StringToV8(isolate, "chrome"))->ToObject();
-  if (chrome.IsEmpty()) {
-    chrome = v8::Object::New(isolate);
-    global->Set(gin::StringToSymbol(isolate, "chrome"), chrome);
-  }
+  v8::Handle<v8::Object> chrome = GetOrCreateChromeObject(isolate,
+                                                          context->Global());
   chrome->Set(gin::StringToSymbol(isolate, "send"),
               gin::CreateFunctionTemplate(
                   isolate, base::Bind(&WebUIExtension::Send))->GetFunction());

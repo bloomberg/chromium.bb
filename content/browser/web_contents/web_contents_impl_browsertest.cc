@@ -363,6 +363,19 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
                 controller->GetPendingEntry())->frame_tree_node_id());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       AppendingFrameInWebUIDoesNotCrash) {
+  const GURL kWebUIUrl("chrome://tracing");
+  const char kJSCodeForAppendingFrame[] =
+      "document.body.appendChild(document.createElement('iframe'));";
+
+  NavigateToURL(shell(), kWebUIUrl);
+
+  bool js_executed = content::ExecuteScript(shell()->web_contents(),
+                                            kJSCodeForAppendingFrame);
+  EXPECT_TRUE(js_executed);
+}
+
 // Observer class to track the creation of RenderFrameHost objects. It is used
 // in subsequent tests.
 class RenderFrameCreatedObserver : public WebContentsObserver {

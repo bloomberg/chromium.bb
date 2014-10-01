@@ -113,6 +113,8 @@
       'renderer/clipboard_utils.h',
       'renderer/child_frame_compositing_helper.cc',
       'renderer/child_frame_compositing_helper.h',
+      'renderer/chrome_object_extensions_utils.cc',
+      'renderer/chrome_object_extensions_utils.h',
       'renderer/context_menu_params_builder.cc',
       'renderer/context_menu_params_builder.h',
       'renderer/cursor_utils.cc',

@@ -5,6 +5,7 @@
 #include "content/renderer/memory_benchmarking_extension.h"
 
 #include "content/common/memory_benchmark_messages.h"
+#include "content/renderer/chrome_object_extensions_utils.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
@@ -35,13 +36,8 @@ void MemoryBenchmarkingExtension::Install(blink::WebFrame* frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> global = context->Global();
-  v8::Handle<v8::Object> chrome =
-      global->Get(gin::StringToV8(isolate, "chrome"))->ToObject();
-  if (chrome.IsEmpty()) {
-    chrome = v8::Object::New(isolate);
-    global->Set(gin::StringToV8(isolate, "chrome"), chrome);
-  }
+  v8::Handle<v8::Object> chrome = GetOrCreateChromeObject(isolate,
+                                                          context->Global());
   chrome->Set(gin::StringToV8(isolate, "memoryBenchmarking"),
               controller.ToV8());
 }
