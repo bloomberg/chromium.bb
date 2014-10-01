@@ -25,7 +25,6 @@
                     assert_equals(event.target, video);
                     assert_true(event instanceof window.MediaKeyNeededEvent);
                     assert_equals(event.type, 'needkey');
-                    assert_equals(event.contentType, 'video/webm');
                     assert_array_equals(event.initData, expectedInitData);
 
                     if (--expectedEvents == 0)
