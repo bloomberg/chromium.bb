@@ -528,6 +528,117 @@ TEST_F(ViewManagerTest, DISABLED_Reorder) {
   }
 }
 
+namespace {
+
+class VisibilityChangeObserver : public ViewObserver {
+ public:
+  explicit VisibilityChangeObserver(View* view) : view_(view) {
+    view_->AddObserver(this);
+  }
+  virtual ~VisibilityChangeObserver() { view_->RemoveObserver(this); }
+
+ private:
+  // Overridden from ViewObserver:
+  virtual void OnViewVisibilityChanged(View* view) OVERRIDE {
+    EXPECT_EQ(view, view_);
+    QuitRunLoop();
+  }
+
+  View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
+};
+
+}  // namespace
+
+TEST_F(ViewManagerTest, DISABLED_Visible) {
+  View* view1 = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view1);
+
+  // Embed another app and verify initial state.
+  ViewManager* embedded = Embed(window_manager(), view1);
+  ASSERT_EQ(1u, embedded->GetRoots().size());
+  View* embedded_root = embedded->GetRoots().front();
+  EXPECT_TRUE(embedded_root->visible());
+  EXPECT_TRUE(embedded_root->IsDrawn());
+
+  // Change the visible state from the first connection and verify its mirrored
+  // correctly to the embedded app.
+  {
+    VisibilityChangeObserver observer(embedded_root);
+    view1->SetVisible(false);
+    DoRunLoop();
+  }
+
+  EXPECT_FALSE(view1->visible());
+  EXPECT_FALSE(view1->IsDrawn());
+
+  EXPECT_FALSE(embedded_root->visible());
+  EXPECT_FALSE(embedded_root->IsDrawn());
+
+  // Make the node visible again.
+  {
+    VisibilityChangeObserver observer(embedded_root);
+    view1->SetVisible(true);
+    DoRunLoop();
+  }
+
+  EXPECT_TRUE(view1->visible());
+  EXPECT_TRUE(view1->IsDrawn());
+
+  EXPECT_TRUE(embedded_root->visible());
+  EXPECT_TRUE(embedded_root->IsDrawn());
+}
+
+namespace {
+
+class DrawnChangeObserver : public ViewObserver {
+ public:
+  explicit DrawnChangeObserver(View* view) : view_(view) {
+    view_->AddObserver(this);
+  }
+  virtual ~DrawnChangeObserver() { view_->RemoveObserver(this); }
+
+ private:
+  // Overridden from ViewObserver:
+  virtual void OnViewDrawnChanged(View* view) OVERRIDE {
+    EXPECT_EQ(view, view_);
+    QuitRunLoop();
+  }
+
+  View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrawnChangeObserver);
+};
+
+}  // namespace
+
+TEST_F(ViewManagerTest, DISABLED_Drawn) {
+  View* view1 = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view1);
+
+  // Embed another app and verify initial state.
+  ViewManager* embedded = Embed(window_manager(), view1);
+  ASSERT_EQ(1u, embedded->GetRoots().size());
+  View* embedded_root = embedded->GetRoots().front();
+  EXPECT_TRUE(embedded_root->visible());
+  EXPECT_TRUE(embedded_root->IsDrawn());
+
+  // Change the visibility of the root, this should propagate a drawn state
+  // change to |embedded|.
+  {
+    DrawnChangeObserver observer(embedded_root);
+    window_manager()->GetRoots().front()->SetVisible(false);
+    DoRunLoop();
+  }
+
+  EXPECT_TRUE(view1->visible());
+  EXPECT_FALSE(view1->IsDrawn());
+
+  EXPECT_TRUE(embedded_root->visible());
+  EXPECT_FALSE(embedded_root->IsDrawn());
+}
+
 // TODO(beng): tests for view event dispatcher.
 // - verify that we see events for all views.
 

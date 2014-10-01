@@ -221,8 +221,20 @@ void View::SetBounds(const gfx::Rect& bounds) {
 }
 
 void View::SetVisible(bool value) {
+  if (visible_ == value)
+    return;
+
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->SetVisible(id_, value);
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanging(this));
+  visible_ = value;
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanged(this));
+}
+
+bool View::IsDrawn() const {
+  if (!visible_)
+    return false;
+  return parent_ ? parent_->IsDrawn() : drawn_;
 }
 
 void View::AddObserver(ViewObserver* observer) {
@@ -354,7 +366,10 @@ scoped_ptr<ServiceProvider>
 View::View()
     : manager_(NULL),
       id_(static_cast<Id>(-1)),
-      parent_(NULL) {}
+      parent_(NULL),
+      visible_(true),
+      drawn_(false) {
+}
 
 View::~View() {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroying(this));
@@ -373,7 +388,10 @@ View::~View() {
 View::View(ViewManager* manager)
     : manager_(manager),
       id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateView()),
-      parent_(NULL) {}
+      parent_(NULL),
+      visible_(true),
+      drawn_(false) {
+}
 
 void View::LocalDestroy() {
   delete this;
@@ -402,6 +420,21 @@ void View::LocalSetBounds(const gfx::Rect& old_bounds,
   DCHECK(old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
   bounds_ = new_bounds;
+}
+
+void View::LocalSetDrawn(bool value) {
+  if (drawn_ == value)
+    return;
+
+  // As IsDrawn() is derived from |visible_| and |drawn_|, only send drawn
+  // notification is the value of IsDrawn() is really changing.
+  if (IsDrawn() == value) {
+    drawn_ = value;
+    return;
+  }
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanging(this));
+  drawn_ = value;
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanged(this));
 }
 
 void View::CreateBitmapUploader() {

@@ -31,16 +31,17 @@ Id MakeTransportId(ConnectionSpecificId connection_id,
 // Helper called to construct a local view object from transport data.
 View* AddViewToViewManager(ViewManagerClientImpl* client,
                            View* parent,
-                           Id view_id,
-                           const gfx::Rect& bounds) {
+                           const ViewDataPtr& view_data) {
   // We don't use the ctor that takes a ViewManager here, since it will call
   // back to the service and attempt to create a new view.
   View* view = ViewPrivate::LocalCreate();
   ViewPrivate private_view(view);
   private_view.set_view_manager(client);
-  private_view.set_id(view_id);
+  private_view.set_id(view_data->view_id);
+  private_view.set_visible(view_data->visible);
+  private_view.set_drawn(view_data->drawn);
   client->AddView(view);
-  private_view.LocalSetBounds(gfx::Rect(), bounds);
+  private_view.LocalSetBounds(gfx::Rect(), view_data->bounds.To<gfx::Rect>());
   if (parent)
     ViewPrivate(parent).LocalAddChild(view);
   return view;
@@ -62,10 +63,7 @@ View* BuildViewTree(ViewManagerClientImpl* client,
         parents.pop_back();
     }
     View* view = AddViewToViewManager(
-        client,
-        !parents.empty() ? parents.back() : NULL,
-        views[i]->view_id,
-        views[i]->bounds.To<gfx::Rect>());
+        client, !parents.empty() ? parents.back() : NULL, views[i]);
     if (!last_view)
       root = view;
     last_view = view;
@@ -276,8 +274,7 @@ void ViewManagerClientImpl::OnEmbed(
 
   // A new root must not already exist as a root or be contained by an existing
   // hierarchy visible to this view manager.
-  View* root = AddViewToViewManager(this, NULL, root_data->view_id,
-                                    root_data->bounds.To<gfx::Rect>());
+  View* root = AddViewToViewManager(this, NULL, root_data);
   roots_.push_back(root);
   root->AddObserver(new RootObserver(root));
 
@@ -332,13 +329,18 @@ void ViewManagerClientImpl::OnViewDeleted(Id view_id) {
 }
 
 void ViewManagerClientImpl::OnViewVisibilityChanged(Id view_id, bool visible) {
-  // TODO(sky): implement me.
-  NOTIMPLEMENTED();
+  // TODO(sky): there is a race condition here. If this client and another
+  // client change the visibility at the same time the wrong value may be set.
+  // Deal with this some how.
+  View* view = GetViewById(view_id);
+  if (view)
+    view->SetVisible(visible);
 }
 
 void ViewManagerClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
-  // TODO(sky): implement me.
-  NOTIMPLEMENTED();
+  View* view = GetViewById(view_id);
+  if (view)
+    ViewPrivate(view).LocalSetDrawn(drawn);
 }
 
 void ViewManagerClientImpl::OnViewInputEvent(

@@ -11,16 +11,23 @@
 
 namespace mojo {
 
+// This class is a friend of a View and contains functions to mutate internal
+// state of View.
 class ViewPrivate {
  public:
   explicit ViewPrivate(View* view);
   ~ViewPrivate();
 
+  // Creates and returns a new View. Caller owns the return value.
   static View* LocalCreate();
 
   ObserverList<ViewObserver>* observers() { return &view_->observers_; }
 
   void ClearParent() { view_->parent_ = NULL; }
+
+  void set_visible(bool visible) { view_->visible_ = visible; }
+
+  void set_drawn(bool drawn) { view_->drawn_ = drawn; }
 
   void set_id(Id id) { view_->id_ = id; }
 
@@ -45,6 +52,7 @@ class ViewPrivate {
                       const gfx::Rect& new_bounds) {
     view_->LocalSetBounds(old_bounds, new_bounds);
   }
+  void LocalSetDrawn(bool drawn) { view_->LocalSetDrawn(drawn); }
 
  private:
   View* view_;

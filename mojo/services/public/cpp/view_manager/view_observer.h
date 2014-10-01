@@ -64,6 +64,14 @@ class ViewObserver {
 
   virtual void OnViewInputEvent(View* view, const EventPtr& event) {}
 
+  virtual void OnViewVisibilityChanging(View* view) {}
+  virtual void OnViewVisibilityChanged(View* view) {}
+
+  // Sent when the drawn state changes. This is only sent for the root nodes
+  // when embedded.
+  virtual void OnViewDrawnChanging(View* view) {}
+  virtual void OnViewDrawnChanged(View* view) {}
+
  protected:
   virtual ~ViewObserver() {}
 };

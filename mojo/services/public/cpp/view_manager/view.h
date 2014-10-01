@@ -46,12 +46,16 @@ class View {
   Id id() const { return id_; }
 
   // Geometric disposition.
-  const gfx::Rect& bounds() { return bounds_; }
+  const gfx::Rect& bounds() const { return bounds_; }
   void SetBounds(const gfx::Rect& bounds);
 
-  // Visibility.
+  // Visibility (also see IsDrawn()).
+  bool visible() const { return visible_; }
   void SetVisible(bool value);
-  // TODO(sky): add accessor.
+
+  // A View is drawn if the View and all its ancestors are visible and the
+  // View is attached to the root.
+  bool IsDrawn() const;
 
   // Observation.
   void AddObserver(ViewObserver* observer);
@@ -105,6 +109,7 @@ class View {
   // Returns true if the order actually changed.
   bool LocalReorder(View* relative, OrderDirection direction);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
+  void LocalSetDrawn(bool drawn);
   void CreateBitmapUploader();
 
   ViewManager* manager_;
@@ -115,6 +120,13 @@ class View {
   ObserverList<ViewObserver> observers_;
 
   gfx::Rect bounds_;
+
+  bool visible_;
+
+  // Drawn state is derived from the visible state and the parent's visible
+  // state. This field is only used if the view has no parent (eg it's a root).
+  bool drawn_;
+
   // TODO(jamesr): Temporary, remove when all clients are using surfaces
   // directly.
   scoped_ptr<BitmapUploader> bitmap_uploader_;
