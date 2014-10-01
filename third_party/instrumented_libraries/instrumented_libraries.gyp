@@ -36,7 +36,8 @@
       '-gline-tables-only',
       '-fPIC',
       '-w',
-      '-U_FORITFY_SOURCE'
+      '-U_FORITFY_SOURCE',
+      '-fno-omit-frame-pointer'
     ],
     'package_ldflags': [
       '-Wl,-z,origin',
@@ -158,7 +159,7 @@
             '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/rpaths.fixed.txt',
           ],
           'action': [
-            '<(DEPTH)/third_party/instrumented_libraries/fix_rpaths.sh',
+            './fix_rpaths.sh',
             '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)'
           ],
         },

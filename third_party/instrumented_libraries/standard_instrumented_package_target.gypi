@@ -19,7 +19,7 @@
       'outputs': [
         '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/<(_package_name).txt',
       ],
-      'action': ['<(DEPTH)/third_party/instrumented_libraries/download_build_install.py',
+      'action': ['./download_build_install.py',
         '--product-directory=<(PRODUCT_DIR)',
         '--package=<(_package_name)',
         '--intermediate-directory=<(INTERMEDIATE_DIR)',
