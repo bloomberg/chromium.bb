@@ -12,18 +12,30 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
+
+namespace {
+class DeckLinkCaptureDelegate;
+}  // namespace
+
 namespace media {
 
-// Extension of VideoCaptureDevice to create and manipulate Blackmagic devices
-// via DeckLink SDK.
+// Extension of VideoCaptureDevice to create and manipulate Blackmagic devices.
+// Creates a reference counted |decklink_capture_delegate_| that does all the
+// DeckLink SDK configuration and capture work while holding a weak reference to
+// us for sending back frames, logs and error messages.
 class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
  public:
   // Gets the names of all DeckLink video capture devices connected to this
-  // computer, as enumerated by the DeckLink SDK.
+  // computer, as enumerated by the DeckLink SDK. To allow the user to choose
+  // exactly which capture format she wants, we enumerate as many cameras as
+  // capture formats.
   static void EnumerateDevices(VideoCaptureDevice::Names* device_names);
 
   // Gets the supported formats of a particular device attached to the system,
   // identified by |device|. Formats are retrieved from the DeckLink SDK.
+  // Following the enumeration, each camera will have only one capability.
   static void EnumerateDeviceCapabilities(
       const VideoCaptureDevice::Name& device,
       VideoCaptureFormats* supported_formats);
@@ -31,13 +43,38 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
   explicit VideoCaptureDeviceDeckLinkMac(const Name& device_name);
   virtual ~VideoCaptureDeviceDeckLinkMac();
 
+  // Copy of VideoCaptureDevice::Client::OnIncomingCapturedData(). Used by
+  // |decklink_capture_delegate_| to forward captured frames.
+  void OnIncomingCapturedData(const uint8* data,
+                              size_t length,
+                              const VideoCaptureFormat& frame_format,
+                              int rotation,  // Clockwise.
+                              base::TimeTicks timestamp);
+
+  // Forwarder to VideoCaptureDevice::Client::OnError().
+  void SendErrorString(const std::string& reason);
+
+  // Forwarder to VideoCaptureDevice::Client::OnLog().
+  void SendLogString(const std::string& message);
+
+ private:
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(
       const VideoCaptureParams& params,
       scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
- private:
+  // Protects concurrent setting and using of |client_|.
+  base::Lock lock_;
+  scoped_ptr<VideoCaptureDevice::Client> client_;
+
+  // Reference counted handle to the DeckLink capture delegate, ref counted by
+  // the DeckLink SDK as well.
+  scoped_refptr<DeckLinkCaptureDelegate> decklink_capture_delegate_;
+
+  // Checks for Device (a.k.a. Audio) thread.
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceDeckLinkMac);
 };
 

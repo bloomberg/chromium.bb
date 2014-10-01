@@ -98,11 +98,16 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
       return scoped_ptr<VideoCaptureDevice>();
   }
 
-  scoped_ptr<VideoCaptureDeviceMac> capture_device(
-      new VideoCaptureDeviceMac(device_name));
-  if (!capture_device->Init(device_name.capture_api_type())) {
-    LOG(ERROR) << "Could not initialize VideoCaptureDevice.";
-    capture_device.reset();
+  scoped_ptr<VideoCaptureDevice> capture_device;
+  if (device_name.capture_api_type() == VideoCaptureDevice::Name::DECKLINK) {
+    capture_device.reset(new VideoCaptureDeviceDeckLinkMac(device_name));
+  } else {
+    VideoCaptureDeviceMac* device = new VideoCaptureDeviceMac(device_name);
+    capture_device.reset(device);
+    if (!device->Init(device_name.capture_api_type())) {
+      LOG(ERROR) << "Could not initialize VideoCaptureDevice.";
+      capture_device.reset();
+    }
   }
   return scoped_ptr<VideoCaptureDevice>(capture_device.Pass());
 }
@@ -177,9 +182,7 @@ void VideoCaptureDeviceFactoryMac::EnumerateDeviceNames(const base::Callback<
     callback.Run(device_names.Pass());
   } else {
     DVLOG(1) << "Enumerating video capture devices using QTKit";
-    base::PostTaskAndReplyWithResult(
-        ui_task_runner_.get(),
-        FROM_HERE,
+    base::PostTaskAndReplyWithResult(ui_task_runner_.get(), FROM_HERE,
         base::Bind(&EnumerateDevicesUsingQTKit),
         base::Bind(&RunDevicesEnumeratedCallback, callback));
   }
