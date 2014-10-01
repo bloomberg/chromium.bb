@@ -179,6 +179,7 @@
         'build_newlib': 1,
         'build_irt': 1,
         'build_pnacl_newlib': 1,
+        'build_nonsfi_helper': 1,
       },
       'sources': [
         '<@(sources_for_nacl_extensions)',

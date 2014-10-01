@@ -76,6 +76,7 @@
           'build_newlib': 0,
           'build_glibc': 0,
           'build_irt': 0,
+          'build_nonsfi_helper': 0,
           'disable_glibc%': 0,
           'disable_bionic%': 1,
           'extra_args': [],
@@ -92,6 +93,7 @@
           'tc_lib_dir_glibc64': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
           'tc_lib_dir_irt32': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/lib32',
           'tc_lib_dir_irt64': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/lib64',
+          'tc_lib_dir_nonsfi_helper32': '<(SHARED_INTERMEDIATE_DIR)/tc_nonsfi_helper/lib32',
           'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
           'tc_include_dir_glibc': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include',
           'extra_deps': [],
@@ -99,6 +101,7 @@
           'extra_deps_newlib32': [],
           'extra_deps_glibc64': [],
           'extra_deps_glibc32': [],
+          'extra_deps_newlib32_nonsfi': [],
           'include_dirs': ['<(DEPTH)'],
           'defines': [
             '<@(nacl_default_defines)',
@@ -129,6 +132,7 @@
           'build_newlib': 0,
           'build_glibc': 0,
           'build_irt': 0,
+          'build_nonsfi_helper': 0,
           'disable_glibc%': 1,
           'disable_bionic%': 1,
           'extra_args': [],
@@ -173,6 +177,7 @@
           'build_newlib': 0,
           'build_glibc': 0,
           'build_irt': 0,
+          'build_nonsfi_helper': 0,
           'disable_glibc%': 1,
           'disable_bionic%': 1,
           'extra_args': [],
@@ -540,6 +545,105 @@
         ],
       },
     }], # end x86 gcc nexe/nlib actions
+    ['target_arch=="ia32" and OS=="linux"', {
+      'target_defaults': {
+        'target_conditions': [
+          # x86-32 non-SFI helper nexe build.
+          ['nexe_target!="" and build_nonsfi_helper!=0', {
+            'variables': {
+              'tool_name': 'nonsfi_helper',
+              'out_newlib32_nonsfi%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32_nonsfi.nexe',
+              'objdir_newlib32_nonsfi%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+            },
+            'actions': [
+              {
+                'action_name': 'build non-SFI helper x86-32 nexe',
+                'variables': {
+                  'source_list_newlib32_nonsfi%': '^|(<(tool_name)-x86-32-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'stdlibs': ['-lc++', '-lm', '-lnacl', '-lc', '-lpnaclmm'],
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib32_nonsfi)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) > (_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_newlib32_nonsfi)',
+                  '^(source_list_newlib32_nonsfi)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib32_nonsfi)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'x86-32-nonsfi',
+                  '--build', 'newlib_nexe_pnacl',
+                  '--name', '>(out_newlib32_nonsfi)',
+                  '--objdir', '>(objdir_newlib32_nonsfi)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--target=i686-unknown-nacl --pnacl-bias=x86-32-nonsfi ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  # Both -Wl,--noirt and -Wt,--noirt are needed here. The
+                  # former is to prevent linking to irt. The latter controls
+                  # the entry point for Non-SFI NaCl in pnacl-translate.
+                  # "-nodefaultlibs -Wl,--starg-group, ... -Wl,--end-group"
+                  # is the flags to exclude -lpthread, otherwise it causes
+                  # library not found error. Note that pthread related code
+                  # is contained in libnacl_sys_private.a, which is
+                  # automatically linked.
+                  '--link_flags=--target=i686-unknown-nacl -arch x86-32-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -B>(tc_lib_dir_nonsfi_helper32) ^(link_flags) >(_link_flags) -nodefaultlibs -Wl,--start-group >@(stdlibs) -Wl,--end-group',
+                  '--source-list=^(source_list_newlib32_nonsfi)',
+                ],
+              },
+            ],
+          }],
+
+          # x86-32 non-SFI helper library build or PNaCl PPAPI shim for nonsfi
+          # build.
+          ['nlib_target!="" and (build_nonsfi_helper!=0 or (pnacl_native_biased!=0 and enable_x86_32_nonsfi==1))', {
+            'variables': {
+              'tool_name': 'nonsfi_helper',
+              'out_newlib32_nonsfi%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
+              'objdir_newlib32_nonsfi%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32-nonsfi/>(_target_name)',
+            },
+            'actions': [
+              {
+                'action_name': 'build nonsfi_helper x86-32 nlib',
+                'variables': {
+                  'source_list_newlib32_nonsfi%': '^|(<(tool_name)-x86-32-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib32_nonsfi)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) > (_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_newlib32_nonsfi)',
+                  '^(source_list_newlib32_nonsfi)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib32_nonsfi)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'x86-32-nonsfi',
+                  '--build', 'newlib_nlib_pnacl',
+                  '--name', '>(out_newlib32_nonsfi)',
+                  '--objdir', '>(objdir_newlib32_nonsfi)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--target=i686-unknown-nacl --pnacl-bias=x86-32-nonsfi --pnacl-allow-translate --pnacl-allow-native -arch x86-32-nonsfi ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_nonsfi_helper32) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_newlib32_nonsfi)',
+                ],
+              },
+            ],
+          }],
+        ],
+      },
+    }],  # end x86-32 Non-SFI helper nexe / library actions.
     ['target_arch=="arm"', {
       'target_defaults': {
         'target_conditions': [
@@ -1576,52 +1680,6 @@
                },
              ],
            }], # end ia32
-          # Non-SFI mode for ia32.
-          ['enable_x86_32_nonsfi!=0 and disable_pnacl==0 and '
-           'pnacl_native_biased==1 and nlib_target!="" and '
-           'build_pnacl_newlib!=0', {
-             'variables': {
-               'tool_name': 'pnacl_newlib_x86_32',
-               # TODO(hidehiko): replace with (tc_lib_dir_pnacl_translate)/
-               # lib-x86-32-nonsfi/>(nlib_target) to be more consistent with
-               # similar configs.
-               'out_pnacl_newlib_x86_32_nonsfi%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-32-nonsfi/>(nlib_target)',
-               'objdir_pnacl_newlib_x86_32_nonsfi%': '>(INTERMEDIATE_DIR)/<(tool_name)-nonsfi/>(_target_name)',
-             },
-             'actions': [
-               {
-                 'action_name': 'build newlib x86-32-nonsfi nlib (via pnacl)',
-                 'variables': {
-                   'source_list_pnacl_newlib_x86_32_nonsfi%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                 },
-                 'msvs_cygwin_shell': 0,
-                 'description': 'building >(out_pnacl_newlib_x86_32_nonsfi)',
-                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
-                   '>@(extra_deps)',
-                   '>@(extra_deps_pnacl_newlib)',
-                   '^(source_list_pnacl_newlib_x86_32_nonsfi)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
-                 ],
-                 'outputs': ['>(out_pnacl_newlib_x86_32_nonsfi)'],
-                 'action': [
-                   '<@(common_args)',
-                   '>@(extra_args)',
-                   '--arch', 'x86-32-nonsfi',
-                   '--build', 'newlib_nlib_pnacl',
-                   '--name', '>(out_pnacl_newlib_x86_32_nonsfi)',
-                   '--objdir', '>(objdir_pnacl_newlib_x86_32_nonsfi)',
-                   '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=--target=i686-unknown-nacl --pnacl-allow-native --pnacl-allow-translate -arch x86-32-nonsfi ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                   '--gomadir', '<(gomadir)',
-                   '--defines=^(defines) >(_defines)',
-                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-                   '--source-list=^(source_list_pnacl_newlib_x86_32_nonsfi)',
-                 ],
-               },
-             ],
-           }], # end ia32 Non-SFI mode.
         ], # end ia32 or x64
       }],
       # MIPS

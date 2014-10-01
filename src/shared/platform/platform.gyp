@@ -167,6 +167,7 @@
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
         'build_irt': 1,
+        'build_nonsfi_helper': 1,
         'sources': [
           'nacl_check.c',
           'nacl_log.c',

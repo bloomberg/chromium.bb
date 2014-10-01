@@ -7,6 +7,7 @@
       'target_name': 'pull_in_all',
       'type': 'none',
       'dependencies': [
+        '../src/nonsfi/loader/loader.gyp:*',
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
         '../src/shared/platform/platform.gyp:*',
