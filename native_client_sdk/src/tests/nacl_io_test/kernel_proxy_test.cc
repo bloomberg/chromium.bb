@@ -426,6 +426,13 @@ TEST_F(KernelProxyTest, MemMountFTruncate) {
   EXPECT_EQ(2, ki_read(fd2, text, sizeof(text)));
   EXPECT_EQ(0, ki_close(fd1));
   EXPECT_EQ(0, ki_close(fd2));
+
+  // Truncate should fail if the file is not writable.
+  EXPECT_EQ(0, ki_chmod("/trunc", 0444));
+  fd2 = ki_open("/trunc", O_RDONLY, 0);
+  ASSERT_NE(-1, fd2);
+  EXPECT_EQ(-1, ki_ftruncate(fd2,  0));
+  EXPECT_EQ(EACCES, errno);
 }
 
 TEST_F(KernelProxyTest, MemMountTruncate) {
@@ -445,6 +452,11 @@ TEST_F(KernelProxyTest, MemMountTruncate) {
   ASSERT_NE(-1, fd1);
   EXPECT_EQ(2, ki_read(fd1, text, sizeof(text)));
   EXPECT_EQ(0, ki_close(fd1));
+
+  // Truncate should fail if the file is not writable.
+  EXPECT_EQ(0, ki_chmod("/trunc", 0444));
+  EXPECT_EQ(-1, ki_truncate("/trunc",  0));
+  EXPECT_EQ(EACCES, errno);
 }
 
 TEST_F(KernelProxyTest, MemMountLseek) {
@@ -528,6 +540,10 @@ TEST_F(KernelProxyTest, Lstat) {
 
   EXPECT_EQ(-1, ki_lstat("/no-such-file", &buf));
   EXPECT_EQ(ENOENT, errno);
+
+  // Still legal to stat a file that is write-only.
+  EXPECT_EQ(0, ki_chmod("/foo", 0222));
+  EXPECT_EQ(0, ki_lstat("/foo", &buf));
 }
 
 TEST_F(KernelProxyTest, OpenWithMode) {
@@ -546,6 +562,25 @@ TEST_F(KernelProxyTest, UseAfterClose) {
   EXPECT_EQ(0, ki_close(fd));
   EXPECT_EQ(-1, ki_write(fd, "hello", 5));
   EXPECT_EQ(EBADF, errno);
+}
+
+TEST_F(KernelProxyTest, Utimes) {
+  struct timeval times[2];
+  times[0].tv_sec = 1000;
+  times[0].tv_usec = 2000;
+  times[1].tv_sec = 3000;
+  times[1].tv_usec = 4000;
+
+  int fd = ki_open("/dummy", O_CREAT | O_WRONLY, 0222);
+  ASSERT_GT(fd, -1);
+  EXPECT_EQ(0, ki_close(fd));
+
+  // utime should work if the file is write-only.
+  EXPECT_EQ(0, ki_utimes("/dummy", times));
+
+  // or if the file is read-only.
+  EXPECT_EQ(0, ki_chmod("/dummy", 0444));
+  EXPECT_EQ(0, ki_utimes("/dummy", times));
 }
 
 namespace {

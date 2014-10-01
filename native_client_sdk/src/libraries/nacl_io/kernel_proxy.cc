@@ -324,13 +324,22 @@ char* KernelProxy::getwd(char* buf) {
 }
 
 int KernelProxy::chmod(const char* path, mode_t mode) {
-  int fd = open(path, O_RDONLY, mode);
-  if (-1 == fd)
-    return -1;
+  ScopedFilesystem fs;
+  ScopedNode node;
 
-  int result = fchmod(fd, mode);
-  close(fd);
-  return result;
+  Error error = AcquireFsAndNode(path, O_RDONLY, 0, &fs, &node);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = node->Fchmod(mode);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::chown(const char* path, uid_t owner, gid_t group) {
@@ -384,13 +393,22 @@ int KernelProxy::rmdir(const char* path) {
 }
 
 int KernelProxy::stat(const char* path, struct stat* buf) {
-  int fd = open(path, O_RDONLY, 0);
-  if (-1 == fd)
-    return -1;
+  ScopedFilesystem fs;
+  ScopedNode node;
 
-  int result = fstat(fd, buf);
-  close(fd);
-  return result;
+  Error error = AcquireFsAndNode(path, O_RDONLY, 0, &fs, &node);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = node->GetStat(buf);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::mount(const char* source,
@@ -611,6 +629,11 @@ int KernelProxy::ftruncate(int fd, off_t length) {
     return -1;
   }
 
+  if (handle->OpenMode() == O_RDONLY) {
+    errno = EACCES;
+    return -1;
+  }
+
   error = handle->node()->FTruncate(length);
   if (error) {
     errno = error;
@@ -731,13 +754,27 @@ int KernelProxy::unlink(const char* path) {
 }
 
 int KernelProxy::truncate(const char* path, off_t len) {
-  int fd = open(path, O_WRONLY, 0);
-  if (-1 == fd)
-    return -1;
+  ScopedFilesystem fs;
+  ScopedNode node;
 
-  int result = ftruncate(fd, len);
-  close(fd);
-  return result;
+  Error error = AcquireFsAndNode(path, O_WRONLY, 0, &fs, &node);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  if (!node->CanOpen(O_WRONLY)) {
+    errno = EACCES;
+    return -1;
+  }
+
+  error = node->FTruncate(len);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::lstat(const char* path, struct stat* buf) {
@@ -883,13 +920,22 @@ int KernelProxy::readlink(const char* path, char* buf, size_t count) {
 }
 
 int KernelProxy::utimens(const char* path, const struct timespec times[2]) {
-  int fd = open(path, O_RDONLY, 0);
-  if (-1 == fd)
-    return -1;
+  ScopedFilesystem fs;
+  ScopedNode node;
 
-  int result = futimens(fd, times);
-  close(fd);
-  return result;
+  Error error = AcquireFsAndNode(path, O_WRONLY, 0, &fs, &node);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = node->Futimens(times);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
 }
 
 // TODO(noelallen): Needs implementation.
