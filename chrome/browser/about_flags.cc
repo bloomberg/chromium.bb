@@ -2064,8 +2064,9 @@ bool SkipConditionalExperiment(const Experiment& experiment,
   }
 
 #if defined(OS_ANDROID)
-  // enable-data-reduction-proxy-dev is only available for the Dev channel.
+  // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.
   if (!strcmp("enable-data-reduction-proxy-dev", experiment.internal_name) &&
+      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_BETA &&
       chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
