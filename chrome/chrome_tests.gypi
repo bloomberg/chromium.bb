@@ -1740,7 +1740,7 @@
             'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
           ]
         }],
-        ['disable_nacl==0', {
+        ['disable_nacl==0 and use_athena==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
             'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
@@ -1839,6 +1839,7 @@
           'sources': [
             '../athena/test/chrome/athena_browsertest.cc',
             '../athena/test/chrome/athena_browsertest.h',
+            '../athena/content/chrome/web_activity_helpers_browsertest.cc',
             '../athena/content/content_proxy_browsertest.cc',
             '../athena/main/placeholder_for_browsertest.cc',
           ],

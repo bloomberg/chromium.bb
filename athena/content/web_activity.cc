@@ -8,6 +8,7 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/content_proxy.h"
 #include "athena/content/public/dialogs.h"
+#include "athena/content/web_activity_helpers.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/strings/grit/athena_strings.h"
 #include "base/bind.h"
@@ -152,7 +153,6 @@ class WebActivityController : public AcceleratorHandler {
 };
 
 const SkColor kDefaultTitleColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
-const SkColor kDefaultUnavailableColor = SkColorSetRGB(0xbb, 0x77, 0x77);
 const int kIconSize = 32;
 const int kDistanceShowReloadMessage = 100;
 const int kDistanceReload = 150;
@@ -163,8 +163,9 @@ const int kDistanceReload = 150;
 // own content so that it can eject and reload it.
 class AthenaWebView : public views::WebView {
  public:
-  AthenaWebView(content::BrowserContext* context)
-      : views::WebView(context), controller_(new WebActivityController(this)),
+  explicit AthenaWebView(content::BrowserContext* context)
+      : views::WebView(context),
+        controller_(new WebActivityController(this)),
         fullscreen_(false),
         overscroll_y_(0) {
     SetEmbedFullscreenWidgetMode(true);
@@ -203,10 +204,20 @@ class AthenaWebView : public views::WebView {
     // run into this state. by unloading.
   }
 
-  void ReloadContent() {
+  void AttachHelpers() {
+    if (!IsContentEvicted())
+      AttachWebActivityHelpers(GetWebContents());
+    // Else: The helpers will be attached when the evicted content is reloaded.
+  }
+
+  void ReloadEvictedContent() {
     CHECK(evicted_web_contents_.get());
-    scoped_ptr<content::WebContents> replaced_contents(SwapWebContents(
-        evicted_web_contents_.Pass()));
+
+    // Order is important. The helpers must be attached prior to the RenderView
+    // being created.
+    AttachWebActivityHelpers(evicted_web_contents_.get());
+
+    SwapWebContents(evicted_web_contents_.Pass());
   }
 
   // Check if the content got evicted.
@@ -409,22 +420,27 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
                          const base::string16& title,
                          const GURL& url)
     : browser_context_(browser_context),
+      web_view_(new AthenaWebView(browser_context)),
       title_(title),
-      url_(url),
-      web_view_(NULL),
       title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
       weak_ptr_factory_(this) {
+  // Order is important. The web activity helpers must be attached prior to the
+  // RenderView being created.
+  SetCurrentState(ACTIVITY_INVISIBLE);
+  web_view_->LoadInitialURL(url);
 }
 
 WebActivity::WebActivity(AthenaWebView* web_view)
     : browser_context_(web_view->browser_context()),
-      url_(web_view->GetWebContents()->GetURL()),
       web_view_(web_view),
+      title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
       weak_ptr_factory_(this) {
-  // Transition to state ACTIVITY_INVISIBLE to perform the same setup steps
-  // as on new activities (namely adding a WebContentsObserver).
+  // If the activity was created as a result of
+  // WebContentsDelegate::AddNewContents(), web activity helpers may not be
+  // created prior to the RenderView being created. Desktop Chrome has a
+  // similar problem.
   SetCurrentState(ACTIVITY_INVISIBLE);
 }
 
@@ -439,21 +455,20 @@ ActivityViewModel* WebActivity::GetActivityViewModel() {
 
 void WebActivity::SetCurrentState(Activity::ActivityState state) {
   DCHECK_NE(state, current_state_);
+  if (current_state_ == ACTIVITY_UNLOADED) {
+    web_view_->AttachHelpers();
+    if (web_view_->IsContentEvicted())
+      web_view_->ReloadEvictedContent();
+    Observe(web_view_->GetWebContents());
+  }
+
   switch (state) {
     case ACTIVITY_VISIBLE:
-      if (!web_view_)
-        break;
       HideContentProxy();
-      ReloadAndObserve();
       break;
     case ACTIVITY_INVISIBLE:
-      if (!web_view_)
-        break;
-
       if (current_state_ == ACTIVITY_VISIBLE)
         ShowContentProxy();
-      else
-        ReloadAndObserve();
 
       break;
     case ACTIVITY_BACKGROUND_LOW_PRIORITY:
@@ -480,16 +495,13 @@ void WebActivity::SetCurrentState(Activity::ActivityState state) {
 
 Activity::ActivityState WebActivity::GetCurrentState() {
   // If the content is evicted, the state has to be UNLOADED.
-  DCHECK(!web_view_ ||
-         !web_view_->IsContentEvicted() ||
+  DCHECK(!web_view_->IsContentEvicted() ||
          current_state_ == ACTIVITY_UNLOADED);
   return current_state_;
 }
 
 bool WebActivity::IsVisible() {
-  return web_view_ &&
-         web_view_->visible() &&
-         current_state_ != ACTIVITY_UNLOADED;
+  return web_view_->visible() && current_state_ != ACTIVITY_UNLOADED;
 }
 
 Activity::ActivityMediaState WebActivity::GetMediaState() {
@@ -500,29 +512,25 @@ Activity::ActivityMediaState WebActivity::GetMediaState() {
 }
 
 aura::Window* WebActivity::GetWindow() {
-  return !web_view_ ? NULL : web_view_->GetWidget()->GetNativeWindow();
+  return web_view_->GetWidget()->GetNativeWindow();
 }
 
 content::WebContents* WebActivity::GetWebContents() {
-  return !web_view_ ? NULL : web_view_->GetWebContents();
+  return web_view_->GetWebContents();
 }
 
 void WebActivity::Init() {
-  DCHECK(web_view_);
   web_view_->InstallAccelerators();
 }
 
 SkColor WebActivity::GetRepresentativeColor() const {
-  return web_view_ ? title_color_ : kDefaultUnavailableColor;
+  return title_color_;
 }
 
 base::string16 WebActivity::GetTitle() const {
   if (!title_.empty())
     return title_;
-  // TODO(oshima): Use title set by the web contents.
-  return web_view_ ? base::UTF8ToUTF16(
-                         web_view_->GetWebContents()->GetVisibleURL().host())
-                   : base::string16();
+  return base::UTF8ToUTF16(web_view_->GetWebContents()->GetVisibleURL().host());
 }
 
 gfx::ImageSkia WebActivity::GetIcon() const {
@@ -534,21 +542,6 @@ bool WebActivity::UsesFrame() const {
 }
 
 views::View* WebActivity::GetContentsView() {
-  if (!web_view_) {
-    web_view_ = new AthenaWebView(browser_context_);
-    web_view_->LoadInitialURL(url_);
-    // Make sure the content gets properly shown.
-    if (current_state_ == ACTIVITY_VISIBLE) {
-      HideContentProxy();
-      ReloadAndObserve();
-    } else if (current_state_ == ACTIVITY_INVISIBLE) {
-      ShowContentProxy();
-      ReloadAndObserve();
-    } else {
-      // If not previously specified, we change the state now to invisible..
-      SetCurrentState(ACTIVITY_INVISIBLE);
-    }
-  }
   return web_view_;
 }
 
@@ -634,16 +627,8 @@ void WebActivity::HideContentProxy() {
 }
 
 void WebActivity::ShowContentProxy() {
-  if (!content_proxy_.get() && web_view_)
+  if (!content_proxy_.get())
     content_proxy_.reset(new ContentProxy(web_view_));
-}
-
-void WebActivity::ReloadAndObserve() {
-  if (web_view_->IsContentEvicted()) {
-    DCHECK_EQ(ACTIVITY_UNLOADED, current_state_);
-    web_view_->ReloadContent();
-  }
-  Observe(web_view_->GetWebContents());
 }
 
 }  // namespace athena

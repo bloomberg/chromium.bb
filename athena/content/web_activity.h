@@ -95,15 +95,11 @@ class WebActivity : public Activity,
   // Showing a content proxy instead of the real content to save resoruces.
   void ShowContentProxy();
 
-  // Reload the content if required, and start observing it.
-  void ReloadAndObserve();
-
   content::BrowserContext* browser_context_;
-  const base::string16 title_;
-  gfx::ImageSkia icon_;
-  const GURL url_;
   AthenaWebView* web_view_;
+  const base::string16 title_;
   SkColor title_color_;
+  gfx::ImageSkia icon_;
 
   // The current state for this activity.
   ActivityState current_state_;

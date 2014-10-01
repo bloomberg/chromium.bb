@@ -11,5 +11,8 @@ specific_include_rules = {
   ".*unittest\.cc": [
     "+athena/test",
   ],
+  ".*browsertest\.cc": [
+    "+athena/test",
+  ],
 }
 

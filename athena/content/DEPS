@@ -30,7 +30,4 @@ specific_include_rules = {
   "app_activity_unittest.cc": [
     "+extensions/common",
   ],
-  "content_proxy_browsertest.cc": [
-    "+athena/test",
-  ],
 }

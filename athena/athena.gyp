@@ -163,6 +163,7 @@
         'content/render_view_context_menu_impl.h',
         'content/web_activity.cc',
         'content/web_activity.h',
+        'content/web_activity_helpers.h',
         'content/web_contents_view_delegate_factory_impl.cc',
         'extensions/athena_app_delegate_base.cc',
         'extensions/athena_app_delegate_base.h',
@@ -189,6 +190,7 @@
       'sources': [
         'content/chrome/dialogs.cc',
         'content/chrome/scheme_classifier_factory.cc',
+        'content/chrome/web_activity_helpers.cc',
         'extensions/chrome/athena_chrome_app_delegate.cc',
         'extensions/chrome/athena_chrome_app_delegate.h',
         'extensions/chrome/athena_chrome_app_window_client.cc',
@@ -208,6 +210,7 @@
       'sources': [
         'content/shell/dialogs.cc',
         'content/shell/scheme_classifier_factory.cc',
+        'content/shell/web_activity_helpers.cc',
         'extensions/shell/extensions_delegate_impl.cc',
         'extensions/shell/athena_shell_app_delegate.cc',
         'extensions/shell/athena_shell_app_delegate.h',
