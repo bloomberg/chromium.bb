@@ -153,15 +153,7 @@ bool WindowState::CanMaximize() const {
 }
 
 bool WindowState::CanMinimize() const {
-  RootWindowController* controller = RootWindowController::ForWindow(window_);
-  if (!controller)
-    return false;
-  aura::Window* lockscreen =
-      controller->GetContainer(kShellWindowId_LockScreenContainersContainer);
-  if (lockscreen->Contains(window_))
-    return false;
-
-  return true;
+  return window()->GetProperty(aura::client::kCanMinimizeKey);
 }
 
 bool WindowState::CanResize() const {

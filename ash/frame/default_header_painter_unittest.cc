@@ -36,8 +36,7 @@ class DefaultHeaderPainterTest : public ash::test::AshTestBase {
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {
   scoped_ptr<Widget> w(CreateTestWidget());
-  ash::FrameCaptionButtonContainerView container(w.get(),
-  ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  ash::FrameCaptionButtonContainerView container(w.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
