@@ -1208,7 +1208,7 @@ IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
     return pixelSnappedIntRect(absoluteClippedOverflowRect());
 }
 
-const char* RenderObject::invalidationReasonToString(InvalidationReason reason) const
+const char* invalidationReasonToString(InvalidationReason reason)
 {
     switch (reason) {
     case InvalidationNone:

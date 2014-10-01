@@ -29,6 +29,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "platform/graphics/FirstPaintInvalidationTracking.h"
 
 namespace blink {
 
@@ -198,16 +199,16 @@ void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const Layout
     // so assert but check that the layer is composited.
     ASSERT(compositingState() != NotComposited);
 
-    WebInvalidationDebugAnnotations annotations = invalidationReason == InvalidationRendererInsertion ? WebInvalidationDebugAnnotationsFirstPaint : WebInvalidationDebugAnnotationsNone;
+    const char* reasonString = firstPaintInvalidationTrackingEnabled() ? invalidationReasonToString(invalidationReason) : "";
 
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
     if (layer()->groupedMapping()) {
         LayoutRect paintInvalidationRect = r;
         paintInvalidationRect.move(layer()->subpixelAccumulation());
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), annotations);
+            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), reasonString);
     } else {
-        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, annotations);
+        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, reasonString);
     }
 }
 

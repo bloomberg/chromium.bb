@@ -901,12 +901,12 @@ void GraphicsLayer::setNeedsDisplay()
     }
 }
 
-void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect, WebInvalidationDebugAnnotations annotations)
+void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect, const char* invalidationReason)
 {
     if (drawsContent()) {
         m_layer->layer()->invalidateRect(rect);
         if (firstPaintInvalidationTrackingEnabled())
-            m_debugInfo.appendAnnotatedInvalidateRect(rect, annotations);
+            m_debugInfo.appendAnnotatedInvalidateRect(rect, invalidationReason);
         addRepaintRect(rect);
         for (size_t i = 0; i < m_linkHighlights.size(); ++i)
             m_linkHighlights[i]->invalidate();

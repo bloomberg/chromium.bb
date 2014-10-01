@@ -121,6 +121,7 @@ enum InvalidationReason {
     InvalidationRendererRemoval,
     InvalidationPaintRectangle
 };
+const char* invalidationReasonToString(InvalidationReason);
 
 const int caretWidth = 1;
 
@@ -1152,7 +1153,6 @@ private:
 #if ENABLE(ASSERT)
     void checkBlockPositionedObjectsNeedLayout();
 #endif
-    const char* invalidationReasonToString(InvalidationReason) const;
 
     void markContainingBlockChainForPaintInvalidation()
     {

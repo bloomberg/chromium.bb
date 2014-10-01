@@ -39,15 +39,11 @@ void GraphicsLayerDebugInfo::appendAsTraceFormat(WebString* out) const
 {
     RefPtr<JSONObject> jsonObject = JSONObject::create();
     appendLayoutRects(jsonObject.get());
+    appendAnnotatedInvalidateRects(jsonObject.get());
     appendCompositingReasons(jsonObject.get());
     appendDebugName(jsonObject.get());
     appendOwnerNodeId(jsonObject.get());
     *out = jsonObject->toJSONString();
-}
-
-void GraphicsLayerDebugInfo::getAnnotatedInvalidationRects(WebVector<WebAnnotatedInvalidationRect>& result) const
-{
-    result.assign(m_invalidations.data(), m_invalidations.size());
 }
 
 GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
@@ -78,6 +74,24 @@ void GraphicsLayerDebugInfo::appendLayoutRects(JSONObject* jsonObject) const
     jsonObject->setArray("layout_rects", jsonArray);
 }
 
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(JSONObject* jsonObject) const
+{
+    RefPtr<JSONArray> jsonArray = JSONArray::create();
+    for (const auto& annotatedRect : m_invalidations) {
+        RefPtr<JSONObject> rectContainer = JSONObject::create();
+        RefPtr<JSONArray> rectArray = JSONArray::create();
+        const FloatRect& rect = annotatedRect.rect;
+        rectArray->pushNumber(rect.x());
+        rectArray->pushNumber(rect.y());
+        rectArray->pushNumber(rect.maxX());
+        rectArray->pushNumber(rect.maxY());
+        rectContainer->setArray("geometry_rect", rectArray);
+        rectContainer->setString("reason", annotatedRect.reason);
+        jsonArray->pushObject(rectContainer);
+    }
+    jsonObject->setArray("annotated_invalidation_rects", jsonArray);
+}
+
 void GraphicsLayerDebugInfo::appendCompositingReasons(JSONObject* jsonObject) const
 {
     RefPtr<JSONArray> jsonArray = JSONArray::create();
@@ -105,11 +119,11 @@ void GraphicsLayerDebugInfo::appendOwnerNodeId(JSONObject* jsonObject) const
     jsonObject->setNumber("owner_node", m_ownerNodeId);
 }
 
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, WebInvalidationDebugAnnotations annotations)
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, const char* invalidationReason)
 {
-    WebAnnotatedInvalidationRect annotatedRect = {
-        WebFloatRect(rect),
-        annotations
+    AnnotatedInvalidationRect annotatedRect = {
+        rect,
+        invalidationReason
     };
     m_invalidations.append(annotatedRect);
 }
