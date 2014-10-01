@@ -128,10 +128,6 @@ class CC_EXPORT OutputSurface {
 
   bool HasClient() { return !!client_; }
 
-  // Returns an estimate of the current GPU latency. When only a software
-  // device is present, returns 0.
-  base::TimeDelta GpuLatencyEstimate();
-
   // Get the class capable of informing cc of hardware overlay capability.
   OverlayCandidateValidator* overlay_candidate_validator() const {
     return overlay_candidate_validator_.get();
@@ -174,13 +170,8 @@ class CC_EXPORT OutputSurface {
   void SetUpContext3d();
   void ResetContext3d();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
-  void UpdateAndMeasureGpuLatency();
 
   bool external_stencil_test_enabled_;
-
-  std::deque<unsigned> available_gpu_latency_query_ids_;
-  std::deque<unsigned> pending_gpu_latency_query_ids_;
-  RollingTimeDeltaHistory gpu_latency_history_;
 
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
