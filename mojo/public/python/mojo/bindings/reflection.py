@@ -95,11 +95,12 @@ class MojoStructType(type):
 
     fields = list(
         itertools.chain.from_iterable([group.descriptors for group in groups]))
+    fields.sort(key=lambda f: f.index)
     for field in fields:
       dictionary[field.name] = _BuildProperty(field)
 
     # Add init
-    dictionary['__init__'] = _StructInit
+    dictionary['__init__'] = _StructInit(fields)
 
     # Add serialization method
     serialization_object = serialization.Serialization(groups)
@@ -126,10 +127,24 @@ class MojoStructType(type):
     raise AttributeError, 'can\'t delete attribute'
 
 
-def _StructInit(self, **kwargs):
-  self._fields = {}
-  for name in kwargs:
-    self.__setattr__(name, kwargs[name])
+def _StructInit(fields):
+  def _Init(self, *args, **kwargs):
+    if len(args) + len(kwargs) > len(fields):
+      raise TypeError('__init__() takes %d argument (%d given)' %
+                      (len(fields), len(args) + len(kwargs)))
+    self._fields = {}
+    for f, a in zip(fields, args):
+      self.__setattr__(f.name, a)
+    remaining_fields = set(x.name for x in fields[len(args):])
+    for name in kwargs:
+      if not name in remaining_fields:
+        if name in (x.name for x in fields[:len(args)]):
+          raise TypeError(
+              '__init__() got multiple values for keyword argument %r' % name)
+        raise TypeError('__init__() got an unexpected keyword argument %r' %
+                        name)
+      self.__setattr__(name, kwargs[name])
+  return _Init
 
 
 def _BuildProperty(field):

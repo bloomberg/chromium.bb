@@ -163,7 +163,8 @@ def GetFieldDescriptor(packed_field):
     class_name = 'FieldDescriptor'
   arguments = [ '%r' % field.name ]
   arguments.append(GetFieldType(field.kind, field))
-  arguments.append(str(packed_field.field.ordinal))
+  arguments.append(str(packed_field.index))
+  arguments.append(str(packed_field.ordinal))
   if field.default:
     if mojom.IsStructKind(field.kind):
       arguments.append('default_value=True')

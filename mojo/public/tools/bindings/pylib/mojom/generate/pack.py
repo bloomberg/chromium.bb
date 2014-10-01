@@ -52,8 +52,15 @@ class PackedField(object):
       raise Exception("Invalid kind: %s" % kind.spec)
     return cls.kind_to_size[kind]
 
-  def __init__(self, field, ordinal):
+  def __init__(self, field, index, ordinal):
+    """
+    Args:
+      field: the original field.
+      index: the position of the original field in the struct.
+      ordinal: the ordinal of the field for serialization.
+    """
     self.field = field
+    self.index = index
     self.ordinal = ordinal
     self.size = self.GetSizeForKind(field.kind)
     self.offset = None
@@ -89,10 +96,10 @@ class PackedStruct(object):
     # Start by sorting by ordinal.
     src_fields = []
     ordinal = 0
-    for field in struct.fields:
+    for index, field in enumerate(struct.fields):
       if field.ordinal is not None:
         ordinal = field.ordinal
-      src_fields.append(PackedField(field, ordinal))
+      src_fields.append(PackedField(field, index, ordinal))
       ordinal += 1
     src_fields.sort(key=lambda field: field.ordinal)
 

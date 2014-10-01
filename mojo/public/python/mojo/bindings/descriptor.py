@@ -439,10 +439,11 @@ TYPE_NULLABLE_HANDLE = HandleType(True)
 class FieldDescriptor(object):
   """Describes a field in a generated struct."""
 
-  def __init__(self, name, field_type, field_number, default_value=None):
+  def __init__(self, name, field_type, index, version, default_value=None):
     self.name = name
     self.field_type = field_type
-    self.field_number = field_number
+    self.version = version
+    self.index = index
     self._default_value = default_value
 
   def GetDefaultValue(self):
@@ -479,9 +480,9 @@ class FieldGroup(object):
 class SingleFieldGroup(FieldGroup, FieldDescriptor):
   """A FieldGroup that contains a single FieldDescriptor."""
 
-  def __init__(self, name, field_type, field_number, default_value=None):
+  def __init__(self, name, field_type, index, version, default_value=None):
     FieldDescriptor.__init__(
-        self, name, field_type, field_number, default_value)
+        self, name, field_type, index, version, default_value)
     FieldGroup.__init__(self, [self])
 
   def GetTypeCode(self):
@@ -491,7 +492,7 @@ class SingleFieldGroup(FieldGroup, FieldDescriptor):
     return self.field_type.GetByteSize()
 
   def GetVersion(self):
-    return self.field_number
+    return self.version
 
   def Serialize(self, obj, data_offset, data, handle_offset):
     value = getattr(obj, self.name)
@@ -506,7 +507,7 @@ class BooleanGroup(FieldGroup):
   """A FieldGroup to pack booleans."""
   def __init__(self, descriptors):
     FieldGroup.__init__(self, descriptors)
-    self.version = min([descriptor.field_number  for descriptor in descriptors])
+    self.version = min([descriptor.version  for descriptor in descriptors])
 
   def GetTypeCode(self):
     return 'B'

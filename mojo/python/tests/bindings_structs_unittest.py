@@ -179,3 +179,30 @@ class StructBindingsTest(unittest.TestCase):
     self.assertEquals(foo_instance.a, False)
     self.assertEquals(foo_instance.bar, bar_instance)
 
+  def testPositionalConstructor(self):
+    p = sample_import_mojom.Point()
+    self.assertEquals(p.x, 0)
+    self.assertEquals(p.y, 0)
+
+    p = sample_import_mojom.Point(34)
+    self.assertEquals(p.x, 34)
+    self.assertEquals(p.y, 0)
+
+    p = sample_import_mojom.Point(34, 12)
+    self.assertEquals(p.x, 34)
+    self.assertEquals(p.y, 12)
+
+    p = sample_import_mojom.Point(x=34, y=12)
+    self.assertEquals(p.x, 34)
+    self.assertEquals(p.y, 12)
+
+    p = sample_import_mojom.Point(34, y=12)
+    self.assertEquals(p.x, 34)
+    self.assertEquals(p.y, 12)
+
+    with self.assertRaises(TypeError):
+      p = sample_import_mojom.Point(0, 0, 0)
+    with self.assertRaises(TypeError):
+      p = sample_import_mojom.Point(0, x=0)
+    with self.assertRaises(TypeError):
+      p = sample_import_mojom.Point(c=0)
