@@ -356,8 +356,6 @@ crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
-crbug.com/418483 inspector/elements/styles/styles-add-new-rule-tab.html [ Pass Failure ]
-crbug.com/418483 inspector/elements/styles/styles-add-new-rule-colon.html [ Pass Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
@@ -1402,8 +1400,6 @@ crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Pass Failure ]
-
-crbug.com/416846 inspector/elements/styles/styles-add-new-rule.html [ Pass Failure ]
 
 crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failure ]
 

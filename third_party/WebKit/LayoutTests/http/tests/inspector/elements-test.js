@@ -756,7 +756,7 @@ function onBlankSection(selector, callback)
     if (typeof selector === "string")
         section._selectorElement.textContent = selector;
     section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-    InspectorTest.runAfterPendingDispatches(callback.bind(null, section));
+    InspectorTest.addSniffer(WebInspector.BlankStylePropertiesSection.prototype, "_finishedAddingRuleForTest", callback.bind(null, section));
 }
 
 InspectorTest.dumpInspectorHighlight = function(node, callback)
