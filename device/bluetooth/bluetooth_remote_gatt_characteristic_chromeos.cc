@@ -74,7 +74,7 @@ BluetoothRemoteGattCharacteristicChromeOS::
   while (!pending_start_notify_calls_.empty()) {
     PendingStartNotifyCall callbacks = pending_start_notify_calls_.front();
     pending_start_notify_calls_.pop();
-    callbacks.second.Run();
+    callbacks.second.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
   }
 }
 
@@ -238,7 +238,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::StartNotifySession(
     if (IsNotifying()) {
       // Check for overflows, though unlikely.
       if (num_notify_sessions_ == std::numeric_limits<size_t>::max()) {
-        error_callback.Run();
+        error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
         return;
       }
 
@@ -398,7 +398,8 @@ void BluetoothRemoteGattCharacteristicChromeOS::OnError(
     const std::string& error_message) {
   VLOG(1) << "Operation failed: " << error_name << ", message: "
           << error_message;
-  error_callback.Run();
+  error_callback.Run(
+      BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(error_name));
 }
 
 void BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifySuccess(
@@ -437,7 +438,9 @@ void BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifyError(
   DCHECK(notify_call_pending_);
 
   notify_call_pending_ = false;
-  error_callback.Run();
+
+  error_callback.Run(
+      BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(error_name));
 
   ProcessStartNotifyQueue();
 }

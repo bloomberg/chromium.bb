@@ -125,6 +125,19 @@ class BluetoothGattService {
         const ErrorCallback& error_callback) = 0;
   };
 
+  // Interacting with Characteristics and Descriptors can produce
+  // this set of errors.
+  enum GattErrorCode {
+    GATT_ERROR_UNKNOWN = 0,
+    GATT_ERROR_FAILED,
+    GATT_ERROR_IN_PROGRESS,
+    GATT_ERROR_INVALID_LENGTH,
+    GATT_ERROR_NOT_PERMITTED,
+    GATT_ERROR_NOT_AUTHORIZED,
+    GATT_ERROR_NOT_PAIRED,
+    GATT_ERROR_NOT_SUPPORTED
+  };
+
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Closure ErrorCallback;
 

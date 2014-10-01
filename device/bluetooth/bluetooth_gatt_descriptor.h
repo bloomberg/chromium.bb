@@ -105,7 +105,8 @@ class BluetoothGattDescriptor {
   static const BluetoothUUID& CharacteristicAggregateFormatUuid();
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Closure ErrorCallback;
+  typedef base::Callback<void(BluetoothGattService::GattErrorCode)>
+      ErrorCallback;
 
   // The ValueCallback is used to return the value of a remote characteristic
   // descriptor upon a read request.

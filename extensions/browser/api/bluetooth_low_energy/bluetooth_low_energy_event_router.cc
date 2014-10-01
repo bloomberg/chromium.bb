@@ -1268,7 +1268,9 @@ void BluetoothLowEnergyEventRouter::OnDisconnect(
 }
 
 void BluetoothLowEnergyEventRouter::OnError(
-    const ErrorCallback& error_callback) {
+    const ErrorCallback& error_callback,
+    BluetoothGattService::GattErrorCode error_code) {
+  // TODO(jamuraa): do something with |error_code| (crbug.com/277232)
   VLOG(2) << "Remote characteristic/descriptor value read/write failed.";
   error_callback.Run(kStatusErrorFailed);
 }
@@ -1278,6 +1280,7 @@ void BluetoothLowEnergyEventRouter::OnConnectError(
     const std::string& device_address,
     const ErrorCallback& error_callback,
     BluetoothDevice::ConnectErrorCode error_code) {
+  // TODO(jamuraa): do something with |error_code| (crbug.com/277232)
   VLOG(2) << "Failed to create GATT connection: " << error_code;
 
   const std::string connect_id = extension_id + device_address;
@@ -1317,7 +1320,9 @@ void BluetoothLowEnergyEventRouter::OnStartNotifySession(
 void BluetoothLowEnergyEventRouter::OnStartNotifySessionError(
     const std::string& extension_id,
     const std::string& characteristic_id,
-    const ErrorCallback& error_callback) {
+    const ErrorCallback& error_callback,
+    device::BluetoothGattService::GattErrorCode error_code) {
+  // TODO(jamuraa): do something with |error_code| (crbug.com/277232)
   VLOG(2) << "Failed to create value update session for characteristic: "
           << characteristic_id;
 

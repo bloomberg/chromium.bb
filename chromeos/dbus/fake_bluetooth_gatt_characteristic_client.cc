@@ -159,7 +159,12 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   }
 
   DCHECK(heart_rate_control_point_properties_.get());
-  if (value.size() != 1 || value[0] > 1) {
+  if (value.size() != 1) {
+    error_callback.Run("org.bluez.Error.InvalidValueLength",
+                       "Invalid length for write");
+    return;
+  }
+  if (value[0] > 1) {
     error_callback.Run("org.bluez.Error.Failed",
                        "Invalid value given for write");
     return;
@@ -187,7 +192,7 @@ void FakeBluetoothGattCharacteristicClient::StartNotify(
   }
 
   if (heart_rate_measurement_properties_->notifying.value()) {
-    error_callback.Run("org.bluez.Error.Busy",
+    error_callback.Run("org.bluez.Error.InProgress",
                        "Characteristic already notifying");
     return;
   }

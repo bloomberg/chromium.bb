@@ -15,6 +15,20 @@
 
 namespace chromeos {
 
+namespace {
+
+// TODO(jamuraa) move these to cros_system_api later
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
+const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+const char kErrorNotPaired[] = "org.bluez.Error.NotPaired";
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+const char kErrorReadNotPermitted[] = "org.bluez.Error.ReadNotPermitted";
+const char kErrorWriteNotPermitted[] = "org.bluez.Error.WriteNotPermitted";
+
+}  // namespace
+
 BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
     BluetoothAdapterChromeOS* adapter,
     BluetoothDeviceChromeOS* device,
@@ -139,6 +153,30 @@ void BluetoothRemoteGattServiceChromeOS::Unregister(
     const ErrorCallback& error_callback) {
   VLOG(1) << "A remote GATT service cannot be unregistered.";
   error_callback.Run();
+}
+
+// static
+device::BluetoothGattService::GattErrorCode
+BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(
+    std::string error_name) {
+  device::BluetoothGattService::GattErrorCode code = GATT_ERROR_UNKNOWN;
+  if (error_name == kErrorFailed) {
+    code = GATT_ERROR_FAILED;
+  } else if (error_name == kErrorInProgress) {
+    code = GATT_ERROR_IN_PROGRESS;
+  } else if (error_name == kErrorInvalidValueLength) {
+    code = GATT_ERROR_INVALID_LENGTH;
+  } else if (error_name == kErrorReadNotPermitted ||
+             error_name == kErrorWriteNotPermitted) {
+    code = GATT_ERROR_NOT_PERMITTED;
+  } else if (error_name == kErrorNotAuthorized) {
+    code = GATT_ERROR_NOT_AUTHORIZED;
+  } else if (error_name == kErrorNotPaired) {
+    code = GATT_ERROR_NOT_PAIRED;
+  } else if (error_name == kErrorNotSupported) {
+    code = GATT_ERROR_NOT_SUPPORTED;
+  }
+  return code;
 }
 
 BluetoothAdapterChromeOS*

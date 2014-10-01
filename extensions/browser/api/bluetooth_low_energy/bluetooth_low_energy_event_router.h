@@ -318,7 +318,8 @@ class BluetoothLowEnergyEventRouter
 
   // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
   // case of an error during the read/write operations.
-  void OnError(const ErrorCallback& error_callback);
+  void OnError(const ErrorCallback& error_callback,
+               device::BluetoothGattService::GattErrorCode error_code);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
   void OnConnectError(const std::string& extension_id,
@@ -337,9 +338,11 @@ class BluetoothLowEnergyEventRouter
 
   // Called by BluetoothGattCharacteristic in response to a call to
   // StartNotifySession.
-  void OnStartNotifySessionError(const std::string& extension_id,
-                                 const std::string& characteristic_id,
-                                 const ErrorCallback& error_callback);
+  void OnStartNotifySessionError(
+      const std::string& extension_id,
+      const std::string& characteristic_id,
+      const ErrorCallback& error_callback,
+      device::BluetoothGattService::GattErrorCode error_code);
 
   // Called by BluetoothGattNotifySession in response to a call to Stop.
   void OnStopNotifySession(const std::string& extension_id,

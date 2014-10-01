@@ -63,6 +63,10 @@ class BluetoothRemoteGattServiceChromeOS
   // Object path of the underlying service.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
+  // Parses a named D-Bus error into a service error code.
+  static device::BluetoothGattService::GattErrorCode DBusErrorToServiceError(
+      const std::string error_name);
+
   // Returns the adapter associated with this service.
   BluetoothAdapterChromeOS* GetAdapter() const;
 

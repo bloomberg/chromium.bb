@@ -11,12 +11,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
 class BluetoothGattDescriptor;
-class BluetoothGattService;
 class BluetoothGattNotifySession;
 
 // BluetoothGattCharacteristic represents a local or remote GATT characteristic.
@@ -33,6 +33,9 @@ class BluetoothGattNotifySession;
 //      BluetoothGattService instance that represents a local service.
 class BluetoothGattCharacteristic {
  public:
+  // TODO(jamuraa): per chromium.org/developers/coding-style these should
+  // be MACRO_STYLE instead of kCamelCase. (crbug.com/418696)
+
   // Values representing the possible properties of a characteristic, which
   // define how the characteristic can be used. Each of these properties serve
   // a role as defined in the Bluetooth Specification.
@@ -78,7 +81,8 @@ class BluetoothGattCharacteristic {
   typedef uint32 Permissions;
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Closure ErrorCallback;
+  typedef base::Callback<void(BluetoothGattService::GattErrorCode)>
+      ErrorCallback;
 
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.

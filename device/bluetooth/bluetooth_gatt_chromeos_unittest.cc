@@ -359,6 +359,11 @@ class BluetoothGattChromeOSTest : public testing::Test {
     QuitMessageLoop();
   }
 
+  void ServiceErrorCallback(BluetoothGattService::GattErrorCode err) {
+    ++error_callback_count_;
+    last_service_error_ = err;
+  }
+
   void ErrorCallback() {
     ++error_callback_count_;
   }
@@ -393,6 +398,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
   int success_callback_count_;
   int error_callback_count_;
   std::vector<uint8> last_read_value_;
+  enum BluetoothGattService::GattErrorCode last_service_error_;
 };
 
 TEST_F(BluetoothGattChromeOSTest, GattConnection) {
@@ -840,12 +846,14 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
       write_value,
       base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_TRUE(observer.last_gatt_characteristic_id_.empty());
   EXPECT_FALSE(observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED,
+            last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
   characteristic = service->GetCharacteristic(
@@ -860,12 +868,14 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
       write_value,
       base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_TRUE(observer.last_gatt_characteristic_id_.empty());
   EXPECT_FALSE(observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED,
+            last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
   // Issue write request to writeable characteristic. The "Body Sensor Location"
@@ -884,12 +894,44 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
       write_value,
       base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_TRUE(observer.last_gatt_characteristic_id_.empty());
   EXPECT_FALSE(observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
+
+  // Issue some invalid write requests to the characteristic.
+  // The value should still not change.
+
+  std::vector<uint8> invalid_write_length;
+  invalid_write_length.push_back(0x01);
+  invalid_write_length.push_back(0x00);
+  characteristic->WriteRemoteCharacteristic(
+      invalid_write_length,
+      base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_EQ(3, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH,
+            last_service_error_);
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
+
+  std::vector<uint8> invalid_write_value;
+  invalid_write_value.push_back(0x02);
+  characteristic->WriteRemoteCharacteristic(
+      invalid_write_value,
+      base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_EQ(4, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED,
+            last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
   // Issue a read request. A successful read results in a
@@ -905,10 +947,10 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   characteristic->ReadRemoteCharacteristic(
       base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(2, success_callback_count_);
-  EXPECT_EQ(2, error_callback_count_);
+  EXPECT_EQ(4, error_callback_count_);
   EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count_);
   EXPECT_TRUE(ValuesEqual(characteristic->GetValue(), last_read_value_));
 }
@@ -1013,7 +1055,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   descriptor->ReadRemoteDescriptor(
       base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1028,10 +1070,12 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
       desc_value,
       base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED,
+            last_service_error_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
   EXPECT_EQ(0, observer.gatt_service_changed_count_);
@@ -1041,7 +1085,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   descriptor->ReadRemoteDescriptor(
       base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(2, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
@@ -1086,7 +1130,7 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
 
   // The operation still hasn't completed but we should have received the first
@@ -1100,12 +1144,12 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1158,7 +1202,7 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1184,7 +1228,7 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   EXPECT_EQ(2, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1235,22 +1279,22 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessionsMadeInactive) {
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
 
   // The operation still hasn't completed but we should have received the first
@@ -1298,7 +1342,7 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessionsMadeInactive) {
   characteristic->StartNotifySession(
       base::Bind(&BluetoothGattChromeOSTest::NotifySessionCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
                  base::Unretained(this)));
 
   EXPECT_EQ(0, success_callback_count_);
