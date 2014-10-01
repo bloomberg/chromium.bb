@@ -757,6 +757,7 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     // navigating doesn't cause the history item to set a new scroll offset
     // before the item was replaced.
     navigateTo("about:blank");
+    frameView = webViewImpl()->mainFrameImpl()->frameView();
 
     EXPECT_NE(firstItem, webViewImpl()->mainFrameImpl()->frame()->loader().currentItem());
     EXPECT_LT(frameView->frameRect().size().width(), 1000);
