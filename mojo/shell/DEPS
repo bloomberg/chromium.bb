@@ -1,5 +1,4 @@
 include_rules = [
-  "+dbus",
   "+gpu",
   "+mojo/embedder",
   "+net",

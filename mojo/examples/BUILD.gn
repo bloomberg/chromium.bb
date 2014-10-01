@@ -32,10 +32,4 @@ group("examples") {
       "//mojo/examples/wm_flow",
     ]
   }
-
-  if (is_linux) {
-    deps += [
-      "//mojo/examples/dbus_echo",
-    ]
-  }
 }

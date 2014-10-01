@@ -32,10 +32,6 @@
 #include "mojo/shell/ui_application_loader_android.h"
 #include "mojo/spy/spy.h"
 
-#if defined(OS_LINUX)
-#include "mojo/shell/dbus_application_loader_linux.h"
-#endif  // defined(OS_LINUX)
-
 #if defined(OS_ANDROID)
 #include "mojo/services/native_viewport/gpu_impl.h"
 #include "mojo/services/native_viewport/native_viewport_impl.h"
@@ -218,11 +214,6 @@ void Context::Init() {
           this)),
       GURL("mojo:mojo_native_viewport_service"));
 #endif
-
-#if defined(OS_LINUX)
-  application_manager_.SetLoaderForScheme(
-      scoped_ptr<ApplicationLoader>(new DBusApplicationLoader(this)), "dbus");
-#endif  // defined(OS_LINUX)
 
   if (command_line->HasSwitch(switches::kSpy)) {
     spy_.reset(

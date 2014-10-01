@@ -52,8 +52,6 @@ source_set("lib") {
     "child_process_host.h",
     "context.cc",
     "context.h",
-    "dbus_application_loader_linux.cc",
-    "dbus_application_loader_linux.h",
     "dynamic_application_loader.cc",
     "dynamic_application_loader.h",
     "dynamic_service_runner.h",
@@ -80,9 +78,7 @@ source_set("lib") {
     "ui_application_loader_android.h",
   ]
 
-  if (is_linux) {
-    deps += ["//dbus"]
-  } else if (is_android) {
+  if (is_android) {
     deps += [
       "//mojo/services/native_viewport:lib",
       "//mojo/services/network:lib",

@@ -86,8 +86,6 @@
         }],
         ['OS == "linux"', {
           'dependencies': [
-            'mojo_dbus_echo',
-            'mojo_dbus_echo_service',
             'mojo_external_application_tests',
           ],
         }],
@@ -172,8 +170,6 @@
         'shell/child_process_host.h',
         'shell/context.cc',
         'shell/context.h',
-        'shell/dbus_application_loader_linux.cc',
-        'shell/dbus_application_loader_linux.h',
         'shell/dynamic_application_loader.cc',
         'shell/dynamic_application_loader.h',
         'shell/dynamic_service_runner.h',
@@ -207,10 +203,6 @@
           ],
         }],
         ['OS=="linux"', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../dbus/dbus.gyp:dbus',
-          ],
           'sources': [
             'shell/external_application_registrar_connection.cc',
             'shell/external_application_registrar_connection.h',
@@ -438,24 +430,6 @@
     }],
     ['OS=="linux"', {
       'targets': [
-        {
-          # GN version: //mojo/dbus
-          'target_name': 'mojo_dbus_service',
-          'type': 'static_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../build/linux/system.gyp:dbus',
-            '../dbus/dbus.gyp:dbus',
-            'mojo_base.gyp:mojo_application_chromium',
-            'mojo_base.gyp:mojo_common_lib',
-            'mojo_base.gyp:mojo_system_impl',
-            'mojo_external_service_bindings',
-          ],
-          'sources': [
-            'dbus/dbus_external_service.h',
-            'dbus/dbus_external_service.cc',
-          ],
-        },
         {
           # GN version: //mojo/shell:mojo_external_application_tests
           'target_name': 'mojo_external_application_tests',
