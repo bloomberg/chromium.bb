@@ -119,6 +119,9 @@ void V8LazyEventListener::handleEvent(ExecutionContext* context, Event* event)
 
 void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
 {
+    if (!context)
+        return;
+
     v8::HandleScope handleScope(toIsolate(context));
     // V8LazyEventListener doesn't know the associated context when created.
     // Thus we lazily get the associated context and set a ScriptState on V8AbstractEventListener.
