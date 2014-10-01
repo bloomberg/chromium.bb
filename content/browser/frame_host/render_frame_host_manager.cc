@@ -295,17 +295,14 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   // in progress.  Sanity check this for http://crbug.com/276333.
   CHECK(pending_render_frame_host_);
 
-  // If the tab becomes unresponsive during {before}unload while doing a
+  // Unload handlers run in the background, so we should never get an
+  // unresponsiveness warning for them.
+  CHECK(!render_frame_host_->IsWaitingForUnloadACK());
+
+  // If the tab becomes unresponsive during beforeunload while doing a
   // cross-site navigation, proceed with the navigation.  (This assumes that
   // the pending RenderFrameHost is still responsive.)
-  if (render_frame_host_->IsWaitingForUnloadACK()) {
-    // The request has been started and paused while we're waiting for the
-    // unload handler to finish.  We'll pretend that it did.  The pending
-    // renderer will then be swapped in as part of the usual DidNavigate logic.
-    // (If the unload handler later finishes, this call will be ignored because
-    // the pending_nav_params_ state will already be cleaned up.)
-    current_frame_host()->OnSwappedOut();
-  } else if (render_frame_host_->is_waiting_for_beforeunload_ack()) {
+  if (render_frame_host_->is_waiting_for_beforeunload_ack()) {
     // Haven't gotten around to starting the request, because we're still
     // waiting for the beforeunload handler to finish.  We'll pretend that it
     // did finish, to let the navigation proceed.  Note that there's a danger
