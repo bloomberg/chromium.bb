@@ -1,3 +1,4 @@
+CONSOLE WARNING: Failed to execute 'requestFullScreen' on 'Element': API can only be initiated by a user gesture.
 Test webkitRequestFullscreen() without any user gesture.
 
 EVENT(canplaythrough)
