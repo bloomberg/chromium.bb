@@ -48,6 +48,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   //  b) At this point, we cannot report failure (if, e.g., a channel is torn
   //     down at this point, we should silently swallow the message).
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) = 0;
+  virtual void Close() = 0;
 
   // Implementations must override these if they represent a local endpoint,
   // i.e., one for which there's a |MessagePipeDispatcher| (and thus a handle).
@@ -57,7 +58,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // These methods implement the methods of the same name in |MessagePipe|,
   // though |MessagePipe|'s implementation may have to do a little more if the
   // operation involves both endpoints.
-  virtual void Close();
   virtual void CancelAllWaiters();
   virtual MojoResult ReadMessage(UserPointer<void> bytes,
                                  UserPointer<uint32_t> num_bytes,

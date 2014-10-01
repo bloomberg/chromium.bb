@@ -37,8 +37,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   virtual Type GetType() const override;
   virtual bool OnPeerClose() override;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) override;
+  virtual void Close() override;
 
  private:
+  void DetachIfNecessary();
+
   scoped_refptr<ChannelEndpoint> channel_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);

@@ -9,9 +9,6 @@
 namespace mojo {
 namespace system {
 
-void MessagePipeEndpoint::Close() {
-}
-
 void MessagePipeEndpoint::CancelAllWaiters() {
   NOTREACHED();
 }
