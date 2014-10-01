@@ -1036,6 +1036,37 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   manager2->DidNavigateFrame(host2);
 }
 
+// Test that WebUI can be navigated to in single-process mode.
+TEST_F(RenderFrameHostManagerTest,
+       CanNavigateBetweenNormalPagesAndWebUIInSingleProcess) {
+  const GURL kNormalUrl1("http://chromium.org");
+  const GURL kNormalUrl2("http://example.com");
+  const GURL kWebUIUrl("chrome://foo");
+
+  // We both set flag on RenderProcesHost and append the switch due to the fact
+  // that some code checks the switch directly instead of relying
+  // on RenderProcessHost
+  RenderProcessHost::SetRunRendererInProcess(true);
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSingleProcess);
+  set_should_create_webui(true);
+
+  RenderFrameHostManager* manager = static_cast<TestWebContents*>(
+      web_contents())->GetRenderManagerForTesting();
+
+  NavigateAndCommit(kNormalUrl1);
+  EXPECT_EQ(kNormalUrl1,
+            manager->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  EXPECT_FALSE(manager->web_ui());
+  NavigateAndCommit(kWebUIUrl);
+  EXPECT_EQ(kWebUIUrl,
+            manager->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  EXPECT_TRUE(manager->web_ui());
+  NavigateAndCommit(kNormalUrl2);
+  EXPECT_EQ(kNormalUrl2,
+            manager->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  EXPECT_FALSE(manager->web_ui());
+}
+
 // Tests that we don't end up in an inconsistent state if a page does a back and
 // then reload. http://crbug.com/51680
 TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
