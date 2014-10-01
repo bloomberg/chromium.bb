@@ -146,7 +146,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'sql_unittests.isolate',
           ],
           'sources': [
             'sql_unittests.isolate',

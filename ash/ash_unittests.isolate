@@ -5,7 +5,7 @@
   'conditions': [
     ['OS=="win" or chromeos==1', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/ash_unittests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
@@ -23,7 +23,7 @@
           '<(PRODUCT_DIR)/ash_unittests',
           '--test-launcher-bot-mode',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
@@ -32,7 +32,7 @@
     }],
     ['OS=="linux" and use_ozone==0', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
@@ -44,7 +44,7 @@
           '<(PRODUCT_DIR)/ash_unittests.exe',
           '--test-launcher-bot-mode',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
@@ -52,7 +52,7 @@
     }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/ash_unittests.exe.pdb',
         ],
       },

@@ -2861,7 +2861,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'unit_tests.isolate',
           ],
           'sources': [
             'unit_tests.isolate',

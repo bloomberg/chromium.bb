@@ -110,7 +110,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'mojo_apps_js_unittests.isolate',
           ],
           'sources': [
             'mojo_apps_js_unittests.isolate',

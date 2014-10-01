@@ -8,7 +8,7 @@
         'command': [
           '<(PRODUCT_DIR)/nacl_loader_unittests',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/nacl_loader_unittests',
         ],
         'read_only': 1,

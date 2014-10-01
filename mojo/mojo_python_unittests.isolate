@@ -9,14 +9,12 @@
           'tools/run_mojo_python_bindings_tests.py',
           '--build-dir=<(PRODUCT_DIR)',
         ],
-        'isolate_dependency_tracked': [
-          'tools/pylib/mojo_python_tests_runner.py',
-          'tools/run_mojo_python_bindings_tests.py',
-        ],
-        'isolate_dependency_untracked': [
-          'python/tests/',
+        'files': [
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/',
           '<(PRODUCT_DIR)/python/',
+          'python/tests/',
+          'tools/pylib/mojo_python_tests_runner.py',
+          'tools/run_mojo_python_bindings_tests.py',
         ],
       },
     }],

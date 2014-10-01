@@ -237,7 +237,7 @@ def create_wrapper(args, isolate_index, isolated_index):
     ],
     'variables': {
       # Will look like ['<(PRODUCT_DIR)/lib/flibuser_prefs.so'].
-      isolate_format.KEY_TRACKED: sorted(
+      'files': sorted(
           '<(PRODUCT_DIR)/%s' % i.replace(os.path.sep, '/')
           for i in binary_deps),
     },

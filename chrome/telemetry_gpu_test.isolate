@@ -11,7 +11,7 @@
       # conformance tests, to be run. However, extra command line arguments
       # must be supplied in order to run any one of them.
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '../content/test/gpu/',
           '../content/test/data/gpu/',
           # For GpuProcess.video
@@ -28,14 +28,14 @@
     # an assertion fires or a crash occurs. Add more as necessary.
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome.exe.pdb',
         ],
       },
     }],
     ['OS=="win" and component=="shared_library" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/base.dll.pdb',
           '<(PRODUCT_DIR)/blink_platform.dll.pdb',
           '<(PRODUCT_DIR)/blink_web.dll.pdb',

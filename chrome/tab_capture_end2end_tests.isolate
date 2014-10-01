@@ -16,7 +16,7 @@
           '--test-launcher-jobs=1',
           '--gtest_filter=TabCaptureApiPixelTest.EndToEnd*',
         ],
-        'isolate_dependency_untracked': [
+        'files': [
           'test/data/extensions/api_test/tab_capture/',
         ],
       },

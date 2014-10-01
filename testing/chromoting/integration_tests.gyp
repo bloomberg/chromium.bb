@@ -15,7 +15,6 @@
           ],
           'includes': [
             '../../build/isolate.gypi',
-            'chromoting_integration_tests.isolate',
           ],
           'sources': [
             'chromoting_integration_tests.isolate',

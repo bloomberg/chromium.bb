@@ -974,7 +974,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'content_browsertests.isolate',
           ],
           'sources': [
             'content_browsertests.isolate',
@@ -988,7 +987,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'content_unittests.isolate',
           ],
           'sources': [
             'content_unittests.isolate',
@@ -1013,7 +1011,6 @@
               ],
               'includes': [
                 '../build/isolate.gypi',
-                'content_gl_tests.isolate',
               ],
               'sources': [
                 'content_gl_tests.isolate',

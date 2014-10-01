@@ -5,25 +5,23 @@
   'conditions': [
     ['OS=="android" or OS=="linux"', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/test_data/',
         ],
       },
     }],
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '../third_party/accessibility-audit/axs_testing.js',
-          '../tools/metrics/histograms/histograms.xml',
-          '<(PRODUCT_DIR)/resources.pak',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../base/test/data/',
           '../components/test/data/',
           '../extensions/test/data/',
           '../net/data/',
+          '../third_party/accessibility-audit/axs_testing.js',
           '../third_party/hunspell_dictionaries/',
           '../third_party/zlib/google/test/data/',
+          '../tools/metrics/histograms/histograms.xml',
+          '<(PRODUCT_DIR)/resources.pak',
           'test/data/',
           'third_party/mock4js/',
         ],
@@ -31,7 +29,7 @@
     }],
     ['OS=="android" or OS=="linux" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
         ],
@@ -46,7 +44,7 @@
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
@@ -56,24 +54,22 @@
     }],
     ['OS=="linux" and use_ozone==0', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../net/tools/testserver/',
+          '../testing/test_env.py',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/',
           '<(PRODUCT_DIR)/test_data/',
+          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
@@ -85,13 +81,11 @@
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/exif.so',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
           '<(PRODUCT_DIR)/osmesa.so',
-        ],
-        'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
         ],
       },
     }],
@@ -107,7 +101,10 @@
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
+          '../ppapi/lib/gl/include/KHR/',
+          '../skia/ext/data/',
+          '../ui/base/glib/',
           '<(PRODUCT_DIR)/blacklist_test_dll_1.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
@@ -117,27 +114,20 @@
           '<(PRODUCT_DIR)/verifier_test_dll_2.dll',
           'test/data/safe_browsing/signed_binary.dll',
         ],
-        'isolate_dependency_untracked': [
-          '../ppapi/lib/gl/include/KHR/',
-          '../skia/ext/data/',
-          '../ui/base/glib/',
-        ],
       },
     }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/unit_tests.exe.pdb',
         ],
       },
     }],
     ['chromeos==1', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libexif.so',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../chromeos/test/data/network/',
+          '<(PRODUCT_DIR)/libexif.so',
         ],
       },
     }],

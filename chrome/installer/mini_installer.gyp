@@ -294,7 +294,6 @@
               ],
               'includes': [
                 '../../build/isolate.gypi',
-                'mini_installer_tests.isolate',
               ],
               'sources': [
                 'mini_installer_tests.isolate',

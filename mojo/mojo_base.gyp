@@ -649,7 +649,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'mojo_js_unittests.isolate',
           ],
           'sources': [
             'mojo_js_unittests.isolate',

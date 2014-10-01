@@ -676,7 +676,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'chrome.isolate',
           ],
           'sources': [
             'chrome.isolate',

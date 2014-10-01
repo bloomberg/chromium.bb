@@ -1479,7 +1479,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'base_unittests.isolate',
           ],
           'sources': [
             'base_unittests.isolate',

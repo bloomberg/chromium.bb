@@ -12,36 +12,32 @@
           '--test-launcher-bot-mode',
           '--lsan=<(lsan)',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
-        ],
-        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/pyproto/',
         ],
       },
     }],
     ['OS=="linux" and use_ozone==0', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/resources.pak',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../net/data/ssl/certificates/',
           '../net/tools/testserver/',
+          '../testing/test_env.py',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
+          '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/resources.pak',
           'test/data/',
         ],
         'read_only': 1,
@@ -49,7 +45,7 @@
     }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
@@ -59,13 +55,11 @@
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
-          '<(PRODUCT_DIR)/osmesa.so',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/osmesa.so',
         ],
       },
     }],
@@ -80,36 +74,32 @@
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/d3dcompiler_46.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
-        ],
-        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
         ],
       },
     }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/interactive_ui_tests.exe.pdb',
         ],
       },
     }],
     ['chromeos==1', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
+          '../google_apis/test/',
           '<(PRODUCT_DIR)/keyboard_resources.pak',
           '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-        ],
-        'isolate_dependency_untracked': [
-          '../google_apis/test/',
           '<(PRODUCT_DIR)/resources/chromeos/',
         ],
       },

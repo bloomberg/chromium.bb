@@ -12,7 +12,7 @@
           '--test-launcher-bot-mode',
           '--lsan=<(lsan)',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libclearkeycdm.so',
           '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
@@ -22,55 +22,53 @@
     }],
     ['OS=="linux" and use_ozone==0', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
     ['OS=="linux" and libpeer_target_type=="loadable_module"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/lib/libpeerconnection.so',
         ],
       },
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
+          '../content/test/data/',
+          '../google_apis/test/',
           '../media/test/data/',
+          '../media/test/data/',
+          '../net/data/',
+          '../net/tools/testserver/',
           '../ppapi/tests/test_case.html',
           '../ppapi/tests/test_page.css',
           '../testing/test_env.py',
           '../third_party/accessibility-audit/axs_testing.js',
-          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
-          '<(PRODUCT_DIR)/test_case.html',
-          '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
-          '<(PRODUCT_DIR)/test_page.css',
-          'browser/policy/test/asn1der.py',
-          'browser/policy/test/policy_testserver.py',
-        ],
-        'isolate_dependency_untracked': [
-          '../content/test/data/',
-          '../google_apis/test/',
-          '../media/test/data/',
-          '../net/data/',
-          '../net/tools/testserver/',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/safe_browsing/',
           '../third_party/simplejson/',
           '../third_party/tlslite/',
+          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/nacl_test_data/',
+          '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/pnacl/',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',
           '<(PRODUCT_DIR)/remoting/unittests/',
+          '<(PRODUCT_DIR)/test_case.html',
+          '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
           '<(PRODUCT_DIR)/test_data/',
+          '<(PRODUCT_DIR)/test_page.css',
           '<(PRODUCT_DIR)/test_url_loader_data/',
+          'browser/policy/test/asn1der.py',
+          'browser/policy/test/policy_testserver.py',
           'common/extensions/docs/examples/apps/calculator/',
           'test/data/',
           'third_party/mock4js/',
@@ -80,17 +78,15 @@
     }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../third_party/bidichecker/',
+          '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
     ['OS=="win" or (OS=="linux" and target_arch=="x64")', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/lib64/',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
@@ -100,22 +96,20 @@
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
-          '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
-        ],
-        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
           '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
+          '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
         ],
       },
     }],
     ['OS=="mac" and target_arch=="ia32"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/lib32/',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
@@ -134,50 +128,46 @@
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '../native_client/build/build_nexe.py',
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
+          '<(PRODUCT_DIR)/plugins/',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
           'tools/build/repack_locales.py',
-        ],
-        'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/plugins/',
         ],
       },
     }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/browser_tests.exe.pdb',
         ],
       },
     }],
     ['OS=="win" and libpeer_target_type=="loadable_module"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/libpeerconnection.dll',
         ],
       },
     }],
     ['chromeos==1', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/content_shell.pak',
-          '<(PRODUCT_DIR)/keyboard_resources.pak',
-          '<(PRODUCT_DIR)/libexif.so',
-          '<(PRODUCT_DIR)/nacl_helper',
-          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-          'browser/chromeos/login/test/https_forwarder.py',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../chromeos/test/data/',
           '../ui/file_manager/file_manager/',
           '../ui/webui/resources/js/',
           '<(PRODUCT_DIR)/chromevox_test_data/',
+          '<(PRODUCT_DIR)/content_shell.pak',
+          '<(PRODUCT_DIR)/keyboard_resources.pak',
+          '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/locales/',
+          '<(PRODUCT_DIR)/nacl_helper',
+          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           '<(PRODUCT_DIR)/resources/chromeos/',
+          'browser/chromeos/login/test/https_forwarder.py',
         ],
       },
     }],

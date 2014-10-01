@@ -339,7 +339,6 @@
           ],
           'includes': [
             '../../build/isolate.gypi',
-            '../sandbox_linux_unittests.isolate',
           ],
           'sources': [
             '../sandbox_linux_unittests.isolate',

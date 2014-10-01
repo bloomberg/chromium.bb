@@ -1681,7 +1681,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'net_unittests.isolate',
           ],
           'sources': [
             'net_unittests.isolate',

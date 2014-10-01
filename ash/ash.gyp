@@ -1287,7 +1287,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'ash_unittests.isolate',
           ],
           'sources': [
             'ash_unittests.isolate',

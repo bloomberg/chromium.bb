@@ -8,7 +8,7 @@
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           'test/data/',
         ],
       },
@@ -18,7 +18,7 @@
         'command': [
           '<(PRODUCT_DIR)/media_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/media_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
@@ -26,21 +26,21 @@
     # TODO(jmadill): should be automatic. http://crbug.com/418146
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
         ],
       },
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
     }],
     ['OS=="linux"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
         ],
       },

@@ -182,7 +182,6 @@
           ],
           'includes': [
             '../../build/isolate.gypi',
-            'cacheinvalidation_unittests.isolate',
           ],
           'sources': [
             'cacheinvalidation_unittests.isolate',

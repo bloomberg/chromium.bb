@@ -12,7 +12,7 @@
         'command': [
           '<(PRODUCT_DIR)/sandbox_linux_unittests',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/sandbox_linux_unittests',
         ],
         'read_only': 1,

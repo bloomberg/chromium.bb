@@ -13,11 +13,9 @@
           '--target=Release',
           '--force-clean',
         ],
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/mini_installer.exe',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../test/mini_installer/',
+          '<(PRODUCT_DIR)/mini_installer.exe',
         ],
       },
     }],

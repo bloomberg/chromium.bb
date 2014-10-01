@@ -5,7 +5,7 @@
   'conditions': [
     ['OS=="android"', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           'test/data/',
         ],
       },

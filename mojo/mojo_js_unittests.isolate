@@ -14,13 +14,11 @@
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../gin/test/expect.js',
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/mojo_js_unittests<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/',
+          '<(PRODUCT_DIR)/mojo_js_unittests<(EXECUTABLE_SUFFIX)',
           'bindings/js/',
           'public/js/bindings/',
         ],
@@ -28,21 +26,21 @@
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/mojo_test_support.dll',
         ],
       },
     }],
     ['OS=="linux"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/lib/libmojo_test_support.so',
         ],
       },
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/libmojo_test_support.dylib',
         ],
       },

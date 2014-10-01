@@ -9,7 +9,7 @@
           '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },

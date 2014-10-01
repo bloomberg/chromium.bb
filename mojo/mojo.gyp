@@ -683,7 +683,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'mojo_python_unittests.isolate',
           ],
           'sources': [
             'mojo_python_unittests.isolate',

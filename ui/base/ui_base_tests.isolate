@@ -5,7 +5,7 @@
   'conditions': [
     ['OS=="android"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           'test/data/data_pack_unittest/truncated-header.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
         ],

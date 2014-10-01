@@ -11,14 +11,14 @@
   'conditions': [
     ['OS=="linux" and asan==1', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/lib/libc++.so',
         ],
       },
     }],
     ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           # Copy the VS runtime DLLs into the isolate so that they
           # don't have to be preinstalled on the target machine.
           '<(PRODUCT_DIR)/msvcp120d.dll',
@@ -28,7 +28,7 @@
     }],
     ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Release"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           # Copy the VS runtime DLLs into the isolate so that they
           # don't have to be preinstalled on the target machine.
           '<(PRODUCT_DIR)/msvcp120.dll',

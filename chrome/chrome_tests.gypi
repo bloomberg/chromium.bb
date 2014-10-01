@@ -2930,7 +2930,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'browser_tests.isolate',
           ],
           'sources': [
             'browser_tests.isolate',
@@ -2958,7 +2957,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'interactive_ui_tests.isolate',
           ],
           'sources': [
             'interactive_ui_tests.isolate',
@@ -2979,7 +2977,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'sync_integration_tests.isolate',
           ],
           'sources': [
             'sync_integration_tests.isolate',
@@ -3009,9 +3006,6 @@
                 '../gpu/gpu.gyp:angle_unittests',
                 'gpu_tests_base',
               ],
-              'includes': [
-                'angle_unittests.isolate',
-              ],
               'sources': [
                 'angle_unittests.isolate',
               ],
@@ -3023,9 +3017,6 @@
                 '../gpu/gpu.gyp:gl_tests',
                 'gpu_tests_base',
               ],
-              'includes': [
-                'gl_tests.isolate',
-              ],
               'sources': [
                 'gl_tests.isolate',
               ],
@@ -3036,9 +3027,6 @@
               'dependencies': [
                 'browser_tests_run',
                 'gpu_tests_base',
-              ],
-              'includes': [
-                'tab_capture_end2end_tests.isolate',
               ],
               'sources': [
                 'tab_capture_end2end_tests.isolate',
@@ -3052,9 +3040,6 @@
                 '../tools/telemetry/telemetry.gyp:bitmaptools#host',
                 'gpu_tests_base',
               ],
-              'includes': [
-                'telemetry_gpu_test.isolate',
-              ],
               'sources': [
                 'telemetry_gpu_test.isolate',
               ],
@@ -3065,9 +3050,6 @@
               'dependencies': [
                 '../gpu/gpu.gyp:gpu_unittests',
                 'gpu_tests_base',
-              ],
-              'includes': [
-                'gpu_unittests.isolate',
               ],
               'sources': [
                 'gpu_unittests.isolate',
@@ -3083,9 +3065,6 @@
                   'dependencies': [
                     '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
                     'gpu_tests_base',
-                  ],
-                  'includes': [
-                    'gles2_conform_test.isolate',
                   ],
                   'sources': [
                     'gles2_conform_test.isolate',

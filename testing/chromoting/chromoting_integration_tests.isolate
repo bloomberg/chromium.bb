@@ -15,7 +15,7 @@
           '--webapp-unpacked=<(PRODUCT_DIR)/remoting/remoting.webapp',
           '--extension-name=Chromoting',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
@@ -25,14 +25,14 @@
     }],
     ['OS=="linux" and use_ozone==0', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
      ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '../test_env.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/remoting/remoting.webapp/',
@@ -43,7 +43,7 @@
     }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
         ],

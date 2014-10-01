@@ -463,7 +463,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'nacl_loader_unittests.isolate',
           ],
           'sources': [
             'nacl_loader_unittests.isolate',

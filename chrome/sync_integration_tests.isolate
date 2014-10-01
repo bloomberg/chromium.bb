@@ -11,7 +11,7 @@
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../testing/test_env.py',
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
@@ -21,14 +21,14 @@
     }],
     ['OS=="linux" and use_ozone==0', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
         ],
@@ -36,18 +36,16 @@
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/resources.pak',
-          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '../chrome/test/data/sync/',
           '../net/tools/testserver/',
           '../sync/tools/testserver/',
-          '../third_party/tlslite/',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
+          '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/',
+          '<(PRODUCT_DIR)/resources.pak',
+          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
@@ -61,18 +59,16 @@
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
         ],
@@ -80,14 +76,14 @@
     }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/sync_integration_tests.exe.pdb',
         ],
       },
     }],
     ['chromeos==1', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/libexif.so',
         ],
       },

@@ -17,7 +17,6 @@
 #         ],
 #         'includes': [
 #           '../build/isolate.gypi',
-#           'foo_test.isolate',
 #         ],
 #         'sources': [
 #           'foo_test.isolate',
@@ -50,18 +49,6 @@
         '<(DEPTH)/tools/isolate_driver.py',
         '<(DEPTH)/tools/swarming_client/isolate.py',
         '<(DEPTH)/tools/swarming_client/run_isolated.py',
-
-        # Disable file tracking by the build driver for now. This means the
-        # project must have the proper build-time dependency for their runtime
-        # dependency. This improves the runtime of the build driver since it
-        # doesn't have to stat() all these files.
-        #
-        # More importantly, it means that even if a isolate_dependency_tracked
-        # file is missing, for example if a file was deleted and the .isolate
-        # file was not updated, that won't break the build, especially in the
-        # case where foo_tests_run is not built! This should be reenabled once
-        # the switch-over to running tests on Swarm is completed.
-        #'<@(isolate_dependency_tracked)',
       ],
       'outputs': [],
       'action': [

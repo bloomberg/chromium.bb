@@ -5,7 +5,7 @@
   'conditions': [
     ['OS=="linux"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
@@ -15,7 +15,7 @@
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/resources.pak',
         ],
       },
@@ -25,27 +25,25 @@
         'command': [
           '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
-        ],
-        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/resources/extension/',
         ],
       },
     }],
     ['OS=="win" or (OS=="linux" and target_arch=="x64")', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
         ],
       },
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_200_percent.pak',
         ],
       },
@@ -55,20 +53,18 @@
         'command': [
           '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/<(mac_product_name)',
         ],
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/exif.so',
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
+          '<(PRODUCT_DIR)/exif.so',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/<(version_full).manifest',
           '<(PRODUCT_DIR)/chrome.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
@@ -80,14 +76,14 @@
     }],
     ['OS=="win" and target_arch=="ia32"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/nacl64.exe',
         ],
       },
     }],
     ['OS=="win" and component=="static_library"', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/chrome_child.dll',
         ],
       },

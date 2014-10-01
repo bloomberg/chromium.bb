@@ -1954,7 +1954,6 @@
           ],
           'includes': [
             '../build/isolate.gypi',
-            'media_unittests.isolate',
           ],
           'sources': [
             'media_unittests.isolate',
