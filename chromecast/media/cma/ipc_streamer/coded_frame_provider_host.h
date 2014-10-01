@@ -49,8 +49,8 @@ class CodedFrameProviderHost : public CodedFrameProvider {
   ::media::AudioDecoderConfig audio_config_;
   ::media::VideoDecoderConfig video_config_;
 
-  base::WeakPtrFactory<CodedFrameProviderHost> weak_factory_;
   base::WeakPtr<CodedFrameProviderHost> weak_this_;
+  base::WeakPtrFactory<CodedFrameProviderHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CodedFrameProviderHost);
 };

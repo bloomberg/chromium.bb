@@ -22,8 +22,8 @@ namespace media {
 CodedFrameProviderHost::CodedFrameProviderHost(
     scoped_ptr<MediaMessageFifo> media_message_fifo)
   : fifo_(media_message_fifo.Pass()),
-    weak_factory_(this),
-    weak_this_(weak_factory_.GetWeakPtr()) {
+    weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 

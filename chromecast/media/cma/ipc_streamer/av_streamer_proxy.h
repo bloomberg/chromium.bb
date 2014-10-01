@@ -76,8 +76,8 @@ class AvStreamerProxy {
   ::media::VideoDecoderConfig pending_video_config_;
   scoped_refptr<DecoderBufferBase> pending_buffer_;
 
-  base::WeakPtrFactory<AvStreamerProxy> weak_factory_;
   base::WeakPtr<AvStreamerProxy> weak_this_;
+  base::WeakPtrFactory<AvStreamerProxy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvStreamerProxy);
 };

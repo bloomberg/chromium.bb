@@ -105,8 +105,8 @@ class BufferingFrameProvider : public CodedFrameProvider {
   // Pending read callback.
   ReadCB read_cb_;
 
-  base::WeakPtrFactory<BufferingFrameProvider> weak_factory_;
   base::WeakPtr<BufferingFrameProvider> weak_this_;
+  base::WeakPtrFactory<BufferingFrameProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferingFrameProvider);
 };

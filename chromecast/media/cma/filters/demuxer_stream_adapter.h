@@ -81,8 +81,8 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
   ::media::AudioDecoderConfig audio_config_;
   ::media::VideoDecoderConfig video_config_;
 
-  base::WeakPtrFactory<DemuxerStreamAdapter> weak_factory_;
   base::WeakPtr<DemuxerStreamAdapter> weak_this_;
+  base::WeakPtrFactory<DemuxerStreamAdapter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DemuxerStreamAdapter);
 };

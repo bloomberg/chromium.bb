@@ -196,8 +196,8 @@ class MediaMessageFifo {
   std::list<scoped_refptr<MediaMessageFlag> > rd_flags_;
   std::list<scoped_refptr<MediaMessageFlag> > wr_flags_;
 
-  base::WeakPtrFactory<MediaMessageFifo> weak_factory_;
   base::WeakPtr<MediaMessageFifo> weak_this_;
+  base::WeakPtrFactory<MediaMessageFifo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMessageFifo);
 };

@@ -96,8 +96,8 @@ class BufferingController {
   typedef std::list<scoped_refptr<BufferingState> > StreamList;
   StreamList stream_list_;
 
-  base::WeakPtrFactory<BufferingController> weak_factory_;
   base::WeakPtr<BufferingController> weak_this_;
+  base::WeakPtrFactory<BufferingController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferingController);
 };

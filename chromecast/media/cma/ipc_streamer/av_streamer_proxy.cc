@@ -24,8 +24,8 @@ AvStreamerProxy::AvStreamerProxy()
     : is_running_(false),
       pending_read_(false),
       pending_av_data_(false),
-      weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()) {
+      weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 

@@ -38,9 +38,9 @@ BufferingFrameProvider::BufferingFrameProvider(
       max_buffer_size_(max_buffer_size),
       max_frame_size_(max_frame_size),
       frame_buffered_cb_(frame_buffered_cb),
-      weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()) {
+      weak_factory_(this) {
   DCHECK_LE(max_frame_size, max_buffer_size);
+  weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 
