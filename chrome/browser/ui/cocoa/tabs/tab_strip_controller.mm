@@ -2202,13 +2202,13 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   return [tabContentsArray_ objectAtIndex:index];
 }
 
-- (void)addWindowControls {
-  if (!fullscreenWindowControls_) {
+- (void)addCustomWindowControls {
+  if (!customWindowControls_) {
     // Make the container view.
     CGFloat height = NSHeight([tabStripView_ frame]);
     NSRect frame = NSMakeRect(0, 0, [self leftIndentForControls], height);
-    fullscreenWindowControls_.reset([[NSView alloc] initWithFrame:frame]);
-    [fullscreenWindowControls_
+    customWindowControls_.reset([[NSView alloc] initWithFrame:frame]);
+    [customWindowControls_
         setAutoresizingMask:NSViewMaxXMargin | NSViewHeightSizable];
 
     // Add the traffic light buttons. The horizontal layout was determined by
@@ -2224,31 +2224,31 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     // Vertically center the buttons in the tab strip.
     CGFloat buttonY = floor((height - NSHeight([closeButton bounds])) / 2);
     [closeButton setFrameOrigin:NSMakePoint(closeButtonX, buttonY)];
-    [fullscreenWindowControls_ addSubview:closeButton];
+    [customWindowControls_ addSubview:closeButton];
 
     NSButton* miniaturizeButton =
         [NSWindow standardWindowButton:NSWindowMiniaturizeButton
                           forStyleMask:styleMask];
     [miniaturizeButton setFrameOrigin:NSMakePoint(miniButtonX, buttonY)];
     [miniaturizeButton setEnabled:NO];
-    [fullscreenWindowControls_ addSubview:miniaturizeButton];
+    [customWindowControls_ addSubview:miniaturizeButton];
 
     NSButton* zoomButton =
         [NSWindow standardWindowButton:NSWindowZoomButton
                           forStyleMask:styleMask];
-    [fullscreenWindowControls_ addSubview:zoomButton];
+    [customWindowControls_ addSubview:zoomButton];
     [zoomButton setFrameOrigin:NSMakePoint(zoomButtonX, buttonY)];
   }
 
-  if (![permanentSubviews_ containsObject:fullscreenWindowControls_]) {
-    [self addSubviewToPermanentList:fullscreenWindowControls_];
+  if (![permanentSubviews_ containsObject:customWindowControls_]) {
+    [self addSubviewToPermanentList:customWindowControls_];
     [self regenerateSubviewList];
   }
 }
 
-- (void)removeWindowControls {
-  if (fullscreenWindowControls_)
-    [permanentSubviews_ removeObject:fullscreenWindowControls_];
+- (void)removeCustomWindowControls {
+  if (customWindowControls_)
+    [permanentSubviews_ removeObject:customWindowControls_];
   [self regenerateSubviewList];
 }
 

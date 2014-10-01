@@ -50,13 +50,6 @@
 using content::RenderWidgetHostView;
 using content::WebContents;
 
-namespace {
-
-// Space between the incognito badge and the right edge of the window.
-const CGFloat kAvatarRightOffset = 4;
-
-}  // namespace
-
 @implementation BrowserWindowController(Private)
 
 // Create the tab strip controller.
@@ -180,91 +173,33 @@ willPositionSheet:(NSWindow*)sheet
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
 }
 
-- (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY
-                          width:(CGFloat)width
-                     fullscreen:(BOOL)fullscreen {
-  // Nothing to do if no tab strip.
-  if (![self hasTabStrip])
-    return maxY;
+- (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout {
+  // Update the presence of the window controls.
+  if (layout.addCustomWindowControls)
+    [tabStripController_ addCustomWindowControls];
+  else
+    [tabStripController_ removeCustomWindowControls];
 
-  NSView* tabStripView = [self tabStripView];
-  CGFloat tabStripHeight = NSHeight([tabStripView frame]);
-  maxY -= tabStripHeight;
-  NSRect tabStripFrame = NSMakeRect(0, maxY, width, tabStripHeight);
-  BOOL requiresRelayout = !NSEqualRects(tabStripFrame, [tabStripView frame]);
+  // Update the layout of the avatar.
+  if (!NSIsEmptyRect(layout.avatarFrame)) {
+    NSView* avatarButton = [avatarButtonController_ view];
+    [avatarButton setFrame:layout.avatarFrame];
+    [avatarButton setHidden:NO];
+  }
 
-  // In Yosemite fullscreen, manually add the fullscreen controls to the tab
-  // strip.
-  BOOL addControlsInFullscreen =
-      [self isInAppKitFullscreen] && base::mac::IsOSYosemiteOrLater();
+  // Check if the tab strip's frame has changed.
+  BOOL requiresRelayout =
+      !NSEqualRects([[self tabStripView] frame], layout.frame);
 
-  // Set left indentation based on fullscreen mode status.
-  CGFloat leftIndent = 0;
-  if (!fullscreen || addControlsInFullscreen)
-    leftIndent = [[tabStripController_ class] defaultLeftIndentForControls];
-  if (leftIndent != [tabStripController_ leftIndentForControls]) {
-    [tabStripController_ setLeftIndentForControls:leftIndent];
+  // Check if the left indent has changed.
+  if (layout.leftIndent != [tabStripController_ leftIndentForControls]) {
+    [tabStripController_ setLeftIndentForControls:layout.leftIndent];
     requiresRelayout = YES;
   }
 
-  if (addControlsInFullscreen)
-    [tabStripController_ addWindowControls];
-  else
-    [tabStripController_ removeWindowControls];
-
-  // fullScreenButton is non-nil when isInAnyFullscreenMode is NO, and OS
-  // version is in the range 10.7 <= version <= 10.9. Starting with 10.10, the
-  // zoom/maximize button acts as the fullscreen button.
-  NSButton* fullScreenButton =
-      [[self window] standardWindowButton:NSWindowFullScreenButton];
-
-  // Lay out the icognito/avatar badge because calculating the indentation on
-  // the right depends on it.
-  NSView* avatarButton = [avatarButtonController_ view];
-  if ([self shouldShowAvatar]) {
-    CGFloat badgeXOffset = -kAvatarRightOffset;
-    CGFloat badgeYOffset = 0;
-    CGFloat buttonHeight = NSHeight([avatarButton frame]);
-
-    if ([self shouldUseNewAvatarButton]) {
-      // The fullscreen icon is displayed to the right of the avatar button.
-      if (![self isInAnyFullscreenMode] && fullScreenButton)
-        badgeXOffset -= width - NSMinX([fullScreenButton frame]);
-      // Center the button vertically on the tabstrip.
-      badgeYOffset = (tabStripHeight - buttonHeight) / 2;
-    } else {
-      // Actually place the badge *above* |maxY|, by +2 to miss the divider.
-      badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
-    }
-
-    [avatarButton setFrameSize:NSMakeSize(NSWidth([avatarButton frame]),
-        std::min(buttonHeight, tabStripHeight))];
-    NSPoint origin =
-        NSMakePoint(width - NSWidth([avatarButton frame]) + badgeXOffset,
-                    maxY + badgeYOffset);
-    [avatarButton setFrameOrigin:origin];
-    [avatarButton setHidden:NO];  // Make sure it's shown.
-  }
-
-  // Calculate the right indentation.  The default indentation built into the
-  // tabstrip leaves enough room for the fullscreen button on Lion (10.7) to
-  // Mavericks (10.9).  On 10.6 and >=10.10, the right indent needs to be
-  // adjusted to make room for the new tab button when an avatar is present.
-  CGFloat rightIndent = 0;
-  if (![self isInAnyFullscreenMode] && fullScreenButton) {
-    rightIndent = width - NSMinX([fullScreenButton frame]);
-
-    if ([self shouldUseNewAvatarButton]) {
-      // The new avatar button is to the left of the fullscreen button.
-      // (The old avatar button is to the right).
-      rightIndent += NSWidth([avatarButton frame]) + kAvatarRightOffset;
-    }
-  } else if ([self shouldShowAvatar]) {
-    rightIndent += NSWidth([avatarButton frame]) + kAvatarRightOffset;
-  }
-
-  if (rightIndent != [tabStripController_ rightIndentForControls]) {
-    [tabStripController_ setRightIndentForControls:rightIndent];
+  // Check if the right indent has changed.
+  if (layout.rightIndent != [tabStripController_ rightIndentForControls]) {
+    [tabStripController_ setRightIndentForControls:layout.rightIndent];
     requiresRelayout = YES;
   }
 
@@ -274,11 +209,9 @@ willPositionSheet:(NSWindow*)sheet
   // a tab animation resulted in the tab frame being the animator's target
   // frame instead of the interrupting setFrame. (See http://crbug.com/415093)
   if (requiresRelayout) {
-    [tabStripView setFrame:tabStripFrame];
+    [[self tabStripView] setFrame:layout.frame];
     [tabStripController_ layoutTabsWithoutAnimation];
   }
-
-  return maxY;
 }
 
 - (BOOL)placeBookmarkBarBelowInfoBar {
@@ -848,6 +781,17 @@ willPositionSheet:(NSWindow*)sheet
       [presentationModeController_ toolbarFraction]];
 
   [layout setHasTabStrip:[self hasTabStrip]];
+  NSButton* fullScreenButton =
+      [[self window] standardWindowButton:NSWindowFullScreenButton];
+  [layout setFullscreenButtonFrame:fullScreenButton ? [fullScreenButton frame]
+                                                    : NSZeroRect];
+  if ([self shouldShowAvatar]) {
+    NSView* avatar = [avatarButtonController_ view];
+    [layout setShouldShowAvatar:YES];
+    [layout setShouldUseNewAvatar:[self shouldUseNewAvatarButton]];
+    [layout setAvatarSize:[avatar frame].size];
+    [layout setAvatarLineWidth:[[avatar superview] cr_lineWidth]];
+  }
 
   [layout setHasToolbar:[self hasToolbar]];
   [layout setToolbarHeight:NSHeight([[toolbarController_ view] bounds])];
@@ -870,17 +814,11 @@ willPositionSheet:(NSWindow*)sheet
 - (void)applyLayout:(BrowserWindowLayout*)layout {
   chrome::LayoutOutput output = [layout computeLayout];
 
-  if (!NSIsEmptyRect(output.tabStripFrame)) {
-    // Note: The fullscreen parameter passed to the method is different from
-    // the field in |parameters| with the similar name.
-    [self layoutTabStripAtMaxY:NSMaxY(output.tabStripFrame)
-                         width:NSWidth(output.tabStripFrame)
-                    fullscreen:[self isInAnyFullscreenMode]];
-  }
+  if (!NSIsEmptyRect(output.tabStripLayout.frame))
+    [self applyTabStripLayout:output.tabStripLayout];
 
-  if (!NSIsEmptyRect(output.toolbarFrame)) {
+  if (!NSIsEmptyRect(output.toolbarFrame))
     [[toolbarController_ view] setFrame:output.toolbarFrame];
-  }
 
   if (!NSIsEmptyRect(output.bookmarkFrame)) {
     NSView* bookmarkBarView = [bookmarkBarController_ view];

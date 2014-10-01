@@ -18,6 +18,11 @@ class BrowserWindowLayoutTest : public testing::Test {
     [layout setWindowSize:NSMakeSize(600, 622)];
     [layout setInAnyFullscreen:NO];
     [layout setHasTabStrip:YES];
+    [layout setFullscreenButtonFrame:NSMakeRect(575, 596, 16, 17)];
+    [layout setShouldShowAvatar:YES];
+    [layout setShouldUseNewAvatar:YES];
+    [layout setAvatarSize:NSMakeSize(63, 27)];
+    [layout setAvatarLineWidth:1];
     [layout setHasToolbar:YES];
     [layout setToolbarHeight:32];
     [layout setPlaceBookmarkBarBelowInfoBar:NO];
@@ -38,7 +43,12 @@ class BrowserWindowLayoutTest : public testing::Test {
 TEST_F(BrowserWindowLayoutTest, TestAllViews) {
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripFrame));
+  EXPECT_TRUE(
+      NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(508, 590, 63, 27),
+                           output.tabStripLayout.avatarFrame));
+  EXPECT_EQ(70, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(92, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 553, 600, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame));
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.fullscreenBackingBarFrame));
@@ -57,10 +67,16 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
   [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
   [layout setFullscreenMenubarOffset:0];
   [layout setFullscreenToolbarFraction:0];
+  [layout setFullscreenButtonFrame:NSZeroRect];
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripFrame));
+  EXPECT_TRUE(
+      NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 590, 63, 27),
+                           output.tabStripLayout.avatarFrame));
+  EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(67, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 553, 600, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 95),
@@ -84,7 +100,12 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 575, 600, 37), output.tabStripFrame));
+  EXPECT_TRUE(
+      NSEqualRects(NSMakeRect(0, 575, 600, 37), output.tabStripLayout.frame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 580, 63, 27),
+                           output.tabStripLayout.avatarFrame));
+  EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(67, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 543, 600, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 95),
@@ -107,7 +128,10 @@ TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.tabStripFrame));
+  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.tabStripLayout.frame));
+  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.tabStripLayout.avatarFrame));
+  EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(0, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(1, 568, 598, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.bookmarkFrame));
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.fullscreenBackingBarFrame));

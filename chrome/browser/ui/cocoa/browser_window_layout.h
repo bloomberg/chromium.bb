@@ -36,6 +36,21 @@ struct LayoutParameters {
   CGFloat toolbarFraction;
 
   BOOL hasTabStrip;
+  // The frame of the fullscreen button. May be NSZeroRect if the fullscreen
+  // button doesn't exist. Only needs to be set when hasTabStrip is YES.
+  NSRect fullscreenButtonFrame;
+  // Whether the avatar button should be shown. Only needs to be set when
+  // hasTabStrip is YES.
+  BOOL shouldShowAvatar;
+  // Whether to use the new avatar button. Only needs to be set when
+  // shouldShowAvatar is YES.
+  BOOL shouldUseNewAvatar;
+  // The size of the avatar button. Only needs to be set when shouldShowAvatar
+  // is YES.
+  NSSize avatarSize;
+  // The line width that will generate a 1 pixel wide line for the avatar's
+  // superview. Only needs to be set when shouldShowAvatar is YES.
+  CGFloat avatarLineWidth;
 
   BOOL hasToolbar;
   BOOL hasLocationBar;
@@ -58,9 +73,26 @@ struct LayoutParameters {
   CGFloat downloadShelfHeight;
 };
 
-// The output frames of the views managed by the BrowserWindowController.
+// The parameters required to lay out the tab strip and its components.
+struct TabStripLayout {
+  // The frame of the tab strip in window coordinates.
+  NSRect frame;
+  // The left indent for the controls of the TabStripController.
+  CGFloat leftIndent;
+  // The right indent for the controls of the TabStripController.
+  CGFloat rightIndent;
+  // Whether the TabStripController needs to add custom traffic light buttons.
+  BOOL addCustomWindowControls;
+  // The frame of the avatar in window coordinates.
+  NSRect avatarFrame;
+};
+
+// The output frames of the views managed by the BrowserWindowController. All
+// frames are in the coordinate system of the window. The lower-left corner of
+// the contentView coincides with the lower-left corner of the window, so these
+// frames are also in the coordinate system of the contentView.
 struct LayoutOutput {
-  NSRect tabStripFrame;
+  TabStripLayout tabStripLayout;
   NSRect toolbarFrame;
   NSRect bookmarkFrame;
   NSRect fullscreenBackingBarFrame;
@@ -114,6 +146,11 @@ struct LayoutOutput {
 - (void)setFullscreenToolbarFraction:(CGFloat)toolbarFraction;
 
 - (void)setHasTabStrip:(BOOL)hasTabStrip;
+- (void)setFullscreenButtonFrame:(NSRect)frame;
+- (void)setShouldShowAvatar:(BOOL)shouldShowAvatar;
+- (void)setShouldUseNewAvatar:(BOOL)shouldUseNewAvatar;
+- (void)setAvatarSize:(NSSize)avatarSize;
+- (void)setAvatarLineWidth:(BOOL)avatarLineWidth;
 
 - (void)setHasToolbar:(BOOL)hasToolbar;
 - (void)setHasLocationBar:(BOOL)hasLocationBar;

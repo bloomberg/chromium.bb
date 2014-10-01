@@ -4,7 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 
+#include <string.h>
+
 #include "base/logging.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace chrome {
 
@@ -20,6 +23,9 @@ namespace {
 const CGFloat kLocBarLeftRightInset = 1;
 const CGFloat kLocBarTopInset = 0;
 const CGFloat kLocBarBottomInset = 1;
+
+// Space between the incognito badge and the right edge of the window.
+const CGFloat kAvatarRightOffset = 4;
 
 }  // namespace
 
@@ -81,6 +87,26 @@ const CGFloat kLocBarBottomInset = 1;
   parameters_.hasTabStrip = hasTabStrip;
 }
 
+- (void)setFullscreenButtonFrame:(NSRect)frame {
+  parameters_.fullscreenButtonFrame = frame;
+}
+
+- (void)setShouldShowAvatar:(BOOL)shouldShowAvatar {
+  parameters_.shouldShowAvatar = shouldShowAvatar;
+}
+
+- (void)setShouldUseNewAvatar:(BOOL)shouldUseNewAvatar {
+  parameters_.shouldUseNewAvatar = shouldUseNewAvatar;
+}
+
+- (void)setAvatarSize:(NSSize)avatarSize {
+  parameters_.avatarSize = avatarSize;
+}
+
+- (void)setAvatarLineWidth:(BOOL)avatarLineWidth {
+  parameters_.avatarLineWidth = avatarLineWidth;
+}
+
 - (void)setHasToolbar:(BOOL)hasToolbar {
   parameters_.hasToolbar = hasToolbar;
 }
@@ -140,15 +166,79 @@ const CGFloat kLocBarBottomInset = 1;
 }
 
 - (void)computeTabStripLayout {
-  if (parameters_.hasTabStrip) {
-    maxY_ = parameters_.windowSize.height + fullscreenYOffset_;
-    CGFloat width = parameters_.contentViewSize.width;
-    output_.tabStripFrame = NSMakeRect(
-        0, maxY_ - chrome::kTabStripHeight, width, chrome::kTabStripHeight);
-    maxY_ = NSMinY(output_.tabStripFrame);
-  } else {
+  if (!parameters_.hasTabStrip) {
     maxY_ = parameters_.contentViewSize.height + fullscreenYOffset_;
+    return;
   }
+
+  // Temporary variable to hold the output.
+  chrome::TabStripLayout layout = {};
+
+  // Lay out the tab strip.
+  maxY_ = parameters_.windowSize.height + fullscreenYOffset_;
+  CGFloat width = parameters_.contentViewSize.width;
+  layout.frame = NSMakeRect(
+      0, maxY_ - chrome::kTabStripHeight, width, chrome::kTabStripHeight);
+  maxY_ = NSMinY(layout.frame);
+
+  // In Yosemite fullscreen, manually add the traffic light buttons to the tab
+  // strip.
+  layout.addCustomWindowControls =
+      parameters_.inAnyFullscreen && base::mac::IsOSYosemiteOrLater();
+
+  // Set left indentation based on fullscreen mode status.
+  if (!parameters_.inAnyFullscreen || layout.addCustomWindowControls)
+    layout.leftIndent = [TabStripController defaultLeftIndentForControls];
+
+  // Lay out the icognito/avatar badge because calculating the indentation on
+  // the right depends on it.
+  if (parameters_.shouldShowAvatar) {
+    CGFloat badgeXOffset = -kAvatarRightOffset;
+    CGFloat badgeYOffset = 0;
+    CGFloat buttonHeight = parameters_.avatarSize.height;
+
+    if (parameters_.shouldUseNewAvatar) {
+      // The fullscreen icon is displayed to the right of the avatar button.
+      if (!parameters_.inAnyFullscreen &&
+          !NSIsEmptyRect(parameters_.fullscreenButtonFrame)) {
+        badgeXOffset -= width - NSMinX(parameters_.fullscreenButtonFrame);
+      }
+      // Center the button vertically on the tabstrip.
+      badgeYOffset = (chrome::kTabStripHeight - buttonHeight) / 2;
+    } else {
+      // Actually place the badge *above* |maxY|, by +2 to miss the divider.
+      badgeYOffset = 2 * parameters_.avatarLineWidth;
+    }
+
+    NSSize size = NSMakeSize(parameters_.avatarSize.width,
+                             std::min(buttonHeight, chrome::kTabStripHeight));
+    NSPoint origin =
+        NSMakePoint(width - parameters_.avatarSize.width + badgeXOffset,
+                    maxY_ + badgeYOffset);
+    layout.avatarFrame =
+        NSMakeRect(origin.x, origin.y, size.width, size.height);
+  }
+
+  // Calculate the right indentation. The default indentation built into the
+  // tabstrip leaves enough room for the fullscreen button on Lion (10.7) to
+  // Mavericks (10.9). On 10.6 and >=10.10, the right indent needs to be
+  // adjusted to make room for the new tab button when an avatar is present.
+  CGFloat rightIndent = 0;
+  if (!parameters_.inAnyFullscreen &&
+      !NSIsEmptyRect(parameters_.fullscreenButtonFrame)) {
+    rightIndent = width - NSMinX(parameters_.fullscreenButtonFrame);
+
+    if (parameters_.shouldUseNewAvatar) {
+      // The new avatar button is to the left of the fullscreen button.
+      // (The old avatar button is to the right).
+      rightIndent += parameters_.avatarSize.width + kAvatarRightOffset;
+    }
+  } else if (parameters_.shouldShowAvatar) {
+    rightIndent += parameters_.avatarSize.width + kAvatarRightOffset;
+  }
+  layout.rightIndent = rightIndent;
+
+  output_.tabStripLayout = layout;
 }
 
 - (void)computeContentViewLayout {
@@ -246,7 +336,8 @@ const CGFloat kLocBarBottomInset = 1;
     // not be further shifted by the appearance/disappearance of the AppKit
     // menu bar.
     maxY = parameters_.windowSize.height;
-    maxY -= NSHeight(output_.toolbarFrame) + NSHeight(output_.tabStripFrame) +
+    maxY -= NSHeight(output_.toolbarFrame) +
+            NSHeight(output_.tabStripLayout.frame) +
             NSHeight(output_.bookmarkFrame) + parameters.infoBarHeight;
   }
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 
 @class BrowserWindowLayout;
@@ -40,12 +41,8 @@
 - (void)showFullscreenExitBubbleIfNecessary;
 - (void)destroyFullscreenExitBubbleIfNecessary;
 
-// Lays out the tab strip at the given maximum y-coordinate, with the given
-// width, possibly for fullscreen mode; returns the new maximum y (below the
-// tab strip). This is safe to call even when there is no tab strip.
-- (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY
-                          width:(CGFloat)width
-                     fullscreen:(BOOL)fullscreen;
+// Lays out the tab strip and avatar button.
+- (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout;
 
 // Returns YES if the bookmark bar should be placed below the infobar, NO
 // otherwise.
