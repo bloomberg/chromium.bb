@@ -1157,15 +1157,11 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(MakeTuple(1, false, 0, true, false, false, true)));
 
 INSTANTIATE_TEST_CASE_P(
-    MidStreamParamSwitchBitrateAndFPS,
-    VideoEncodeAcceleratorTest,
-    ::testing::Values(MakeTuple(1, false, 0, true, false, true, true)));
-
-INSTANTIATE_TEST_CASE_P(
     MultipleEncoders,
     VideoEncodeAcceleratorTest,
     ::testing::Values(MakeTuple(3, false, 0, false, false, false, false),
-                      MakeTuple(3, false, 0, true, false, true, true)));
+                      MakeTuple(3, false, 0, true, false, false, true),
+                      MakeTuple(3, false, 0, true, false, true, false)));
 
 // TODO(posciak): more tests:
 // - async FeedEncoderWithOutput
