@@ -45599,6 +45599,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="disable-gesture-requirement-for-media-playback"/>
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="494733611" label="disable-drop-sync-credential"/>
+  <int value="546710806" label="disable-easy-signin"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="593707592" label="disable-network-portal-notification"/>

@@ -451,8 +451,8 @@ bool UserSessionManager::RespectLocalePreference(
 }
 
 bool UserSessionManager::NeedsToUpdateEasyUnlockKeys() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kEnableEasySignin) &&
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kDisableEasySignin) &&
          !user_context_.GetUserID().empty() &&
          user_context_.GetUserType() == user_manager::USER_TYPE_REGULAR &&
          user_context_.GetKey() && !user_context_.GetKey()->GetSecret().empty();
@@ -1030,11 +1030,22 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
 }
 
 void UserSessionManager::UpdateEasyUnlockKeys(Profile* user_profile) {
+  // Skip key update because FakeCryptohomeClient always return success
+  // and RemoveKey op expects a failure to stop. As a result, some tests would
+  // timeout.
+  // TODO(xiyuan): Revisit this when adding tests.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return;
+
   if (!GetEasyUnlockKeyManager())
     return;
 
   // Only update Easy unlock keys for regular user.
-  if (user_context_.GetUserType() != user_manager::USER_TYPE_REGULAR)
+  // TODO(xiyuan): Fix inconsistency user type of |user_context_| introduced in
+  // authenticator.
+  user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  if (active_user->GetType() != user_manager::USER_TYPE_REGULAR)
     return;
 
   // Bail if |user_context_| does not have secret.
@@ -1101,8 +1112,8 @@ UserSessionManager::GetDefaultIMEState(Profile* profile) {
 }
 
 EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
-  if (!CommandLine::ForCurrentProcess()
-           ->HasSwitch(chromeos::switches::kEnableEasySignin)) {
+  if (CommandLine::ForCurrentProcess()
+           ->HasSwitch(chromeos::switches::kDisableEasySignin)) {
     return NULL;
   }
 

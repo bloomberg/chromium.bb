@@ -926,11 +926,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchpadThreeFingerClick)
   },
   {
-    "enable-easy-signin",
-    IDS_FLAGS_ENABLE_EASY_SIGNIN_NAME,
-    IDS_FLAGS_ENABLE_EASY_SIGNIN_DESCRIPTION,
+    "disable-easy-signin",
+    IDS_FLAGS_DISABLE_EASY_SIGNIN_NAME,
+    IDS_FLAGS_DISABLE_EASY_SIGNIN_DESCRIPTION,
     kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableEasySignin),
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableEasySignin),
   },
 #endif
 #if defined(USE_ASH)

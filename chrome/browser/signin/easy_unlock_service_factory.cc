@@ -48,8 +48,8 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableEasySignin)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kDisableEasySignin)) {
       return new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
     } else {
       return NULL;

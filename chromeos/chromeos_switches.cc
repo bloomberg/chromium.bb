@@ -37,6 +37,9 @@ const char kDisableBootAnimation[] = "disable-boot-animation";
 // Disables the ChromeOS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
 
+// Disable Easy sign-in.
+const char kDisableEasySignin[] = "disable-easy-signin";
+
 // Disable HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
@@ -75,9 +78,6 @@ const char kEnableChromeVoxNext[] = "enable-chromevox-next";
 // Enables consumer management, which allows user to enroll, remotely lock and
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";
-
-// Enable Easy sign-in.
-const char kEnableEasySignin[] = "enable-easy-signin";
 
 // If this switch is set, Chrome OS login screen uses |EmbeddedSignin| endpoint
 // of GAIA.
