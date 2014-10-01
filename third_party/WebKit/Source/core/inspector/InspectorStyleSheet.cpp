@@ -89,7 +89,6 @@ private:
     virtual void endSelector(unsigned) OVERRIDE;
     virtual void startRuleBody(unsigned) OVERRIDE;
     virtual void endRuleBody(unsigned, bool) OVERRIDE;
-    virtual void startEndUnknownRule() OVERRIDE { addNewRuleToSourceTree(CSSRuleSourceData::createUnknown()); }
     virtual void startProperty(unsigned) OVERRIDE;
     virtual void endProperty(bool, bool, unsigned, CSSParserError) OVERRIDE;
     virtual void startComment(unsigned) OVERRIDE;
@@ -395,6 +394,10 @@ void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
         switch (data->type) {
         case CSSRuleSourceData::STYLE_RULE:
         case CSSRuleSourceData::IMPORT_RULE:
+        case CSSRuleSourceData::CHARSET_RULE:
+        case CSSRuleSourceData::PAGE_RULE:
+        case CSSRuleSourceData::FONT_FACE_RULE:
+        case CSSRuleSourceData::VIEWPORT_RULE:
         case CSSRuleSourceData::KEYFRAMES_RULE:
             m_sourceData->append(data);
             break;
@@ -471,22 +474,6 @@ static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const So
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
-{
-    if (!styleSheet)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<StaticCSSRuleList> list = StaticCSSRuleList::create();
-    WillBeHeapVector<RefPtrWillBeMember<CSSRule> >& listRules = list->rules();
-    for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
-        CSSRule* item = styleSheet->item(i);
-        if (item->type() == CSSRule::CHARSET_RULE)
-            continue;
-        listRules.append(item);
-    }
-    return list.release();
-}
-
 static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
 {
     if (!rule)
@@ -494,9 +481,6 @@ static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
 
     if (rule->type() == CSSRule::MEDIA_RULE)
         return toCSSMediaRule(rule)->cssRules();
-
-    if (rule->type() == CSSRule::KEYFRAMES_RULE)
-        return toCSSKeyframesRule(rule)->cssRules();
 
     if (rule->type() == CSSRule::SUPPORTS_RULE)
         return toCSSSupportsRule(rule)->cssRules();
@@ -1559,7 +1543,8 @@ bool InspectorStyleSheet::ensureText() const
     return success;
 }
 
-static void collectFlatRules(PassRefPtrWillBeRawPtr<CSSRuleList> ruleList, CSSRuleVector* result)
+template <typename RuleList>
+static void collectFlatRules(RuleList ruleList, CSSRuleVector* result)
 {
     if (!ruleList)
         return;
@@ -1571,6 +1556,10 @@ static void collectFlatRules(PassRefPtrWillBeRawPtr<CSSRuleList> ruleList, CSSRu
         switch (rule->type()) {
         case CSSRule::STYLE_RULE:
         case CSSRule::IMPORT_RULE:
+        case CSSRule::CHARSET_RULE:
+        case CSSRule::PAGE_RULE:
+        case CSSRule::FONT_FACE_RULE:
+        case CSSRule::VIEWPORT_RULE:
         case CSSRule::KEYFRAMES_RULE:
             result->append(rule);
             break;
@@ -1589,7 +1578,7 @@ void InspectorStyleSheet::ensureFlatRules() const
 {
     // We are fine with redoing this for empty stylesheets as this will run fast.
     if (m_flatRules.isEmpty())
-        collectFlatRules(asCSSRuleList(pageStyleSheet()), &m_flatRules);
+        collectFlatRules(pageStyleSheet(), &m_flatRules);
 }
 
 bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& text)

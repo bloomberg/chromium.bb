@@ -1816,12 +1816,6 @@ void BisonCSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, C
         m_observer->endProperty(isImportantFound, isPropertyParsed, m_tokenizer.safeUserStringTokenOffset(), errorType);
 }
 
-void BisonCSSParser::startEndUnknownRule()
-{
-    if (m_observer)
-        m_observer->startEndUnknownRule();
-}
-
 StyleRuleBase* BisonCSSParser::createViewportRule()
 {
     // Allow @viewport rules from UA stylesheets even if the feature is disabled.

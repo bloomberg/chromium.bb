@@ -198,7 +198,6 @@ public:
     void startRuleBody();
     void startProperty();
     void endProperty(bool isImportantFound, bool isPropertyParsed, CSSParserError = NoCSSError);
-    void startEndUnknownRule();
 
     void endInvalidRuleHeader();
     void reportError(const CSSParserLocation&, CSSParserError = GeneralCSSError);
