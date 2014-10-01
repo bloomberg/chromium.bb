@@ -1,14 +1,14 @@
 Tests that custom element lifecycle events fire while debugger is paused.
 
+[page] Invoked createdCallback.
+[page] Invoked createdCallback.
+[page] Invoked createdCallback.
+[page] Invoked attributeChangedCallback.
+[page] Invoked attachedCallback.
+[page] Invoked detachedCallback.
 Custom element registered.
-Invoked createdCallback.
 new CustomElement() instanceof CustomElement = true
 Script execution paused.
-Invoked createdCallback.
 new CustomElement() instanceof CustomElement = true
-Invoked createdCallback.
-Invoked attributeChangedCallback.
-Invoked attachedCallback.
-Invoked detachedCallback.
 Script execution resumed.
 

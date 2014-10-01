@@ -4,6 +4,7 @@ Tests that the content of resources with JSON MIME types can be accessed.
 When loaded by asynchronous XHR requests (Bug 80684) or within iframes/documents.
 
 
+
 Running: test1
 request.url: http://127.0.0.1:8000/inspector/network/resources/json.php?type=application%2Fjson
 request.type: xhr

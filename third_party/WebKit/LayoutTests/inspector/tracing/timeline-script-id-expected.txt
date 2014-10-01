@@ -5,7 +5,6 @@ It expects two FunctionCall for InjectedScript, two TimerInstall events, two Fun
 details.textContent for FunctionCall event: 'InjectedScript:1'
 details.textContent for TimerInstall event: 'performActions.js:3'
 details.textContent for TimerInstall event: 'performActions.js:4'
-details.textContent for FunctionCall event: 'InjectedScript:1'
 details.textContent for FunctionCall event: 'performActions.js:7'
 details.textContent for FunctionCall event: 'performActions.js:7'
 details.textContent for TimerRemove event: 'performActions.js:11'

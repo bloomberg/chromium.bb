@@ -113,20 +113,6 @@ FunctionCall Properties:
 }
 FunctionCall Properties:
 {
-    data : {
-        frame : <string>
-        scriptId : <string>
-        scriptLine : <number>
-        scriptName : <string>
-    }
-    endTime : <number>
-    frameId : <string>
-    startTime : <number>
-    thread : <string>
-    type : "FunctionCall"
-}
-FunctionCall Properties:
-{
     children : <object>
     data : {
         frame : <string>

@@ -4,7 +4,6 @@ Test nesting of time/timeEnd records on Timeline
 Running: testSimpleConsoleTime
 Root
 ----> FunctionCall
-----> FunctionCall
 --------> Console Time: a
 
 Running: testNestedConsoleTime

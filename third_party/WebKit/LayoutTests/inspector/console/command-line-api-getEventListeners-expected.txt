@@ -1,95 +1,95 @@
 Tests getEventListeners() method of console command line API.
 
  
-- inner -
-keydown: {
-    0: {
-        listener: function listener1() { }
-        useCapture: false
-        type: "keydown"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-    1: {
-        listener: function listener2() { }
-        useCapture: true
-        type: "keydown"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-- inner after a removal -
-keydown: {
-    0: {
-        listener: function listener2() { }
-        useCapture: true
-        type: "keydown"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-- outer -
-mousemove: {
-    0: {
-        listener: function listener1() { }
-        useCapture: false
-        type: "mousemove"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-mousedown: {
-    0: {
-        listener: function listener2() { }
-        useCapture: true
-        type: "mousedown"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-keydown: {
-    0: {
-        listener: function listener2() { }
-        useCapture: true
-        type: "keydown"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-- attribute event listeners -
-click: {
-    0: {
-        listener: function onclick(event) { alert(1) }
-        useCapture: false
-        type: "click"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-mouseover: {
-    0: {
-        listener: function onmouseover(event) { listener2() }
-        useCapture: false
-        type: "mouseover"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-- window -
-load: {
-    0: {
-        listener: function onload(event) { runTest() }
-        useCapture: false
-        type: "load"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-popstate: {
-    0: {
-        listener: function listener1() { }
-        useCapture: false
-        type: "popstate"
-        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
-    }
-}
-- empty -
-- invalid -
-- object -
-undefined
-- null -
-undefined
-- undefined -
-undefined
+[page] - inner -
+[page] keydown: {
+[page]     0: {
+[page]         listener: function listener1() { }
+[page]         useCapture: false
+[page]         type: "keydown"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page]     1: {
+[page]         listener: function listener2() { }
+[page]         useCapture: true
+[page]         type: "keydown"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] - inner after a removal -
+[page] keydown: {
+[page]     0: {
+[page]         listener: function listener2() { }
+[page]         useCapture: true
+[page]         type: "keydown"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] - outer -
+[page] mousemove: {
+[page]     0: {
+[page]         listener: function listener1() { }
+[page]         useCapture: false
+[page]         type: "mousemove"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] mousedown: {
+[page]     0: {
+[page]         listener: function listener2() { }
+[page]         useCapture: true
+[page]         type: "mousedown"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] keydown: {
+[page]     0: {
+[page]         listener: function listener2() { }
+[page]         useCapture: true
+[page]         type: "keydown"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] - attribute event listeners -
+[page] click: {
+[page]     0: {
+[page]         listener: function onclick(event) { alert(1) }
+[page]         useCapture: false
+[page]         type: "click"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] mouseover: {
+[page]     0: {
+[page]         listener: function onmouseover(event) { listener2() }
+[page]         useCapture: false
+[page]         type: "mouseover"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] - window -
+[page] load: {
+[page]     0: {
+[page]         listener: function onload(event) { runTest() }
+[page]         useCapture: false
+[page]         type: "load"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] popstate: {
+[page]     0: {
+[page]         listener: function listener1() { }
+[page]         useCapture: false
+[page]         type: "popstate"
+[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]     }
+[page] }
+[page] - empty -
+[page] - invalid -
+[page] - object -
+[page] undefined
+[page] - null -
+[page] undefined
+[page] - undefined -
+[page] undefined
 

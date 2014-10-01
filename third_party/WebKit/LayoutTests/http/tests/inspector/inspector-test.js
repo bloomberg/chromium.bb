@@ -1,7 +1,6 @@
 var initialize_InspectorTest = function() {
 
 var results = [];
-var resultsSynchronized = false;
 
 function consoleOutputHook(messageType)
 {
@@ -19,23 +18,6 @@ console.assert = function(condition, object)
     InspectorTest.addResult(new Error(message).stack);
 }
 
-InspectorTest.Output = {   // override in window.initialize_yourName
-    testComplete: function()
-    {
-        RuntimeAgent.evaluate("didEvaluateForTestInFrontend(" + InspectorTest.completeTestCallId + ", \"\")", "test");
-    },
-
-    addResult: function(text)
-    {
-        InspectorTest.evaluateInPage("output(unescape('" + escape(text) + "'))");
-    },
-
-    clearResults: function()
-    {
-        InspectorTest.evaluateInPage("clearOutput()");
-    }
-};
-
 InspectorTest.startDumpingProtocolMessages = function()
 {
     InspectorBackendClass.Connection.prototype._dumpProtocolMessage = testRunner.logToStderr.bind(testRunner);
@@ -44,7 +26,13 @@ InspectorTest.startDumpingProtocolMessages = function()
 
 InspectorTest.completeTest = function()
 {
-    InspectorTest.Output.testComplete();
+    RuntimeAgent.evaluate("completeTest(\"" + escape(JSON.stringify(results)) + "\")", "test");
+}
+
+InspectorTest.flushResults = function()
+{
+    RuntimeAgent.evaluate("flushResults(\"" + escape(JSON.stringify(results)) + "\")", "test");
+    results = [];
 }
 
 InspectorTest.evaluateInPage = function(code, callback)
@@ -101,15 +89,7 @@ InspectorTest.check = function(passCondition, failureText)
 
 InspectorTest.addResult = function(text)
 {
-    results.push(text);
-    if (resultsSynchronized)
-        InspectorTest.Output.addResult(text);
-    else {
-        InspectorTest.Output.clearResults();
-        for (var i = 0; i < results.length; ++i)
-            InspectorTest.Output.addResult(results[i]);
-        resultsSynchronized = true;
-    }
+    results.push(String(text));
 }
 
 InspectorTest.addResults = function(textArray)
@@ -245,7 +225,6 @@ InspectorTest._innerReloadPage = function(hardReload, callback, scriptToEvaluate
 
 InspectorTest.pageLoaded = function()
 {
-    resultsSynchronized = false;
     InspectorTest.addResult("Page reloaded.");
     if (InspectorTest._pageLoadedCallback) {
         var callback = InspectorTest._pageLoadedCallback;
@@ -616,8 +595,7 @@ InspectorTest.preloadPanel = function(panelName)
 
 var initializeCallId = 0;
 var runTestCallId = 1;
-var completeTestCallId = 2;
-var evalCallbackCallId = 3;
+var evalCallbackCallId = 2;
 var frontendReopeningCount = 0;
 
 function reopenFrontend()
@@ -683,12 +661,12 @@ function runTest(enableWatchDogWhileDebugging)
         }
     }
 
-    function runTestInFrontend(testFunction, completeTestCallId)
+    function runTestInFrontend(testFunction)
     {
-        if (InspectorTest.completeTestCallId) 
+        if (InspectorTest.wasAlreadyExecuted)
             return;
 
-        InspectorTest.completeTestCallId = completeTestCallId;
+        InspectorTest.wasAlreadyExecuted = true;
         // 1. Preload panels.
         var lastLoadedPanel;
         for (var i = 0; i < InspectorTest._panelsToPreload.length; ++i) {
@@ -749,7 +727,7 @@ function runTest(enableWatchDogWhileDebugging)
     var toEvaluate = "(" + initializeFrontend + ")(" + "[" + initializationFunctions + "]" + ");";
     testRunner.evaluateInWebInspector(initializeCallId, toEvaluate);
 
-    toEvaluate = "(" + runTestInFrontend + ")(" + test + ", " + completeTestCallId + ");";
+    toEvaluate = "(" + runTestInFrontend + ")(" + test + ");";
     testRunner.evaluateInWebInspector(runTestCallId, toEvaluate);
 
     if (enableWatchDogWhileDebugging) {
@@ -771,14 +749,17 @@ function runTestAfterDisplay(enableWatchDogWhileDebugging)
     requestAnimationFrame(runTest.bind(this, enableWatchDogWhileDebugging));
 }
 
-function didEvaluateForTestInFrontend(callId)
+function completeTest(results)
 {
-    if (callId !== completeTestCallId)
-        return;
-    delete window.completeTestCallId;
-    if (outputElement && window.quietUntilDone)
-        outputElementParent.appendChild(outputElement);
+    flushResults(results);
     closeInspectorAndNotifyDone();
+}
+
+function flushResults(results)
+{
+    results = (JSON && JSON.parse ? JSON.parse : eval)(unescape(results));
+    for (var i = 0; i < results.length; ++i)
+        _output(results[i]);
 }
 
 function closeInspectorAndNotifyDone()
@@ -793,50 +774,28 @@ function closeInspectorAndNotifyDone()
 }
 
 var outputElement;
-var outputElementParent;
-var savedOutput;
 
 function createOutputElement()
 {
-    var intermediate = document.createElement("div");
-    document.body.appendChild(intermediate);
-
-    outputElementParent = document.createElement("div");
-    intermediate.appendChild(outputElementParent);
-
     outputElement = document.createElement("div");
-    outputElement.className = "output";
-    outputElement.id = "output";
-    outputElement.style.whiteSpace = "pre";
-    if (!window.quietUntilDone)
-        outputElementParent.appendChild(outputElement);
+    // Support for svg - add to document, not body, check for style.
+    if (outputElement.style) {
+        outputElement.style.whiteSpace = "pre";
+        outputElement.style.height = "10px";
+        outputElement.style.overflow = "hidden";
+    }
+    document.documentElement.appendChild(outputElement);
 }
 
 function output(text)
 {
+    _output("[page] " + text);
+}
+
+function _output(result)
+{
     if (!outputElement)
         createOutputElement();
-    outputElement.appendChild(document.createTextNode(text));
+    outputElement.appendChild(document.createTextNode(result));
     outputElement.appendChild(document.createElement("br"));
-}
-
-function clearOutput()
-{
-    if (outputElement) {
-        outputElement.remove();
-        outputElement = null;
-    }
-}
-
-function saveOutput()
-{
-    savedOutput = outputElement ? outputElement.innerHTML : "";
-}
-
-function restoreOutput()
-{
-    if (!savedOutput)
-        return;
-    createOutputElement();
-    outputElement.innerHTML = savedOutput;
 }

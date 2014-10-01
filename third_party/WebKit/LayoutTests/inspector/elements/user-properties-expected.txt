@@ -122,7 +122,6 @@ aNode removed
               <div id="child1"></div>
               <div id="child2"></div> [userProperties:[attr2=anotherValue,attr1=true]]
           </div>
-        + <div>…</div>
       </body>
   </html>
 child2 removed
@@ -138,7 +137,6 @@ child2 removed
         - <div id="container">
               <div id="child1"></div>
           </div>
-        + <div>…</div>
       </body>
   </html>
 

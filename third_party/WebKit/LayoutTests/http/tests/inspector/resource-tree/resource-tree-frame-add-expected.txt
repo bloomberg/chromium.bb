@@ -1,6 +1,7 @@
 CONSOLE MESSAGE: line 21: iframe navigated
 Tests resource tree model on iframe addition, compares resource tree against golden. Every line is important.
 
+
 Before addition
 ====================================
 Resources:

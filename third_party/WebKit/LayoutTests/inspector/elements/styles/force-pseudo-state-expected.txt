@@ -78,7 +78,6 @@ Style Attribute  { ()
     - <body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)"> [descendantUserAttributeCounters:[pseudoState=1]]
           <p>\nTests that forced element state is reflected in the DOM tree and Styles pane.\n</p>
           <div id="div">Test text</div> [userProperties:[pseudoState=active,focus]]
-        + <div>…</div>
       </body>
   </html>
 
@@ -101,7 +100,6 @@ font-weight: normal;
     - <body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
           <p>\nTests that forced element state is reflected in the DOM tree and Styles pane.\n</p>
           <div id="div">Test text</div>
-        + <div>…</div>
       </body>
   </html>
 

@@ -13,17 +13,4 @@ FunctionCall Properties:
     thread : <string>
     type : "FunctionCall"
 }
-FunctionCall Properties:
-{
-    data : {
-        scriptId : <string>
-        scriptLine : <number>
-        scriptName : <string>
-    }
-    endTime : <number>
-    frameId : <string>
-    startTime : <number>
-    thread : <string>
-    type : "FunctionCall"
-}
 

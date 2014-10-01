@@ -1,17 +1,17 @@
 Test to catch Canvas 2D API changes. If this test should ever fail, we should re-examine the Canvas 2D state saving/restoring logic in the InjectedScriptModule to include any latest changes to the API.
 
-New properties and functions that should be manually examined (should be empty to pass the test):
-addHitRegion
-clearHitRegions
-currentTransform
-direction
-drawFocusIfNeeded
-ellipse
-isContextLost
-removeHitRegion
-resetTransform
-scrollPathIntoView
-webkitImageSmoothingEnabled
-New properties and functions of CanvasGradient object that should be manually examined (should be empty to pass the test):
-New properties and functions of CanvasPattern object that should be manually examined (should be empty to pass the test):
+[page] New properties and functions that should be manually examined (should be empty to pass the test):
+[page] addHitRegion
+[page] clearHitRegions
+[page] currentTransform
+[page] direction
+[page] drawFocusIfNeeded
+[page] ellipse
+[page] isContextLost
+[page] removeHitRegion
+[page] resetTransform
+[page] scrollPathIntoView
+[page] webkitImageSmoothingEnabled
+[page] New properties and functions of CanvasGradient object that should be manually examined (should be empty to pass the test):
+[page] New properties and functions of CanvasPattern object that should be manually examined (should be empty to pass the test):
 

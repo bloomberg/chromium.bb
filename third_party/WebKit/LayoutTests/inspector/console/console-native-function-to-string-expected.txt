@@ -1,6 +1,6 @@
 Tests that command-line API methods behave similarly to native code by returning '[Command Line API]' via toString().
 
-CommandLineAPI
+[page] CommandLineAPI
 
 $                   : function $(selector, [startNode]) { [Command Line API] }
 $$                  : function $$(selector, [startNode]) { [Command Line API] }
