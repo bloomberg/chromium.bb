@@ -6,6 +6,7 @@
 #define ATHENA_RESOURCE_MANAGER_MEMORY_PRESSURE_NOTIFIER_H_
 
 #include "athena/athena_export.h"
+#include "athena/resource_manager/public/resource_manager.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -26,19 +27,8 @@ class MemoryPressureObserver {
   MemoryPressureObserver() {}
   virtual ~MemoryPressureObserver() {}
 
-  // The reported memory pressure. Note: The value is intentionally abstracted
-  // since the real amount of free memory is only estimated (due to e.g. zram).
-  // Note: The bigger the index of the pressure level, the more resources are
-  // in use.
-  enum MemoryPressure {
-    MEMORY_PRESSURE_UNKNOWN = 0,   // The memory pressure cannot be determined.
-    MEMORY_PRESSURE_LOW,           // Single call if fill level is below 50%.
-    MEMORY_PRESSURE_MODERATE,      // Polled for fill level of ~50 .. 75%.
-    MEMORY_PRESSURE_HIGH,          // Polled for fill level of ~75% .. 90%.
-    MEMORY_PRESSURE_CRITICAL,      // Polled for fill level of above ~90%.
-  };
   // The observer.
-  virtual void OnMemoryPressure(MemoryPressure pressure) = 0;
+  virtual void OnMemoryPressure(ResourceManager::MemoryPressure pressure) = 0;
 
   // OS system interface functions. The delegate remains owned by the Observer.
   virtual ResourceManagerDelegate* GetDelegate() = 0;
@@ -76,7 +66,7 @@ class ATHENA_EXPORT MemoryPressureNotifier {
   void CheckMemoryPressure();
 
   // Converts free percent of memory into a memory pressure value.
-  MemoryPressureObserver::MemoryPressure GetMemoryPressureLevelFromFillLevel(
+  ResourceManager::MemoryPressure GetMemoryPressureLevelFromFillLevel(
       int memory_fill_level);
 
   base::RepeatingTimer<MemoryPressureNotifier> timer_;
@@ -85,7 +75,7 @@ class ATHENA_EXPORT MemoryPressureNotifier {
   MemoryPressureObserver* listener_;
 
   // Our current memory pressure.
-  MemoryPressureObserver::MemoryPressure current_pressure_;
+  ResourceManager::MemoryPressure current_pressure_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureNotifier);
 };

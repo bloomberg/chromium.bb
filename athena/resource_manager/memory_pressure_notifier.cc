@@ -13,7 +13,7 @@ namespace athena {
 MemoryPressureNotifier::MemoryPressureNotifier(
     MemoryPressureObserver* listener)
       : listener_(listener),
-        current_pressure_(MemoryPressureObserver::MEMORY_PRESSURE_UNKNOWN) {
+        current_pressure_(ResourceManager::MEMORY_PRESSURE_UNKNOWN) {
   StartObserving();
 }
 
@@ -35,12 +35,12 @@ void MemoryPressureNotifier::StopObserving() {
 }
 
 void MemoryPressureNotifier::CheckMemoryPressure() {
-  MemoryPressureObserver::MemoryPressure pressure =
+  ResourceManager::MemoryPressure pressure =
       GetMemoryPressureLevelFromFillLevel(
           listener_->GetDelegate()->GetUsedMemoryInPercent());
   if (current_pressure_ != pressure ||
-      (pressure != MemoryPressureObserver::MEMORY_PRESSURE_LOW &&
-       pressure != MemoryPressureObserver::MEMORY_PRESSURE_UNKNOWN)) {
+      (pressure != ResourceManager::MEMORY_PRESSURE_LOW &&
+       pressure != ResourceManager::MEMORY_PRESSURE_UNKNOWN)) {
     // If we are anything worse than |MEMORY_PRESSURE_LOW|, we notify the
     // listener.
     current_pressure_ = pressure;
@@ -48,18 +48,18 @@ void MemoryPressureNotifier::CheckMemoryPressure() {
   }
 }
 
-MemoryPressureObserver::MemoryPressure
+ResourceManager::MemoryPressure
 MemoryPressureNotifier::GetMemoryPressureLevelFromFillLevel(
     int memory_fill_level) {
   if (memory_fill_level == 0)
-    return MemoryPressureObserver::MEMORY_PRESSURE_UNKNOWN;
+    return ResourceManager::MEMORY_PRESSURE_UNKNOWN;
   if (memory_fill_level < 50)
-    return MemoryPressureObserver::MEMORY_PRESSURE_LOW;
+    return ResourceManager::MEMORY_PRESSURE_LOW;
   if (memory_fill_level < 75)
-    return MemoryPressureObserver::MEMORY_PRESSURE_MODERATE;
+    return ResourceManager::MEMORY_PRESSURE_MODERATE;
   if (memory_fill_level < 90)
-    return MemoryPressureObserver::MEMORY_PRESSURE_HIGH;
-  return MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL;
+    return ResourceManager::MEMORY_PRESSURE_HIGH;
+  return ResourceManager::MEMORY_PRESSURE_CRITICAL;
 }
 
 }  // namespace athena

@@ -112,21 +112,21 @@ TEST_F(ResourceManagerTest, OnCriticalWillUnloadOneActivity) {
 
   // Call the resource manager and say we are in a critical memory condition.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_unloadable1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable2->GetCurrentState());
 
   // Calling it a second time will release the second app.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable2->GetCurrentState());
 
   // Calling it once more will change nothing.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable2->GetCurrentState());
@@ -163,7 +163,7 @@ TEST_F(ResourceManagerTest, OnCriticalMediaHandling) {
   // Calling it with a critical situation first, it will release the non media
   // locked app.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_media_locked1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable->GetCurrentState());
@@ -172,7 +172,7 @@ TEST_F(ResourceManagerTest, OnCriticalMediaHandling) {
   // Calling it the second time, the oldest media playing activity will get
   // unloaded.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_media_locked1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable->GetCurrentState());
@@ -181,7 +181,7 @@ TEST_F(ResourceManagerTest, OnCriticalMediaHandling) {
   // Calling it the third time, the oldest media playing activity will get
   // unloaded.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_media_locked1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable->GetCurrentState());
@@ -202,7 +202,7 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
 
   // Applying low resource pressure should keep everything as is.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_LOW);
+      ResourceManager::MEMORY_PRESSURE_LOW);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
@@ -212,7 +212,7 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
   // This is testing an internal algorithm constant, but for the time being
   // this should suffice.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_MODERATE);
+      ResourceManager::MEMORY_PRESSURE_MODERATE);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
@@ -220,7 +220,7 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
 
   // Applying higher pressure should get rid of everything unneeded.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
@@ -237,7 +237,7 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
 
   // Going back to a relaxed memory pressure should reload the old activities.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_LOW);
+      ResourceManager::MEMORY_PRESSURE_LOW);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
@@ -261,20 +261,20 @@ TEST_F(ResourceManagerTest, NoUnloadFromVisible) {
 
   // Applying low resource pressure should turn one item invisible.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
 
   // Trying to apply the memory pressure again does not do anything.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
 
   // Waiting and applying the pressure again should unload it.
   usleep(kTimeoutOverrideInMs * 1000);
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app2->GetCurrentState());
 }
@@ -295,7 +295,7 @@ TEST_F(ResourceManagerTest, VisibilityChangeIsInstantaneous) {
 
   // Applying higher pressure should get rid of everything unneeded.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
@@ -307,7 +307,7 @@ TEST_F(ResourceManagerTest, VisibilityChangeIsInstantaneous) {
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
 
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
@@ -334,7 +334,7 @@ TEST_F(ResourceManagerTest, ResourceChangeDelayed) {
       kTimeoutOverrideInMs);
   // Applying higher pressure should get unload the oldest activity.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
@@ -342,7 +342,7 @@ TEST_F(ResourceManagerTest, ResourceChangeDelayed) {
   // Trying to apply the resource pressure again within the timeout time should
   // not trigger any operation.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
@@ -351,7 +351,7 @@ TEST_F(ResourceManagerTest, ResourceChangeDelayed) {
   // Passing the timeout however should allow for another call.
   usleep(kTimeoutOverrideInMs * 1000);
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+      ResourceManager::MEMORY_PRESSURE_CRITICAL);
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app3->GetCurrentState());

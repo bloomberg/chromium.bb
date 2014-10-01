@@ -735,7 +735,6 @@
       'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
       'renderer/translate/translate_helper_browsertest.cc',
       'renderer/translate/translate_script_browsertest.cc',
-      'test/base/browser_tests_main.cc',
       'test/base/chrome_render_view_test.cc',
       'test/base/chrome_render_view_test.h',
       'test/base/web_ui_browser_test.cc',
@@ -1673,7 +1672,9 @@
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
-      'sources': [ '<@(chrome_browser_tests_sources)' ],
+      'sources': [
+        '<@(chrome_browser_tests_sources)',
+        'test/base/browser_tests_main.cc', ],
       'rules': [
         {
           'rule_name': 'js2webui',
@@ -1822,6 +1823,24 @@
         ['use_aura==1 or toolkit_views==1', {
           'dependencies': [
             '../ui/events/events.gyp:events_test_support',
+          ],
+        }],
+        ['use_athena==1', {
+          'dependencies': [
+            '../dbus/dbus.gyp:dbus_test_support',
+            '../build/linux/system.gyp:dbus',
+            '../ui/login/login.gyp:login_resources',
+            '../athena/resources/athena_resources.gyp:athena_pak',
+          ],
+          'sources!': [
+             '<@(chrome_browser_tests_sources)',
+             'browser/extensions/api/networking_private/networking_private_apitest.cc',
+          ],
+          'sources': [
+            '../athena/test/chrome/athena_browsertest.cc',
+            '../athena/test/chrome/athena_browsertest.h',
+            '../athena/content/content_proxy_browsertest.cc',
+            '../athena/main/placeholder_for_browsertest.cc',
           ],
         }],
         ['chromeos==0', {
@@ -2064,7 +2083,7 @@
             ['exclude', '^browser/ui/views/'],
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
+        ['OS!="android" and OS!="ios" and use_athena==0', {
           'sources': [
             'browser/copresence/chrome_whispernet_client_browsertest.cc',
           ],
@@ -2121,7 +2140,7 @@
             ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
           ],
         }],
-        ['enable_mdns==1', {
+        ['enable_mdns==1 and use_athena==0', {
           'sources' : [
             'browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc',
           ]

@@ -6,7 +6,6 @@
 #define ATHENA_RESOURCE_MANAGER_PUBLIC_RESOURCE_MANAGER_H_
 
 #include "athena/athena_export.h"
-#include "athena/resource_manager/memory_pressure_notifier.h"
 #include "base/basictypes.h"
 
 namespace athena {
@@ -17,6 +16,18 @@ namespace athena {
 // are loaded and / or a navigation between applications takes place.
 class ATHENA_EXPORT ResourceManager {
  public:
+  // The reported memory pressure. Note: The value is intentionally abstracted
+  // since the real amount of free memory is only estimated (due to e.g. zram).
+  // Note: The bigger the index of the pressure level, the more resources are
+  // in use.
+  enum MemoryPressure {
+    MEMORY_PRESSURE_UNKNOWN = 0,   // The memory pressure cannot be determined.
+    MEMORY_PRESSURE_LOW,           // Single call if fill level is below 50%.
+    MEMORY_PRESSURE_MODERATE,      // Polled for fill level of ~50 .. 75%.
+    MEMORY_PRESSURE_HIGH,          // Polled for fill level of ~75% .. 90%.
+    MEMORY_PRESSURE_CRITICAL,      // Polled for fill level of above ~90%.
+  };
+
   // Creates the instance handling the resources.
   static void Create();
   static ResourceManager* Get();
@@ -30,7 +41,7 @@ class ATHENA_EXPORT ResourceManager {
   // implementation ensures that the MemoryPressure event will not go off,
   // this call will also explicitly stop the MemoryPressureNotifier.
   virtual void SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MemoryPressure pressure) = 0;
+      ResourceManager::MemoryPressure pressure) = 0;
 
   // Resource management calls require time to show effect (until memory
   // gets actually released). This function lets override the time limiter

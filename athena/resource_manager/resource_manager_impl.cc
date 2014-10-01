@@ -35,7 +35,7 @@ class ResourceManagerImpl : public ResourceManager,
 
   // ResourceManager:
   virtual void SetMemoryPressureAndStopMonitoring(
-      MemoryPressureObserver::MemoryPressure pressure) OVERRIDE;
+      MemoryPressure pressure) OVERRIDE;
   virtual void SetWaitTimeBetweenResourceManageCalls(int time_in_ms) OVERRIDE {
     wait_time_for_resource_deallocation_ =
         base::TimeDelta::FromMilliseconds(time_in_ms);
@@ -69,8 +69,7 @@ class ResourceManagerImpl : public ResourceManager,
   virtual void OnSplitViewModeExit() OVERRIDE;
 
   // MemoryPressureObserver:
-  virtual void OnMemoryPressure(
-      MemoryPressureObserver::MemoryPressure pressure) OVERRIDE;
+  virtual void OnMemoryPressure(MemoryPressure pressure) OVERRIDE;
   virtual ResourceManagerDelegate* GetDelegate() OVERRIDE;
 
   // WindowListProviderObserver:
@@ -114,7 +113,7 @@ class ResourceManagerImpl : public ResourceManager,
   scoped_ptr<ResourceManagerDelegate> delegate_;
 
   // Keeping a reference to the current memory pressure.
-  MemoryPressureObserver::MemoryPressure current_memory_pressure_;
+  MemoryPressure current_memory_pressure_;
 
   // The memory pressure notifier.
   scoped_ptr<MemoryPressureNotifier> memory_pressure_notifier_;
@@ -158,7 +157,7 @@ const int kMaxVisibleActivities = 3;
 
 ResourceManagerImpl::ResourceManagerImpl(ResourceManagerDelegate* delegate)
     : delegate_(delegate),
-      current_memory_pressure_(MemoryPressureObserver::MEMORY_PRESSURE_UNKNOWN),
+      current_memory_pressure_(MEMORY_PRESSURE_UNKNOWN),
       memory_pressure_notifier_(new MemoryPressureNotifier(this)),
       pause_(false),
       queued_command_(false),
@@ -183,7 +182,7 @@ ResourceManagerImpl::~ResourceManagerImpl() {
 }
 
 void ResourceManagerImpl::SetMemoryPressureAndStopMonitoring(
-    MemoryPressureObserver::MemoryPressure pressure) {
+    MemoryPressure pressure) {
   memory_pressure_notifier_->StopObserving();
   OnMemoryPressure(pressure);
 }
@@ -258,8 +257,7 @@ void ResourceManagerImpl::OnWindowRemoved(aura::Window* removed_window,
                                           int index) {
 }
 
-void ResourceManagerImpl::OnMemoryPressure(
-      MemoryPressureObserver::MemoryPressure pressure) {
+void ResourceManagerImpl::OnMemoryPressure(MemoryPressure pressure) {
   if (pressure > current_memory_pressure_)
     OnMemoryPressureIncreased();
   current_memory_pressure_ = pressure;
