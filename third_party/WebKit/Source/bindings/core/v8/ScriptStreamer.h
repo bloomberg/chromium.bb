@@ -116,7 +116,7 @@ private:
     SourceStream* m_stream;
     v8::ScriptCompiler::StreamedSource m_source;
     ScriptResourceClient* m_client;
-    v8::ScriptCompiler::ScriptStreamingTask* m_task;
+    WTF::OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> m_task;
     bool m_loadingFinished; // Whether loading from the network is done.
     bool m_parsingFinished; // Whether the V8 side processing is done.
     bool m_firstDataChunkReceived;

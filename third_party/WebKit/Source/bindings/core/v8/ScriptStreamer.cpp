@@ -300,9 +300,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // running. This is taken care of with a manual ref() & deref() pair;
         // the corresponding deref() is in streamingComplete.
         ref();
-        ScriptStreamingTask* task = new ScriptStreamingTask(m_task, this);
+        ScriptStreamingTask* task = new ScriptStreamingTask(m_task.release(), this);
         ScriptStreamerThread::shared()->postTask(task);
-        m_task = 0;
         blink::Platform::current()->histogramEnumeration(histogramName, 1, 2);
     }
     m_stream->didReceiveData();
@@ -328,7 +327,6 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::Str
     , m_stream(new SourceStream(this))
     , m_source(m_stream, encoding) // m_source takes ownership of m_stream.
     , m_client(0)
-    , m_task(0)
     , m_loadingFinished(false)
     , m_parsingFinished(false)
     , m_firstDataChunkReceived(false)
@@ -427,7 +425,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
         compileOption = v8::ScriptCompiler::kProduceCodeCache;
     v8::ScriptCompiler::ScriptStreamingTask* scriptStreamingTask = v8::ScriptCompiler::StartStreamingScript(scriptState->isolate(), &(streamer->m_source), compileOption);
     if (scriptStreamingTask) {
-        streamer->m_task = scriptStreamingTask;
+        streamer->m_task = adoptPtr(scriptStreamingTask);
         script.setStreamer(streamer.release());
         return true;
     }

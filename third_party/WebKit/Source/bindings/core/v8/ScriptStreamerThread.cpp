@@ -58,8 +58,8 @@ blink::WebThread& ScriptStreamerThread::platformThread()
     return *m_thread;
 }
 
-ScriptStreamingTask::ScriptStreamingTask(v8::ScriptCompiler::ScriptStreamingTask* task, ScriptStreamer* streamer)
-    : m_v8Task(adoptPtr(task)), m_streamer(streamer) { }
+ScriptStreamingTask::ScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
+    : m_v8Task(task), m_streamer(streamer) { }
 
 void ScriptStreamingTask::run()
 {
