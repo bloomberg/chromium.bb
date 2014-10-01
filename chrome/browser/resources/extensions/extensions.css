@@ -34,6 +34,7 @@ html:not(.focus-outline-visible)
 
 #dev-controls .buttons-container {
   display: -webkit-box;
+  height: 32px;  /* height + padding-top matches #dev-controls height. */
   padding-top: 13px;
 }
 
@@ -42,13 +43,13 @@ html:not(.focus-outline-visible)
 }
 
 #apps-developer-tools-promo {
-  -webkit-margin-before: 15px;
-  -webkit-padding-before: 5px;
   -webkit-padding-end: 3px;
   align-items: center;
   border-top: 1px solid #eee;
   display: flex;
   font-size: 13px;
+  margin-top: 7px;  /* This matches #dev-controls padding-bottom. */
+  padding-top: 5px;
 }
 
 #apps-developer-tools-promo img {
@@ -226,7 +227,7 @@ html[dir='rtl'] .extension-list-item {
 }
 
 .action-links {
-  -webkit-margin-after: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .action-links :-webkit-any(a, .link-button) {
