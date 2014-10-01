@@ -41,16 +41,14 @@ namespace blink {
 
 WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, long long size)
 {
-    Blob* blob = Blob::create(BlobDataHandle::create(uuid, type, size));
-    return WebBlob(blob);
+    return Blob::create(BlobDataHandle::create(uuid, type, size));
 }
 
 WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(path);
-    Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
-    return WebBlob(blob);
+    return Blob::create(BlobDataHandle::create(blobData.release(), size));
 }
 
 WebBlob WebBlob::fromV8Value(v8::Handle<v8::Value> value)
@@ -59,7 +57,7 @@ WebBlob WebBlob::fromV8Value(v8::Handle<v8::Value> value)
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
         Blob* blob = V8Blob::toImpl(object);
         ASSERT(blob);
-        return WebBlob(blob);
+        return blob;
     }
     return WebBlob();
 }
