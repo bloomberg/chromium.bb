@@ -730,8 +730,7 @@ void PasswordFormManager::UploadPasswordForm(
   // Note that this doesn't guarantee that the upload succeeded, only that
   // |form_data| is considered uploadable.
   bool success =
-      autofill_manager->UploadPasswordForm(
-          form_data, autofill::ACCOUNT_CREATION_PASSWORD);
+      autofill_manager->UploadPasswordForm(form_data, password_type);
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
 }
 
