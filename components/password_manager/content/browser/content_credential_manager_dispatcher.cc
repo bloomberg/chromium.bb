@@ -47,6 +47,7 @@ bool ContentCredentialManagerDispatcher::OnMessageReceived(
 
 void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
     int request_id, const CredentialInfo&) {
+  DCHECK(request_id);
   // TODO(mkwst): This is a stub.
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeFailedSignIn(
@@ -56,6 +57,7 @@ void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
 void ContentCredentialManagerDispatcher::OnNotifySignedIn(
     int request_id,
     const password_manager::CredentialInfo& credential) {
+  DCHECK(request_id);
   scoped_ptr<autofill::PasswordForm> form(
       CreatePasswordFormFromCredentialInfo(credential,
           web_contents()->GetLastCommittedURL().GetOrigin()));
@@ -71,6 +73,7 @@ void ContentCredentialManagerDispatcher::OnNotifySignedIn(
 }
 
 void ContentCredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
+  DCHECK(request_id);
   // TODO(mkwst): This is a stub.
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedOut(
