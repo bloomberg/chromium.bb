@@ -88,7 +88,7 @@ public:
 
     // IDBDatabaseCallbacks
     void onVersionChange(int64_t oldVersion, int64_t newVersion);
-    void onAbort(int64_t, PassRefPtrWillBeRawPtr<DOMError>);
+    void onAbort(int64_t, DOMError*);
     void onComplete(int64_t);
 
     // ActiveDOMObject

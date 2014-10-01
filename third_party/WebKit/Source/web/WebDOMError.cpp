@@ -40,7 +40,7 @@ namespace blink {
 
 WebDOMError WebDOMError::create(const WebString& name, const WebString& message)
 {
-    return WebDOMError(DOMError::create(name, message));
+    return DOMError::create(name, message);
 }
 
 void WebDOMError::reset()
@@ -74,12 +74,12 @@ v8::Handle<v8::Value>  WebDOMError::toV8Value(v8::Handle<v8::Object> creationCon
     return toV8(m_private.get(), creationContext, isolate);
 }
 
-WebDOMError::WebDOMError(const PassRefPtrWillBeRawPtr<DOMError>& error)
+WebDOMError::WebDOMError(DOMError* error)
     : m_private(error)
 {
 }
 
-WebDOMError& WebDOMError::operator=(const PassRefPtrWillBeRawPtr<DOMError>& error)
+WebDOMError& WebDOMError::operator=(DOMError* error)
 {
     m_private = error;
     return *this;

@@ -55,7 +55,7 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator PassRefPtrWillBeRawPtr<DOMError>() const;
+    operator DOMError*() const;
 #endif
 
 private:

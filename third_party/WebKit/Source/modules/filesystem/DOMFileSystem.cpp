@@ -113,7 +113,7 @@ bool DOMFileSystem::hasPendingActivity() const
     return m_numberOfPendingCallbacks;
 }
 
-void DOMFileSystem::reportError(ErrorCallback* errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
+void DOMFileSystem::reportError(ErrorCallback* errorCallback, FileError* fileError)
 {
     scheduleCallback(errorCallback, fileError);
 }

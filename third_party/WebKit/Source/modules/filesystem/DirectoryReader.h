@@ -70,7 +70,7 @@ private:
 
     bool m_isReading;
     EntryHeapVector m_entries;
-    RefPtrWillBeMember<FileError> m_error;
+    Member<FileError> m_error;
     Member<EntriesCallback> m_entriesCallback;
     Member<ErrorCallback> m_errorCallback;
 };

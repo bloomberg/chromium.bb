@@ -72,7 +72,7 @@ public:
     void doAbort();
 
     ReadyState readyState() const { return m_state; }
-    PassRefPtrWillBeRawPtr<FileError> error() { return m_error; }
+    FileError* error() { return m_error; }
     FileReaderLoader::ReadType readType() const { return m_readType; }
     PassRefPtr<ArrayBuffer> arrayBufferResult() const;
     String stringResult();
@@ -129,7 +129,7 @@ private:
     String m_encoding;
 
     OwnPtr<FileReaderLoader> m_loader;
-    RefPtrWillBeMember<FileError> m_error;
+    Member<FileError> m_error;
     double m_lastProgressNotificationTimeMS;
     int m_asyncOperationId;
 };

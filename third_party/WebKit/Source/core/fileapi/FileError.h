@@ -34,14 +34,12 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMError.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class ExceptionState;
 
-class FileError : public DOMError {
+class FileError final : public DOMError {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
@@ -72,9 +70,9 @@ public:
     static const char syntaxErrorMessage[];
     static const char typeMismatchErrorMessage[];
 
-    static PassRefPtrWillBeRawPtr<FileError> create(ErrorCode code)
+    static FileError* create(ErrorCode code)
     {
-        return adoptRefWillBeNoop(new FileError(code));
+        return new FileError(code);
     }
 
     ErrorCode code() const { return m_code; }

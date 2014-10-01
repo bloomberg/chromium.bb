@@ -69,8 +69,8 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value> toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebDOMError(const PassRefPtrWillBeRawPtr<DOMError>&);
-    WebDOMError& operator=(const PassRefPtrWillBeRawPtr<DOMError>&);
+    WebDOMError(DOMError*);
+    WebDOMError& operator=(DOMError*);
 #endif
 
 protected:

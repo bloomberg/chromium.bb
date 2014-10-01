@@ -88,7 +88,7 @@ public:
     static FakeIDBDatabaseCallbacks* create() { return new FakeIDBDatabaseCallbacks(); }
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) OVERRIDE { }
     virtual void onForcedClose() OVERRIDE { }
-    virtual void onAbort(int64_t transactionId, PassRefPtrWillBeRawPtr<DOMError> error) OVERRIDE { }
+    virtual void onAbort(int64_t transactionId, DOMError* error) OVERRIDE { }
     virtual void onComplete(int64_t transactionId) OVERRIDE { }
 private:
     FakeIDBDatabaseCallbacks() { }

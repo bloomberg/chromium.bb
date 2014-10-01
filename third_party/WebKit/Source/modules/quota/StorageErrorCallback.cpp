@@ -46,7 +46,7 @@ void StorageErrorCallback::CallbackTask::performTask(ExecutionContext*)
 {
     if (!m_callback)
         return;
-    m_callback->handleEvent(DOMError::create(m_ec).get());
+    m_callback->handleEvent(DOMError::create(m_ec));
 }
 
 } // namespace blink

@@ -109,7 +109,7 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
     return value;
 }
 
-PassRefPtrWillBeRawPtr<DOMError> IDBRequest::error(ExceptionState& exceptionState) const
+DOMError* IDBRequest::error(ExceptionState& exceptionState) const
 {
     if (m_readyState != DONE) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
@@ -225,7 +225,7 @@ bool IDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-void IDBRequest::onError(PassRefPtrWillBeRawPtr<DOMError> error)
+void IDBRequest::onError(DOMError* error)
 {
     IDB_TRACE("IDBRequest::onError()");
     if (!shouldEnqueueEvent())

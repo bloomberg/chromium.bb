@@ -165,7 +165,7 @@ void IDBDatabase::transactionFinished(const IDBTransaction* transaction)
         closeConnection();
 }
 
-void IDBDatabase::onAbort(int64_t transactionId, PassRefPtrWillBeRawPtr<DOMError> error)
+void IDBDatabase::onAbort(int64_t transactionId, DOMError* error)
 {
     ASSERT(m_transactions.contains(transactionId));
     m_transactions.get(transactionId)->onAbort(error);

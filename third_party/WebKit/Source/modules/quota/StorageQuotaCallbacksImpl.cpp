@@ -58,7 +58,7 @@ void StorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInB
 
 void StorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error)
 {
-    m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)).get());
+    m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)));
 }
 
 } // namespace blink

@@ -55,7 +55,7 @@ public:
 
     virtual ~DOMFileSystemSync();
 
-    virtual void reportError(ErrorCallback*, PassRefPtrWillBeRawPtr<FileError>) OVERRIDE;
+    virtual void reportError(ErrorCallback*, FileError*) OVERRIDE;
 
     DirectoryEntrySync* root();
 

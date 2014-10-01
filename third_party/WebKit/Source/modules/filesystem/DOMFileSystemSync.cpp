@@ -64,9 +64,9 @@ DOMFileSystemSync::~DOMFileSystemSync()
 {
 }
 
-void DOMFileSystemSync::reportError(ErrorCallback* errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
+void DOMFileSystemSync::reportError(ErrorCallback* errorCallback, FileError* fileError)
 {
-    errorCallback->handleEvent(fileError.get());
+    errorCallback->handleEvent(fileError);
 }
 
 DirectoryEntrySync* DOMFileSystemSync::root()

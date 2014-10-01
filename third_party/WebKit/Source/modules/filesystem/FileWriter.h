@@ -110,7 +110,7 @@ private:
 
     void setError(FileError::ErrorCode, ExceptionState&);
 
-    RefPtrWillBeMember<FileError> m_error;
+    Member<FileError> m_error;
     ReadyState m_readyState;
     Operation m_operationInProgress;
     Operation m_queuedOperation;

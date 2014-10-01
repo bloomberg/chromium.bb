@@ -44,7 +44,7 @@ public:
     virtual void onForcedClose();
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
 
-    virtual void onAbort(int64_t transactionId, PassRefPtrWillBeRawPtr<DOMError>);
+    virtual void onAbort(int64_t transactionId, DOMError*);
     virtual void onComplete(int64_t transactionId);
 
     void connect(IDBDatabase*);

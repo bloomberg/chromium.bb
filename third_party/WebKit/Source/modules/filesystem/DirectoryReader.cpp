@@ -101,7 +101,7 @@ void DirectoryReader::readEntries(EntriesCallback* entriesCallback, ErrorCallbac
     }
 
     if (m_error) {
-        filesystem()->scheduleCallback(errorCallback, PassRefPtrWillBeRawPtr<FileError>(m_error.get()));
+        filesystem()->scheduleCallback(errorCallback, m_error);
         return;
     }
 

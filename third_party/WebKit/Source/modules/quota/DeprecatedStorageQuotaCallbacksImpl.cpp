@@ -75,7 +75,7 @@ void DeprecatedStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long lon
 void DeprecatedStorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error)
 {
     if (m_errorCallback)
-        m_errorCallback->handleEvent(DOMError::create(static_cast<ExceptionCode>(error)).get());
+        m_errorCallback->handleEvent(DOMError::create(static_cast<ExceptionCode>(error)));
 }
 
 } // namespace blink

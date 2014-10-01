@@ -56,7 +56,7 @@ void WebIDBDatabaseError::reset()
     m_private.reset();
 }
 
-WebIDBDatabaseError::operator PassRefPtrWillBeRawPtr<DOMError>() const
+WebIDBDatabaseError::operator DOMError*() const
 {
     return m_private.get();
 }

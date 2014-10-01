@@ -60,7 +60,7 @@ public:
     // DOMFileSystemBase overrides.
     virtual void addPendingCallbacks() OVERRIDE;
     virtual void removePendingCallbacks() OVERRIDE;
-    virtual void reportError(ErrorCallback*, PassRefPtrWillBeRawPtr<FileError>) OVERRIDE;
+    virtual void reportError(ErrorCallback*, FileError*) OVERRIDE;
 
     // ActiveDOMObject overrides.
     virtual bool hasPendingActivity() const OVERRIDE;
@@ -81,6 +81,9 @@ public:
 
     template <typename CB, typename CBArg>
     static void scheduleCallback(ExecutionContext*, CB*, const CBArg&);
+
+    template <typename CB, typename CBArg>
+    static void scheduleCallback(ExecutionContext*, CB*, const Member<CBArg>&);
 
     template <typename CB>
     static void scheduleCallback(ExecutionContext*, CB*);
@@ -222,6 +225,14 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
     ASSERT(executionContext->isContextThread());
     if (callback)
         executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)));
+}
+
+template <typename CB, typename CBArg>
+void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, const Member<CBArg>& arg)
+{
+    ASSERT(executionContext->isContextThread());
+    if (callback)
+        executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg> >(callback, arg)));
 }
 
 template <typename CB>

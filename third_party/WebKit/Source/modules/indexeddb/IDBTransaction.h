@@ -77,7 +77,7 @@ public:
     // Implement the IDBTransaction IDL
     const String& mode() const;
     IDBDatabase* db() const { return m_database.get(); }
-    PassRefPtrWillBeRawPtr<DOMError> error() const { return m_error; }
+    DOMError* error() const { return m_error; }
     IDBObjectStore* objectStore(const String& name, ExceptionState&);
     void abort(ExceptionState&);
 
@@ -86,13 +86,13 @@ public:
     void objectStoreCreated(const String&, IDBObjectStore*);
     void objectStoreDeleted(const String&);
     void setActive(bool);
-    void setError(PassRefPtrWillBeRawPtr<DOMError>);
+    void setError(DOMError*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void onAbort(PassRefPtrWillBeRawPtr<DOMError>);
+    void onAbort(DOMError*);
     void onComplete();
 
     // EventTarget
@@ -126,7 +126,7 @@ private:
     State m_state;
     bool m_hasPendingActivity;
     bool m_contextStopped;
-    RefPtrWillBeMember<DOMError> m_error;
+    Member<DOMError> m_error;
 
     HeapListHashSet<Member<IDBRequest> > m_requestList;
 

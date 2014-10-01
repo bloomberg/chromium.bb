@@ -154,13 +154,13 @@ void FileSystemRootRequest::start(ExecutionContext* executionContext)
 
     FileSystemType type;
     if (!DOMFileSystemBase::pathPrefixToFileSystemType(m_type, type)) {
-        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
+        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR));
         return;
     }
 
     KURL rootURL = DOMFileSystemBase::createFileSystemRootURL(executionContext->securityOrigin()->toString(), type);
     if (!rootURL.isValid()) {
-        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
+        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR));
         return;
     }
 
@@ -398,7 +398,7 @@ public:
         if (event->type() == EventTypeNames::load)
             didRead();
         else if (event->type() == EventTypeNames::error)
-            didHitError(m_reader->error().get());
+            didHitError(m_reader->error());
     }
 
 private:
@@ -560,7 +560,7 @@ void DeleteEntryRequest::start(ExecutionContext* executionContext)
     FileSystemType type;
     String path;
     if (!DOMFileSystemBase::crackFileSystemURL(m_url, type, path)) {
-        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
+        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR));
         return;
     }
 

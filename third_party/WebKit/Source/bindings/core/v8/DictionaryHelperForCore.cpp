@@ -490,7 +490,7 @@ struct DictionaryHelperTraits<Path2D> {
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<Uint8Array>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<ArrayBufferView>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<MediaKeyError>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<DOMError>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<DOMError>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Storage>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Element>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Element>& value);

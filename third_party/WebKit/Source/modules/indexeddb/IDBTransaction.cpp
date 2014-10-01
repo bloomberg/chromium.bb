@@ -99,7 +99,7 @@ void IDBTransaction::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-void IDBTransaction::setError(PassRefPtrWillBeRawPtr<DOMError> error)
+void IDBTransaction::setError(DOMError* error)
 {
     ASSERT(m_state != Finished);
     ASSERT(error);
@@ -211,7 +211,7 @@ void IDBTransaction::unregisterRequest(IDBRequest* request)
     m_requestList.remove(request);
 }
 
-void IDBTransaction::onAbort(PassRefPtrWillBeRawPtr<DOMError> prpError)
+void IDBTransaction::onAbort(DOMError* error)
 {
     IDB_TRACE("IDBTransaction::onAbort");
     if (m_contextStopped) {
@@ -219,12 +219,10 @@ void IDBTransaction::onAbort(PassRefPtrWillBeRawPtr<DOMError> prpError)
         return;
     }
 
-    RefPtrWillBeRawPtr<DOMError> error = prpError;
     ASSERT(m_state != Finished);
-
     if (m_state != Finishing) {
-        ASSERT(error.get());
-        setError(error.release());
+        ASSERT(error);
+        setError(error);
 
         // Abort was not triggered by front-end, so outstanding requests must
         // be aborted now.

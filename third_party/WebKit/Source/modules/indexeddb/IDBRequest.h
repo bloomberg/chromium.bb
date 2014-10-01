@@ -65,7 +65,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     ScriptValue result(ExceptionState&);
-    PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;
+    DOMError* error(ExceptionState&) const;
     ScriptValue source() const;
     IDBTransaction* transaction() const { return m_transaction.get(); }
 
@@ -92,7 +92,7 @@ public:
     void setPendingCursor(IDBCursor*);
     void abort();
 
-    virtual void onError(PassRefPtrWillBeRawPtr<DOMError>);
+    virtual void onError(DOMError*);
     virtual void onSuccess(const Vector<String>&);
     virtual void onSuccess(PassOwnPtr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
     virtual void onSuccess(IDBKey*);
@@ -147,7 +147,7 @@ private:
     RefPtr<ScriptState> m_scriptState;
     Member<IDBAny> m_source;
     Member<IDBAny> m_result;
-    RefPtrWillBeMember<DOMError> m_error;
+    Member<DOMError> m_error;
 
     bool m_hasPendingActivity;
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
