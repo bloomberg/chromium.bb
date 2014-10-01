@@ -2,6 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{accessibility: Function,
+ *            documentLoadComplete: Function,
+ *            getHeight: Function,
+ *            getHorizontalScrollbarThickness: Function,
+ *            getPageLocationNormalized: Function,
+ *            getVerticalScrollbarThickness: Function,
+ *            getWidth: Function,
+ *            getZoomLevel: Function,
+ *            goToPage: Function,
+ *            grayscale: Function,
+ *            loadPreviewPage: Function,
+ *            onload: Function,
+ *            onPluginSizeChanged: Function,
+ *            onScroll: Function,
+ *            pageXOffset: Function,
+ *            pageYOffset: Function,
+ *            printPreviewPageCount: Function,
+ *            reload: Function,
+ *            removePrintButton: Function,
+ *            resetPrintPreviewUrl: Function,
+ *            sendKeyEvent: Function,
+ *            setPageNumbers: Function,
+ *            setPageXOffset: Function,
+ *            setPageYOffset: Function,
+ *            setZoomLevel: Function,
+ *            fitToHeight: Function,
+ *            fitToWidth: Function,
+ *            zoomIn: Function,
+ *            zoomOut: Function}}
+ */
+print_preview.PDFPlugin;
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -61,7 +94,7 @@ cr.define('print_preview', function() {
 
     /**
      * The embedded pdf plugin object. It's value is null if not yet loaded.
-     * @type {HTMLEmbedElement}
+     * @type {HTMLEmbedElement|print_preview.PDFPlugin}
      * @private
      */
     this.plugin_ = null;
@@ -195,7 +228,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maps message IDs to the CSS class that contains them.
-   * @type {object.<PreviewArea.MessageId_, string>}
+   * @type {Object.<print_preview.PreviewArea.MessageId_, string>}
    * @private
    */
   PreviewArea.MessageIdClassMap_ = {};
@@ -280,7 +313,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.openSystemDialogButton_,
+          assert(this.openSystemDialogButton_),
           'click',
           this.onOpenSystemDialogButtonClick_.bind(this));
 
@@ -399,6 +432,7 @@ cr.define('print_preview', function() {
       // TODO(raymes): Remove the in-process check after we remove the
       // in-process plugin. Change this function back to
       // checkPluginCompatibility_().
+      /** @type {print_preview.PDFPlugin} */
       var compatObj = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.COMPATIBILITY_OBJECT)[0];
       var isCompatible =
@@ -498,12 +532,14 @@ cr.define('print_preview', function() {
       }
 
       if (this.pluginType_ == PreviewArea.PluginType_.IN_PROCESS) {
-        this.plugin_ = document.createElement('embed');
+        this.plugin_ = assertInstanceof(document.createElement('embed'),
+                                        HTMLEmbedElement);
         this.plugin_.setAttribute(
             'type', 'application/x-google-chrome-print-preview-pdf');
         this.plugin_.setAttribute('src', srcUrl);
       } else {
-        this.plugin_ = PDFCreateOutOfProcessPlugin(srcUrl);
+        this.plugin_ = /** @type {print_preview.PDFPlugin} */(
+            PDFCreateOutOfProcessPlugin(srcUrl));
       }
 
       this.plugin_.setAttribute('class', 'preview-area-plugin');
@@ -514,7 +550,7 @@ cr.define('print_preview', function() {
       // it.
       this.plugin_.setAttribute('id', 'pdf-viewer');
       this.getChildElement('.preview-area-plugin-wrapper').
-          appendChild(this.plugin_);
+          appendChild(/** @type {Node} */(this.plugin_));
 
 
       if (this.pluginType_ == PreviewArea.PluginType_.OUT_OF_PROCESS) {
@@ -528,7 +564,8 @@ cr.define('print_preview', function() {
                                            this.documentInfo_.isModifiable);
       } else {
         global['onPreviewPluginLoad'] = this.onPluginLoad_.bind(this);
-        this.plugin_.onload('onPreviewPluginLoad()');
+        (/** @type {print_preview.PDFPlugin} */(this.plugin_)).
+            onload('onPreviewPluginLoad()');
 
         global['onPreviewPluginVisualStateChange'] =
             this.onPreviewVisualStateChange_.bind(this);
