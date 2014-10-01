@@ -1,8 +1,9 @@
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/network-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 function testFunction()
 {
@@ -20,9 +21,6 @@ var test = function()
 
     function step1()
     {
-        // We need to initialize sources panel so that watch expressions section is created.
-        WebInspector.inspectorView._showPanel("sources");
-
         var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
         watchExpressionsPane.expand();
 
@@ -44,7 +42,7 @@ var test = function()
         InspectorTest.setBreakpoint(currentSourceFrame, 9, "", true);
         InspectorTest.addSniffer(WebInspector.WatchExpressionsSection.prototype, "update", watchExpressionsUpdated);
         // Switch to another panel to test how watch expressions evaluation together with panel switching.
-        WebInspector.inspectorView._showPanel("network");
+        WebInspector.NetworkPanel.show();
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 

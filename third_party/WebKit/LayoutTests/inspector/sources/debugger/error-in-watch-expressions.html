@@ -7,9 +7,6 @@ var foo = 123
 
 var test = function()
 {
-    // We need to initialize sources panel so that watch expressions section is created.
-    WebInspector.inspectorView._showPanel("sources");
-
     var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
     watchExpressionsPane.expand();
 

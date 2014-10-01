@@ -1,10 +1,9 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    WebInspector.inspectorView._showPanel("network");
-
     function checkURL(url)
     {
         var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), url, url, "", "", "");

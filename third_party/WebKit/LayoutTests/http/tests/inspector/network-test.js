@@ -8,7 +8,15 @@ function xhrLoadedCallback()
 
 var initialize_NetworkTest = function() {
 
-InspectorTest.networkRequests = function() {
+InspectorTest.preloadPanel("network");
+
+InspectorTest.recordNetwork = function()
+{
+    WebInspector.panels.network._networkLogView._recordButton.toggled = true;
+}
+
+InspectorTest.networkRequests = function()
+{
     return WebInspector.networkLog.requests.slice();
 }
 
@@ -61,7 +69,7 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
 
     function innerCallback(msg)
     {
-        if (msg.consoleMessage().messageText.indexOf("XHR loaded") !== -1)
+        if (msg.messageText.indexOf("XHR loaded") !== -1)
             callback();
         else
             InspectorTest.addConsoleSniffer(innerCallback);
@@ -70,6 +78,29 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
     InspectorTest.addConsoleSniffer(innerCallback);
     InspectorTest.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs + "\")");
 }
+
+InspectorTest.HARPropertyFormatters = {
+    bodySize: "formatAsTypeName",
+    compression: "formatAsTypeName",
+    connection: "formatAsTypeName",
+    headers: "formatAsTypeName",
+    headersSize: "formatAsTypeName",
+    id: "formatAsTypeName",
+    onContentLoad: "formatAsTypeName",
+    onLoad: "formatAsTypeName",
+    receive: "formatAsTypeName",
+    startedDateTime: "formatAsRecentTime",
+    time: "formatAsTypeName",
+    timings: "formatAsTypeName",
+    version: "formatAsTypeName",
+    wait: "formatAsTypeName",
+    _error: "skip",
+};
+
+// addObject checks own properties only, so make a deep copy rather than use prototype.
+
+InspectorTest.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(InspectorTest.HARPropertyFormatters));
+InspectorTest.HARPropertyFormattersWithSize.size = "formatAsTypeName";
 
 };
 

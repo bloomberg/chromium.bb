@@ -1,6 +1,8 @@
 function initialize_AuditTests()
 {
 
+InspectorTest.preloadPanel("audits");
+
 InspectorTest.collectAuditResults = function()
 {
     WebInspector.panels.audits.showResults(WebInspector.panels.audits.auditResultsTreeElement.children[0].results);

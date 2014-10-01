@@ -11,17 +11,16 @@ function testFunction() {
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("sources");
     InspectorTest.startDebuggerTest(startDebuggerTestCallback);
 
     function startDebuggerTestCallback()
     {
-        InspectorTest.evaluateInConsole("setTimeout(testFunction, 0)", function(result) {
+        InspectorTest.evaluateInPage("setTimeout(testFunction, 0)", function(result) {
             InspectorTest.addResult("Set timer for test function.");
         });
 
         InspectorTest.waitUntilPaused(function(callFrames) {
-            InspectorTest.evaluateInConsole("alert(1)", function(result) {
+            InspectorTest.evaluateInPage("alert(1)", function(result) {
                 InspectorTest.addResult("Shown alert while staying on a breakpoint.");
                 InspectorTest.completeDebuggerTest();
             });

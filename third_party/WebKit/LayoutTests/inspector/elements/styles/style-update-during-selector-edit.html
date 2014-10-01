@@ -11,7 +11,6 @@ function addStyleClass()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("elements");
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
     var treeOutline = InspectorTest.firstElementsTreeOutline();
     var seenRebuildUpdate;

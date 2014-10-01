@@ -4,6 +4,16 @@
 <script src="../http/tests/inspector/elements-test.js"></script>
 <script src="../http/tests/inspector/network-test.js"></script>
 <script>
+
+var initialize_TestCustom = function() {
+
+InspectorTest.preloadPanel("elements");
+InspectorTest.preloadPanel("sources");
+InspectorTest.preloadPanel("resources");
+InspectorTest.preloadPanel("network");
+
+}
+
 function loadResource(url)
 {
     var xhr = new XMLHttpRequest();
@@ -88,13 +98,9 @@ function test() {
 
     function installHooks()
     {
-        WebInspector.inspectorView._panel("elements");
         InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
-        WebInspector.inspectorView._panel("sources");
         InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
-        WebInspector.inspectorView._panel("resources");
         InspectorTest.addSniffer(WebInspector.ResourcesPanel.prototype, "showResource", resourceRevealed, true);
-        WebInspector.inspectorView._panel("network");
         InspectorTest.addSniffer(WebInspector.NetworkPanel.prototype, "revealAndHighlightRequest", requestRevealed, true);
     }
 

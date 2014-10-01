@@ -42,7 +42,7 @@ function test()
             }
             InspectorTest.showProfileWhenAdded("profile");
             InspectorTest.waitUntilProfileViewIsShown("profile", findPageFunctionInProfileView);
-            InspectorTest.evaluateInConsole("pageFunction()", function done() {});
+            InspectorTest.evaluateInPage("pageFunction()", function done() {});
         }
     ]);
 }

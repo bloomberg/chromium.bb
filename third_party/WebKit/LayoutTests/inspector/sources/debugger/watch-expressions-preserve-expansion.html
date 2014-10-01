@@ -17,9 +17,6 @@ var windowAlias = window;
 var test = function()
 {
     var watchExpressionsSection;
-
-    // We need to initialize sources panel so that watch expressions section is created.
-    WebInspector.inspectorView._showPanel("sources");
     InspectorTest.startDebuggerTest(step1);
 
     function step1()

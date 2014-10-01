@@ -6,7 +6,6 @@
 <script>
 function test()
 {
-    WebInspector.inspectorView._panel("network")._networkLogView._reset();
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, step2);
     WebInspector.resourceTreeModel._fetchResourceTree();
 

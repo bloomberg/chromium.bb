@@ -180,6 +180,8 @@ function writeResult(key, val)
 
 var initialize_DeviceEmulationTest = function() {
 
+InspectorTest.preloadPanel("network");
+
 InspectorTest.getPageMetrics = function(full, callback)
 {
     InspectorTest.evaluateInPage("dumpMetrics(" + full + ")", callback);

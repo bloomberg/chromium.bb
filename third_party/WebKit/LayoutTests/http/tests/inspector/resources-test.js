@@ -1,28 +1,6 @@
 var initialize_ResourceTest = function() {
 
-InspectorTest.HARPropertyFormatters = {
-    bodySize: "formatAsTypeName",
-    compression: "formatAsTypeName",
-    connection: "formatAsTypeName",
-    headers: "formatAsTypeName",
-    headersSize: "formatAsTypeName",
-    id: "formatAsTypeName",
-    onContentLoad: "formatAsTypeName",
-    onLoad: "formatAsTypeName",
-    receive: "formatAsTypeName",
-    startedDateTime: "formatAsRecentTime",
-    time: "formatAsTypeName",
-    timings: "formatAsTypeName",
-    version: "formatAsTypeName",
-    wait: "formatAsTypeName",
-    _error: "skip",
-};
-
-// addObject checks own properties only, so make a deep copy rather than use prototype.
-
-InspectorTest.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(InspectorTest.HARPropertyFormatters));
-InspectorTest.HARPropertyFormattersWithSize.size = "formatAsTypeName";
-
+InspectorTest.preloadPanel("resources");
 
 InspectorTest.requestURLComparer = function(r1, r2)
 {

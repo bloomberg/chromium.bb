@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/console-test.js"></script>
 <script src="../http/tests/inspector/workspace-test.js"></script>
 <script src="../http/tests/inspector/debugger-test.js"></script>
 <script src="resources/example-fileset-for-test.js"></script>
@@ -221,7 +222,7 @@ function test()
             function onScriptSource(uiSourceCode)
             {
                 var linkifier = new WebInspector.Linkifier();
-                WebInspector.inspectorView._showPanel("timeline");
+                WebInspector.inspectorView._showPanel("console");
                 var anchorURI = uiSourceCode.url;
                 var anchor = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, anchorURI, 10, 1);
                 WebInspector.Revealer.revealPromise(anchor.__uiLocation).then(function() {

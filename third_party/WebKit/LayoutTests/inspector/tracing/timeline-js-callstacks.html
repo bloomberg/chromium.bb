@@ -369,7 +369,7 @@ function test()
     }
     ];
 
-    var tracingTimelineModel = InspectorTest.tracingTimelineModel;
+    var tracingTimelineModel = InspectorTest.tracingTimelineModel();
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingTimelineModel, null);
     var events = dataProvider._generateJSFrameEvents(tracingTimelineModel.inspectedTargetEvents());

@@ -815,7 +815,6 @@ function test()
         profile.timestamps.push(startTime + i * samplingInterval);
     profileAndExpectations.target = function() {};
     profileAndExpectations.weakTarget = function() { return new WeakReference(null);};
-    WebInspector.inspectorView._showPanel("profiles");
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
     cpuProfileView.viewSelectComboBox.setSelectedIndex(0);
     cpuProfileView._changeView();

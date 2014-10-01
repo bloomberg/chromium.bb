@@ -1,13 +1,14 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script src="resources/timeline-data.js"></script>
 <script>
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("network");
+    WebInspector.inspectorView._showPanel("console");
     var timelineData = InspectorTest.timelineData();
 
     var timeline = WebInspector.inspectorView._showPanel("timeline");

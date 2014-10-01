@@ -36,5 +36,5 @@ var initialize_ExtensionsAuditsTest = function()
         InspectorTest.addResult("Progress: " + Math.round(100 * progress.value / progress.max) + "%");
     }
 
-    WebInspector.inspectorView._showPanel("audits");
+    InspectorTest.preloadPanel("audits");
 }

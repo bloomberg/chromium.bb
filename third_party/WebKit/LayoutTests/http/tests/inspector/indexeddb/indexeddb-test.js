@@ -52,7 +52,7 @@ InspectorTest._installIndexedDBSniffer = function()
 
     function consoleMessageOverride(msg)
     {
-        var text = msg.consoleMessage().messageText;
+        var text = msg.messageText;
         if (!text.startsWith(callbackIdPrefix)) {
             InspectorTest.addConsoleSniffer(consoleMessageOverride, false);
             return;

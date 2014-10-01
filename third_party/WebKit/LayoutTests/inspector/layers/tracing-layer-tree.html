@@ -32,7 +32,7 @@ function test()
 
     function onTracingComplete()
     {
-        var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
+        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
         for (var i = events.length - 1; i >= 0; --i) {
             if (events[i].phase === WebInspector.TracingModel.Phase.SnapshotObject && events[i].name === "cc::LayerTreeHostImpl") {
                 var rootLayer = events[i].args["snapshot"]["active_tree"]["root_layer"];

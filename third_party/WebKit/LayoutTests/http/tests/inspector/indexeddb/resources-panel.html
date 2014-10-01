@@ -2,6 +2,8 @@
 <head>
 <script src="../inspector-test.js"></script>
 <script src="indexeddb-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
 <script>
 function test()
 {
@@ -43,8 +45,8 @@ function test()
         }
     }
 
-    // Load panel to install listeners.
-    WebInspector.inspectorView._panel("resources");
+    // Start with non-resources panel.
+    WebInspector.ConsolePanel.show();
 
     InspectorTest.addSniffer(WebInspector.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
     function indexedDBAdded()
@@ -64,7 +66,8 @@ function test()
         InspectorTest.addResult("Database loaded.");
     }
 
-    WebInspector.inspectorView._showPanel("resources");
+    // Switch to resources panel.
+    WebInspector.ResourcesPanel.show();
 
     InspectorTest.addResult("Expanded IndexedDB tree element.");
     WebInspector.panels.resources.indexedDBListTreeElement.expand();

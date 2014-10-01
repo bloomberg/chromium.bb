@@ -1,9 +1,10 @@
 var initialize_ProfilerTest = function() {
 
+InspectorTest.preloadPanel("profiles");
+
 InspectorTest.startProfilerTest = function(callback)
 {
     Runtime.experiments.enableForTest("disableAgentsWhenProfile");
-    WebInspector.inspectorView._showPanel("profiles");
 
     InspectorTest.addResult("Profiler was enabled.");
     InspectorTest.addSniffer(WebInspector.panels.profiles, "_addProfileHeader", InspectorTest._profileHeaderAdded, true);

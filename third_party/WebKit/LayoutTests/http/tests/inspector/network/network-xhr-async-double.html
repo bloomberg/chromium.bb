@@ -32,7 +32,7 @@ function test()
     var totalXHRs = 2;
     function step2(msg)
     {
-        if (msg.consoleMessage().messageText.indexOf("XHR loaded") === -1 || (--totalXHRs)) {
+        if (msg.messageText.indexOf("XHR loaded") === -1 || (--totalXHRs)) {
             InspectorTest.addConsoleSniffer(step2);
             return;
         }

@@ -1,11 +1,11 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    var panel = WebInspector.inspectorView._showPanel("network");
     InspectorTest.recordNetwork();
-    var target = panel._networkLogView;
+    var target = WebInspector.panels.network._networkLogView;
     var types = WebInspector.resourceTypes;
 
     function toggleAndDump(buttonName, toggle)

@@ -9,8 +9,11 @@ function test()
     InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
 
     var nodeChangesRemaining = 2;
-    function selectedNodeChanged(event) {
+    function selectedNodeChanged(event)
+    {
         var node = event.data;
+        if (node.nodeName() === "BODY")
+            return;
         InspectorTest.addResult("SelectedNodeChanged: " + node.localName() + " " + shadowDOMPart(node));
         if (!--nodeChangesRemaining)
             InspectorTest.completeTest();

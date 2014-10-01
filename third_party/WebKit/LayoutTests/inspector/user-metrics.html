@@ -1,6 +1,9 @@
 <html>
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/timeline-test.js"></script>
+<script src="profiler/profiler-test.js"></script>
+<script src="audits/audits-test.js"></script>
 <script>
 
 function test()
@@ -31,9 +34,9 @@ function test()
 
     InspectorTest.addResult("\nrecordPanelShown:");
     InspectorTest.dump(WebInspector.UserMetrics._PanelCodes);
-    WebInspector.inspectorView._showPanel("profiles");
-    WebInspector.inspectorView._showPanel("timeline");
-    WebInspector.inspectorView._showPanel("audits");
+    WebInspector.ProfilesPanel.show();
+    WebInspector.TimelinePanel.show();
+    WebInspector.AuditsPanel.show();
 
     InspectorTest.completeTest();
 }

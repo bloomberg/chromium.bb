@@ -85,7 +85,7 @@ function test()
             }
             InspectorTest.showProfileWhenAdded("manual");
             InspectorTest.waitUntilProfileViewIsShown("manual", waitForTempFile.bind(this));
-            InspectorTest.evaluateInConsole("pageFunction()", function done() {});
+            InspectorTest.evaluateInPage("pageFunction()", function done() {});
         },
 
         function testLoad(next)

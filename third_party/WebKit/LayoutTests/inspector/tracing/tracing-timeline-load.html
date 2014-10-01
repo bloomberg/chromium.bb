@@ -9,7 +9,7 @@ function test()
 {
     function runTestWithDataAndCheck(input, expectedOutput)
     {
-        var model = InspectorTest.tracingTimelineModel;
+        var model = InspectorTest.tracingTimelineModel();
 
         function createFileReader(file, delegate)
         {
@@ -35,8 +35,8 @@ function test()
 
     function runTestOnMalformedInput(input)
     {
-        InspectorTest.tracingModel.reset();
-        var model = InspectorTest.tracingTimelineModel;
+        InspectorTest.tracingModel().reset();
+        var model = InspectorTest.tracingTimelineModel();
         model.reset();
         function createFileReader(file, delegate)
         {

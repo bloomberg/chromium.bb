@@ -2,6 +2,8 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/network-test.js"></script>
+<script src="../../../http/tests/inspector/resources-test.js"></script>
 
 <script>
 
@@ -17,7 +19,7 @@ function methodForBreakpoint()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("resources");
+    WebInspector.ResourcesPanel.show();
     InspectorTest.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
@@ -70,7 +72,7 @@ function test()
 
         function testShowResource(next)
         {
-            WebInspector.inspectorView._showPanel("network");
+            WebInspector.NetworkPanel.show();
 
             InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "show", didShowSourceFrame);
 

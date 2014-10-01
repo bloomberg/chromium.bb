@@ -1,7 +1,7 @@
 <html>
 <head>
-<script src="console-test.js"></script>
 <script src="inspector-test.js"></script>
+<script src="console-test.js"></script>
 
 <script>
 
@@ -27,7 +27,7 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.addConsoleSniffer(addMessage, true);
+    InspectorTest.addConsoleViewSniffer(addMessage, true);
 
     function addMessage(uiMessage)
     {

@@ -21,7 +21,7 @@ function test()
 
     function initSizes()
     {
-        canvas = InspectorTest.layers3DView._canvasElement;
+        canvas = WebInspector.panels.layers._layers3DView._canvasElement;
         var canvasWidth = canvas.offsetWidth;
         var canvasHeight = canvas.offsetHeight;
         var rootWidth = contentRoot.width();
@@ -50,7 +50,8 @@ function test()
 
         function checkLayer(layerInfo)
         {
-            if (InspectorTest.layers3DView._lastActiveObject[type] && layerInfo.layer.id() === InspectorTest.layers3DView._lastActiveObject[type].layer.id())
+            var l3dview = WebInspector.panels.layers._layers3DView;
+            if (l3dview._lastActiveObject[type] && layerInfo.layer.id() === l3dview._lastActiveObject[type].layer.id())
                 outlined = layerInfo.name;
         }
 
@@ -94,7 +95,6 @@ function test()
         InspectorTest.completeTest();
     }
 
-    WebInspector.inspectorView._showPanel("layers");
     InspectorTest.requestLayers(onGotLayers);
 }
 </script>

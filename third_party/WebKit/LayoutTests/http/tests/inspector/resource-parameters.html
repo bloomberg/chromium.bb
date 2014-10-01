@@ -1,7 +1,7 @@
 <html>
 <head>
 <script src="inspector-test.js"></script>
-<script src="resources-test.js"></script>
+<script src="network-test.js"></script>
 
 <script>
 function submit()
@@ -11,7 +11,6 @@ function submit()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("network");
     InspectorTest.evaluateInPage("submit()");
     WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequestFinished);
 

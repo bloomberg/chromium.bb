@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/resources-test.js"></script>
 <script>
 
 function addItem(key, value)
@@ -26,9 +27,6 @@ function clear()
 function test()
 {
     var view = null;
-
-    // Resources panel must be visible
-    WebInspector.inspectorView._showPanel("resources");
 
     function dumpDataGrid(rootNode)
     {

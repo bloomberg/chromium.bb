@@ -47,35 +47,6 @@ InspectorTest.completeTest = function()
     InspectorTest.Output.testComplete();
 }
 
-InspectorTest.evaluateInConsole = function(code, callback)
-{
-    callback = InspectorTest.safeWrap(callback);
-
-    WebInspector.inspectorView._panel("console");
-    var consoleView = WebInspector.ConsolePanel._view();
-    consoleView.visible = true;
-    consoleView._prompt.text = code;
-    var event = document.createEvent("KeyboardEvent");
-    event.initKeyboardEvent("keydown", true, true, null, "Enter", "");
-    consoleView._prompt.proxyElement.dispatchEvent(event);
-    InspectorTest.addConsoleSniffer(
-        function(commandResult) {
-            callback(commandResult.toMessageElement().textContent);
-        });
-}
-
-InspectorTest.evaluateInConsoleAndDump = function(code, callback)
-{
-    callback = InspectorTest.safeWrap(callback);
-
-    function mycallback(text)
-    {
-        InspectorTest.addResult(code + " = " + text);
-        callback(text);
-    }
-    InspectorTest.evaluateInConsole(code, mycallback);
-}
-
 InspectorTest.evaluateInPage = function(code, callback)
 {
     callback = InspectorTest.safeWrap(callback);
@@ -250,14 +221,7 @@ InspectorTest.registerModule = function(moduleName, loadImmediately)
 InspectorTest.navigate = function(url, callback)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
-
-    WebInspector.inspectorView._panel("network")._networkLogView._reset();
-    InspectorTest.evaluateInConsole("window.location = '" + url + "'");
-}
-
-InspectorTest.recordNetwork = function()
-{
-    WebInspector.inspectorView._panel("network")._networkLogView._recordButton.toggled = true;
+    InspectorTest.evaluateInPage("window.location = '" + url + "'");
 }
 
 InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)
@@ -399,12 +363,7 @@ InspectorTest.addSniffer = function(receiver, methodName, override, opt_sticky)
 
 InspectorTest.addConsoleSniffer = function(override, opt_sticky)
 {
-    var sniffer = function (viewMessage) {
-        override(viewMessage);
-    };
-
-    WebInspector.inspectorView._panel("console");
-    InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage", sniffer, opt_sticky);
+    InspectorTest.addSniffer(WebInspector.ConsoleModel.prototype, "addMessage", override, opt_sticky);
 }
 
 InspectorTest.override = function(receiver, methodName, override, opt_sticky)
@@ -646,6 +605,13 @@ WebInspector.targetManager.observeTargets({
     targetRemoved: function(target) { }
 });
 
+InspectorTest._panelsToPreload = [];
+
+InspectorTest.preloadPanel = function(panelName)
+{
+    InspectorTest._panelsToPreload.push(panelName);
+}
+
 };  // initialize_InspectorTest
 
 var initializeCallId = 0;
@@ -711,7 +677,7 @@ function runTest(enableWatchDogWhileDebugging)
             try {
                 initializationFunctions[i]();
             } catch (e) {
-                console.error("Exception in test initialization: " + e);
+                console.error("Exception in test initialization: " + e + " " + e.stack);
                 InspectorTest.completeTest();
             }
         }
@@ -723,7 +689,50 @@ function runTest(enableWatchDogWhileDebugging)
             return;
 
         InspectorTest.completeTestCallId = completeTestCallId;
+        // 1. Preload panels.
+        var lastLoadedPanel;
+        for (var i = 0; i < InspectorTest._panelsToPreload.length; ++i) {
+            lastLoadedPanel = InspectorTest._panelsToPreload[i];
+            WebInspector.inspectorView._loadPanel(lastLoadedPanel);
+        }
 
+        var testPath = WebInspector.settings.testPath.get();
+
+        // FIXME(399531): enable timelineOnTraceEvents experiment when running layout tests under inspector/tracing/. This code
+        // should be removed along with the old Timeline implementation once we move tracing based Timeline out of experimental.
+        if (testPath.indexOf("tracing/") !== -1)
+            Runtime.experiments.setEnabled("timelineOnTraceEvents", true);
+
+        if (testPath.indexOf("layers/") !== -1)
+            Runtime.experiments.setEnabled("layersPanel", true);
+
+        // 2. Show initial panel based on test path.
+        var initialPanelByFolder = {
+            "audits": "audits",
+            "console": "console",
+            "elements": "elements",
+            "editor": "sources",
+            "layers": "layers",
+            "profiler": "profiles",
+            "resource-tree": "resources",
+            "search": "sources",
+            "sources": "sources",
+            "timeline": "timeline",
+            "tracing": "timeline",
+        }
+        var initialPanelShown = false;
+        for (var folder in initialPanelByFolder) {
+            if (testPath.indexOf(folder + "/") !== -1) {
+                lastLoadedPanel = initialPanelByFolder[folder];
+                WebInspector.inspectorView._loadPanel(lastLoadedPanel);
+                break;
+            }
+        }
+
+        if (lastLoadedPanel)
+            WebInspector.inspectorView.showInitialPanelForTest(lastLoadedPanel);
+
+        // 3. Run test function.
         try {
             testFunction();
         } catch (e) {
@@ -737,12 +746,10 @@ function runTest(enableWatchDogWhileDebugging)
         if (name.indexOf("initialize_") === 0 && typeof window[name] === "function" && name !== "initialize_InspectorTest")
             initializationFunctions.push(window[name].toString());
     }
-    var parameters = ["[" + initializationFunctions + "]"];
-    var toEvaluate = "(" + initializeFrontend + ")(" + parameters.join(", ") + ");";
+    var toEvaluate = "(" + initializeFrontend + ")(" + "[" + initializationFunctions + "]" + ");";
     testRunner.evaluateInWebInspector(initializeCallId, toEvaluate);
 
-    parameters = [test, completeTestCallId];
-    toEvaluate = "(" + runTestInFrontend + ")(" + parameters.join(", ") + ");";
+    toEvaluate = "(" + runTestInFrontend + ")(" + test + ", " + completeTestCallId + ");";
     testRunner.evaluateInWebInspector(runTestCallId, toEvaluate);
 
     if (enableWatchDogWhileDebugging) {
@@ -833,38 +840,3 @@ function restoreOutput()
     createOutputElement();
     outputElement.innerHTML = savedOutput;
 }
-
-function StandaloneTestRunnerStub()
-{
-}
-
-StandaloneTestRunnerStub.prototype = {
-    dumpAsText: function()
-    {
-    },
-
-    waitUntilDone: function()
-    {
-    },
-
-    closeWebInspector: function()
-    {
-        window.opener.postMessage(["closeWebInspector"], "*");
-    },
-
-    notifyDone: function()
-    {
-        var actual = document.body.innerText + "\n";
-        window.opener.postMessage(["notifyDone", actual], "*");
-    },
-
-    evaluateInWebInspector: function(callId, script)
-    {
-        window.opener.postMessage(["evaluateInWebInspector", callId, script], "*");
-    },
-
-    display: function() { }
-}
-
-if (!window.testRunner && window.opener)
-    window.testRunner = new StandaloneTestRunnerStub();

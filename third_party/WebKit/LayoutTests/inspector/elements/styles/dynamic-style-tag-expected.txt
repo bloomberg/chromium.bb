@@ -1,15 +1,5 @@
 Tests that different types of inline styles are correctly disambiguated and their sourceURL is correct.
 
-Page reloaded.
-Stylesheet added:
-  - isInline: false
-  - sourceURL: 
-  - hasSourceURL: false
-  - contents: 
-.inline-style-added-by-parser-in-document-write {
-   color: blue;
-}
-
 Stylesheet added:
   - isInline: false
   - sourceURL: 
@@ -19,41 +9,12 @@ Stylesheet added:
 }
 Stylesheet added:
   - isInline: false
-  - sourceURL: inlineStyleAddedByDocumentWrite.css
-  - hasSourceURL: true
-  - contents: 
-.inline-style-added-by-document-write-with-source-url {
-   color: yellow;
-}
-/*# sourceURL=inlineStyleAddedByDocumentWrite.css*/
-
-Stylesheet added:
-  - isInline: false
   - sourceURL: inlineStyleCreatedByScript.css
   - hasSourceURL: true
   - contents: .inline-style-created-by-script-with-source-url {
    color: grey;
 }
 /*# sourceURL=inlineStyleCreatedByScript.css*/
-Stylesheet added:
-  - isInline: true
-  - sourceURL: dynamic-style-tag.html
-  - hasSourceURL: false
-  - contents: 
-/* comment */.inline-style-added-by-parser {
-   color: red;
-}
-
-Stylesheet added:
-  - isInline: true
-  - sourceURL: inlineStyleAddedByParser.css
-  - hasSourceURL: true
-  - contents: 
-.inline-style-added-by-parser-with-source-url {
-   color: green;
-}
-/*# sourceURL=inlineStyleAddedByParser.css*/
-
 [expanded] 
 element.style  { ()
 color: red;
@@ -65,14 +26,6 @@ color: red;
 [expanded] 
 .inline-style-created-by-script  { ()
 /-- overloaded --/ color: orange;
-
-[expanded] 
-.inline-style-added-by-document-write-with-source-url  { (inlineStyleAdde…entWrite.css:2 -> inlineStyleAddedByDocumentWrite.css:2:1)
-/-- overloaded --/ color: yellow;
-
-[expanded] 
-.inline-style-added-by-parser-in-document-write  { ()
-/-- overloaded --/ color: blue;
 
 [expanded] 
 .inline-style-added-by-parser-with-source-url  { ()

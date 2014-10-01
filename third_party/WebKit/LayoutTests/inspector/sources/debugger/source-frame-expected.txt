@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 10: test error message
+CONSOLE ERROR: line 12: test error message
 Tests that it's possible to set breakpoint in source frame, and that source frame displays breakpoints and console errors.
 
 

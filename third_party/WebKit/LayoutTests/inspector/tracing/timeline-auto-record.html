@@ -1,26 +1,27 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
 function test()
 {
-    var panel = WebInspector.inspectorView._panel("timeline");
+    var panel = WebInspector.panels.timeline;
     var model = panel._model;
 
     var callbackBarrier = new CallbackBarrier();
     model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, callbackBarrier.createCallback());
 
-    WebInspector.inspectorView._showPanel("console");
+    WebInspector.ConsolePanel.show();
     InspectorTest.runWhenPageLoads(step1);
     InspectorTest.addResult("Reloading page on console panel");
     WebInspector.resourceTreeModel.reloadPage();
 
     function step1()
     {
-        WebInspector.inspectorView._showPanel("timeline");
+        WebInspector.TimelinePanel.show();
         InspectorTest.runWhenPageLoads(callbackBarrier.createCallback());
         callbackBarrier.callWhenDone(recordingStopped);
         InspectorTest.addResult("Reloading page on timeline panel");

@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
 <script src="appcache-test.js"></script>
 <script>
 function test()
@@ -9,7 +10,7 @@ function test()
     var frameId2;
     var frameId3;
 
-    WebInspector.inspectorView._showPanel("resources");
+    WebInspector.ResourcesPanel.show();
     InspectorTest.startApplicationCacheStatusesRecording();
     InspectorTest.dumpApplicationCache();
     InspectorTest.createAndNavigateIFrame("resources/page-with-manifest.php?manifestId=with-non-existing-file", step1);

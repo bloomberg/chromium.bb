@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
@@ -17,7 +18,7 @@ function initialize_ExtensionResourceTests()
 
 InspectorTest.clickOnURL = function()
 {
-    WebInspector.inspectorView._showPanel("console");
+    WebInspector.ConsolePanel.show();
     var xpathResult = document.evaluate("//a[starts-with(., 'extensions-resources.html')]",
                                         WebInspector.panels.console.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
     var click = document.createEvent("MouseEvent");

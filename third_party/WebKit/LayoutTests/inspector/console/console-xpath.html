@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.addConsoleSniffer(addMessageSniffer, true);
+    InspectorTest.addConsoleViewSniffer(addMessageSniffer, true);
 
     InspectorTest.evaluateInConsole("$x('42')"); // number
     InspectorTest.evaluateInConsole("$x('name(/html)')"); // string

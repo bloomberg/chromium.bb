@@ -11,7 +11,7 @@ function test()
 
     function processTracingEvents()
     {
-        InspectorTest.tracingModel.sortedProcesses().forEach(function(process) {
+        InspectorTest.tracingModel().sortedProcesses().forEach(function(process) {
             process.sortedThreads().forEach(function(thread) {
                 thread.events().forEach(processEvent);
             });
@@ -29,7 +29,7 @@ function test()
         if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory || metadataEvents.indexOf(event.name) < 0)
             return;
 
-        InspectorTest.assertEquals(InspectorTest.tracingModel.sessionId(), event.args["sessionId"]);
+        InspectorTest.assertEquals(InspectorTest.tracingModel().sessionId(), event.args["sessionId"]);
         InspectorTest.addResult("Got DevTools metadata event: " + event.name);
     }
 }

@@ -8,9 +8,9 @@
 
 function test()
 {
-    InspectorTest.waitForStylesheetsOnFrontend(2, onStyleSheetsLoaded);
+    InspectorTest.selectNodeAndWaitForStyles("inspect", fetchStyleSheet);
 
-    function onStyleSheetsLoaded()
+    function fetchStyleSheet()
     {
         var styleSheets = WebInspector.cssModel.allStyleSheets();
         for (var i = 0; i < styleSheets.length; ++i) {
@@ -18,6 +18,7 @@ function test()
             if (styleSheetHeader.sourceURL.indexOf("different-rule-types.css") === -1)
                 continue;
             InspectorTest.addNewRuleInStyleSheet(styleSheetHeader, "#other, div", onRuleAdded);
+            return;
         }
     }
 
@@ -42,6 +43,7 @@ Tests that adding new rule in the stylesheet end works as expected.
 </p>
 
 <div class="inspected">Styled element</div>
+<div id="inspect"></div>
 <div id="other"></div>
 
 </body>

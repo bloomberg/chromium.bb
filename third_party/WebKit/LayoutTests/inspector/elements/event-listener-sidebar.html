@@ -34,63 +34,33 @@ function setupEventListeners()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("elements");
-
-    Object.defineProperty(WebInspector.EventListenerBar.prototype, "subtitleAsTextForTest", {
-        configurable: true,
-        get: function()
-        {
-            var payload = this._eventListener.payload();
-            var columnNumber = payload.location.columnNumber + 1;
-            var result = this.subtitleElement.textContent + ":" + columnNumber;
-            return result.replace(/\s*\bVM\d*:?\d*\b\s*/g, "");
-        }
-    });
-
-    var nextEventListenersCallback = null;
-    InspectorTest.addSniffer(WebInspector.DOMNode.prototype, "eventListeners", eventListenersHook, true);
-    function eventListenersHook()
-    {
-        if (nextEventListenersCallback) {
-            InspectorTest.runAfterPendingDispatches(nextEventListenersCallback);
-            nextEventListenersCallback = null;
-        }
-    }
-    function waitAndDumpSelectedElementEventListeners(callback)
-    {
-        nextEventListenersCallback = function()
-        {
-            InspectorTest.expandAndDumpSelectedElementEventListeners(callback);
-        }
-        var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-        sidebarPane.expand();
-    }
+    var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
 
     WebInspector.settings.eventListenersFilter.set("all");
-    waitAndDumpSelectedElementEventListeners(step1);
-    InspectorTest.selectNodeWithId("node");
+    InspectorTest.selectNodeWithId("node", step1);
 
     function step1()
     {
-        waitAndDumpSelectedElementEventListeners(step2);
-        InspectorTest.selectNodeWithId("node-without-listeners");
+        InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
     }
+
     function step2()
     {
-        waitAndDumpSelectedElementEventListeners(step3);
+        InspectorTest.selectNodeWithId("node-without-listeners", step3);
+    }
+
+    function step3()
+    {
         var eventListenersPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
         eventListenersPane.settingsSelectElement.selectedIndex = 1;
         eventListenersPane._changeSetting();
         InspectorTest.addResult("Listeners for selected node only(should be no listeners):");
+        InspectorTest.expandAndDumpSelectedElementEventListeners(step4);
     }
-    function step3()
+
+    function step4()
     {
-        InspectorTest.expandAndDumpSelectedElementEventListeners(completeTest);
-    }
-    function completeTest()
-    {
-        delete WebInspector.EventListenerBar.prototype.subtitleAsTextForTest;
-        InspectorTest.completeTest()
+        InspectorTest.completeTest();
     }
 }
 

@@ -9,7 +9,6 @@ var test = function()
 
     function step1()
     {
-        WebInspector.inspectorView._showPanel("network");
         var requests = InspectorTest.networkRequests();
         for (var i = 0; i < requests.length; ++i)
             InspectorTest.assertTrue(requests[i].responseHeaderValue("Set-Cookie") === undefined);

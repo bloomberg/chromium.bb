@@ -14,10 +14,12 @@
 /*# sourceURL=inlineStyleAddedByParser.css*/
 </style>
 <script>
-document.write("<style>\n.inline-style-added-by-parser-in-document-write {\n   color: blue;\n}\n</style>");
-document.write("<style>\n.inline-style-added-by-document-write-with-source-url {\n   color: yellow;\n}\n/*# sourceURL=inlineStyleAddedByDocumentWrite.css*/\n</style>");
-addStyleElement(".inline-style-created-by-script {\n   color: orange;\n}");
-addStyleElement(".inline-style-created-by-script-with-source-url {\n   color: grey;\n}\n/*# sourceURL=inlineStyleCreatedByScript.css*/");
+
+function addStyleElements()
+{
+    addStyleElement(".inline-style-created-by-script {\n   color: orange;\n}");
+    addStyleElement(".inline-style-created-by-script-with-source-url {\n   color: grey;\n}\n/*# sourceURL=inlineStyleCreatedByScript.css*/");
+}
 
 function addStyleElement(styleContent)
 {
@@ -26,16 +28,10 @@ function addStyleElement(styleContent)
     document.head.appendChild(styleElement);
 }
 
-var test = function()
+function test()
 {
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
-    InspectorTest.reloadPage(step1);
-    var styleSheets = [];
-
-    function pathToFileName(path)
-    {
-        return path.substring(path.lastIndexOf("/") + 1);
-    }
+    InspectorTest.evaluateInPage("addStyleElements()", step1);
 
     function step1()
     {
@@ -44,13 +40,10 @@ var test = function()
 
     function step2()
     {
-        styleSheets.sort();
-        for (var i = 0; i < styleSheets.length; ++i)
-            InspectorTest.addResult(styleSheets[i]);
         InspectorTest.dumpSelectedElementStyles(true, false, true);
         InspectorTest.completeTest();
     }
-    
+
     function styleSheetAdded(event)
     {
         var header = event.data;
@@ -61,10 +54,15 @@ var test = function()
 
         CSSAgent.getStyleSheetText(header.id, contentLoaded.bind(this));
 
+        function pathToFileName(path)
+        {
+            return path.substring(path.lastIndexOf("/") + 1);
+        }
+
         function contentLoaded(error, content)
         {
             text.push("  - contents: " + content);
-            styleSheets.push(text.join("\n"));
+            InspectorTest.addResult(text.join("\n"));
         }
     }
 }

@@ -7,7 +7,6 @@ function test()
     InspectorTest.runTestSuite([
         function testSetUp(next)
         {
-            WebInspector.inspectorView._showPanel("elements");
             WebInspector.domModel.requestDocument(next);
         },
 

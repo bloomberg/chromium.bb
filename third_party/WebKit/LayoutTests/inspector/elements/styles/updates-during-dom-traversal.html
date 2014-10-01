@@ -8,7 +8,6 @@ function test()
 {
     var updateCount = 0;
     var keydownCount = 5;
-    WebInspector.inspectorView._showPanel("elements");
 
     InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
     function selectCallback()

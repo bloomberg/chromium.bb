@@ -60,7 +60,7 @@ function test()
     InspectorTest.invokeWithTracing("showImages", onTracingComplete);
     function onTracingComplete()
     {
-        var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
+        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
             if (events[i].name !== WebInspector.TracingTimelineModel.RecordType.DecodeImage)

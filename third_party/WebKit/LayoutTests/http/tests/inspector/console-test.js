@@ -1,9 +1,46 @@
 var initialize_ConsoleTest = function() {
 
+InspectorTest.preloadPanel("console");
 
 InspectorTest.showConsolePanel = function()
 {
     WebInspector.inspectorView._showPanel("console");
+}
+
+InspectorTest.evaluateInConsole = function(code, callback)
+{
+    callback = InspectorTest.safeWrap(callback);
+
+    var consoleView = WebInspector.ConsolePanel._view();
+    consoleView.visible = true;
+    consoleView._prompt.text = code;
+    var event = document.createEvent("KeyboardEvent");
+    event.initKeyboardEvent("keydown", true, true, null, "Enter", "");
+    consoleView._prompt.proxyElement.dispatchEvent(event);
+    InspectorTest.addConsoleViewSniffer(function(commandResult) {
+        callback(commandResult.toMessageElement().textContent);
+    });
+}
+
+InspectorTest.addConsoleViewSniffer = function(override, opt_sticky)
+{
+    var sniffer = function (viewMessage) {
+        override(viewMessage);
+    };
+
+    InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage", sniffer, opt_sticky);
+}
+
+InspectorTest.evaluateInConsoleAndDump = function(code, callback)
+{
+    callback = InspectorTest.safeWrap(callback);
+
+    function mycallback(text)
+    {
+        InspectorTest.addResult(code + " = " + text);
+        callback(text);
+    }
+    InspectorTest.evaluateInConsole(code, mycallback);
 }
 
 InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessage)

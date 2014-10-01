@@ -1,8 +1,11 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/extensions-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script src="../../http/tests/inspector/resources-test.js"></script>
+<script src="../../http/tests/inspector/extensions-test.js"></script>
 <script type="text/javascript">
 function logMessage()
 {
@@ -62,9 +65,9 @@ function initialize_extensionsPanelTest()
         }
         InspectorTest.recordNetwork();
 
-        InspectorTest.addSniffer(WebInspector.inspectorView._panel("sources"), "showUILocation", showUILocationHook, true);
-        InspectorTest.addSniffer(WebInspector.inspectorView._panel("resources"), "showResource", showResourceHook, true);
-        InspectorTest.addSniffer(WebInspector.inspectorView._panel("network"), "revealAndHighlightRequest", showRequestHook, true);
+        InspectorTest.addSniffer(WebInspector.panels.sources, "showUILocation", showUILocationHook, true);
+        InspectorTest.addSniffer(WebInspector.panels.resources, "showResource", showResourceHook, true);
+        InspectorTest.addSniffer(WebInspector.panels.network, "revealAndHighlightRequest", showRequestHook, true);
 
         function showUILocationHook(uiLocation)
         {
@@ -85,7 +88,7 @@ function initialize_extensionsPanelTest()
     InspectorTest.switchToLastPanel = function()
     {
         var lastPanelName = WebInspector.inspectorView._tabbedPane._tabs.peekLast().id;
-        WebInspector.inspectorView._showPanel(lastPanelName);
+        WebInspector.inspectorView._loadAndShowPanel(lastPanelName);
     }
 }
 

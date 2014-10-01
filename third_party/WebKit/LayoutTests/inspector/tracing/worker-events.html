@@ -40,7 +40,7 @@ function test()
     var workerMetadataEventCount = 0;
     function processTracingEvents()
     {
-        InspectorTest.tracingModel.sortedProcesses().forEach(function(process) {
+        InspectorTest.tracingModel().sortedProcesses().forEach(function(process) {
             process.sortedThreads().forEach(function(thread) {
                 thread.events().forEach(processEvent);
             });
@@ -55,7 +55,7 @@ function test()
             return;
 
         ++workerMetadataEventCount;
-        InspectorTest.assertEquals(InspectorTest.tracingModel.sessionId(), event.args["data"]["sessionId"]);
+        InspectorTest.assertEquals(InspectorTest.tracingModel().sessionId(), event.args["data"]["sessionId"]);
         InspectorTest.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
     }
 

@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
@@ -25,7 +26,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.evaluateInConsole(setup, function() {
+        InspectorTest.evaluateInPage(setup, function() {
             InspectorTest.addResult("DIV and observer setup.");
             InspectorTest.evaluateInConsoleAndDump("deliveryCount", step2);
         });
@@ -33,7 +34,7 @@ var test = function()
 
     function step2()
     {
-        InspectorTest.evaluateInConsole("window.testDiv.setAttribute('foo', 'bar')", function() {
+        InspectorTest.evaluateInPage("window.testDiv.setAttribute('foo', 'bar')", function() {
             InspectorTest.addResult("setAttribute should have triggered delivery.");
             InspectorTest.evaluateInConsoleAndDump("deliveryCount", step3); 
         });
@@ -41,7 +42,7 @@ var test = function()
 
     function step3()
     {
-        InspectorTest.evaluateInConsole(mutateAndPause, InspectorTest.addResult.bind(InspectorTest, "mutateAndPause invoked."));
+        InspectorTest.evaluateInPage(mutateAndPause, InspectorTest.addResult.bind(InspectorTest, "mutateAndPause invoked."));
         InspectorTest.waitUntilPaused(step4);
     }
 

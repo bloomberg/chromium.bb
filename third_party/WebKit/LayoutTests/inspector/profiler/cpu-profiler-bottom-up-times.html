@@ -94,7 +94,6 @@ function test()
             "endTime": 1.000
         }
     };
-    WebInspector.inspectorView._showPanel("profiles");
     var view = new WebInspector.CPUProfileView(profileAndExpectations);
     view.viewSelectComboBox.setSelectedIndex(1);
     view._changeView();

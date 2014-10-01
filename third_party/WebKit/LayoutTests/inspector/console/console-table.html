@@ -25,7 +25,7 @@ function start()
 function test()
 {
     InspectorTest.disableConsoleViewport();
-    InspectorTest.addConsoleSniffer(messageAdded, true);
+    InspectorTest.addConsoleViewSniffer(messageAdded, true);
 
     var count = 4;
     function messageAdded(message)

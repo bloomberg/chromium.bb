@@ -1,5 +1,7 @@
 var initialize_Timeline = function() {
 
+InspectorTest.preloadPanel("timeline");
+
 // Scrub values when printing out these properties in the record or data field.
 InspectorTest.timelinePropertyFormatters = {
     children: "formatAsTypeName",
@@ -53,7 +55,7 @@ InspectorTest.timelineUIUtils = function()
 
 InspectorTest.startTimeline = function(callback)
 {
-    var panel = WebInspector.inspectorView._panel("timeline");
+    var panel = WebInspector.panels.timeline;
     function onRecordingStarted()
     {
         panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
@@ -65,7 +67,7 @@ InspectorTest.startTimeline = function(callback)
 
 InspectorTest.stopTimeline = function(callback)
 {
-    var panel = WebInspector.inspectorView._panel("timeline");
+    var panel = WebInspector.panels.timeline;
     function didStop()
     {
         panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)

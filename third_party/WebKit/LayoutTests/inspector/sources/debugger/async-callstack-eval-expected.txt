@@ -2,10 +2,10 @@ Tests evaluation in an async call frame.
 
 Set timer for test function.
 Call stack:
-    0) timeout (async-callstack-eval.html:24)
+    0) timeout (async-callstack-eval.html:25)
     [setTimeout]
-    0) inner (async-callstack-eval.html:14)
-    1) testFunction (async-callstack-eval.html:16)
+    0) inner (async-callstack-eval.html:15)
+    1) testFunction (async-callstack-eval.html:17)
 Select call frame: inner
 a = "PASS"
 b = "PASS"

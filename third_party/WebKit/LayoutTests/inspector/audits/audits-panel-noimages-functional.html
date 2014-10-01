@@ -21,7 +21,6 @@ JSON = {};
 <script>
 var test = function()
 {
-    WebInspector.inspectorView._showPanel("audits");
     InspectorTest.reloadPage();
     InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
 

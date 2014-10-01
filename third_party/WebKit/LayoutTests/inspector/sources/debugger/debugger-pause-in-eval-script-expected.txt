@@ -3,6 +3,6 @@ Tests that debugger will stop on "debugger" statement in a function that was add
 Evaluated script in console.
 Script execution paused.
 Call stack:
-    0) testFunction (:3)
+    0) testFunction (:2)
 Script execution resumed.
 

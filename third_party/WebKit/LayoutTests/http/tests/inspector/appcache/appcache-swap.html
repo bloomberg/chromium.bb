@@ -3,13 +3,14 @@
 <script src="../inspector-test.js"></script>
 <script src="appcache-test.js"></script>
 <script src="../network-test.js"></script>
+<script src="../resources-test.js"></script>
 <script>
 function test()
 {
     var frameId1;
     var frameId2;
 
-    WebInspector.inspectorView._showPanel("resources");
+    WebInspector.ResourcesPanel.show();
     InspectorTest.startApplicationCacheStatusesRecording();
     InspectorTest.dumpApplicationCache();
     InspectorTest.createAndNavigateIFrame("resources/with-versioned-manifest.php", step1);

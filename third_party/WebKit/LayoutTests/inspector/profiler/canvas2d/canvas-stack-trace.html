@@ -28,7 +28,7 @@ function test()
     InspectorTest.enableCanvasAgent(step1);
     function step1()
     {
-        InspectorTest.evaluateInConsole("createCanvasContext()", step2);
+        InspectorTest.evaluateInPage("createCanvasContext()", step2);
     }
     function step2()
     {
@@ -38,7 +38,7 @@ function test()
     {
         InspectorTest.assertTrue(!error && !!id, "Unexpected error: " + error);
         traceLogId = id;
-        InspectorTest.evaluateInConsole("doSomeCanvasCalls()", didSomeCanvasCalls);
+        InspectorTest.evaluateInPage("doSomeCanvasCalls()", didSomeCanvasCalls);
     }
     function didSomeCanvasCalls()
     {

@@ -16,7 +16,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.evaluateInConsole(scriptToEvaluate, InspectorTest.addResult.bind(InspectorTest, "Evaluated script in console."));
+        InspectorTest.evaluateInPage(scriptToEvaluate, InspectorTest.addResult.bind(InspectorTest, "Evaluated script in console."));
         InspectorTest.waitUntilPaused(step2);
     }
 

@@ -2,7 +2,7 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script>
+<script>// It is important that script starts on line 5 (zero-based 4)
 
 function nonFormattedFunction() { var  i = 2 + 2; var a = 4; return a + i; }
 
@@ -22,7 +22,6 @@ function onload()
 
 function test()
 {
-    var panel = WebInspector.inspectorView._panel("sources");
     var scriptFormatter;
     var linkifier;
     var link;
@@ -75,7 +74,7 @@ function test()
     function uiSourceCodeScriptFormatted()
     {
         InspectorTest.addResult("pretty printed location: " + link.textContent);
-        scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+        scriptFormatter._discardFormattedUISourceCodeScript(WebInspector.panels.sources.visibleView.uiSourceCode());
         InspectorTest.addResult("reverted location: " + link.textContent);
 
         var count1 = liveLocationsCount();

@@ -9,6 +9,7 @@ div#test {
 }
 </style>
 <script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/timeline-test.js"></script>
 <script>
 function doWork()
 {
@@ -19,8 +20,6 @@ function doWork()
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("timeline");
-
     var tracingManager = new WebInspector.TracingManager();
     var tracingModel = new WebInspector.TracingModel();
 

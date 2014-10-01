@@ -5,9 +5,6 @@
 <script>
 function test()
 {
-    // force the loading of NetworkPanel code.
-    var networkPanel = WebInspector.inspectorView._showPanel("network");
-
     function createNetworkRequestWithJSONMIMEType(type)
     {
         InspectorTest.addResult("Creating a NetworkRequest with type: " + type);

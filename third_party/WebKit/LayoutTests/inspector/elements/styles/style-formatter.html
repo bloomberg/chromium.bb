@@ -2,6 +2,7 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/sources-test.js"></script>
 <link rel="stylesheet" href="resources/style-formatter-obfuscated.css">
 
 <script>
@@ -41,7 +42,7 @@ var test = function()
 
             function didFormatContent(content, mapping)
             {
-                var source = WebInspector.inspectorView._panel("sources").visibleView._textEditor.text();
+                var source = WebInspector.panels.sources.visibleView._textEditor.text();
                 var formattedSource = content;
 
                 function testMapping(string)

@@ -14,8 +14,6 @@ function test()
 {
     InspectorTest.recordNetwork();
 
-    WebInspector.inspectorView._showPanel("network");
-
     function lastRequest()
     {
         return InspectorTest.networkRequests().pop();

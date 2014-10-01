@@ -9,7 +9,6 @@
 function test()
 {
     var cssSourceFrame;
-    WebInspector.inspectorView._showPanel("elements");
     WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
 
     InspectorTest.runTestSuite([
@@ -64,7 +63,6 @@ function test()
 
     function toggleProperty(value, next)
     {
-        WebInspector.inspectorView._showPanel("elements");
         InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", callback);
         InspectorTest.waitForStyles("inspected", callback);
         InspectorTest.toggleMatchedStyleProperty("font-weight", value);

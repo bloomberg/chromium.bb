@@ -6,7 +6,6 @@
 
 function test()
 {
-    WebInspector.inspectorView._showPanel("elements");
 
     InspectorTest.runTestSuite([
         function init(next)
@@ -105,7 +104,7 @@ function test()
     function setFormat(newFormat)
     {
         format = newFormat;
-        WebInspector.inspectorView._panel("elements").sidebarPanes.styles._colorFormatSettingChanged();
+        WebInspector.panels.elements.sidebarPanes.styles._colorFormatSettingChanged();
     }
 
     function startEditingAndDumpValue(format, propertyName, next)

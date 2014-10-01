@@ -169,11 +169,11 @@ function test()
     InspectorTest.enableCanvasAgent(step1);
     function step1()
     {
-        InspectorTest.evaluateInConsole("createAndRunWebGLProgram()", step2);
+        InspectorTest.evaluateInPage("createAndRunWebGLProgram()", step2);
     }
     function step2(error)
     {
-        InspectorTest.assertEquals("\"SUCCESS\"", error);
+        InspectorTest.assertEquals("SUCCESS", error.description);
         InspectorTest.completeTest();
     }
 }

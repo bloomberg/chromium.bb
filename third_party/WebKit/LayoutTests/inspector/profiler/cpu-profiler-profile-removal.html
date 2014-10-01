@@ -29,7 +29,7 @@ function test()
             InspectorTest.completeProfilerTest();
         }
         WebInspector.inspectorView._showPanel("profiles");
-        InspectorTest.evaluateInConsole("pageFunction()", function() {});
+        InspectorTest.evaluateInPage("pageFunction()", function() {});
         InspectorTest.showProfileWhenAdded("p2");
         InspectorTest.waitUntilProfileViewIsShown("p2", setTimeout.bind(null, viewLoaded, 0));
     });

@@ -28,7 +28,7 @@ function test()
 
     function step2()
     {
-        InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest);
+        InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest.bind(InspectorTest));
     }
 }
 

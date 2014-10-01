@@ -38,7 +38,6 @@ function test()
     // FIXME: Remove once taken out of experiments. Also a hack below should be removed.
     Runtime.experiments.enableForTest("canvasInspection");
 
-    WebInspector.inspectorView._showPanel("profiles");
     var profilesPanel = WebInspector.panels.profiles;
     var typeRegistry = WebInspector.ProfileTypeRegistry.instance;
     var profileType = typeRegistry.canvasProfileType;
@@ -69,7 +68,7 @@ function test()
         profileHeader = profileType.getProfiles()[0]
         profilesPanel.showProfile(profileHeader);
         InspectorTest.addSniffer(profileHeader, "_updateCapturingStatus", didReceiveFirstFrame);
-        InspectorTest.evaluateInConsole("doSomeCanvasCalls(2)");
+        InspectorTest.evaluateInPage("doSomeCanvasCalls(2)");
     }
     function didReceiveFirstFrame(traceLog)
     {
@@ -77,7 +76,7 @@ function test()
             InspectorTest.addSniffer(profileHeader, "_updateCapturingStatus", didReceiveFirstFrame);
             return;
         }
-        InspectorTest.evaluateInConsole("doSomeCanvasCalls(3)", didSecondFrameCalls);
+        InspectorTest.evaluateInPage("doSomeCanvasCalls(3)", didSecondFrameCalls);
     }
     function didSecondFrameCalls()
     {

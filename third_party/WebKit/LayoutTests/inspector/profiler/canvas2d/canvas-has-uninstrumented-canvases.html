@@ -20,7 +20,7 @@ function getCanvasContext()
 
 function test()
 {
-    InspectorTest.evaluateInConsole("createCanvasElement()", step1);
+    InspectorTest.evaluateInPage("createCanvasElement()", step1);
     function step1()
     {
         InspectorTest.enableCanvasAgent(step2);
@@ -38,7 +38,7 @@ function test()
     }
     function step3()
     {
-        InspectorTest.evaluateInConsole("getCanvasContext()", step4);
+        InspectorTest.evaluateInPage("getCanvasContext()", step4);
     }
     function step4()
     {

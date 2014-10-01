@@ -8,7 +8,6 @@ function test()
 {
     var UPDATE_COUNT = 5;
     var rebuildCount = 0;
-    WebInspector.inspectorView._showPanel("elements");
 
     InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
     function selectCallback()
