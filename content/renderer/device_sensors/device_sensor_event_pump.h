@@ -56,6 +56,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
         state_(STOPPED) {}
 
   virtual ~DeviceSensorEventPump() {
+    PlatformEventObserver<ListenerType>::StopIfObserving();
   }
 
   // The pump is a tri-state automaton with allowed transitions as follows:

@@ -15,6 +15,7 @@ BatteryStatusDispatcher::BatteryStatusDispatcher(RenderThread* thread)
 }
 
 BatteryStatusDispatcher::~BatteryStatusDispatcher() {
+  StopIfObserving();
 }
 
 bool BatteryStatusDispatcher::OnControlMessageReceived(

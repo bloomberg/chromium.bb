@@ -151,7 +151,9 @@ GamepadController::GamepadController()
   Reset();
 }
 
-GamepadController::~GamepadController() {}
+GamepadController::~GamepadController() {
+  StopIfObserving();
+}
 
 void GamepadController::Reset() {
   memset(&gamepads_, 0, sizeof(gamepads_));

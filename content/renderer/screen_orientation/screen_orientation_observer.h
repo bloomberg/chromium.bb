@@ -19,6 +19,7 @@ class ScreenOrientationObserver
     : public PlatformEventObserver<blink::WebPlatformEventListener> {
  public:
   ScreenOrientationObserver();
+  virtual ~ScreenOrientationObserver();
 
   // Overriding this method just to make sure |listener| is always null.
   virtual void Start(blink::WebPlatformEventListener* listener) OVERRIDE;

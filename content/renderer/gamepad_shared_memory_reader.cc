@@ -105,6 +105,7 @@ void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
 }
 
 GamepadSharedMemoryReader::~GamepadSharedMemoryReader() {
+  StopIfObserving();
 }
 
 bool GamepadSharedMemoryReader::OnControlMessageReceived(

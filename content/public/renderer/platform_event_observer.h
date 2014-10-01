@@ -60,11 +60,13 @@ class PlatformEventObserver : public PlatformEventObserverBase,
       thread->AddObserver(this);
   }
 
-  // The observer will automatically stop observing when destroyed in case it
-  // did not stop before.
+  // The observer must automatically stop observing when destroyed in case it
+  // did not stop before. Implementations of PlatformEventObserver must do
+  // so by calling StopIfObserving() from their destructors.
   virtual ~PlatformEventObserver() {
-    if (is_observing())
-      Stop();
+    // If this assert fails, the derived destructor failed to invoke
+    // StopIfObserving().
+    DCHECK(!is_observing());
   }
 
   // Called when a new IPC message is received. Must be used to listen to the
@@ -104,6 +106,15 @@ class PlatformEventObserver : public PlatformEventObserverBase,
   // know that it should start observing.
   // It is expected for subclasses to override it.
   virtual void SendStopMessage() = 0;
+
+  // Implementations of PlatformEventObserver must call StopIfObserving()
+  // from their destructor to shutdown in an orderly manner.
+  // (As Stop() calls a virtual method, it cannot be handled by
+  // ~PlatformEventObserver.)
+  void StopIfObserving() {
+    if (is_observing())
+      Stop();
+  }
 
   bool is_observing() const {
     return is_observing_;

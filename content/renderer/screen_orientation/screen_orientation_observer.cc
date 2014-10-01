@@ -11,6 +11,10 @@ namespace content {
 ScreenOrientationObserver::ScreenOrientationObserver() {
 }
 
+ScreenOrientationObserver::~ScreenOrientationObserver() {
+  StopIfObserving();
+}
+
 void ScreenOrientationObserver::Start(
     blink::WebPlatformEventListener* listener) {
   // This should never be called with a proper listener.
