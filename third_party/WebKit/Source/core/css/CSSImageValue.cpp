@@ -86,6 +86,7 @@ void CSSImageValue::restoreCachedResourceIfNeeded(Document& document)
         return;
 
     FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, resource->options());
+    document.fetcher()->maybeNotifyInsecureContent(resource);
     document.fetcher()->requestLoadStarted(resource, request, ResourceFetcher::ResourceLoadingFromCache);
 }
 

@@ -133,6 +133,7 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document)
         return;
 
     FetchRequest request(ResourceRequest(resourceURL), FetchInitiatorTypeNames::css);
+    document->fetcher()->maybeNotifyInsecureContent(m_fetched.get());
     document->fetcher()->requestLoadStarted(m_fetched.get(), request, ResourceFetcher::ResourceLoadingFromCache);
 }
 

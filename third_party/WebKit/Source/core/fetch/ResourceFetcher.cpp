@@ -630,6 +630,14 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
     return request.options().synchronousPolicy == RequestSynchronously && resource->isLoading();
 }
 
+void ResourceFetcher::maybeNotifyInsecureContent(const Resource* resource) const
+{
+    // As a side effect browser will be notified.
+    MixedContentChecker::shouldBlockFetch(frame(),
+                                          resource->lastResourceRequest(),
+                                          resource->lastResourceRequest().url());
+}
+
 void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type)
 {
     if (type == ResourceLoadingFromCache)
