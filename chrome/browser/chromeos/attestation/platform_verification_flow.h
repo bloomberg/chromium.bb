@@ -183,6 +183,13 @@ class PlatformVerificationFlow
 
   ~PlatformVerificationFlow();
 
+  // Checks whether the device has already been enrolled for attestation. The
+  // arguments to ChallengePlatformKey are in |context| and
+  // |attestation_prepared| specifies whether attestation has been prepared on
+  // this device.
+  void CheckEnrollment(const ChallengeContext& context,
+                       bool attestation_prepared);
+
   // Checks whether we need to prompt the user for consent before proceeding and
   // invokes the consent UI if so.  The arguments to ChallengePlatformKey are
   // in |context| and |attestation_enrolled| specifies whether attestation has

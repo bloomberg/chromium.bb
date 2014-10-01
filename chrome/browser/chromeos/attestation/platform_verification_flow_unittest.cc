@@ -477,5 +477,14 @@ TEST_F(PlatformVerificationFlowTest, IncognitoMode) {
   EXPECT_EQ(PlatformVerificationFlow::PLATFORM_NOT_VERIFIED, result_);
 }
 
+TEST_F(PlatformVerificationFlowTest, AttestationNotPrepared) {
+  fake_delegate_.set_response(PlatformVerificationFlow::CONSENT_RESPONSE_DENY);
+  fake_cryptohome_client_.set_attestation_enrolled(false);
+  fake_cryptohome_client_.set_attestation_prepared(false);
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::PLATFORM_NOT_VERIFIED, result_);
+}
+
 }  // namespace attestation
 }  // namespace chromeos

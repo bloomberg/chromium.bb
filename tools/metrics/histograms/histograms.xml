@@ -2628,6 +2628,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.PlatformVerification.Available"
+    enum="BooleanAvailable">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    Whether platform verification subsystem features are available at the time a
+    platform verification request is made for content protection on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.PlatformVerification.Result"
+    enum="ChromeOSPlatformVerificationResult">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The result of a platform verification attempt for content protection on
+    Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.SAML.APIUsed" enum="BooleanUsage">
   <owner>bartfab@chromium.org</owner>
   <summary>
@@ -39487,6 +39505,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Dynamic"/>
   <int value="2" label="Movie"/>
   <int value="3" label="Reading"/>
+</enum>
+
+<enum name="ChromeOSPlatformVerificationResult" type="int">
+  <summary>
+    Possible results of a platform verification attempt. See
+    chrome/browser/chromeos/attestation/platform_verification.h.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Internal Error"/>
+  <int value="2" label="Platform Not Verified"/>
+  <int value="3" label="Rejected by User"/>
+  <int value="4" label="Rejected by Policy"/>
+  <int value="5" label="Timeout"/>
 </enum>
 
 <enum name="ChromeOSUserImageId" type="int">

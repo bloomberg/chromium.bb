@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -37,6 +38,11 @@ namespace {
 
 const char kDefaultHttpsPort[] = "443";
 const int kTimeoutInSeconds = 8;
+const char kAttestationResultHistogram[] =
+    "ChromeOS.PlatformVerification.Result";
+const char kAttestationAvailableHistogram[] =
+    "ChromeOS.PlatformVerification.Available";
+const int kAttestationResultHistogramMax = 10;
 
 // A callback method to handle DBus errors.
 void DBusCallback(const base::Callback<void(bool)>& on_success,
@@ -56,6 +62,8 @@ void ReportError(
     const chromeos::attestation::PlatformVerificationFlow::ChallengeCallback&
         callback,
     chromeos::attestation::PlatformVerificationFlow::Result error) {
+  UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, error,
+                            kAttestationResultHistogramMax);
   callback.Run(error, std::string(), std::string(), std::string());
 }
 }  // namespace
@@ -182,10 +190,26 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     return;
   }
   ChallengeContext context(web_contents, service_id, challenge, callback);
+  // Check if the device has been prepared to use attestation.
+  BoolDBusMethodCallback dbus_callback = base::Bind(
+      &DBusCallback,
+      base::Bind(&PlatformVerificationFlow::CheckEnrollment, this, context),
+      base::Bind(&ReportError, callback, INTERNAL_ERROR));
+  cryptohome_client_->TpmAttestationIsPrepared(dbus_callback);
+}
+
+void PlatformVerificationFlow::CheckEnrollment(const ChallengeContext& context,
+                                               bool attestation_prepared) {
+  UMA_HISTOGRAM_BOOLEAN(kAttestationAvailableHistogram, attestation_prepared);
+  if (!attestation_prepared) {
+    // This device is not currently able to use attestation features.
+    ReportError(context.callback, PLATFORM_NOT_VERIFIED);
+    return;
+  }
   BoolDBusMethodCallback dbus_callback = base::Bind(
       &DBusCallback,
       base::Bind(&PlatformVerificationFlow::CheckConsent, this, context),
-      base::Bind(&ReportError, callback, INTERNAL_ERROR));
+      base::Bind(&ReportError, context.callback, INTERNAL_ERROR));
   cryptohome_client_->TpmAttestationIsEnrolled(dbus_callback);
 }
 
@@ -352,6 +376,8 @@ void PlatformVerificationFlow::OnChallengeReady(
     return;
   }
   VLOG(1) << "Platform verification successful.";
+  UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, SUCCESS,
+                            kAttestationResultHistogramMax);
   context.callback.Run(SUCCESS,
                        signed_data_pb.data(),
                        signed_data_pb.signature(),
