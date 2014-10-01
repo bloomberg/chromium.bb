@@ -1283,6 +1283,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
+  results.extend(_CheckForInvalidIfDefinedMacros(input_api, output_api))
   results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckChangeHasNoTabs(
@@ -1392,6 +1393,55 @@ def _CheckForInvalidOSMacros(input_api, output_api):
   return [output_api.PresubmitError(
       'Possibly invalid OS macro[s] found. Please fix your code\n'
       'or add your macro to src/PRESUBMIT.py.', bad_macros)]
+
+
+def _CheckForInvalidIfDefinedMacrosInFile(input_api, f):
+  """Check all affected files for invalid "if defined" macros."""
+  ALWAYS_DEFINED_MACROS = (
+      "TARGET_CPU_PPC",
+      "TARGET_CPU_PPC64",
+      "TARGET_CPU_68K",
+      "TARGET_CPU_X86",
+      "TARGET_CPU_ARM",
+      "TARGET_CPU_MIPS",
+      "TARGET_CPU_SPARC",
+      "TARGET_CPU_ALPHA",
+      "TARGET_IPHONE_SIMULATOR",
+      "TARGET_OS_EMBEDDED",
+      "TARGET_OS_IPHONE",
+      "TARGET_OS_MAC",
+      "TARGET_OS_UNIX",
+      "TARGET_OS_WIN32",
+  )
+  ifdef_macro = input_api.re.compile(r'^\s*#.*(?:ifdef\s|defined\()([^\s\)]+)')
+  results = []
+  for lnum, line in f.ChangedContents():
+    for match in ifdef_macro.finditer(line):
+      if match.group(1) in ALWAYS_DEFINED_MACROS:
+        always_defined = ' %s is always defined. ' % match.group(1)
+        did_you_mean = 'Did you mean \'#if %s\'?' % match.group(1)
+        results.append('    %s:%d %s\n\t%s' % (f.LocalPath(),
+                                               lnum,
+                                               always_defined,
+                                               did_you_mean))
+  return results
+
+
+def _CheckForInvalidIfDefinedMacros(input_api, output_api):
+  """Check all affected files for invalid "if defined" macros."""
+  bad_macros = []
+  for f in input_api.AffectedFiles():
+    if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm')):
+      bad_macros.extend(_CheckForInvalidIfDefinedMacrosInFile(input_api, f))
+
+  if not bad_macros:
+    return []
+
+  return [output_api.PresubmitError(
+      'Found ifdef check on always-defined macro[s]. Please fix your code\n'
+      'or check the list of ALWAYS_DEFINED_MACROS in src/PRESUBMIT.py.',
+      bad_macros)]
+
 
 def _CheckForIPCRules(input_api, output_api):
   """Check for same IPC rules described in

@@ -413,6 +413,28 @@ class InvalidOSMacroNamesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
+class InvalidIfDefinedMacroNamesTest(unittest.TestCase):
+  def testInvalidIfDefinedMacroNames(self):
+    lines = ['#if defined(TARGET_IPHONE_SIMULATOR)',
+             '#if !defined(TARGET_IPHONE_SIMULATOR)',
+             '#elif defined(TARGET_IPHONE_SIMULATOR)',
+             '#ifdef TARGET_IPHONE_SIMULATOR',
+             ' # ifdef TARGET_IPHONE_SIMULATOR',
+             '# if defined(VALID) || defined(TARGET_IPHONE_SIMULATOR)',
+             '# else  // defined(TARGET_IPHONE_SIMULATOR)',
+             '#endif  // defined(TARGET_IPHONE_SIMULATOR)',]
+    errors = PRESUBMIT._CheckForInvalidIfDefinedMacrosInFile(
+        MockInputApi(), MockFile('some/path/source.mm', lines))
+    self.assertEqual(len(lines), len(errors))
+
+  def testValidIfDefinedMacroNames(self):
+    lines = ['#if defined(FOO)',
+             '#ifdef BAR',]
+    errors = PRESUBMIT._CheckForInvalidIfDefinedMacrosInFile(
+        MockInputApi(), MockFile('some/path/source.cc', lines))
+    self.assertEqual(0, len(errors))
+
+
 class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
   def testFilesToCheckForIncomingDeps(self):
     changed_lines = [
