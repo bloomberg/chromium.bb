@@ -46,6 +46,8 @@ public:
         visitor->trace(m_paintInvalidationContainer);
     }
 
+    RenderObject* object() const { return m_object.get(); }
+
 protected:
     RawPtrWillBeMember<RenderObject> m_object;
     RawPtrWillBeMember<const RenderLayerModelObject> m_paintInvalidationContainer;

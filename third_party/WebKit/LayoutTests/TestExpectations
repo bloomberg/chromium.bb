@@ -351,6 +351,12 @@ crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failur
 crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 
+crbug.com/407416 fast/repaint/repaint-across-writing-mode-boundary.html [ NeedsRebaseline ]
+crbug.com/407416 fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
+crbug.com/407416 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
+crbug.com/407416 editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ NeedsRebaseline ]
+crbug.com/407416 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
+
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]

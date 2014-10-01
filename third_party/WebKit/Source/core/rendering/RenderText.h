@@ -184,7 +184,11 @@ private:
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
     // The parent invalidates for RenderText, so RenderText does nothing.
-    virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject&) OVERRIDE FINAL { return InvalidationNone; }
+    virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer) OVERRIDE FINAL
+    {
+        invalidateSelectionIfNeeded(paintInvalidationContainer);
+        return InvalidationNone;
+    }
 
     // We put the bitfield first to minimize padding on 64-bit.
     bool m_hasBreakableChar : 1; // Whether or not we can be broken into multiple lines.

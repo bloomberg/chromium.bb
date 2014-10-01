@@ -862,6 +862,8 @@ public:
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
+    void invalidateSelectionIfNeeded(const RenderLayerModelObject&);
+
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
@@ -1054,17 +1056,28 @@ public:
             markContainingBlockChainForPaintInvalidation();
     }
 
+    bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
+    void setShouldInvalidateSelection()
+    {
+        if (!canUpdateSelectionOnRootLineBoxes())
+            return;
+
+        m_bitfields.setShouldInvalidateSelection(true);
+        markContainingBlockChainForPaintInvalidation();
+    }
+    void clearShouldInvalidateSelection() { m_bitfields.setShouldInvalidateSelection(false); }
+
     bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
     void setNeededLayoutBecauseOfChildren(bool b) { m_bitfields.setNeededLayoutBecauseOfChildren(b); }
 
-    bool shouldCheckForPaintInvalidation(const PaintInvalidationState& paintInvalidationState)
+    bool shouldCheckForPaintInvalidation(const PaintInvalidationState& paintInvalidationState) const
     {
         return paintInvalidationState.forceCheckForPaintInvalidation() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 
-    bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()
+    bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() const
     {
-        return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer();
+        return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer() || shouldInvalidateSelection();
     }
 
     bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransform() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
@@ -1123,8 +1136,7 @@ protected:
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
     {
-        return layoutDidGetCalled() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer()
-            || onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || mayNeedPaintInvalidation();
+        return onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 #endif
 
@@ -1201,6 +1213,7 @@ private:
             // FIXME: We should remove mayNeedPaintInvalidation once we are able to
             // use the other layout flags to detect the same cases. crbug.com/370118
             , m_mayNeedPaintInvalidation(false)
+            , m_shouldInvalidateSelection(false)
             , m_onlyNeededPositionedMovementLayout(false)
             , m_neededLayoutBecauseOfChildren(false)
             , m_needsPositionedMovementLayout(false)
@@ -1238,11 +1251,12 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 14 in the second.
+        // 32 bits have been used in the first word, and 15 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidationIfSelfPaintingLayer, ShouldDoFullPaintInvalidationIfSelfPaintingLayer);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
+        ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
         ADD_BOOLEAN_BITFIELD(onlyNeededPositionedMovementLayout, OnlyNeededPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);

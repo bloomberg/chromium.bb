@@ -1276,6 +1276,18 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRe
     return value;
 }
 
+void RenderObject::invalidateSelectionIfNeeded(const RenderLayerModelObject& paintInvalidationContainer)
+{
+    if (!shouldInvalidateSelection())
+        return;
+
+    LayoutRect selection = selectionRectForPaintInvalidation(&paintInvalidationContainer);
+    // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
+    if (paintInvalidationContainer.layer()->groupedMapping())
+        RenderLayer::mapRectToPaintBackingCoordinates(&paintInvalidationContainer, selection);
+    invalidatePaintUsingContainer(&paintInvalidationContainer, selection, InvalidationSelection);
+}
+
 InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
 {
     RenderView* v = view();
@@ -1300,6 +1312,8 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidation
         "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
 
     InvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
+
+    invalidateSelectionIfNeeded(paintInvalidationContainer);
 
     if (invalidationReason == InvalidationNone)
         return invalidationReason;
@@ -3107,6 +3121,7 @@ void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& pai
     setShouldInvalidateOverflowForPaint(false);
     setLayoutDidGetCalled(false);
     setMayNeedPaintInvalidation(false);
+    clearShouldInvalidateSelection();
 }
 
 bool RenderObject::isAllowedToModifyRenderTreeStructure(Document& document)

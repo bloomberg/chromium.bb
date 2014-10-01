@@ -475,10 +475,6 @@ void RenderView::invalidatePaintForSelection() const
 {
     HashSet<RenderBlock*> processedBlocks;
 
-    // For querying RenderLayer::compositingState()
-    // FIXME: this may be wrong. crbug.com/407416
-    DisableCompositingQueryAsserts disabler;
-
     RenderObject* end = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
     for (RenderObject* o = m_selectionStart; o && o != end; o = o->nextInPreOrder()) {
         if (!o->canBeSelectionLeaf() && o != m_selectionStart && o != m_selectionEnd)
@@ -486,13 +482,13 @@ void RenderView::invalidatePaintForSelection() const
         if (o->selectionState() == SelectionNone)
             continue;
 
-        RenderSelectionInfo(o).invalidatePaint();
+        o->setShouldInvalidateSelection();
 
         // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
         for (RenderBlock* block = o->containingBlock(); block && !block->isRenderView(); block = block->containingBlock()) {
             if (!processedBlocks.add(block).isNewEntry)
                 break;
-            RenderSelectionInfo(block).invalidatePaint();
+            block->setShouldInvalidateSelection();
         }
     }
 }
@@ -631,10 +627,6 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     if (!m_frameView)
         return;
 
-    // For querying RenderLayer::compositingState()
-    // FIXME: this is wrong, selection should not cause eager invalidation. crbug.com/407416
-    DisableCompositingQueryAsserts disabler;
-
     // Have any of the old selected objects changed compared to the new selection?
     for (SelectedObjectMap::iterator i = oldSelectedObjects.begin(); i != oldObjectsEnd; ++i) {
         RenderObject* obj = i->key;
@@ -645,7 +637,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
             || (m_selectionEnd == obj && oldEndPos != m_selectionEndPos)) {
             oldInfo->invalidatePaint();
             if (newInfo) {
-                newInfo->invalidatePaint();
+                newInfo->object()->setShouldInvalidateSelection();
                 newSelectedObjects.remove(obj);
             }
         }
@@ -654,7 +646,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     // Any new objects that remain were not found in the old objects dict, and so they need to be updated.
     SelectedObjectMap::iterator newObjectsEnd = newSelectedObjects.end();
     for (SelectedObjectMap::iterator i = newSelectedObjects.begin(); i != newObjectsEnd; ++i)
-        i->value->invalidatePaint();
+        i->value->object()->setShouldInvalidateSelection();
 
     // Have any of the old blocks changed?
     SelectedBlockMap::iterator oldBlocksEnd = oldSelectedBlocks.end();
@@ -663,9 +655,9 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         RenderBlockSelectionInfo* newInfo = newSelectedBlocks.get(block);
         RenderBlockSelectionInfo* oldInfo = i->value.get();
         if (!newInfo || newInfo->hasChangedFrom(*oldInfo)) {
-            oldInfo->invalidatePaint();
+            oldInfo->object()->setShouldInvalidateSelection();
             if (newInfo) {
-                newInfo->invalidatePaint();
+                newInfo->object()->setShouldInvalidateSelection();
                 newSelectedBlocks.remove(block);
             }
         }
@@ -674,7 +666,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     // Any new blocks that remain were not found in the old blocks dict, and so they need to be updated.
     SelectedBlockMap::iterator newBlocksEnd = newSelectedBlocks.end();
     for (SelectedBlockMap::iterator i = newSelectedBlocks.begin(); i != newBlocksEnd; ++i)
-        i->value->invalidatePaint();
+        i->value->object()->setShouldInvalidateSelection();
 }
 
 void RenderView::getSelection(RenderObject*& startRenderer, int& startOffset, RenderObject*& endRenderer, int& endOffset) const
