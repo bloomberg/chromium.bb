@@ -1125,7 +1125,6 @@ crbug.com/350853 fast/multicol/widows2.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height-with-break.html [ Skip ]
 
-crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass Failure Timeout ]
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
 
@@ -1236,8 +1235,6 @@ crbug.com/411779 [ Win7 ] http/tests/serviceworker/fetch.html [ Slow ]
 crbug.com/30536 [ Win ] http/tests/htmlimports/import-cors-credentials.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/htmlimports/redirect-cross-origin.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/forward-and-cancel.html [ Timeout Pass ]
-crbug.com/30536 [ Win7 ] http/tests/navigation/ping-cookie.html [ Failure Pass ]
-crbug.com/30536 [ Win7 ] http/tests/navigation/ping-same-origin.html [ Failure Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-uri-from-child-frame.html [ Failure Pass Timeout ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-blocked-file-uri.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-uri-scheme-relative.html [ Timeout Pass ]
@@ -1439,4 +1436,3 @@ crbug.com/418091 [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ Pass F
 crbug.com/418091 [ SnowLeopard ] fast/text/text-shadow-no-default-color.html [ Pass Failure ]
 
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
-
