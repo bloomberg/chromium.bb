@@ -10,6 +10,7 @@
 #include "dl/sp/src/test/test_util.h"
 
 #include "dl/sp/src/test/compare.h"
+#include "dl/sp/src/test/gensig.h"
 
 /*
  * Test results from running either forward or inverse FFT tests

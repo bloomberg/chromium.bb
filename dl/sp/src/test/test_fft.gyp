@@ -167,13 +167,16 @@
         'test_float_rfft.c',
         'support/float_rfft_thresholds.h',
       ],
+      'libraries': [
+        '-lm',
+      ],
       'conditions': [
         ['target_arch == "arm" or target_arch == "arm64"', {
           'sources': [
             'support/float_rfft_neon.c',
           ],
         }],
-        ['target_arch == "ia32"', {
+        ['target_arch == "ia32" or target_arch == "x64"', {
           'sources': [
             'support/float_rfft_x86.c',
           ],
@@ -192,8 +195,11 @@
       'sources': [
         'test_fft_time.c',
       ],
+      'libraries': [
+        '-lm',
+      ],
       'conditions': [
-        ['target_arch == "ia32" or target_arch == "arm64" or target_arch == "mipsel"', {
+        ['target_arch == "ia32" or target_arch == "x64" or target_arch == "arm64" or target_arch == "mipsel"', {
           'defines': [
             # Timing test only for float FFTs on x86 and arm64 and MIPSEL.
             'FLOAT_ONLY',

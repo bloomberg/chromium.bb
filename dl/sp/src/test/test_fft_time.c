@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -609,11 +610,11 @@ void TimeOneSC32FFT(int count, int fft_log_size, float signal_value,
       GetUserTime(&start_time);
       for (k = 0; k < count; ++k) {
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(x[n].Re) > factor) {
-            factor = fabs(x[n].Re);
+          if (abs(x[n].Re) > factor) {
+            factor = abs(x[n].Re);
           }
-          if (fabs(x[n].Im) > factor) {
-            factor = fabs(x[n].Im);
+          if (abs(x[n].Im) > factor) {
+            factor = abs(x[n].Im);
           }
         }
 
@@ -653,11 +654,11 @@ void TimeOneSC32FFT(int count, int fft_log_size, float signal_value,
       GetUserTime(&start_time);
       for (k = 0; k < count; ++k) {
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(x[n].Re) > factor) {
-            factor = fabs(x[n].Re);
+          if (abs(x[n].Re) > factor) {
+            factor = abs(x[n].Re);
           }
-          if (fabs(x[n].Im) > factor) {
-            factor = fabs(x[n].Im);
+          if (abs(x[n].Im) > factor) {
+            factor = abs(x[n].Im);
           }
         }
         factor = ((1 << 18) - 1) / factor;
@@ -791,11 +792,11 @@ void TimeOneSC16FFT(int count, int fft_log_size, float signal_value,
       GetUserTime(&start_time);
       for (k = 0; k < count; ++k) {
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(x[n].Re) > factor) {
-            factor = fabs(x[n].Re);
+          if (abs(x[n].Re) > factor) {
+            factor = abs(x[n].Re);
           }
-          if (fabs(x[n].Im) > factor) {
-            factor = fabs(x[n].Im);
+          if (abs(x[n].Im) > factor) {
+            factor = abs(x[n].Im);
           }
         }
 
@@ -835,11 +836,11 @@ void TimeOneSC16FFT(int count, int fft_log_size, float signal_value,
       GetUserTime(&start_time);
       for (k = 0; k < count; ++k) {
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(x[n].Re) > factor) {
-            factor = fabs(x[n].Re);
+          if (abs(x[n].Re) > factor) {
+            factor = abs(x[n].Re);
           }
-          if (fabs(x[n].Im) > factor) {
-            factor = fabs(x[n].Im);
+          if (abs(x[n].Im) > factor) {
+            factor = abs(x[n].Im);
           }
         }
         factor = ((1 << 15) - 1) / factor;
@@ -1013,8 +1014,8 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
          * Spend some time computing the max of the signal, and then scaling it.
          */
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(xr[n]) > factor) {
-            factor = fabs(xr[n]);
+          if (abs(xr[n]) > factor) {
+            factor = abs(xr[n]);
           }
         }
 
@@ -1080,8 +1081,8 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
          * Spend some time scaling the FFT signal to fixed point.
          */
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(yrTrue[n]) > factor) {
-            factor = fabs(yrTrue[n]);
+          if (abs(yrTrue[n]) > factor) {
+            factor = abs(yrTrue[n]);
           }
         }
         for (n = 0; n < fft_size; ++n) {
@@ -1282,8 +1283,8 @@ void TimeOneRFFT32(int count, int fft_log_size, float signal_value,
          * Spend some time computing the max of the signal, and then scaling it.
          */
         for (n = 0; n < fft_size; ++n) {
-          if (fabs(xr[n]) > factor) {
-            factor = fabs(xr[n]);
+          if (abs(xr[n]) > factor) {
+            factor = abs(xr[n]);
           }
         }
 
@@ -1331,8 +1332,8 @@ void TimeOneRFFT32(int count, int fft_log_size, float signal_value,
          * Spend some time scaling the FFT signal to fixed point.
          */
         for (n = 0; n < fft_size + 2; ++n) {
-          if (fabs(yrTrue[n]) > factor) {
-            factor = fabs(yrTrue[n]);
+          if (abs(yrTrue[n]) > factor) {
+            factor = abs(yrTrue[n]);
           }
         }
         for (n = 0; n < fft_size + 2; ++n) {
