@@ -1223,9 +1223,34 @@ CSSParserValue& BisonCSSParser::sinkFloatingValue(CSSParserValue& value)
     return value;
 }
 
+void BisonCSSParser::startMediaValue()
+{
+    if (!m_observer)
+        return;
+    m_mediaQueryValueStartOffset = m_tokenizer.safeUserStringTokenOffset();
+}
+
+void BisonCSSParser::endMediaValue()
+{
+    if (!m_observer)
+        return;
+    m_mediaQueryValueEndOffset = m_tokenizer.safeUserStringTokenOffset();
+}
+
+void BisonCSSParser::startMediaQuery()
+{
+    if (!m_observer)
+        return;
+    m_observer->startMediaQuery();
+}
+
 MediaQueryExp* BisonCSSParser::createFloatingMediaQueryExp(const AtomicString& mediaFeature, CSSParserValueList* values)
 {
     m_floatingMediaQueryExp = MediaQueryExp::createIfValid(mediaFeature, values);
+    if (m_observer && m_floatingMediaQueryExp.get() && values) {
+        m_observer->startMediaQueryExp(m_mediaQueryValueStartOffset);
+        m_observer->endMediaQueryExp(m_mediaQueryValueEndOffset);
+    }
     return m_floatingMediaQueryExp.get();
 }
 
@@ -1250,6 +1275,8 @@ PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > Bi
 MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > expressions)
 {
     m_floatingMediaQuery = adoptPtrWillBeNoop(new MediaQuery(restrictor, mediaType, expressions));
+    if (m_observer)
+        m_observer->endMediaQuery();
     return m_floatingMediaQuery.get();
 }
 

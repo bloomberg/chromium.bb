@@ -93,6 +93,10 @@ private:
     virtual void endProperty(bool, bool, unsigned, CSSParserError) OVERRIDE;
     virtual void startComment(unsigned) OVERRIDE;
     virtual void endComment(unsigned) OVERRIDE;
+    virtual void startMediaQueryExp(unsigned offset) OVERRIDE;
+    virtual void endMediaQueryExp(unsigned offset) OVERRIDE;
+    virtual void startMediaQuery() OVERRIDE;
+    virtual void endMediaQuery() OVERRIDE;
 
     void addNewRuleToSourceTree(PassRefPtrWillBeRawPtr<CSSRuleSourceData>);
     PassRefPtrWillBeRawPtr<CSSRuleSourceData> popRuleData();
@@ -109,6 +113,8 @@ private:
     unsigned m_propertyRangeStart;
     unsigned m_selectorRangeStart;
     unsigned m_commentRangeStart;
+    RefPtrWillBeMember<CSSMediaQuerySourceData> m_currentMediaQueryData;
+    unsigned m_mediaQueryExpValueRangeStart;
 };
 
 void StyleSheetHandler::startRuleHeader(CSSRuleSourceData::Type type, unsigned offset)
@@ -345,6 +351,37 @@ void StyleSheetHandler::endComment(unsigned offset)
 
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
         CSSPropertySourceData(propertyData.name, propertyData.value, false, true, true, SourceRange(startOffset, offset)));
+}
+
+void StyleSheetHandler::startMediaQueryExp(unsigned offset)
+{
+    ASSERT(m_currentMediaQueryData);
+    m_mediaQueryExpValueRangeStart = offset;
+}
+
+void StyleSheetHandler::endMediaQueryExp(unsigned offset)
+{
+    ASSERT(m_currentMediaQueryData);
+    ASSERT(offset >= m_mediaQueryExpValueRangeStart);
+    ASSERT(offset <= m_parsedText.length());
+    while (offset > m_mediaQueryExpValueRangeStart && isSpaceOrNewline(m_parsedText[offset - 1]))
+        --offset;
+    while (offset > m_mediaQueryExpValueRangeStart && isSpaceOrNewline(m_parsedText[m_mediaQueryExpValueRangeStart]))
+        ++m_mediaQueryExpValueRangeStart;
+    m_currentMediaQueryData->expData.append(CSSMediaQueryExpSourceData(SourceRange(m_mediaQueryExpValueRangeStart, offset)));
+}
+
+void StyleSheetHandler::startMediaQuery()
+{
+    ASSERT(m_currentRuleDataStack.size() && m_currentRuleDataStack.last()->mediaSourceData);
+    RefPtrWillBeRawPtr<CSSMediaQuerySourceData> data = CSSMediaQuerySourceData::create();
+    m_currentMediaQueryData = data;
+    m_currentRuleDataStack.last()->mediaSourceData->queryData.append(data);
+}
+
+void StyleSheetHandler::endMediaQuery()
+{
+    m_currentMediaQueryData.clear();
 }
 
 } // namespace
@@ -1382,6 +1419,23 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceR
         return nullptr;
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = m_parsedStyleSheet->ruleSourceDataAt(static_cast<unsigned>(index));
     return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get());
+}
+
+PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValueSourceRange(const CSSRule* rule, size_t mediaQueryIndex, size_t mediaQueryExpIndex)
+{
+    if (!ensureParsedDataReady())
+        return nullptr;
+    ensureFlatRules();
+    size_t index = m_flatRules.find(rule);
+    if (index == kNotFound || index >= m_parsedStyleSheet->ruleCount())
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = m_parsedStyleSheet->ruleSourceDataAt(static_cast<unsigned>(index));
+    if (!sourceData->mediaSourceData || mediaQueryIndex >= sourceData->mediaSourceData->queryData.size())
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSMediaQuerySourceData> mediaQueryData = sourceData->mediaSourceData->queryData.at(mediaQueryIndex);
+    if (mediaQueryExpIndex >= mediaQueryData->expData.size())
+        return nullptr;
+    return buildSourceRangeObject(mediaQueryData->expData.at(mediaQueryExpIndex).valueRange, lineEndings().get());
 }
 
 PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const InspectorCSSId& id)

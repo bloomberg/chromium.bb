@@ -22,12 +22,42 @@ function test()
             return 0;
         }
         response.medias.sort(mediaComparator);
+
+        var styleSheetIds = [];
         for (var i = 0; i < response.medias.length; ++i) {
-            var mediaRule = response.medias[i];
+            var styleSheetId = response.medias[i].parentStyleSheetId;
+            if (styleSheetId && styleSheetIds.indexOf(styleSheetId) === -1)
+                styleSheetIds.push(styleSheetId);
+        }
+        if (!styleSheetIds.length) {
+            dumpMediaQueries(response.medias, {});
+            return;
+        }
+
+        var styleSheetTextMap = {};
+        for (var i = 0; i < styleSheetIds.length; ++i) {
+            var callback = i === styleSheetIds.length - 1 ? dumpMediaQueries.bind(null, response.medias, styleSheetTextMap) : null;
+            InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", {styleSheetId: styleSheetIds[i]}, onStyleSheetText.bind(null, styleSheetIds[i], styleSheetTextMap, callback));
+        }
+    }
+
+    function onStyleSheetText(styleSheetId, styleSheetTextMap, callback, response)
+    {
+        styleSheetTextMap[styleSheetId] = response.text;
+        if (callback)
+            callback();
+    }
+
+    function dumpMediaQueries(medias, styleSheetTextMap)
+    {
+        for (var i = 0; i < medias.length; ++i) {
+            var mediaRule = medias[i];
             InspectorTest.log("mediaRule #" + i);
             InspectorTest.log("    text: " + mediaRule.text);
             InspectorTest.log("    source: " + mediaRule.source);
             InspectorTest.log("    range: " + JSON.stringify(mediaRule.range));
+            if (mediaRule.parentStyleSheetId && mediaRule.range)
+                InspectorTest.log("    computedText: " + getComputedText(styleSheetTextMap[mediaRule.parentStyleSheetId], mediaRule.range));
             if (!mediaRule.mediaList) {
                 InspectorTest.log("    mediaList is empty");
                 continue;
@@ -40,13 +70,31 @@ function test()
                     var expression = mediaQuery.expressions[k];
                     InspectorTest.log("        mediaExpression #" + k);
                     InspectorTest.log("            feature: " + expression.feature);
-                    InspectorTest.log("            value: " + expression.value + expression.unit);
+                    InspectorTest.log("            value: " + expression.value);
+                    InspectorTest.log("            unit: " + expression.unit);
+                    if (expression.valueRange) {
+                        InspectorTest.log("            valueRange: " + JSON.stringify(expression.valueRange));
+                        if (mediaRule.parentStyleSheetId)
+                            InspectorTest.log("            computedText: " + getComputedText(styleSheetTextMap[mediaRule.parentStyleSheetId], expression.valueRange));
+                    }
                     if (expression.computedLength)
                         InspectorTest.log("            computed length: " + expression.computedLength);
                 }
             }
         }
         InspectorTest.completeTest();
+    }
+
+    function getComputedText(text, range)
+    {
+        var lines = text.split("\n");
+        var result = [];
+        for (var line = range.startLine; line <= range.endLine; ++line) {
+            var start = line === range.startLine ? range.startColumn : 0;
+            var end = line === range.endLine ? range.endColumn : lines[line].length;
+            result.push(lines[line].substring(start, end));
+        }
+        return result.join("\\n");
     }
 };
 </script>

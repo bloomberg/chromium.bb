@@ -604,12 +604,19 @@ STRING
 | URI
 ;
 
+before_media_value_expr:
+    /* empty */ {
+        parser->startMediaValue();
+    }
+    ;
+
 maybe_media_value:
     /*empty*/ {
         $$ = 0;
     }
-    | ':' maybe_space expr {
-        $$ = $3;
+    | ':' maybe_space before_media_value_expr expr {
+        $$ = $4;
+        parser->endMediaValue();
     }
     ;
 
@@ -657,13 +664,19 @@ maybe_media_restrictor:
     }
     ;
 
-valid_media_query:
-    media_query_exp_list maybe_space {
-        $$ = parser->createFloatingMediaQuery(parser->sinkFloatingMediaQueryExpList($1));
+before_media_query:
+    /* empty */ {
+        parser->startMediaQuery();
     }
-    | maybe_media_restrictor medium maybe_and_media_query_exp_list {
-        parser->tokenToLowerCase($2);
-        $$ = parser->createFloatingMediaQuery($1, $2, parser->sinkFloatingMediaQueryExpList($3));
+    ;
+
+valid_media_query:
+    before_media_query media_query_exp_list maybe_space {
+        $$ = parser->createFloatingMediaQuery(parser->sinkFloatingMediaQueryExpList($2));
+    }
+    | before_media_query maybe_media_restrictor medium maybe_and_media_query_exp_list {
+        parser->tokenToLowerCase($3);
+        $$ = parser->createFloatingMediaQuery($2, $3, parser->sinkFloatingMediaQueryExpList($4));
     }
     ;
 

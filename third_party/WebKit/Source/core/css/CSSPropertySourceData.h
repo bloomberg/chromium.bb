@@ -83,6 +83,39 @@ struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSour
     WillBeHeapVector<CSSPropertySourceData> propertyData;
 };
 
+struct CSSMediaQueryExpSourceData {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    CSSMediaQueryExpSourceData(const SourceRange& valueRange)
+        : valueRange(valueRange) { }
+
+    void trace(Visitor* visitor) { visitor->trace(valueRange); }
+
+    SourceRange valueRange;
+};
+
+struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollected<CSSMediaQuerySourceData> {
+    static PassRefPtrWillBeRawPtr<CSSMediaQuerySourceData> create()
+    {
+        return adoptRefWillBeNoop(new CSSMediaQuerySourceData());
+    }
+
+    void trace(Visitor* visitor) { visitor->trace(expData); }
+
+    WillBeHeapVector<CSSMediaQueryExpSourceData> expData;
+};
+
+struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSourceData> {
+    static PassRefPtrWillBeRawPtr<CSSMediaSourceData> create()
+    {
+        return adoptRefWillBeNoop(new CSSMediaSourceData());
+    }
+
+    void trace(Visitor* visitor) { visitor->trace(queryData); }
+
+    WillBeHeapVector<RefPtrWillBeMember<CSSMediaQuerySourceData> > queryData;
+};
+
 struct CSSRuleSourceData;
 typedef WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData> > RuleSourceDataList;
 typedef WillBeHeapVector<SourceRange> SelectorRangeList;
@@ -117,6 +150,8 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
     {
         if (type == STYLE_RULE || type == FONT_FACE_RULE || type == PAGE_RULE)
             styleSourceData = CSSStyleSourceData::create();
+        if (type == MEDIA_RULE || type == IMPORT_RULE)
+            mediaSourceData = CSSMediaSourceData::create();
     }
 
     void trace(Visitor*);
@@ -137,6 +172,9 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
 
     // Only for CSSMediaRules.
     RuleSourceDataList childRules;
+
+    // Only for CSSMediaRules and CSSImportRules.
+    RefPtrWillBeMember<CSSMediaSourceData> mediaSourceData;
 };
 
 } // namespace blink

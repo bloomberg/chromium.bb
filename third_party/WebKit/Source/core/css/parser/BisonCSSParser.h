@@ -134,6 +134,9 @@ public:
     void startDeclarationsForMarginBox();
     void endDeclarationsForMarginBox();
 
+    void startMediaValue();
+    void endMediaValue();
+    void startMediaQuery();
     MediaQueryExp* createFloatingMediaQueryExp(const AtomicString&, CSSParserValueList*);
     PassOwnPtrWillBeRawPtr<MediaQueryExp> sinkFloatingMediaQueryExp(MediaQueryExp*);
     WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* createFloatingMediaQueryExpList();
@@ -284,6 +287,8 @@ private:
     Vector<CSSParserValueList*> m_floatingValueLists;
     Vector<CSSParserFunction*> m_floatingFunctions;
 
+    unsigned m_mediaQueryValueStartOffset;
+    unsigned m_mediaQueryValueEndOffset;
     OwnPtrWillBeMember<MediaQuery> m_floatingMediaQuery;
     OwnPtrWillBeMember<MediaQueryExp> m_floatingMediaQueryExp;
     OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > m_floatingMediaQueryExpList;

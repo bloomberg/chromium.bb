@@ -1,5 +1,13 @@
 /* media queries which are guaranteed to evaluate to true */
-@media all and (min-width: 1px), (max-width: 1000em) { }
+@media all
+
+and (           min-width:
+    1px),
+
+    (max-width: 1000em
+
+
+) { }
 
 /* media queries which are guaranteed to evaluate to false */
 @media all and (max-width: 0px), (min-width: 1000em) { }
