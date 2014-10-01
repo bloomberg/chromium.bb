@@ -53,6 +53,8 @@ _NEGATIVE_FILTER = [
 
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=913
+    'ChromeDriverTest.testChromeDriverReceiveAndSendLargeData',
 ]
 
 _OS_SPECIFIC_FILTER = {}
@@ -718,7 +720,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     lots_of_data = self._driver.ExecuteScript(script)
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
 
-  def testChromeDriverRecieveAndSendLargeData(self):
+  def testChromeDriverReceiveAndSendLargeData(self):
     lots_of_data = '1'.zfill(int(10e6))
     result = self._driver.ExecuteScript('return "%s"' % lots_of_data)
     self.assertEquals(lots_of_data, result)
