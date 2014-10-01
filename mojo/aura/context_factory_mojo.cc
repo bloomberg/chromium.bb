@@ -5,6 +5,7 @@
 #include "mojo/aura/context_factory_mojo.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -29,7 +30,7 @@ class SoftwareOutputDeviceViewManager : public cc::SoftwareOutputDevice {
   virtual ~SoftwareOutputDeviceViewManager() {}
 
   // cc::SoftwareOutputDevice:
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE {
+  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override {
     WindowTreeHostMojo* window_tree_host =
         WindowTreeHostMojo::ForCompositor(compositor_);
     DCHECK(window_tree_host);
@@ -52,7 +53,7 @@ class TestSharedBitmapManager : public cc::SharedBitmapManager {
   virtual ~TestSharedBitmapManager() {}
 
   virtual scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size& size) OVERRIDE {
+      const gfx::Size& size) override {
     base::AutoLock lock(lock_);
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory);
     memory->CreateAndMapAnonymous(size.GetArea() * 4);
@@ -65,7 +66,7 @@ class TestSharedBitmapManager : public cc::SharedBitmapManager {
 
   virtual scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
-      const cc::SharedBitmapId& id) OVERRIDE {
+      const cc::SharedBitmapId& id) override {
     base::AutoLock lock(lock_);
     if (bitmap_map_.find(id) == bitmap_map_.end())
       return scoped_ptr<cc::SharedBitmap>();
@@ -75,7 +76,7 @@ class TestSharedBitmapManager : public cc::SharedBitmapManager {
   }
 
   virtual scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
-      base::SharedMemory* memory) OVERRIDE {
+      base::SharedMemory* memory) override {
     base::AutoLock lock(lock_);
     cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
     bitmap_map_[id] = memory;

@@ -27,7 +27,7 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
   SampleApp() : weak_factory_(this) {}
   virtual ~SampleApp() {}
 
-  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
     viewport_->Create(Size::From(gfx::Size(800, 600)),
@@ -39,15 +39,15 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
     app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
   }
 
-  virtual void OnDestroyed() OVERRIDE { base::MessageLoop::current()->Quit(); }
+  virtual void OnDestroyed() override { base::MessageLoop::current()->Quit(); }
 
-  virtual void OnSizeChanged(SizePtr size) OVERRIDE {
+  virtual void OnSizeChanged(SizePtr size) override {
     if (host_)
       host_->SetSize(size.To<gfx::Size>());
   }
 
   virtual void OnEvent(EventPtr event,
-                       const mojo::Callback<void()>& callback) OVERRIDE {
+                       const mojo::Callback<void()>& callback) override {
     callback.Run();
   }
 

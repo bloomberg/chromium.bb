@@ -5,6 +5,7 @@
 #ifndef MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
 #define MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
 
+#include "base/macros.h"
 #include "ui/compositor/compositor.h"
 
 namespace mojo {
@@ -18,17 +19,17 @@ class ContextFactoryMojo : public ui::ContextFactory {
   // ContextFactory:
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       ui::Compositor* compositor,
-      bool software_fallback) OVERRIDE;
+      bool software_fallback) override;
   virtual scoped_refptr<ui::Reflector> CreateReflector(
       ui::Compositor* mirrored_compositor,
-      ui::Layer* mirroring_layer) OVERRIDE;
-  virtual void RemoveReflector(scoped_refptr<ui::Reflector> reflector) OVERRIDE;
+      ui::Layer* mirroring_layer) override;
+  virtual void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
   virtual scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider()
-      OVERRIDE;
-  virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
-  virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
+      override;
+  virtual void RemoveCompositor(ui::Compositor* compositor) override;
+  virtual bool DoesCreateTestContexts() override;
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
 
   scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
 

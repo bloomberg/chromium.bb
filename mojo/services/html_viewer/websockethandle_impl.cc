@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/services/html_viewer/blink_basic_type_converters.h"
 #include "mojo/services/public/cpp/network/web_socket_read_queue.h"
@@ -75,7 +76,7 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
                           const String& selected_subprotocol,
                           const String& extensions,
                           ScopedDataPipeConsumerHandle receive_stream)
-      OVERRIDE {
+      override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     receive_stream_ = receive_stream.Pass();
@@ -91,19 +92,19 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
 
   virtual void DidReceiveData(bool fin,
                               WebSocket::MessageType type,
-                              uint32_t num_bytes) OVERRIDE {
+                              uint32_t num_bytes) override {
     read_queue_->Read(num_bytes,
                       base::Bind(&WebSocketClientImpl::DidReadFromReceiveStream,
                                  base::Unretained(this),
                                  fin, type, num_bytes));
   }
 
-  virtual void DidReceiveFlowControl(int64_t quota) OVERRIDE {
+  virtual void DidReceiveFlowControl(int64_t quota) override {
     client_->didReceiveFlowControl(handle_, quota);
     // |handle| can be deleted here.
   }
 
-  virtual void DidFail(const String& message) OVERRIDE {
+  virtual void DidFail(const String& message) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     handle->Disconnect();  // deletes |this|
@@ -113,7 +114,7 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
 
   virtual void DidClose(bool was_clean,
                         uint16_t code,
-                        const String& reason) OVERRIDE {
+                        const String& reason) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     handle->Disconnect();  // deletes |this|

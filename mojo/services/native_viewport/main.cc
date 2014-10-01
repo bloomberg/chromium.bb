@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -37,13 +38,13 @@ class NativeViewportAppDelegate
       : app_delegate_(app_delegate) {}
 
     virtual void UseTestConfig(
-        const Callback<void()>& callback) OVERRIDE {
+        const Callback<void()>& callback) override {
       app_delegate_->is_test_ = true;
       callback.Run();
     }
 
     virtual void UseHeadlessConfig(
-        const Callback<void()>& callback) OVERRIDE {
+        const Callback<void()>& callback) override {
       app_delegate_->is_headless_ = true;
       callback.Run();
     }
@@ -53,12 +54,12 @@ class NativeViewportAppDelegate
   };
 
   // ApplicationDelegate implementation.
-  virtual void Initialize(ApplicationImpl* application) OVERRIDE {
+  virtual void Initialize(ApplicationImpl* application) override {
     app_ = application;
   }
 
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) OVERRIDE {
+      mojo::ApplicationConnection* connection) override {
     connection->AddService<NativeViewport>(this);
     connection->AddService<Gpu>(this);
     connection->AddService<NativeViewportConfig>(this);
@@ -67,7 +68,7 @@ class NativeViewportAppDelegate
 
   // InterfaceFactory<NativeViewport> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<NativeViewport> request) OVERRIDE {
+                      InterfaceRequest<NativeViewport> request) override {
 #if !defined(COMPONENT_BUILD)
     if (!is_initialized_) {
       if (is_test_)
@@ -82,14 +83,14 @@ class NativeViewportAppDelegate
 
   // InterfaceFactory<Gpu> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Gpu> request) OVERRIDE {
+                      InterfaceRequest<Gpu> request) override {
     BindToRequest(new GpuImpl(share_group_.get(), mailbox_manager_.get()),
                   &request);
   }
 
   // InterfaceFactory<NVTestConfig> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<NativeViewportConfig> request) OVERRIDE {
+                      InterfaceRequest<NativeViewportConfig> request) override {
     BindToRequest(new NativeViewportConfigImpl(this), &request);
   }
 

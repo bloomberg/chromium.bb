@@ -32,10 +32,10 @@ class GpuImpl : public InterfaceImpl<Gpu> {
   virtual void CreateOnscreenGLES2Context(
       uint64_t native_viewport_id,
       SizePtr size,
-      InterfaceRequest<CommandBuffer> command_buffer_request) OVERRIDE;
+      InterfaceRequest<CommandBuffer> command_buffer_request) override;
 
   virtual void CreateOffscreenGLES2Context(
-      InterfaceRequest<CommandBuffer> command_buffer_request) OVERRIDE;
+      InterfaceRequest<CommandBuffer> command_buffer_request) override;
 
  private:
   // We need to share these across all NativeViewport instances so that contexts

@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/public/interfaces/clipboard/clipboard.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
@@ -48,7 +49,7 @@ class ClipboardStandaloneTest : public testing::Test {
   ClipboardStandaloneTest() {}
   virtual ~ClipboardStandaloneTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test_helper_.Init();
 
     test_helper_.application_manager()->ConnectToService(

@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_WEBSOCKETHANDLE_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_WEBSOCKETHANDLE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/public/interfaces/network/web_socket.mojom.h"
@@ -29,14 +30,14 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
   virtual void connect(const blink::WebURL& url,
                        const blink::WebVector<blink::WebString>& protocols,
                        const blink::WebSerializedOrigin& origin,
-                       blink::WebSocketHandleClient*) OVERRIDE;
+                       blink::WebSocketHandleClient*) override;
   virtual void send(bool fin,
                     MessageType,
                     const char* data,
-                    size_t size) OVERRIDE;
-  virtual void flowControl(int64_t quota) OVERRIDE;
+                    size_t size) override;
+  virtual void flowControl(int64_t quota) override;
   virtual void close(unsigned short code,
-                     const blink::WebString& reason) OVERRIDE;
+                     const blink::WebString& reason) override;
 
   // Called when we finished writing to |send_stream_|.
   void DidWriteToSendStream(bool fin,

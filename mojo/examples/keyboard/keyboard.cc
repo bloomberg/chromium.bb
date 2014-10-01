@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -38,7 +38,7 @@ class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
   virtual ~KeyboardServiceImpl() {}
 
   // KeyboardService:
-  virtual void SetTarget(uint32_t view_id) OVERRIDE;
+  virtual void SetTarget(uint32_t view_id) override;
 
  private:
   Keyboard* keyboard_;
@@ -99,20 +99,20 @@ class Keyboard : public ApplicationDelegate,
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     // TODO: deal with OnEmbed() being invoked multiple times.
     view_manager_ = view_manager;
     CreateWidget(root);
   }
   virtual void OnViewManagerDisconnected(
-      ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) override {
     DCHECK_EQ(view_manager_, view_manager);
     view_manager_ = NULL;
     base::MessageLoop::current()->Quit();
   }
 
   // KeyboardDelegate:
-  virtual void OnKeyPressed(int key_code, int event_flags) OVERRIDE {
+  virtual void OnKeyPressed(int key_code, int event_flags) override {
     if (!target_)
       return;
     keyboard_service_->client()->OnKeyboardEvent(target_, key_code,

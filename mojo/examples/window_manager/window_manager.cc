@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/window_manager/debug_panel.h"
@@ -114,9 +114,9 @@ class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
 
  private:
   // Overridden from IWindowManager:
-  virtual void CloseWindow(Id view_id) OVERRIDE;
-  virtual void ShowKeyboard(Id view_id, RectPtr bounds) OVERRIDE;
-  virtual void HideKeyboard(Id view_id) OVERRIDE;
+  virtual void CloseWindow(Id view_id) override;
+  virtual void ShowKeyboard(Id view_id, RectPtr bounds) override;
+  virtual void HideKeyboard(Id view_id) override;
 
   WindowManager* window_manager_;
 
@@ -131,8 +131,8 @@ class NavigatorHostImpl : public InterfaceImpl<NavigatorHost> {
   }
 
  private:
-  virtual void DidNavigateLocally(const mojo::String& url) OVERRIDE;
-  virtual void RequestNavigate(Target target, URLRequestPtr request) OVERRIDE;
+  virtual void DidNavigateLocally(const mojo::String& url) override;
+  virtual void RequestNavigate(Target target, URLRequestPtr request) override;
 
   WindowManager* window_manager_;
   Id view_id_;
@@ -180,7 +180,7 @@ class KeyboardManager : public KeyboardClient,
   // KeyboardClient:
   virtual void OnKeyboardEvent(Id view_id,
                                int32_t code,
-                               int32_t flags) OVERRIDE {
+                               int32_t flags) override {
     View* view = view_manager_->GetViewById(view_id);
     if (!view)
       return;
@@ -212,14 +212,14 @@ class KeyboardManager : public KeyboardClient,
   // Overridden from ViewObserver:
   virtual void OnViewBoundsChanged(View* parent,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
+                                   const gfx::Rect& new_bounds) override {
     gfx::Rect keyboard_bounds(view_->bounds());
     keyboard_bounds.set_y(new_bounds.bottom() - keyboard_bounds.height());
     keyboard_bounds.set_width(keyboard_bounds.width() +
                               new_bounds.width() - old_bounds.width());
     view_->SetBounds(keyboard_bounds);
   }
-  virtual void OnViewDestroyed(View* parent) OVERRIDE {
+  virtual void OnViewDestroyed(View* parent) override {
     DCHECK_EQ(parent, view_->parent());
     parent->RemoveObserver(this);
     view_ = NULL;
@@ -255,7 +255,7 @@ class RootLayoutManager : public ViewObserver {
   // Overridden from ViewObserver:
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
+                                   const gfx::Rect& new_bounds) override {
     DCHECK_EQ(view, root_);
 
     View* content_view = view_manager_->GetViewById(content_view_id_);
@@ -289,7 +289,7 @@ class RootLayoutManager : public ViewObserver {
       view->SetBounds(view_bounds);
     }
   }
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_);
     root_->RemoveObserver(this);
     root_ = NULL;
@@ -323,7 +323,7 @@ class Window : public InterfaceFactory<NavigatorHost> {
  private:
   // InterfaceFactory<NavigatorHost>
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<NavigatorHost> request) OVERRIDE {
+                      InterfaceRequest<NavigatorHost> request) override {
     BindToRequest(new NavigatorHostImpl(window_manager_, view_->id()),
                   &request);
   }
@@ -392,14 +392,14 @@ class WindowManager
   }
 
   // Overridden from DebugPanel::Delegate:
-  virtual void CloseTopWindow() OVERRIDE {
+  virtual void CloseTopWindow() override {
     if (!windows_.empty())
       CloseWindow(windows_.back()->view()->id());
   }
 
   virtual void RequestNavigate(uint32 source_view_id,
                                Target target,
-                               URLRequestPtr request) OVERRIDE {
+                               URLRequestPtr request) override {
     OnLaunch(source_view_id, target, request->url);
   }
 
@@ -424,7 +424,7 @@ class WindowManager
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
 
@@ -448,7 +448,7 @@ class WindowManager
     window_manager_app_->InitFocus(new WMFocusRules(window_manager_app_.get(),
                                                     view));
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {
     DCHECK_EQ(view_manager_, view_manager);
     view_manager_ = NULL;
     base::MessageLoop::current()->Quit();
@@ -457,14 +457,14 @@ class WindowManager
   // Overridden from WindowManagerDelegate:
   virtual void Embed(
       const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
+      InterfaceRequest<ServiceProvider> service_provider) override {
     const Id kInvalidSourceViewId = 0;
     OnLaunch(kInvalidSourceViewId, TARGET_DEFAULT, url);
   }
   virtual void DispatchEvent(EventPtr event) override {}
 
   // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     View* view = WindowManagerApp::GetViewForWindow(
         static_cast<aura::Window*>(event->target()));
     if (event->type() == ui::ET_MOUSE_PRESSED &&

@@ -35,7 +35,7 @@ class SurfacesApp : public ApplicationDelegate,
 
   // ApplicationDelegate implementation
   virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) OVERRIDE {
+      ApplicationConnection* connection) override {
     connection->ConnectToService("mojo:mojo_native_viewport_service",
                                  &viewport_);
     viewport_.set_client(this);
@@ -102,14 +102,14 @@ class SurfacesApp : public ApplicationDelegate,
   }
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE {
+  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override {
     DCHECK(!resources.size());
   }
   // NativeViewportClient implementation.
-  virtual void OnSizeChanged(mojo::SizePtr size) OVERRIDE {}
-  virtual void OnDestroyed() OVERRIDE {}
+  virtual void OnSizeChanged(mojo::SizePtr size) override {}
+  virtual void OnDestroyed() override {}
   virtual void OnEvent(mojo::EventPtr event,
-                       const mojo::Callback<void()>& callback) OVERRIDE {
+                       const mojo::Callback<void()>& callback) override {
     callback.Run();
   }
 

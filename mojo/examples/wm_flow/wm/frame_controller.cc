@@ -4,6 +4,7 @@
 
 #include "mojo/examples/wm_flow/wm/frame_controller.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/window_manager/window_manager_app.h"
@@ -31,11 +32,11 @@ class FrameController::LayoutManager : public views::LayoutManager,
   static const int kFrameSize = 10;
 
   // Overridden from views::LayoutManager:
-  virtual void Installed(views::View* host) OVERRIDE {
+  virtual void Installed(views::View* host) override {
     host->AddChildView(close_button_);
     host->AddChildView(maximize_button_);
   }
-  virtual void Layout(views::View* host) OVERRIDE {
+  virtual void Layout(views::View* host) override {
     gfx::Size ps = close_button_->GetPreferredSize();
     gfx::Rect bounds = host->GetLocalBounds();
     close_button_->SetBounds(bounds.right() - kButtonFrameMargin - ps.width(),
@@ -51,13 +52,13 @@ class FrameController::LayoutManager : public views::LayoutManager,
                  kFrameSize, kFrameSize);
     controller_->app_view_->SetBounds(bounds);
   }
-  virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE {
+  virtual gfx::Size GetPreferredSize(const views::View* host) const override {
     return gfx::Size();
   }
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     if (sender == close_button_)
       controller_->CloseWindow();
     else if (sender == maximize_button_)
@@ -80,7 +81,7 @@ class FrameController::FrameEventHandler : public ui::EventHandler {
  private:
 
   // Overriden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED)
       frame_controller_->ActivateWindow();
   }

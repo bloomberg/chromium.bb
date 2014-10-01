@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -59,7 +59,7 @@ class NestingApp
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     root->AddObserver(this);
     root->SetColor(SK_ColorCYAN);
 
@@ -68,16 +68,16 @@ class NestingApp
     nested_->SetBounds(gfx::Rect(20, 20, 50, 50));
     nested_->Embed(kEmbeddedAppURL);
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {
     base::MessageLoop::current()->Quit();
   }
 
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     // TODO(beng): reap views & child Views.
     nested_ = NULL;
   }
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) override {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED)
       window_manager_->CloseWindow(view->id());
   }

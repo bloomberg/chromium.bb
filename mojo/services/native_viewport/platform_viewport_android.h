@@ -7,6 +7,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/native_viewport/platform_viewport.h"
 #include "ui/events/event_constants.h"
@@ -38,14 +39,14 @@ class PlatformViewportAndroid : public PlatformViewport {
 
  private:
   // Overridden from PlatformViewport:
-  virtual void Init(const gfx::Rect& bounds) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
+  virtual void Init(const gfx::Rect& bounds) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void Close() override;
+  virtual gfx::Size GetSize() override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
 
   void ReleaseWindow();
 

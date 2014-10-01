@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -64,21 +64,21 @@ class EmbeddedApp
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     root->AddObserver(this);
     windows_[root->id()] = new Window(root, imported_services.Pass());
     root->SetColor(kColors[next_color_++ % arraysize(kColors)]);
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {
     base::MessageLoop::current()->Quit();
   }
 
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK(windows_.find(view->id()) != windows_.end());
     windows_.erase(view->id());
   }
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) override {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
       if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
         URLRequestPtr request(URLRequest::New());

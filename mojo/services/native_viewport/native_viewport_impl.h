@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_NATIVE_VIEWPORT_IMPL_H_
 #define MOJO_SERVICES_NATIVE_VIEWPORT_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/services/native_viewport/platform_viewport.h"
@@ -29,19 +30,19 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
 
   // InterfaceImpl<NativeViewport> implementation.
   virtual void Create(SizePtr size,
-                      const Callback<void(uint64_t)>& callback) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void SetSize(SizePtr size) OVERRIDE;
-  virtual void SubmittedFrame(SurfaceIdPtr surface_id) OVERRIDE;
+                      const Callback<void(uint64_t)>& callback) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void Close() override;
+  virtual void SetSize(SizePtr size) override;
+  virtual void SubmittedFrame(SurfaceIdPtr surface_id) override;
 
   // PlatformViewport::Delegate implementation.
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& bounds) override;
   virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) OVERRIDE;
-  virtual bool OnEvent(ui::Event* ui_event) OVERRIDE;
-  virtual void OnDestroyed() OVERRIDE;
+      gfx::AcceleratedWidget widget) override;
+  virtual bool OnEvent(ui::Event* ui_event) override;
+  virtual void OnDestroyed() override;
 
   void AckEvent();
 

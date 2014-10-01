@@ -6,6 +6,7 @@
 #define MOJO_EXAMPLES_SURFACES_APP_CHILD_GL_IMPL_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -39,14 +40,14 @@ class ChildGLImpl : public InterfaceImpl<Child>, public SurfaceClient {
   virtual ~ChildGLImpl();
 
   // SurfaceClient implementation
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
+  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
  private:
   // Child implementation.
   virtual void ProduceFrame(
       ColorPtr color,
       SizePtr size,
-      const mojo::Callback<void(SurfaceIdPtr id)>& callback) OVERRIDE;
+      const mojo::Callback<void(SurfaceIdPtr id)>& callback) override;
 
   void SurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
   void AllocateSurface();

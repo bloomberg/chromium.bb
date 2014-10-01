@@ -63,7 +63,7 @@ class CustomButtonBorder: public views::Border {
 
  private:
   // Overridden from views::Border:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) override {
     const views::LabelButton* button =
         static_cast<const views::LabelButton*>(&view);
     views::Button::ButtonState state = button->state();
@@ -77,11 +77,11 @@ class CustomButtonBorder: public views::Border {
     painter->Paint(canvas, view.size());
   }
 
-  virtual gfx::Insets GetInsets() const OVERRIDE {
+  virtual gfx::Insets GetInsets() const override {
     return insets_;
   }
 
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     gfx::Size size;
     if (normal_painter_)
       size.SetToMax(normal_painter_->GetMinimumSize());
@@ -171,7 +171,7 @@ class ControlPanel : public views::ButtonListener {
  private:
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     for (int i = 0; i < CONTROL_COUNT; ++i) {
       if (sender == buttons_[i]) {
         delegate_->ButtonPressed(static_cast<ControlType>(i));
@@ -212,7 +212,7 @@ class MediaViewer
 
 
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
     app_ = app;
@@ -220,7 +220,7 @@ class MediaViewer
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      OVERRIDE {
+      override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }
@@ -238,7 +238,7 @@ class MediaViewer
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     root_view_ = root;
     view_manager_ = view_manager;
 
@@ -257,14 +257,14 @@ class MediaViewer
   }
 
   virtual void OnViewManagerDisconnected(
-      ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) override {
     DCHECK_EQ(view_manager_, view_manager);
     view_manager_ = NULL;
     base::MessageLoop::current()->Quit();
   }
 
   // Overridden from ControlPanel::Delegate:
-  virtual void ButtonPressed(ControlPanel::ControlType type) OVERRIDE {
+  virtual void ButtonPressed(ControlPanel::ControlType type) override {
     switch (type) {
       case ControlPanel::CONTROL_ZOOM_IN:
         zoomable_media_->ZoomIn();
@@ -283,10 +283,10 @@ class MediaViewer
   // ViewObserver:
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
+                                   const gfx::Rect& new_bounds) override {
     LayoutViews();
   }
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_view_);
     view->RemoveObserver(this);
     root_view_ = NULL;

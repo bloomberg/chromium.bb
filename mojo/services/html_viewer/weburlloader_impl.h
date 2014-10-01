@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
@@ -33,11 +34,11 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   // blink::WebURLLoader methods:
   virtual void loadSynchronously(
       const blink::WebURLRequest& request, blink::WebURLResponse& response,
-      blink::WebURLError& error, blink::WebData& data) OVERRIDE;
+      blink::WebURLError& error, blink::WebData& data) override;
   virtual void loadAsynchronously(
-      const blink::WebURLRequest&, blink::WebURLLoaderClient* client) OVERRIDE;
-  virtual void cancel() OVERRIDE;
-  virtual void setDefersLoading(bool defers_loading) OVERRIDE;
+      const blink::WebURLRequest&, blink::WebURLLoaderClient* client) override;
+  virtual void cancel() override;
+  virtual void setDefersLoading(bool defers_loading) override;
 
   void OnReceivedResponse(URLResponsePtr response);
   void OnReceivedError(URLResponsePtr response);

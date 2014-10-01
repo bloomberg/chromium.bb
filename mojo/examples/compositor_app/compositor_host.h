@@ -5,7 +5,6 @@
 #ifndef MOJO_EXAMPLES_COMPOSITOR_APP_COMPOSITOR_HOST_H_
 #define MOJO_EXAMPLES_COMPOSITOR_APP_COMPOSITOR_HOST_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -29,23 +28,23 @@ class CompositorHost : public cc::LayerTreeHostClient {
   void SetSize(const gfx::Size& viewport_size);
 
   // cc::LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) OVERRIDE;
-  virtual void DidBeginMainFrame() OVERRIDE;
-  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual void WillBeginMainFrame(int frame_id) override;
+  virtual void DidBeginMainFrame() override;
+  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) override;
+  virtual void Layout() override;
   virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
                                    const gfx::Vector2d& outer_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE;
+                                   float top_controls_delta) override;
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE;
-  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE;
-  virtual void DidInitializeOutputSurface() OVERRIDE;
-  virtual void WillCommit() OVERRIDE;
-  virtual void DidCommit() OVERRIDE;
-  virtual void DidCommitAndDrawFrame() OVERRIDE;
-  virtual void DidCompleteSwapBuffers() OVERRIDE;
+                                   float top_controls_delta) override;
+  virtual void RequestNewOutputSurface(bool fallback) override;
+  virtual void DidInitializeOutputSurface() override;
+  virtual void WillCommit() override;
+  virtual void DidCommit() override;
+  virtual void DidCommitAndDrawFrame() override;
+  virtual void DidCompleteSwapBuffers() override;
 
  private:
   void SetupScene();

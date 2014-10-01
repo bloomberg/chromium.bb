@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_WEBLAYERTREEVIEW_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_WEBLAYERTREEVIEW_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -44,61 +45,61 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void set_view(View* view) { view_ = view; }
 
   // cc::LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) OVERRIDE;
-  virtual void DidBeginMainFrame() OVERRIDE;
-  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual void WillBeginMainFrame(int frame_id) override;
+  virtual void DidBeginMainFrame() override;
+  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) override;
+  virtual void Layout() override;
   virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
                                    const gfx::Vector2d& outer_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE;
+                                   float top_controls_delta) override;
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE;
-  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE;
-  virtual void DidInitializeOutputSurface() OVERRIDE;
-  virtual void WillCommit() OVERRIDE;
-  virtual void DidCommit() OVERRIDE;
-  virtual void DidCommitAndDrawFrame() OVERRIDE;
-  virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual void RateLimitSharedMainThreadContext() OVERRIDE {}
+                                   float top_controls_delta) override;
+  virtual void RequestNewOutputSurface(bool fallback) override;
+  virtual void DidInitializeOutputSurface() override;
+  virtual void WillCommit() override;
+  virtual void DidCommit() override;
+  virtual void DidCommitAndDrawFrame() override;
+  virtual void DidCompleteSwapBuffers() override;
+  virtual void RateLimitSharedMainThreadContext() override {}
 
   // blink::WebLayerTreeView implementation.
-  virtual void setSurfaceReady() OVERRIDE;
-  virtual void setRootLayer(const blink::WebLayer& layer) OVERRIDE;
-  virtual void clearRootLayer() OVERRIDE;
+  virtual void setSurfaceReady() override;
+  virtual void setRootLayer(const blink::WebLayer& layer) override;
+  virtual void clearRootLayer() override;
   virtual void setViewportSize(
-      const blink::WebSize& device_viewport_size) OVERRIDE;
-  virtual blink::WebSize deviceViewportSize() const OVERRIDE;
-  virtual void setDeviceScaleFactor(float) OVERRIDE;
-  virtual float deviceScaleFactor() const OVERRIDE;
-  virtual void setBackgroundColor(blink::WebColor color) OVERRIDE;
+      const blink::WebSize& device_viewport_size) override;
+  virtual blink::WebSize deviceViewportSize() const override;
+  virtual void setDeviceScaleFactor(float) override;
+  virtual float deviceScaleFactor() const override;
+  virtual void setBackgroundColor(blink::WebColor color) override;
   virtual void setHasTransparentBackground(
-      bool has_transparent_background) OVERRIDE;
-  virtual void setOverhangBitmap(const SkBitmap& bitmap) OVERRIDE;
-  virtual void setVisible(bool visible) OVERRIDE;
+      bool has_transparent_background) override;
+  virtual void setOverhangBitmap(const SkBitmap& bitmap) override;
+  virtual void setVisible(bool visible) override;
   virtual void setPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,
-                                           float maximum) OVERRIDE;
+                                           float maximum) override;
   virtual void startPageScaleAnimation(const blink::WebPoint& destination,
                                        bool use_anchor,
                                        float new_page_scale,
-                                       double duration_sec) OVERRIDE;
+                                       double duration_sec) override;
   virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) {}
   virtual void setTopControlsContentOffset(float offset) {}
-  virtual void setNeedsAnimate() OVERRIDE;
-  virtual bool commitRequested() const OVERRIDE;
+  virtual void setNeedsAnimate() override;
+  virtual bool commitRequested() const override;
   virtual void didStopFlinging() {}
   virtual void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) {}
-  virtual void finishAllRendering() OVERRIDE;
+  virtual void finishAllRendering() override;
   virtual void setDeferCommits(bool defer_commits) {}
-  virtual void registerForAnimations(blink::WebLayer* layer) OVERRIDE;
+  virtual void registerForAnimations(blink::WebLayer* layer) override;
   virtual void registerViewportLayers(
       const blink::WebLayer* page_scale_layer,
       const blink::WebLayer* inner_viewport_scroll_layer,
-      const blink::WebLayer* outer_viewport_scroll_layer) OVERRIDE;
-  virtual void clearViewportLayers() OVERRIDE;
+      const blink::WebLayer* outer_viewport_scroll_layer) override;
+  virtual void clearViewportLayers() override;
   virtual void registerSelection(const blink::WebSelectionBound& start,
                                  const blink::WebSelectionBound& end) {}
   virtual void clearSelection() {}
@@ -109,7 +110,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual void setShowScrollBottleneckRects(bool) {}
 
   // OutputSurfaceMojoClient implementation.
-  virtual void DidCreateSurface(cc::SurfaceId id) OVERRIDE;
+  virtual void DidCreateSurface(cc::SurfaceId id) override;
 
  private:
   void OnSurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -44,14 +44,14 @@ class BrowserLayoutManager : public views::LayoutManager {
 
  private:
   // Overridden from views::LayoutManager:
-  virtual void Layout(views::View* host) OVERRIDE {
+  virtual void Layout(views::View* host) override {
     // Browser view has one child, a text input field.
     DCHECK_EQ(1, host->child_count());
     views::View* text_field = host->child_at(0);
     gfx::Size ps = text_field->GetPreferredSize();
     text_field->SetBoundsRect(gfx::Rect(host->width(), ps.height()));
   }
-  virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE {
+  virtual gfx::Size GetPreferredSize(const views::View* host) const override {
     return gfx::Size();
   }
 
@@ -115,16 +115,16 @@ class KeyboardManager
 
   // views::FocusChangeListener:
   virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) OVERRIDE {
+                                 views::View* focused_now) override {
   }
   virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) OVERRIDE {
+                                views::View* focused_now) override {
     if (focused_view_ && focused_now != focused_view_)
       HideKeyboard();
   }
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     views::View* focused_now = widget_->GetFocusManager()->GetFocusedView();
     if (focused_now &&
         focused_now->GetClassName() == views::Textfield::kViewClassName &&
@@ -134,7 +134,7 @@ class KeyboardManager
   }
 
   // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) override {
     delete this;
   }
 
@@ -207,7 +207,7 @@ class Browser : public ApplicationDelegate,
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     // TODO: deal with OnEmbed() being invoked multiple times.
     ConnectToService(imported_services.get(), &navigator_host_);
     view_manager_ = view_manager;
@@ -217,7 +217,7 @@ class Browser : public ApplicationDelegate,
     CreateWidget(root_);
   }
   virtual void OnViewManagerDisconnected(
-      ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) override {
     DCHECK_EQ(view_manager_, view_manager);
     view_manager_ = NULL;
     base::MessageLoop::current()->Quit();
@@ -225,7 +225,7 @@ class Browser : public ApplicationDelegate,
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE {
+                              const ui::KeyEvent& key_event) override {
     if (key_event.key_code() == ui::VKEY_RETURN) {
       GURL url(sender->text());
       printf("User entered this URL: %s\n", url.spec().c_str());
@@ -238,7 +238,7 @@ class Browser : public ApplicationDelegate,
 
   // ViewObserver:
   virtual void OnViewFocusChanged(View* gained_focus,
-                                  View* lost_focus) OVERRIDE {
+                                  View* lost_focus) override {
     aura::client::FocusClient* focus_client =
         aura::client::GetFocusClient(widget_->GetNativeView());
     if (lost_focus == root_)
@@ -246,7 +246,7 @@ class Browser : public ApplicationDelegate,
     else if (gained_focus == root_)
       focus_client->FocusWindow(widget_->GetNativeView());
   }
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK_EQ(root_, view);
     view->RemoveObserver(this);
     root_ = NULL;

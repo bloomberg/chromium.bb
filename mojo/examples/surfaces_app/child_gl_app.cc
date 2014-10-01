@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/surfaces_app/child_gl_impl.h"
@@ -20,7 +21,7 @@ class ChildGLApp : public ApplicationDelegate, public InterfaceFactory<Child> {
   ChildGLApp() {}
   virtual ~ChildGLApp() {}
 
-  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     surfaces_service_connection_ =
         app->ConnectToApplication("mojo:mojo_surfaces_service");
     // TODO(jamesr): Should be mojo:mojo_gpu_service
@@ -29,14 +30,14 @@ class ChildGLApp : public ApplicationDelegate, public InterfaceFactory<Child> {
 
   // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) OVERRIDE {
+      ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
 
   // InterfaceFactory<Child> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Child> request) OVERRIDE {
+                      InterfaceRequest<Child> request) override {
     CommandBufferPtr command_buffer;
     gpu_service_->CreateOffscreenGLES2Context(Get(&command_buffer));
     BindToRequest(

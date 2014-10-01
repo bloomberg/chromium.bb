@@ -5,6 +5,7 @@
 #ifndef MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_VIEW_MANAGER_H_
 #define MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_VIEW_MANAGER_H_
 
+#include "base/macros.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
@@ -42,28 +43,27 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
  private:
   // WindowTreeHost:
-  virtual ui::EventSource* GetEventSource() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
-  virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
-  virtual void SetCursorNative(gfx::NativeCursor cursor) OVERRIDE;
-  virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
-  virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
+  virtual ui::EventSource* GetEventSource() override;
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual gfx::Rect GetBounds() const override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual gfx::Point GetLocationOnNativeScreen() const override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
+  virtual void PostNativeEvent(const base::NativeEvent& native_event) override;
+  virtual void SetCursorNative(gfx::NativeCursor cursor) override;
+  virtual void MoveCursorToNative(const gfx::Point& location) override;
+  virtual void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource:
-  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+  virtual ui::EventProcessor* GetEventProcessor() override;
 
   // ViewObserver:
-  virtual void OnViewBoundsChanged(
-      View* view,
-      const gfx::Rect& old_bounds,
-      const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnViewBoundsChanged(View* view,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) override;
 
   View* view_;
 

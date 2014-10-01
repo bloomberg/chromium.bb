@@ -5,6 +5,7 @@
 #include "mojo/examples/pepper_container_app/mojo_ppapi_globals.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
 #include "mojo/examples/pepper_container_app/plugin_instance.h"
@@ -35,37 +36,37 @@ class MojoPpapiGlobals::MainThreadMessageLoopResource
   // ppapi::MessageLoopShared implementation.
   virtual void PostClosure(const tracked_objects::Location& from_here,
                            const base::Closure& closure,
-                           int64 delay_ms) OVERRIDE {
+                           int64 delay_ms) override {
     main_thread_message_loop_->PostDelayedTask(
         from_here, closure, base::TimeDelta::FromMilliseconds(delay_ms));
   }
 
-  virtual base::MessageLoopProxy* GetMessageLoopProxy() OVERRIDE {
+  virtual base::MessageLoopProxy* GetMessageLoopProxy() override {
     return main_thread_message_loop_.get();
   }
 
-  virtual bool CurrentlyHandlingBlockingMessage() OVERRIDE {
+  virtual bool CurrentlyHandlingBlockingMessage() override {
     return false;
   }
 
   // ppapi::thunk::PPB_MessageLoop_API implementation.
-  virtual int32_t AttachToCurrentThread() OVERRIDE {
+  virtual int32_t AttachToCurrentThread() override {
     NOTIMPLEMENTED();
     return PP_ERROR_FAILED;
   }
 
-  virtual int32_t Run() OVERRIDE {
+  virtual int32_t Run() override {
     NOTIMPLEMENTED();
     return PP_ERROR_FAILED;
   }
 
   virtual int32_t PostWork(PP_CompletionCallback callback,
-                           int64_t delay_ms) OVERRIDE {
+                           int64_t delay_ms) override {
     NOTIMPLEMENTED();
     return PP_ERROR_FAILED;
   }
 
-  virtual int32_t PostQuit(PP_Bool should_destroy) OVERRIDE {
+  virtual int32_t PostQuit(PP_Bool should_destroy) override {
     NOTIMPLEMENTED();
     return PP_ERROR_FAILED;
   }

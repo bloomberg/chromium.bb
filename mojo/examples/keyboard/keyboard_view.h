@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -30,7 +31,7 @@ class KeyboardView : public views::View, public views::ButtonListener {
   virtual ~KeyboardView();
 
   // views::View:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
  private:
   // The type of keys that are shown.
@@ -79,7 +80,7 @@ class KeyboardView : public views::View, public views::ButtonListener {
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   KeyboardDelegate* delegate_;
 

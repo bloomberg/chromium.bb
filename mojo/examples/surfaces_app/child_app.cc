@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/surfaces_app/child_impl.h"
 #include "mojo/public/c/system/main.h"
@@ -18,21 +19,21 @@ class ChildApp : public ApplicationDelegate, public InterfaceFactory<Child> {
   ChildApp() {}
   virtual ~ChildApp() {}
 
-  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     surfaces_service_connection_ =
         app->ConnectToApplication("mojo:mojo_surfaces_service");
   }
 
   // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) OVERRIDE {
+      ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
 
   // InterfaceFactory<Child> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Child> request) OVERRIDE {
+                      InterfaceRequest<Child> request) override {
     BindToRequest(new ChildImpl(surfaces_service_connection_), &request);
   }
 

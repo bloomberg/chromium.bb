@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_GLES2_COMMAND_BUFFER_IMPL_H_
 #define MOJO_SERVICES_GLES2_COMMAND_BUFFER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/system/core.h"
@@ -43,16 +44,16 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
   virtual ~CommandBufferImpl();
 
   virtual void Initialize(CommandBufferSyncClientPtr sync_client,
-                          mojo::ScopedSharedBufferHandle shared_state) OVERRIDE;
-  virtual void SetGetBuffer(int32_t buffer) OVERRIDE;
-  virtual void Flush(int32_t put_offset) OVERRIDE;
-  virtual void MakeProgress(int32_t last_get_offset) OVERRIDE;
+                          mojo::ScopedSharedBufferHandle shared_state) override;
+  virtual void SetGetBuffer(int32_t buffer) override;
+  virtual void Flush(int32_t put_offset) override;
+  virtual void MakeProgress(int32_t last_get_offset) override;
   virtual void RegisterTransferBuffer(
       int32_t id,
       mojo::ScopedSharedBufferHandle transfer_buffer,
-      uint32_t size) OVERRIDE;
-  virtual void DestroyTransferBuffer(int32_t id) OVERRIDE;
-  virtual void Echo(const Callback<void()>& callback) OVERRIDE;
+      uint32_t size) override;
+  virtual void DestroyTransferBuffer(int32_t id) override;
+  virtual void Echo(const Callback<void()>& callback) override;
 
  private:
   bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);

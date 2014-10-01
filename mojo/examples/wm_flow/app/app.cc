@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/wm_flow/app/embedder.mojom.h"
 #include "mojo/examples/wm_flow/embedded/embeddee.mojom.h"
@@ -33,7 +34,7 @@ class EmbedderImpl : public mojo::InterfaceImpl<Embedder> {
 
  private:
   // Overridden from Embedder:
-  virtual void HelloWorld(const mojo::Callback<void()>& callback) OVERRIDE {
+  virtual void HelloWorld(const mojo::Callback<void()>& callback) override {
     callback.Run();
   }
 

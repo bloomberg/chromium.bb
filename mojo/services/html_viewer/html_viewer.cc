@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -42,7 +43,7 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
   virtual void OnConnect(
       const mojo::String& url,
       URLResponsePtr response,
-      InterfaceRequest<ServiceProvider> service_provider_request) OVERRIDE {
+      InterfaceRequest<ServiceProvider> service_provider_request) override {
     new HTMLDocumentView(response.Pass(),
                          service_provider_request.Pass(),
                          shell_,
@@ -66,7 +67,7 @@ class HTMLViewer : public ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+  virtual void Initialize(ApplicationImpl* app) override {
     shell_ = app->shell();
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
@@ -86,14 +87,14 @@ class HTMLViewer : public ApplicationDelegate,
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      OVERRIDE {
+      override {
     connection->AddService(this);
     return true;
   }
 
   // Overridden from InterfaceFactory<ContentHandler>
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ContentHandler> request) OVERRIDE {
+                      InterfaceRequest<ContentHandler> request) override {
     BindToRequest(
         new ContentHandlerImpl(shell_, compositor_thread_.message_loop_proxy(),
                                web_media_player_factory_.get()),

@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_GLES2_MOJO_BUFFER_BACKING_H_
 #define MOJO_SERVICES_GLES2_MOJO_BUFFER_BACKING_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "mojo/public/cpp/system/core.h"
@@ -23,8 +24,8 @@ class MojoBufferBacking : public gpu::BufferBacking {
       mojo::ScopedSharedBufferHandle handle,
       size_t size);
 
-  virtual void* GetMemory() const OVERRIDE;
-  virtual size_t GetSize() const OVERRIDE;
+  virtual void* GetMemory() const override;
+  virtual size_t GetSize() const override;
 
  private:
   mojo::ScopedSharedBufferHandle handle_;

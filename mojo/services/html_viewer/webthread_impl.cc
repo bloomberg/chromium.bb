@@ -24,11 +24,11 @@ class WebThreadBase::TaskObserverAdapter
   TaskObserverAdapter(WebThread::TaskObserver* observer)
       : observer_(observer) {}
 
-  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
     observer_->willProcessTask();
   }
 
-  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
     observer_->didProcessTask();
   }
 

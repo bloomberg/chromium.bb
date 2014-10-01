@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/layout_manager.h"
@@ -48,10 +49,10 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
 
  private:
   // LayoutManager overrides:
-  virtual gfx::Size GetPreferredSize(const views::View* view) const OVERRIDE;
-  virtual void Layout(views::View* host) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(const views::View* view) const override;
+  virtual void Layout(views::View* host) override;
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   void Navigate(const std::string& url);
 

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
@@ -74,7 +75,7 @@ class PNGView : public ViewManagerDelegate, public ViewObserver {
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     root_ = root;
     root_->AddObserver(this);
     root_->SetColor(SK_ColorGRAY);
@@ -82,19 +83,19 @@ class PNGView : public ViewManagerDelegate, public ViewObserver {
       DrawBitmap();
   }
 
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {
     // TODO(aa): Need to figure out how shutdown works.
   }
 
   // Overridden from ViewObserver:
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
+                                   const gfx::Rect& new_bounds) override {
     DCHECK_EQ(view, root_);
     DrawBitmap();
   }
 
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_);
     delete this;
   }
@@ -195,7 +196,7 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
   virtual void OnConnect(
       const mojo::String& url,
       URLResponsePtr response,
-      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
+      InterfaceRequest<ServiceProvider> service_provider) override {
     ServiceProviderImpl* exported_services = new ServiceProviderImpl();
     BindToRequest(exported_services, &service_provider);
     scoped_ptr<ServiceProvider> remote(

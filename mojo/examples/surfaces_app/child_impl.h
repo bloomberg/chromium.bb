@@ -5,6 +5,7 @@
 #ifndef MOJO_EXAMPLES_SURFACES_APP_CHILD_IMPL_H_
 #define MOJO_EXAMPLES_SURFACES_APP_CHILD_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
@@ -44,14 +45,14 @@ class ChildImpl : public InterfaceImpl<Child>, public SurfaceClient {
 
   // SurfaceClient implementation
   virtual void ReturnResources(
-      Array<ReturnedResourcePtr> resources) OVERRIDE;
+      Array<ReturnedResourcePtr> resources) override;
 
  private:
   // Child implementation.
   virtual void ProduceFrame(
       ColorPtr color,
       SizePtr size,
-      const mojo::Callback<void(SurfaceIdPtr id)>& callback) OVERRIDE;
+      const mojo::Callback<void(SurfaceIdPtr id)>& callback) override;
 
   void SurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
   void Draw();

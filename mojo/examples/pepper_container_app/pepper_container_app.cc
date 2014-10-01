@@ -54,7 +54,7 @@ class PepperContainerApp: public ApplicationDelegate,
   }
 
   // NativeViewportClient implementation.
-  virtual void OnDestroyed() OVERRIDE {
+  virtual void OnDestroyed() override {
     ppapi::ProxyAutoLock lock;
 
     if (plugin_instance_) {
@@ -65,7 +65,7 @@ class PepperContainerApp: public ApplicationDelegate,
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnSizeChanged(SizePtr size) OVERRIDE {
+  virtual void OnSizeChanged(SizePtr size) override {
     ppapi::ProxyAutoLock lock;
 
     if (plugin_instance_) {
@@ -75,7 +75,7 @@ class PepperContainerApp: public ApplicationDelegate,
   }
 
   virtual void OnEvent(EventPtr event,
-                       const mojo::Callback<void()>& callback) OVERRIDE {
+                       const mojo::Callback<void()>& callback) override {
     if (!event->location_data.is_null()) {
       ppapi::ProxyAutoLock lock;
 
@@ -85,7 +85,7 @@ class PepperContainerApp: public ApplicationDelegate,
   }
 
   // MojoPpapiGlobals::Delegate implementation.
-  virtual ScopedMessagePipeHandle CreateGLES2Context() OVERRIDE {
+  virtual ScopedMessagePipeHandle CreateGLES2Context() override {
     CommandBufferPtr command_buffer;
     SizePtr size = Size::New();
     size->width = 800;

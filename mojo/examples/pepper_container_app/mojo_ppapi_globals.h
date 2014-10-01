@@ -5,7 +5,6 @@
 #ifndef MOJO_EXAMPLES_PEPPER_CONTAINER_APP_MOJO_PPAPI_GLOBALS_H_
 #define MOJO_EXAMPLES_PEPPER_CONTAINER_APP_MOJO_PPAPI_GLOBALS_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/system/core.h"
@@ -45,27 +44,27 @@ class MojoPpapiGlobals : public ppapi::PpapiGlobals {
   ScopedMessagePipeHandle CreateGLES2Context();
 
   // ppapi::PpapiGlobals implementation.
-  virtual ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
-  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ppapi::ResourceTracker* GetResourceTracker() override;
+  virtual ppapi::VarTracker* GetVarTracker() override;
   virtual ppapi::CallbackTracker* GetCallbackTrackerForInstance(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel level,
                              const std::string& source,
-                             const std::string& value) OVERRIDE;
+                             const std::string& value) override;
   virtual void BroadcastLogWithSource(PP_Module module,
                                       PP_LogLevel level,
                                       const std::string& source,
-                                      const std::string& value) OVERRIDE;
+                                      const std::string& value) override;
   virtual ppapi::thunk::PPB_Instance_API* GetInstanceAPI(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual ppapi::thunk::ResourceCreationAPI* GetResourceCreationAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
-  virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
-  virtual std::string GetCmdLine() OVERRIDE;
-  virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
+      PP_Instance instance) override;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) override;
+  virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() override;
+  virtual base::TaskRunner* GetFileTaskRunner() override;
+  virtual std::string GetCmdLine() override;
+  virtual void PreCacheFontForFlash(const void* logfontw) override;
 
  private:
   class MainThreadMessageLoopResource;

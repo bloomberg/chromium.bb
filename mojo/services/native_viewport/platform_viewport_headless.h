@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "mojo/services/native_viewport/platform_viewport.h"
 #include "ui/gfx/rect.h"
 
@@ -17,14 +18,14 @@ class PlatformViewportHeadless : public PlatformViewport {
   explicit PlatformViewportHeadless(Delegate* delegate);
 
   // Overridden from PlatformViewport:
-  virtual void Init(const gfx::Rect& bounds) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
+  virtual void Init(const gfx::Rect& bounds) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void Close() override;
+  virtual gfx::Size GetSize() override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
 
   Delegate* delegate_;
   gfx::Rect bounds_;
