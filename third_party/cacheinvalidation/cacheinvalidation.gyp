@@ -11,6 +11,7 @@
   'targets': [
     # The C++ files generated from the cache invalidation protocol buffers.
     {
+      # GN: //third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp (secondary)
       'target_name': 'cacheinvalidation_proto_cpp',
       'type': 'static_library',
       'variables': {
@@ -55,6 +56,7 @@
     # The main cache invalidation library.  External clients should depend
     # only on this.
     {
+      # GN: //third_party/cacheinvalidation (secondary)
       'target_name': 'cacheinvalidation',
       'type': 'static_library',
       'sources': [
@@ -147,6 +149,7 @@
     # Unittests for the cache invalidation library.
     # TODO(ghc): Write native tests and include them here.
     {
+      # GN: //third_party/cacheinvalidation:cacheinvalidation_unittests (secondary)
       'target_name': 'cacheinvalidation_unittests',
       'type': 'executable',
       'sources': [
@@ -175,6 +178,7 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
+          # TODO(GN)
           'target_name': 'cacheinvalidation_unittests_run',
           'type': 'none',
           'dependencies': [
@@ -195,6 +199,7 @@
       },
       'targets': [
         {
+          # GN: //third_party/cacheinvalidation:cacheinvalidation_proto_java (secondary)
           'target_name': 'cacheinvalidation_proto_java',
           'type': 'none',
           'variables': {
@@ -213,6 +218,7 @@
           'includes': [ '../../build/protoc_java.gypi' ],
         },
         {
+          # GN: //third_party/cacheinvalidation:cacheinvalidation_javalib (secondary)
           'target_name': 'cacheinvalidation_javalib',
           'type': 'none',
           'dependencies': [

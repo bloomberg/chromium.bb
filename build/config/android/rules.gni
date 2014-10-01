@@ -1091,3 +1091,55 @@ template("create_native_executable_dist") {
     deps = final_deps
   }
 }
+
+
+# Compile a protocol buffer to java.
+#
+# This generates java files from protocol buffers and creates an Android library
+# containing the classes.
+#
+# Variables
+#   sources: Paths to .proto files to compile.
+#   proto_path: Root directory of .proto files.
+#
+# Example:
+#  proto_java_library("foo_proto_java") {
+#    proto_path = [ "src/foo" ]
+#    sources = [ "$proto_path/foo.proto" ]
+#  }
+template("proto_java_library") {
+  _protoc_dep = "//third_party/android_protobuf:android_protoc($host_toolchain)"
+  _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
+  _protoc_bin = "$_protoc_out_dir/android_protoc"
+  _proto_path = invoker.proto_path
+
+  _template_name = target_name
+
+  action("${_template_name}__protoc_java") {
+    srcjar_path = "$target_gen_dir/$target_name.srcjar"
+    script = "//build/protoc_java.py"
+    deps = [
+      _protoc_dep
+    ]
+    sources = invoker.sources
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+      srcjar_path,
+    ]
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--protoc", rebase_path(_protoc_bin, root_build_dir),
+      "--proto-path", rebase_path(_proto_path, root_build_dir),
+      "--srcjar", rebase_path(srcjar_path, root_build_dir),
+    ] + rebase_path(sources, root_build_dir)
+  }
+
+  android_library(target_name) {
+    java_files = []
+    srcjar_deps = [ ":${_template_name}__protoc_java" ]
+    deps = [
+      "//third_party/android_protobuf:protobuf_nano_javalib",
+    ]
+  }
+}

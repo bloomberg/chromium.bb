@@ -112,4 +112,33 @@ test("cacheinvalidation_unittests") {
   ]
 }
 
-# TODO(GYP) A bunch of Android-specific stuff.
+# TODO(GYP) Test isolation stuff.
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  # GYP: //third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_java
+  proto_java_library("cacheinvalidation_proto_java") {
+    proto_path = "src/proto"
+    sources = [
+      "$proto_path/android_channel.proto",
+      "$proto_path/android_listener.proto",
+      "$proto_path/android_service.proto",
+      "$proto_path/channel_common.proto",
+      "$proto_path/client.proto",
+      "$proto_path/client_protocol.proto",
+      "$proto_path/java_client.proto",
+      "$proto_path/types.proto",
+    ]
+  }
+
+  # GYP: //third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib
+  android_library("cacheinvalidation_javalib") {
+    deps = [
+      ":cacheinvalidation_proto_java",
+      "//third_party/android_protobuf:protobuf_nano_javalib",
+      "//third_party/android_tools:android_gcm_java",
+    ]
+
+    DEPRECATED_java_in_dir = "src/java"
+  }
+}

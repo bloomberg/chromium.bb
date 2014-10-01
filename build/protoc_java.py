@@ -5,56 +5,64 @@
 
 """Generate java source files from protobuf files.
 
-Usage:
-    protoc_java.py {protoc} {proto_path} {java_out} {stamp_file} {proto_files}
-
 This is a helper file for the genproto_java action in protoc_java.gypi.
 
 It performs the following steps:
 1. Deletes all old sources (ensures deleted classes are not part of new jars).
 2. Creates source directory.
-3. Generates Java files using protoc.
+3. Generates Java files using protoc (output into either --java-out-dir or
+   --srcjar).
 4. Creates a new stamp file.
 """
 
 import os
+import optparse
 import shutil
 import subprocess
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), "android", "gyp"))
+from util import build_utils
+
 def main(argv):
-  if len(argv) < 5:
-    usage()
+  parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
+  parser.add_option("--protoc", help="Path to protoc binary.")
+  parser.add_option("--proto-path", help="Path to proto directory.")
+  parser.add_option("--java-out-dir",
+      help="Path to output directory for java files.")
+  parser.add_option("--srcjar", help="Path to output srcjar.")
+  parser.add_option("--stamp", help="File to touch on success.")
+  options, args = parser.parse_args(argv)
+
+  build_utils.CheckOptions(options, parser, ['protoc', 'proto_path'])
+  if not options.java_out_dir and not options.srcjar:
+    print 'One of --java-out-dir or --srcjar must be specified.'
     return 1
 
-  protoc_path, proto_path, java_out, stamp_file = argv[1:5]
-  proto_files = argv[5:]
+  with build_utils.TempDir() as temp_dir:
+    # Specify arguments to the generator.
+    generator_args = ['optional_field_style=reftypes',
+                      'store_unknown_fields=true']
+    out_arg = '--javanano_out=' + ','.join(generator_args) + ':' + temp_dir
+    # Generate Java files using protoc.
+    build_utils.CheckOutput(
+        [options.protoc, '--proto_path', options.proto_path, out_arg]
+        + args)
 
-  # Delete all old sources.
-  if os.path.exists(java_out):
-    shutil.rmtree(java_out)
+    if options.java_out_dir:
+      build_utils.DeleteDirectory(options.java_out_dir)
+      shutil.copytree(temp_dir, options.java_out_dir)
+    else:
+      build_utils.ZipDir(options.srcjar, temp_dir)
 
-  # Create source directory.
-  os.makedirs(java_out)
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        args + [options.protoc] + build_utils.GetPythonDependencies())
 
-  # Specify arguments to the generator.
-  generator_args = ['optional_field_style=reftypes',
-                    'store_unknown_fields=true']
-  out_arg = '--javanano_out=' + ','.join(generator_args) + ':' + java_out
-
-  # Generate Java files using protoc.
-  ret = subprocess.call(
-      [protoc_path, '--proto_path', proto_path, out_arg] + proto_files)
-
-  if ret == 0:
-    # Create a new stamp file.
-    with file(stamp_file, 'a'):
-      os.utime(stamp_file, None)
-
-  return ret
-
-def usage():
-  print(__doc__);
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))
