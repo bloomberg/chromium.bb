@@ -211,14 +211,17 @@ class DevToolsAndroidBridge
 
   typedef int PortStatus;
   typedef std::map<int, PortStatus> PortStatusMap;
-  typedef std::map<std::string, PortStatusMap> DevicesStatus;
+  typedef std::pair<scoped_refptr<RemoteBrowser>, PortStatusMap>
+      BrowserStatus;
+  typedef std::vector<BrowserStatus> ForwardingStatus;
 
   class PortForwardingListener {
    public:
     typedef DevToolsAndroidBridge::PortStatusMap PortStatusMap;
-    typedef DevToolsAndroidBridge::DevicesStatus DevicesStatus;
+    typedef DevToolsAndroidBridge::BrowserStatus BrowserStatus;
+    typedef DevToolsAndroidBridge::ForwardingStatus ForwardingStatus;
 
-    virtual void PortStatusChanged(const DevicesStatus&) = 0;
+    virtual void PortStatusChanged(const ForwardingStatus&) = 0;
    protected:
     virtual ~PortForwardingListener() {}
   };

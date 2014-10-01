@@ -59,6 +59,19 @@ const char kAdbScreenWidthField[] = "adbScreenWidth";
 const char kAdbScreenHeightField[] = "adbScreenHeight";
 const char kAdbAttachedForeignField[]  = "adbAttachedForeign";
 
+const char kPortForwardingPorts[] = "ports";
+const char kPortForwardingBrowserId[] = "browserId";
+
+std::string SerializeBrowserId(
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser) {
+  return base::StringPrintf(
+      "browser:%s:%s:%s:%s",
+      browser->serial().c_str(), // Ensure uniqueness across devices.
+      browser->display_name().c_str(),  // Sort by display name.
+      browser->version().c_str(),  // Then by version.
+      browser->socket().c_str());  // Ensure uniqueness on the device.
+}
+
 // CancelableTimer ------------------------------------------------------------
 
 class CancelableTimer {
@@ -358,12 +371,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
       browser_data->SetInteger(
           kAdbBrowserChromeVersionField,
           browser->IsChrome() && !parsed.empty() ? parsed[0] : 0);
-      std::string browser_id = base::StringPrintf(
-          "browser:%s:%s:%s:%s",
-          device->serial().c_str(), // Ensure uniqueness across devices.
-          browser->display_name().c_str(),  // Sort by display name.
-          browser->version().c_str(),  // Then by version.
-          browser->socket().c_str());  // Ensure uniqueness on the device.
+      std::string browser_id = SerializeBrowserId(browser);
       browser_data->SetString(kTargetIdField, browser_id);
       browser_data->SetString(kTargetSourceField, source_id());
 
@@ -500,21 +508,26 @@ PortForwardingStatusSerializer::~PortForwardingStatusSerializer() {
 }
 
 void PortForwardingStatusSerializer::PortStatusChanged(
-    const DevicesStatus& status) {
+    const ForwardingStatus& status) {
   base::DictionaryValue result;
-  for (DevicesStatus::const_iterator sit = status.begin();
+  for (ForwardingStatus::const_iterator sit = status.begin();
       sit != status.end(); ++sit) {
-    base::DictionaryValue* device_status_dict = new base::DictionaryValue();
-    const PortStatusMap& device_status_map = sit->second;
-    for (PortStatusMap::const_iterator it = device_status_map.begin();
-         it != device_status_map.end(); ++it) {
-      device_status_dict->SetInteger(
+    base::DictionaryValue* port_status_dict = new base::DictionaryValue();
+    const PortStatusMap& port_status_map = sit->second;
+    for (PortStatusMap::const_iterator it = port_status_map.begin();
+         it != port_status_map.end(); ++it) {
+      port_status_dict->SetInteger(
           base::StringPrintf("%d", it->first), it->second);
     }
 
+    base::DictionaryValue* device_status_dict = new base::DictionaryValue();
+    device_status_dict->Set(kPortForwardingPorts, port_status_dict);
+    device_status_dict->SetString(kPortForwardingBrowserId,
+                                  SerializeBrowserId(sit->first));
+
     std::string device_id = base::StringPrintf(
         kAdbDeviceIdFormat,
-        sit->first.c_str());
+        sit->first->serial().c_str());
     result.Set(device_id, device_status_dict);
   }
   callback_.Run(result);

@@ -148,6 +148,14 @@ img {
   font-weight: bold;
 }
 
+.used-for-port-forwarding {
+  background-image: -webkit-image-set(url('chrome://theme/IDR_INFO') 1x,
+                                      url('chrome://theme/IDR_INFO@2x') 2x);
+  height: 15px;
+  margin-left: 20px;
+  width: 15px;
+}
+
 .row {
   padding: 6px 0;
   position: relative;
@@ -280,8 +288,8 @@ img {
                                       url('chrome://theme/IDR_WARNING@2x') 2x);
   background-position: 0 center;
   background-repeat: no-repeat;
-  background-size:24px 21px;
-  margin-left: 3px;
+  background-size: 24px 21px;
+  margin-top: 5px;
   padding-left: 25px;
 }
 

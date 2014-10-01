@@ -845,7 +845,7 @@ void DevToolsAndroidBridge::ReceivedDeviceList(const RemoteDevices& devices) {
   for (DeviceListListeners::iterator it = copy.begin(); it != copy.end(); ++it)
     (*it)->DeviceListChanged(devices);
 
-  DevicesStatus status =
+  ForwardingStatus status =
       port_forwarding_controller_->DeviceListChanged(devices);
   PortForwardingListeners forwarding_listeners(port_forwarding_listeners_);
   for (PortForwardingListeners::iterator it = forwarding_listeners.begin();

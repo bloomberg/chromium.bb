@@ -264,6 +264,10 @@ class PortForwardingController::Connection
 
   void UpdateForwardingMap(const ForwardingMap& new_forwarding_map);
 
+  scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser() {
+    return browser_;
+  }
+
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
@@ -530,10 +534,10 @@ PortForwardingController::PortForwardingController(Profile* profile)
 
 PortForwardingController::~PortForwardingController() {}
 
-PortForwardingController::DevicesStatus
+PortForwardingController::ForwardingStatus
 PortForwardingController::DeviceListChanged(
     const DevToolsAndroidBridge::RemoteDevices& devices) {
-  DevicesStatus status;
+  ForwardingStatus status;
   if (forwarding_map_.empty())
     return status;
 
@@ -550,10 +554,10 @@ PortForwardingController::DeviceListChanged(
         new Connection(&registry_, device, browser, forwarding_map_);
       }
     } else {
-      status[device->serial()] = (*rit).second->GetPortStatusMap();
+      status.push_back(std::make_pair(rit->second->browser(),
+                                      rit->second->GetPortStatusMap()));
     }
   }
-
   return status;
 }
 

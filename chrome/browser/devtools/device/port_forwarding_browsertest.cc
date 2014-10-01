@@ -49,7 +49,7 @@ class PortForwardingTest: public InProcessBrowserTest {
           RemovePortForwardingListener(this);
     }
 
-    virtual void PortStatusChanged(const DevicesStatus& status) OVERRIDE {
+    virtual void PortStatusChanged(const ForwardingStatus& status) OVERRIDE {
       if (status.empty() && skip_empty_devices_)
         return;
       base::MessageLoop::current()->PostTask(

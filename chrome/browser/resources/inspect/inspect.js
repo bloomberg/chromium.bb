@@ -124,6 +124,14 @@ function showIncognitoWarning() {
   $('devices-incognito').hidden = false;
 }
 
+function alreadyDisplayed(element, data) {
+  var json = JSON.stringify(data);
+  if (element.cachedJSON == json)
+    return true;
+  element.cachedJSON = json;
+  return false;
+}
+
 function populateRemoteTargets(devices) {
   if (!devices)
     return;
@@ -131,14 +139,6 @@ function populateRemoteTargets(devices) {
   if (window.modal) {
     window.holdDevices = devices;
     return;
-  }
-
-  function alreadyDisplayed(element, data) {
-    var json = JSON.stringify(data);
-    if (element.cachedJSON == json)
-      return true;
-    element.cachedJSON = json;
-    return false;
   }
 
   function insertChildSortedById(parent, child) {
@@ -248,14 +248,7 @@ function populateRemoteTargets(devices) {
           browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
         browserSection.appendChild(browserHeader);
 
-        if (incompatibleVersion) {
-          var warningSection = document.createElement('div');
-          warningSection.className = 'warning';
-          warningSection.textContent =
-            'You may need a newer version of desktop Chrome. ' +
-            'Please try Chrome ' + browser.adbBrowserVersion + ' or later.';
-          browserHeader.appendChild(warningSection);
-        } else if (majorChromeVersion >= MIN_VERSION_NEW_TAB) {
+        if (!incompatibleVersion && majorChromeVersion >= MIN_VERSION_NEW_TAB) {
           var newPage = document.createElement('div');
           newPage.className = 'open';
 
@@ -280,6 +273,22 @@ function populateRemoteTargets(devices) {
           newPageButton.addEventListener('click', openHandler, true);
 
           browserHeader.appendChild(newPage);
+        }
+
+        var portForwardingInfo = document.createElement('div');
+        portForwardingInfo.className = 'used-for-port-forwarding';
+        portForwardingInfo.hidden = true;
+        portForwardingInfo.title = 'This browser is used for port ' +
+            'forwarding. Closing it will drop current connections.';
+        browserHeader.appendChild(portForwardingInfo);
+
+        if (incompatibleVersion) {
+          var warningSection = document.createElement('div');
+          warningSection.className = 'warning';
+          warningSection.textContent =
+            'You may need a newer version of desktop Chrome. ' +
+            'Please try Chrome ' + browser.adbBrowserVersion + ' or later.';
+          browserSection.appendChild(warningSection);
         }
 
         var browserInspector;
@@ -854,13 +863,17 @@ function populatePortStatus(devicesStatusMap) {
   for (var deviceId in devicesStatusMap) {
     if (!devicesStatusMap.hasOwnProperty(deviceId))
       continue;
-    var deviceStatusMap = devicesStatusMap[deviceId];
+    var deviceStatus = devicesStatusMap[deviceId];
+    var deviceStatusMap = deviceStatus.ports;
 
     var deviceSection = $(deviceId);
     if (!deviceSection)
       continue;
 
     var devicePorts = deviceSection.querySelector('.device-ports');
+    if (alreadyDisplayed(devicePorts, deviceStatus))
+      continue;
+
     devicePorts.textContent = '';
     for (var port in deviceStatusMap) {
       if (!deviceStatusMap.hasOwnProperty(port))
@@ -887,6 +900,15 @@ function populatePortStatus(devicesStatusMap) {
         portNumber.textContent += '(' + status + ')';
       devicePorts.appendChild(portNumber);
     }
+
+    function updatePortForwardingInfo(browserSection) {
+      var icon = browserSection.querySelector('.used-for-port-forwarding');
+      if (icon)
+        icon.hidden = (browserSection.id !== deviceStatus.browserId);
+    }
+
+    Array.prototype.forEach.call(
+        deviceSection.querySelectorAll('.browser'), updatePortForwardingInfo);
   }
 
   function clearPorts(deviceSection) {
