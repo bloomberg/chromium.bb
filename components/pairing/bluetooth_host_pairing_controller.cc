@@ -35,6 +35,7 @@ BluetoothHostPairingController::~BluetoothHostPairingController() {
 void BluetoothHostPairingController::ChangeStage(Stage new_stage) {
   if (current_stage_ == new_stage)
     return;
+  VLOG(1) << "ChangeStage " << new_stage;
   current_stage_ = new_stage;
   FOR_EACH_OBSERVER(Observer, observers_, PairingStageChanged(new_stage));
 }

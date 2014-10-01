@@ -68,7 +68,6 @@ std::string ControllerPairingScreen::GetName() const {
   return WizardController::kControllerPairingScreenName;
 }
 
-// Overridden from ControllerPairingController::Observer:
 void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
   DCHECK(new_stage != current_stage_);
 
@@ -111,7 +110,8 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       controller_->RemoveObserver(this);
       get_screen_observer()->OnExit(
           WizardController::CONTROLLER_PAIRING_FINISHED);
-      // TODO: Move the rest of the stages to the proper location.
+      // TODO(achuith, zork): Move the rest of the stages to the proper
+      // location.
       desired_page = kPageEnrollmentIntroduction;
       break;
     }
@@ -139,6 +139,8 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
   context_.SetString(kContextKeyPage, desired_page);
   context_.SetBoolean(kContextKeyControlsDisabled, false);
   CommitContextChanges();
+  VLOG(1) << "PairingStageChanged " << desired_page
+          << ", current stage " << current_stage_;
 }
 
 void ControllerPairingScreen::DiscoveredDevicesListChanged() {

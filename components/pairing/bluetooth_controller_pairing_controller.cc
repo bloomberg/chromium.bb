@@ -46,6 +46,7 @@ device::BluetoothDevice* BluetoothControllerPairingController::GetController() {
 void BluetoothControllerPairingController::ChangeStage(Stage new_stage) {
   if (current_stage_ == new_stage)
     return;
+  VLOG(1) << "ChangeStage " << new_stage;
   current_stage_ = new_stage;
   FOR_EACH_OBSERVER(ControllerPairingController::Observer, observers_,
                     PairingStageChanged(new_stage));
@@ -356,7 +357,6 @@ void BluetoothControllerPairingController::StartSession() {
   ChangeStage(STAGE_FINISHED);
 }
 
-// ProtoDecoder::Observer:
 void BluetoothControllerPairingController::OnHostStatusMessage(
     const pairing_api::HostStatus& message) {
   if (got_initial_status_) {
@@ -377,6 +377,7 @@ void BluetoothControllerPairingController::OnHostStatusMessage(
     got_initial_status_ = true;
 
     // TODO(zork): Check domain. (http://crbug.com/405761)
+    // TODO(achuith): Need STAGE_HOST_UPDATE_IN_PROGRESS here.
     ChangeStage(STAGE_WAITING_FOR_CREDENTIALS);
   }
 }
