@@ -214,21 +214,21 @@ Utils.resetTitleChange = function() {
 Utils.sendRequest = function(requestType, responseType, message, serverURL,
                              onSuccessCallbackFn, forceInvalidResponse) {
   var requestAttemptCount = 0;
-  var MAXIMUM_REQUEST_ATTEMPTS = 3;
   var REQUEST_RETRY_DELAY_MS = 3000;
+  var REQUEST_TIMEOUT_MS = 1000;
 
   function sendRequestAttempt() {
+    // No limit on the number of retries. This will retry on failures
+    // until the test framework stops the test.
     requestAttemptCount++;
-    if (requestAttemptCount == MAXIMUM_REQUEST_ATTEMPTS) {
-      Utils.failTest('FAILED: Exceeded maximum license request attempts.');
-      return;
-    }
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.responseType = responseType;
     xmlhttp.open(requestType, serverURL, true);
     xmlhttp.onerror = function(e) {
       Utils.timeLog('Request status: ' + this.statusText);
-      Utils.failTest('FAILED: License request XHR failed with network error.');
+      Utils.timeLog('FAILED: License request XHR failed with network error.');
+      Utils.timeLog('Retrying request in ' + REQUEST_RETRY_DELAY_MS + 'ms');
+      setTimeout(sendRequestAttempt, REQUEST_RETRY_DELAY_MS);
     };
     xmlhttp.onload = function(e) {
       if (this.status == 200) {
@@ -237,11 +237,16 @@ Utils.sendRequest = function(requestType, responseType, message, serverURL,
       } else {
         Utils.timeLog('Bad response status: ' + this.status);
         Utils.timeLog('Bad response: ' + this.response);
-        Utils.timeLog('Retrying request if possible in ' +
-                      REQUEST_RETRY_DELAY_MS + 'ms');
+        Utils.timeLog('Retrying request in ' + REQUEST_RETRY_DELAY_MS + 'ms');
         setTimeout(sendRequestAttempt, REQUEST_RETRY_DELAY_MS);
       }
     };
+    xmlhttp.timeout = REQUEST_TIMEOUT_MS;
+    xmlhttp.ontimeout = function(e) {
+      Utils.timeLog('Request timeout');
+      Utils.timeLog('Retrying request in ' + REQUEST_RETRY_DELAY_MS + 'ms');
+      setTimeout(sendRequestAttempt, REQUEST_RETRY_DELAY_MS);
+    }
     Utils.timeLog('Attempt (' + requestAttemptCount +
                   '): sending request to server: ' + serverURL);
     xmlhttp.send(message);
