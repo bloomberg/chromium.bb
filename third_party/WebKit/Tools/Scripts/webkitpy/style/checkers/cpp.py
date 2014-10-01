@@ -1960,7 +1960,7 @@ def check_spacing(file_extension, clean_lines, line_number, error):
     # Alas, we can't test < or > because they're legitimately used sans spaces
     # (a->b, vector<int> a).  The only time we can tell is a < with no >, and
     # only if it's not template params list spilling into the next line.
-    matched = search(r'[^<>=!\s](==|!=|\+=|-=|\*=|/=|/|\|=|&=|<<=|>>=|<=|>=|\|\||\||&&|>>|<<)[^<>=!\s]', line)
+    matched = search(r'[^<>=!\s](==|!=|\+=|-=|\*=|/=|/|\|=|&=|<<=|>>=|<=|>=|\|\||\||&&|<<)[^<>=!\s]', line)
     if not matched:
         # Note that while it seems that the '<[^<]*' term in the following
         # regexp could be simplified to '<.*', which would indeed match
@@ -1968,6 +1968,15 @@ def check_spacing(file_extension, clean_lines, line_number, error):
         # regexp takes linear rather than quadratic time.
         if not search(r'<[^<]*,\s*$', line):  # template params spill
             matched = search(r'[^<>=!\s](<)[^<>=!\s]([^>]|->)*$', line)
+    if not matched:
+        # Regardless of template arguments or operator>>, \w should not
+        # follow >>.
+        matched = search(r'(>>)\w', line)
+        # If the line has no template arguments, >> is operator>>.
+        # FIXME: This doesn't handle line-breaks inside template arguments.
+        if not matched and not search(r'<', line):
+            matched = search(r'\w(>>)', line)
+
     if matched:
         error(line_number, 'whitespace/operators', 3,
               'Missing spaces around %s' % matched.group(1))

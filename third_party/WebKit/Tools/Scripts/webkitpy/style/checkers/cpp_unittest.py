@@ -1798,6 +1798,15 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('a<Foo*> t <<= *b / &c; // Test', '')
         self.assert_lint('if (a=b == 1)', 'Missing spaces around =  [whitespace/operators] [4]')
         self.assert_lint('a = 1<<20', 'Missing spaces around <<  [whitespace/operators] [3]')
+        self.assert_lint('a = 1>> 20', 'Missing spaces around >>  [whitespace/operators] [3]')
+        self.assert_lint('a = 1 >>20', 'Missing spaces around >>  [whitespace/operators] [3]')
+        self.assert_lint('a = 1>>20', 'Missing spaces around >>  [whitespace/operators] [3]')
+        self.assert_lint('func(OwnPtr<Vector<Foo>>)', '')
+        self.assert_lint('func(OwnPtr<Vector<Foo>> foo)', '')
+        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar>>>)', '')
+        # FIXME: The following test should not show any error.
+        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar\n    >>>)',
+                         'Missing spaces around <  [whitespace/operators] [3]')
         self.assert_lint('if (a = b == 1)', '')
         self.assert_lint('a = 1 << 20', '')
         self.assert_multi_line_lint('#include <sys/io.h>\n', '')
