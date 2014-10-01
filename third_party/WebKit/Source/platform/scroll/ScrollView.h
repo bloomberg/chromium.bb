@@ -48,6 +48,7 @@ public:
     // ScrollableArea functions.
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
     virtual void setScrollOffset(const IntPoint&) OVERRIDE;
+    virtual void setScrollOffset(const DoublePoint&) OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE;
     virtual void scrollbarStyleChanged() OVERRIDE;
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
@@ -130,20 +131,23 @@ public:
     virtual void setContentsSize(const IntSize&);
 
     // Functions for querying the current scrolled position (both as a point, a size, or as individual X and Y values).
+    // FIXME: Remove the IntPoint version. crbug.com/414283.
     virtual IntPoint scrollPosition() const OVERRIDE { return visibleContentRect().location(); }
+    virtual DoublePoint scrollPositionDouble() const OVERRIDE { return m_scrollPosition; }
     IntSize scrollOffset() const { return toIntSize(visibleContentRect().location()); } // Gets the scrolled position as an IntSize. Convenient for adding to other sizes.
-    IntSize pendingScrollDelta() const { return m_pendingScrollDelta; }
+    DoubleSize pendingScrollDelta() const { return m_pendingScrollDelta; }
     virtual IntPoint maximumScrollPosition() const OVERRIDE; // The maximum position we can be scrolled to.
     virtual IntPoint minimumScrollPosition() const OVERRIDE; // The minimum position we can be scrolled to.
     // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
     IntPoint adjustScrollPositionWithinRange(const IntPoint&) const;
-    int scrollX() const { return scrollPosition().x(); }
-    int scrollY() const { return scrollPosition().y(); }
+    DoublePoint adjustScrollPositionWithinRange(const DoublePoint&) const;
+    double scrollX() const { return scrollPositionDouble().x(); }
+    double scrollY() const { return scrollPositionDouble().y(); }
 
     virtual IntSize overhangAmount() const OVERRIDE;
 
-    void cacheCurrentScrollPosition() { m_cachedScrollPosition = scrollPosition(); }
-    IntPoint cachedScrollPosition() const { return m_cachedScrollPosition; }
+    void cacheCurrentScrollPosition() { m_cachedScrollPosition = scrollPositionDouble(); }
+    DoublePoint cachedScrollPosition() const { return m_cachedScrollPosition; }
 
     // Functions for scrolling the view.
     virtual void setScrollPosition(const IntPoint&, ScrollBehavior = ScrollBehaviorInstant);
@@ -250,7 +254,7 @@ protected:
     ScrollView();
 
     // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
-    virtual void scrollTo(const IntSize& newOffset);
+    virtual void scrollTo(const DoublePoint& newPosition);
 
     virtual void contentRectangleForPaintInvalidation(const IntRect&);
     virtual void paintContents(GraphicsContext*, const IntRect& damageRect) = 0;
@@ -318,9 +322,9 @@ private:
 
     HashSet<RefPtr<Widget> > m_children;
 
-    IntSize m_pendingScrollDelta;
-    IntSize m_scrollOffset; // FIXME: Would rather store this as a position, but we will wait to make this change until more code is shared.
-    IntPoint m_cachedScrollPosition;
+    DoubleSize m_pendingScrollDelta;
+    DoublePoint m_scrollPosition;
+    DoublePoint m_cachedScrollPosition;
     IntSize m_contentsSize;
 
     int m_scrollbarsAvoidingResizer;

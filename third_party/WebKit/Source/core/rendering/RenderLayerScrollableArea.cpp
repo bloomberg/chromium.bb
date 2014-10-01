@@ -353,7 +353,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     if (scrollOffset() == toIntSize(newScrollOffset))
         return;
 
-    setScrollOffset(toIntSize(newScrollOffset));
+    m_scrollOffset = toIntSize(newScrollOffset);
 
     LocalFrame* frame = box().frame();
     ASSERT(frame);

@@ -133,7 +133,7 @@ FloatPoint ScrollAnimator::currentPosition() const
 
 void ScrollAnimator::notifyPositionChanged()
 {
-    m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY));
+    m_scrollableArea->setScrollOffsetFromAnimation(DoublePoint(m_currentPosX, m_currentPosY));
 }
 
 float ScrollAnimator::clampScrollPosition(ScrollbarOrientation orientation, float pos)

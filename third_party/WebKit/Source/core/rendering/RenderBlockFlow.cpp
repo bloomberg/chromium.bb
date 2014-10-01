@@ -2622,7 +2622,7 @@ bool RenderBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult
 
     LayoutPoint adjustedLocation = accumulatedOffset;
     if (isRenderView()) {
-        adjustedLocation += toLayoutSize(toRenderView(this)->frameView()->scrollPosition());
+        adjustedLocation += toLayoutSize(LayoutPoint(toRenderView(this)->frameView()->scrollPositionDouble()));
     }
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();

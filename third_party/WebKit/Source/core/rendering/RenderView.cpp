@@ -386,7 +386,7 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
         rect.move(m_frameView->scrollOffsetForFixedPosition());
         // If we have a pending scroll, invalidate the previous scroll position.
         if (!m_frameView->pendingScrollDelta().isZero()) {
-            rect.move(-m_frameView->pendingScrollDelta());
+            rect.move(-LayoutSize(m_frameView->pendingScrollDelta()));
         }
     }
 

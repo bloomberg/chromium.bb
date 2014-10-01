@@ -192,8 +192,6 @@ private:
 
     IntSize clampScrollOffset(const IntSize&) const;
 
-    void setScrollOffset(const IntSize& scrollOffset) { m_scrollOffset = scrollOffset; }
-
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
     LayoutUnit verticalScrollbarStart(int minX, int maxX) const;

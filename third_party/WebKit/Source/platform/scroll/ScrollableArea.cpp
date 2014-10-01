@@ -182,15 +182,15 @@ void ScrollableArea::programmaticallyScrollSmoothlyToOffset(const FloatPoint& of
 
 void ScrollableArea::notifyScrollPositionChanged(const IntPoint& position)
 {
-    scrollPositionChanged(position);
+    scrollPositionChanged(DoublePoint(position));
     scrollAnimator()->setCurrentPosition(position);
 }
 
-void ScrollableArea::scrollPositionChanged(const IntPoint& position)
+void ScrollableArea::scrollPositionChanged(const DoublePoint& position)
 {
     TRACE_EVENT0("blink", "ScrollableArea::scrollPositionChanged");
 
-    IntPoint oldPosition = scrollPosition();
+    DoublePoint oldPosition = scrollPositionDouble();
     // Tell the derived class to scroll its contents.
     setScrollOffset(position);
 
@@ -217,8 +217,10 @@ void ScrollableArea::scrollPositionChanged(const IntPoint& position)
             verticalScrollbar->invalidate();
     }
 
-    if (scrollPosition() != oldPosition)
-        scrollAnimator()->notifyContentAreaScrolled(scrollPosition() - oldPosition);
+    if (scrollPositionDouble() != oldPosition) {
+        // FIXME: Pass in DoubleSize. crbug.com/414283.
+        scrollAnimator()->notifyContentAreaScrolled(toFloatSize(scrollPositionDouble() - oldPosition));
+    }
 }
 
 bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, ScrollBehavior& behavior)
@@ -248,10 +250,10 @@ bool ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 // NOTE: Only called from Internals for testing.
 void ScrollableArea::setScrollOffsetFromInternals(const IntPoint& offset)
 {
-    setScrollOffsetFromAnimation(offset);
+    setScrollOffsetFromAnimation(DoublePoint(offset));
 }
 
-void ScrollableArea::setScrollOffsetFromAnimation(const IntPoint& offset)
+void ScrollableArea::setScrollOffsetFromAnimation(const DoublePoint& offset)
 {
     scrollPositionChanged(offset);
 }

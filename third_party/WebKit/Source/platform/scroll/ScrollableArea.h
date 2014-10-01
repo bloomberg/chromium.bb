@@ -27,6 +27,7 @@
 #define ScrollableArea_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/DoublePoint.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/Noncopyable.h"
@@ -159,8 +160,12 @@ public:
     virtual Scrollbar* verticalScrollbar() const { return 0; }
 
     // scrollPosition is relative to the scrollOrigin. i.e. If the page is RTL
-    // then scrollPosition will be negative.
+    // then scrollPosition will be negative. By default, scrollPositionDouble()
+    // just call into scrollPosition(). Subclass can override scrollPositionDouble()
+    // to return floating point precision scrolloffset.
+    // FIXME: Remove scrollPosition(). crbug.com/414283.
     virtual IntPoint scrollPosition() const = 0;
+    virtual DoublePoint scrollPositionDouble() const { return DoublePoint(scrollPosition()); }
     virtual IntPoint minimumScrollPosition() const = 0;
     virtual IntPoint maximumScrollPosition() const = 0;
 
@@ -248,15 +253,23 @@ protected:
     virtual void invalidateScrollCornerRect(const IntRect&) = 0;
 
 private:
-    void scrollPositionChanged(const IntPoint&);
+    void scrollPositionChanged(const DoublePoint&);
 
     // NOTE: Only called from the ScrollAnimator.
     friend class ScrollAnimator;
-    void setScrollOffsetFromAnimation(const IntPoint&);
+    void setScrollOffsetFromAnimation(const DoublePoint&);
 
     // This function should be overriden by subclasses to perform the actual
-    // scroll of the content.
+    // scroll of the content. By default the DoublePoint version will just
+    // call into the IntPoint version. If fractional scroll is needed, one
+    // can override the DoublePoint version to take advantage of the double
+    // precision scroll offset.
+    // FIXME: Remove the IntPoint version. crbug.com/414283.
     virtual void setScrollOffset(const IntPoint&) = 0;
+    virtual void setScrollOffset(const DoublePoint& offset)
+    {
+        setScrollOffset(flooredIntPoint(offset));
+    }
 
     virtual int lineStep(ScrollbarOrientation) const;
     virtual int pageStep(ScrollbarOrientation) const;

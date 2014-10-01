@@ -188,7 +188,7 @@ IntRect ScrollView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion
 {
     FloatSize visibleContentSize = unscaledVisibleContentSize(scollbarInclusion);
     visibleContentSize.scale(1 / visibleContentScaleFactor());
-    return IntRect(IntPoint(m_scrollOffset), expandedIntSize(visibleContentSize));
+    return IntRect(flooredIntPoint(m_scrollPosition), expandedIntSize(visibleContentSize));
 }
 
 IntSize ScrollView::contentsSize() const
@@ -227,6 +227,17 @@ IntPoint ScrollView::adjustScrollPositionWithinRange(const IntPoint& scrollPoint
     return newScrollPosition;
 }
 
+DoublePoint ScrollView::adjustScrollPositionWithinRange(const DoublePoint& scrollPoint) const
+{
+    if (!constrainsScrollingToContentEdge())
+        return scrollPoint;
+    DoublePoint newScrollPosition = scrollPoint.shrunkTo(
+        maximumScrollPosition().x(), maximumScrollPosition().y());
+    newScrollPosition = newScrollPosition.expandedTo(
+        minimumScrollPosition().x(), minimumScrollPosition().y());
+    return newScrollPosition;
+}
+
 void ScrollView::adjustScrollbarOpacity()
 {
     if (m_horizontalScrollbar && layerForHorizontalScrollbar()) {
@@ -259,23 +270,29 @@ void ScrollView::notifyPageThatContentAreaWillPaint() const
 
 void ScrollView::setScrollOffset(const IntPoint& offset)
 {
-    scrollTo(toIntSize(adjustScrollPositionWithinRange(offset)));
+    scrollTo(DoublePoint(adjustScrollPositionWithinRange(offset)));
 }
 
-void ScrollView::scrollTo(const IntSize& newOffset)
+void ScrollView::setScrollOffset(const DoublePoint& offset)
 {
-    IntSize scrollDelta = newOffset - m_scrollOffset;
-    if (scrollDelta == IntSize())
+    scrollTo(adjustScrollPositionWithinRange(offset));
+}
+
+void ScrollView::scrollTo(const DoublePoint& newPosition)
+{
+    DoubleSize scrollDelta = newPosition - m_scrollPosition;
+    if (scrollDelta.isZero())
         return;
-    m_scrollOffset = newOffset;
+    m_scrollPosition = newPosition;
 
     if (scrollbarsSuppressed())
         return;
 
+    // FIXME: Change scrollContents() to take DoubleSize. crbug.com/414283.
     if (isFrameView())
         m_pendingScrollDelta += scrollDelta;
     else
-        scrollContents(scrollDelta);
+        scrollContents(flooredIntSize(scrollDelta));
 }
 
 void ScrollView::setScrollPosition(const IntPoint& scrollPoint, ScrollBehavior scrollBehavior)
@@ -529,9 +546,10 @@ void ScrollView::scrollContentsIfNeeded()
 {
     if (m_pendingScrollDelta.isZero())
         return;
-    IntSize scrollDelta = m_pendingScrollDelta;
-    m_pendingScrollDelta = IntSize();
-    scrollContents(scrollDelta);
+    DoubleSize scrollDelta = m_pendingScrollDelta;
+    m_pendingScrollDelta = DoubleSize();
+    // FIXME: Change scrollContents() to take DoubleSize. crbug.com/414283.
+    scrollContents(flooredIntSize(scrollDelta));
 }
 
 void ScrollView::scrollContents(const IntSize& scrollDelta)

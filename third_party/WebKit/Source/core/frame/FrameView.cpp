@@ -2079,11 +2079,11 @@ bool FrameView::isActive() const
     return page && page->focusController().isActive();
 }
 
-void FrameView::scrollTo(const IntSize& newOffset)
+void FrameView::scrollTo(const DoublePoint& newPosition)
 {
-    LayoutSize offset = scrollOffset();
-    ScrollView::scrollTo(newOffset);
-    if (offset != scrollOffset()) {
+    DoublePoint position = scrollPositionDouble();
+    ScrollView::scrollTo(newPosition);
+    if (position != scrollPositionDouble()) {
         updateLayersAndCompositingAfterScrollIfNeeded();
         scrollPositionChanged();
     }

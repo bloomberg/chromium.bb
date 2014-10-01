@@ -1855,18 +1855,12 @@ inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const Render
     return value / style.effectiveZoom();
 }
 
-// Since we don't currently persist fractional scroll offsets (crbug.com/414283),
-// we should round our return value to reflect the actual precision we have under
-// the range of typical zoom values. This avoids surprising issues with scroll
-// values not quite round-tripping exactly.
-inline double adjustScrollForAbsoluteZoom(int scrollOffset, float zoomFactor)
+inline double adjustScrollForAbsoluteZoom(double scrollOffset, float zoomFactor)
 {
-    double result = scrollOffset / zoomFactor;
-    const double kScale = 10000; // 4 decimal places of accuracy
-    return lround(result * kScale) / kScale;
+    return scrollOffset / zoomFactor;
 }
 
-inline double adjustScrollForAbsoluteZoom(int scrollOffset, const RenderStyle& style)
+inline double adjustScrollForAbsoluteZoom(double scrollOffset, const RenderStyle& style)
 {
     return adjustScrollForAbsoluteZoom(scrollOffset, style.effectiveZoom());
 }

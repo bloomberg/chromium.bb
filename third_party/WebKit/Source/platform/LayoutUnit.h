@@ -621,6 +621,11 @@ inline float operator-(const LayoutUnit& a, float b)
     return a.toFloat() - b;
 }
 
+inline double operator-(const LayoutUnit& a, double b)
+{
+    return a.toDouble() - b;
+}
+
 inline LayoutUnit operator-(const int a, const LayoutUnit& b)
 {
     return LayoutUnit(a) - b;

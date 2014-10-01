@@ -7,40 +7,42 @@
         Test for <i><a href="rdar://problem/6643103">rdar://problem/6643103</a>
         Unscaled values from body.scrollHeight</i>.
     </p>
-    <pre id="console"></pre>
+    <script src="../../resources/js-test.js"></script>
     <script>
-        function log(message)
+        var floatPrecision = 0.00001;
+        function checkValue(actual, expected)
         {
-            var console = document.getElementById("console");
-            console.appendChild(document.createTextNode(message + "\n"));
+            if (window.eventSender) {
+               shouldBeCloseTo(actual, expected, floatPrecision);
+            }
         }
 
         if (window.testRunner) {
             testRunner.dumpAsText();
             var body = document.body;
             var documentElement = document.documentElement;
-            log("scrollHeight: " + body.scrollHeight);
-            log("scrollWidth: " + body.scrollWidth);
+            checkValue('document.body.scrollHeight', 1000)
+            checkValue('document.body.scrollWidth', 1000);
 
-            log("\nScrolling right to 50");
+            // Scrolling right to 50.
             documentElement.scrollLeft = 50;
-            log("scrollLeft: " + documentElement.scrollLeft);
+            checkValue('document.documentElement.scrollLeft', 50);
 
-            log("\nZooming in");
+            // Zooming in.
             eventSender.zoomPageIn();
-            log("scrollHeight: " + body.scrollHeight);
-            log("scrollWidth: " + body.scrollWidth);
-            log("scrollTop: " + documentElement.scrollTop);
-            log("scrollLeft: " + documentElement.scrollLeft);
+            checkValue('document.body.scrollHeight', 1000);
+            checkValue('document.body.scrollWidth', 1000);
+            checkValue('document.documentElement.scrollTop', 0);
+            checkValue('document.documentElement.scrollLeft', 50);
 
-            log("\nScrolling down to 100");
+            // Scrolling down to 100.
             documentElement.scrollTop = 100;
-            log("scrollTop: " + documentElement.scrollTop);
+            checkValue('document.documentElement.scrollTop', 100);
 
-            log("\nZooming back out");
+            // Zooming back out.
             eventSender.zoomPageOut();
-            log("scrollTop: " + documentElement.scrollTop);
-            log("scrollLeft: " + documentElement.scrollLeft);
+            checkValue('document.documentElement.scrollTop', 100);
+            checkValue('document.documentElement.scrollLeft', 50);
         }
     </script>
 </body>
