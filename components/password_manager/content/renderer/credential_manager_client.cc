@@ -56,6 +56,8 @@ bool CredentialManagerClient::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeSignedOut,
                         OnAcknowledgeSignedOut)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_SendCredential, OnSendCredential)
+    IPC_MESSAGE_HANDLER(CredentialManagerMsg_RejectCredentialRequest,
+                        OnRejectCredentialRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -80,6 +82,15 @@ void CredentialManagerClient::OnSendCredential(int request_id,
   // TODO(mkwst): Split into local/federated credentials.
   blink::WebCredential credential(info.id, info.name, info.avatar);
   callbacks->onSuccess(&credential);
+  request_callbacks_.Remove(request_id);
+}
+
+void CredentialManagerClient::OnRejectCredentialRequest(int request_id) {
+  RequestCallbacks* callbacks = request_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  // We don't expose an internal failure to the page directly; model it as
+  // though no credentials were available.
+  callbacks->onSuccess(nullptr);
   request_callbacks_.Remove(request_id);
 }
 

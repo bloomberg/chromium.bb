@@ -87,3 +87,8 @@ IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeSignedOut,
 IPC_MESSAGE_ROUTED2(CredentialManagerMsg_SendCredential,
                     int /* request_id */,
                     password_manager::CredentialInfo /* credential */)
+
+// Reject the credential request in response to a
+// CredentialManagerHostMsg_RequestCredential message.
+IPC_MESSAGE_ROUTED1(CredentialManagerMsg_RejectCredentialRequest,
+                    int /* request_id */)

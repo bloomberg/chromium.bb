@@ -130,4 +130,27 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   process()->sink().ClearMessages();
 }
 
+TEST_F(ContentCredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialWhileRequestPending) {
+  std::vector<GURL> federations;
+  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+  dispatcher()->OnRequestCredential(kRequestId, false, federations);
+
+  // Check that the second request triggered a rejection.
+  uint32 kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+
+  // Execute the PasswordStore asynchronousness.
+  RunAllPendingTasks();
+
+  // Check that the first request resolves.
+  kMsgID = CredentialManagerMsg_SendCredential::ID;
+  message = process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+}
+
 }  // namespace password_manager

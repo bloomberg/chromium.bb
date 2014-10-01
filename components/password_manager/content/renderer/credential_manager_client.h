@@ -59,19 +59,20 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   virtual void OnAcknowledgeSignedOut(int request_id);
   virtual void OnSendCredential(int request_id,
                                 const CredentialInfo& credential_info);
+  virtual void OnRejectCredentialRequest(int request_id);
 
   // blink::WebCredentialManager:
   virtual void dispatchFailedSignIn(
       const blink::WebCredential& credential,
-      WebCredentialManagerClient::NotificationCallbacks* callbacks) OVERRIDE;
+      WebCredentialManagerClient::NotificationCallbacks* callbacks);
   virtual void dispatchSignedIn(
       const blink::WebCredential& credential,
-      WebCredentialManagerClient::NotificationCallbacks* callbacks) OVERRIDE;
-  virtual void dispatchSignedOut(NotificationCallbacks* callbacks) OVERRIDE;
+      WebCredentialManagerClient::NotificationCallbacks* callbacks);
+  virtual void dispatchSignedOut(NotificationCallbacks* callbacks);
   virtual void dispatchRequest(
       bool zero_click_only,
       const blink::WebVector<blink::WebURL>& federations,
-      RequestCallbacks* callbacks) OVERRIDE;
+      RequestCallbacks* callbacks);
 
  private:
   typedef IDMap<blink::WebCredentialManagerClient::RequestCallbacks,

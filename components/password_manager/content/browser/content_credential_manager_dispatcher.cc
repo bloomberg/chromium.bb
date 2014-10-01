@@ -77,8 +77,10 @@ void ContentCredentialManagerDispatcher::OnRequestCredential(
   DCHECK(request_id);
   PasswordStore* store = GetPasswordStore();
   if (pending_request_id_ || !store) {
-    // TODO(mkwst): Reject the promise if we can't get to the password store, or
-    // if we're already requesting credentials.
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_RejectCredentialRequest(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
+    return;
   }
 
   pending_request_id_ = request_id;
