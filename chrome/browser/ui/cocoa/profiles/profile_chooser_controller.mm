@@ -449,15 +449,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Display everything as a circle that spans the entire control.
   NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:frame];
   [path addClip];
-
   [super drawImage:[self image] withFrame:frame inView:controlView];
-
-  // Focus ring.
-  if ([self showsFirstResponder]) {
-    [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:1] set];
-    [path setLineWidth:kFocusRingLineWidth];
-    [path stroke];
-  }
 }
 @end
 
@@ -552,6 +544,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)setHoverState:(HoverState)state {
   [super setHoverState:state];
   [changePhotoImage_ setHidden:([self hoverState] == kHoverStateNone)];
+}
+
+- (BOOL)canBecomeKeyView {
+  return false;
 }
 
 - (BOOL)accessibilityIsIgnored {
@@ -689,6 +685,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)showEditableView:(id)sender {
   [profileNameTextField_ setHidden:NO];
   [[self window] makeFirstResponder:profileNameTextField_];
+}
+
+- (BOOL)canBecomeKeyView {
+  return false;
 }
 
 @end

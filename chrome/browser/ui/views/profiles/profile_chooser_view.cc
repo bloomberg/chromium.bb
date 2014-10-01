@@ -232,7 +232,6 @@ class EditableProfilePhoto : public views::LabelButton {
       return;
     }
 
-    SetFocusable(true);
     set_notify_enter_exit_on_child(true);
 
     // Photo overlay that appears when hovering over the button.
@@ -315,7 +314,6 @@ class EditableProfileName : public RightAlignedIconLabelButton,
       return;
     }
 
-    SetFocusable(true);
     // Show an "edit" pencil icon when hovering over. In the default state,
     // we need to create an empty placeholder of the correct size, so that
     // the text doesn't jump around when the hovered icon appears.
