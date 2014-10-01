@@ -43,8 +43,6 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
-crbug.com/416534 fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
-
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
