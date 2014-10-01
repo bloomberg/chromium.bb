@@ -195,11 +195,6 @@ WebVector<WebIconURL> WebRemoteFrameImpl::iconURLs(int iconTypesMask) const
     return WebVector<WebIconURL>();
 }
 
-void WebRemoteFrameImpl::setIsRemote(bool)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 {
     if (!frame())

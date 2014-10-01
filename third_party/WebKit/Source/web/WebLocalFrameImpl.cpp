@@ -542,13 +542,6 @@ WebVector<WebIconURL> WebLocalFrameImpl::iconURLs(int iconTypesMask) const
     return WebVector<WebIconURL>();
 }
 
-void WebLocalFrameImpl::setIsRemote(bool isRemote)
-{
-    m_isRemote = isRemote;
-    if (isRemote)
-        client()->initializeChildFrame(frame()->view()->frameRect(), frame()->view()->visibleContentScaleFactor());
-}
-
 void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 {
     if (!frame())

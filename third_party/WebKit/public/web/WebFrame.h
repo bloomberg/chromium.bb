@@ -146,10 +146,6 @@ public:
     // URLs
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const = 0;
 
-    // Notify the WebFrame as to whether its frame will be rendered in a
-    // separate renderer process.
-    virtual void setIsRemote(bool) = 0;
-
     // For a WebFrame with contents being rendered in another process, this
     // sets a layer for use by the in-process compositor. WebLayer should be
     // null if the content is being rendered in the current process.

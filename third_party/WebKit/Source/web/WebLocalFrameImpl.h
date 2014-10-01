@@ -84,7 +84,6 @@ public:
     virtual WebString assignedName() const OVERRIDE;
     virtual void setName(const WebString&) OVERRIDE;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const OVERRIDE;
-    virtual void setIsRemote(bool) OVERRIDE;
     virtual void setRemoteWebLayer(WebLayer*) OVERRIDE;
     virtual void setPermissionClient(WebPermissionClient*) OVERRIDE;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) OVERRIDE;
@@ -334,10 +333,6 @@ private:
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtrWillBeMember<LocalFrame> m_frame;
-
-    // Indicate whether the current LocalFrame is local or remote. Remote frames are
-    // rendered in a different process from their parent frames.
-    bool m_isRemote;
 
     WebFrameClient* m_client;
     WebPermissionClient* m_permissionClient;

@@ -35,7 +35,6 @@ public:
     virtual WebString assignedName() const OVERRIDE;
     virtual void setName(const WebString&) OVERRIDE;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const OVERRIDE;
-    virtual void setIsRemote(bool) OVERRIDE;
     virtual void setRemoteWebLayer(WebLayer*) OVERRIDE;
     virtual void setPermissionClient(WebPermissionClient*) OVERRIDE;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) OVERRIDE;
