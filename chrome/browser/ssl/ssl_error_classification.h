@@ -134,7 +134,7 @@ class SSLErrorClassification : public content::NotificationObserver {
   content::WebContents* web_contents_;
   // This stores the current time.
   base::Time current_time_;
-  const GURL& request_url_;
+  const GURL request_url_;
   int cert_error_;
   // This stores the certificate.
   const net::X509Certificate& cert_;
