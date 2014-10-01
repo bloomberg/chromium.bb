@@ -118,6 +118,10 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
   scoped_ptr<views::Painter> focus_painter_;
 
+  // Changes the background color being used by |background_view_| and schedules
+  // a paint.
+  void SetDrawBackgroundAsActive(bool active);
+
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
 

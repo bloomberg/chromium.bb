@@ -7,6 +7,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -223,10 +224,25 @@ void MessageView::Layout() {
 }
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    controller_->ClickOnNotification(notification_id_);
-    event->SetHandled();
-    return;
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN: {
+      SetDrawBackgroundAsActive(true);
+      break;
+    }
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_END: {
+      SetDrawBackgroundAsActive(false);
+      break;
+    }
+    case ui::ET_GESTURE_TAP: {
+      SetDrawBackgroundAsActive(false);
+      controller_->ClickOnNotification(notification_id_);
+      event->SetHandled();
+      return;
+    }
+    default: {
+      // Do nothing
+    }
   }
 
   SlideOutView::OnGestureEvent(event);
@@ -251,6 +267,15 @@ void MessageView::ButtonPressed(views::Button* sender,
 
 void MessageView::OnSlideOut() {
   controller_->RemoveNotification(notification_id_, true);  // By user.
+}
+
+void MessageView::SetDrawBackgroundAsActive(bool active) {
+  if (!switches::IsTouchFeedbackEnabled())
+    return;
+  background_view_->background()->
+      SetNativeControlColor(active ? kHoveredButtonBackgroundColor :
+                                     kNotificationBackgroundColor);
+  SchedulePaint();
 }
 
 }  // namespace message_center
