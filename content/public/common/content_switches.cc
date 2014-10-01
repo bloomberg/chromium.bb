@@ -277,6 +277,12 @@ const char kDisableZeroCopy[]               = "disable-zero-copy";
 // based tests.
 const char kDomAutomationController[]       = "dom-automation";
 
+// Enable partially decoding jpeg images using the GPU.
+// At least YUV decoding will be accelerated when using this flag.
+// Has no effect unless GPU rasterization is enabled.
+const char kEnableAcceleratedJpegDecoding[] =
+    "enable-accelerated-jpeg-decoding";
+
 // Enable bleeding-edge code to make Chrome draw content faster. The changes
 // behind this path are very likely to break lots of content.
 // ** DO NOT use this flag unless you know what you are doing. **

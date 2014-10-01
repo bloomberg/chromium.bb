@@ -139,6 +139,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
     WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
 
+  if (command_line.HasSwitch(switches::kEnableAcceleratedJpegDecoding))
+    WebRuntimeFeatures::enableDecodeToYUV(true);
+
   if (command_line.HasSwitch(switches::kDisableDisplayList2dCanvas)) {
     WebRuntimeFeatures::enableDisplayList2dCanvas(false);
   } else if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas)) {
