@@ -9,6 +9,7 @@ group("resources") {
   deps = [
     ":devtools_resources",
     ":devtools_protocol_constants",
+    ":devtools_protocol_handler",
   ]
 }
 
@@ -56,7 +57,31 @@ action("gen_devtools_protocol_constants") {
   ]
 }
 
+action("gen_devtools_protocol_handler") {
+  visibility = [ ":devtools_protocol_handler" ]
+
+  script = "//content/browser/devtools/protocol/" +
+      "devtools_protocol_handler_generator.py"
+
+  blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
+  inputs = [ blink_protocol ]
+
+  outputs = [
+    "$target_gen_dir/protocol/devtools_protocol_handler_impl.cc",
+    "$target_gen_dir/protocol/devtools_protocol_handler_impl.h",
+  ]
+
+  args = [
+    rebase_path(blink_protocol, root_build_dir),
+  ] + rebase_path(outputs, root_build_dir)
+}
+
 source_set("devtools_protocol_constants") {
   visibility = [ ":resources" ]
   sources = get_target_outputs(":gen_devtools_protocol_constants")
+}
+
+source_set("devtools_protocol_handler") {
+  visibility = [ ":resources" ]
+  sources = get_target_outputs(":gen_devtools_protocol_handler")
 }

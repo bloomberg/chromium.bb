@@ -11,6 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
+#include "content/browser/devtools/protocol/input_handler.h"
+#include "content/browser/devtools/protocol/page_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -23,6 +25,7 @@ class CompositorFrameMetadata;
 namespace content {
 
 class DevToolsPowerHandler;
+class DevToolsProtocolHandlerImpl;
 class DevToolsTracingHandler;
 class RendererOverridesHandler;
 class RenderViewHost;
@@ -107,6 +110,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void InnerClientDetachedFromRenderer();
 
   RenderViewHostImpl* render_view_host_;
+  scoped_ptr<devtools::input::InputHandler> input_handler_;
+  scoped_ptr<devtools::page::PageHandler> page_handler_;
+  scoped_ptr<DevToolsProtocolHandlerImpl> handler_impl_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
   scoped_ptr<DevToolsPowerHandler> power_handler_;
