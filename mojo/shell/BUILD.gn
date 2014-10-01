@@ -110,6 +110,8 @@ mojom("external_application_registrar_bindings") {
   sources = [
     "external_application_registrar.mojom"
   ]
+
+  deps = [ "//mojo/public/interfaces/application" ]
 }
 
 source_set("external_application_registrar_connection") {
