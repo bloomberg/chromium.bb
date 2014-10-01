@@ -19,6 +19,7 @@ class InternalAlertsTest(unittest.TestCase):
         self.testbed.activate()
         self.testbed.init_user_stub()
         self.testbed.init_memcache_stub()
+        self.testbed.init_datastore_v3_stub()
         self.testapp = webtest.TestApp(internal_alerts.app)
 
     def tearDown(self):

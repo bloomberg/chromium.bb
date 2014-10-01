@@ -10,6 +10,7 @@ import unittest
 import webtest
 
 from google.appengine.api import memcache
+from google.appengine.ext import ndb
 from google.appengine.ext import testbed
 
 
@@ -18,6 +19,7 @@ class AlertsTest(unittest.TestCase):
         self.testbed = testbed.Testbed()
         self.testbed.activate()
         self.testbed.init_memcache_stub()
+        self.testbed.init_datastore_v3_stub()
         self.testapp = webtest.TestApp(alerts.app)
 
     def tearDown(self):
@@ -64,6 +66,31 @@ class AlertsTest(unittest.TestCase):
         self.check_json_headers(res)
         alerts = json.loads(res.body)
         self.assertEqual(alerts['alerts'], 'everything is OK')
+
+    def test_alerts_jsons_are_stored_in_history(self):
+        test_alerts1 = {'alerts': ['hello', 'world', '1']}
+        test_alerts2 = {'alerts': ['hello', 'world', '2']}
+        self.testapp.post('/alerts', {'content': json.dumps(test_alerts1)})
+        self.testapp.post('/alerts', {'content': json.dumps(test_alerts2)})
+        alerts_query = alerts.AlertsJSON.query().order(alerts.AlertsJSON.date)
+        stored_alerts = alerts_query.fetch(limit=3)
+        self.assertEqual(2, len(stored_alerts))
+        stored_alerts1 = json.loads(stored_alerts[0].json)
+        stored_alerts2 = json.loads(stored_alerts[1].json)
+        self.assertEqual(test_alerts1['alerts'], stored_alerts1['alerts'])
+        self.assertEqual(test_alerts2['alerts'], stored_alerts2['alerts'])
+        self.assertTrue('date' in stored_alerts1)
+        self.assertTrue('date' in stored_alerts2)
+        self.assertEqual(type(stored_alerts1['date']), int)
+        self.assertEqual(type(stored_alerts2['date']), int)
+
+    def test_repeating_alerts_are_not_stored_to_history(self):
+        test_alerts = {'alerts': ['hello', 'world']}
+        self.testapp.post('/alerts', {'content': json.dumps(test_alerts)})
+        test_alerts['last_builder_info'] = {'some': 'info'}
+        self.testapp.post('/alerts', {'content': json.dumps(test_alerts)})
+        stored_alerts = alerts.AlertsJSON.query().fetch(limit=2)
+        self.assertEqual(1, len(stored_alerts))
 
     def test_large_number_of_alerts(self):
         # This generates ~2.5MB of JSON that compresses to ~750K. Real

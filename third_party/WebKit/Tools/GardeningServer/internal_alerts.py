@@ -40,8 +40,7 @@ class InternalAlertsHandler(alerts.AlertsHandler):
             InternalAlertsHandler.MEMCACHE_INTERNAL_ALERTS_KEY)
 
     def post(self):
-        super(InternalAlertsHandler, self).post_to_memcache(
-            InternalAlertsHandler.MEMCACHE_INTERNAL_ALERTS_KEY)
+        self.update_alerts(InternalAlertsHandler.MEMCACHE_INTERNAL_ALERTS_KEY)
 
 
 app = webapp2.WSGIApplication([
