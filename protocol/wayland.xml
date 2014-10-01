@@ -525,6 +525,11 @@
       A wl_data_device provides access to inter-client data transfer
       mechanisms such as copy-and-paste and drag-and-drop.
     </description>
+
+    <enum name="error">
+      <entry name="role" value="0" summary="given wl_surface has another role"/>
+    </enum>
+
     <request name="start_drag">
       <description summary="start drag-and-drop operation">
 	This request asks the compositor to start a drag-and-drop
@@ -546,7 +551,8 @@
 	hotspot, but subsequent wl_surface.attach request can move the
 	relative position. Attach requests must be confirmed with
 	wl_surface.commit as usual. The icon surface is given the role of
-	a drag-and-drop icon.
+	a drag-and-drop icon. If the icon surface already has another role,
+	it raises a protocol error.
 
 	The current and pending input regions of the icon wl_surface are
 	cleared, and wl_surface.set_input_region is ignored until the
@@ -677,10 +683,15 @@
       a basic surface.
     </description>
 
+    <enum name="error">
+      <entry name="role" value="0" summary="given wl_surface has another role"/>
+    </enum>
+
     <request name="get_shell_surface">
       <description summary="create a shell surface from a surface">
 	Create a shell surface for an existing surface. This gives
-	the wl_surface the role of a shell surface.
+	the wl_surface the role of a shell surface. If the wl_surface
+	already has another role, it raises a protocol error.
 
 	Only one shell surface can be associated with a given surface.
       </description>
@@ -1393,11 +1404,16 @@
       and scrolling.
     </description>
 
+    <enum name="error">
+      <entry name="role" value="0" summary="given wl_surface has another role"/>
+    </enum>
+
     <request name="set_cursor">
       <description summary="set the pointer surface">
 	Set the pointer surface, i.e., the surface that contains the
 	pointer image (cursor). This request gives the surface the role
-	of a cursor.
+	of a cursor. If the surface already has another role, it raises
+	a protocol error.
 
 	The cursor actually changes only if the pointer
 	focus for this device is one of the requesting client's surfaces
