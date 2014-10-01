@@ -2243,7 +2243,13 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
 
 bool WebViewImpl::compositionRange(size_t* location, size_t* length)
 {
-    LocalFrame* focused = toLocalFrame(focusedCoreFrame());
+    // FIXME: Long term, the focused frame should be a local frame. For now,
+    // return early to avoid crashes.
+    Frame* frame = focusedCoreFrame();
+    if (!frame || frame->isRemoteFrame())
+        return false;
+
+    LocalFrame* focused = toLocalFrame(frame);
     if (!focused || !m_imeAcceptEvents)
         return false;
 
