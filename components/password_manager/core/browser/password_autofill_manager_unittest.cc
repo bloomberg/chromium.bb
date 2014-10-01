@@ -43,7 +43,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
+  virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
 
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
 
@@ -72,7 +72,7 @@ class PasswordAutofillManagerTest : public testing::Test {
       : test_username_(base::ASCIIToUTF16(kAliceUsername)),
         test_password_(base::ASCIIToUTF16(kAlicePassword)) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Add a preferred login and an additional login to the FillData.
     username_field_.name = base::ASCIIToUTF16(kUsernameName);
     username_field_.value = test_username_;

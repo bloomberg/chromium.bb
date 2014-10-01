@@ -256,7 +256,7 @@ class PasswordStore : protected PasswordStoreSync,
   // operation has been performed. Notifies observers that password store data
   // may have been changed.
   virtual void NotifyLoginsChanged(
-      const PasswordStoreChangeList& changes) OVERRIDE;
+      const PasswordStoreChangeList& changes) override;
 
   // TaskRunner for tasks that run on the main thread (usually the UI thread).
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;

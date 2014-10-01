@@ -19,22 +19,22 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
 
   // PasswordManagerDriver:
   virtual void FillPasswordForm(
-      const autofill::PasswordFormFillData& form_data) OVERRIDE;
-  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+      const autofill::PasswordFormFillData& form_data) override;
+  virtual bool DidLastPageLoadEncounterSSLErrors() override;
+  virtual bool IsOffTheRecord() override;
   virtual void AllowPasswordGenerationForForm(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual void AccountCreationFormsFound(
-      const std::vector<autofill::FormData>& forms) OVERRIDE;
+      const std::vector<autofill::FormData>& forms) override;
   virtual void FillSuggestion(const base::string16& username,
-                              const base::string16& password) OVERRIDE;
+                              const base::string16& password) override;
   virtual void PreviewSuggestion(const base::string16& username,
-                                 const base::string16& password) OVERRIDE;
-  virtual void ClearPreviewedForm() OVERRIDE;
-  virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
-  virtual PasswordManager* GetPasswordManager() OVERRIDE;
-  virtual PasswordAutofillManager* GetPasswordAutofillManager() OVERRIDE;
-  virtual autofill::AutofillManager* GetAutofillManager() OVERRIDE;
+                                 const base::string16& password) override;
+  virtual void ClearPreviewedForm() override;
+  virtual PasswordGenerationManager* GetPasswordGenerationManager() override;
+  virtual PasswordManager* GetPasswordManager() override;
+  virtual PasswordAutofillManager* GetPasswordAutofillManager() override;
+  virtual autofill::AutofillManager* GetAutofillManager() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerDriver);

@@ -74,8 +74,8 @@ class PasswordManager : public LoginModel {
                         bool wait_for_username) const;
 
   // LoginModel implementation.
-  virtual void AddObserver(LoginModelObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(LoginModelObserver* observer) OVERRIDE;
+  virtual void AddObserver(LoginModelObserver* observer) override;
+  virtual void RemoveObserver(LoginModelObserver* observer) override;
 
   // Mark this form as having a generated password.
   void SetFormHasGeneratedPassword(const autofill::PasswordForm& form);

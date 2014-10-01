@@ -46,33 +46,33 @@ class TestPasswordStore : public PasswordStore {
 
   // PasswordStore interface
   virtual PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual PasswordStoreChangeList RemoveLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       PasswordStore::AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& runner) OVERRIDE;
-  virtual void WrapModificationTask(ModificationTask task) OVERRIDE;
+      const ConsumerCallbackRunner& runner) override;
+  virtual void WrapModificationTask(ModificationTask task) override;
 
   // Unused portions of PasswordStore interface
-  virtual void ReportMetricsImpl(const std::string& sync_username) OVERRIDE {}
+  virtual void ReportMetricsImpl(const std::string& sync_username) override {}
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
-      base::Time end) OVERRIDE;
+      base::Time end) override;
   virtual PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
-      base::Time delete_end) OVERRIDE;
+      base::Time delete_end) override;
   virtual void GetAutofillableLoginsImpl(
-      PasswordStore::GetLoginsRequest* request) OVERRIDE {}
+      PasswordStore::GetLoginsRequest* request) override {}
   virtual void GetBlacklistLoginsImpl(
-      PasswordStore::GetLoginsRequest* request) OVERRIDE {}
+      PasswordStore::GetLoginsRequest* request) override {}
   virtual bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
   virtual bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
 
  private:
   PasswordMap stored_passwords_;

@@ -21,13 +21,13 @@ class CredentialManagerClientTest : public content::RenderViewTest {
       : callback_errored_(false), callback_succeeded_(false) {}
   virtual ~CredentialManagerClientTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     content::RenderViewTest::SetUp();
     credential_.reset(new blink::WebCredential("", "", GURL()));
     client_.reset(new CredentialManagerClient(view_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     credential_.reset();
     content::RenderViewTest::TearDown();
   }
@@ -112,9 +112,9 @@ class TestNotificationCallbacks
 
   virtual ~TestNotificationCallbacks() {}
 
-  virtual void onSuccess() OVERRIDE { test_->set_callback_succeeded(true); }
+  virtual void onSuccess() { test_->set_callback_succeeded(true); }
 
-  virtual void onError(blink::WebCredentialManagerError* reason) OVERRIDE {
+  virtual void onError(blink::WebCredentialManagerError* reason) {
     test_->set_callback_errored(true);
   }
 
@@ -130,11 +130,11 @@ class TestRequestCallbacks
 
   virtual ~TestRequestCallbacks() {}
 
-  virtual void onSuccess(blink::WebCredential*) OVERRIDE {
+  virtual void onSuccess(blink::WebCredential*) {
     test_->set_callback_succeeded(true);
   }
 
-  virtual void onError(blink::WebCredentialManagerError* reason) OVERRIDE {
+  virtual void onError(blink::WebCredentialManagerError* reason) {
     test_->set_callback_errored(true);
   }
 

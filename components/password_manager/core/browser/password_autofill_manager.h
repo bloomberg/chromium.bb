@@ -28,15 +28,15 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   virtual ~PasswordAutofillManager();
 
   // AutofillPopupDelegate implementation.
-  virtual void OnPopupShown() OVERRIDE;
-  virtual void OnPopupHidden() OVERRIDE;
+  virtual void OnPopupShown() override;
+  virtual void OnPopupHidden() override;
   virtual void DidSelectSuggestion(const base::string16& value,
-                                   int identifier) OVERRIDE;
+                                   int identifier) override;
   virtual void DidAcceptSuggestion(const base::string16& value,
-                                   int identifier) OVERRIDE;
+                                   int identifier) override;
   virtual void RemoveSuggestion(const base::string16& value,
-                                int identifier) OVERRIDE;
-  virtual void ClearPreviewedForm() OVERRIDE;
+                                int identifier) override;
+  virtual void ClearPreviewedForm() override;
 
   // Invoked when a password mapping is added.
   void OnAddPasswordFormMapping(

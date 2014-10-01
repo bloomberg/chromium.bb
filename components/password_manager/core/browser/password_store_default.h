@@ -27,29 +27,29 @@ class PasswordStoreDefault : public PasswordStore {
   virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
-  virtual void ReportMetricsImpl(const std::string& sync_username) OVERRIDE;
+  virtual void ReportMetricsImpl(const std::string& sync_username) override;
   virtual PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual PasswordStoreChangeList RemoveLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time delete_begin,
-      base::Time delete_end) OVERRIDE;
+      base::Time delete_end) override;
   virtual PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
-      base::Time delete_end) OVERRIDE;
+      base::Time delete_end) override;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) OVERRIDE;
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
+      const ConsumerCallbackRunner& callback_runner) override;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
   virtual bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
   virtual bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
 
  protected:
   inline bool DeleteAndRecreateDatabaseFile() {

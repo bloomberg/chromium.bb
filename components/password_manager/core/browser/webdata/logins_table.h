@@ -28,11 +28,11 @@ class LoginsTable : public WebDatabaseTable {
   // Retrieves the LoginsTable* owned by |database|.
   static LoginsTable* FromWebDatabase(WebDatabase* db);
 
-  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
-  virtual bool CreateTablesIfNecessary() OVERRIDE;
-  virtual bool IsSyncable() OVERRIDE;
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const override;
+  virtual bool CreateTablesIfNecessary() override;
+  virtual bool IsSyncable() override;
   virtual bool MigrateToVersion(int version,
-                                bool* update_compatible_version) OVERRIDE;
+                                bool* update_compatible_version) override;
 
 #if defined(OS_WIN)
   // Adds |info| to the list of imported passwords from ie7/ie8.

@@ -61,17 +61,17 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   virtual bool ShouldFilterAutofillResult(
-      const autofill::PasswordForm& form) OVERRIDE {
+      const autofill::PasswordForm& form) override {
     if (form == form_to_filter_)
       return true;
     return false;
   }
 
-  virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
-  virtual PasswordStore* GetPasswordStore() OVERRIDE { return password_store_; }
-  virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
+  virtual PrefService* GetPrefs() override { return &prefs_; }
+  virtual PasswordStore* GetPasswordStore() override { return password_store_; }
+  virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
   virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) override {
     driver_.FillPasswordForm(*fill_data.get());
   }
 
@@ -97,7 +97,7 @@ class TestPasswordManager : public PasswordManager {
   virtual void Autofill(const autofill::PasswordForm& form_for_autofill,
                         const autofill::PasswordFormMap& best_matches,
                         const autofill::PasswordForm& preferred_match,
-                        bool wait_for_username) const OVERRIDE {
+                        bool wait_for_username) const override {
     best_matches_ = best_matches;
   }
 

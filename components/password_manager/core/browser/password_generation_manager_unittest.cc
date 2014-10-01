@@ -38,18 +38,18 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   virtual ~TestPasswordManagerDriver() {}
 
   // PasswordManagerDriver implementation.
-  virtual bool IsOffTheRecord() OVERRIDE { return is_off_the_record_; }
-  virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE {
+  virtual bool IsOffTheRecord() override { return is_off_the_record_; }
+  virtual PasswordGenerationManager* GetPasswordGenerationManager() override {
     return &password_generation_manager_;
   }
-  virtual PasswordManager* GetPasswordManager() OVERRIDE {
+  virtual PasswordManager* GetPasswordManager() override {
     return &password_manager_;
   }
-  virtual PasswordAutofillManager* GetPasswordAutofillManager() OVERRIDE {
+  virtual PasswordAutofillManager* GetPasswordAutofillManager() override {
     return &password_autofill_manager_;
   }
   virtual void AccountCreationFormsFound(
-      const std::vector<autofill::FormData>& forms) OVERRIDE {
+      const std::vector<autofill::FormData>& forms) override {
     found_account_creation_forms_.insert(
         found_account_creation_forms_.begin(), forms.begin(), forms.end());
   }
@@ -74,12 +74,12 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   TestPasswordManagerClient(scoped_ptr<PrefService> prefs)
       : prefs_(prefs.Pass()), driver_(this), is_sync_enabled_(false) {}
 
-  virtual PasswordStore* GetPasswordStore() OVERRIDE { return NULL; }
-  virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
-  virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
+  virtual PasswordStore* GetPasswordStore() override { return NULL; }
+  virtual PrefService* GetPrefs() override { return prefs_.get(); }
+  virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
   virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {}
-  virtual bool IsPasswordSyncEnabled() OVERRIDE { return is_sync_enabled_; }
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) override {}
+  virtual bool IsPasswordSyncEnabled() override { return is_sync_enabled_; }
 
   void set_is_password_sync_enabled(bool enabled) {
     is_sync_enabled_ = enabled;
@@ -104,7 +104,7 @@ class TestAutofillMetrics : public autofill::AutofillMetrics {
 
 class PasswordGenerationManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Construct a PrefService and register all necessary prefs before handing
     // it off to |client_|, as the initialization flow of |client_| will
     // indirectly cause those prefs to be immediately accessed.
@@ -114,7 +114,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     client_.reset(new TestPasswordManagerClient(prefs.PassAs<PrefService>()));
   }
 
-  virtual void TearDown() OVERRIDE { client_.reset(); }
+  virtual void TearDown() override { client_.reset(); }
 
   PasswordGenerationManager* GetGenerationManager() {
     return client_->GetDriver()->GetPasswordGenerationManager();

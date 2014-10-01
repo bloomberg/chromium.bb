@@ -39,22 +39,22 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   // CredentialManagerDispatcher implementation.
   virtual void OnNotifyFailedSignIn(
       int request_id,
-      const password_manager::CredentialInfo&) OVERRIDE;
+      const password_manager::CredentialInfo&) override;
   virtual void OnNotifySignedIn(
       int request_id,
-      const password_manager::CredentialInfo&) OVERRIDE;
-  virtual void OnNotifySignedOut(int request_id) OVERRIDE;
+      const password_manager::CredentialInfo&) override;
+  virtual void OnNotifySignedOut(int request_id) override;
   virtual void OnRequestCredential(
       int request_id,
       bool zero_click_only,
-      const std::vector<GURL>& federations) OVERRIDE;
+      const std::vector<GURL>& federations) override;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // PasswordStoreConsumer implementation.
   virtual void OnGetPasswordStoreResults(
-      const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
+      const std::vector<autofill::PasswordForm*>& results) override;
 
  private:
   PasswordStore* GetPasswordStore();

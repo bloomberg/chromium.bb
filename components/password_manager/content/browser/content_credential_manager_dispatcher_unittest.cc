@@ -57,7 +57,7 @@ class ContentCredentialManagerDispatcherTest
  public:
   ContentCredentialManagerDispatcherTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
     client_.reset(new TestPasswordManagerClient(store_.get()));

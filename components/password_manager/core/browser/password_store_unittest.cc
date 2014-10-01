@@ -43,14 +43,14 @@ class StartSyncFlareMock {
 
 class PasswordStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     login_db_.reset(new LoginDatabase());
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ASSERT_TRUE(temp_dir_.Delete());
   }
 
