@@ -851,6 +851,7 @@ weston_tests =					\
 	button.weston				\
 	text.weston				\
 	presentation.weston			\
+	roles.weston				\
 	subsurface.weston
 
 
@@ -959,6 +960,10 @@ nodist_presentation_weston_SOURCES =		\
 	protocol/presentation_timing-client-protocol.h
 presentation_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 presentation_weston_LDADD = libtest-client.la
+
+roles_weston_SOURCES = tests/roles-test.c
+roles_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+roles_weston_LDADD = libtest-client.la
 
 if ENABLE_EGL
 weston_tests += buffer-count.weston
