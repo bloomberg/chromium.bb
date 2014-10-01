@@ -348,13 +348,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 20
-        }
-      },
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
@@ -435,22 +428,27 @@
   },
   "Win7 Tests (dbg)(2)": {
     "gtest_tests": [
+       {"test": "browser_tests", "shard_index": 0, "total_shards": 5}
     ]
   },
   "Win7 Tests (dbg)(3)": {
     "gtest_tests": [
+       {"test": "browser_tests", "shard_index": 1, "total_shards": 5}
      ]
   },
   "Win7 Tests (dbg)(4)": {
     "gtest_tests": [
+       {"test": "browser_tests", "shard_index": 2, "total_shards": 5}
     ]
   },
   "Win7 Tests (dbg)(5)": {
     "gtest_tests": [
+       {"test": "browser_tests", "shard_index": 3, "total_shards": 5}
     ]
   },
   "Win7 Tests (dbg)(6)": {
     "gtest_tests": [
+       {"test": "browser_tests", "shard_index": 4, "total_shards": 5}
     ]
   },
   "Interactive Tests (dbg)": {
