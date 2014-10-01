@@ -304,3 +304,28 @@ html[subframe] body {
   display: none;
 }
 
+@media (max-width: 400px) {
+  .suggested-left > #control-buttons,
+  .suggested-right > #control-buttons {
+    float: none;
+    margin: 50px 0 20px;
+  }
+}
+
+@media (max-height: 350px) {
+  h1 {
+    margin: 0 0 15px;
+  }
+
+  .icon-offline {
+    margin: 0 0 10px;
+  }
+
+  .interstitial-wrapper {
+    margin-top: 5%;
+  }
+
+  .nav-wrapper {
+    margin-top: 30px;
+  }
+}
