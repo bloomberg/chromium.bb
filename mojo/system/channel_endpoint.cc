@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/message_pipe.h"
+#include "mojo/system/transport_data.h"
 
 namespace mojo {
 namespace system {
@@ -55,6 +56,9 @@ void ChannelEndpoint::DetachFromMessagePipe() {
   scoped_refptr<Channel> channel;
   {
     base::AutoLock locker(lock_);
+    DCHECK(message_pipe_.get());
+    message_pipe_ = nullptr;
+
     if (!channel_)
       return;
     DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
@@ -93,6 +97,55 @@ void ChannelEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   }
 }
 
+bool ChannelEndpoint::OnReadMessage(
+    const MessageInTransit::View& message_view,
+    embedder::ScopedPlatformHandleVectorPtr platform_handles) {
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
+  scoped_refptr<MessagePipe> message_pipe;
+  unsigned port;
+  {
+    base::AutoLock locker(lock_);
+    DCHECK(channel_);
+    if (!message_pipe_.get()) {
+      // This isn't a failure per se. (It just means that, e.g., the other end
+      // of the message point closed first.)
+      return true;
+    }
+
+    if (message_view.transport_data_buffer_size() > 0) {
+      DCHECK(message_view.transport_data_buffer());
+      message->SetDispatchers(TransportData::DeserializeDispatchers(
+          message_view.transport_data_buffer(),
+          message_view.transport_data_buffer_size(),
+          platform_handles.Pass(),
+          channel_));
+    }
+
+    // Take a ref, and call |EnqueueMessage()| outside the lock.
+    message_pipe = message_pipe_;
+    port = port_;
+  }
+
+  MojoResult result = message_pipe->EnqueueMessage(
+      MessagePipe::GetPeerPort(port), message.Pass());
+  return (result == MOJO_RESULT_OK);
+}
+
+void ChannelEndpoint::OnDisconnect() {
+  scoped_refptr<MessagePipe> message_pipe;
+  unsigned port;
+  {
+    base::AutoLock locker(lock_);
+    if (!message_pipe_.get())
+      return;
+
+    // Take a ref, and call |Close()| outside the lock.
+    message_pipe = message_pipe_;
+    port = port_;
+  }
+  message_pipe->Close(port);
+}
+
 void ChannelEndpoint::DetachFromChannel() {
   base::AutoLock locker(lock_);
   DCHECK(channel_);
@@ -105,6 +158,7 @@ void ChannelEndpoint::DetachFromChannel() {
 }
 
 ChannelEndpoint::~ChannelEndpoint() {
+  DCHECK(!message_pipe_.get());
   DCHECK(!channel_);
   DCHECK_EQ(local_id_, MessageInTransit::kInvalidEndpointId);
   DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);

@@ -74,10 +74,9 @@ void Channel::Shutdown() {
        it != to_destroy.end();
        ++it) {
     if (it->second->state_ == ChannelEndpoint::STATE_NORMAL) {
-      it->second->message_pipe_->Close(it->second->port_);
+      it->second->OnDisconnect();
       num_live++;
     } else {
-      DCHECK(!it->second->message_pipe_.get());
       num_zombies++;
     }
     it->second->DetachFromChannel();
@@ -215,7 +214,6 @@ void Channel::DetachMessagePipeEndpoint(
     switch (it->second->state_) {
       case ChannelEndpoint::STATE_NORMAL:
         it->second->state_ = ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK;
-        it->second->message_pipe_ = nullptr;
         if (remote_id == MessageInTransit::kInvalidEndpointId)
           return;
         // We have to send a remove message (outside the lock).
@@ -321,10 +319,8 @@ void Channel::OnReadMessageForDownstream(
     return;
   }
 
+  scoped_refptr<ChannelEndpoint> endpoint;
   ChannelEndpoint::State state = ChannelEndpoint::STATE_NORMAL;
-  scoped_refptr<MessagePipe> message_pipe;
-  unsigned port = ~0u;
-  bool nonexistent_local_id_error = false;
   {
     base::AutoLock locker(lock_);
 
@@ -335,15 +331,12 @@ void Channel::OnReadMessageForDownstream(
 
     IdToEndpointMap::const_iterator it =
         local_id_to_endpoint_map_.find(local_id);
-    if (it == local_id_to_endpoint_map_.end()) {
-      nonexistent_local_id_error = true;
-    } else {
+    if (it != local_id_to_endpoint_map_.end()) {
+      endpoint = it->second;
       state = it->second->state_;
-      message_pipe = it->second->message_pipe_;
-      port = it->second->port_;
     }
   }
-  if (nonexistent_local_id_error) {
+  if (!endpoint.get()) {
     HandleRemoteError(base::StringPrintf(
         "Received a message for nonexistent local destination ID %u",
         static_cast<unsigned>(local_id)));
@@ -362,28 +355,10 @@ void Channel::OnReadMessageForDownstream(
     return;
   }
 
-  // We need to duplicate the message (data), because |EnqueueMessage()| will
-  // take ownership of it.
-  scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
-  if (message_view.transport_data_buffer_size() > 0) {
-    DCHECK(message_view.transport_data_buffer());
-    message->SetDispatchers(TransportData::DeserializeDispatchers(
-        message_view.transport_data_buffer(),
-        message_view.transport_data_buffer_size(),
-        platform_handles.Pass(),
-        this));
-  }
-  MojoResult result = message_pipe->EnqueueMessage(
-      MessagePipe::GetPeerPort(port), message.Pass());
-  if (result != MOJO_RESULT_OK) {
-    // TODO(vtl): This might be a "non-error", e.g., if the destination endpoint
-    // has been closed (in an unavoidable race). This might also be a "remote"
-    // error, e.g., if the remote side is sending invalid control messages (to
-    // the message pipe).
-    HandleLocalError(base::StringPrintf(
-        "Failed to enqueue message to local ID %u (result %d)",
-        static_cast<unsigned>(local_id),
-        static_cast<int>(result)));
+  if (!endpoint->OnReadMessage(message_view, platform_handles.Pass())) {
+    HandleLocalError(
+        base::StringPrintf("Failed to enqueue message to local ID %u",
+                           static_cast<unsigned>(local_id)));
     return;
   }
 }
@@ -444,8 +419,7 @@ bool Channel::OnRemoveMessagePipeEndpoint(
     MessageInTransit::EndpointId remote_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
-  scoped_refptr<MessagePipe> message_pipe;
-  unsigned port = ~0u;
+  scoped_refptr<ChannelEndpoint> endpoint;
   {
     base::AutoLock locker(lock_);
 
@@ -472,9 +446,7 @@ bool Channel::OnRemoveMessagePipeEndpoint(
     }
 
     it->second->state_ = ChannelEndpoint::STATE_WAIT_LOCAL_DETACH;
-    message_pipe = it->second->message_pipe_;
-    port = it->second->port_;
-    it->second->message_pipe_ = nullptr;
+    endpoint = it->second;
     // Send the remove ack message outside the lock.
   }
 
@@ -489,7 +461,7 @@ bool Channel::OnRemoveMessagePipeEndpoint(
         static_cast<unsigned>(remote_id)));
   }
 
-  message_pipe->Close(port);
+  endpoint->OnDisconnect();
   return true;
 }
 
@@ -497,7 +469,7 @@ bool Channel::OnRemoveMessagePipeEndpointAck(
     MessageInTransit::EndpointId local_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
-  scoped_refptr<ChannelEndpoint> endpoint_to_detach;
+  scoped_refptr<ChannelEndpoint> endpoint;
   {
     base::AutoLock locker(lock_);
 
@@ -512,12 +484,12 @@ bool Channel::OnRemoveMessagePipeEndpointAck(
       return false;
     }
 
-    endpoint_to_detach = it->second;
+    endpoint = it->second;
     local_id_to_endpoint_map_.erase(it);
     // Detach the endpoint outside the lock.
   }
 
-  endpoint_to_detach->DetachFromChannel();
+  endpoint->DetachFromChannel();
   return true;
 }
 

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/system_impl_export.h"
@@ -135,6 +136,16 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // TODO(vtl): Combine this with |AttachToChannel()|.
   void Run(MessageInTransit::EndpointId remote_id);
 
+  // Called by |Channel| when it receives a message for the message pipe.
+  bool OnReadMessage(const MessageInTransit::View& message_view,
+                     embedder::ScopedPlatformHandleVectorPtr platform_handles);
+
+  // Called by |Channel| to notify that it'll no longer receive messages for the
+  // message pipe (i.e., |OnReadMessage()| will no longer be called).
+  // TODO(vtl): After more simplification, we might be able to get rid of this
+  // (and merge it with |DetachFromChannel()|).
+  void OnDisconnect();
+
   // Called by |Channel| before it gives up its reference to this object.
   void DetachFromChannel();
 
@@ -162,16 +173,26 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
 
   // TODO(vtl): Move these under lock.
   State state_;
-  // TODO(vtl): When moved under lock, this can/should be made a raw pointer.
-  scoped_refptr<MessagePipe> message_pipe_;
-  unsigned port_;
 
   // TODO(vtl): Move the things above under lock.
   // Protects the members below.
   base::Lock lock_;
 
-  // |channel_| must be alive whenever this is non-null. Before the |channel_|
-  // gives up its reference to this object, it will call |DetachFromChannel()|.
+  // |message_pipe_| must be valid whenever it is non-null. Before
+  // |*message_pipe_| gives up its reference to this object, it must call
+  // |DetachFromMessagePipe()|.
+  // NOTE: This is a |scoped_refptr<>|, rather than a raw pointer, since the
+  // |Channel| needs to keep the |MessagePipe| alive for the "proxy-proxy" case.
+  // Possibly we'll be able to eliminate that case when we have full
+  // multiprocess support.
+  // WARNING: |MessagePipe| methods must not be called under |lock_|. Thus to
+  // make such a call, a reference must first be taken under |lock_| and the
+  // lock released.
+  scoped_refptr<MessagePipe> message_pipe_;
+  unsigned port_;
+
+  // |channel_| must be valid whenever it is non-null. Before |*channel_| gives
+  // up its reference to this object, it must call |DetachFromChannel()|.
   Channel* channel_;
   MessageInTransit::EndpointId local_id_;
   MessageInTransit::EndpointId remote_id_;
