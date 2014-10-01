@@ -309,6 +309,7 @@ v8.log
 /third_party/ppapi
 /third_party/psyco_win32
 /third_party/pthreads-win32
+/third_party/py_trace_event/src
 /third_party/pyelftools
 /third_party/pyftpdlib/src
 /third_party/pylib
