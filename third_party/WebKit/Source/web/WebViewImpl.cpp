@@ -1719,9 +1719,8 @@ void WebViewImpl::didUpdateTopControls()
     // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
     // the FrameView about it so it can make correct scroll offset clamping decisions during compositor
     // commits.
-    // FIXME(bokan) Reenable once Chromium side lands.
-    // float topControlsViewportAdjustment = m_topControlsContentOffset - m_topControlsLayoutHeight;
-    // view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
+    float topControlsViewportAdjustment = m_topControlsContentOffset - m_topControlsLayoutHeight;
+    view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
 }
 
 void WebViewImpl::resize(const WebSize& newSize)
