@@ -18,7 +18,7 @@ cvox2.AutomationPredicates = function() {};
 /**
  * Constructs a predicate given a role.
  * @param {string} role
- * @return {function(chrome.automation.AutomationNode) : boolean}
+ * @return {function(AutomationNode) : boolean}
  */
 cvox2.AutomationPredicates.makeRolePredicate = function(role) {
   return function(node) {
@@ -26,15 +26,18 @@ cvox2.AutomationPredicates.makeRolePredicate = function(role) {
   };
 };
 
-/** @type {function(chrome.automation.AutomationNode) : boolean} */
+/** @type {function(AutomationNode) : boolean} */
 cvox2.AutomationPredicates.heading =
-    cvox2.AutomationPredicates.makeRolePredicate('heading');
-/** @type {function(chrome.automation.AutomationNode) : boolean} */
+    cvox2.AutomationPredicates.makeRolePredicate(
+        chrome.automation.RoleType.heading);
+/** @type {function(AutomationNode) : boolean} */
 cvox2.AutomationPredicates.inlineTextBox =
-    cvox2.AutomationPredicates.makeRolePredicate('inlineTextBox');
-/** @type {function(chrome.automation.AutomationNode) : boolean} */
+    cvox2.AutomationPredicates.makeRolePredicate(
+        chrome.automation.RoleType.inlineTextBox);
+/** @type {function(AutomationNode) : boolean} */
 cvox2.AutomationPredicates.link =
-    cvox2.AutomationPredicates.makeRolePredicate('link');
+    cvox2.AutomationPredicates.makeRolePredicate(
+        chrome.automation.RoleType.link);
 
 /**
  * Possible directions to perform tree traversals.
@@ -55,11 +58,11 @@ cvox2.AutomationUtil = function() {};
 
 /**
  * Find a node in subtree of |cur| satisfying |pred| using pre-order traversal.
- * @param {chrome.automation.AutomationNode} cur Node to begin the search from.
+ * @param {AutomationNode} cur Node to begin the search from.
  * @param {cvox2.Dir} dir
- * @param {function(chrome.automation.AutomationNode) : boolean} pred A
- *     predicate to apply to a candidate node.
- * @return {chrome.automation.AutomationNode}
+ * @param {function(AutomationNode) : boolean} pred A predicate to apply to a
+ *     candidate node.
+ * @return {AutomationNode}
  */
 cvox2.AutomationUtil.findNodePre = function(cur, dir, pred) {
   if (pred(cur))
@@ -77,11 +80,11 @@ cvox2.AutomationUtil.findNodePre = function(cur, dir, pred) {
 
 /**
  * Find a node in subtree of |cur| satisfying |pred| using post-order traversal.
- * @param {chrome.automation.AutomationNode} cur Node to begin the search from.
+ * @param {AutomationNode} cur Node to begin the search from.
  * @param {cvox2.Dir} dir
- * @param {function(chrome.automation.AutomationNode) : boolean} pred A
- *     predicate to apply to a candidate node.
- * @return {chrome.automation.AutomationNode}
+ * @param {function(AutomationNode) : boolean} pred A predicate to apply to a
+ *     candidate node.
+ * @return {AutomationNode}
  */
 cvox2.AutomationUtil.findNodePost = function(cur, dir, pred) {
   var child = dir == cvox2.Dir.BACKWARD ? cur.lastChild() : cur.firstChild();
@@ -100,9 +103,9 @@ cvox2.AutomationUtil.findNodePost = function(cur, dir, pred) {
 /**
  * Find the next node in the given direction that is either an immediate
  * sibling or a sibling of an ancestor.
- * @param {chrome.automation.AutomationNode} cur Node to start search from.
+ * @param {AutomationNode} cur Node to start search from.
  * @param {cvox2.Dir} dir
- * @return {chrome.automation.AutomationNode}
+ * @return {AutomationNode}
  */
 cvox2.AutomationUtil.findNextSubtree = function(cur, dir) {
   while (cur) {
@@ -117,11 +120,11 @@ cvox2.AutomationUtil.findNextSubtree = function(cur, dir) {
 
 /**
  * Find the next node in the given direction in depth first order.
- * @param {chrome.automation.AutomationNode} cur Node to begin the search from.
+ * @param {AutomationNode} cur Node to begin the search from.
  * @param {cvox2.Dir} dir
- * @param {function(chrome.automation.AutomationNode) : boolean} pred A
- *     predicate to apply to a candidate node.
- * @return {chrome.automation.AutomationNode}
+ * @param {function(AutomationNode) : boolean} pred A predicate to apply to a
+ *     candidate node.
+ * @return {AutomationNode}
  */
 cvox2.AutomationUtil.findNextNode = function(cur, dir, pred) {
   var next = cur;

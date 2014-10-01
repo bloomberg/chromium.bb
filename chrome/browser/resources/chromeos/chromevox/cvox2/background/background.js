@@ -5,7 +5,6 @@
 /**
  * @fileoverview The entry point for all ChromeVox2 related code for the
  * background page.
- *
  */
 
 goog.provide('cvox2.Background');
@@ -22,30 +21,27 @@ cvox2.global.accessibility =
 
 /**
  * ChromeVox2 background page.
- * @constructor
  */
 cvox2.Background = function() {
   /**
    * A list of site substring patterns to use with ChromeVox next. Keep these
    * strings relatively specific.
    * @type {!Array.<string>}
-   * @private
    */
   this.whitelist_ = ['http://www.chromevox.com/', 'chromevox_next_test'];
 
-  /**
-   * @type {cvox.TabsApiHandler}
-   * @private
-   */
+  /** @type {cvox.TabsApiHandler} @private */
   this.tabsHandler_ = new cvox.TabsApiHandler(cvox.ChromeVox.tts,
                                               cvox.ChromeVox.braille,
                                               cvox.ChromeVox.earcons);
 
-  /**
-   * @type {chrome.automation.AutomationNode}
-   * @private
-   */
+  /** @type {AutomationNode} @private */
   this.currentNode_ = null;
+
+  /** @type {cvox.TabsApiHandler} @private */
+  this.tabsHandler_ = new cvox.TabsApiHandler(cvox.ChromeVox.tts,
+                                              cvox.ChromeVox.braille,
+                                              cvox.ChromeVox.earcons);
 
   // Only needed with unmerged ChromeVox classic loaded before.
   cvox2.global.accessibility.setAccessibilityEnabled(false);
@@ -77,7 +73,7 @@ cvox2.Background.prototype = {
 
       if (!this.isWhitelisted_(tab.url)) {
         chrome.commands.onCommand.removeListener(this.onGotCommand);
-        cvox.ChromeVox.injectChromeVoxIntoTabs([tab], true);
+        cvox.ChromeVox.background.injectChromeVoxIntoTabs([tab], true);
         return;
       }
 
@@ -92,14 +88,14 @@ cvox2.Background.prototype = {
 
   /**
    * Handles all setup once a new automation tree appears.
-   * @param {chrome.automation.AutomationNode} root
+   * @param {AutomationTree} tree The new automation tree.
    */
   onGotTree: function(root) {
     // Register all automation event listeners.
-    root.addEventListener('focus',
+    root.addEventListener(chrome.automation.EventType.focus,
                           this.onFocus,
                           true);
-    root.addEventListener('loadComplete',
+    root.addEventListener(chrome.automation.EventType.loadComplete,
                           this.onLoadComplete,
                           true);
 
@@ -146,7 +142,7 @@ cvox2.Background.prototype = {
         pred = cvox2.AutomationPredicates.link;
         break;
       case 'nextElement':
-        current = current.role == 'inlineTextBox' ?
+        current = current.role == chrome.automation.RoleType.inlineTextBox ?
             current.parent() : current;
         current = cvox2.AutomationUtil.findNextNode(current,
             cvox2.Dir.FORWARD,
@@ -154,7 +150,7 @@ cvox2.Background.prototype = {
         current = current ? current.parent() : current;
         break;
       case 'previousElement':
-        current = current.role == 'inlineTextBox' ?
+        current = current.role == chrome.automation.RoleType.inlineTextBox ?
             current.parent() : current;
         current = cvox2.AutomationUtil.findNextNode(current,
             cvox2.Dir.BACKWARD,
