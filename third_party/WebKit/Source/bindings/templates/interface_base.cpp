@@ -386,7 +386,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 {##############################################################################}
 {% block get_dom_template %}{% endblock %}
 {% block has_instance %}{% endblock %}
-{% block to_native_with_type_check %}{% endblock %}
+{% block to_impl_with_type_check %}{% endblock %}
 {% block install_conditional_attributes %}{% endblock %}
 {% block install_conditional_methods %}{% endblock %}
 {% block to_active_dom_object %}{% endblock %}
