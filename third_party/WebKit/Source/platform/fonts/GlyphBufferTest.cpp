@@ -162,25 +162,6 @@ TEST(GlyphBufferTest, AdvanceArrayWithOffset)
     EXPECT_EQ(12, advances[1]);
 }
 
-TEST(GlyphBufferTest, Clear)
-{
-    RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
-    RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
-
-    GlyphBuffer glyphBuffer;
-    glyphBuffer.add(42, font1.get(), 10);
-    glyphBuffer.add(43, font1.get(), 15);
-    glyphBuffer.add(44, font2.get(), 12);
-
-    EXPECT_FALSE(glyphBuffer.isEmpty());
-    EXPECT_EQ(3u, glyphBuffer.size());
-
-    glyphBuffer.clear();
-
-    EXPECT_TRUE(glyphBuffer.isEmpty());
-    EXPECT_EQ(0u, glyphBuffer.size());
-}
-
 TEST(GlyphBufferTest, Reverse)
 {
     RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();

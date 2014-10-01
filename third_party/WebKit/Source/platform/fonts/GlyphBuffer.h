@@ -46,13 +46,6 @@ public:
     virtual bool hasOffsets() const { return false; }
     unsigned size() const { return m_fontData.size(); }
 
-    virtual void clear()
-    {
-        m_fontData.clear();
-        m_glyphs.clear();
-        m_advances.clear();
-    }
-
     const Glyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
     const float* advances(unsigned from) const { return m_advances.data() + from; }
     const SimpleFontData* fontDataAt(unsigned index) const { return m_fontData[index]; }
@@ -74,7 +67,7 @@ public:
         m_advances.append(width);
     }
 
-    virtual void reverse()
+    void reverse()
     {
         m_fontData.reverse();
         m_glyphs.reverse();
@@ -99,12 +92,6 @@ class GlyphBufferWithOffsets : public GlyphBuffer {
 public:
     virtual bool hasOffsets() const OVERRIDE { return true; }
 
-    virtual void clear() OVERRIDE
-    {
-        GlyphBuffer::clear();
-        m_offsets.clear();
-    }
-
     const FloatSize* offsets(unsigned from) const { return m_offsets.data() + from; }
 
     FloatSize offsetAt(unsigned index) const
@@ -120,14 +107,13 @@ public:
         m_advances.append(advance);
     }
 
-    virtual void reverse() OVERRIDE
-    {
-        GlyphBuffer::reverse();
-        m_offsets.reverse();
-    }
-
 private:
     void add(Glyph glyph, const SimpleFontData* font, float width)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    void reverse()
     {
         ASSERT_NOT_REACHED();
     }
