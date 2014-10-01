@@ -480,7 +480,7 @@ float CanvasRenderingContext2D::lineWidth() const
 
 void CanvasRenderingContext2D::setLineWidth(float width)
 {
-    if (!(std::isfinite(width) && width > 0))
+    if (!std::isfinite(width) || width <= 0)
         return;
     if (state().m_lineWidth == width)
         return;
@@ -539,7 +539,7 @@ float CanvasRenderingContext2D::miterLimit() const
 
 void CanvasRenderingContext2D::setMiterLimit(float limit)
 {
-    if (!(std::isfinite(limit) && limit > 0))
+    if (!std::isfinite(limit) || limit <= 0)
         return;
     if (state().m_miterLimit == limit)
         return;
@@ -590,7 +590,7 @@ float CanvasRenderingContext2D::shadowBlur() const
 
 void CanvasRenderingContext2D::setShadowBlur(float blur)
 {
-    if (!(std::isfinite(blur) && blur >= 0))
+    if (!std::isfinite(blur) || blur < 0)
         return;
     if (state().m_shadowBlur == blur)
         return;
@@ -727,7 +727,7 @@ void CanvasRenderingContext2D::scale(float sx, float sy)
     if (!state().m_invertibleCTM)
         return;
 
-    if (!std::isfinite(sx) | !std::isfinite(sy))
+    if (!std::isfinite(sx) || !std::isfinite(sy))
         return;
 
     AffineTransform newTransform = state().m_transform;
@@ -783,7 +783,7 @@ void CanvasRenderingContext2D::translate(float tx, float ty)
     if (!state().m_invertibleCTM)
         return;
 
-    if (!std::isfinite(tx) | !std::isfinite(ty))
+    if (!std::isfinite(tx) || !std::isfinite(ty))
         return;
 
     AffineTransform newTransform = state().m_transform;
@@ -811,7 +811,7 @@ void CanvasRenderingContext2D::transform(float m11, float m12, float m21, float 
     if (!state().m_invertibleCTM)
         return;
 
-    if (!std::isfinite(m11) | !std::isfinite(m21) | !std::isfinite(dx) | !std::isfinite(m12) | !std::isfinite(m22) | !std::isfinite(dy))
+    if (!std::isfinite(m11) || !std::isfinite(m21) || !std::isfinite(dx) || !std::isfinite(m12) || !std::isfinite(m22) || !std::isfinite(dy))
         return;
 
     AffineTransform transform(m11, m12, m21, m22, dx, dy);
@@ -862,7 +862,7 @@ void CanvasRenderingContext2D::setTransform(float m11, float m12, float m21, flo
     if (!c)
         return;
 
-    if (!std::isfinite(m11) | !std::isfinite(m21) | !std::isfinite(dx) | !std::isfinite(m12) | !std::isfinite(m22) | !std::isfinite(dy))
+    if (!std::isfinite(m11) || !std::isfinite(m21) || !std::isfinite(dx) || !std::isfinite(m12) || !std::isfinite(m22) || !std::isfinite(dy))
         return;
 
     resetTransform();
@@ -960,7 +960,7 @@ void CanvasRenderingContext2D::beginPath()
 
 static bool validateRectForCanvas(float& x, float& y, float& width, float& height)
 {
-    if (!std::isfinite(x) | !std::isfinite(y) | !std::isfinite(width) | !std::isfinite(height))
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(width) || !std::isfinite(height))
         return false;
 
     if (!width && !height)
@@ -1146,10 +1146,10 @@ bool CanvasRenderingContext2D::isPointInPathInternal(const Path& path, const flo
         return false;
 
     FloatPoint point(x, y);
+    if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
+        return false;
     AffineTransform ctm = state().m_transform;
     FloatPoint transformedPoint = ctm.inverse().mapPoint(point);
-    if (!std::isfinite(transformedPoint.x()) || !std::isfinite(transformedPoint.y()))
-        return false;
 
     return path.contains(transformedPoint, parseWinding(windingRuleString));
 }
@@ -1173,10 +1173,10 @@ bool CanvasRenderingContext2D::isPointInStrokeInternal(const Path& path, const f
         return false;
 
     FloatPoint point(x, y);
+    if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
+        return false;
     AffineTransform ctm = state().m_transform;
     FloatPoint transformedPoint = ctm.inverse().mapPoint(point);
-    if (!std::isfinite(transformedPoint.x()) || !std::isfinite(transformedPoint.y()))
-        return false;
 
     StrokeData strokeData;
     strokeData.setThickness(lineWidth());
@@ -2154,7 +2154,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         return;
     if (!state().m_invertibleCTM)
         return;
-    if (!std::isfinite(x) | !std::isfinite(y))
+    if (!std::isfinite(x) || !std::isfinite(y))
         return;
     if (useMaxWidth && (!std::isfinite(maxWidth) || maxWidth <= 0))
         return;
