@@ -181,4 +181,42 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadProgressEvent) {
   RunTest("testLoadProgressEvent", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavigateAfterResize) {
+  RunTest("testNavigateAfterResize", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavigationToExternalProtocol) {
+  RunTest("testNavigationToExternalProtocol", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestNavOnConsecutiveSrcAttributeChanges) {
+  RunTest("testNavOnConsecutiveSrcAttributeChanges", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavOnSrcAttributeChange) {
+  RunTest("testNavOnSrcAttributeChange", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestPartitionRaisesException) {
+  RunTest("testPartitionRaisesException", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestPartitionRemovalAfterNavigationFails) {
+  RunTest("testPartitionRemovalAfterNavigationFails", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReassignSrcAttribute) {
+  RunTest("testReassignSrcAttribute", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReload) {
+  RunTest("testReload", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReloadAfterTerminate) {
+  RunTest("testReloadAfterTerminate", "web_view/apitest");
+}
+
 }  // namespace extensions

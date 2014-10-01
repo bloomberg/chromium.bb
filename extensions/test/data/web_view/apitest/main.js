@@ -884,6 +884,241 @@ function testLoadProgressEvent() {
   document.body.appendChild(webview);
 }
 
+function testNavigationToExternalProtocol() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadstop', function(e) {
+    webview.addEventListener('loadabort', function(e) {
+      embedder.test.assertEq('ERR_UNKNOWN_URL_SCHEME', e.reason);
+      embedder.test.succeed();
+    });
+    webview.executeScript({
+      code: 'window.location.href = "tel:+12223334444";'
+    }, function(results) {});
+  });
+  webview.setAttribute('src', 'data:text/html,navigate to external protocol');
+  document.body.appendChild(webview);
+}
+
+// This test ensures if the guest isn't there and we resize the guest (from JS),
+// it remembers the size correctly.
+function testNavigateAfterResize() {
+  var webview = document.createElement('webview');
+
+  var postMessageHandler = function(e) {
+    var data = JSON.parse(e.data);
+    webview.removeEventListener('message', postMessageHandler);
+    if (data[0] == 'dimension-response') {
+      var actualWidth = data[1];
+      var actualHeight = data[2];
+      embedder.test.assertEq(100, actualWidth);
+      embedder.test.assertEq(125, actualHeight);
+      embedder.test.succeed();
+    }
+  };
+  window.addEventListener('message', postMessageHandler);
+
+  webview.addEventListener('consolemessage', function(e) {
+    window.console.warn('guest log: ' + e.message);
+  });
+
+  webview.addEventListener('loadstop', function(e) {
+    webview.executeScript(
+      {file: 'navigate_after_resize.js'},
+      function(results) {
+        if (!results || !results.length) {
+          window.console.warn('Failed to inject navigate_after_resize.js');
+          embedder.test.fail();
+          return;
+        }
+        var msg = ['dimension-request'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      });
+  });
+
+  // First set size.
+  webview.style.width = '100px';
+  webview.style.height = '125px';
+
+  // Then navigate.
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+}
+
+// This test verifies that multiple consecutive changes to the <webview> src
+// attribute will cause a navigation.
+function testNavOnConsecutiveSrcAttributeChanges() {
+  var testPage1 = 'data:text/html,test page 1';
+  var testPage2 = 'data:text/html,test page 2';
+  var testPage3 = 'data:text/html,test page 3';
+  var webview = document.createElement('webview');
+  webview.partition = arguments.callee.name;
+  var loadCommitCount = 0;
+  webview.addEventListener('loadcommit', function(e) {
+    if (e.url == testPage3) {
+      embedder.test.succeed();
+    }
+    loadCommitCount++;
+    if (loadCommitCount > 3) {
+      embedder.test.fail();
+    }
+  });
+  document.body.appendChild(webview);
+  webview.src = testPage1;
+  webview.src = testPage2;
+  webview.src = testPage3;
+}
+
+// This test verifies that we can set the <webview> src multiple times and the
+// changes will cause a navigation.
+function testNavOnSrcAttributeChange() {
+  var testPage1 = 'data:text/html,test page 1';
+  var testPage2 = 'data:text/html,test page 2';
+  var testPage3 = 'data:text/html,test page 3';
+  var tests = [testPage1, testPage2, testPage3];
+  var webview = document.createElement('webview');
+  webview.partition = arguments.callee.name;
+  var loadCommitCount = 0;
+  webview.addEventListener('loadcommit', function(evt) {
+    var success = tests.indexOf(evt.url) > -1;
+    embedder.test.assertTrue(success);
+    ++loadCommitCount;
+    if (loadCommitCount == tests.length) {
+      embedder.test.succeed();
+    } else if (loadCommitCount > tests.length) {
+      embedder.test.fail();
+    } else {
+      webview.src = tests[loadCommitCount];
+    }
+  });
+  webview.src = tests[0];
+  document.body.appendChild(webview);
+}
+
+// This test verifies that setting the partition attribute after the src has
+// been set raises an exception.
+function testPartitionRaisesException() {
+  var webview = document.createElement('webview');
+  var partitionAttribute = arguments.callee.name;
+  webview.setAttribute('partition', partitionAttribute);
+
+  var loadstopHandler = function(e) {
+    try {
+      webview.partition = 'illegal';
+      embedder.test.fail();
+    } catch (e) {
+      embedder.test.assertEq(partitionAttribute, webview.partition);
+      embedder.test.succeed();
+    }
+  };
+  webview.addEventListener('loadstop', loadstopHandler);
+
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
+
+// This test verifies that removing partition attribute after navigation does
+// not work, i.e. the partition remains the same.
+function testPartitionRemovalAfterNavigationFails() {
+  var webview = document.createElement('webview');
+
+  var partition = 'testme';
+  webview.setAttribute('partition', partition);
+
+  var loadstopHandler = function(e) {
+    // Removing after navigation should not change the partition.
+    webview.removeAttribute('partition');
+    embedder.test.assertEq('testme', webview.partition);
+    embedder.test.succeed();
+  };
+  webview.addEventListener('loadstop', loadstopHandler);
+
+  webview.setAttribute('src', 'data:text/html,<html><body>guest</body></html>');
+  document.body.appendChild(webview);
+}
+
+// This test verifies that <webview> reloads the page if the src attribute is
+// assigned the same value.
+function testReassignSrcAttribute() {
+  var dataUrl = 'data:text/html,test page';
+  var webview = document.createElement('webview');
+  webview.partition = arguments.callee.name;
+
+  var loadStopCount = 0;
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(dataUrl, webview.getAttribute('src'));
+    ++loadStopCount;
+    console.log('[' + loadStopCount + '] loadstop called');
+    if (loadStopCount == 3) {
+      embedder.test.succeed();
+    } else if (loadStopCount > 3) {
+      embedder.test.fail();
+    } else {
+      webview.src = dataUrl;
+    }
+  });
+  webview.src = dataUrl;
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the reload method on webview functions as expected.
+function testReload() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = document.createElement('webview');
+
+  var loadCommitCount = 0;
+  webview.addEventListener('loadstop', function(e) {
+    if (loadCommitCount < 2) {
+      webview.reload();
+    } else if (loadCommitCount == 2) {
+      embedder.test.succeed();
+    } else {
+      embedder.test.fail();
+    }
+  });
+  webview.addEventListener('loadcommit', function(e) {
+    embedder.test.assertEq(triggerNavUrl, e.url);
+    embedder.test.assertTrue(e.isTopLevel);
+    loadCommitCount++;
+  });
+
+  webview.setAttribute('src', triggerNavUrl);
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the reload method on webview functions as expected.
+function testReloadAfterTerminate() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = document.createElement('webview');
+
+  var step = 1;
+  webview.addEventListener('loadstop', function(e) {
+    switch (step) {
+      case 1:
+        webview.terminate();
+        break;
+      case 2:
+        setTimeout(function() { embedder.test.succeed(); }, 0);
+        break;
+      default:
+        window.console.log('Unexpected loadstop event, step = ' + step);
+        embedder.test.fail();
+        break;
+    }
+    ++step;
+  });
+
+  webview.addEventListener('exit', function(e) {
+    // Trigger a focus state change of the guest to test for
+    // http://crbug.com/413874.
+    webview.blur();
+    webview.focus();
+    setTimeout(function() { webview.reload(); }, 0);
+  });
+
+  webview.src = triggerNavUrl;
+  document.body.appendChild(webview);
+}
+
 
 // Tests end.
 
@@ -919,7 +1154,18 @@ embedder.test.testList = {
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
   'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
   'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
-  'testLoadProgressEvent': testLoadProgressEvent
+  'testLoadProgressEvent': testLoadProgressEvent,
+  'testNavigateAfterResize': testNavigateAfterResize,
+  'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
+  'testNavOnConsecutiveSrcAttributeChanges':
+      testNavOnConsecutiveSrcAttributeChanges,
+  'testNavOnSrcAttributeChange': testNavOnSrcAttributeChange,
+  'testPartitionRaisesException': testPartitionRaisesException,
+  'testPartitionRemovalAfterNavigationFails':
+      testPartitionRemovalAfterNavigationFails,
+  'testReassignSrcAttribute': testReassignSrcAttribute,
+  'testReload': testReload,
+  'testReloadAfterTerminate': testReloadAfterTerminate
 };
 
 onload = function() {
