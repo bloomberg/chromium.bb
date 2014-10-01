@@ -221,7 +221,8 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_TAR = 'gsutil_4.7pre_retrydns.tar.gz'
+  GSUTIL_VERSION = '4.7pre_retrydns'
+  GSUTIL_TAR = 'gsutil_%s.tar.gz' % GSUTIL_VERSION
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'prerelease/%s' % GSUTIL_TAR
   GSUTIL_API_SELECTOR = 'JSON'
 
@@ -329,21 +330,24 @@ class GSContext(object):
   def gsutil_version(self):
     """Return the version of the gsutil in this context."""
     if not self._gsutil_version:
-      cmd = ['-q', 'version']
-
-      # gsutil has been known to return version to stderr in the past, so
-      # use combine_stdout_stderr=True.
-      result = self.DoCommand(cmd, combine_stdout_stderr=True,
-                              redirect_stdout=True)
-
-      # Expect output like: 'gsutil version 3.35' or 'gsutil version: 4.5'.
-      match = re.search(r'^\s*gsutil\s+version:?\s+([\d.]+)', result.output,
-                        re.IGNORECASE)
-      if match:
-        self._gsutil_version = match.group(1)
+      if self.dry_run:
+        self._gsutil_version = self.GSUTIL_VERSION
       else:
-        raise GSContextException('Unexpected output format from "%s":\n%s.' %
-                                 (result.cmdstr, result.output))
+        cmd = ['-q', 'version']
+
+        # gsutil has been known to return version to stderr in the past, so
+        # use combine_stdout_stderr=True.
+        result = self.DoCommand(cmd, combine_stdout_stderr=True,
+                                redirect_stdout=True)
+
+        # Expect output like: 'gsutil version 3.35' or 'gsutil version: 4.5'.
+        match = re.search(r'^\s*gsutil\s+version:?\s+([\d.]+)', result.output,
+                          re.IGNORECASE)
+        if match:
+          self._gsutil_version = match.group(1)
+        else:
+          raise GSContextException('Unexpected output format from "%s":\n%s.' %
+                                   (result.cmdstr, result.output))
 
     return self._gsutil_version
 
@@ -392,6 +396,8 @@ class GSContext(object):
           raise GSNoSuchKey('%s: file does not exist' % path)
         else:
           raise GSContextException(str(e))
+    elif self.dry_run:
+      return ''
     else:
       return self.DoCommand(['cat', path], **kwargs).output
 
@@ -675,6 +681,9 @@ class GSContext(object):
       A list of paths that matched |path|.  Might be more than one if a
       directory or path include wildcards/etc...
     """
+    if self.dry_run:
+      return []
+
     if not path.startswith(BASE_GS_URL):
       # gsutil doesn't support listing a local path, so just run 'ls'.
       kwargs.pop('retries', None)
@@ -697,6 +706,8 @@ class GSContext(object):
       than one if a directory or path include wildcards/etc...
     """
     ret = []
+    if self.dry_run:
+      return ret
 
     cmd = ['ls']
     if details:

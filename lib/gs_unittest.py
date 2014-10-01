@@ -858,6 +858,77 @@ class CatTest(cros_test_lib.TempDirTestCase):
         ctx.Cat(tempuri)
 
 
+class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Verify dry_run works for all of GSContext."""
+
+  def setUp(self):
+    self.ctx = gs.GSContext(dry_run=True)
+
+  def tearDown(self):
+    # Verify we don't try to call gsutil at all.
+    for call_args in self.rc.call_args_list:
+      self.assertNotIn('gsutil', call_args[0][0])
+
+  def testCat(self):
+    """Test Cat in dry_run mode."""
+    self.assertEqual(self.ctx.Cat('gs://foo/bar'), '')
+
+  def testChangeACL(self):
+    """Test ChangeACL in dry_run mode."""
+    self.assertEqual(
+        self.ctx.ChangeACL('gs://foo/bar', acl_args_file='/dev/null'),
+        None)
+
+  def testCopy(self):
+    """Test Copy in dry_run mode."""
+    self.ctx.Copy('/dev/null', 'gs://foo/bar')
+    self.ctx.Copy('gs://foo/bar', '/dev/null')
+
+  def testCopyInto(self):
+    """Test CopyInto in dry_run mode."""
+    self.ctx.CopyInto('/dev/null', 'gs://foo/bar')
+
+  def testDoCommand(self):
+    """Test DoCommand in dry_run mode."""
+    self.ctx.DoCommand(['a-bad-command'])
+
+  def testExists(self):
+    """Test Exists in dry_run mode."""
+    self.assertEqual(self.ctx.Exists('gs://foo/bar'), True)
+
+  def testGetGeneration(self):
+    """Test GetGeneration in dry_run mode."""
+    self.assertEqual(self.ctx.GetGeneration('gs://foo/bar'), (0, 0))
+
+  def testGetTrackerFilenames(self):
+    """Test GetTrackerFilenames in dry_run mode."""
+    self.ctx.GetTrackerFilenames('foo')
+
+  def testLS(self):
+    """Test LS in dry_run mode."""
+    self.assertEqual(self.ctx.LS('gs://foo/bar'), [])
+
+  def testList(self):
+    """Test List in dry_run mode."""
+    self.assertEqual(self.ctx.List('gs://foo/bar'), [])
+
+  def testMove(self):
+    """Test Move in dry_run mode."""
+    self.ctx.Move('gs://foo/bar', 'gs://foo/bar2')
+
+  def testRemove(self):
+    """Test Remove in dry_run mode."""
+    self.ctx.Remove('gs://foo/bar')
+
+  def testSetACL(self):
+    """Test SetACL in dry_run mode."""
+    self.assertEqual(self.ctx.SetACL('gs://foo/bar', 'bad-acl'), None)
+
+  def testVersion(self):
+    """Test gsutil_version in dry_run mode."""
+    self.assertEqual(self.ctx.gsutil_version, gs.GSContext.GSUTIL_VERSION)
+
+
 class InitBotoTest(AbstractGSContextTest):
   """Test boto file interactive initialization."""
 
