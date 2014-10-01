@@ -1476,3 +1476,4 @@ crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass
 crbug.com/419515 battery-status/page-visibility.html [ Crash ]
 
 crbug.com/419531 inspector/elements/styles/styles-add-blank-property.html [ Pass Failure ]
+crbug.com/419566 inspector/timeline/timeline-bound-function.html [ Pass Timeout ]
