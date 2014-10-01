@@ -174,7 +174,7 @@ void ExternalProcessImporterClient::OnHistoryImportGroup(
 
   history_rows_.insert(history_rows_.end(), history_rows_group.begin(),
                        history_rows_group.end());
-  if (history_rows_.size() == total_history_rows_count_)
+  if (history_rows_.size() >= total_history_rows_count_)
     bridge_->SetHistoryItems(history_rows_,
                              static_cast<importer::VisitSource>(visit_source));
 }
@@ -207,7 +207,7 @@ void ExternalProcessImporterClient::OnBookmarksImportGroup(
   // total_bookmarks_count_:
   bookmarks_.insert(bookmarks_.end(), bookmarks_group.begin(),
                     bookmarks_group.end());
-  if (bookmarks_.size() == total_bookmarks_count_)
+  if (bookmarks_.size() >= total_bookmarks_count_)
     bridge_->AddBookmarks(bookmarks_, bookmarks_first_folder_name_);
 }
 
@@ -227,7 +227,7 @@ void ExternalProcessImporterClient::OnFaviconsImportGroup(
 
   favicons_.insert(favicons_.end(), favicons_group.begin(),
                     favicons_group.end());
-  if (favicons_.size() == total_favicons_count_)
+  if (favicons_.size() >= total_favicons_count_)
     bridge_->SetFavicons(favicons_);
 }
 
@@ -272,7 +272,7 @@ void ExternalProcessImporterClient::OnAutofillFormDataImportGroup(
   autofill_form_data_.insert(autofill_form_data_.end(),
                              autofill_form_data_entry_group.begin(),
                              autofill_form_data_entry_group.end());
-  if (autofill_form_data_.size() == total_autofill_form_data_entry_count_)
+  if (autofill_form_data_.size() >= total_autofill_form_data_entry_count_)
     bridge_->SetAutofillFormData(autofill_form_data_);
 }
 
