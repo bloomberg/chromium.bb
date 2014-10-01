@@ -32,7 +32,6 @@
 #define DirectoryEntrySync_h
 
 #include "modules/filesystem/EntrySync.h"
-#include "modules/filesystem/FileSystemFlags.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -40,6 +39,7 @@ namespace blink {
 class DirectoryReaderSync;
 class ExceptionState;
 class FileEntrySync;
+class FileSystemFlags;
 
 class DirectoryEntrySync FINAL : public EntrySync {
     DEFINE_WRAPPERTYPEINFO();
@@ -51,8 +51,8 @@ public:
     virtual bool isDirectory() const OVERRIDE { return true; }
 
     DirectoryReaderSync* createReader();
-    FileEntrySync* getFile(const String& path, const Dictionary&, ExceptionState&);
-    DirectoryEntrySync* getDirectory(const String& path, const Dictionary&, ExceptionState&);
+    FileEntrySync* getFile(const String& path, const FileSystemFlags&, ExceptionState&);
+    DirectoryEntrySync* getDirectory(const String& path, const FileSystemFlags&, ExceptionState&);
     void removeRecursively(ExceptionState&);
 
     virtual void trace(Visitor*) OVERRIDE;

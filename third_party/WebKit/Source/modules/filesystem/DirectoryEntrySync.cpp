@@ -36,6 +36,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
 #include "modules/filesystem/FileEntrySync.h"
+#include "modules/filesystem/FileSystemFlags.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
 
 namespace blink {
@@ -50,19 +51,17 @@ DirectoryReaderSync* DirectoryEntrySync::createReader()
     return DirectoryReaderSync::create(m_fileSystem, m_fullPath);
 }
 
-FileEntrySync* DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
+FileEntrySync* DirectoryEntrySync::getFile(const String& path, const FileSystemFlags& options, ExceptionState& exceptionState)
 {
-    FileSystemFlags flags(options);
     EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::create();
-    m_fileSystem->getFile(this, path, flags, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    m_fileSystem->getFile(this, path, options, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
     return static_cast<FileEntrySync*>(helper->getResult(exceptionState));
 }
 
-DirectoryEntrySync* DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
+DirectoryEntrySync* DirectoryEntrySync::getDirectory(const String& path, const FileSystemFlags& options, ExceptionState& exceptionState)
 {
-    FileSystemFlags flags(options);
     EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::create();
-    m_fileSystem->getDirectory(this, path, flags, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    m_fileSystem->getDirectory(this, path, options, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
     return static_cast<DirectoryEntrySync*>(helper->getResult(exceptionState));
 }
 

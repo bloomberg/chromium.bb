@@ -36,6 +36,7 @@
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemFlags.h"
 
 namespace blink {
 
@@ -49,16 +50,14 @@ DirectoryReader* DirectoryEntry::createReader()
     return DirectoryReader::create(m_fileSystem, m_fullPath);
 }
 
-void DirectoryEntry::getFile(const String& path, const Dictionary& options, EntryCallback* successCallback, ErrorCallback* errorCallback)
+void DirectoryEntry::getFile(const String& path, const FileSystemFlags& options, EntryCallback* successCallback, ErrorCallback* errorCallback)
 {
-    FileSystemFlags flags(options);
-    m_fileSystem->getFile(this, path, flags, successCallback, errorCallback);
+    m_fileSystem->getFile(this, path, options, successCallback, errorCallback);
 }
 
-void DirectoryEntry::getDirectory(const String& path, const Dictionary& options, EntryCallback* successCallback, ErrorCallback* errorCallback)
+void DirectoryEntry::getDirectory(const String& path, const FileSystemFlags& options, EntryCallback* successCallback, ErrorCallback* errorCallback)
 {
-    FileSystemFlags flags(options);
-    m_fileSystem->getDirectory(this, path, flags, successCallback, errorCallback);
+    m_fileSystem->getDirectory(this, path, options, successCallback, errorCallback);
 }
 
 void DirectoryEntry::removeRecursively(VoidCallback* successCallback, ErrorCallback* errorCallback) const

@@ -32,7 +32,7 @@
     NoInterfaceObject
 ] interface DirectoryEntrySync : EntrySync {
     DirectoryReaderSync createReader();
-    [RaisesException] FileEntrySync getFile([TreatUndefinedAs=NullString] DOMString? path, Dictionary flags);
-    [RaisesException] DirectoryEntrySync getDirectory([TreatUndefinedAs=NullString] DOMString? path, Dictionary flags);
+    [RaisesException] FileEntrySync getFile([TreatUndefinedAs=NullString] DOMString? path, FileSystemFlags flags);
+    [RaisesException] DirectoryEntrySync getDirectory([TreatUndefinedAs=NullString] DOMString? path, FileSystemFlags flags);
     [RaisesException] void removeRecursively();
 };

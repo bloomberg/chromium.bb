@@ -356,8 +356,8 @@ void DOMFileSystemBase::getFile(const EntryBase* entry, const String& path, cons
     OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, this, absolutePath, false));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    if (flags.create)
-        fileSystem()->createFile(createFileSystemURL(absolutePath), flags.exclusive, callbacks.release());
+    if (flags.createFlag())
+        fileSystem()->createFile(createFileSystemURL(absolutePath), flags.exclusive(), callbacks.release());
     else
         fileSystem()->fileExists(createFileSystemURL(absolutePath), callbacks.release());
 }
@@ -378,8 +378,8 @@ void DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path,
     OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, m_context, this, absolutePath, true));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    if (flags.create)
-        fileSystem()->createDirectory(createFileSystemURL(absolutePath), flags.exclusive, callbacks.release());
+    if (flags.createFlag())
+        fileSystem()->createDirectory(createFileSystemURL(absolutePath), flags.exclusive(), callbacks.release());
     else
         fileSystem()->directoryExists(createFileSystemURL(absolutePath), callbacks.release());
 }
