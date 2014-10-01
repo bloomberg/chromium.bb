@@ -3572,7 +3572,11 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
             frame_url,
             url,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    if (!same_domain_or_host || frame_url.scheme() != url.scheme()) {
+    // Only keep same-site (domain + scheme) and data URLs in the same process.
+    bool is_same_site =
+        (same_domain_or_host && frame_url.scheme() == url.scheme()) ||
+        url.SchemeIs(url::kDataScheme);
+    if (!is_same_site) {
       OpenURL(info.frame, url, referrer, info.defaultPolicy);
       return blink::WebNavigationPolicyIgnore;
     }
