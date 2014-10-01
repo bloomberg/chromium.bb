@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;
@@ -66,6 +67,10 @@ class IndexedDBDispatcherTest : public testing::Test {
         sync_message_filter_(new IPC::SyncMessageFilter(NULL)),
         thread_safe_sender_(new ThreadSafeSender(message_loop_proxy_.get(),
                                                  sync_message_filter_.get())) {}
+
+  virtual void TearDown() override {
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
 
  protected:
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
