@@ -11,10 +11,20 @@ class GURL;
 
 class PermissionRequestCreator {
  public:
+  typedef base::Callback<void(bool)> SuccessCallback;
+
   virtual ~PermissionRequestCreator() {}
 
+  // Returns false if creating a permission request is expected to fail.
+  // If this method returns true, it doesn't necessary mean that creating the
+  // permission request will succeed, just that it's not known in advance
+  // to fail.
+  virtual bool IsEnabled() const = 0;
+
+  // Creates a permission request for |url_requested| and calls |callback| with
+  // the result (whether creating the permission request was successful).
   virtual void CreatePermissionRequest(const GURL& url_requested,
-                                       const base::Closure& callback) = 0;
+                                       const SuccessCallback& callback) = 0;
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_H_

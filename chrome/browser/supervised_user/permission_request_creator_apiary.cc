@@ -36,19 +36,20 @@ const char kState[] = "PENDING";
 static const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
 struct PermissionRequestCreatorApiary::Request {
-  Request(const GURL& url_requested, const base::Closure& callback);
+  Request(const GURL& url_requested, const SuccessCallback& callback);
   ~Request();
 
   GURL url_requested;
-  base::Closure callback;
+  SuccessCallback callback;
   scoped_ptr<OAuth2TokenService::Request> access_token_request;
   std::string access_token;
   bool access_token_expired;
   scoped_ptr<net::URLFetcher> url_fetcher;
 };
 
-PermissionRequestCreatorApiary::Request::Request(const GURL& url_requested,
-                                                 const base::Closure& callback)
+PermissionRequestCreatorApiary::Request::Request(
+    const GURL& url_requested,
+    const SuccessCallback& callback)
     : url_requested(url_requested),
       callback(callback),
       access_token_expired(false) {
@@ -59,31 +60,39 @@ PermissionRequestCreatorApiary::Request::~Request() {}
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
     OAuth2TokenService* oauth2_token_service,
     scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
-    net::URLRequestContextGetter* context)
+    net::URLRequestContextGetter* context,
+    const GURL& apiary_url)
     : OAuth2TokenService::Consumer("permissions_creator"),
       oauth2_token_service_(oauth2_token_service),
       signin_wrapper_(signin_wrapper.Pass()),
-      context_(context) {}
+      context_(context),
+      apiary_url_(apiary_url) {
+  DCHECK(apiary_url_.is_valid());
+}
 
 PermissionRequestCreatorApiary::~PermissionRequestCreatorApiary() {}
 
 // static
 scoped_ptr<PermissionRequestCreator>
-PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
+PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile,
+                                                  const GURL& apiary_url) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
   scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper(
       new SupervisedUserSigninManagerWrapper(profile, signin));
-  scoped_ptr<PermissionRequestCreator> creator(
-      new PermissionRequestCreatorApiary(
-          token_service, signin_wrapper.Pass(), profile->GetRequestContext()));
-  return creator.Pass();
+  return make_scoped_ptr(new PermissionRequestCreatorApiary(
+      token_service, signin_wrapper.Pass(), profile->GetRequestContext(),
+      apiary_url));
+}
+
+bool PermissionRequestCreatorApiary::IsEnabled() const {
+  return true;
 }
 
 void PermissionRequestCreatorApiary::CreatePermissionRequest(
     const GURL& url_requested,
-    const base::Closure& callback) {
+    const SuccessCallback& callback) {
   requests_.push_back(new Request(url_requested, callback));
   StartFetching(requests_.back());
 }
@@ -117,11 +126,10 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   }
   DCHECK(it != requests_.end());
   (*it)->access_token = access_token;
-  GURL url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kPermissionRequestApiUrl));
   const int id = 0;
 
-  (*it)->url_fetcher.reset(URLFetcher::Create(id, url, URLFetcher::POST, this));
+  (*it)->url_fetcher.reset(
+      URLFetcher::Create(id, apiary_url_, URLFetcher::POST, this));
 
   (*it)->url_fetcher->SetRequestContext(context_);
   (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -151,7 +159,7 @@ void PermissionRequestCreatorApiary::OnGetTokenFailure(
     ++it;
   }
   DCHECK(it != requests_.end());
-  (*it)->callback.Run();
+  (*it)->callback.Run(false);
   requests_.erase(it);
 }
 
@@ -202,7 +210,7 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
     DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
     return;
   }
-  (*it)->callback.Run();
+  (*it)->callback.Run(true);
   requests_.erase(it);
 }
 
@@ -215,6 +223,6 @@ void PermissionRequestCreatorApiary::DispatchNetworkError(RequestIterator it,
 void PermissionRequestCreatorApiary::DispatchGoogleServiceAuthError(
     RequestIterator it,
     const GoogleServiceAuthError& error) {
-  (*it)->callback.Run();
+  (*it)->callback.Run(false);
   requests_.erase(it);
 }

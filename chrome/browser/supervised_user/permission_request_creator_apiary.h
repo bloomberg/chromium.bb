@@ -33,15 +33,18 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   PermissionRequestCreatorApiary(
       OAuth2TokenService* oauth2_token_service,
       scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
-      net::URLRequestContextGetter* context);
+      net::URLRequestContextGetter* context,
+      const GURL& apiary_url);
   virtual ~PermissionRequestCreatorApiary();
 
   static scoped_ptr<PermissionRequestCreator> CreateWithProfile(
-      Profile* profile);
+      Profile* profile, const GURL& apiary_url);
 
   // PermissionRequestCreator implementation:
-  virtual void CreatePermissionRequest(const GURL& url_requested,
-                                       const base::Closure& callback) OVERRIDE;
+  virtual bool IsEnabled() const OVERRIDE;
+  virtual void CreatePermissionRequest(
+      const GURL& url_requested,
+      const SuccessCallback& callback) OVERRIDE;
 
  private:
   struct Request;
@@ -70,6 +73,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   OAuth2TokenService* oauth2_token_service_;
   scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper_;
   net::URLRequestContextGetter* context_;
+  GURL apiary_url_;
 
   ScopedVector<Request> requests_;
 };

@@ -8,6 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
@@ -26,19 +28,29 @@ const char kNotificationSetting[] = "custodian-notification-setting";
 PermissionRequestCreatorSync::PermissionRequestCreatorSync(
     SupervisedUserSettingsService* settings_service,
     SupervisedUserSharedSettingsService* shared_settings_service,
+    ProfileSyncService* sync_service,
     const std::string& name,
     const std::string& supervised_user_id)
     : settings_service_(settings_service),
       shared_settings_service_(shared_settings_service),
+      sync_service_(sync_service),
       name_(name),
       supervised_user_id_(supervised_user_id) {
 }
 
 PermissionRequestCreatorSync::~PermissionRequestCreatorSync() {}
 
+bool PermissionRequestCreatorSync::IsEnabled() const {
+  GoogleServiceAuthError::State state = sync_service_->GetAuthError().state();
+  // We allow requesting access if Sync is working or has a transient error.
+  return (state == GoogleServiceAuthError::NONE ||
+          state == GoogleServiceAuthError::CONNECTION_FAILED ||
+          state == GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+}
+
 void PermissionRequestCreatorSync::CreatePermissionRequest(
     const GURL& url_requested,
-    const base::Closure& callback) {
+    const SuccessCallback& callback) {
   // Escape the URL and add the prefix.
   std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
       kSupervisedUserAccessRequestKeyPrefix,
@@ -64,5 +76,5 @@ void PermissionRequestCreatorSync::CreatePermissionRequest(
 
   settings_service_->UploadItem(key, dict.PassAs<base::Value>());
 
-  callback.Run();
+  callback.Run(true);
 }

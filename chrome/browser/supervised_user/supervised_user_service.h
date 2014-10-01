@@ -118,8 +118,6 @@ class SupervisedUserService : public KeyedService,
   // Whether the user can request access to blocked URLs.
   bool AccessRequestsEnabled();
 
-  void OnPermissionRequestIssued();
-
   // Adds an access request for the given URL. The requests are stored using
   // a prefix followed by a URIEncoded version of the URL. Each entry contains
   // a dictionary which currently has the timestamp of the request in it.
@@ -284,6 +282,10 @@ class SupervisedUserService : public KeyedService,
 
   SupervisedUserSettingsService* GetSettingsService();
 
+  size_t FindEnabledPermissionRequestCreator(size_t start);
+  void AddAccessRequestInternal(const GURL& url, size_t index);
+  void OnPermissionRequestIssued(const GURL& url, size_t index, bool success);
+
   void OnSupervisedUserIdChanged();
 
   void OnDefaultFilteringBehaviorChanged();
@@ -359,7 +361,7 @@ class SupervisedUserService : public KeyedService,
   scoped_ptr<SupervisedUserBlacklistDownloader> blacklist_downloader_;
 
   // Used to create permission requests.
-  scoped_ptr<PermissionRequestCreator> permissions_creator_;
+  ScopedVector<PermissionRequestCreator> permissions_creators_;
 
   ObserverList<SupervisedUserServiceObserver> observer_list_;
 

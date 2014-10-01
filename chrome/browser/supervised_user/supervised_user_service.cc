@@ -45,7 +45,6 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -545,6 +544,40 @@ SupervisedUserSettingsService* SupervisedUserService::GetSettingsService() {
   return SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
 }
 
+size_t SupervisedUserService::FindEnabledPermissionRequestCreator(
+    size_t start) {
+  for (size_t i = start; i < permissions_creators_.size(); ++i) {
+    if (permissions_creators_[i]->IsEnabled())
+      return i;
+  }
+  return permissions_creators_.size();
+}
+
+void SupervisedUserService::AddAccessRequestInternal(const GURL& url,
+                                                     size_t index) {
+  // Find a permission request creator that is enabled.
+  size_t next_index = FindEnabledPermissionRequestCreator(index);
+  if (next_index >= permissions_creators_.size())
+    return;
+
+  permissions_creators_[next_index]->CreatePermissionRequest(
+      url,
+      base::Bind(&SupervisedUserService::OnPermissionRequestIssued,
+                 weak_ptr_factory_.GetWeakPtr(), url, next_index));
+}
+
+void SupervisedUserService::OnPermissionRequestIssued(const GURL& url,
+                                                      size_t index,
+                                                      bool success) {
+  // TODO(akuegel): Figure out how to show the result of issuing the permission
+  // request in the UI. Currently, we assume the permission request was created
+  // successfully.
+  if (success)
+    return;
+
+  AddAccessRequestInternal(url, index + 1);
+}
+
 void SupervisedUserService::OnSupervisedUserIdChanged() {
   std::string supervised_user_id =
       profile_->GetPrefs()->GetString(prefs::kSupervisedUserId);
@@ -607,26 +640,11 @@ void SupervisedUserService::OnBlacklistDownloadDone(const base::FilePath& path,
 }
 
 bool SupervisedUserService::AccessRequestsEnabled() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  GoogleServiceAuthError::State state = service->GetAuthError().state();
-  // We allow requesting access if Sync is working or has a transient error.
-  return (state == GoogleServiceAuthError::NONE ||
-          state == GoogleServiceAuthError::CONNECTION_FAILED ||
-          state == GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-}
-
-void SupervisedUserService::OnPermissionRequestIssued() {
-  // TODO(akuegel): Figure out how to show the result of issuing the permission
-  // request in the UI. Currently, we assume the permission request was created
-  // successfully.
+  return FindEnabledPermissionRequestCreator(0) < permissions_creators_.size();
 }
 
 void SupervisedUserService::AddAccessRequest(const GURL& url) {
-  permissions_creator_->CreatePermissionRequest(
-      SupervisedUserURLFilter::Normalize(url),
-      base::Bind(&SupervisedUserService::OnPermissionRequestIssued,
-                 weak_ptr_factory_.GetWeakPtr()));
+  AddAccessRequestInternal(SupervisedUserURLFilter::Normalize(url), 0);
 }
 
 SupervisedUserService::ManualBehavior
@@ -737,8 +755,7 @@ void SupervisedUserService::SetActive(bool active) {
   }
 #endif
 
-  SupervisedUserSettingsService* settings_service = GetSettingsService();
-  settings_service->SetActive(active_);
+  GetSettingsService()->SetActive(active_);
 
 #if defined(ENABLE_EXTENSIONS)
   SetExtensionsActive();
@@ -747,16 +764,20 @@ void SupervisedUserService::SetActive(bool active) {
   if (active_) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kPermissionRequestApiUrl)) {
-      permissions_creator_ =
-          PermissionRequestCreatorApiary::CreateWithProfile(profile_);
+      scoped_ptr<PermissionRequestCreator> creator =
+          PermissionRequestCreatorApiary::CreateWithProfile(
+              profile_,
+              GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                  switches::kPermissionRequestApiUrl)));
+      permissions_creators_.push_back(creator.release());
     } else {
-      PrefService* pref_service = profile_->GetPrefs();
-      permissions_creator_.reset(new PermissionRequestCreatorSync(
-          settings_service,
+      permissions_creators_.push_back(new PermissionRequestCreatorSync(
+          GetSettingsService(),
           SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile_),
+          ProfileSyncServiceFactory::GetForProfile(profile_),
           GetSupervisedUserName(),
-          pref_service->GetString(prefs::kSupervisedUserId)));
+          profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
     }
 
     pref_change_registrar_.Add(
@@ -815,7 +836,7 @@ void SupervisedUserService::SetActive(bool active) {
     BrowserList::AddObserver(this);
 #endif
   } else {
-    permissions_creator_.reset();
+    permissions_creators_.clear();
 
     pref_change_registrar_.Remove(
         prefs::kDefaultSupervisedUserFilteringBehavior);

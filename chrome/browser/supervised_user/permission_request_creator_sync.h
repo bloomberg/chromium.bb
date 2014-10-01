@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 
+class ProfileSyncService;
 class SupervisedUserSettingsService;
 class SupervisedUserSharedSettingsService;
 
@@ -18,17 +19,21 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
   PermissionRequestCreatorSync(
       SupervisedUserSettingsService* settings_service,
       SupervisedUserSharedSettingsService* shared_settings_service,
+      ProfileSyncService* sync_service,
       const std::string& name,
       const std::string& supervised_user_id);
   virtual ~PermissionRequestCreatorSync();
 
   // PermissionRequestCreator implementation:
-  virtual void CreatePermissionRequest(const GURL& url_requested,
-                                       const base::Closure& callback) OVERRIDE;
+  virtual bool IsEnabled() const OVERRIDE;
+  virtual void CreatePermissionRequest(
+      const GURL& url_requested,
+      const SuccessCallback& callback) OVERRIDE;
 
  private:
   SupervisedUserSettingsService* settings_service_;
   SupervisedUserSharedSettingsService* shared_settings_service_;
+  ProfileSyncService* sync_service_;
   std::string name_;
   std::string supervised_user_id_;
 };
