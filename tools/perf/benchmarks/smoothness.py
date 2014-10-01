@@ -21,7 +21,7 @@ class SmoothnessToughFiltersCases(benchmark.Benchmark):
   page_set = page_sets.ToughFiltersCasesPageSet
 
 
-@benchmark.Disabled('mac', 'win')  # crbug.com/388877, crbug.com/396127
+@benchmark.Disabled('mac')  # crbug.com/388877
 class SmoothnessToughCanvasCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughCanvasCasesPageSet
