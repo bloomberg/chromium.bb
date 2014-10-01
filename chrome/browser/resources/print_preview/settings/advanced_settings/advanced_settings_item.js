@@ -255,7 +255,7 @@ cr.define('print_preview', function() {
         item.value = option.value;
         if (option.is_default)
           indexToSelect = index;
-        selectEl.add(item);
+        selectEl.appendChild(item);
       });
       for (var i = 0, option; option = selectEl.options[i]; i++) {
         if (option.value == this.selectedValue_) {

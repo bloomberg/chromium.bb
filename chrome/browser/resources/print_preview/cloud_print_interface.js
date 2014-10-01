@@ -756,7 +756,7 @@ cr.define('cloudprint', function() {
             CloudPrintInterface.EventType.PRINTER_FAILED, request);
         errorEvent.destinationId = destinationId;
         errorEvent.destinationOrigin = request.origin;
-        this.dispatchEvent(errorEvent, request.origin);
+        this.dispatchEvent(errorEvent);
       }
     },
 

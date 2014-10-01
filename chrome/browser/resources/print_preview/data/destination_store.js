@@ -291,6 +291,7 @@ cr.define('print_preview', function() {
           !this.appState_.selectedDestinationOrigin) {
         this.selectDefaultDestination_();
       } else {
+        assert(typeof this.appState_.selectedDestinationAccount == 'string');
         var key = this.getDestinationKey_(
             this.appState_.selectedDestinationOrigin,
             this.appState_.selectedDestinationId,

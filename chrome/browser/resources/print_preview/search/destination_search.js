@@ -293,8 +293,8 @@ cr.define('print_preview', function() {
     getAvailableListsHeight_: function() {
       var elStyle = window.getComputedStyle(this.getElement());
       return this.getElement().offsetHeight -
-          parseInt(elStyle.getPropertyValue('padding-top')) -
-          parseInt(elStyle.getPropertyValue('padding-bottom')) -
+          parseInt(elStyle.getPropertyValue('padding-top'), 10) -
+          parseInt(elStyle.getPropertyValue('padding-bottom'), 10) -
           this.getChildElement('.lists').offsetTop -
           this.getChildElement('.invitation-container').offsetHeight -
           this.getChildElement('.cloudprint-promo').offsetHeight;

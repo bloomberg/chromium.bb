@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * @typedef {{selectSaveAsPdfDestination: boolean,
+ *            layoutSettings.portrait: boolean,
+ *            pageRange: string,
+ *            headersAndFooters: boolean,
+ *            backgroundColorsAndImages: boolean,
+ *            margins: number}}
+ * @see chrome/browser/printing/print_preview_pdf_generated_browsertest.cc
+ */
+print_preview.PreviewSettings;
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -180,7 +193,7 @@ cr.define('print_preview', function() {
     getNativeColorModel_: function(destination, color) {
       // For non-local printers native color model is ignored anyway.
       var option = destination.isLocal ? color.getSelectedOption() : null;
-      var nativeColorModel = parseInt(option ? option.vendor_id : null);
+      var nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
       if (isNaN(nativeColorModel)) {
         return color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY;
@@ -718,8 +731,8 @@ cr.define('print_preview', function() {
     /**
      * Dispatches an event to print_preview.js to change
      * a particular setting for print preview.
-     * @param {!Object} settings Object containing the value to be
-     *     changed and that value should be set to.
+     * @param {!print_preview.PreviewSettings} settings Object containing the
+     *     value to be changed and that value should be set to.
      * @private
      */
     onManipulateSettingsForTest_: function(settings) {

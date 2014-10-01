@@ -378,7 +378,7 @@ cr.define('print_preview', function() {
       if (event.propertyName != 'opacity')
         return;
       var elStyle = window.getComputedStyle(this.getElement());
-      var opacity = parseInt(elStyle.getPropertyValue('opacity'));
+      var opacity = parseInt(elStyle.getPropertyValue('opacity'), 10);
       this.textbox_.setAttribute('aria-hidden', opacity == 0);
     },
 

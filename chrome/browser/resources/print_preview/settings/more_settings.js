@@ -123,7 +123,7 @@ cr.define('print_preview', function() {
      */
     updateState_: function(noAnimation) {
       if (!this.firstDestinationReady_) {
-        fadeOutElement(this.getElement(), noAnimation);
+        fadeOutElement(this.getElement());
         return;
       }
       // When capabilities are not known yet, don't change the state to avoid
@@ -154,7 +154,7 @@ cr.define('print_preview', function() {
       if (hasSectionsToToggle)
         fadeInElement(this.getElement(), noAnimation);
       else
-        fadeOutElement(this.getElement(), noAnimation);
+        fadeOutElement(this.getElement());
 
       var collapseContent =
           this.settingsToShow_ == MoreSettings.SettingsToShow.MOST_POPULAR &&

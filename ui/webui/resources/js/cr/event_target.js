@@ -8,7 +8,7 @@
  */
 
 /**
- * @typedef {EventListener|function(!Event):(boolean|undefined)}
+ * @typedef {EventListener|function(!Event):*}
  */
 var EventListenerType;
 
@@ -24,7 +24,6 @@ cr.define('cr', function() {
   }
 
   EventTarget.prototype = {
-
     /**
      * Adds an event listener to the target.
      * @param {string} type The name of the event.

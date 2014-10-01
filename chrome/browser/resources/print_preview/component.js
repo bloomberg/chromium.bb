@@ -189,7 +189,7 @@ cr.define('print_preview', function() {
       var templateEl = $(templateId);
       assert(templateEl != null,
              'Could not find element with ID: ' + templateId);
-      var el = templateEl.cloneNode(true);
+      var el = assertInstanceof(templateEl.cloneNode(true), HTMLElement);
       el.id = '';
       if (!opt_keepHidden) {
         setIsVisible(el, true);

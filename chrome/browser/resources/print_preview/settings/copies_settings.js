@@ -166,7 +166,7 @@ cr.define('print_preview', function() {
     onButtonClicked_: function(delta) {
       // Assumes text field has a valid number.
       var newValue =
-          parseInt(this.getChildElement('input.copies').value) + delta;
+          parseInt(this.getChildElement('input.copies').value, 10) + delta;
       this.copiesTicketItem_.updateValue(newValue + '');
     },
 

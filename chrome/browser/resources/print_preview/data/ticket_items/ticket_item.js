@@ -10,21 +10,21 @@ cr.define('print_preview.ticket_items', function() {
    * ticket item has a value which can be set by the user. Ticket items can also
    * be unavailable for modifying if the print destination doesn't support it or
    * if other ticket item constraints are not met.
-   * @param {print_preview.AppState=} appState Application state model to update
+   * @param {?print_preview.AppState} appState Application state model to update
    *     when ticket items update.
-   * @param {print_preview.AppState.Field=} field Field of the app state to
+   * @param {?print_preview.AppState.Field} field Field of the app state to
    *     update when ticket item is updated.
-   * @param {print_preview.DestinationStore=} destinationStore Used listen for
+   * @param {?print_preview.DestinationStore} destinationStore Used listen for
    *     changes in the currently selected destination's capabilities. Since
    *     this is a common dependency of ticket items, it's handled in the base
    *     class.
-   * @param {print_preview.DocumentInfo=} documentInfo Used to listen for
+   * @param {?print_preview.DocumentInfo=} opt_documentInfo Used to listen for
    *     changes in the document. Since this is a common dependency of ticket
    *     items, it's handled in the base class.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function TicketItem(appState, field, destinationStore, documentInfo) {
+  function TicketItem(appState, field, destinationStore, opt_documentInfo) {
     cr.EventTarget.call(this);
 
     /**
@@ -54,7 +54,7 @@ cr.define('print_preview.ticket_items', function() {
      * @type {print_preview.DocumentInfo}
      * @private
      */
-    this.documentInfo_ = documentInfo || null;
+    this.documentInfo_ = opt_documentInfo || null;
 
     /**
      * Backing store of the print ticket item.
@@ -86,7 +86,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /**
      * Determines whether a given value is valid for the ticket item.
-     * @param {Object} value The value to check for validity.
+     * @param {?} value The value to check for validity.
      * @return {boolean} Whether the given value is valid for the ticket item.
      */
     wouldValueBeValid: function(value) {
@@ -127,7 +127,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @param {Object} value Value to compare to the value of this ticket item.
+     * @param {?} value Value to compare to the value of this ticket item.
      * @return {boolean} Whether the given value is equal to the value of the
      *     ticket item.
      */
@@ -135,7 +135,9 @@ cr.define('print_preview.ticket_items', function() {
       return this.getValue() == value;
     },
 
-    /** @param {!Object} value Value to set as the value of the ticket item. */
+    /**
+     * @param {?} value Value to set as the value of the ticket item.
+     */
     updateValue: function(value) {
       // Use comparison with capabilities for event.
       var sendUpdateEvent = !this.isValueEqual(value);

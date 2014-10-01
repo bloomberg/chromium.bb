@@ -48,14 +48,14 @@ cr.define('print_preview', function() {
    * @param {boolean} isRecent Whether the destination has been used recently.
    * @param {!print_preview.Destination.ConnectionStatus} connectionStatus
    *     Connection status of the print destination.
-   * @param {{tags: Array.<string>,
-   *          isOwned: ?boolean,
-   *          account: ?string,
-   *          lastAccessTime: ?number,
-   *          isTosAccepted: ?boolean,
-   *          cloudID: ?string,
-   *          description: ?string}=} opt_params Optional parameters for the
-   *     destination.
+   * @param {{tags: (Array.<string>|undefined),
+   *          isOwned: (boolean|undefined),
+   *          account: (string|undefined),
+   *          lastAccessTime: (number|undefined),
+   *          isTosAccepted: (boolean|undefined),
+   *          cloudID: (string|undefined),
+   *          description: (string|undefined)}=} opt_params Optional parameters
+   *     for the destination.
    * @constructor
    */
   function Destination(id, type, origin, displayName, isRecent,
@@ -98,7 +98,7 @@ cr.define('print_preview', function() {
 
     /**
      * Print capabilities of the destination.
-     * @private {print_preview.Cdd}
+     * @private {?print_preview.Cdd}
      */
     this.capabilities_ = null;
 
@@ -339,7 +339,7 @@ cr.define('print_preview', function() {
       return this.cloudID_;
     },
 
-    /** @return {print_preview.Cdd} Print capabilities of the destination. */
+    /** @return {?print_preview.Cdd} Print capabilities of the destination. */
     get capabilities() {
       return this.capabilities_;
     },

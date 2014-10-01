@@ -11,11 +11,11 @@ cr.define('print_preview', function() {
    *     events to.
    * @param {!print_preview.Destination} destination Destination data object to
    *     render.
-   * @param {RegExp} query Active filter query.
+   * @param {RegExp=} opt_query Active filter query.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function DestinationListItem(eventTarget, destination, query) {
+  function DestinationListItem(eventTarget, destination, opt_query) {
     print_preview.Component.call(this);
 
     /**
@@ -37,7 +37,7 @@ cr.define('print_preview', function() {
      * @type {RegExp}
      * @private
      */
-    this.query_ = query;
+    this.query_ = opt_query || null;
 
     /**
      * FedEx terms-of-service widget or {@code null} if this list item does not

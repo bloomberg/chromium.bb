@@ -81,10 +81,12 @@ cr.define('print_preview', function() {
           var selectOption = document.createElement('option');
           var displayName = option.custom_display_name;
           if (!displayName && option.custom_display_name_localized) {
-            var getLocaleToCompare = function(locale, languageOnly) {
-              var code = languageOnly ? locale.split('-')[0] : locale;
+            var getLocaleToCompare =
+                /** @type {function(string, boolean=): string} */
+                (function(locale, opt_languageOnly) {
+              var code = opt_languageOnly ? locale.split('-')[0] : locale;
               return code.toLowerCase();
-            };
+            });
             var getItemForLocale = function(items, locale, languageOnly) {
               locale = getLocaleToCompare(locale, languageOnly);
               for (var i = 0; i < items.length; i++) {
@@ -100,7 +102,7 @@ cr.define('print_preview', function() {
           }
           selectOption.text = displayName || option.name;
           selectOption.value = JSON.stringify(option);
-          select.add(selectOption);
+          select.appendChild(selectOption);
           if (option.is_default) {
             indexToSelect = index;
           }

@@ -12,14 +12,14 @@ cr.define('print_preview', function() {
   function CapabilitiesHolder() {
     /**
      * Reference to the capabilities object.
-     * @type {print_preview.Cdd}
+     * @type {?print_preview.Cdd}
      * @private
      */
     this.capabilities_ = null;
   };
 
   CapabilitiesHolder.prototype = {
-    /** @return {print_preview.Cdd} The instance held by the holder. */
+    /** @return {?print_preview.Cdd} The instance held by the holder. */
     get: function() {
       return this.capabilities_;
     },

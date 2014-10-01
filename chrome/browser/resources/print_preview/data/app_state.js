@@ -12,7 +12,7 @@ cr.define('print_preview', function() {
   function AppState() {
     /**
      * Internal representation of application state.
-     * @type {Object.<string: Object>}
+     * @type {Object}
      * @private
      */
     this.state_ = {};
@@ -80,7 +80,10 @@ cr.define('print_preview', function() {
       return this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT];
     },
 
-    /** @return {?string} Origin of the selected destination. */
+    /**
+     * @return {?print_preview.Destination.Origin.<string>} Origin of the
+     *     selected destination.
+     */
     get selectedDestinationOrigin() {
       return this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN];
     },
@@ -111,7 +114,7 @@ cr.define('print_preview', function() {
 
     /**
      * @param {!print_preview.AppState.Field} field App state field to get.
-     * @return {Object} Value of the app state field.
+     * @return {?} Value of the app state field.
      */
     getField: function(field) {
       if (field == AppState.Field.CUSTOM_MARGINS) {
@@ -163,7 +166,7 @@ cr.define('print_preview', function() {
     /**
      * Persists the given value for the given field.
      * @param {!print_preview.AppState.Field} field Field to persist.
-     * @param {Object} value Value of field to persist.
+     * @param {?} value Value of field to persist.
      */
     persistField: function(field, value) {
       if (!this.isInitialized_)

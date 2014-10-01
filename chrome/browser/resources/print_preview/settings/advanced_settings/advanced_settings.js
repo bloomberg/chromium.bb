@@ -123,8 +123,8 @@ cr.define('print_preview', function() {
     getAvailableContentHeight_: function() {
       var elStyle = window.getComputedStyle(this.getElement());
       return this.getElement().offsetHeight -
-          parseInt(elStyle.getPropertyValue('padding-top')) -
-          parseInt(elStyle.getPropertyValue('padding-bottom')) -
+          parseInt(elStyle.getPropertyValue('padding-top'), 10) -
+          parseInt(elStyle.getPropertyValue('padding-bottom'), 10) -
           this.getChildElement('.settings-area').offsetTop -
           this.getChildElement('.action-area').offsetHeight;
     },

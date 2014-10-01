@@ -66,7 +66,8 @@ cr.define('print_preview', function() {
     createDom: function() {
       this.setElementInternal(this.cloneTemplateInternal(
           'search-box-template'));
-      this.input_ = this.getChildElement('.search-box-input');
+      this.input_ = assertInstanceof(this.getChildElement('.search-box-input'),
+          HTMLInputElement);
       this.input_.setAttribute('placeholder', this.searchBoxPlaceholderText_);
     },
 

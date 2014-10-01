@@ -857,19 +857,22 @@ cr.define('print_preview', function() {
      * to the preview area.
      * @param {KeyboardEvent} e The keyboard event.
      * @private
+     * @suppress {uselessCode}
+     * Current compiler preprocessor leaves all the code inside all the <if>s,
+     * so the compiler claims that code after first return is unreachable.
      */
     onKeyDown_: function(e) {
       // Escape key closes the dialog.
       if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
           !e.metaKey) {
-        <if expr="toolkit_views">
+<if expr="toolkit_views">
         // On the toolkit_views environment, ESC key is handled by C++-side
         // instead of JS-side.
         return;
-        </if>
-        <if expr="not toolkit_views">
+</if>
+<if expr="not toolkit_views">
         this.close_();
-        </if>
+</if>
         e.preventDefault();
         return;
       }
@@ -937,7 +940,7 @@ cr.define('print_preview', function() {
      */
     onAdvancedOptionsButtonActivated_: function() {
       this.advancedSettings_.showForDestination(
-          this.destinationStore_.selectedDestination);
+          assert(this.destinationStore_.selectedDestination));
     },
 
     /**
@@ -998,19 +1001,21 @@ cr.define('print_preview', function() {
      * @private
      */
     onManipulateSettingsForTest_: function(event) {
-      if ('selectSaveAsPdfDestination' in event.settings) {
+      var settings =
+          /** @type {print_preview.PreviewSettings} */(event.settings);
+      if ('selectSaveAsPdfDestination' in settings) {
         this.saveAsPdfForTest_();  // No parameters.
-      } else if ('layoutSettings' in event.settings) {
-        this.setLayoutSettingsForTest_(event.settings.layoutSettings.portrait);
-      } else if ('pageRange' in event.settings) {
-        this.setPageRangeForTest_(event.settings.pageRange);
-      } else if ('headersAndFooters' in event.settings) {
-        this.setHeadersAndFootersForTest_(event.settings.headersAndFooters);
-      } else if ('backgroundColorsAndImages' in event.settings) {
+      } else if ('layoutSettings' in settings) {
+        this.setLayoutSettingsForTest_(settings.layoutSettings.portrait);
+      } else if ('pageRange' in settings) {
+        this.setPageRangeForTest_(settings.pageRange);
+      } else if ('headersAndFooters' in settings) {
+        this.setHeadersAndFootersForTest_(settings.headersAndFooters);
+      } else if ('backgroundColorsAndImages' in settings) {
         this.setBackgroundColorsAndImagesForTest_(
-            event.settings.backgroundColorsAndImages);
-      } else if ('margins' in event.settings) {
-        this.setMarginsForTest_(event.settings.margins);
+            settings.backgroundColorsAndImages);
+      } else if ('margins' in settings) {
+        this.setMarginsForTest_(settings.margins);
       }
     },
 
@@ -1137,7 +1142,7 @@ cr.define('print_preview', function() {
       if (!cr.isWindows)
         return true;
       var selectedDest = this.destinationStore_.selectedDestination;
-      return selectedDest &&
+      return !!selectedDest &&
              selectedDest.origin == print_preview.Destination.Origin.LOCAL &&
              selectedDest.id !=
                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
@@ -1167,7 +1172,7 @@ cr.define('print_preview', function() {
       var selectedDest = this.destinationStore_.selectedDestination;
       setIsVisible(
           getRequiredElement('cloud-print-dialog-link'),
-          selectedDest && !cr.isChromeOS && !selectedDest.isLocal);
+          !!selectedDest && !cr.isChromeOS && !selectedDest.isLocal);
       setIsVisible(
           getRequiredElement('system-dialog-link'),
           this.shouldShowSystemDialogLink_());
@@ -1187,8 +1192,8 @@ cr.define('print_preview', function() {
           this.cloudPrintInterface_ &&
           this.userInfo_.activeUser &&
           !this.appState_.isGcpPromoDismissed &&
-          !this.destinationStore_.isLocalDestinationsSearchInProgress &&
-          !this.destinationStore_.isCloudDestinationsSearchInProgress &&
+          !this.destinationStore_.isLocalDestinationSearchInProgress &&
+          !this.destinationStore_.isCloudDestinationSearchInProgress &&
           this.destinationStore_.hasOnlyDefaultCloudDestinations();
       setIsVisible(this.getChildElement('#no-destinations-promo'),
                    isPromoVisible);

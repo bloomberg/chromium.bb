@@ -13,8 +13,8 @@ cr.define('print_preview.ticket_items', function() {
    *     save the state of the margins type selection.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
-   * @param {!print_preview.CustomMargins} customMargins Custom margins ticket
-   *     item, used to write when margins type changes.
+   * @param {!print_preview.ticket_items.CustomMargins} customMargins Custom
+   *     margins ticket item, used to write when margins type changes.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */

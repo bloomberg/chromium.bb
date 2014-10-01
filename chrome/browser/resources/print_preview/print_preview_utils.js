@@ -145,7 +145,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
  */
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);
-  pageList = [];
+  var pageList = [];
   if (pageRanges) {
     for (var i = 0; i < pageRanges.length; ++i) {
       for (var j = pageRanges[i].from; j <= Math.min(pageRanges[i].to,
@@ -172,7 +172,7 @@ function pageListToPageSet(pageList) {
     return pageSet;
   pageSet = pageList.slice(0);
   pageSet.sort(function(a, b) {
-    return (/** @type {number} */ a) - (/** @type {number} */ b);
+    return /** @type {number} */(a) - /** @type {number} */(b);
   });
   pageSet = removeDuplicates(pageSet);
   return pageSet;

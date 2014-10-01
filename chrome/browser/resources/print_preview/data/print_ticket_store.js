@@ -305,52 +305,62 @@ cr.define('print_preview', function() {
       // Initialize ticket with user's previous values.
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_COLOR_ENABLED)) {
-        this.color_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_COLOR_ENABLED));
+        this.color_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.IS_COLOR_ENABLED)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_DUPLEX_ENABLED)) {
-        this.duplex_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_DUPLEX_ENABLED));
+        this.duplex_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.IS_DUPLEX_ENABLED)));
       }
       if (this.appState_.hasField(print_preview.AppState.Field.MEDIA_SIZE)) {
-        this.mediaSize_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.MEDIA_SIZE));
+        this.mediaSize_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.MEDIA_SIZE)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)) {
-        this.landscape_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_LANDSCAPE_ENABLED));
+        this.landscape_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)));
       }
       // Initialize margins after landscape because landscape may reset margins.
       if (this.appState_.hasField(print_preview.AppState.Field.MARGINS_TYPE)) {
         this.marginsType_.updateValue(
-            this.appState_.getField(print_preview.AppState.Field.MARGINS_TYPE));
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.MARGINS_TYPE)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.CUSTOM_MARGINS)) {
-        this.customMargins_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.CUSTOM_MARGINS));
+        this.customMargins_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.CUSTOM_MARGINS)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)) {
-        this.headerFooter_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED));
+        this.headerFooter_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_COLLATE_ENABLED)) {
-        this.collate_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_COLLATE_ENABLED));
+        this.collate_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.IS_COLLATE_ENABLED)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)) {
-        this.cssBackground_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED));
+        this.cssBackground_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.VENDOR_OPTIONS)) {
-        this.vendorItems_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.VENDOR_OPTIONS));
+        this.vendorItems_.updateValue(
+            /** @type {!Object.<string, string>} */(this.appState_.getField(
+            print_preview.AppState.Field.VENDOR_OPTIONS)));
     }
     },
 
@@ -498,7 +508,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectedDestinationCapabilitiesReady_: function() {
-      var caps = this.destinationStore_.selectedDestination.capabilities;
+      var caps = assert(
+          this.destinationStore_.selectedDestination.capabilities);
       var isFirstUpdate = this.capabilitiesHolder_.get() == null;
       this.capabilitiesHolder_.set(caps);
       if (isFirstUpdate) {
