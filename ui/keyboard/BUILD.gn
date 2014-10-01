@@ -39,6 +39,7 @@ component("keyboard") {
     "//content/public/browser",
     "//content/public/common",
     "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
     "//mojo/environment:chromium",
     "//mojo/bindings/js",
     "//mojo/system",
