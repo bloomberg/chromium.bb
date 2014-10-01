@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/time/time.h"
 #include "base/win/object_watcher.h"
 
@@ -146,6 +147,11 @@ void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
 }
 
 void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "FilePathWatcherImpl_OnObjectSignaled"));
+
   DCHECK(object == handle_);
   // Make sure we stay alive through the body of this function.
   scoped_refptr<FilePathWatcherImpl> keep_alive(this);

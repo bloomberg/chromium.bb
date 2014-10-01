@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_iterator.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/win/object_watcher.h"
 
 namespace base {
@@ -71,6 +72,11 @@ void TimerExpiredTask::TimedOut() {
 }
 
 void TimerExpiredTask::OnObjectSignaled(HANDLE object) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "TimerExpiredTask_OnObjectSignaled"));
+
   CloseHandle(process_);
   process_ = NULL;
 }

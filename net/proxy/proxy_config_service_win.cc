@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/string_tokenizer.h"
@@ -136,6 +137,11 @@ bool ProxyConfigServiceWin::AddKeyToWatchList(HKEY rootkey,
 }
 
 void ProxyConfigServiceWin::OnObjectSignaled(HANDLE object) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "ProxyConfigServiceWin_OnObjectSignaled"));
+
   // Figure out which registry key signalled this change.
   KeyEntryList::iterator it;
   for (it = keys_to_watch_.begin(); it != keys_to_watch_.end(); ++it) {
