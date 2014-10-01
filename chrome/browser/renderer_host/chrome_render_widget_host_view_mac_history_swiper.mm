@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace {
@@ -89,6 +90,13 @@ BOOL forceMagicMouse = NO;
   // If history swiping isn't possible, allow rubberbanding.
   if (!browser)
     return true;
+
+  // TODO(erikchen): Update this comment after determining whether this
+  // NULL-check fixes the crash.
+  // This NULL check likely prevents a crash. http://crbug.com/418761
+  if (!browser->tab_strip_model()->GetActiveWebContents())
+    return true;
+
   if (!chrome::CanGoBack(browser))
     return true;
   // History swiping is possible. By default, disallow rubberbanding.  If the
@@ -102,6 +110,13 @@ BOOL forceMagicMouse = NO;
   // If history swiping isn't possible, allow rubberbanding.
   if (!browser)
     return true;
+
+  // TODO(erikchen): Update this comment after determining whether this
+  // NULL-check fixes the crash.
+  // This NULL check likely prevents a crash. http://crbug.com/418761
+  if (!browser->tab_strip_model()->GetActiveWebContents())
+    return true;
+
   if (!chrome::CanGoForward(browser))
     return true;
   // History swiping is possible. By default, disallow rubberbanding.  If the
