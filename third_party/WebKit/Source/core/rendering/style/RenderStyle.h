@@ -344,6 +344,8 @@ public:
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
+    static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle);
+
     StyleDifference visualInvalidationDiff(const RenderStyle&) const;
 
     enum IsAtShadowBoundary {

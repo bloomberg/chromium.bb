@@ -32,6 +32,7 @@
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/QuotesData.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StyleInheritedData.h"
@@ -195,6 +196,15 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
         return Inherit;
 
     return NoInherit;
+}
+
+ItemPosition RenderStyle::resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle)
+{
+    ItemPosition align = childStyle->alignSelf();
+    // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
+    if (align == ItemPositionAuto)
+        align = (parentStyle->alignItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->alignItems();
+    return align;
 }
 
 void RenderStyle::inheritFrom(const RenderStyle* inheritParent, IsAtShadowBoundary isAtShadowBoundary)

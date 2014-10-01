@@ -36,6 +36,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"
 #include <limits>
@@ -193,14 +194,6 @@ int RenderFlexibleBox::inlineBlockBaseline(LineDirectionMode direction) const
     return synthesizedBaselineFromContentBox(*this, direction) + marginAscent;
 }
 
-static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle)
-{
-    ItemPosition align = childStyle->alignSelf();
-    if (align == ItemPositionAuto)
-        align = (parentStyle->alignItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->alignItems();
-    return align;
-}
-
 void RenderFlexibleBox::removeChild(RenderObject* child)
 {
     RenderBlock::removeChild(child);
@@ -215,8 +208,8 @@ void RenderFlexibleBox::styleDidChange(StyleDifference diff, const RenderStyle* 
         // Flex items that were previously stretching need to be relayed out so we can compute new available cross axis space.
         // This is only necessary for stretching since other alignment values don't change the size of the box.
         for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-            ItemPosition previousAlignment = resolveAlignment(oldStyle, child->style());
-            if (previousAlignment == ItemPositionStretch && previousAlignment != resolveAlignment(style(), child->style()))
+            ItemPosition previousAlignment = RenderStyle::resolveAlignment(oldStyle, child->style());
+            if (previousAlignment == ItemPositionStretch && previousAlignment != RenderStyle::resolveAlignment(style(), child->style()))
                 child->setChildNeedsLayout(MarkOnlyThis);
         }
     }
@@ -1011,7 +1004,7 @@ void RenderFlexibleBox::prepareChildForPositionedLayout(RenderBox& child, Layout
 
 ItemPosition RenderFlexibleBox::alignmentForChild(RenderBox& child) const
 {
-    ItemPosition align = resolveAlignment(style(), child.style());
+    ItemPosition align = RenderStyle::resolveAlignment(style(), child.style());
 
     if (align == ItemPositionBaseline && hasOrthogonalFlow(child))
         align = ItemPositionFlexStart;

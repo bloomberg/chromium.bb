@@ -31,6 +31,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/GridCoordinate.h"
+#include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -1291,20 +1292,10 @@ LayoutUnit RenderGrid::centeredRowPositionForChild(const RenderBox& child) const
     return startOfRow + std::max<LayoutUnit>(0, endOfRow - startOfRow - child.logicalHeight()) / 2;
 }
 
-// FIXME: We should move this logic to the StyleAdjuster or the StyleBuilder.
-static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle)
-{
-    ItemPosition align = childStyle->alignSelf();
-    // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
-    if (align == ItemPositionAuto)
-        align = (parentStyle->alignItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->alignItems();
-    return align;
-}
-
 LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    ItemPosition alignSelf = resolveAlignment(style(), child.style());
+    ItemPosition alignSelf = RenderStyle::resolveAlignment(style(), child.style());
 
     switch (alignSelf) {
     case ItemPositionSelfStart:
