@@ -247,9 +247,7 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  // If settings-in-a-window is enabled the Extensions item is at the top level.
-  if (!::switches::SettingsWindowEnabled())
-    AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
+  AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
 
   if (chrome::CanOpenTaskManager())
     AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
@@ -598,9 +596,6 @@ void WrenchMenuModel::Build() {
 
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
-  // If settings-in-a-window is enabled the Extensions item is at the top level.
-  if (::switches::SettingsWindowEnabled())
-    AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
   AddSeparator(ui::NORMAL_SEPARATOR);
 
 #if !defined(OS_CHROMEOS)
