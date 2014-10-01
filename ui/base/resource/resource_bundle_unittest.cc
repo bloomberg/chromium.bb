@@ -342,7 +342,7 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
   EXPECT_EQ(delegate_data, result);
 }
 
-#if defined(USE_OZONE) && !defined(USE_PANGO)
+#if (defined(USE_OZONE) && !defined(USE_PANGO)) || defined(OS_ANDROID)
 #define MAYBE_DelegateGetFontList DISABLED_DelegateGetFontList
 #else
 #define MAYBE_DelegateGetFontList DelegateGetFontList
