@@ -174,17 +174,14 @@ public:
     ThreadIdentifier audioThread() const { return m_audioThread; }
     bool isAudioThread() const;
 
-    // mustReleaseLock is set to true if we acquired the lock in this method call and caller must unlock(), false if it was previously acquired.
-    void lock(bool& mustReleaseLock);
-
-    // Returns true if we own the lock.
-    // mustReleaseLock is set to true if we acquired the lock in this method call and caller must unlock(), false if it was previously acquired.
-    bool tryLock(bool& mustReleaseLock);
-
+    void lock();
+    bool tryLock();
     void unlock();
 
+#if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
-    bool isGraphOwner() const;
+    bool isGraphOwner();
+#endif
 
     // Returns the maximum numuber of channels we can support.
     static unsigned maxNumberOfChannels() { return MaxNumberOfChannels;}
@@ -196,17 +193,15 @@ public:
             : m_context(context)
         {
             ASSERT(context);
-            context->lock(m_mustReleaseLock);
+            context->lock();
         }
 
         ~AutoLocker()
         {
-            if (m_mustReleaseLock)
-                m_context->unlock();
+            m_context->unlock();
         }
     private:
         Member<AudioContext> m_context;
-        bool m_mustReleaseLock;
     };
 
     // In AudioNode::breakConnection() and deref(), a tryLock() is used for
@@ -330,9 +325,8 @@ private:
     unsigned m_connectionCount;
 
     // Graph locking.
-    Mutex m_contextGraphMutex;
+    RecursiveMutex m_contextGraphMutex;
     volatile ThreadIdentifier m_audioThread;
-    volatile ThreadIdentifier m_graphOwnerThread; // if the lock is held then this is the thread which owns it, otherwise == UndefinedThreadIdentifier
 
     // Only accessed in the audio thread.
     // Oilpan: Since items are added to these vectors by the audio thread (not registered to Oilpan),

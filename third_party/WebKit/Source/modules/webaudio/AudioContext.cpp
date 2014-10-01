@@ -73,9 +73,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-// FIXME: check the proper way to reference an undefined thread ID
-const WTF::ThreadIdentifier UndefinedThreadIdentifier = 0xffffffff;
-
 namespace blink {
 
 // Don't allow more than this number of simultaneous AudioContexts talking to hardware.
@@ -107,7 +104,6 @@ AudioContext::AudioContext(Document* document)
     , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_audioThread(0)
-    , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(false)
 {
     m_destinationNode = DefaultAudioDestinationNode::create(this);
@@ -128,7 +124,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_audioThread(0)
-    , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(true)
 {
     // Create a new destination for offline rendering.
@@ -583,62 +578,29 @@ void AudioContext::derefUnfinishedSourceNodes()
     m_referencedNodes.clear();
 }
 
-void AudioContext::lock(bool& mustReleaseLock)
+void AudioContext::lock()
 {
     // Don't allow regular lock in real-time audio thread.
     ASSERT(isMainThread());
-
-    ThreadIdentifier thisThread = currentThread();
-
-    if (thisThread == m_graphOwnerThread) {
-        // We already have the lock.
-        mustReleaseLock = false;
-    } else {
-        // Acquire the lock.
-        m_contextGraphMutex.lock();
-        m_graphOwnerThread = thisThread;
-        mustReleaseLock = true;
-    }
+    m_contextGraphMutex.lock();
 }
 
-bool AudioContext::tryLock(bool& mustReleaseLock)
+bool AudioContext::tryLock()
 {
-    ThreadIdentifier thisThread = currentThread();
-    bool isAudioThread = thisThread == audioThread();
-
-    // Try to catch cases of using try lock on main thread - it should use regular lock.
-    ASSERT(isAudioThread);
-
-    if (!isAudioThread) {
-        // In release build treat tryLock() as lock() (since above ASSERT(isAudioThread) never fires) - this is the best we can do.
-        lock(mustReleaseLock);
+    // Try to catch cases of using try lock on main thread
+    // - it should use regular lock.
+    ASSERT(isAudioThread());
+    if (!isAudioThread()) {
+        // In release build treat tryLock() as lock() (since above
+        // ASSERT(isAudioThread) never fires) - this is the best we can do.
+        lock();
         return true;
     }
-
-    bool hasLock;
-
-    if (thisThread == m_graphOwnerThread) {
-        // Thread already has the lock.
-        hasLock = true;
-        mustReleaseLock = false;
-    } else {
-        // Don't already have the lock - try to acquire it.
-        hasLock = m_contextGraphMutex.tryLock();
-
-        if (hasLock)
-            m_graphOwnerThread = thisThread;
-
-        mustReleaseLock = hasLock;
-    }
-
-    return hasLock;
+    return m_contextGraphMutex.tryLock();
 }
 
 void AudioContext::unlock()
 {
-    ASSERT(currentThread() == m_graphOwnerThread);
-
-    m_graphOwnerThread = UndefinedThreadIdentifier;
     m_contextGraphMutex.unlock();
 }
 
@@ -647,10 +609,12 @@ bool AudioContext::isAudioThread() const
     return currentThread() == m_audioThread;
 }
 
-bool AudioContext::isGraphOwner() const
+#if ENABLE(ASSERT)
+bool AudioContext::isGraphOwner()
 {
-    return currentThread() == m_graphOwnerThread;
+    return m_contextGraphMutex.locked();
 }
+#endif
 
 void AudioContext::addDeferredBreakConnection(AudioNode& node)
 {
@@ -664,8 +628,7 @@ void AudioContext::handlePreRenderTasks()
 
     // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
     // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
-    bool mustReleaseLock;
-    if (tryLock(mustReleaseLock)) {
+    if (tryLock()) {
         // Update the channel count mode.
         updateChangedChannelCountMode();
 
@@ -674,9 +637,7 @@ void AudioContext::handlePreRenderTasks()
         handleDirtyAudioNodeOutputs();
 
         updateAutomaticPullNodes();
-
-        if (mustReleaseLock)
-            unlock();
+        unlock();
     }
 }
 
@@ -687,8 +648,7 @@ void AudioContext::handlePostRenderTasks()
     // Must use a tryLock() here too.  Don't worry, the lock will very rarely be contended and this method is called frequently.
     // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
     // from the render graph (in which case they'll render silence).
-    bool mustReleaseLock;
-    if (tryLock(mustReleaseLock)) {
+    if (tryLock()) {
         // Update the channel count mode.
         updateChangedChannelCountMode();
 
@@ -703,9 +663,7 @@ void AudioContext::handlePostRenderTasks()
         handleDirtyAudioNodeOutputs();
 
         updateAutomaticPullNodes();
-
-        if (mustReleaseLock)
-            unlock();
+        unlock();
     }
 }
 
