@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 
@@ -33,6 +34,12 @@ class FileManagerPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunAsync() OVERRIDE;
 
  private:
+  // Part of Run(). Called after GetFile for Drive File System.
+  void RunAfterGetDriveFile(const base::FilePath& drive_path,
+                            drive::FileError error,
+                            const base::FilePath& cache_path,
+                            scoped_ptr<drive::ResourceEntry> entry);
+
   // Part of Run(). Called after MarkCacheFielAsMounted for Drive File System.
   // (or directly called from RunAsync() for other file system).
   void RunAfterMarkCacheFileAsMounted(const base::FilePath& display_name,

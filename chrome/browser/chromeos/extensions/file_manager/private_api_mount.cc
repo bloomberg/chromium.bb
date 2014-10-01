@@ -73,11 +73,13 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
     if (!file_system)
       return false;
 
-    file_system->MarkCacheFileAsMounted(
-        drive::util::ExtractDrivePath(path),
-        base::Bind(
-            &FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted,
-            this, path.BaseName()));
+    // Ensure that the cache file exists.
+    const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
+    file_system->GetFile(
+        drive_path,
+        base::Bind(&FileManagerPrivateAddMountFunction::RunAfterGetDriveFile,
+                   this,
+                   drive_path));
   } else {
     file_manager::VolumeManager* volume_manager =
         file_manager::VolumeManager::Get(GetProfile());
@@ -112,6 +114,33 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
     }
   }
   return true;
+}
+
+void FileManagerPrivateAddMountFunction::RunAfterGetDriveFile(
+    const base::FilePath& drive_path,
+    drive::FileError error,
+    const base::FilePath& cache_path,
+    scoped_ptr<drive::ResourceEntry> entry) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (error != drive::FILE_ERROR_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system) {
+    SendResponse(false);
+    return;
+  }
+
+  file_system->MarkCacheFileAsMounted(
+      drive_path,
+      base::Bind(
+          &FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted,
+          this,
+          drive_path.BaseName()));
 }
 
 void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
