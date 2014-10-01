@@ -121,7 +121,7 @@ void AppInfoFooterPanel::ExtensionUninstallAccepted() {
                               NULL);
 
   // Close the App Info dialog as well (which will free the dialog too).
-  GetWidget()->Close();
+  Close();
 }
 
 void AppInfoFooterPanel::ExtensionUninstallCanceled() {

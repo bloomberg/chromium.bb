@@ -7,12 +7,15 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/views/app_list/app_list_dialog_container.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "ui/app_list/app_list_constants.h"
@@ -47,7 +50,12 @@ void ShowAppInfoDialog(gfx::NativeWindow parent,
 AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const extensions::Extension* app)
-    : dialog_header_(NULL), dialog_body_(NULL), dialog_footer_(NULL) {
+    : dialog_header_(NULL),
+      dialog_body_(NULL),
+      dialog_footer_(NULL),
+      profile_(profile),
+      app_id_(app->id()),
+      extension_registry_(NULL) {
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   SetLayoutManager(layout);
@@ -94,7 +102,44 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
 
   if (dialog_footer_)
     AddChildView(dialog_footer_);
+
+  // Close the dialog if the app is uninstalled, or if the profile is destroyed.
+  StartObservingExtensionRegistry();
 }
 
 AppInfoDialog::~AppInfoDialog() {
+  StopObservingExtensionRegistry();
+}
+
+void AppInfoDialog::Close() {
+  GetWidget()->Close();
+}
+
+void AppInfoDialog::StartObservingExtensionRegistry() {
+  DCHECK(!extension_registry_);
+
+  extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
+  extension_registry_->AddObserver(this);
+}
+
+void AppInfoDialog::StopObservingExtensionRegistry() {
+  if (extension_registry_)
+    extension_registry_->RemoveObserver(this);
+  extension_registry_ = NULL;
+}
+
+void AppInfoDialog::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  if (extension->id() != app_id_)
+    return;
+
+  Close();
+}
+
+void AppInfoDialog::OnShutdown(extensions::ExtensionRegistry* registry) {
+  DCHECK_EQ(extension_registry_, registry);
+  StopObservingExtensionRegistry();
+  Close();
 }

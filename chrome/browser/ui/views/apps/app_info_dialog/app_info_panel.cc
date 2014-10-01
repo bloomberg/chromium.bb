@@ -8,6 +8,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -20,6 +21,10 @@ AppInfoPanel::AppInfoPanel(Profile* profile, const extensions::Extension* app)
 }
 
 AppInfoPanel::~AppInfoPanel() {
+}
+
+void AppInfoPanel::Close() {
+  GetWidget()->Close();
 }
 
 views::Label* AppInfoPanel::CreateHeading(const base::string16& text) const {

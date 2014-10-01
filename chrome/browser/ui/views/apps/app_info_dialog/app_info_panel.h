@@ -25,6 +25,9 @@ class AppInfoPanel : public views::View {
   virtual ~AppInfoPanel();
 
  protected:
+  // Closes the dialog.
+  void Close();
+
   // Create a heading label with the given text.
   views::Label* CreateHeading(const base::string16& text) const;
 

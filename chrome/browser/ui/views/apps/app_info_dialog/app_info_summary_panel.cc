@@ -31,7 +31,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 // A model for a combobox selecting the launch options for a hosted app.
 // Displays different options depending on the host OS.

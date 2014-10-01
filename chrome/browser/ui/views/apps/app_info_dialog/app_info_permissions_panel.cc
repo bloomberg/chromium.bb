@@ -26,7 +26,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 AppInfoPermissionsPanel::AppInfoPermissionsPanel(
     Profile* profile,
@@ -264,7 +263,7 @@ void AppInfoPermissionsPanel::RevokeFilePermissions() {
   apps::SavedFilesService::Get(profile_)->ClearQueue(app_);
   apps::AppLoadService::Get(profile_)->RestartApplicationIfRunning(app_->id());
 
-  GetWidget()->Close();
+  Close();
 }
 
 const std::vector<base::string16> AppInfoPermissionsPanel::GetRetainedDevices()
@@ -277,5 +276,5 @@ void AppInfoPermissionsPanel::RevokeDevicePermissions() {
   extensions::DevicePermissionsManager::Get(profile_)->Clear(app_->id());
   apps::AppLoadService::Get(profile_)->RestartApplicationIfRunning(app_->id());
 
-  GetWidget()->Close();
+  Close();
 }
