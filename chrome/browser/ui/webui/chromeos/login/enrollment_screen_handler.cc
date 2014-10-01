@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
@@ -117,7 +116,6 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       frame_error_(net::OK),
       network_state_informer_(network_state_informer),
       error_screen_actor_(error_screen_actor),
-      histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
   set_async_assets_load_id(OobeUI::kScreenOobeEnrollment);
   DCHECK(network_state_informer_.get());
@@ -498,7 +496,6 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
                               &params,
                               base::Bind(&EnrollmentScreenHandler::DoShow,
                                          weak_ptr_factory_.GetWeakPtr()));
-    histogram_helper_->OnErrorShow(error_screen_actor_->error_state());
   }
 }
 
@@ -507,7 +504,6 @@ void EnrollmentScreenHandler::HideOfflineMessage(
     ErrorScreenActor::ErrorReason reason) {
   if (IsEnrollmentScreenHiddenByError())
     error_screen_actor_->Hide();
-  histogram_helper_->OnErrorHide();
 }
 
 void EnrollmentScreenHandler::OnFrameError(
@@ -601,7 +597,6 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetString("management_domain", management_domain_);
 
   ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
-  histogram_helper_->OnScreenShow();
 }
 
 }  // namespace chromeos

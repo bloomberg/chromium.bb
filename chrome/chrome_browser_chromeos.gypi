@@ -561,8 +561,6 @@
         'browser/chromeos/login/enrollment/enrollment_screen.cc',
         'browser/chromeos/login/enrollment/enrollment_screen.h',
         'browser/chromeos/login/enrollment/enrollment_screen_actor.h',
-        'browser/chromeos/login/error_screens_histogram_helper.cc',
-        'browser/chromeos/login/error_screens_histogram_helper.h',
         'browser/chromeos/login/existing_user_controller.cc',
         'browser/chromeos/login/existing_user_controller.h',
         'browser/chromeos/login/help_app_launcher.cc',

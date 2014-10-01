@@ -9,7 +9,6 @@
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -107,7 +106,6 @@ SupervisedUserCreationScreen::SupervisedUserCreationScreen(
       image_decoder_(NULL),
       apply_photo_after_decoding_(false),
       selected_image_(0),
-      histogram_helper_(new ErrorScreensHistogramHelper("Supervised")),
       weak_factory_(this) {
   DCHECK(actor_);
   if (actor_)
@@ -145,7 +143,6 @@ void SupervisedUserCreationScreen::Show() {
   if (!on_error_screen_)
     NetworkPortalDetector::Get()->AddAndFireObserver(this);
   on_error_screen_ = false;
-  histogram_helper_->OnScreenShow();
 }
 
 void SupervisedUserCreationScreen::OnPageSelected(const std::string& page) {
@@ -157,14 +154,12 @@ void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
     const NetworkPortalDetector::CaptivePortalState& state)  {
   if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
     get_screen_observer()->HideErrorScreen(this);
-    histogram_helper_->OnErrorHide();
   } else {
     on_error_screen_ = true;
     ErrorScreen* screen = get_screen_observer()->GetErrorScreen();
     ConfigureErrorScreen(screen, network, state.status);
     screen->SetUIState(ErrorScreen::UI_STATE_SUPERVISED);
     get_screen_observer()->ShowErrorScreen();
-    histogram_helper_->OnErrorShow(screen->GetErrorState());
   }
 }
 

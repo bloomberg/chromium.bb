@@ -25,7 +25,6 @@ class PolicyOAuth2TokenFetcher;
 namespace chromeos {
 
 class AuthenticatedUserEmailRetriever;
-class ErrorScreensHistogramHelper;
 
 // WebUIMessageHandler implementation which handles events occurring on the
 // page, such as the user pressing the signin button.
@@ -150,8 +149,6 @@ class EnrollmentScreenHandler
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   ErrorScreenActor* error_screen_actor_;
-
-  scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_;
 

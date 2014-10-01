@@ -136,11 +136,6 @@ void ErrorScreen::SetErrorState(ErrorState error_state,
   actor_->SetErrorState(error_state, network);
 }
 
-ErrorScreen::ErrorState ErrorScreen::GetErrorState() const {
-  DCHECK(actor_);
-  return actor_->error_state();
-}
-
 void ErrorScreen::AllowGuestSignin(bool allow) {
   DCHECK(actor_);
   actor_->AllowGuestSignin(allow);

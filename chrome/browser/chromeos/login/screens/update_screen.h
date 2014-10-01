@@ -21,7 +21,6 @@
 namespace chromeos {
 
 class ErrorScreen;
-class ErrorScreensHistogramHelper;
 class NetworkState;
 class ScreenManager;
 class ScreenObserver;
@@ -164,8 +163,6 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   // True if there was no notification about captive portal state for
   // the default network.
   bool is_first_portal_notification_;
-
-  scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   base::WeakPtrFactory<UpdateScreen> weak_factory_;
 

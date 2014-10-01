@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
@@ -92,8 +91,9 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
       manager->GetScreen(WizardController::kUpdateScreenName));
 }
 
-UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
-                           UpdateScreenActor* actor)
+UpdateScreen::UpdateScreen(
+    ScreenObserver* screen_observer,
+    UpdateScreenActor* actor)
     : WizardScreen(screen_observer),
       state_(STATE_IDLE),
       reboot_check_delay_(0),
@@ -105,7 +105,6 @@ UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
       actor_(actor),
       is_first_detection_notification_(true),
       is_first_portal_notification_(true),
-      histogram_helper_(new ErrorScreensHistogramHelper("Update")),
       weak_factory_(this) {
   DCHECK(actor_);
   if (actor_)
@@ -298,7 +297,6 @@ void UpdateScreen::CancelUpdate() {
 
 void UpdateScreen::Show() {
   is_shown_ = true;
-  histogram_helper_->OnScreenShow();
   if (actor_) {
     actor_->Show();
     actor_->SetProgress(kBeforeUpdateCheckProgress);
@@ -490,13 +488,11 @@ void UpdateScreen::ShowErrorMessage() {
   state_ = STATE_ERROR;
   GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_UPDATE);
   get_screen_observer()->ShowErrorScreen();
-  histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
 }
 
 void UpdateScreen::HideErrorMessage() {
   LOG(WARNING) << "UpdateScreen::HideErrorMessage()";
   get_screen_observer()->HideErrorScreen(this);
-  histogram_helper_->OnErrorHide();
 }
 
 void UpdateScreen::UpdateErrorMessage(

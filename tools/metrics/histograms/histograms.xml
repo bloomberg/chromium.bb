@@ -21246,55 +21246,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time from boot to sign-in completed.</summary>
 </histogram>
 
-<histogram name="OOBE.ErrorScreensTime.Enrollment" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
-  <summary>
-    Time spent on error screens during enrollment or autoenrollment.
-  </summary>
-</histogram>
-
-<histogram name="OOBE.ErrorScreensTime.Signin" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
-  <summary>Time spent on error screens during signin.</summary>
-</histogram>
-
-<histogram name="OOBE.ErrorScreensTime.Supervised" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
-  <summary>
-    Time spent on error screens during supervised user creation.
-  </summary>
-</histogram>
-
-<histogram name="OOBE.ErrorScreensTime.Update" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
-  <summary>Time spent on error screens during update.</summary>
-</histogram>
-
-<histogram name="OOBE.NetworkErrorShown.Enrollment" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
-  <summary>
-    Number of times error screen has appeared during enrollment or
-    autoenrollment.
-  </summary>
-</histogram>
-
-<histogram name="OOBE.NetworkErrorShown.Signin" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
-  <summary>Number of times error screen has appeared during signin.</summary>
-</histogram>
-
-<histogram name="OOBE.NetworkErrorShown.Supervised" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
-  <summary>
-    Number of times error screen has appeared during supervised user creation.
-  </summary>
-</histogram>
-
-<histogram name="OOBE.NetworkErrorShown.Update" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
-  <summary>Number of times error screen has appeared during update.</summary>
-</histogram>
-
 <histogram name="OOBE.StepCompletionTime" units="milliseconds">
   <owner>merkulova@chromium.org</owner>
   <summary>Time spent on specific OOBE screen.</summary>
@@ -47345,15 +47296,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="User Disconnect"/>
 </enum>
 
-<enum name="NetworkErrorType" type="int">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Portal"/>
-  <int value="2" label="Offline"/>
-  <int value="3" label="Proxy"/>
-  <int value="4" label="AuthExtTimeout"/>
-  <int value="5" label="None"/>
-</enum>
-
 <enum name="NetworkLocationRequestEvent" type="int">
   <int value="0" label="REQUEST_START"/>
   <int value="1" label="REQUEST_CANCEL"/>
@@ -55474,17 +55416,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="UrlOver8K" label="URL length was over 8K"/>
   <suffix name="UrlOver128K" label="URL length was over 128K"/>
   <affected-histogram name="Net.ProxyResolver.ExecutionTime"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="NetworkErrors" separator=".">
-  <suffix name="AuthExtTimeout" label="with the last error AuthExtTimeout"/>
-  <suffix name="Offline" label="with the last error Offline"/>
-  <suffix name="Portal" label="with the last error Portal"/>
-  <suffix name="Proxy" label="with the last error Proxy"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Enrollment"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Signin"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Supervised"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Update"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">

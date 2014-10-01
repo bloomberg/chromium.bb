@@ -49,7 +49,6 @@ namespace chromeos {
 class AuthenticatedUserEmailRetriever;
 class CaptivePortalWindowProxy;
 class CoreOobeActor;
-class ErrorScreensHistogramHelper;
 class GaiaScreenHandler;
 class NativeWindowDelegate;
 class SupervisedUserCreationScreenHandler;
@@ -536,8 +535,6 @@ class SigninScreenHandler
 
   // True if SigninScreenHandler has already been added to OobeUI observers.
   bool oobe_ui_observer_added_;
-
-  scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

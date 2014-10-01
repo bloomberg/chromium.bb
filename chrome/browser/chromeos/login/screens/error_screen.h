@@ -41,10 +41,7 @@ class ErrorScreen : public WizardScreen,
     ERROR_STATE_OFFLINE,
     ERROR_STATE_PROXY,
     ERROR_STATE_AUTH_EXT_TIMEOUT,
-    ERROR_STATE_NONE,
-    // States above are being logged to histograms.
-    // Please keep ERROR_STATE_NONE as the last one of the histogram values.
-    ERROR_STATE_KIOSK_ONLINE,
+    ERROR_STATE_KIOSK_ONLINE
   };
 
   ErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);
@@ -88,8 +85,6 @@ class ErrorScreen : public WizardScreen,
   // Sets current error screen content according to current UI state,
   // |error_state|, and |network|.
   void SetErrorState(ErrorState error_state, const std::string& network);
-
-  ErrorState GetErrorState() const;
 
   // Toggles the guest sign-in prompt.
   void AllowGuestSignin(bool allow);
