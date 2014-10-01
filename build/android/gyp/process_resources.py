@@ -120,20 +120,26 @@ def CreateExtraRJavaFiles(r_dir, extra_packages):
     # affect how the code in this .apk target could refer to the resources.
 
 
+def FilterCrunchStderr(stderr):
+  """Filters out lines from aapt crunch's stderr that can safely be ignored."""
+  filtered_lines = []
+  for line in stderr.splitlines(True):
+    # Ignore this libpng warning, which is a known non-error condition.
+    # http://crbug.com/364355
+    if ('libpng warning: iCCP: Not recognizing known sRGB profile that has '
+        + 'been edited' in line):
+      continue
+    filtered_lines.append(line)
+  return ''.join(filtered_lines)
+
+
 def DidCrunchFail(returncode, stderr):
   """Determines whether aapt crunch failed from its return code and output.
 
   Because aapt's return code cannot be trusted, any output to stderr is
-  an indication that aapt has failed (http://crbug.com/314885), except
-  lines that contain "libpng warning", which is a known non-error condition
-  (http://crbug.com/364355).
+  an indication that aapt has failed (http://crbug.com/314885).
   """
-  if returncode != 0:
-    return True
-  for line in stderr.splitlines():
-    if line and not 'libpng warning' in line:
-      return True
-  return False
+  return returncode != 0 or stderr
 
 
 def ZipResources(resource_dirs, zip_path):
@@ -253,7 +259,8 @@ def main():
                   'crunch',
                   '-C', crunch_dir,
                   '-S', d]
-      build_utils.CheckOutput(aapt_cmd, fail_func=DidCrunchFail)
+      build_utils.CheckOutput(aapt_cmd, stderr_filter=FilterCrunchStderr,
+                              fail_func=DidCrunchFail)
 
     ZipResources(zip_resource_dirs, options.resource_zip_out)
 
