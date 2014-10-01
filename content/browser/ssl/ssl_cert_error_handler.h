@@ -20,7 +20,6 @@ class SSLCertErrorHandler : public SSLErrorHandler {
  public:
   // Construct on the IO thread.
   SSLCertErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                      const GlobalRequestID& id,
                       ResourceType resource_type,
                       const GURL& url,
                       int render_process_id,

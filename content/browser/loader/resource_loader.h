@@ -73,10 +73,9 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                                int bytes_read) OVERRIDE;
 
   // SSLErrorHandler::Delegate implementation:
-  virtual void CancelSSLRequest(const GlobalRequestID& id,
-                                int error,
+  virtual void CancelSSLRequest(int error,
                                 const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest(const GlobalRequestID& id) OVERRIDE;
+  virtual void ContinueSSLRequest() OVERRIDE;
 
   // ResourceController implementation:
   virtual void Resume() OVERRIDE;

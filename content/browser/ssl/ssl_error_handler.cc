@@ -19,13 +19,11 @@ using net::SSLInfo;
 namespace content {
 
 SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                                 const GlobalRequestID& id,
                                  ResourceType resource_type,
                                  const GURL& url,
                                  int render_process_id,
                                  int render_frame_id)
     : manager_(NULL),
-      request_id_(id),
       delegate_(delegate),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
@@ -133,7 +131,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
   if (cert_error)
     ssl_info = &cert_error->ssl_info();
   if (delegate_.get())
-    delegate_->CancelSSLRequest(request_id_, error, ssl_info);
+    delegate_->CancelSSLRequest(error, ssl_info);
   request_has_been_notified_ = true;
 
   // We're done with this object on the IO thread.
@@ -151,7 +149,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
     return;
 
   if (delegate_.get())
-    delegate_->ContinueSSLRequest(request_id_);
+    delegate_->ContinueSSLRequest();
   request_has_been_notified_ = true;
 
   // We're done with this object on the IO thread.

@@ -9,9 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/id_map.h"
-#include "base/memory/weak_ptr.h"
-#include "content/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/resource_type.h"
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
@@ -27,10 +26,8 @@ class SocketStreamHost;
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
 // It also acts as SocketStream::Delegate so that it sends
 // ViewMsg_SocketStream_* messages back to renderer.
-class SocketStreamDispatcherHost
-    : public BrowserMessageFilter,
-      public net::SocketStream::Delegate,
-      public SSLErrorHandler::Delegate {
+class SocketStreamDispatcherHost : public BrowserMessageFilter,
+                                   public net::SocketStream::Delegate {
  public:
   typedef base::Callback<net::URLRequestContext*(ResourceType)>
       GetRequestContextCallback;
@@ -64,12 +61,6 @@ class SocketStreamDispatcherHost
                             const std::string& cookie_line,
                             net::CookieOptions* options) OVERRIDE;
 
-  // SSLErrorHandler::Delegate methods:
-  virtual void CancelSSLRequest(const GlobalRequestID& id,
-                                int error,
-                                const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest(const GlobalRequestID& id) OVERRIDE;
-
  protected:
   virtual ~SocketStreamDispatcherHost();
 
@@ -89,8 +80,6 @@ class SocketStreamDispatcherHost
   ResourceContext* resource_context_;
 
   bool on_shutdown_;
-
-  base::WeakPtrFactory<SocketStreamDispatcherHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };

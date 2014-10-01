@@ -125,10 +125,9 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
     base::WeakPtr<SSLErrorHandler::Delegate> GetWeakPtr();
 
     // SSLErrorHandler::Delegate methods
-    virtual void CancelSSLRequest(const GlobalRequestID& id,
-                                  int error,
+    virtual void CancelSSLRequest(int error,
                                   const net::SSLInfo* ssl_info) OVERRIDE;
-    virtual void ContinueSSLRequest(const GlobalRequestID& id) OVERRIDE;
+    virtual void ContinueSSLRequest() OVERRIDE;
 
    private:
     scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
@@ -276,10 +275,7 @@ ChannelState WebSocketEventHandler::OnSSLCertificateError(
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
   ssl_error_handler_delegate_.reset(
       new SSLErrorHandlerDelegate(callbacks.Pass()));
-  // We don't need request_id to be unique so just make a fake one.
-  GlobalRequestID request_id(-1, -1);
   SSLManager::OnSSLCertificateError(ssl_error_handler_delegate_->GetWeakPtr(),
-                                    request_id,
                                     RESOURCE_TYPE_SUB_RESOURCE,
                                     url,
                                     dispatcher_->render_process_id(),
@@ -302,7 +298,6 @@ WebSocketEventHandler::SSLErrorHandlerDelegate::GetWeakPtr() {
 }
 
 void WebSocketEventHandler::SSLErrorHandlerDelegate::CancelSSLRequest(
-    const GlobalRequestID& id,
     int error,
     const net::SSLInfo* ssl_info) {
   DVLOG(3) << "SSLErrorHandlerDelegate::CancelSSLRequest"
@@ -312,8 +307,7 @@ void WebSocketEventHandler::SSLErrorHandlerDelegate::CancelSSLRequest(
   callbacks_->CancelSSLRequest(error, ssl_info);
 }
 
-void WebSocketEventHandler::SSLErrorHandlerDelegate::ContinueSSLRequest(
-    const GlobalRequestID& id) {
+void WebSocketEventHandler::SSLErrorHandlerDelegate::ContinueSSLRequest() {
   DVLOG(3) << "SSLErrorHandlerDelegate::ContinueSSLRequest";
   callbacks_->ContinueSSLRequest();
 }

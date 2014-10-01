@@ -42,22 +42,18 @@ class SSLManager;
 //
 class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
  public:
-  // Delegate functions must be called from IO thread. All functions accept
-  // |id| as the first argument. |id| is a copy of the second argument of
-  // SSLManager::OnSSLCertificateError() and represents the request.
-  // Finally, CancelSSLRequest() or ContinueSSLRequest() will be called after
+  // Delegate functions must be called from IO thread. Finally,
+  // CancelSSLRequest() or ContinueSSLRequest() will be called after
   // SSLErrorHandler makes a decision on the SSL error.
   class CONTENT_EXPORT Delegate {
    public:
     // Called when SSLErrorHandler decides to cancel the request because of
     // the SSL error.
-    virtual void CancelSSLRequest(const GlobalRequestID& id,
-                                  int error,
-                                  const net::SSLInfo* ssl_info) = 0;
+    virtual void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) = 0;
 
     // Called when SSLErrorHandler decides to continue the request despite the
     // SSL error.
-    virtual void ContinueSSLRequest(const GlobalRequestID& id) = 0;
+    virtual void ContinueSSLRequest() = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -108,7 +104,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // Construct on the IO thread.
   SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                  const GlobalRequestID& id,
                   ResourceType resource_type,
                   const GURL& url,
                   int render_process_id,
@@ -124,10 +119,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // Should only be accessed on the UI thread.
   SSLManager* manager_;  // Our manager.
-
-  // The id of the request associated with this object.
-  // Should only be accessed from the IO thread.
-  GlobalRequestID request_id_;
 
   // The delegate we are associated with.
   base::WeakPtr<Delegate> delegate_;

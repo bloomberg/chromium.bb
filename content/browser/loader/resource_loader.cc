@@ -291,7 +291,6 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
 
   SSLManager::OnSSLCertificateError(
       weak_ptr_factory_.GetWeakPtr(),
-      info->GetGlobalRequestID(),
       info->GetResourceType(),
       request_->url(),
       render_process_id,
@@ -386,8 +385,7 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
   }
 }
 
-void ResourceLoader::CancelSSLRequest(const GlobalRequestID& id,
-                                      int error,
+void ResourceLoader::CancelSSLRequest(int error,
                                       const net::SSLInfo* ssl_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -404,7 +402,7 @@ void ResourceLoader::CancelSSLRequest(const GlobalRequestID& id,
   }
 }
 
-void ResourceLoader::ContinueSSLRequest(const GlobalRequestID& id) {
+void ResourceLoader::ContinueSSLRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DVLOG(1) << "ContinueSSLRequest() url: " << request_->url().spec();

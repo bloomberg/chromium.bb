@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
@@ -26,13 +28,13 @@ namespace content {
 // SocketStream to manage bi-directional communication over socket stream.  The
 // lifetime of an instance of this class is completely controlled by the
 // SocketStreamDispatcherHost.
-class SocketStreamHost {
+class SocketStreamHost : public SSLErrorHandler::Delegate {
  public:
   SocketStreamHost(net::SocketStream::Delegate* delegate,
                    int child_id,
                    int render_frame_id,
                    int socket_id);
-  ~SocketStreamHost();
+  virtual ~SocketStreamHost();
 
   // Gets socket_id associated with |socket|.
   static int SocketIdFromSocketStream(const net::SocketStream* socket);
@@ -53,17 +55,12 @@ class SocketStreamHost {
   // Closes the socket stream.
   void Close();
 
-  // Following CancelWithError, CancelWithSSLError, and ContinueDespiteError
-  // will be called by net::SocketStream::Delegate in OnSSLCertificateError.
-  // CancelWithError Cancels the connection because of an error.
-  // |error| is net::Error which represents the error.
-  void CancelWithError(int error);
+  base::WeakPtr<SSLErrorHandler::Delegate> AsSSLErrorHandlerDelegate();
 
-  // Cancels the connection because of receiving a certificate with an error.
-  void CancelWithSSLError(const net::SSLInfo& ssl_info);
-
-  // Continue to establish the connection in spite of an error.
-  void ContinueDespiteError();
+  // SSLErrorHandler::Delegate methods:
+  virtual void CancelSSLRequest(int error,
+                                const net::SSLInfo* ssl_info) OVERRIDE;
+  virtual void ContinueSSLRequest() OVERRIDE;
 
  private:
   net::SocketStream::Delegate* delegate_;
@@ -72,6 +69,8 @@ class SocketStreamHost {
   int socket_id_;
 
   scoped_refptr<net::SocketStreamJob> job_;
+
+  base::WeakPtrFactory<SocketStreamHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamHost);
 };

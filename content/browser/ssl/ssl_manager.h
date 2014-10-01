@@ -45,12 +45,11 @@ class SSLManager {
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
   // will adjust the security UI and either call |CancelSSLRequest| or
-  // |ContinueSSLRequest| of |delegate| with |id| as the first argument.
+  // |ContinueSSLRequest| of |delegate|.
   //
   // Called on the IO thread.
   static void OnSSLCertificateError(
       const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-      const GlobalRequestID& id,
       ResourceType resource_type,
       const GURL& url,
       int render_process_id,

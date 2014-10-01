@@ -35,7 +35,8 @@ SocketStreamHost::SocketStreamHost(
     : delegate_(delegate),
       child_id_(child_id),
       render_frame_id_(render_frame_id),
-      socket_id_(socket_id) {
+      socket_id_(socket_id),
+      weak_ptr_factory_(this) {
   DCHECK_NE(socket_id_, kNoSocketId);
   VLOG(1) << "SocketStreamHost: render_frame_id=" << render_frame_id
           << " socket_id=" << socket_id_;
@@ -83,22 +84,24 @@ void SocketStreamHost::Close() {
   job_->Close();
 }
 
-void SocketStreamHost::CancelWithError(int error) {
-  VLOG(1) << "SocketStreamHost::CancelWithError: error=" << error;
-  if (!job_.get())
-    return;
-  job_->CancelWithError(error);
+base::WeakPtr<SSLErrorHandler::Delegate>
+SocketStreamHost::AsSSLErrorHandlerDelegate() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
-void SocketStreamHost::CancelWithSSLError(const net::SSLInfo& ssl_info) {
-  VLOG(1) << "SocketStreamHost::CancelWithSSLError";
+void SocketStreamHost::CancelSSLRequest(int error,
+                                        const net::SSLInfo* ssl_info) {
+  VLOG(1) << "SocketStreamHost::CancelSSLRequest socket_id=" << socket_id_;
   if (!job_.get())
     return;
-  job_->CancelWithSSLError(ssl_info);
+  if (ssl_info)
+    job_->CancelWithSSLError(*ssl_info);
+  else
+    job_->CancelWithError(error);
 }
 
-void SocketStreamHost::ContinueDespiteError() {
-  VLOG(1) << "SocketStreamHost::ContinueDespiteError";
+void SocketStreamHost::ContinueSSLRequest() {
+  VLOG(1) << "SocketStreamHost::ContinueSSLRequest socket_id=" << socket_id_;
   if (!job_.get())
     return;
   job_->ContinueDespiteError();

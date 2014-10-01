@@ -13,7 +13,6 @@
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/global_request_id.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -36,8 +35,7 @@ SocketStreamDispatcherHost::SocketStreamDispatcherHost(
       render_process_id_(render_process_id),
       request_context_callback_(request_context_callback),
       resource_context_(resource_context),
-      on_shutdown_(false),
-      weak_ptr_factory_(this) {
+      on_shutdown_(false) {
   net::WebSocketJob::EnsureInit();
 }
 
@@ -142,9 +140,9 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
   }
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   DCHECK(socket_stream_host);
-  GlobalRequestID request_id(-1, socket_id);
   SSLManager::OnSSLCertificateError(
-      weak_ptr_factory_.GetWeakPtr(), request_id, RESOURCE_TYPE_SUB_RESOURCE,
+      socket_stream_host->AsSSLErrorHandlerDelegate(),
+      RESOURCE_TYPE_SUB_RESOURCE,
       socket->url(), render_process_id_, socket_stream_host->render_frame_id(),
       ssl_info, fatal);
 }
@@ -184,33 +182,6 @@ bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
       render_process_id_,
       socket_stream_host->render_frame_id(),
       options);
-}
-
-void SocketStreamDispatcherHost::CancelSSLRequest(
-    const GlobalRequestID& id,
-    int error,
-    const net::SSLInfo* ssl_info) {
-  int socket_id = id.request_id;
-  DVLOG(2) << "SocketStreamDispatcherHost::CancelSSLRequest socket_id="
-           << socket_id;
-  DCHECK_NE(kNoSocketId, socket_id);
-  SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
-  DCHECK(socket_stream_host);
-  if (ssl_info)
-    socket_stream_host->CancelWithSSLError(*ssl_info);
-  else
-    socket_stream_host->CancelWithError(error);
-}
-
-void SocketStreamDispatcherHost::ContinueSSLRequest(
-    const GlobalRequestID& id) {
-  int socket_id = id.request_id;
-  DVLOG(2) << "SocketStreamDispatcherHost::ContinueSSLRequest socket_id="
-           << socket_id;
-  DCHECK_NE(kNoSocketId, socket_id);
-  SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
-  DCHECK(socket_stream_host);
-  socket_stream_host->ContinueDespiteError();
 }
 
 SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
