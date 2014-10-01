@@ -60,28 +60,28 @@
 }
 
 .website-properties {
-  -webkit-margin-after: 8px;
   -webkit-margin-start: 8px;
-  -webkit-padding-after: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .website-property-area {
-  -webkit-margin-after: 8px;
   align-items: center;
   display: flex;
   justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .website-property-button {
-  -webkit-margin-after: 9em;
+  margin-bottom: 9em;
 }
 
 #website-title {
-  -webkit-margin-after: 22px;
-  -webkit-margin-before: 0;
   -webkit-padding-start: 21px;
   font-size: 15px;
   line-height: 20px;
+  margin-bottom: 22px;
+  margin-top: 0;
 }
 
 #website-settings-page .content-area {
@@ -99,9 +99,9 @@
 }
 
 .origin-permission-list {
-  -webkit-padding-before: 4px;
   border: 1px solid #d9d9d9;
   height: 192px;
+  padding-top: 4px;
 }
 
 #website-settings-edit-page .website-property-button {
@@ -113,9 +113,9 @@
 }
 
 #website-settings-global-controls {
-  -webkit-margin-after: 24px;
   align-items: center;
   display: flex;
+  margin-bottom: 24px;
 }
 
 #global-setting {
@@ -162,8 +162,8 @@ list.origin-list .favicon-cell {
 }
 
 .permission-option {
-  -webkit-margin-before: 4px;
   align-items: center;
   display: flex;
   justify-content: space-between;
+  margin-top: 4px;
 }

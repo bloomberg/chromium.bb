@@ -62,8 +62,8 @@ html[dir='rtl'] .settings-banner > .close-button {
 }
 
 .settings-banner .content-area .text p {
-  -webkit-margin-after: 0;
-  -webkit-margin-before: 0;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 
 .settings-banner .content-area .button-area  {

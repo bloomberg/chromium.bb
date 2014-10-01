@@ -7,14 +7,14 @@
 }
 
 .icon {
-  -webkit-margin-after: 10px;
-  -webkit-margin-before: 4px;
   -webkit-margin-start: 25px;
   content: -webkit-image-set(
       url('../../../browser/resources/ntp4/images/incognito_icon.png') 1x,
       url('../../../browser/resources/ntp4/images/2x/incognito_icon.png') 2x);
   float: right;
   height: 128px;
+  margin-bottom: 10px;
+  margin-top: 4px;
   width: 128px;
 }
 

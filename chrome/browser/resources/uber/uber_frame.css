@@ -12,11 +12,11 @@ html.changing-content body {
 }
 
 h1 {
-  -webkit-margin-after: 1em;
-  /* This value must match the top padding of the uber page header. */
-  -webkit-margin-before: 21px;
   -webkit-margin-start: 23px;
   color: rgb(92, 97, 102);
+  margin-bottom: 1em;
+  /* This value must match the top padding of the uber page header. */
+  margin-top: 21px;
 }
 
 ul {

@@ -3,9 +3,9 @@
  * found in the LICENSE file. */
 
 #language-dictionary-overlay-no-matches {
-  -webkit-margin-after: 0;
-  -webkit-margin-before: 0;
   line-height: 2.5em;
+  margin-bottom: 0;
+  margin-top: 0;
   padding: 0 3px;
 }
 
