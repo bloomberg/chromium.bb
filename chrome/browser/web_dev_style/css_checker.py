@@ -245,6 +245,16 @@ class CSSChecker(object):
       h = hex_reg.search(line).group(1)
       return ' (replace with #%s)' % (h[0] + h[2] + h[4])
 
+    webkit_before_or_after_reg = re.compile(r'-webkit-(\w+-)(after|before):')
+
+    def suggest_top_or_bottom(line):
+      prop, pos = webkit_before_or_after_reg.search(line).groups()
+      top_or_bottom = 'top' if pos == 'before' else 'bottom'
+      return ' (replace with %s)' % (prop + top_or_bottom)
+
+    def webkit_before_or_after(line):
+      return webkit_before_or_after_reg.search(line)
+
     def zero_length_values(contents):
       hsl_reg = re.compile(r"""
           hsl\([^\)]*       # hsl(<maybe stuff>
@@ -315,6 +325,10 @@ class CSSChecker(object):
         { 'desc': 'Use rgb() over #hex when not a shade of gray (like #333).',
           'test': rgb_if_not_gray,
           'after': suggest_rgb_from_hex,
+        },
+        { 'desc': 'Use *-top/bottom instead of -webkit-*-before/after.',
+          'test': webkit_before_or_after,
+          'after': suggest_top_or_bottom,
         },
         { 'desc': 'Make all zero length terms (i.e. 0px) 0 unless inside of '
                   'hsl() or part of @keyframe.',

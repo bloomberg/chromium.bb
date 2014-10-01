@@ -739,6 +739,19 @@ b:before,
     color: #bad; (replace with rgb(187, 170, 221))
     color: #bada55; (replace with rgb(186, 218, 85))""")
 
+  def testWebkitBeforeOrAfter(self):
+    self.VerifyContentsProducesOutput("""
+.test {
+  -webkit-margin-before: 10px;
+  -webkit-margin-start: 20px;
+  -webkit-padding-after: 3px;
+  -webkit-padding-end: 5px;
+}
+""", """
+- Use *-top/bottom instead of -webkit-*-before/after.
+    -webkit-margin-before: 10px; (replace with margin-top)
+    -webkit-padding-after: 3px; (replace with padding-bottom)""")
+
   def testCssZeroLengthTerms(self):
     self.VerifyContentsProducesOutput("""
 @-webkit-keyframe anim {
