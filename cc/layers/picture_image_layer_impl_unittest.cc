@@ -83,7 +83,8 @@ class PictureImageLayerImplTest : public testing::Test {
         maximum_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
-    layer->UpdateTiles(Occlusion());
+    bool resourceless_software_draw = false;
+    layer->UpdateTiles(Occlusion(), resourceless_software_draw);
   }
 
  protected:

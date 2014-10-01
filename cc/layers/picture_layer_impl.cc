@@ -441,15 +441,22 @@ void PictureLayerImpl::AppendQuads(
   CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
-void PictureLayerImpl::UpdateTiles(
-    const Occlusion& occlusion_in_content_space) {
+void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
+                                   bool resourceless_software_draw) {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTiles");
   DCHECK_EQ(1.f, contents_scale_x());
   DCHECK_EQ(1.f, contents_scale_y());
 
   DoPostCommitInitializationIfNeeded();
 
-  visible_rect_for_tile_priority_ = visible_content_rect();
+  // Any draw properties derived from |transform|, |viewport|, and |clip|
+  // parameters in LayerTreeHostImpl::SetExternalDrawConstraints are not valid
+  // for prioritizing tiles during resourceless software draws. This is because
+  // resourceless software draws can have wildly different transforms/viewports
+  // from regular draws.
+  if (!resourceless_software_draw) {
+    visible_rect_for_tile_priority_ = visible_content_rect();
+  }
   viewport_rect_for_tile_priority_ =
       layer_tree_impl()->ViewportRectForTilePriority();
   screen_space_transform_for_tile_priority_ = screen_space_transform();
@@ -806,7 +813,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   // higher res on the active tree to a lower res on the pending tree.
 
   // First, early out for layers with no visible content.
-  if (visible_content_rect().IsEmpty())
+  if (visible_rect_for_tile_priority_.IsEmpty())
     return;
 
   // Only mark tiles inside the viewport for tile priority as required for
@@ -814,7 +821,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   // can be independently overridden by embedders like Android WebView with
   // SetExternalDrawConstraints.
   gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
-  rect.Intersect(visible_content_rect());
+  rect.Intersect(visible_rect_for_tile_priority_);
 
   float min_acceptable_scale =
       std::min(raster_contents_scale_, ideal_contents_scale_);
@@ -1492,8 +1499,11 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
   if (!tilings_)
     return true;
 
-  if (visible_content_rect().IsEmpty())
+  if (visible_rect_for_tile_priority_.IsEmpty())
     return true;
+
+  gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
+  rect.Intersect(visible_rect_for_tile_priority_);
 
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
@@ -1501,7 +1511,6 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
         tiling->resolution() != LOW_RESOLUTION)
       continue;
 
-    gfx::Rect rect(visible_content_rect());
     for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
          ++iter) {
       const Tile* tile = *iter;

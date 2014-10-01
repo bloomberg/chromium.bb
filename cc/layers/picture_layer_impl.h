@@ -109,8 +109,8 @@ class CC_EXPORT PictureLayerImpl
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void UpdateTiles(
-      const Occlusion& occlusion_in_content_space) OVERRIDE;
+  virtual void UpdateTiles(const Occlusion& occlusion_in_content_space,
+                           bool resourceless_software_draw) OVERRIDE;
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
   virtual void DidBeginTracing() OVERRIDE;

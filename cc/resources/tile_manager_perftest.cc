@@ -188,8 +188,10 @@ class TileManagerPerfTest : public testing::Test {
     int priority_count = 0;
 
     std::vector<LayerImpl*> layers = CreateLayers(layer_count, 10);
-    for (unsigned i = 0; i < layers.size(); ++i)
-      layers[i]->UpdateTiles(Occlusion());
+    bool resourceless_software_draw = false;
+    for (unsigned i = 0; i < layers.size(); ++i) {
+      layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);
+    }
 
     timer_.Reset();
     do {
@@ -215,8 +217,10 @@ class TileManagerPerfTest : public testing::Test {
                                  NEW_CONTENT_TAKES_PRIORITY};
 
     std::vector<LayerImpl*> layers = CreateLayers(layer_count, 100);
-    for (unsigned i = 0; i < layers.size(); ++i)
-      layers[i]->UpdateTiles(Occlusion());
+    bool resourceless_software_draw = false;
+    for (unsigned i = 0; i < layers.size(); ++i) {
+      layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);
+    }
 
     int priority_count = 0;
     timer_.Reset();
@@ -250,10 +254,11 @@ class TileManagerPerfTest : public testing::Test {
     int priority_count = 0;
 
     std::vector<LayerImpl*> layers = CreateLayers(layer_count, 10);
+    bool resourceless_software_draw = false;
     for (unsigned i = 0; i < layers.size(); ++i) {
       FakePictureLayerImpl* layer =
           static_cast<FakePictureLayerImpl*>(layers[i]);
-      layer->UpdateTiles(Occlusion());
+      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
       for (size_t j = 0; j < layer->GetTilings()->num_tilings(); ++j) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->GetTilings()->tiling_at(j)->AllTilesForTesting());
@@ -285,10 +290,11 @@ class TileManagerPerfTest : public testing::Test {
     int priority_count = 0;
 
     std::vector<LayerImpl*> layers = CreateLayers(layer_count, tile_count);
+    bool resourceless_software_draw = false;
     for (unsigned i = 0; i < layers.size(); ++i) {
       FakePictureLayerImpl* layer =
           static_cast<FakePictureLayerImpl*>(layers[i]);
-      layer->UpdateTiles(Occlusion());
+      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
       for (size_t j = 0; j < layer->GetTilings()->num_tilings(); ++j) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->GetTilings()->tiling_at(j)->AllTilesForTesting());
@@ -394,11 +400,13 @@ class TileManagerPerfTest : public testing::Test {
     std::vector<LayerImpl*> layers =
         CreateLayers(layer_count, approximate_tile_count_per_layer);
     timer_.Reset();
+    bool resourceless_software_draw = false;
     do {
       BeginFrameArgs args = CreateBeginFrameArgsForTesting();
       host_impl_.UpdateCurrentBeginFrameArgs(args);
-      for (unsigned i = 0; i < layers.size(); ++i)
-        layers[i]->UpdateTiles(Occlusion());
+      for (unsigned i = 0; i < layers.size(); ++i) {
+        layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);
+      }
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->ManageTiles(global_state);
