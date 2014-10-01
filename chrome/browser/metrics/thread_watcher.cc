@@ -89,9 +89,6 @@ NOINLINE void ThreadUnresponsive_IO() {
   ReportThreadHang();
 }
 
-MSVC_POP_WARNING()
-MSVC_ENABLE_OPTIMIZE();
-
 void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
   base::debug::Alias(&thread_id);
 
@@ -120,6 +117,9 @@ void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
 
   CHECK(false) << "Unknown thread was unresponsive.";  // Shouldn't be reached.
 }
+
+MSVC_POP_WARNING()
+MSVC_ENABLE_OPTIMIZE();
 
 }  // namespace
 
