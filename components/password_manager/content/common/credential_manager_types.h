@@ -37,9 +37,6 @@ struct CredentialInfo {
   CredentialInfo(const autofill::PasswordForm& form);
   ~CredentialInfo();
 
-  scoped_ptr<autofill::PasswordForm> CreatePasswordForm(
-      const GURL& origin) const;
-
   CredentialType type;
 
   // An identifier (username, email address, etc). Corresponds to
