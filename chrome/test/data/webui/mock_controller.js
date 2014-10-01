@@ -10,20 +10,8 @@
 function MockMethod() {
   var fn = function() {
     var args = Array.prototype.slice.call(arguments);
-    var callbacks =
-        args.filter(function(arg) { return (typeof arg == 'function'); });
-
-    if (callbacks.length > 1) {
-      console.error('Only support mocking function with at most one callback.');
-      return;
-    }
-
     fn.recordCall(args);
-    if (callbacks.length == 1) {
-      callbacks[0].apply(undefined, fn.callbackData);
-      return;
-    }
-    return fn.returnValue;
+    return this.returnValue;
   };
 
   /**
@@ -46,12 +34,6 @@ function MockMethod() {
    */
   fn.returnValue = undefined;
 
-  /**
-   * List of arguments for callback function.
-   * @type {!Array.<!Array>}
-   */
-  fn.callbackData = [];
-
   fn.__proto__ = MockMethod.prototype;
   return fn;
 }
@@ -63,7 +45,7 @@ MockMethod.prototype = {
    */
   addExpectation: function() {
     var args = Array.prototype.slice.call(arguments);
-    this.expectations_.push(args.filter(this.notFunction_));
+    this.expectations_.push(args);
   },
 
   /**
@@ -71,7 +53,7 @@ MockMethod.prototype = {
    * @param {!Array} args.
    */
   recordCall: function(args) {
-    this.calls_.push(args.filter(this.notFunction_));
+    this.calls_.push(args);
   },
 
   /**
@@ -102,15 +84,6 @@ MockMethod.prototype = {
   validateCall: function(index, expected, observed) {
     assertDeepEquals(expected, observed);
   },
-
-  /**
-   * Test if arg is a function.
-   * @param {*} arg The argument to test.
-   * @return True if arg is not function type.
-   */
-  notFunction_: function(arg) {
-    return typeof arg != 'function';
-  }
 };
 
 /**
