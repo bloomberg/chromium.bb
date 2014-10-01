@@ -21,10 +21,11 @@ function test()
 
     InspectorTest.invokeWithTracing("doActions", onTracingComplete, "disabled-by-default-blink.graphics_context_annotations");
 
+
     var inFlightPictures = 0;
     function onTracingComplete()
     {
-        var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
+        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
             if (event.name !== WebInspector.TracingTimelineModel.RecordType.Paint)
