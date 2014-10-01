@@ -293,4 +293,9 @@ void WebRuntimeFeatures::enableLaxMixedContentChecking(bool enable)
     RuntimeEnabledFeatures::setLaxMixedContentCheckingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableCredentialManagerAPI(bool enable)
+{
+    RuntimeEnabledFeatures::setCredentialManagerEnabled(enable);
+}
+
 } // namespace blink

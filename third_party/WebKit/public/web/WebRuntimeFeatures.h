@@ -133,6 +133,8 @@ public:
 
     BLINK_EXPORT static void enableLaxMixedContentChecking(bool);
 
+    BLINK_EXPORT static void enableCredentialManagerAPI(bool);
+
 private:
     WebRuntimeFeatures();
 };
