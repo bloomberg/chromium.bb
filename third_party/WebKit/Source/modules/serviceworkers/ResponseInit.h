@@ -12,6 +12,7 @@
 
 namespace blink {
 
+// FIXME: Use IDL dictionary instead of this class.
 class ResponseInit {
     STACK_ALLOCATED();
 public:
@@ -20,7 +21,7 @@ public:
         , statusText("OK")
     {
     }
-    explicit ResponseInit(const Dictionary& options)
+    explicit ResponseInit(const Dictionary& options, ExceptionState& exceptionState)
         : status(200)
         , statusText("OK")
     {
@@ -29,7 +30,11 @@ public:
         DictionaryHelper::get(options, "statusText", statusText);
         DictionaryHelper::get(options, "headers", headers);
         if (!headers) {
-            DictionaryHelper::get(options, "headers", headersDictionary);
+            Vector<Vector<String> > headersVector;
+            if (DictionaryHelper::get(options, "headers", headersVector, exceptionState))
+                headers = Headers::create(headersVector, exceptionState);
+            else
+                DictionaryHelper::get(options, "headers", headersDictionary);
         }
     }
 

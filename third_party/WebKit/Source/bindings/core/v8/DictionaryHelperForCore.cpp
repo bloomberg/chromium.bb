@@ -375,6 +375,28 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vect
 }
 
 template <>
+bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<Vector<String> >& value, ExceptionState& exceptionState)
+{
+    v8::Local<v8::Value> v8Value;
+    if (!dictionary.get(key, v8Value))
+        return false;
+
+    if (!v8Value->IsArray())
+        return false;
+
+    v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
+    for (size_t i = 0; i < v8Array->Length(); ++i) {
+        v8::Local<v8::Value> v8IndexedValue = v8Array->Get(v8::Uint32::New(dictionary.isolate(), i));
+        Vector<String> indexedValue = toImplArray<String>(v8IndexedValue, i, dictionary.isolate(), exceptionState);
+        if (exceptionState.hadException())
+            return false;
+        value.append(indexedValue);
+    }
+
+    return true;
+}
+
+template <>
 bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, Vector<String>& value)
 {
     Dictionary::ConversionContextScope scope(context);

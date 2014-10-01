@@ -8,6 +8,7 @@ typedef Dictionary OpenEndedDictionary;
     Constructor,
     Constructor(Headers input),
     Constructor(OpenEndedDictionary input),
+    Constructor(sequence<sequence<ByteString>> input),
     Iterable,
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,

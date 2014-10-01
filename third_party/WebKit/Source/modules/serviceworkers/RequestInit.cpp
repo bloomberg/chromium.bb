@@ -24,7 +24,11 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     DictionaryHelper::get(options, "method", method);
     DictionaryHelper::get(options, "headers", headers);
     if (!headers) {
-        DictionaryHelper::get(options, "headers", headersDictionary);
+        Vector<Vector<String> > headersVector;
+        if (DictionaryHelper::get(options, "headers", headersVector, exceptionState))
+            headers = Headers::create(headersVector, exceptionState);
+        else
+            DictionaryHelper::get(options, "headers", headersDictionary);
     }
     DictionaryHelper::get(options, "mode", mode);
     DictionaryHelper::get(options, "credentials", credentials);

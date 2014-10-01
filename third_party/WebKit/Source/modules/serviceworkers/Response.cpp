@@ -48,7 +48,7 @@ Headers* createHeadersFromWebResponse(const WebServiceWorkerResponse& webRespons
 
 Response* Response::create(ExecutionContext* context, Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
-    return create(context, body, ResponseInit(responseInit), exceptionState);
+    return create(context, body, ResponseInit(responseInit, exceptionState), exceptionState);
 }
 
 Response* Response::create(ExecutionContext* context, const String& body, const Dictionary& responseInit, ExceptionState& exceptionState)
@@ -59,7 +59,7 @@ Response* Response::create(ExecutionContext* context, const String& body, const 
     blobData->setContentType("text/plain;charset=UTF-8");
     const long long length = blobData->length();
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-    return create(context, blob.get(), ResponseInit(responseInit), exceptionState);
+    return create(context, blob.get(), ResponseInit(responseInit, exceptionState), exceptionState);
 }
 
 Response* Response::create(ExecutionContext* context, const ArrayBuffer* body, const Dictionary& responseInit, ExceptionState& exceptionState)
@@ -68,7 +68,7 @@ Response* Response::create(ExecutionContext* context, const ArrayBuffer* body, c
     blobData->appendArrayBuffer(body);
     const long long length = blobData->length();
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-    return create(context, blob.get(), ResponseInit(responseInit), exceptionState);
+    return create(context, blob.get(), ResponseInit(responseInit, exceptionState), exceptionState);
 }
 
 Response* Response::create(ExecutionContext* context, const ArrayBufferView* body, const Dictionary& responseInit, ExceptionState& exceptionState)
@@ -77,7 +77,7 @@ Response* Response::create(ExecutionContext* context, const ArrayBufferView* bod
     blobData->appendArrayBufferView(body);
     const long long length = blobData->length();
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-    return create(context, blob.get(), ResponseInit(responseInit), exceptionState);
+    return create(context, blob.get(), ResponseInit(responseInit, exceptionState), exceptionState);
 }
 
 Response* Response::create(ExecutionContext* context, Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)

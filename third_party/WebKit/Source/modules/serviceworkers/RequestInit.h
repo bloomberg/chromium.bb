@@ -16,6 +16,7 @@ class BlobDataHandle;
 class ExceptionState;
 class Headers;
 
+// FIXME: Use IDL dictionary instead of this class.
 class RequestInit {
     STACK_ALLOCATED();
 public:

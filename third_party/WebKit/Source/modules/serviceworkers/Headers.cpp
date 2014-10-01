@@ -94,6 +94,14 @@ Headers* Headers::create(const Headers* init, ExceptionState& exceptionState)
     return headers;
 }
 
+Headers* Headers::create(const Vector<Vector<String> >& init, ExceptionState& exceptionState)
+{
+    // The same steps as above.
+    Headers* headers = create();
+    headers->fillWith(init, exceptionState);
+    return headers;
+}
+
 Headers* Headers::create(const Dictionary& init, ExceptionState& exceptionState)
 {
     // "The Headers(|init|) constructor, when invoked, must run these steps:"
@@ -275,46 +283,34 @@ void Headers::fillWith(const Headers* object, ExceptionState& exceptionState)
     }
 }
 
+void Headers::fillWith(const Vector<Vector<String> >& object, ExceptionState& exceptionState)
+{
+    ASSERT(!m_headerList->size());
+    // "2. Otherwise, if |object| is a sequence, then for each |header| in
+    //     |object|, run these substeps:
+    //    1. If |header| does not contain exactly two items, throw a
+    //       TypeError.
+    //    2. Append |header|'s first item/|header|'s second item to
+    //       |headers|. Rethrow any exception."
+    for (size_t i = 0; i < object.size(); ++i) {
+        if (object[i].size() != 2) {
+            exceptionState.throwTypeError("Invalid value");
+            return;
+        }
+        append(object[i][0], object[i][1], exceptionState);
+        if (exceptionState.hadException())
+            return;
+    }
+}
+
 void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
 {
-    ASSERT(m_headerList->size() == 0);
+    ASSERT(!m_headerList->size());
     Vector<String> keys;
     object.getOwnPropertyNames(keys);
-    if (keys.size() == 0)
+    if (!keys.size())
         return;
 
-    // Because of the restrictions in IDL compiler of blink we recieve
-    // sequence<sequence<ByteString>> as a Dictionary, which is a type of union
-    // type of HeadersInit defined in the spec.
-    // http://fetch.spec.whatwg.org/#headers-class
-    // FIXME: Support sequence<sequence<ByteString>>.
-    Vector<String> keyValuePair;
-    if (DictionaryHelper::get(object, keys[0], keyValuePair)) {
-        // "2. Otherwise, if |object| is a sequence, then for each |header| in
-        //     |object|, run these substeps:
-        //    1. If |header| does not contain exactly two items, throw a
-        //       TypeError.
-        //    2. Append |header|'s first item/|header|'s second item to
-        //       |headers|. Rethrow any exception."
-        for (size_t i = 0; i < keys.size(); ++i) {
-            // We've already got the keyValuePair for key[0].
-            if (i > 0) {
-                if (!DictionaryHelper::get(object, keys[i], keyValuePair)) {
-                    exceptionState.throwTypeError("Invalid value");
-                    return;
-                }
-            }
-            if (keyValuePair.size() != 2) {
-                exceptionState.throwTypeError("Invalid value");
-                return;
-            }
-            append(keyValuePair[0], keyValuePair[1], exceptionState);
-            if (exceptionState.hadException())
-                return;
-            keyValuePair.clear();
-        }
-        return;
-    }
     // "3. Otherwise, if |object| is an open-ended dictionary, then for each
     //    |header| in object, run these substeps:
     //    1. Set |header|'s key to |header|'s key, converted to ByteString.
