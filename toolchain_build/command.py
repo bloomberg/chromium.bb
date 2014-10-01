@@ -225,10 +225,12 @@ def SkipForIncrementalCommand(command, run_cond=None, **kwargs):
     if run_cond and not run_cond(cmd_opts):
       return False
 
+    dir_list = os.listdir(cmd_opts.GetWorkDir())
     # Only run when clobbering working directory or working directory is empty.
     return (cmd_opts.IsClobberWorking() or
             not os.path.isdir(cmd_opts.GetWorkDir()) or
-            len(os.listdir(cmd_opts.GetWorkDir())) == 0)
+            len(dir_list) == 0 or
+            (len(dir_list) == 1 and dir_list[0].endswith('.log')))
 
   return Command(command, run_cond=SkipForIncrementalCondition, **kwargs)
 
