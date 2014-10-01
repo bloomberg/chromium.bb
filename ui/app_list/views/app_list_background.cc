@@ -58,17 +58,17 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
       !app_list::switches::IsExperimentalAppListEnabled()) {
     const gfx::Rect search_box_view_bounds =
         search_box_view->ConvertRectToWidget(search_box_view->GetLocalBounds());
-    gfx::Rect search_box_rect(bounds.x(),
-                              bounds.y(),
-                              bounds.width(),
-                              search_box_view_bounds.bottom() - bounds.y());
+    gfx::Rect search_box_rect(
+        bounds.x(),
+        bounds.y(),
+        bounds.width(),
+        search_box_view_bounds.bottom() - bounds.y() + kTopSeparatorSize);
 
     paint.setColor(kSearchBoxBackground);
     canvas->DrawRect(search_box_rect, paint);
 
     gfx::Rect separator_rect(search_box_rect);
-    separator_rect.set_y(separator_rect.bottom());
-    separator_rect.set_height(kTopSeparatorSize);
+    separator_rect.Inset(0, search_box_rect.height() - kTopSeparatorSize, 0, 0);
     canvas->FillRect(separator_rect, kTopSeparatorColor);
     contents_top = separator_rect.bottom();
   }

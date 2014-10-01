@@ -32,8 +32,6 @@ const int kBottomSeparatorPadding = 9;  // Non-experimental app list only.
 const int kBottomSeparatorHeight = 1;
 const int kMaxFolderNameWidth = 300;
 
-const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
-
 }  // namespace
 
 class FolderHeaderView::FolderNameView : public views::Textfield {
@@ -44,6 +42,8 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
           kFocusBorderColor,
           gfx::Insets(0, 0, 1, 1)));
+
+    SetTextColor(kFolderTitleColor);
   }
 
   virtual ~FolderNameView() {
@@ -75,7 +75,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
 
   folder_name_view_->SetFontList(
       rb.GetFontList(ui::ResourceBundle::MediumFont));
-  folder_name_view_->set_placeholder_text_color(kHintTextColor);
+  folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
   folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::Border::NullBorder());
   folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
