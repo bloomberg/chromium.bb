@@ -37,8 +37,7 @@ $L$prologue::
 	mov	cl,BYTE PTR[((-4))+rdi]
 	cmp	DWORD PTR[256+rdi],-1
 	je	$L$RC4_CHAR
-	lea	r8,QWORD PTR[OPENSSL_ia32cap_P]
-	mov	r8d,DWORD PTR[r8]
+	mov	r8d,DWORD PTR[OPENSSL_ia32cap_P]
 	xor	rbx,rbx
 	inc	r10b
 	sub	rbx,r10
@@ -557,8 +556,7 @@ $L$SEH_begin_asm_RC4_set_key::
 	xor	r10,r10
 	xor	r11,r11
 
-	lea	r8,QWORD PTR[OPENSSL_ia32cap_P]
-	mov	r8d,DWORD PTR[r8]
+	mov	r8d,DWORD PTR[OPENSSL_ia32cap_P]
 	bt	r8d,20
 	jc	$L$c1stloop
 	jmp	$L$w1stloop

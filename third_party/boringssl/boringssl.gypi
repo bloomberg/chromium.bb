@@ -309,12 +309,9 @@
       'src/ssl/ssl_sess.c',
       'src/ssl/ssl_stat.c',
       'src/ssl/ssl_txt.c',
-      'src/ssl/t1_clnt.c',
       'src/ssl/t1_enc.c',
       'src/ssl/t1_lib.c',
-      'src/ssl/t1_meth.c',
       'src/ssl/t1_reneg.c',
-      'src/ssl/t1_srvr.c',
     ],
     'boringssl_linux_arm_sources': [
       'linux-arm/crypto/aes/aes-armv4.S',

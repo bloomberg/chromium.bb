@@ -43,16 +43,16 @@ class OpenSSLNetErrorLibSingleton {
     net_error_lib_ = ERR_get_next_error_library();
   }
 
-  unsigned net_error_lib() const { return net_error_lib_; }
+  int net_error_lib() const { return net_error_lib_; }
 
  private:
-  unsigned net_error_lib_;
+  int net_error_lib_;
 };
 
 base::LazyInstance<OpenSSLNetErrorLibSingleton>::Leaky g_openssl_net_error_lib =
     LAZY_INSTANCE_INITIALIZER;
 
-unsigned OpenSSLNetErrorLib() {
+int OpenSSLNetErrorLib() {
   return g_openssl_net_error_lib.Get().net_error_lib();
 }
 

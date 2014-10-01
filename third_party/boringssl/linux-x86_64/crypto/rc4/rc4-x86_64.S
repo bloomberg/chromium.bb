@@ -26,8 +26,7 @@ asm_RC4:
 	movb	-4(%rdi),%cl
 	cmpl	$-1,256(%rdi)
 	je	.LRC4_CHAR
-	movq	OPENSSL_ia32cap_P@GOTPCREL(%rip),%r8
-	movl	(%r8),%r8d
+	movl	OPENSSL_ia32cap_P(%rip),%r8d
 	xorq	%rbx,%rbx
 	incb	%r10b
 	subq	%r10,%rbx
@@ -535,8 +534,7 @@ asm_RC4_set_key:
 	xorq	%r10,%r10
 	xorq	%r11,%r11
 
-	movq	OPENSSL_ia32cap_P@GOTPCREL(%rip),%r8
-	movl	(%r8),%r8d
+	movl	OPENSSL_ia32cap_P(%rip),%r8d
 	btl	$20,%r8d
 	jc	.Lc1stloop
 	jmp	.Lw1stloop
