@@ -439,7 +439,7 @@ ThreadWatcherList::CrashDataThresholds::CrashDataThresholds()
 
 // static
 void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
-  // TODO(rtenneti): Enable ThreadWatcher.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   uint32 unresponsive_threshold;
   CrashOnHangThreadMap crash_on_hang_threads;
   ParseCommandLine(command_line,
@@ -453,12 +453,16 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
       FROM_HERE,
       base::Bind(&ThreadWatcherList::SetStopped, false));
 
-  WatchDogThread::PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcherList::InitializeAndStartWatching,
-                 unresponsive_threshold,
-                 crash_on_hang_threads),
-      base::TimeDelta::FromSeconds(g_initialize_delay_seconds));
+  if (!WatchDogThread::PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&ThreadWatcherList::InitializeAndStartWatching,
+                     unresponsive_threshold,
+                     crash_on_hang_threads),
+          base::TimeDelta::FromSeconds(g_initialize_delay_seconds))) {
+    // Disarm() the startup timebomb, if we couldn't post the task to start the
+    // ThreadWatcher (becasue WatchDog thread is not running).
+    StartupTimeBomb::DisarmStartupTimeBomb();
+  }
 }
 
 // static
