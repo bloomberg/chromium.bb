@@ -2,7 +2,7 @@ Name: usrsctp
 URL: http://sctp-refimpl.googlecode.com/svn/trunk/KERN/usrsctp
 Version: 0
 Date: 8 July 2014
-Revision: 8912
+Revision: 9029
 License: New BSD License
 License File: LICENSE
 Security Critical: yes
