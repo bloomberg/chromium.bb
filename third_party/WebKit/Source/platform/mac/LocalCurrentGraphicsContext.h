@@ -44,17 +44,4 @@ private:
     gfx::SkiaBitLocker m_skiaBitLocker;
 };
 
-class PLATFORM_EXPORT ContextContainer {
-    WTF_MAKE_NONCOPYABLE(ContextContainer);
-public:
-    ContextContainer(GraphicsContext*, IntRect clipRect);
-
-    // This synchronizes the CGContext to reflect the current SkCanvas state.
-    // The implementation may not return the same CGContext each time.
-    CGContextRef context() { return m_skiaBitLocker.cgContext(); }
-
-private:
-    gfx::SkiaBitLocker m_skiaBitLocker;
-};
-
 }

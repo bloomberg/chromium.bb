@@ -67,12 +67,4 @@ CGContextRef LocalCurrentGraphicsContext::cgContext()
     return cgContext;
 }
 
-ContextContainer::ContextContainer(GraphicsContext* graphicsContext,
-                                   IntRect clipRect)
-    : m_skiaBitLocker(graphicsContext->canvas(),
-                      ThemeMac::inflateRectForAA(clipRect),
-                      graphicsContext->deviceScaleFactor())
-{
-}
-
 }

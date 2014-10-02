@@ -1052,8 +1052,8 @@ bool RenderThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const 
     if (!imageBuffer)
         return true;
 
-    ContextContainer cgContextContainer(imageBuffer->context(), inflatedRect);
-    CGContextRef cgContext = cgContextContainer.context();
+    LocalCurrentGraphicsContext localContext(imageBuffer->context(), IntRect(IntPoint(), inflatedRect.size()));
+    CGContextRef cgContext = localContext.cgContext();
     HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
