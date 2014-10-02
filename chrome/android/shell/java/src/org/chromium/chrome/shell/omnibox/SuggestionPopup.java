@@ -49,8 +49,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
      * Initializes a suggestion popup that will track urlField value and display suggestions based
      * on that value.
      */
-    public SuggestionPopup(Context context, EditText urlField,
-            ChromeShellToolbar toolbar) {
+    public SuggestionPopup(Context context, EditText urlField, ChromeShellToolbar toolbar) {
         mContext = context;
         mUrlField = urlField;
         mToolbar = toolbar;
@@ -138,13 +137,13 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
             });
         }
         mSuggestionsPopup.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
-        mSuggestionsPopup.setWidth(mUrlField.getWidth());
+        mSuggestionsPopup.setWidth(mToolbar.getWidth());
         mSuggestionArrayAdapter =
                 new SuggestionArrayAdapter(mContext, R.layout.dropdown_item, suggestions,
                         mUrlField);
         mSuggestionsPopup.setHeight(getSuggestionPopupHeight());
         mSuggestionsPopup.setAdapter(mSuggestionArrayAdapter);
-        mSuggestionsPopup.setAnchorView(mUrlField);
+        mSuggestionsPopup.setAnchorView(mToolbar);
         mSuggestionsPopup.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
