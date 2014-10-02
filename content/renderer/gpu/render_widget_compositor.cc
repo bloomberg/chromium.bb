@@ -786,8 +786,8 @@ void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
 void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
 
-  DCHECK(layer_tree_host_->root_layer());
   if (temporary_copy_output_request_) {
+    DCHECK(layer_tree_host_->root_layer());
     layer_tree_host_->root_layer()->RequestCopyOfOutput(
         temporary_copy_output_request_.Pass());
   }
