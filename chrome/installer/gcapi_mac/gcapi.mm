@@ -57,8 +57,8 @@ bool IsOSXVersionSupported() {
   // 10.2.
   int mac_os_x_minor_version = darwin_major_version - 4;
 
-  // Chrome is known to work on 10.6 - 10.9.
-  return mac_os_x_minor_version >= 6 && mac_os_x_minor_version <= 9;
+  // Chrome is known to work on 10.6 - 10.10.
+  return mac_os_x_minor_version >= 6 && mac_os_x_minor_version <= 10;
 }
 
 // Returns the pid/gid of the logged-in user, even if getuid() claims that the
