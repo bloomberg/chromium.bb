@@ -400,7 +400,6 @@ class CC_EXPORT LayerTreeHost {
   float page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
-  gfx::Transform impl_transform_;
   bool has_gpu_rasterization_trigger_;
   bool content_is_suitable_for_gpu_rasterization_;
   bool gpu_rasterization_histogram_recorded_;
