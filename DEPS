@@ -14,6 +14,8 @@ vars = {
   "lcov_rev": "149720",
   "tools_rev": "13800",
 
+  "validator_snapshots_rev": "13821",
+
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "googlecode_url": "http://%s.googlecode.com/svn",
@@ -38,7 +40,8 @@ deps = {
   "third_party":
     Var("native_client_trunk") + "/src/third_party@" + Var("tools_rev"),
   "validator_snapshots":
-    Var("native_client_trunk") + "/src/validator_snapshots@" + Var("tools_rev"),
+    (Var("native_client_trunk") + "/src/validator_snapshots@" +
+     Var("validator_snapshots_rev")),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   "third_party/lss":
