@@ -222,9 +222,6 @@ deps = {
   'src/third_party/libsrtp':
    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '98284c8600c73812ff4716a6ea157d1e11d417dc',
 
-  'src/third_party/speex':
-   Var('chromium_git') + '/chromium/deps/speex.git' + '@' + '5260621c36c227209c7ba64ea71ca3418cf9e2b4',
-
   'src/third_party/yasm/source/patched-yasm':
    Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + 'c960eb11ccda80b10ed50be39df4f0663b371d1d',
 
@@ -391,7 +388,6 @@ deps_os = {
     'src/third_party/safe_browsing/testing': None,
     'src/third_party/scons-2.0.1': None,
     'src/third_party/sfntly/cpp/src': None,
-    'src/third_party/speex': None,
     'src/third_party/swig/Lib': None,
     'src/third_party/usrsctp/usrsctplib': None,
     'src/third_party/v8-i18n': None,
