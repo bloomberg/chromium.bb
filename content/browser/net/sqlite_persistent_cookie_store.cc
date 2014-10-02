@@ -1317,16 +1317,7 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
     }
   }
 
-  // In the case of Android WebView, the cookie store may be created
-  // before the browser process fully initializes -- certainly before
-  // the main loop ever runs. In this situation, the CommandLine singleton
-  // will not have been set up. Android tests do not need file cookies
-  // so always ignore them here.
-  //
-  // TODO(ajwong): Remove the InitializedForCurrentProcess() check
-  // once http://crbug.com/331424 is resolved.
-  if (base::CommandLine::InitializedForCurrentProcess() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFileCookies)) {
     cookie_monster->SetEnableFileScheme(true);
   }
