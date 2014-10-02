@@ -194,9 +194,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // good).
   //
   // NOTE: This method may be called on any thread.  The object will be deleted
-  // on the thread that executes MessageLoop::Run().  If this is not the same
-  // as the thread that calls PostDelayedTask(FROM_HERE, ), then T MUST inherit
-  // from RefCountedThreadSafe<T>!
+  // on the thread that executes MessageLoop::Run().
   template <class T>
   void DeleteSoon(const tracked_objects::Location& from_here, const T* object) {
     base::subtle::DeleteHelperInternal<T, void>::DeleteViaSequencedTaskRunner(
@@ -223,7 +221,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // NOTE: This method may be called on any thread.  The object will be
   // released (and thus possibly deleted) on the thread that executes
   // MessageLoop::Run().  If this is not the same as the thread that calls
-  // PostDelayedTask(FROM_HERE, ), then T MUST inherit from
+  // ReleaseSoon(FROM_HERE, ), then T MUST inherit from
   // RefCountedThreadSafe<T>!
   template <class T>
   void ReleaseSoon(const tracked_objects::Location& from_here,
