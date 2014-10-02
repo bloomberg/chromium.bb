@@ -23,6 +23,8 @@ class CC_EXPORT RollingTimeDeltaHistory {
 
   void InsertSample(base::TimeDelta time);
 
+  size_t SampleCount();
+
   void Clear();
 
   // Returns the smallest sample that is greater than or equal to the specified

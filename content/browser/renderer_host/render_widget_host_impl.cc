@@ -89,6 +89,10 @@ namespace {
 
 bool g_check_for_pending_resize_ack = true;
 
+const size_t kBrowserCompositeLatencyHistorySize = 60;
+const double kBrowserCompositeLatencyEstimationPercentile = 90.0;
+const double kBrowserCompositeLatencyEstimationSlack = 1.1;
+
 typedef std::pair<int32, int32> RenderWidgetHostID;
 typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
     RoutingIDWidgetMap;
@@ -186,6 +190,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       has_touch_handler_(false),
       last_input_number_(static_cast<int64>(GetProcess()->GetID()) << 32),
       next_browser_snapshot_id_(1),
+      browser_composite_latency_history_(kBrowserCompositeLatencyHistorySize),
       weak_factory_(this) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
@@ -1499,6 +1504,11 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   input_router_->OnViewUpdated(
       GetInputRouterViewFlagsFromCompositorFrameMetadata(frame->metadata));
 
+  for (size_t i = 0; i < frame->metadata.latency_info.size(); ++i) {
+    frame->metadata.latency_info[i].AddLatencyNumber(
+        ui::INPUT_EVENT_BROWSER_COMPOSITE_COMPONENT, 0, 0);
+  }
+
   if (view_) {
     view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());
     view_->DidReceiveRendererFrame();
@@ -2179,6 +2189,21 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
           100);
     }
   }
+
+  ui::LatencyInfo::LatencyComponent gpu_swap_component;
+  if (!latency_info.FindLatency(
+          ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, &gpu_swap_component)) {
+    return;
+  }
+
+  ui::LatencyInfo::LatencyComponent composite_component;
+  if (latency_info.FindLatency(ui::INPUT_EVENT_BROWSER_COMPOSITE_COMPONENT,
+                               0,
+                               &composite_component)) {
+    base::TimeDelta delta =
+        gpu_swap_component.event_time - composite_component.event_time;
+    browser_composite_latency_history_.InsertSample(delta);
+  }
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {
@@ -2350,6 +2375,17 @@ BrowserAccessibilityManager*
     RenderWidgetHostImpl::GetOrCreateRootBrowserAccessibilityManager() {
   return delegate_ ?
       delegate_->GetOrCreateRootBrowserAccessibilityManager() : NULL;
+}
+
+base::TimeDelta RenderWidgetHostImpl::GetEstimatedBrowserCompositeTime() {
+  // TODO(orglofch) remove lower bound on estimate once we're sure it won't
+  // cause regressions
+  return std::max(
+      browser_composite_latency_history_.Percentile(
+          kBrowserCompositeLatencyEstimationPercentile) *
+          kBrowserCompositeLatencyEstimationSlack,
+      base::TimeDelta::FromMicroseconds(
+          (1.0f * base::Time::kMicrosecondsPerSecond) / (3.0f * 60)));
 }
 
 #if defined(OS_WIN)

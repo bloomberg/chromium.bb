@@ -226,6 +226,10 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
+  for (size_t i = 0; i < latency_info_.size(); ++i) {
+    latency_info_[i].AddLatencyNumber(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0);
+  }
   bool result = gfx::GLSurfaceAdapter::SwapBuffers();
   for (size_t i = 0; i < latency_info_.size(); i++) {
     latency_info_[i].AddLatencyNumber(

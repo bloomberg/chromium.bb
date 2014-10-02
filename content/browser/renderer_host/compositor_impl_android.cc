@@ -66,6 +66,11 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
   }
 
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
+    for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
+      frame->metadata.latency_info[i].AddLatencyNumber(
+          ui::INPUT_EVENT_BROWSER_SWAP_BUFFER_COMPONENT, 0, 0);
+    }
+
     content::ContextProviderCommandBuffer* provider_command_buffer =
         static_cast<content::ContextProviderCommandBuffer*>(
             context_provider_.get());

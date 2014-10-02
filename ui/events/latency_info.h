@@ -54,6 +54,13 @@ enum LatencyComponentType {
   WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
   // Timestamp when a tab is requested to be shown.
   TAB_SHOW_COMPONENT,
+  // Timestamp of when the Browser process began compositing
+  INPUT_EVENT_BROWSER_COMPOSITE_COMPONENT,
+  // Timestamp of when the Browser process began swap buffers
+  INPUT_EVENT_BROWSER_SWAP_BUFFER_COMPONENT,
+  // Timestamp of when the gpu service began swap buffers, unlike
+  // INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT which measure after
+  INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
   // ---------------------------TERMINAL COMPONENT-----------------------------
   // TERMINAL COMPONENT is when we show the latency end in chrome://tracing.
   // Timestamp when the mouse event is acked from renderer and it does not
@@ -104,7 +111,7 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   };
 
   // Empirically determined constant based on a typical scroll sequence.
-  enum { kTypicalMaxComponentsPerLatencyInfo = 6 };
+  enum { kTypicalMaxComponentsPerLatencyInfo = 9 };
 
   enum { kMaxInputCoordinates = 2 };
 
