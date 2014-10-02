@@ -233,7 +233,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(data_reduction_proxy_settings);
   data_reduction_proxy_auth_request_handler_.reset(
       new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
-          data_reduction_proxy::kClientAndroidWebview,
+          data_reduction_proxy::Client::WEBVIEW_ANDROID,
           data_reduction_proxy_settings->params(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 

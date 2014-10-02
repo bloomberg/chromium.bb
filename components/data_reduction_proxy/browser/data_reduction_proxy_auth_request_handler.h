@@ -29,9 +29,25 @@ namespace data_reduction_proxy {
 extern const char kAndroidWebViewProtocolVersion[];
 #endif
 
-extern const char kClientAndroidWebview[];
-extern const char kClientChromeAndroid[];
-extern const char kClientChromeIOS[];
+#define CLIENT_ENUMS_LIST \
+    CLIENT_ENUM(UNKNOWN, "") \
+    CLIENT_ENUM(WEBVIEW_ANDROID, "webview") \
+    CLIENT_ENUM(CHROME_ANDROID, "android") \
+    CLIENT_ENUM(CHROME_IOS, "ios") \
+    CLIENT_ENUM(CHROME_MAC, "mac") \
+    CLIENT_ENUM(CHROME_CHROMEOS, "chromeos") \
+    CLIENT_ENUM(CHROME_LINUX, "linux") \
+    CLIENT_ENUM(CHROME_WINDOWS, "win") \
+    CLIENT_ENUM(CHROME_FREEBSD, "freebsd") \
+    CLIENT_ENUM(CHROME_OPENBSD, "openbsd") \
+    CLIENT_ENUM(CHROME_SOLARIS, "solaris") \
+    CLIENT_ENUM(CHROME_QNX, "qnx")
+
+#define CLIENT_ENUM(name, str_value) name,
+typedef enum {
+  CLIENT_ENUMS_LIST
+} Client;
+#undef CLIENT_ENUM
 
 class DataReductionProxyParams;
 
@@ -42,7 +58,7 @@ class DataReductionProxyAuthRequestHandler {
   // Constructs a DataReductionProxyAuthRequestHandler object with the given
   // client type, params, and network task runner.
   DataReductionProxyAuthRequestHandler(
-      const std::string& client,
+      Client client,
       DataReductionProxyParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
@@ -89,7 +105,7 @@ class DataReductionProxyAuthRequestHandler {
 
   // Visible for testing.
   DataReductionProxyAuthRequestHandler(
-      const std::string& client,
+      Client client,
       const std::string& version,
       DataReductionProxyParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);

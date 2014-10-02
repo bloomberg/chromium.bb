@@ -31,10 +31,16 @@ namespace data_reduction_proxy {
 const char kAndroidWebViewProtocolVersion[] = "";
 #endif
 
-// The clients supported by the data reduction proxy.
-const char kClientAndroidWebview[] = "webview";
-const char kClientChromeAndroid[] = "android";
-const char kClientChromeIOS[] = "ios";
+#define CLIENT_ENUM(name, str_value) \
+    case name: return str_value;
+const char* GetString(Client client) {
+  switch (client) {
+    CLIENT_ENUMS_LIST
+  }
+  NOTREACHED();
+  return "";
+}
+#undef CLIENT_ENUM
 
 // static
 bool DataReductionProxyAuthRequestHandler::IsKeySetOnCommandLine() {
@@ -44,10 +50,10 @@ bool DataReductionProxyAuthRequestHandler::IsKeySetOnCommandLine() {
 }
 
 DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
-    const std::string& client,
+    Client client,
     DataReductionProxyParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-    : client_(client),
+    : client_(GetString(client)),
       data_reduction_proxy_params_(params),
       network_task_runner_(network_task_runner) {
   GetChromiumBuildAndPatch(ChromiumVersion(), &build_number_, &patch_number_);
@@ -55,11 +61,11 @@ DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
 }
 
 DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
-    const std::string& client,
+    Client client,
     const std::string& version,
     DataReductionProxyParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-    : client_(client),
+    : client_(GetString(client)),
       data_reduction_proxy_params_(params),
       network_task_runner_(network_task_runner) {
   GetChromiumBuildAndPatch(version, &build_number_, &patch_number_);

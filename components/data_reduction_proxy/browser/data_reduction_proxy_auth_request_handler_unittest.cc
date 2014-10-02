@@ -23,14 +23,6 @@ namespace {
 const char kChromeProxyHeader[] = "chrome-proxy";
 const char kOtherProxy[] = "testproxy:17";
 
-
-#if defined(OS_ANDROID)
-  const char kClient[] = "android";
-#elif defined(OS_IOS)
-  const char kClient[] = "ios";
-#else
-  const char kClient[] = "";
-#endif
 const char kVersion[] = "0.1.2.3";
 const char kExpectedBuild[] = "2";
 const char kExpectedPatch[] = "3";
@@ -42,49 +34,66 @@ const char kExpectedSession[] = "0-1633771873-1633771873-1633771873";
 const char kTestKey2[] = "test-key2";
 const char kExpectedCredentials2[] = "c911fdb402f578787562cf7f00eda972";
 const char kExpectedSession2[] = "0-1633771873-1633771873-1633771873";
-#if defined(OS_ANDROID)
-const char kExpectedHeader2[] =
-    "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, b=2, p=3, c=android";
-const char kExpectedHeader3[] =
-    "ps=86401-1633771873-1633771873-1633771873, "
-    "sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3, c=android";
-const char kExpectedHeader4[] =
-    "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, c=android";
-#elif defined(OS_IOS)
-const char kExpectedHeader2[] =
-    "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, b=2, p=3, c=ios";
-const char kExpectedHeader3[] =
-    "ps=86401-1633771873-1633771873-1633771873, "
-    "sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3, c=ios";
-const char kExpectedHeader4[] =
-    "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, c=ios";
-#else
-const char kExpectedHeader2[] =
-    "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, b=2, p=3";
-const char kExpectedHeader3[] =
-    "ps=86401-1633771873-1633771873-1633771873, "
-    "sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3";
-const char kExpectedHeader4[] =
-    "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972";
-#endif
-
 const char kDataReductionProxyKey[] = "12345";
 }  // namespace
 
 
 namespace data_reduction_proxy {
 namespace {
+
+#if defined(OS_ANDROID)
+const Client kClient = Client::CHROME_ANDROID;
+const char kClientStr[] = "android";
+#elif defined(OS_IOS)
+const Client kClient = Client::CHROME_IOS;
+const char kClientStr[] = "ios";
+#elif defined(OS_MACOSX)
+const Client kClient = Client::CHROME_MAC;
+const char kClientStr[] = "mac";
+#elif defined(OS_CHROMEOS)
+const Client kClient = Client::CHROME_CHROMEOS;
+const char kClientStr[] = "chromeos";
+#elif defined(OS_LINUX)
+const Client kClient = Client::CHROME_LINUX;
+const char kClientStr[] = "linux";
+#elif defined(OS_WIN)
+const Client kClient = Client::CHROME_WINDOWS;
+const char kClientStr[] = "win";
+#elif defined(OS_FREEBSD)
+const Client kClient = Client::CHROME_FREEBSD;
+const char kClientStr[] = "freebsd";
+#elif defined(OS_OPENBSD)
+const Client kClient = Client::CHROME_OPENBSD;
+const char kClientStr[] = "openbsd";
+#elif defined(OS_SOLARIS)
+const Client kClient = Client::CHROME_SOLARIS;
+const char kClientStr[] = "solaris";
+#elif defined(OS_QNX)
+const Client kClient = Client::CHROME_QNX;
+const char kClientStr[] = "qnx";
+#else
+const Client kClient = Client::UNKNOWN;
+const char kClientStr[] = "";
+#endif
+
+const std::string kExpectedHeader2 =
+    std::string("ps=0-1633771873-1633771873-1633771873, ") +
+    std::string("sid=c911fdb402f578787562cf7f00eda972, b=2, p=3, c=") +
+    kClientStr;
+const std::string kExpectedHeader3 =
+    std::string("ps=86401-1633771873-1633771873-1633771873, ") +
+    std::string("sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3, c=") +
+    kClientStr;
+const std::string kExpectedHeader4 =
+    std::string("ps=0-1633771873-1633771873-1633771873, ") +
+    std::string("sid=c911fdb402f578787562cf7f00eda972, c=") +
+    kClientStr;
+
 class TestDataReductionProxyAuthRequestHandler
     : public DataReductionProxyAuthRequestHandler {
  public:
   TestDataReductionProxyAuthRequestHandler(
-      const std::string& client,
+      Client client,
       const std::string& version,
       DataReductionProxyParams* params,
       base::MessageLoopProxy* loop_proxy)
@@ -143,7 +152,7 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
                                                         loop_proxy_);
   auth_handler.Init();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(auth_handler.client_, kClient);
+  EXPECT_EQ(auth_handler.client_, kClientStr);
   EXPECT_EQ(kExpectedBuild, auth_handler.build_number_);
   EXPECT_EQ(kExpectedPatch, auth_handler.patch_number_);
   EXPECT_EQ(auth_handler.key_, kTestKey);
