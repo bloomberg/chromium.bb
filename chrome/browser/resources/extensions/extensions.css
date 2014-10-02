@@ -389,9 +389,7 @@ html[dir='rtl'] #extension-settings .trash {
 }
 
 .extension-highlight {
-  background: rgb(238, 238, 238);
-  background-position: auto;
-  background-repeat: auto;
+  background: rgb(250, 250, 250);
   border-radius: 3px;
   padding: 5px 0 5px 5px;
 }
