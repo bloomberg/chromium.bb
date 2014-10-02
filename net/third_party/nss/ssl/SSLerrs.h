@@ -413,16 +413,22 @@ ER3(SSL_ERROR_DIGEST_FAILURE, (SSL_ERROR_BASE + 127),
 ER3(SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM, (SSL_ERROR_BASE + 128),
 "Incorrect signature algorithm specified in a digitally-signed element.")
 
-ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 129),
-"SSL received a malformed TLS Channel ID extension.")
+ER3(SSL_ERROR_NEXT_PROTOCOL_NO_CALLBACK, (SSL_ERROR_BASE + 129),
+"The next protocol negotiation extension was enabled, but the callback was cleared prior to being needed.")
 
-ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 130),
-"The application provided an invalid TLS Channel ID key.")
+ER3(SSL_ERROR_NEXT_PROTOCOL_NO_PROTOCOL, (SSL_ERROR_BASE + 130),
+"The server supports no protocols that the client advertises in the ALPN extension.")
 
-ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 131),
-"The application could not get a TLS Channel ID.")
-
-ER3(SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT, (SSL_ERROR_BASE + 132),
+ER3(SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT, (SSL_ERROR_BASE + 131),
 "The connection was using a lesser TLS version as a result of a previous"
 " handshake failure, but the server indicated that it should not have been"
 " needed.")
+
+ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 132),
+"SSL received a malformed TLS Channel ID extension.")
+
+ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 133),
+"The application provided an invalid TLS Channel ID key.")
+
+ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 134),
+"The application could not get a TLS Channel ID.")

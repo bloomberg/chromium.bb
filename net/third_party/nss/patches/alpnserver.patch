@@ -1,0 +1,349 @@
+diff --git a/net/third_party/nss/ssl/SSLerrs.h b/net/third_party/nss/ssl/SSLerrs.h
+index 4ff0b7d..3f0078c 100644
+--- a/net/third_party/nss/ssl/SSLerrs.h
++++ b/net/third_party/nss/ssl/SSLerrs.h
+@@ -413,16 +413,22 @@ ER3(SSL_ERROR_DIGEST_FAILURE, (SSL_ERROR_BASE + 127),
+ ER3(SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM, (SSL_ERROR_BASE + 128),
+ "Incorrect signature algorithm specified in a digitally-signed element.")
+ 
+-ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 129),
+-"SSL received a malformed TLS Channel ID extension.")
++ER3(SSL_ERROR_NEXT_PROTOCOL_NO_CALLBACK, (SSL_ERROR_BASE + 129),
++"The next protocol negotiation extension was enabled, but the callback was cleared prior to being needed.")
+ 
+-ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 130),
+-"The application provided an invalid TLS Channel ID key.")
++ER3(SSL_ERROR_NEXT_PROTOCOL_NO_PROTOCOL, (SSL_ERROR_BASE + 130),
++"The server supports no protocols that the client advertises in the ALPN extension.")
+ 
+-ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 131),
+-"The application could not get a TLS Channel ID.")
+-
+-ER3(SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT, (SSL_ERROR_BASE + 132),
++ER3(SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT, (SSL_ERROR_BASE + 131),
+ "The connection was using a lesser TLS version as a result of a previous"
+ " handshake failure, but the server indicated that it should not have been"
+ " needed.")
++
++ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 132),
++"SSL received a malformed TLS Channel ID extension.")
++
++ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 133),
++"The application provided an invalid TLS Channel ID key.")
++
++ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 134),
++"The application could not get a TLS Channel ID.")
+diff --git a/net/third_party/nss/ssl/ssl3ext.c b/net/third_party/nss/ssl/ssl3ext.c
+index 523e49a..f6530fe 100644
+--- a/net/third_party/nss/ssl/ssl3ext.c
++++ b/net/third_party/nss/ssl/ssl3ext.c
+@@ -56,10 +56,14 @@ static SECStatus ssl3_ClientHandleAppProtoXtn(sslSocket *ss,
+ 			PRUint16 ex_type, SECItem *data);
+ static SECStatus ssl3_ServerHandleNextProtoNegoXtn(sslSocket *ss,
+ 			PRUint16 ex_type, SECItem *data);
++static SECStatus ssl3_ServerHandleAppProtoXtn(sslSocket *ss, PRUint16 ex_type,
++                                              SECItem *data);
++static PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
++                                               PRUint32 maxBytes);
+ static PRInt32 ssl3_ClientSendAppProtoXtn(sslSocket *ss, PRBool append,
+ 					  PRUint32 maxBytes);
+-static PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
+-					       PRUint32 maxBytes);
++static PRInt32 ssl3_ServerSendAppProtoXtn(sslSocket *ss, PRBool append,
++                                          PRUint32 maxBytes);
+ static PRInt32 ssl3_SendUseSRTPXtn(sslSocket *ss, PRBool append,
+     PRUint32 maxBytes);
+ static SECStatus ssl3_HandleUseSRTPXtn(sslSocket * ss, PRUint16 ex_type,
+@@ -247,6 +251,7 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
+     { ssl_session_ticket_xtn,     &ssl3_ServerHandleSessionTicketXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ServerHandleNextProtoNegoXtn },
++    { ssl_app_layer_protocol_xtn, &ssl3_ServerHandleAppProtoXtn },
+     { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
+     { ssl_cert_status_xtn,        &ssl3_ServerHandleStatusRequestXtn },
+     { ssl_signature_algorithms_xtn, &ssl3_ServerHandleSigAlgsXtn },
+@@ -578,7 +583,8 @@ ssl3_SendSessionTicketXtn(
+ 
+ /* handle an incoming Next Protocol Negotiation extension. */
+ static SECStatus
+-ssl3_ServerHandleNextProtoNegoXtn(sslSocket * ss, PRUint16 ex_type, SECItem *data)
++ssl3_ServerHandleNextProtoNegoXtn(sslSocket * ss, PRUint16 ex_type,
++                                  SECItem *data)
+ {
+     if (ss->firstHsDone || data->len != 0) {
+ 	/* Clients MUST send an empty NPN extension, if any. */
+@@ -623,14 +629,93 @@ ssl3_ValidateNextProtoNego(const unsigned char* data, unsigned int length)
+     return SECSuccess;
+ }
+ 
++/* protocol selection handler for ALPN (server side) and NPN (client side) */
+ static SECStatus
+-ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
+-				  SECItem *data)
++ssl3_SelectAppProtocol(sslSocket *ss, PRUint16 ex_type, SECItem *data)
+ {
+     SECStatus rv;
+     unsigned char resultBuffer[255];
+     SECItem result = { siBuffer, resultBuffer, 0 };
+ 
++    rv = ssl3_ValidateNextProtoNego(data->data, data->len);
++    if (rv != SECSuccess)
++        return rv;
++
++    PORT_Assert(ss->nextProtoCallback);
++    rv = ss->nextProtoCallback(ss->nextProtoArg, ss->fd, data->data, data->len,
++                               result.data, &result.len, sizeof resultBuffer);
++    if (rv != SECSuccess)
++        return rv;
++    /* If the callback wrote more than allowed to |result| it has corrupted our
++     * stack. */
++    if (result.len > sizeof resultBuffer) {
++        PORT_SetError(SEC_ERROR_OUTPUT_LEN);
++        return SECFailure;
++    }
++
++    if (ex_type == ssl_app_layer_protocol_xtn &&
++        ss->ssl3.nextProtoState != SSL_NEXT_PROTO_NEGOTIATED) {
++        /* The callback might say OK, but then it's picked a default.
++         * That's OK for NPN, but not ALPN. */
++        SECITEM_FreeItem(&ss->ssl3.nextProto, PR_FALSE);
++        PORT_SetError(SSL_ERROR_NEXT_PROTOCOL_NO_PROTOCOL);
++        (void)SSL3_SendAlert(ss, alert_fatal, no_application_protocol);
++        return SECFailure;
++    }
++
++    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
++
++    SECITEM_FreeItem(&ss->ssl3.nextProto, PR_FALSE);
++    return SECITEM_CopyItem(NULL, &ss->ssl3.nextProto, &result);
++}
++
++/* handle an incoming ALPN extension at the server */
++static SECStatus
++ssl3_ServerHandleAppProtoXtn(sslSocket *ss, PRUint16 ex_type, SECItem *data)
++{
++    int count;
++    SECStatus rv;
++
++    /* We expressly don't want to allow ALPN on renegotiation,
++     * despite it being permitted by the spec. */
++    if (ss->firstHsDone || data->len == 0) {
++        /* Clients MUST send a non-empty ALPN extension. */
++        PORT_SetError(SSL_ERROR_NEXT_PROTOCOL_DATA_INVALID);
++        return SECFailure;
++    }
++
++    /* unlike NPN, ALPN has extra redundant length information so that
++     * the extension is the same in both ClientHello and ServerHello */
++    count = ssl3_ConsumeHandshakeNumber(ss, 2, &data->data, &data->len);
++    if (count < 0) {
++        return SECFailure; /* fatal alert was sent */
++    }
++    if (count != data->len) {
++        return ssl3_DecodeError(ss);
++    }
++
++    if (!ss->nextProtoCallback) {
++        /* we're not configured for it */
++        return SECSuccess;
++    }
++
++    rv = ssl3_SelectAppProtocol(ss, ex_type, data);
++    if (rv != SECSuccess) {
++      return rv;
++    }
++
++    /* prepare to send back a response, if we negotiated */
++    if (ss->ssl3.nextProtoState == SSL_NEXT_PROTO_NEGOTIATED) {
++        return ssl3_RegisterServerHelloExtensionSender(
++            ss, ex_type, ssl3_ServerSendAppProtoXtn);
++    }
++    return SECSuccess;
++}
++
++static SECStatus
++ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
++                                  SECItem *data)
++{
+     PORT_Assert(!ss->firstHsDone);
+ 
+     if (ssl3_ExtensionNegotiated(ss, ssl_app_layer_protocol_xtn)) {
+@@ -643,37 +728,16 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
+ 	return SECFailure;
+     }
+ 
+-    rv = ssl3_ValidateNextProtoNego(data->data, data->len);
+-    if (rv != SECSuccess)
+-	return rv;
+-
+-    /* ss->nextProtoCallback cannot normally be NULL if we negotiated the
+-     * extension. However, It is possible that an application erroneously
+-     * cleared the callback between the time we sent the ClientHello and now.
+-     */
+-    PORT_Assert(ss->nextProtoCallback != NULL);
++    /* We should only get this call if we sent the extension, so
++     * ss->nextProtoCallback needs to be non-NULL.  However, it is possible
++     * that an application erroneously cleared the callback between the time
++     * we sent the ClientHello and now. */
+     if (!ss->nextProtoCallback) {
+-	/* XXX Use a better error code. This is an application error, not an
+-	 * NSS bug. */
+-	PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
++	PORT_SetError(SSL_ERROR_NEXT_PROTOCOL_NO_CALLBACK);
+ 	return SECFailure;
+     }
+ 
+-    rv = ss->nextProtoCallback(ss->nextProtoArg, ss->fd, data->data, data->len,
+-			       result.data, &result.len, sizeof resultBuffer);
+-    if (rv != SECSuccess)
+-	return rv;
+-    /* If the callback wrote more than allowed to |result| it has corrupted our
+-     * stack. */
+-    if (result.len > sizeof resultBuffer) {
+-	PORT_SetError(SEC_ERROR_OUTPUT_LEN);
+-	return SECFailure;
+-    }
+-
+-    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
+-
+-    SECITEM_FreeItem(&ss->ssl3.nextProto, PR_FALSE);
+-    return SECITEM_CopyItem(NULL, &ss->ssl3.nextProto, &result);
++    return ssl3_SelectAppProtocol(ss, ex_type, data);
+ }
+ 
+ static SECStatus
+@@ -814,6 +878,47 @@ loser:
+     return -1;
+ }
+ 
++static PRInt32
++ssl3_ServerSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
++{
++    PRInt32 extension_length;
++
++    PORT_Assert(ss->opt.enableALPN);
++    PORT_Assert(ss->ssl3.nextProto.data);
++    PORT_Assert(ss->ssl3.nextProto.len > 0);
++    PORT_Assert(ss->ssl3.nextProtoState == SSL_NEXT_PROTO_NEGOTIATED);
++    PORT_Assert(!ss->firstHsDone);
++
++    extension_length = 2 /* extension type */ + 2 /* extension length */ +
++                       2 /* protocol name list */ + 1 /* name length */ +
++                       ss->ssl3.nextProto.len;
++
++    if (append && maxBytes >= extension_length) {
++        SECStatus rv;
++        rv = ssl3_AppendHandshakeNumber(ss, ssl_app_layer_protocol_xtn, 2);
++        if (rv != SECSuccess) {
++            return -1;
++        }
++        rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
++        if (rv != SECSuccess) {
++            return -1;
++        }
++        rv = ssl3_AppendHandshakeNumber(ss, ss->ssl3.nextProto.len + 1, 2);
++        if (rv != SECSuccess) {
++            return -1;
++        }
++        rv = ssl3_AppendHandshakeVariable(ss, ss->ssl3.nextProto.data,
++                                          ss->ssl3.nextProto.len, 1);
++        if (rv != SECSuccess) {
++            return -1;
++        }
++    } else if (maxBytes < extension_length) {
++        return 0;
++    }
++
++    return extension_length;
++}
++
+ static SECStatus
+ ssl3_ClientHandleChannelIDXtn(sslSocket *ss, PRUint16 ex_type,
+ 			     SECItem *data)
+diff --git a/net/third_party/nss/ssl/ssl3prot.h b/net/third_party/nss/ssl/ssl3prot.h
+index 4c19ade..d32be38 100644
+--- a/net/third_party/nss/ssl/ssl3prot.h
++++ b/net/third_party/nss/ssl/ssl3prot.h
+@@ -107,7 +107,8 @@ typedef enum {
+     certificate_unobtainable        = 111,
+     unrecognized_name               = 112,
+     bad_certificate_status_response = 113,
+-    bad_certificate_hash_value      = 114
++    bad_certificate_hash_value      = 114,
++    no_application_protocol         = 120
+ 
+ } SSL3AlertDescription;
+ 
+diff --git a/net/third_party/nss/ssl/sslerr.h b/net/third_party/nss/ssl/sslerr.h
+index 82ae7df..5184a6e 100644
+--- a/net/third_party/nss/ssl/sslerr.h
++++ b/net/third_party/nss/ssl/sslerr.h
+@@ -193,10 +193,14 @@ SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM = (SSL_ERROR_BASE + 126),
+ SSL_ERROR_DIGEST_FAILURE = (SSL_ERROR_BASE + 127),
+ SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM = (SSL_ERROR_BASE + 128),
+ 
+-SSL_ERROR_BAD_CHANNEL_ID_DATA = (SSL_ERROR_BASE + 129),
+-SSL_ERROR_INVALID_CHANNEL_ID_KEY = (SSL_ERROR_BASE + 130),
+-SSL_ERROR_GET_CHANNEL_ID_FAILED = (SSL_ERROR_BASE + 131),
+-SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT = (SSL_ERROR_BASE + 132),
++SSL_ERROR_NEXT_PROTOCOL_NO_CALLBACK     = (SSL_ERROR_BASE + 129),
++SSL_ERROR_NEXT_PROTOCOL_NO_PROTOCOL     = (SSL_ERROR_BASE + 130),
++
++SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT = (SSL_ERROR_BASE + 131),
++
++SSL_ERROR_BAD_CHANNEL_ID_DATA = (SSL_ERROR_BASE + 132),
++SSL_ERROR_INVALID_CHANNEL_ID_KEY = (SSL_ERROR_BASE + 133),
++SSL_ERROR_GET_CHANNEL_ID_FAILED = (SSL_ERROR_BASE + 134),
+ 
+ SSL_ERROR_END_OF_LIST	/* let the c compiler determine the value of this. */
+ } SSLErrorCodes;
+diff --git a/net/third_party/nss/ssl/sslsock.c b/net/third_party/nss/ssl/sslsock.c
+index 028cd98..421ba21 100644
+--- a/net/third_party/nss/ssl/sslsock.c
++++ b/net/third_party/nss/ssl/sslsock.c
+@@ -1432,6 +1432,11 @@ DTLS_ImportFD(PRFileDesc *model, PRFileDesc *fd)
+     return ssl_ImportFD(model, fd, ssl_variant_datagram);
+ }
+ 
++/* SSL_SetNextProtoCallback is used to select an application protocol
++ * for ALPN and NPN.  For ALPN, this runs on the server; for NPN it
++ * runs on the client. */
++/* Note: The ALPN version doesn't allow for the use of a default, setting a
++ * status of SSL_NEXT_PROTO_NO_OVERLAP is treated as a failure. */
+ SECStatus
+ SSL_SetNextProtoCallback(PRFileDesc *fd, SSLNextProtoCallback callback,
+ 			 void *arg)
+@@ -1452,7 +1457,7 @@ SSL_SetNextProtoCallback(PRFileDesc *fd, SSLNextProtoCallback callback,
+     return SECSuccess;
+ }
+ 
+-/* ssl_NextProtoNegoCallback is set as an NPN callback for the case when
++/* ssl_NextProtoNegoCallback is set as an ALPN/NPN callback when
+  * SSL_SetNextProtoNego is used.
+  */
+ static SECStatus
+@@ -1471,12 +1476,6 @@ ssl_NextProtoNegoCallback(void *arg, PRFileDesc *fd,
+ 	return SECFailure;
+     }
+ 
+-    if (protos_len == 0) {
+-	/* The server supports the extension, but doesn't have any protocols
+-	 * configured. In this case we request our favoured protocol. */
+-	goto pick_first;
+-    }
+-
+     /* For each protocol in server preference, see if we support it. */
+     for (i = 0; i < protos_len; ) {
+ 	for (j = 0; j < ss->opt.nextProtoNego.len; ) {
+@@ -1493,7 +1492,10 @@ ssl_NextProtoNegoCallback(void *arg, PRFileDesc *fd,
+ 	i += 1 + (unsigned int)protos[i];
+     }
+ 
+-pick_first:
++    /* The other side supports the extension, and either doesn't have any
++     * protocols configured, or none of its options match ours. In this case we
++     * request our favoured protocol. */
++    /* This will be treated as a failure for ALPN. */
+     ss->ssl3.nextProtoState = SSL_NEXT_PROTO_NO_OVERLAP;
+     result = ss->opt.nextProtoNego.data;
+ 

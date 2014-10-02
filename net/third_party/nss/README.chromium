@@ -109,6 +109,10 @@ Patches:
     patches/ignorechangecipherspec.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=1009227
 
+  * Implement server-side components of ALPN (RFC 7301).
+    patches/alpnserver.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=996250
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
