@@ -24,7 +24,7 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
+#include "chrome/browser/content_settings/local_shared_objects_counter.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -694,9 +694,9 @@ void WebsiteSettings::PresentSitePermissions() {
 
 void WebsiteSettings::PresentSiteData() {
   CookieInfoList cookie_info_list;
-  const LocalSharedObjectsContainer& allowed_objects =
+  const LocalSharedObjectsCounter& allowed_objects =
       tab_specific_content_settings()->allowed_local_shared_objects();
-  const LocalSharedObjectsContainer& blocked_objects =
+  const LocalSharedObjectsCounter& blocked_objects =
       tab_specific_content_settings()->blocked_local_shared_objects();
 
   // Add first party cookie and site data counts.

@@ -52,18 +52,6 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
 LocalSharedObjectsContainer::~LocalSharedObjectsContainer() {
 }
 
-void LocalSharedObjectsContainer::Reset() {
-  appcaches_->Reset();
-  channel_ids_->Reset();
-  cookies_->Reset();
-  databases_->Reset();
-  file_systems_->Reset();
-  indexed_dbs_->Reset();
-  local_storages_->Reset();
-  service_workers_->Reset();
-  session_storages_->Reset();
-}
-
 size_t LocalSharedObjectsContainer::GetObjectCount() const {
   size_t count = 0;
   count += appcaches()->GetAppCacheCount();
@@ -198,6 +186,18 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   return count;
+}
+
+void LocalSharedObjectsContainer::Reset() {
+  appcaches_->Reset();
+  channel_ids_->Reset();
+  cookies_->Reset();
+  databases_->Reset();
+  file_systems_->Reset();
+  indexed_dbs_->Reset();
+  local_storages_->Reset();
+  service_workers_->Reset();
+  session_storages_->Reset();
 }
 
 scoped_ptr<CookiesTreeModel>

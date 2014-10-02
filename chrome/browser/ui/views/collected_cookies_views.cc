@@ -15,7 +15,6 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -332,9 +331,8 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
 
-  const LocalSharedObjectsContainer& allowed_data =
-      content_settings->allowed_local_shared_objects();
-  allowed_cookies_tree_model_ = allowed_data.CreateCookiesTreeModel();
+  allowed_cookies_tree_model_ =
+      content_settings->CreateAllowedCookiesTreeModel();
   allowed_cookies_tree_ = new views::TreeView();
   allowed_cookies_tree_->SetModel(allowed_cookies_tree_model_.get());
   allowed_cookies_tree_->SetRootShown(false);
@@ -406,9 +404,8 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
               IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
   blocked_label_->SetMultiLine(true);
   blocked_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  const LocalSharedObjectsContainer& blocked_data =
-      content_settings->blocked_local_shared_objects();
-  blocked_cookies_tree_model_ = blocked_data.CreateCookiesTreeModel();
+  blocked_cookies_tree_model_ =
+      content_settings->CreateBlockedCookiesTreeModel();
   blocked_cookies_tree_ = new views::TreeView();
   blocked_cookies_tree_->SetModel(blocked_cookies_tree_model_.get());
   blocked_cookies_tree_->SetRootShown(false);

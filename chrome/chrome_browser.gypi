@@ -299,6 +299,7 @@
       'browser/content_settings/host_content_settings_map.h',
       'browser/content_settings/local_shared_objects_container.cc',
       'browser/content_settings/local_shared_objects_container.h',
+      'browser/content_settings/local_shared_objects_counter.h',
       'browser/content_settings/permission_bubble_request_impl.cc',
       'browser/content_settings/permission_bubble_request_impl.h',
       'browser/content_settings/permission_context_base.cc',
