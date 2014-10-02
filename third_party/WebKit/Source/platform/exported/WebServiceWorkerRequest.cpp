@@ -17,7 +17,11 @@ public:
     WebServiceWorkerRequestPrivate()
         : m_mode(WebURLRequest::FetchRequestModeNoCORS)
         , m_credentialsMode(WebURLRequest::FetchCredentialsModeOmit)
-        , m_isReload(false) { }
+        , m_requestContext(WebURLRequest::RequestContextUnspecified)
+        , m_frameType(WebURLRequest::FrameTypeNone)
+        , m_isReload(false)
+    {
+    }
     WebURL m_url;
     WebString m_method;
     HTTPHeaderMap m_headers;
@@ -25,6 +29,8 @@ public:
     Referrer m_referrer;
     WebURLRequest::FetchRequestMode m_mode;
     WebURLRequest::FetchCredentialsMode m_credentialsMode;
+    WebURLRequest::RequestContext m_requestContext;
+    WebURLRequest::FrameType m_frameType;
     bool m_isReload;
 };
 
@@ -138,6 +144,26 @@ void WebServiceWorkerRequest::setCredentialsMode(WebURLRequest::FetchCredentials
 WebURLRequest::FetchCredentialsMode WebServiceWorkerRequest::credentialsMode() const
 {
     return m_private->m_credentialsMode;
+}
+
+void WebServiceWorkerRequest::setRequestContext(WebURLRequest::RequestContext requestContext)
+{
+    m_private->m_requestContext = requestContext;
+}
+
+WebURLRequest::RequestContext WebServiceWorkerRequest::requestContext() const
+{
+    return m_private->m_requestContext;
+}
+
+void WebServiceWorkerRequest::setFrameType(WebURLRequest::FrameType frameType)
+{
+    m_private->m_frameType = frameType;
+}
+
+WebURLRequest::FrameType WebServiceWorkerRequest::frameType() const
+{
+    return m_private->m_frameType;
 }
 
 void WebServiceWorkerRequest::setIsReload(bool isReload)
