@@ -701,19 +701,6 @@ float Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& run
     if (glyphBuffer.isEmpty())
         return 0;
 
-    TextBlobPtr textBlob;
-    float advance = 0;
-    if (RuntimeEnabledFeatures::textBlobEnabled()) {
-        FloatRect blobBounds = runInfo.bounds;
-        blobBounds.moveBy(-point);
-        textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, advance, context->couldUseLCDRenderedText());
-    }
-
-    if (textBlob) {
-        drawTextBlob(context, textBlob.get(), point.data());
-        return advance;
-    }
-
     FloatPoint startPoint(point.x() + initialAdvance, point.y());
     return drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
 }
