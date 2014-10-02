@@ -218,5 +218,4 @@ void InstallCloseHandleHooks() {
 }
 
 void RemoveCloseHandleHooks() {
-  g_hooks.Get().Unpatch();
 }
