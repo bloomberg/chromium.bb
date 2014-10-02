@@ -60,17 +60,17 @@ void ThreadSafeDataTransport::setData(SharedBuffer* buffer, bool allDataReceived
 
 void ThreadSafeDataTransport::data(SharedBuffer** buffer, bool* allDataReceived)
 {
+    ASSERT(buffer);
+    ASSERT(allDataReceived);
     Vector<RefPtr<SharedBuffer> > newBufferQueue;
     {
         MutexLocker lock(m_mutex);
         m_newBufferQueue.swap(newBufferQueue);
+        *allDataReceived = m_allDataReceived;
     }
     for (size_t i = 0; i < newBufferQueue.size(); ++i)
         m_readBuffer->append(newBufferQueue[i].get());
-    ASSERT(buffer);
-    ASSERT(allDataReceived);
     *buffer = m_readBuffer.get();
-    *allDataReceived = m_allDataReceived;
 }
 
 bool ThreadSafeDataTransport::hasNewData()
