@@ -14,13 +14,14 @@ import tempfile
 
 from util import build_utils
 
-def AddPageAlignment(rezip_apk_jar_path, in_zip_file, out_zip_file):
+def RenameInflateAndAddPageAlignment(
+    rezip_apk_jar_path, in_zip_file, out_zip_file):
   rezip_apk_cmd = [
       'java',
       '-classpath',
       rezip_apk_jar_path,
       'RezipApk',
-      'addalignment',
+      'renamealign',
       in_zip_file,
       out_zip_file,
     ]
@@ -64,16 +65,6 @@ def AlignApk(zipalign_path, unaligned_path, final_path):
   build_utils.CheckOutput(align_cmd)
 
 
-def RenameAndUncompressLibInApk(rezip_path, in_zip_file, out_zip_file):
-  rename_cmd = [
-      rezip_path,
-      'renameinflate',
-      in_zip_file,
-      out_zip_file,
-    ]
-  build_utils.CheckOutput(rename_cmd)
-
-
 def main():
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -81,7 +72,6 @@ def main():
   parser.add_option('--rezip-apk-jar-path',
                     help='Path to the RezipApk jar file.')
   parser.add_option('--zipalign-path', help='Path to the zipalign tool.')
-  parser.add_option('--rezip-path', help='Path to the rezip executable.')
   parser.add_option('--unsigned-apk-path', help='Path to input unsigned APK.')
   parser.add_option('--final-apk-path',
       help='Path to output signed and aligned APK.')
@@ -97,8 +87,7 @@ def main():
   options, _ = parser.parse_args()
 
   with tempfile.NamedTemporaryFile() as signed_apk_path_tmp, \
-      tempfile.NamedTemporaryFile() as apk_to_sign_tmp, \
-      tempfile.NamedTemporaryFile() as uncompress_lib_apk_tmp:
+      tempfile.NamedTemporaryFile() as apk_to_sign_tmp:
 
     if options.load_library_from_zip_file:
       # We alter the name of the library so that the Android Package Manager
@@ -106,14 +95,10 @@ def main():
       # signing, as the filename is part of the signed manifest. At the same
       # time we uncompress the library, which is necessary so that it can be
       # loaded directly from the APK.
-      uncompress_lib_apk_path = uncompress_lib_apk_tmp.name
-      RenameAndUncompressLibInApk(
-          options.rezip_path, options.unsigned_apk_path,
-          uncompress_lib_apk_path)
-      apk_to_sign = apk_to_sign_tmp.name
       # Move the library to a page boundary by adding a page alignment file.
-      AddPageAlignment(
-          options.rezip_apk_jar_path, uncompress_lib_apk_path, apk_to_sign)
+      apk_to_sign = apk_to_sign_tmp.name
+      RenameInflateAndAddPageAlignment(
+          options.rezip_apk_jar_path, options.unsigned_apk_path, apk_to_sign)
     else:
       apk_to_sign = options.unsigned_apk_path
 

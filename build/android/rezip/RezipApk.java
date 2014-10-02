@@ -19,9 +19,15 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 /**
- * Command line tool used to page align non-compressed libraries (*.so) in APK files.
- * Tool is designed so that running SignApk and/or zipalign on the resulting APK does not
- * break the page alignment.
+ * Command line tool used to build APKs which support loading the native code library
+ * directly from the APK file. To construct the APK we rename the native library by
+ * adding the prefix "crazy." to the filename. This is done to prevent the Android
+ * Package Manager from extracting the library. The native code must be page aligned
+ * and uncompressed. The page alignment is implemented by adding a zero filled file
+ * in front of the the native code library. This tool is designed so that running
+ * SignApk and/or zipalign on the resulting APK does not break the page alignment.
+ * This is achieved by outputing the filenames in the same canonical order used
+ * by SignApk and adding the same alignment fields added by zipalign.
  */
 class RezipApk {
     // Alignment to use for non-compressed files (must match zipalign).
@@ -35,6 +41,31 @@ class RezipApk {
     private static Pattern sMetaFilePattern =
             Pattern.compile("^(META-INF/((.*)[.](SF|RSA|DSA)|com/android/otacert))|(" +
                             Pattern.quote(JarFile.MANIFEST_NAME) + ")$");
+
+    // Pattern for matching a shared library in the APK
+    private static Pattern sLibraryPattern = Pattern.compile("^lib/[^/]*/lib.*[.]so$");
+    // Pattern for match the crazy linker in the APK
+    private static Pattern sCrazyLinkerPattern =
+            Pattern.compile("^lib/[^/]*/libchromium_android_linker.so$");
+    // Pattern for matching a crazy loaded shared library in the APK
+    private static Pattern sCrazyLibraryPattern =
+            Pattern.compile("^lib/[^/]*/crazy.lib.*[.]so$");
+
+    private static boolean isLibraryFilename(String filename) {
+        return sLibraryPattern.matcher(filename).matches() &&
+                !sCrazyLinkerPattern.matcher(filename).matches();
+    }
+
+    private static boolean isCrazyLibraryFilename(String filename) {
+        return sCrazyLibraryPattern.matcher(filename).matches();
+    }
+
+    private static String renameLibraryForCrazyLinker(String filename) {
+        int lastSlash = filename.lastIndexOf('/');
+        // We rename the library, so that the Android Package Manager
+        // no longer extracts the library.
+        return filename.substring(0, lastSlash + 1) + "crazy." + filename.substring(lastSlash + 1);
+    }
 
     /**
      * Wraps another output stream, counting the number of bytes written.
@@ -71,14 +102,32 @@ class RezipApk {
         }
     }
 
+    private static String outputName(JarEntry entry, boolean rename) {
+        String inName = entry.getName();
+        if (rename && entry.getSize() > 0 && isLibraryFilename(inName)) {
+            return renameLibraryForCrazyLinker(inName);
+        }
+        return inName;
+    }
+
     /**
-     * Sort filenames in natural string order, except that filenames matching
+     * Comparator used to sort jar entries from the input file.
+     * Sorting is done based on the output filename (which maybe renamed).
+     * Filenames are in natural string order, except that filenames matching
      * the meta-file pattern are always after other files. This is so the manifest
      * and signature are at the end of the file after any alignment file.
      */
-    private static class FilenameComparator implements Comparator<String> {
+    private static class EntryComparator implements Comparator<JarEntry> {
+        private boolean mRename;
+
+        public EntryComparator(boolean rename) {
+            mRename = rename;
+        }
+
         @Override
-        public int compare(String o1, String o2) {
+        public int compare(JarEntry j1, JarEntry j2) {
+            String o1 = outputName(j1, mRename);
+            String o2 = outputName(j2, mRename);
             boolean o1Matches = sMetaFilePattern.matcher(o1).matches();
             boolean o2Matches = sMetaFilePattern.matcher(o2).matches();
             if (o1Matches != o2Matches) {
@@ -89,10 +138,13 @@ class RezipApk {
         }
     }
 
-    // Build an ordered list of filenames. Using the same deterministic ordering used
-    // by SignApk. If omitMetaFiles is true do not include the META-INF files.
-    private static List<String> orderFilenames(JarFile jar, boolean omitMetaFiles) {
-        List<String> names = new ArrayList<String>();
+    // Build an ordered list of jar entries. The jar entries from the input are
+    // sorted based on the output filenames (which maybe renamed). If |omitMetaFiles|
+    // is true do not include the jar entries for the META-INF files.
+    // Entries are ordered in the deterministic order used by SignApk.
+    private static List<JarEntry> getOutputFileOrderEntries(
+            JarFile jar, boolean omitMetaFiles, boolean rename) {
+        List<JarEntry> entries = new ArrayList<JarEntry>();
         for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements(); ) {
             JarEntry entry = e.nextElement();
             if (entry.isDirectory()) {
@@ -102,13 +154,13 @@ class RezipApk {
                 sMetaFilePattern.matcher(entry.getName()).matches()) {
                 continue;
             }
-            names.add(entry.getName());
+            entries.add(entry);
         }
 
         // We sort the input entries by name. When present META-INF files
         // are sorted to the end.
-        Collections.sort(names, new FilenameComparator());
-        return names;
+        Collections.sort(entries, new EntryComparator(rename));
+        return entries;
     }
 
     /**
@@ -148,7 +200,8 @@ class RezipApk {
             throw new UnsupportedOperationException(
                 "Unable to insert alignment file, because there is "
                 + "another file in front of the file to be aligned. "
-                + "Other file: " + prevName + " Alignment file: " + alignName);
+                + "Other file: " + prevName + " Alignment file: " + alignName
+                + " file: " + name);
         }
 
         // Compute the size of the alignment file header.
@@ -187,40 +240,98 @@ class RezipApk {
         out.flush();
     }
 
+    // Make a JarEntry for the output file which corresponds to the input
+    // file. The output file will be called |name|. The output file will always
+    // be uncompressed (STORED). If the input is not STORED it is necessary to inflate
+    // it to compute the CRC and size of the output entry.
+    private static JarEntry makeStoredEntry(String name, JarEntry inEntry, JarFile in)
+            throws IOException {
+        JarEntry outEntry = new JarEntry(name);
+        outEntry.setMethod(JarEntry.STORED);
+
+        if (inEntry.getMethod() == JarEntry.STORED) {
+            outEntry.setCrc(inEntry.getCrc());
+            outEntry.setSize(inEntry.getSize());
+        } else {
+            // We are inflating the file. We need to compute the CRC and size.
+            byte[] buffer = new byte[4096];
+            CRC32 crc = new CRC32();
+            int size = 0;
+            int num;
+            InputStream data = in.getInputStream(inEntry);
+            while ((num = data.read(buffer)) > 0) {
+                crc.update(buffer, 0, num);
+                size += num;
+            }
+            data.close();
+            outEntry.setCrc(crc.getValue());
+            outEntry.setSize(size);
+        }
+        return outEntry;
+    }
+
     /**
-     * Copy the contents of the input APK file to the output APK file. Uncompressed files
-     * will be aligned in the output stream. Uncompressed native code libraries (*.so)
-     * will be aligned on a page boundary. Page alignment is implemented by adding a
-     * zero filled file, regular alignment is implemented by adding a zero filled extra
-     * field to the zip file header. Care is take so that the output generated in the
-     * same way as SignApk. This is important so that running SignApk and zipalign on
-     * the output does not break the page alignment. The archive may not contain a "*.apk"
-     * as SignApk has special nested signing logic that we do not support.
+     * Copy the contents of the input APK file to the output APK file. If |rename| is
+     * true then non-empty libraries (*.so) in the input will be renamed by prefixing
+     * "crazy.". This is done to prevent the Android Package Manager extracting the
+     * library. Note the crazy linker itself is not renamed, for bootstrapping reasons.
+     * Empty libraries are not renamed (they are in the APK to workaround a bug where
+     * the Android Package Manager fails to delete old versions when upgrading).
+     * There must be exactly one "crazy" library in the output stream. The "crazy"
+     * library will be uncompressed and page aligned in the output stream. Page
+     * alignment is implemented by adding a zero filled file, regular alignment is
+     * implemented by adding a zero filled extra field to the zip file header. If
+     * |addAlignment| is true a page alignment file is added, otherwise the "crazy"
+     * library must already be page aligned. Care is taken so that the output is generated
+     * in the same way as SignApk. This is important so that running SignApk and
+     * zipalign on the output does not break the page alignment. The archive may not
+     * contain a "*.apk" as SignApk has special nested signing logic that we do not
+     * support.
      *
      * @param in The input APK File.
      * @param out The output APK stream.
      * @param countOut Counting output stream (to measure the current offset).
      * @param addAlignment Whether to add the alignment file or just check.
+     * @param rename Whether to rename libraries to be "crazy".
      *
      * @throws IOException if the output file can not be written.
      */
-    private static void copyAndAlignFiles(
+    private static void rezip(
             JarFile in, JarOutputStream out, CountingOutputStream countOut,
-            boolean addAlignment) throws IOException {
+            boolean addAlignment, boolean rename) throws IOException {
 
-        List<String> names = orderFilenames(in, addAlignment);
+        List<JarEntry> entries = getOutputFileOrderEntries(in, addAlignment, rename);
         long timestamp = System.currentTimeMillis();
         byte[] buffer = new byte[4096];
         boolean firstEntry = true;
         String prevName = null;
-        for (String name : names) {
-            JarEntry inEntry = in.getJarEntry(name);
-            JarEntry outEntry = null;
+        int numCrazy = 0;
+        for (JarEntry inEntry : entries) {
+            // Rename files, if specied.
+            String name = outputName(inEntry, rename);
             if (name.endsWith(".apk")) {
                 throw new UnsupportedOperationException(
-                    "Nested APKs are not supported: " + name);
+                        "Nested APKs are not supported: " + name);
             }
-            if (inEntry.getMethod() == JarEntry.STORED) {
+
+            // Build the header.
+            JarEntry outEntry = null;
+            boolean isCrazy = isCrazyLibraryFilename(name);
+            if (isCrazy) {
+                // "crazy" libraries are alway output uncompressed (STORED).
+                outEntry = makeStoredEntry(name, inEntry, in);
+                numCrazy++;
+                if (numCrazy > 1) {
+                    throw new UnsupportedOperationException(
+                            "Found more than one library\n"
+                            + "Multiple libraries are not supported for APKs that use "
+                            + "'load_library_from_zip_file'.\n"
+                            + "See crbug/388223.\n"
+                            + "Note, check that your build is clean.\n"
+                            + "An unclean build can incorrectly incorporate old "
+                            + "libraries in the APK.");
+                }
+            } else if (inEntry.getMethod() == JarEntry.STORED) {
                 // Preserve the STORED method of the input entry.
                 outEntry = new JarEntry(inEntry);
                 outEntry.setExtra(null);
@@ -230,6 +341,7 @@ class RezipApk {
             }
             outEntry.setTime(timestamp);
 
+            // Compute and add alignment
             long offset = countOut.getCount();
             if (firstEntry) {
                 // The first entry in a jar file has an extra field of
@@ -240,8 +352,8 @@ class RezipApk {
                 firstEntry = false;
                 offset += 4;
             }
-            if (inEntry.getMethod() == JarEntry.STORED) {
-                if (name.endsWith(".so")) {
+            if (outEntry.getMethod() == JarEntry.STORED) {
+                if (isCrazy) {
                     if (addAlignment) {
                         addAlignmentFile(offset, timestamp, name, prevName, out);
                     }
@@ -249,11 +361,13 @@ class RezipApk {
                     offset = countOut.getCount() + JarFile.LOCHDR + name.length();
                     if ((offset % LIBRARY_ALIGNMENT) != 0) {
                         throw new AssertionError(
-                            "Library was not page aligned when verifying page alignment. "
-                            + "Library name: " + name + " Expected alignment: " + LIBRARY_ALIGNMENT
-                            + "Offset: " + offset + " Error: " + (offset % LIBRARY_ALIGNMENT));
+                                "Library was not page aligned when verifying page alignment. "
+                                + "Library name: " + name + " Expected alignment: "
+                                + LIBRARY_ALIGNMENT + "Offset: " + offset + " Error: "
+                                + (offset % LIBRARY_ALIGNMENT));
                     }
                 } else {
+                    // This is equivalent to zipalign.
                     offset += JarFile.LOCHDR + name.length();
                     int needed = (ALIGNMENT - (int) (offset % ALIGNMENT)) % ALIGNMENT;
                     if (needed != 0) {
@@ -263,21 +377,33 @@ class RezipApk {
             }
             out.putNextEntry(outEntry);
 
+            // Copy the data from the input to the output
             int num;
             InputStream data = in.getInputStream(inEntry);
             while ((num = data.read(buffer)) > 0) {
                 out.write(buffer, 0, num);
             }
+            data.close();
             out.closeEntry();
             out.flush();
             prevName = name;
         }
+        if (numCrazy == 0) {
+            throw new AssertionError("There was no crazy library in the archive");
+        }
     }
 
     private static void usage() {
-        System.err.println("Usage: prealignapk (addalignment|reorder) input.apk output.apk");
-        System.err.println("  addalignment - adds alignment file removes manifest and signature");
-        System.err.println("  reorder      - re-creates canonical ordering and checks alignment");
+        System.err.println(
+                "Usage: prealignapk (addalignment|reorder) input.apk output.apk");
+        System.err.println(
+                "\"crazy\" libraries are always inflated in the output");
+        System.err.println(
+                "  renamealign  - rename libraries with \"crazy.\" prefix and add alignment file");
+        System.err.println(
+                "  align        - add alignment file");
+        System.err.println(
+                "  reorder      - re-creates canonical ordering and checks alignment");
         System.exit(2);
     }
 
@@ -285,9 +411,18 @@ class RezipApk {
         if (args.length != 3) usage();
 
         boolean addAlignment = false;
-        if (args[0].equals("addalignment")) {
+        boolean rename = false;
+        if (args[0].equals("renamealign")) {
+            // Normal case. Before signing we rename the library and add an alignment file.
             addAlignment = true;
+            rename = true;
+        } else if (args[0].equals("align")) {
+            // LGPL compliance case. Before signing, we add an alignment file to a
+            // reconstructed APK which already contains the "crazy" library.
+            addAlignment = true;
+            rename = false;
         } else if (args[0].equals("reorder")) {
+            // Normal case. After jarsigning we write the file in the canonical order and check.
             addAlignment = false;
         } else {
             usage();
@@ -309,7 +444,7 @@ class RezipApk {
             // Match the compression level used by SignApk.
             outputJar.setLevel(9);
 
-            copyAndAlignFiles(inputJar, outputJar, outCount, addAlignment);
+            rezip(inputJar, outputJar, outCount, addAlignment, rename);
             outputJar.close();
         } finally {
             if (inputJar != null) inputJar.close();
