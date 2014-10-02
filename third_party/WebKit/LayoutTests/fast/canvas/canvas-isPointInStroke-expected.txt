@@ -64,6 +64,10 @@ Check dashOffset = 10
 PASS ctx.isPointInStroke(15,10) is false
 PASS ctx.isPointInStroke(25,10) is true
 PASS ctx.isPointInStroke(35,10) is false
+Check extremely large scale
+PASS ctx.isPointInStroke(0, 0) is true
+Check with non-invertible ctm.
+PASS ctx.isPointInStroke(0, 0) is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

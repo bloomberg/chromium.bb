@@ -97,3 +97,21 @@ ctx.lineDashOffset = 10;
 shouldBeFalse("ctx.isPointInStroke(15,10)");
 shouldBeTrue("ctx.isPointInStroke(25,10)");
 shouldBeFalse("ctx.isPointInStroke(35,10)");
+
+debug("Check extremely large scale")
+ctx.save();
+ctx.scale(Number.MAX_VALUE, Number.MAX_VALUE);
+ctx.beginPath();
+ctx.moveTo(-10, -10);
+ctx.lineTo(10, 10);
+shouldBeTrue("ctx.isPointInStroke(0, 0)");
+ctx.restore();
+
+debug("Check with non-invertible ctm.")
+ctx.save();
+ctx.scale(0, 0);
+ctx.beginPath();
+ctx.moveTo(-10, -10);
+ctx.lineTo(10, 10);
+shouldBeFalse("ctx.isPointInStroke(0, 0)");
+ctx.restore();

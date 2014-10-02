@@ -79,6 +79,24 @@ function prepareTestScenario() {
     shouldThrow("ctx.isPointInPath({}, 50, 50, 'nonzero')");
     shouldThrow("ctx.isPointInPath({}, 50, 50, 'evenodd')");
     debug('');
+
+    debug("Testing extremely large scale")
+    ctx.save();
+    ctx.scale(Number.MAX_VALUE, Number.MAX_VALUE);
+    ctx.beginPath();
+    ctx.rect(-10, -10, 20, 20);
+    shouldBeTrue("ctx.isPointInPath(0, 0, 'nonzero')");
+    shouldBeTrue("ctx.isPointInPath(0, 0, 'evenodd')");
+    ctx.restore();
+
+    debug("Check with non-invertible ctm.")
+    ctx.save();
+    ctx.scale(0, 0);
+    ctx.beginPath();
+    ctx.rect(-10, -10, 20, 20);
+    shouldBeFalse("ctx.isPointInPath(0, 0, 'nonzero')");
+    shouldBeFalse("ctx.isPointInPath(0, 0, 'evenodd')");
+    ctx.restore();
 }
 
 // Run test and allow variation of results.

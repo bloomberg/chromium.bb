@@ -47,6 +47,12 @@ PASS ctx.isPointInPath({}, 50, 50) threw exception TypeError: Failed to execute 
 PASS ctx.isPointInPath({}, 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 PASS ctx.isPointInPath({}, 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 
+Testing extremely large scale
+PASS ctx.isPointInPath(0, 0, 'nonzero') is true
+PASS ctx.isPointInPath(0, 0, 'evenodd') is true
+Check with non-invertible ctm.
+PASS ctx.isPointInPath(0, 0, 'nonzero') is false
+PASS ctx.isPointInPath(0, 0, 'evenodd') is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
