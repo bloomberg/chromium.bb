@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "chromecast/common/chromecast_config.h"
+#include "chromecast/metrics/cast_metrics_prefs.h"
 #include "chromecast/metrics/cast_metrics_service_client.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
@@ -92,7 +93,9 @@ void CastBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 int CastBrowserMainParts::PreCreateThreads() {
-  ChromecastConfig::Create(new PrefRegistrySimple());
+  PrefRegistrySimple* pref_registry = new PrefRegistrySimple();
+  metrics::RegisterPrefs(pref_registry);
+  ChromecastConfig::Create(pref_registry);
   return 0;
 }
 

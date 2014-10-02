@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/common/cast_paths.h"
 #include "chromecast/common/pref_names.h"
-#include "chromecast/metrics/cast_metrics_prefs.h"
 
 namespace chromecast {
 
@@ -75,7 +74,6 @@ bool ChromecastConfig::Load(PrefRegistrySimple* registry) {
   VLOG(1) << "Loading config from " << config_path_.value();
   registry->RegisterIntegerPref(prefs::kRemoteDebuggingPort, 0);
 
-  metrics::RegisterPrefs(registry);
   RegisterPlatformPrefs(registry);
 
   PersistentPrefStore::PrefReadError prefs_read_error =

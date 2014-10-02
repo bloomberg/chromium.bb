@@ -1,0 +1,5 @@
+include_rules = [
+  # chromecast/shell/ is the top-level directory for the Chromecast embedder and
+  # can include from all other chromecast/ directories.
+  "+chromecast",
+]

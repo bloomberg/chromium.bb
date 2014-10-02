@@ -53,12 +53,15 @@
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',
         '../components/components.gyp:metrics_profiler',
+        '../content/content.gyp:content',
       ],
       'sources': [
         'metrics/cast_metrics_prefs.cc',
         'metrics/cast_metrics_prefs.h',
         'metrics/cast_metrics_service_client.cc',
         'metrics/cast_metrics_service_client.h',
+        'metrics/cast_stability_metrics_provider.cc',
+        'metrics/cast_stability_metrics_provider.h',
         'metrics/platform_metrics_providers.h',
       ],
       'conditions': [
@@ -87,6 +90,13 @@
       'sources': [
         'metrics/cast_metrics_service_client_unittest.cc',
       ],
+      'conditions': [
+        ['use_allocator!="none"', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+      ]
     },  # end of target 'cast_metrics_unittests'
     {
       'target_name': 'cast_net',

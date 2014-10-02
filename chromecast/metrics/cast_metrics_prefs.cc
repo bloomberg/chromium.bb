@@ -4,6 +4,7 @@
 
 #include "chromecast/metrics/cast_metrics_prefs.h"
 
+#include "chromecast/metrics/cast_stability_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 
 namespace chromecast {
@@ -11,6 +12,7 @@ namespace metrics {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   ::metrics::MetricsService::RegisterPrefs(registry);
+  CastStabilityMetricsProvider::RegisterPrefs(registry);
 }
 
 }  // namespace metrics

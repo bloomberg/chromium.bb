@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/chromecast_switches.h"
+#include "chromecast/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/metrics/platform_metrics_providers.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
@@ -151,6 +152,9 @@ CastMetricsServiceClient::CastMetricsServiceClient(
   // value.
   metrics_state_manager_->ForceClientIdCreation();
 
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr< ::metrics::MetricsProvider>(
+          new CastStabilityMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
           new ::metrics::GPUMetricsProvider));

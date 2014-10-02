@@ -25,6 +25,9 @@ class CastMetricsTest : public testing::Test {
     ::metrics::MetricsService::RegisterPrefs(prefs_->registry());
   }
 
+  base::TaskRunner* task_runner() {
+    return message_loop_->task_runner().get();
+  }
   TestingPrefServiceSimple* prefs() { return prefs_.get(); }
 
  private:
@@ -36,7 +39,7 @@ class CastMetricsTest : public testing::Test {
 
 TEST_F(CastMetricsTest, CreateMetricsServiceClient) {
   // Create and expect this to not crash.
-  metrics::CastMetricsServiceClient::Create(prefs(), NULL);
+  metrics::CastMetricsServiceClient::Create(task_runner(), prefs(), NULL);
 }
 
 }  // namespace chromecast

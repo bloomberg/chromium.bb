@@ -1,0 +1,4 @@
+include_rules = [
+  # Include for JNI.
+  "+chromecast/shell/browser/android",
+]
