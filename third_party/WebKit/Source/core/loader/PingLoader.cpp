@@ -125,10 +125,8 @@ void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchI
     if (!frame->loader().mixedContentChecker()->canRunInsecureContent(frame->document()->securityOrigin(), request.url()))
         return;
 
-    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
-
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* leakedPingLoader ALLOW_UNUSED = pingLoader.leakPtr();
+    new PingLoader(frame, request, initiatorInfo, credentialsAllowed);
 }
 
 PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)

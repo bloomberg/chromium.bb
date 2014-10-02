@@ -5058,11 +5058,6 @@ class WebKitStyleTest(CppStyleTestBase):
         # vm_throw is allowed as well.
         self.assert_lint('int vm_throw;', '')
 
-        # Attributes.
-        self.assert_lint('int foo ALLOW_UNUSED;', '')
-        self.assert_lint('int foo_error ALLOW_UNUSED;', 'foo_error' + name_underscore_error_message)
-        self.assert_lint('ThreadFunctionInvocation* leakedInvocation ALLOW_UNUSED = invocation.leakPtr()', '')
-
         # Bitfields.
         self.assert_lint('unsigned _fillRule : 1;',
                          '_fillRule' + name_underscore_error_message)

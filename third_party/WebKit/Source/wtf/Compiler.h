@@ -170,7 +170,6 @@
 
 /* NO_RETURN */
 
-
 #ifndef NO_RETURN
 #if COMPILER(GCC)
 #define NO_RETURN __attribute((__noreturn__))
@@ -190,13 +189,11 @@
 #define WARN_UNUSED_RETURN
 #endif
 
-/* ALLOW_UNUSED */
 
-#if COMPILER(GCC)
-#define ALLOW_UNUSED __attribute__((unused))
-#else
-#define ALLOW_UNUSED
-#endif
+/* ALLOW_UNUSED_LOCAL */
+
+#define ALLOW_UNUSED_LOCAL(x) false ? (void)x : (void)0
+
 
 /* OVERRIDE and FINAL */
 
@@ -208,6 +205,7 @@
 #define FINAL
 #endif
 
+
 /* WTF_DELETED_FUNCTION */
 
 #if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
@@ -215,6 +213,7 @@
 #else
 #define WTF_DELETED_FUNCTION
 #endif
+
 
 /* REFERENCED_FROM_ASM */
 
@@ -226,6 +225,7 @@
 #endif
 #endif
 
+
 /* OBJC_CLASS */
 
 #ifndef OBJC_CLASS
@@ -235,6 +235,7 @@
 #define OBJC_CLASS class
 #endif
 #endif
+
 
 /* WTF_PRETTY_FUNCTION */
 

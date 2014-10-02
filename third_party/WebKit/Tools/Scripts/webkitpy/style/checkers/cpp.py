@@ -3376,11 +3376,10 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
 
     # Detect variable and functions.
     type_regexp = r'\w([\w]|\s*[*&]\s*|::)+'
-    attribute_regexp = r'ALLOW_UNUSED'
-    identifier_regexp = r'(?!' + attribute_regexp + r')(?P<identifier>[\w:]+)'
+    identifier_regexp = r'(?P<identifier>[\w:]+)'
     maybe_bitfield_regexp = r'(:\s*\d+\s*)?'
     character_after_identifier_regexp = r'(?P<character_after_identifier>[[;()=,])(?!=)'
-    declaration_without_type_regexp = r'\s*' + identifier_regexp + r'\s*(' + attribute_regexp + r')?\s*' + maybe_bitfield_regexp + character_after_identifier_regexp
+    declaration_without_type_regexp = r'\s*' + identifier_regexp + r'\s*' + maybe_bitfield_regexp + character_after_identifier_regexp
     declaration_with_type_regexp = r'\s*' + type_regexp + r'\s' + declaration_without_type_regexp
     is_function_arguments = False
     number_of_identifiers = 0

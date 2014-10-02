@@ -710,7 +710,8 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr
     setFocusedFrame(newFocusedFrame);
 
     // Setting the focused node can result in losing our last reft to node when JS event handlers fire.
-    RefPtrWillBeRawPtr<Element> protect ALLOW_UNUSED = element;
+    RefPtrWillBeRawPtr<Element> protect = element;
+    ALLOW_UNUSED_LOCAL(protect);
     if (newDocument) {
         bool successfullyFocused = newDocument->setFocusedElement(element, type);
         if (!successfullyFocused)
