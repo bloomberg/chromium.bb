@@ -146,7 +146,7 @@ crbug.com/419386 [ Mac ] css3/font-feature-settings-rendering.html [ NeedsRebase
 crbug.com/419386 [ Mac ] fast/canvas/canvas-drawtext-width-return.html [ NeedsRebaseline ]
 crbug.com/419386 [ Mac ] fast/text/emphasis-complex.html [ NeedsRebaseline ]
 crbug.com/419386 [ Mac ] fast/text/font-smallcaps-layout.html [ NeedsRebaseline ]
-crbug.com/419386 [ Mac Release ] fast/text/font-variant-width.html [ NeedsRebaseline ]
+crbug.com/419386 [ Mac ] fast/text/font-variant-width.html [ NeedsRebaseline ]
 crbug.com/419386 [ Mac ] fast/text/international/bidi-control-chars-treated-as-ZWS.html [ NeedsRebaseline ]
 crbug.com/419386 [ Mac ] fast/text/international/bidi-mirror-he-ar.html [ NeedsRebaseline ]
 crbug.com/419386 [ Mac ] fast/text/international/vertical-text-metrics-test.html [ NeedsRebaseline ]
