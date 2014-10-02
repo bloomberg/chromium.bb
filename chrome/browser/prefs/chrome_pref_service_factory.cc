@@ -66,23 +66,14 @@
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/win_util.h"
-#if defined(ENABLE_RLZ)
+#if defined(OS_WIN) && defined(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
-#endif  // defined(ENABLE_RLZ)
-#endif  // defined(OS_WIN)
+#endif  // defined(ENABLE_RLZ) && defined(OS_WIN)
 
 using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
-
-// Whether we are in testing mode; can be enabled via
-// DisableDelaysAndDomainCheckForTesting(). Forces startup checks to occur
-// with no delay and ignores the presence of a domain when determining the
-// active SettingsEnforcement group.
-bool g_disable_delays_and_domain_check_for_testing = false;
 
 // These preferences must be kept in sync with the TrackedPreference enum in
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
@@ -228,20 +219,6 @@ enum SettingsEnforcementGroup {
 };
 
 SettingsEnforcementGroup GetSettingsEnforcementGroup() {
-# if defined(OS_WIN)
-  if (!g_disable_delays_and_domain_check_for_testing) {
-    static bool first_call = true;
-    static const bool is_enrolled_to_domain = base::win::IsEnrolledToDomain();
-    if (first_call) {
-      UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
-                            is_enrolled_to_domain);
-      first_call = false;
-    }
-    if (is_enrolled_to_domain)
-      return GROUP_NO_ENFORCEMENT;
-  }
-#endif
-
   struct {
     const char* group_name;
     SettingsEnforcementGroup group;
@@ -519,14 +496,8 @@ void SchedulePrefsFilePathVerification(const base::FilePath& profile_path) {
       base::Bind(&VerifyPreferencesFile,
                  ProfilePrefStoreManager::GetPrefFilePathFromProfilePath(
                      profile_path)),
-      base::TimeDelta::FromSeconds(g_disable_delays_and_domain_check_for_testing
-                                       ? 0
-                                       : kVerifyPrefsFileDelaySeconds));
+      base::TimeDelta::FromSeconds(kVerifyPrefsFileDelaySeconds));
 #endif
-}
-
-void DisableDelaysAndDomainCheckForTesting() {
-  g_disable_delays_and_domain_check_for_testing = true;
 }
 
 bool InitializePrefsFromMasterPrefs(

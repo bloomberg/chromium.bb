@@ -228,14 +228,6 @@ class PrefHashBrowserTestBase
     return true;
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    // Bots are on a domain, turn off the domain check for settings hardening in
-    // order to be able to test all SettingsEnforcement groups.
-    chrome_prefs::DisableDelaysAndDomainCheckForTesting();
-  }
-
   // In the PRE_ test, find the number of tracked preferences that were
   // initialized and save it to a file to be read back in the main test and used
   // as the total number of tracked preferences.

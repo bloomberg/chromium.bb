@@ -81,17 +81,6 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
 // |profile_path|.
 void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
 
-// Call before startup tasks kick in to disable delays in
-// chrome_prefs::Schedule*() methods and ignore presence of a domain when
-// determining the active SettingsEnforcement group. For testing only.
-void DisableDelaysAndDomainCheckForTesting();
-
-// Schedules an update check for all PrefHashStores, stores whose version
-// doesn't match the latest version will then be updated. Clears all pref hash
-// state on platforms that don't yet support a pref hash store.
-void SchedulePrefHashStoresUpdateCheck(
-    const base::FilePath& initial_profile_path);
-
 // Initializes the preferences for the profile at |profile_path| with the
 // preference values in |master_prefs|. Returns true on success.
 bool InitializePrefsFromMasterPrefs(
