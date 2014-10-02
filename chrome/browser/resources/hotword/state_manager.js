@@ -175,7 +175,7 @@ cr.define('hotword', function() {
      * @private
      */
     startRecognizer_: function() {
-      assert(this.pluginManager_);
+      assert(this.pluginManager_, 'No NaCl plugin loaded');
       if (this.state_ != State_.RUNNING) {
         this.state_ = State_.RUNNING;
         this.pluginManager_.startRecognizer();
@@ -214,7 +214,7 @@ cr.define('hotword', function() {
       if (this.state_ != State_.STARTING) {
         // At this point, we should not be in the RUNNING state. Doing so would
         // imply the hotword detector was started without being ready.
-        assert(this.state_ != State_.RUNNING);
+        assert(this.state_ != State_.RUNNING, 'Unexpected RUNNING state');
         this.shutdownPluginManager_();
         return;
       }
@@ -236,7 +236,7 @@ cr.define('hotword', function() {
      */
     onTrigger_: function() {
       hotword.debug('Hotword triggered!');
-      assert(this.pluginManager_);
+      assert(this.pluginManager_, 'No NaCl plugin loaded on trigger');
       // Detector implicitly stops when the hotword is detected.
       this.state_ = State_.STOPPED;
 

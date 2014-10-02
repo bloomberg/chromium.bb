@@ -105,7 +105,7 @@ NaClManager.prototype.isRunning = function() {
  * @private
  */
 NaClManager.prototype.setTimeout_ = function(func, timeout) {
-  assert(!this.naclTimeoutId_);
+  assert(!this.naclTimeoutId_, 'Timeout already exists');
   this.naclTimeoutId_ = window.setTimeout(
       function() {
         this.naclTimeoutId_ = null;
@@ -216,7 +216,9 @@ NaClManager.prototype.createPlugin_ = function(src) {
  * @return {boolean} True if the successful.
  */
 NaClManager.prototype.initialize = function(naclArch, stream) {
-  assert(this.recognizerState_ == ManagerState_.UNINITIALIZED);
+  assert(this.recognizerState_ == ManagerState_.UNINITIALIZED,
+         'Recognizer not in uninitialized state. State: ' +
+         this.recognizerState_);
   var langs = this.getPossibleLanguages_();
   var i, j;
   // For country-lang variations. For example, when combined with path it will
@@ -275,7 +277,8 @@ NaClManager.prototype.shutdown = function() {
  * @private
  */
 NaClManager.prototype.sendDataToPlugin_ = function(data) {
-  assert(this.recognizerState_ != ManagerState_.UNINITIALIZED);
+  assert(this.recognizerState_ != ManagerState_.UNINITIALIZED,
+         'Recognizer in uninitialized state');
   this.plugin_.postMessage(data);
 };
 
