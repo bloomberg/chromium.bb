@@ -103,6 +103,7 @@ extern const char kDisableSearchButtonInOmnibox[];
 extern const char kDisableSessionCrashedBubble[];
 extern const char kDisableSpdy31[];
 extern const char kDisableSuggestionsService[];
+extern const char kDisableSupervisedUserBlacklist[];
 extern const char kDisableSync[];
 extern const char kDisableSyncSyncedNotifications[];
 extern const char kDisableSyncTypes[];

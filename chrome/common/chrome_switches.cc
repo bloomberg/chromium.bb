@@ -346,6 +346,10 @@ const char kDisableSpdy31[]                 = "disable-spdy31";
 // Disables the suggestions service.
 const char kDisableSuggestionsService[]     = "disable-suggestions-service";
 
+// Disables the supervised user host blacklist.
+const char kDisableSupervisedUserBlacklist[] =
+    "disable-supervised-user-blacklist";
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
