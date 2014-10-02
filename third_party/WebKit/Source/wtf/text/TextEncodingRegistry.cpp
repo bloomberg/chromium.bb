@@ -296,7 +296,7 @@ const char* atomicCanonicalTextEncodingName(const String& alias)
 
 bool noExtendedTextEncodingNameUsed()
 {
-    // If the calling thread did not use extended encoding names, it is fine for it to use a stale false value.
+    MutexLocker lock(encodingRegistryMutex());
     return !didExtendTextCodecMaps;
 }
 
