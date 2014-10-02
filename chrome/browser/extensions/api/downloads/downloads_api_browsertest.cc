@@ -4024,9 +4024,9 @@ void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
 #if defined(OS_MACOSX)
 // Flakily triggers and assert on Mac.
 // http://crbug.com/180759
-#define MAYBE_DownloadExtensionTest_AcceptDanger DownloadExtensionTest_AcceptDanger
-#else
 #define MAYBE_DownloadExtensionTest_AcceptDanger DISABLED_DownloadExtensionTest_AcceptDanger
+#else
+#define MAYBE_DownloadExtensionTest_AcceptDanger DownloadExtensionTest_AcceptDanger
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_AcceptDanger) {
