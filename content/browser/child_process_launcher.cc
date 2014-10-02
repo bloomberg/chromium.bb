@@ -210,9 +210,8 @@ class ChildProcessLauncher::Context
         base::SharedMemory::IsHandleValid(
             stats_table->GetSharedMemoryHandle())) {
       base::FileDescriptor fd = stats_table->GetSharedMemoryHandle();
-      DCHECK(fd.auto_close);
-      files_to_register->Transfer(kStatsTableSharedMemFd,
-                                  base::ScopedFD(fd.fd));
+      DCHECK(!fd.auto_close);
+      files_to_register->Share(kStatsTableSharedMemFd, fd.fd);
     }
 #endif
 
