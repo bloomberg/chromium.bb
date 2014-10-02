@@ -32,6 +32,12 @@
     ],
   },
   'variables': {
+
+    # WA: Suppress [chromium-style] enforcement errors when compiled with
+    # clang.  The third_party/khronos_glcts sourcecode does not comply with
+    # the chromium-style standards.
+    'clang_use_chrome_plugins': 0,
+
     'glcts_data_dirs': [
       '<(DEPTH)/third_party/khronos_glcts/cts/data',
     ],

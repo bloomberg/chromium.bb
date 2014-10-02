@@ -30,6 +30,16 @@
     {
       'target_name': 'debase',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="linux"', {
+          'cflags': [
+            # WA: Suppress "implicit declaration of function '__assert_fail'
+            # is invalid in C99" warning from deDefs.c for Release compiles.
+            # TODO(uartie) fix.
+            '-Wno-implicit-function-declaration',
+          ],
+        }],
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '<(DEPTH)/third_party/khronos_glcts/framework/delibs/debase',
@@ -131,6 +141,17 @@
     {
       'target_name': 'tcutil',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="linux"', {
+          'cflags_cc': [
+            # WA: Suppress "cast to 'const unsigned char *' from smaller
+            # integer type 'deUint32' (aka 'unsigned int')" compile warning
+            # from tcuRandomValueIterator.hpp.
+            # TODO(uartie) fix.
+            '-Wno-int-to-pointer-cast',
+          ],
+        }],
+      ],
       'dependencies': [
         'delibs', 'qphelper',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
@@ -188,6 +209,17 @@
     {
       'target_name': 'tcutil_egl',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="linux"', {
+          'cflags_cc': [
+            # WA: Suppress "cast to 'void *' from smaller
+            # integer type 'glw::GLuint' (aka 'unsigned int')" compile
+            # warning from tcuEglPlatform.cpp.
+            # TODO(uartie) fix.
+            '-Wno-int-to-void-pointer-cast',
+          ],
+        }],
+      ],
       'dependencies': [
         'delibs', 'tcutil', 'glwrapper',
         # TODO: We may want to phase out the old gles2_conform support in preference

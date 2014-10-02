@@ -10,6 +10,18 @@
     {
       'target_name': 'glcts_common',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="linux"', {
+          'cflags_cc': [
+            # WA: Suppress "implicit conversion turns string literal into
+            # bool" compile warning from glcShaderIndexingTests.cpp,
+            # glcShaderLibraryCase.cpp and glcShaderLoopTests.cpp during
+            # Debug build
+            # TODO(uartie) fix.
+            '-Wno-string-conversion',
+          ],
+        }],
+      ],
       'dependencies': [
         '<(DEPTH)/gpu/khronos_glcts_support/khronos_glcts_framework.gyp:delibs',
         '<(DEPTH)/gpu/khronos_glcts_support/khronos_glcts_framework.gyp:tcutil',

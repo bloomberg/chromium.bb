@@ -10,6 +10,38 @@
     {
       'target_name': 'gtf_es',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="linux"', {
+          'cflags': [
+            # WA: Suppress "control reaches end of non-void function" compile
+            # warning from GTFTestDriver.c.
+            # TODO(uartie) fix.
+            '-Wno-return-type',
+
+            # WA: Suppress "incompatible pointer types passing to parameter"
+            # compile warning from GTFTestExtension.c.
+            # TODO(uartie) fix.
+            '-Wno-incompatible-pointer-types',
+
+            # WA: Suppress "passing 'GLint [15]' to parameter of type
+            # 'GLuint *' (aka 'unsigned int') converts between pointers to
+            # integer types with different sign" compile warning from
+            # GTFGL2TestGetAttachedObjects.c
+            # TODO(uartie) fix.
+            '-Wno-pointer-sign',
+
+            # WA: Suppress "comparison of unsigned expression >= 0 is always
+            # true" compile warning from GTFgl.c
+            # TODO(uartie) fix.
+            '-Wno-tautological-compare',
+
+            # WA: Suppress "equality comparison with extraneous parentheses"
+            # compile warning from GTFgl.c
+            # TODO(uartie) fix.
+            '-Wno-parentheses-equality',
+          ],
+        }],
+      ],
       'dependencies': [
         '<(DEPTH)/gpu/khronos_glcts_support/khronos_glcts_framework.gyp:debase',
         '<(DEPTH)/gpu/khronos_glcts_support/khronos_glcts_cts.gyp:glcts_gtf_wrapper',
