@@ -6,11 +6,13 @@
 
 #include <queue>
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -35,6 +37,10 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       parent_(NULL) {}
 
 FrameTreeNode::~FrameTreeNode() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation)) {
+    navigator_->CancelNavigation(this);
+  }
 }
 
 bool FrameTreeNode::IsMainFrame() const {

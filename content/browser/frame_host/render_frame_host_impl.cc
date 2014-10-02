@@ -1057,7 +1057,8 @@ void RenderFrameHostImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  frame_tree_node()->render_manager()->OnBeginNavigation(params, common_params);
+  frame_tree_node()->navigator()->OnBeginNavigation(
+      frame_tree_node(), params, common_params);
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(

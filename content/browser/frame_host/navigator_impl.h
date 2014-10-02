@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -21,6 +22,7 @@ namespace content {
 
 class NavigationControllerImpl;
 class NavigatorDelegate;
+class NavigatorTest;
 struct LoadCommittedDetails;
 struct CommitNavigationParams;
 struct CommonNavigationParams;
@@ -70,15 +72,19 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       bool user_gesture) OVERRIDE;
+  virtual void OnBeginNavigation(
+      FrameTreeNode* frame_tree_node,
+      const FrameHostMsg_BeginNavigation_Params& params,
+      const CommonNavigationParams& common_params) OVERRIDE;
   virtual void CommitNavigation(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& stream_url,
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params) OVERRIDE;
+      FrameTreeNode* frame_tree_node,
+      const NavigationBeforeCommitInfo& info) OVERRIDE;
   virtual void LogResourceRequestTime(
       base::TimeTicks timestamp, const GURL& url) OVERRIDE;
+  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) OVERRIDE;
 
  private:
+  friend class NavigatorTest;
   virtual ~NavigatorImpl();
 
   // Navigates to the given entry, which must be the pending entry.  Private
@@ -94,6 +100,14 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
     RenderFrameHostImpl* render_frame_host,
     const GURL& url);
 
+  // PlzNavigate: sends a RequestNavigation IPC to the renderer to ask it to
+  // navigate. If no live renderer is present, then the navigation request will
+  // be sent directly to the ResourceDispatcherHost.
+  bool RequestNavigation(FrameTreeNode* frame_tree_node,
+                         const NavigationEntryImpl& entry,
+                         NavigationController::ReloadType reload_type,
+                         base::TimeTicks navigation_start);
+
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.
   // TODO(nasko): Move ownership of the NavigationController from
@@ -107,6 +121,11 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // The start time and URL for latest navigation request, used for feeding a
   // few histograms under the Navigation group.
   Tuple2<base::TimeTicks, GURL> navigation_start_time_and_url;
+
+  // PlzNavigate: used to track the various ongoing NavigationRequests in the
+  // different FrameTreeNodes, based on the frame_tree_node_id.
+  typedef base::ScopedPtrHashMap<int64, NavigationRequest> NavigationRequestMap;
+  NavigationRequestMap navigation_request_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

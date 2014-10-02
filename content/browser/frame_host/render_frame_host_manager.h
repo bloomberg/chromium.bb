@@ -18,7 +18,6 @@
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
 
-struct FrameHostMsg_BeginNavigation_Params;
 struct FrameMsg_Navigate_Params;
 
 namespace content {
@@ -30,7 +29,6 @@ class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
-class NavigationRequest;
 class RenderFrameHost;
 class RenderFrameHostDelegate;
 class RenderFrameHost;
@@ -43,9 +41,6 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
-struct CommonNavigationParams;
-struct NavigationBeforeCommitInfo;
-struct RequestNavigationParams;
 
 // Manages RenderFrameHosts for a FrameTreeNode.  This class acts as a state
 // machine to make cross-process navigations in a frame possible.
@@ -192,8 +187,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   }
 
   // Sets the pending Web UI for the pending navigation, ensuring that the
-  // bindings are appropriate for the given NavigationEntry.
-  void SetPendingWebUI(const NavigationEntryImpl& entry);
+  // bindings are appropriate compared to |bindings|.
+  void SetPendingWebUI(const GURL& url, int bindings);
 
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderFrameHost or re-use an existing
@@ -316,24 +311,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
   int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
 
-  // PlzNavigate: sends a RequestNavigation IPC to the renderer to ask it to
-  // navigate. If no live renderer is present, then the navigation request will
-  // be sent directly to the ResourceDispatcherHost. Takes ownership of
-  // |navigation_request|.
-  bool RequestNavigation(scoped_ptr<NavigationRequest> navigation_request,
-                         const RequestNavigationParams& request_params);
-
-  // PlzNavigate: Used to start a navigation. OnBeginNavigation is called
-  // directly by RequestNavigation when there is no live renderer. Otherwise, it
-  // is called following a BeginNavigation IPC from the renderer (which in
-  // browser-initiated navigation also happens after RequestNavigation has been
-  // called).
-  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params,
-                         const CommonNavigationParams& common_params);
-
-  // PlzNavigate: Called when a navigation request has received a response, to
-  // select a renderer to use for the navigation.
-  void CommitNavigation(const NavigationBeforeCommitInfo& info);
+  // PlzNavigate: Called when a navigation is ready to commit, to select the
+  // renderer that will commit it.
+  RenderFrameHostImpl* GetFrameHostForNavigation(const GURL& url,
+                                                 ui::PageTransition transition);
 
  private:
   friend class RenderFrameHostManagerTest;
@@ -341,11 +322,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   FRIEND_TEST_ALL_PREFIXES(CrossProcessFrameTreeBrowserTest,
                            CreateCrossProcessSubframeProxies);
-
-  // Returns the current navigation request (used in the PlzNavigate navigation
-  // logic refactoring project).
-  NavigationRequest* navigation_request_for_testing() const {
-    return navigation_request_.get(); }
 
   // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
   // FrameTreeNode's RenderFrameHostManager.
@@ -378,10 +354,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       bool new_is_view_source_mode) const;
 
   // Returns true if it is safe to reuse the current WebUI when navigating from
-  // |current_entry| to |new_entry|.
+  // |current_entry| to |new_url|.
   bool ShouldReuseWebUI(
       const NavigationEntry* current_entry,
-      const NavigationEntryImpl* new_entry) const;
+      const GURL& new_url) const;
 
   // Returns the SiteInstance to use for the navigation.
   SiteInstance* GetSiteInstanceForNavigation(
@@ -458,7 +434,13 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       scoped_ptr<RenderFrameHostImpl> render_frame_host);
 
   RenderFrameHostImpl* UpdateStateForNavigate(
-      const NavigationEntryImpl& entry);
+      const GURL& url,
+      SiteInstance* instance,
+      ui::PageTransition transition,
+      bool is_restore,
+      bool is_view_source_mode,
+      const GlobalRequestID& transferred_request_id,
+      int bindings);
 
   // Called when a renderer process is starting to close.  We should not
   // schedule new navigations in its swapped out RenderFrameHosts after this.
@@ -535,10 +517,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   InterstitialPageImpl* interstitial_page_;
 
   NotificationRegistrar registrar_;
-
-  // PlzNavigate: Owns a navigation request that originated in that frame until
-  // it commits.
-  scoped_ptr<NavigationRequest> navigation_request_;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
 
