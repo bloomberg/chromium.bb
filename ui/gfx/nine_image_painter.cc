@@ -98,20 +98,26 @@ void NineImagePainter::Paint(Canvas* canvas,
   ScopedCanvas scoped_canvas(canvas);
   canvas->Translate(bounds.OffsetFromOrigin());
 
-  SkPaint paint;
-  paint.setAlpha(alpha);
-
   // Get the current transform from the canvas and apply it to the logical
   // bounds passed in. This will give us the pixel bounds which can be used
   // to draw the images at the correct locations.
   // We should not scale the bounds by the canvas->image_scale() as that can be
   // different from the real scale in the canvas transform.
-  SkMatrix matrix = canvas->sk_canvas()->getTotalMatrix();
-  SkRect scaled_rect;
-  matrix.mapRect(&scaled_rect, RectToSkRect(bounds));
+  SkRect bounds_in_pixels_f;
+  if (!canvas->sk_canvas()->getTotalMatrix().mapRect(
+          &bounds_in_pixels_f, RectToSkRect(gfx::Rect(bounds.size()))))
+    return;  // Invalid transform.
 
-  int scaled_width = gfx::ToCeiledInt(SkScalarToFloat(scaled_rect.width()));
-  int scaled_height = gfx::ToCeiledInt(SkScalarToFloat(scaled_rect.height()));
+  SkIRect bounds_in_pixels;
+  bounds_in_pixels_f.dround(&bounds_in_pixels);
+
+  SkMatrix matrix = canvas->sk_canvas()->getTotalMatrix();
+  matrix.setTranslateX(SkIntToScalar(bounds_in_pixels.x()));
+  matrix.setTranslateY(SkIntToScalar(bounds_in_pixels.y()));
+  canvas->sk_canvas()->setMatrix(matrix);
+
+  const int width_in_pixels = bounds_in_pixels.width();
+  const int height_in_pixels = bounds_in_pixels.height();
 
   // In case the corners and edges don't all have the same width/height, we draw
   // the center first, and extend it out in all directions to the edges of the
@@ -125,7 +131,7 @@ void NineImagePainter::Paint(Canvas* canvas,
   int i8w = ImageWidthInPixels(images_[8], canvas);
 
   int i4x = std::min(std::min(i0w, i3w), i6w);
-  int i4w = scaled_width - i4x - std::min(std::min(i2w, i5w), i8w);
+  int i4w = width_in_pixels - i4x - std::min(std::min(i2w, i5w), i8w);
 
   int i0h = ImageHeightInPixels(images_[0], canvas);
   int i1h = ImageHeightInPixels(images_[1], canvas);
@@ -135,23 +141,27 @@ void NineImagePainter::Paint(Canvas* canvas,
   int i8h = ImageHeightInPixels(images_[8], canvas);
 
   int i4y = std::min(std::min(i0h, i1h), i2h);
-  int i4h = scaled_height - i4y - std::min(std::min(i6h, i7h), i8h);
+  int i4h = height_in_pixels - i4y - std::min(std::min(i6h, i7h), i8h);
+
+  SkPaint paint;
+  paint.setAlpha(alpha);
+
   if (!images_[4].isNull())
     Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
   canvas->DrawImageIntInPixel(images_[0], 0, 0, i0w, i0h,
                               0, 0, i0w, i0h, false, paint);
-  Fill(canvas, images_[1], i0w, 0, scaled_width - i0w - i2w, i1h, paint);
-  canvas->DrawImageIntInPixel(images_[2], 0, 0, i2w, i2h, scaled_width - i2w,
+  Fill(canvas, images_[1], i0w, 0, width_in_pixels - i0w - i2w, i1h, paint);
+  canvas->DrawImageIntInPixel(images_[2], 0, 0, i2w, i2h, width_in_pixels - i2w,
                               0, i2w, i2h, false, paint);
-  Fill(canvas, images_[3], 0, i0h, i3w, scaled_height - i0h - i6h, paint);
-  Fill(canvas, images_[5], scaled_width - i5w, i2h, i5w,
-       scaled_height - i2h - i8h, paint);
+  Fill(canvas, images_[3], 0, i0h, i3w, height_in_pixels - i0h - i6h, paint);
+  Fill(canvas, images_[5], width_in_pixels - i5w, i2h, i5w,
+       height_in_pixels - i2h - i8h, paint);
   canvas->DrawImageIntInPixel(images_[6], 0, 0, i6w, i6h, 0,
-                              scaled_height - i6h, i6w, i6h, false, paint);
-  Fill(canvas, images_[7], i6w, scaled_height - i7h, scaled_width - i6w - i8w,
-       i7h, paint);
-  canvas->DrawImageIntInPixel(images_[8], 0, 0, i8w, i8h, scaled_width - i8w,
-                              scaled_height - i8h, i8w, i8h, false, paint);
+                              height_in_pixels - i6h, i6w, i6h, false, paint);
+  Fill(canvas, images_[7], i6w, height_in_pixels - i7h,
+       width_in_pixels - i6w - i8w, i7h, paint);
+  canvas->DrawImageIntInPixel(images_[8], 0, 0, i8w, i8h, width_in_pixels - i8w,
+                              height_in_pixels - i8h, i8w, i8h, false, paint);
 }
 
 }  // namespace gfx
