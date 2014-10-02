@@ -132,7 +132,7 @@ match_suppressions() {
 }
 
 match_gtest_excludes() {
-  for PLATFORM in "Linux" "Chromium%20Mac" "Chromium%20OS"
+  for PLATFORM in "Linux" "Chromium%20Mac" "Chromium%20OS" "Windows"
   do
     echo
     echo "Test failures on ${PLATFORM}:" | sed "s/%20/ /"
