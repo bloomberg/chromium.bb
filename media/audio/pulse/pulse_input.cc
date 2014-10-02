@@ -74,10 +74,6 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
   if (stream_started_)
     return;
 
-  // Clean up the old buffer.
-  pa_stream_drop(handle_);
-  fifo_.Clear();
-
   // Start the streaming.
   callback_ = callback;
   pa_stream_set_read_callback(handle_, &ReadCallback, this);
@@ -98,6 +94,10 @@ void PulseAudioInputStream::Stop() {
 
   // Set the flag to false to stop filling new data to soundcard.
   stream_started_ = false;
+
+  // Clean up the old buffer.
+  pa_stream_drop(handle_);
+  fifo_.Clear();
 
   pa_operation* operation = pa_stream_flush(handle_,
                                             &pulse::StreamSuccessCallback,

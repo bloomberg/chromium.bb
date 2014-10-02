@@ -286,6 +286,7 @@ void AUAudioInputStream::Stop() {
   DCHECK_EQ(result, noErr);
   started_ = false;
   sink_ = NULL;
+  fifo_.Clear();
 
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "Failed to stop acquiring data";
