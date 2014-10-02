@@ -18061,7 +18061,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.TcpFastOpenSocketConnection" enum="TcpSocketStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jri@chromium.org</owner>
   <summary>
     For sockets for which a TCP Fast Open protocol might be used, the result of
     trying to use it.
@@ -52175,10 +52175,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Connection Error"/>
   <int value="4" label="Syn Data Acknowledged"/>
   <int value="5" label="Syn Data Nacked"/>
-  <int value="6" label="Syn Data Probe Failed"/>
-  <int value="7" label="No syn data + ack (can't happen)"/>
-  <int value="8" label="No syn data + nack"/>
-  <int value="9" label="No syn data + probe failed"/>
+  <int value="6" label="Syn Data Getsockopt Failed"/>
+  <int value="7" label="No Syn Data + Ack (can't happen)"/>
+  <int value="8" label="No Syn Data + Nack"/>
+  <int value="9" label="No Syn Data + Getsockopt Failed"/>
+  <int value="10" label="Fast Connect + Read Failed"/>
+  <int value="11" label="Slow Connect + Read Failed"/>
+  <int value="12" label="Previously Failed"/>
 </enum>
 
 <enum name="TileMemoryBudget" type="int">
