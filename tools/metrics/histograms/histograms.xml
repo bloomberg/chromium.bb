@@ -43234,6 +43234,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="533" label="NotificationCreated"/>
   <int value="534" label="NotificationClosed"/>
   <int value="535" label="NotificationPermissionRequested"/>
+  <int value="557" label="ScreenOrientationAngle"/>
+  <int value="558" label="ScreenOrientationType"/>
+  <int value="559" label="ScreenOrientationLock"/>
+  <int value="560" label="ScreenOrientationUnlock"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
