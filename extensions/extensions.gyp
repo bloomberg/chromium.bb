@@ -12,10 +12,6 @@
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [
-        # TODO(benwells): figure out what to do with the api target and
-        # api resources compiled into the chrome resource bundle.
-        # http://crbug.com/162530
-        '../chrome/chrome_resources.gyp:chrome_resources',
         '../components/components.gyp:crx_file',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
@@ -297,8 +293,6 @@
         '<(INTERMEDIATE_DIR)',
         # Needed to access generated API headers.
         '<(SHARED_INTERMEDIATE_DIR)',
-        # Needed for grit.
-        '<(SHARED_INTERMEDIATE_DIR)/chrome',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
@@ -767,7 +761,6 @@
       'type': 'static_library',
       'dependencies': [
         'extensions_resources.gyp:extensions_resources',
-        '../chrome/chrome_resources.gyp:chrome_resources',
         '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
         '../mojo/mojo_base.gyp:mojo_js_bindings',
@@ -998,9 +991,6 @@
       'target_name': 'extensions_shell_and_test_pak',
       'type': 'none',
       'dependencies': [
-        # Need extension related resources in common_resources.pak and
-        # renderer_resources_100_percent.pak
-        '../chrome/chrome_resources.gyp:chrome_resources',
         # Need dev-tools related resources in shell_resources.pak and
         # devtools_resources.pak.
         '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
@@ -1016,12 +1006,6 @@
           'action_name': 'repack_extensions_shell_and_test_pak',
           'variables': {
             'pak_inputs': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.pak',
-              # TODO(jamescook): Extract the extension/app related resources
-              # from generated_resources_en-US.pak. http://crbug.com/397250
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
