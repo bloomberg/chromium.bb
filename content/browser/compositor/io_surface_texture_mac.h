@@ -48,11 +48,10 @@ class IOSurfaceTexture
   static scoped_refptr<IOSurfaceTexture> Create();
 
   // Set IOSurfaceTexture that will be drawn on the next NSView drawRect.
-  bool SetIOSurfaceWithContextCurrent(
-      scoped_refptr<IOSurfaceContext> current_context,
-      IOSurfaceID io_surface_handle,
-      const gfx::Size& size,
-      float scale_factor) WARN_UNUSED_RESULT;
+  bool SetIOSurface(
+      scoped_refptr<IOSurfaceContext> context,
+      IOSurfaceID io_surface_id,
+      const gfx::Size& pixel_size) WARN_UNUSED_RESULT;
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -61,107 +60,25 @@ class IOSurfaceTexture
   // with the origin in the lower left corner. If the window rect's size is
   // larger than the IOSurface, the remaining right and bottom edges will be
   // white. |window_scale_factor| is 1 in normal views, 2 in HiDPI views.
-  bool DrawIOSurface(
-      scoped_refptr<IOSurfaceContext> drawing_context,
-      const gfx::Rect& window_rect,
-      float window_scale_factor) WARN_UNUSED_RESULT;
+  bool DrawIOSurface() WARN_UNUSED_RESULT;
 
   bool HasIOSurface() { return !!io_surface_.get(); }
-
-  const gfx::Size& pixel_io_surface_size() const {
-    return pixel_io_surface_size_;
-  }
-  // In cocoa view units / DIPs.
-  const gfx::Size& dip_io_surface_size() const { return dip_io_surface_size_; }
-  float scale_factor() const { return scale_factor_; }
-
-  // Returns true if asynchronous readback is supported on this system.
-  bool IsAsynchronousReadbackSupported();
-
-  // Scan the list of started asynchronous copies and test if each one has
-  // completed. If |block_until_finished| is true, then block until all
-  // pending copies are finished.
-  void CheckIfAllCopiesAreFinished(bool block_until_finished);
 
   // Returns true if the offscreen context used by this surface has been
   // poisoned.
   bool HasBeenPoisoned() const;
 
  private:
-  // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
-  // process is no longer referencing it, this will delete the IOSurfaceTexture.
-  void UnrefIOSurface();
-
   friend class base::RefCounted<IOSurfaceTexture>;
-
-  // Vertex structure for use in glDraw calls.
-  struct SurfaceVertex {
-    SurfaceVertex() : x_(0.0f), y_(0.0f), tx_(0.0f), ty_(0.0f) { }
-    void set(float x, float y, float tx, float ty) {
-      x_ = x;
-      y_ = y;
-      tx_ = tx;
-      ty_ = ty;
-    }
-    void set_position(float x, float y) {
-      x_ = x;
-      y_ = y;
-    }
-    void set_texcoord(float tx, float ty) {
-      tx_ = tx;
-      ty_ = ty;
-    }
-    float x_;
-    float y_;
-    float tx_;
-    float ty_;
-  };
-
-  // Counter-clockwise verts starting from upper-left corner (0, 0).
-  struct SurfaceQuad {
-    void set_size(gfx::Size vertex_size, gfx::Size texcoord_size) {
-      // Texture coordinates are flipped vertically so they can be drawn on
-      // a projection with a flipped y-axis (origin is top left).
-      float vw = static_cast<float>(vertex_size.width());
-      float vh = static_cast<float>(vertex_size.height());
-      float tw = static_cast<float>(texcoord_size.width());
-      float th = static_cast<float>(texcoord_size.height());
-      verts_[0].set(0.0f, 0.0f, 0.0f, th);
-      verts_[1].set(0.0f, vh, 0.0f, 0.0f);
-      verts_[2].set(vw, vh, tw, 0.0f);
-      verts_[3].set(vw, 0.0f, tw, th);
-    }
-    void set_rect(float x1, float y1, float x2, float y2) {
-      verts_[0].set_position(x1, y1);
-      verts_[1].set_position(x1, y2);
-      verts_[2].set_position(x2, y2);
-      verts_[3].set_position(x2, y1);
-    }
-    void set_texcoord_rect(float tx1, float ty1, float tx2, float ty2) {
-      // Texture coordinates are flipped vertically so they can be drawn on
-      // a projection with a flipped y-axis (origin is top left).
-      verts_[0].set_texcoord(tx1, ty2);
-      verts_[1].set_texcoord(tx1, ty1);
-      verts_[2].set_texcoord(tx2, ty1);
-      verts_[3].set_texcoord(tx2, ty2);
-    }
-    SurfaceVertex verts_[4];
-  };
 
   IOSurfaceTexture(
       const scoped_refptr<IOSurfaceContext>& context);
   ~IOSurfaceTexture();
 
-  // Returns true if IOSurfaceTexture is ready to render. False otherwise.
-  bool MapIOSurfaceToTextureWithContextCurrent(
-      const scoped_refptr<IOSurfaceContext>& current_context,
-      const gfx::Size pixel_size,
-      float scale_factor,
-      IOSurfaceID io_surface_handle) WARN_UNUSED_RESULT;
-
+  // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
+  // process is no longer referencing it, this will delete the IOSurface.
+  void UnrefIOSurface();
   void UnrefIOSurfaceWithContextCurrent();
-
-  void DrawQuad(const SurfaceQuad& quad);
 
   // Check for GL errors and store the result in error_. Only return new
   // errors
@@ -172,14 +89,9 @@ class IOSurfaceTexture
   // drawing, and is the same for all IOSurfaces in all windows.
   scoped_refptr<IOSurfaceContext> offscreen_context_;
 
-  // IOSurfaceTexture data.
-  IOSurfaceID io_surface_handle_;
+  // The IOSurface and its non-rounded size.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-
-  // The width and height of the io surface.
-  gfx::Size pixel_io_surface_size_;  // In pixels.
-  gfx::Size dip_io_surface_size_;  // In view / density independent pixels.
-  float scale_factor_;
+  gfx::Size pixel_size_;
 
   // The "live" OpenGL texture referring to this IOSurfaceRef. Note
   // that per the CGLTexImageIOSurface2D API we do not need to

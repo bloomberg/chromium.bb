@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
 #define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
 
-#import <AppKit/NSOpenGL.h>
 #include <OpenGL/OpenGL.h>
 #include <map>
 

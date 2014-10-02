@@ -211,12 +211,7 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 - (bool)gotFrameWithIOSurface:(IOSurfaceID)io_surface_id
                 withPixelSize:(gfx::Size)pixel_size
               withScaleFactor:(float)scale_factor {
-  bool result = true;
-  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-      context_->cgl_context());
-  result = iosurface_->SetIOSurfaceWithContextCurrent(
-      context_, io_surface_id, pixel_size, scale_factor);
-  return result;
+  return iosurface_->SetIOSurface(context_, io_surface_id, pixel_size);
 }
 
 - (void)poisonContextAndSharegroup {
@@ -228,7 +223,9 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 }
 
 - (float)scaleFactor {
-  return iosurface_->scale_factor();
+  if ([self respondsToSelector:(@selector(contentsScale))])
+    return [self contentsScale];
+  return 1;
 }
 
 - (int)rendererID {
@@ -300,21 +297,7 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
     return;
   }
 
-  // The correct viewport to cover the layer will be set up by the caller.
-  // Transform this into a window size for DrawIOSurface, where it will be
-  // transformed back into this viewport.
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-  gfx::Rect window_rect(viewport[0], viewport[1], viewport[2], viewport[3]);
-  float window_scale_factor = 1.f;
-  if ([self respondsToSelector:(@selector(contentsScale))])
-    window_scale_factor = [self contentsScale];
-  window_rect = ToNearestRect(
-      gfx::ScaleRect(window_rect, 1.f/window_scale_factor));
-
-  bool draw_succeeded = iosurface_->DrawIOSurface(
-      context_, window_rect, window_scale_factor);
-
+  bool draw_succeeded = iosurface_->DrawIOSurface();
   if (helper_)
     helper_->DidDraw(draw_succeeded);
 

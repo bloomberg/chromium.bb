@@ -29,20 +29,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gl_context.h"
 
-#ifdef NDEBUG
-#define CHECK_GL_ERROR()
-#define CHECK_AND_SAVE_GL_ERROR()
-#else
-#define CHECK_GL_ERROR() do {                                           \
-    GLenum gl_error = glGetError();                                     \
-    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
-  } while (0)
-#define CHECK_AND_SAVE_GL_ERROR() do {                                  \
-    GLenum gl_error = GetAndSaveGLError();                              \
-    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
-  } while (0)
-#endif
-
 namespace content {
 
 // static
@@ -61,8 +47,6 @@ scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create() {
 IOSurfaceTexture::IOSurfaceTexture(
     const scoped_refptr<IOSurfaceContext>& offscreen_context)
     : offscreen_context_(offscreen_context),
-      io_surface_handle_(0),
-      scale_factor_(1.f),
       texture_(0),
       gl_error_(GL_NO_ERROR),
       eviction_queue_iterator_(eviction_queue_.Get().end()),
@@ -80,17 +64,6 @@ IOSurfaceTexture::~IOSurfaceTexture() {
   DCHECK(eviction_queue_iterator_ == eviction_queue_.Get().end());
 }
 
-bool IOSurfaceTexture::SetIOSurfaceWithContextCurrent(
-    scoped_refptr<IOSurfaceContext> current_context,
-    IOSurfaceID io_surface_handle,
-    const gfx::Size& size,
-    float scale_factor) {
-  bool result = MapIOSurfaceToTextureWithContextCurrent(
-      current_context, size, scale_factor, io_surface_handle);
-  EvictionMarkUpdated();
-  return result;
-}
-
 int IOSurfaceTexture::GetRendererID() {
   GLint current_renderer_id = -1;
   if (CGLGetParameter(offscreen_context_->cgl_context(),
@@ -100,77 +73,46 @@ int IOSurfaceTexture::GetRendererID() {
   return -1;
 }
 
-bool IOSurfaceTexture::DrawIOSurface(
-    scoped_refptr<IOSurfaceContext> drawing_context,
-    const gfx::Rect& window_rect,
-    float window_scale_factor) {
-  DCHECK_EQ(CGLGetCurrentContext(), drawing_context->cgl_context());
+bool IOSurfaceTexture::DrawIOSurface() {
+  TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurface");
+  DCHECK(HasIOSurface());
 
-  bool has_io_surface = HasIOSurface();
-  TRACE_EVENT1("browser", "IOSurfaceTexture::DrawIOSurface",
-               "has_io_surface", has_io_surface);
+  // The viewport is the size of the CALayer, which should always match the
+  // IOSurface pixel size.
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  gfx::Rect viewport_rect(viewport[0], viewport[1], viewport[2], viewport[3]);
+  DCHECK_EQ(pixel_size_.ToString(), viewport_rect.size().ToString());
 
-  gfx::Rect pixel_window_rect =
-      ToNearestRect(gfx::ScaleRect(window_rect, window_scale_factor));
-  glViewport(
-      pixel_window_rect.x(), pixel_window_rect.y(),
-      pixel_window_rect.width(), pixel_window_rect.height());
-
-  SurfaceQuad quad;
-  quad.set_size(dip_io_surface_size_, pixel_io_surface_size_);
-
+  // Set the projection matrix to match 1 unit to 1 pixel.
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-
-  // Note that the projection keeps things in view units, so the use of
-  // window_rect / dip_io_surface_size_ (as opposed to the pixel_ variants)
-  // below is correct.
-  glOrtho(0, window_rect.width(), window_rect.height(), 0, -1, 1);
+  glOrtho(0, viewport_rect.width(), 0, viewport_rect.height(), -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_BLEND);
-
+  // Draw a quad the size of the IOSurface. This should cover the full viewport.
   glColor4f(1, 1, 1, 1);
-  if (has_io_surface) {
-    glEnable(GL_TEXTURE_RECTANGLE_ARB);
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
-    DrawQuad(quad);
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
-    CHECK_AND_SAVE_GL_ERROR();
+  glEnable(GL_TEXTURE_RECTANGLE_ARB);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
+  glBegin(GL_QUADS);
+  glTexCoord2f(0, 0);
+  glVertex2f(0, 0);
+  glTexCoord2f(pixel_size_.width(), 0);
+  glVertex2f(pixel_size_.width(), 0);
+  glTexCoord2f(pixel_size_.width(), pixel_size_.height());
+  glVertex2f(pixel_size_.width(), pixel_size_.height());
+  glTexCoord2f(0, pixel_size_.height());
+  glVertex2f(0, pixel_size_.height());
+  glEnd();
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
+  glDisable(GL_TEXTURE_RECTANGLE_ARB);
 
-    // Fill the resize gutters with white.
-    if (window_rect.width() > dip_io_surface_size_.width() ||
-        window_rect.height() > dip_io_surface_size_.height()) {
-      SurfaceQuad filler_quad;
-      if (window_rect.width() > dip_io_surface_size_.width()) {
-        // Draw right-side gutter down to the bottom of the window.
-        filler_quad.set_rect(dip_io_surface_size_.width(), 0.0f,
-                             window_rect.width(), window_rect.height());
-        DrawQuad(filler_quad);
-      }
-      if (window_rect.height() > dip_io_surface_size_.height()) {
-        // Draw bottom gutter to the width of the IOSurfaceTexture.
-        filler_quad.set_rect(
-            0.0f, dip_io_surface_size_.height(),
-            dip_io_surface_size_.width(), window_rect.height());
-        DrawQuad(filler_quad);
-      }
-    }
-
-    // Workaround for issue 158469. Issue a dummy draw call with texture_ not
-    // bound to a texture, in order to shake all references to the IOSurface out
-    // of the driver.
-    glBegin(GL_TRIANGLES);
-    glEnd();
-    CHECK_AND_SAVE_GL_ERROR();
-  } else {
-    // Should match the clear color of RenderWidgetHostViewMac.
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-  }
+  // Workaround for issue 158469. Issue a dummy draw call with texture_ not
+  // bound to a texture, in order to shake all references to the IOSurface out
+  // of the driver.
+  glBegin(GL_TRIANGLES);
+  glEnd();
 
   bool workaround_needed =
       GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
@@ -187,61 +129,59 @@ bool IOSurfaceTexture::DrawIOSurface(
     LOG(ERROR) << "GL error in DrawIOSurface: " << gl_error_;
     result = false;
     // If there was an error, clear the screen to a light grey to avoid
-    // rendering artifacts. If we're in a really bad way, this too may
-    // generate an error. Clear the GL error afterwards just in case.
+    // rendering artifacts.
     glClearColor(0.8, 0.8, 0.8, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glGetError();
   }
 
   eviction_has_been_drawn_since_updated_ = true;
   return result;
 }
 
-bool IOSurfaceTexture::MapIOSurfaceToTextureWithContextCurrent(
-    const scoped_refptr<IOSurfaceContext>& current_context,
-    const gfx::Size pixel_size,
-    float scale_factor,
-    IOSurfaceID io_surface_handle) {
+bool IOSurfaceTexture::SetIOSurface(
+    scoped_refptr<IOSurfaceContext> context,
+    IOSurfaceID io_surface_id,
+    const gfx::Size& pixel_size) {
   TRACE_EVENT0("browser", "IOSurfaceTexture::MapIOSurfaceToTexture");
 
-  if (!io_surface_ || io_surface_handle != io_surface_handle_)
+  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+      context->cgl_context());
+
+  // Destroy the old IOSurface and texture if it is no longer needed.
+  bool needs_new_iosurface =
+      !io_surface_ || io_surface_id != IOSurfaceGetID(io_surface_);
+  if (needs_new_iosurface)
     UnrefIOSurfaceWithContextCurrent();
 
-  pixel_io_surface_size_ = pixel_size;
-  scale_factor_ = scale_factor;
-  dip_io_surface_size_ = gfx::ToFlooredSize(
-      gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor_));
+  // Note that because IOSurface sizes are rounded, the same IOSurface may have
+  // two different sizes associated with it, so update the sizes before the
+  // early-out.
+  pixel_size_ = pixel_size;
 
-  // Early-out if the IOSurface has not changed. Note that because IOSurface
-  // sizes are rounded, the same IOSurface may have two different sizes
-  // associated with it.
-  if (io_surface_ && io_surface_handle == io_surface_handle_)
+  // Early-out if the IOSurface has not changed.
+  if (!needs_new_iosurface)
     return true;
 
-  io_surface_.reset(IOSurfaceLookup(io_surface_handle));
-  // Can fail if IOSurface with that ID was already released by the gpu
-  // process.
+  // Open the IOSurface handle.
+  io_surface_.reset(IOSurfaceLookup(io_surface_id));
   if (!io_surface_) {
     UnrefIOSurfaceWithContextCurrent();
     return false;
   }
-
-  io_surface_handle_ = io_surface_handle;
 
   // Actual IOSurface size is rounded up to reduce reallocations during window
   // resize. Get the actual size to properly map the texture.
   gfx::Size rounded_size(IOSurfaceGetWidth(io_surface_),
                          IOSurfaceGetHeight(io_surface_));
 
+  // Create the GL texture and set it to be backed by the IOSurface.
   glGenTextures(1, &texture_);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
   glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  CHECK_AND_SAVE_GL_ERROR();
   GLuint plane = 0;
   CGLError cgl_error = CGLTexImageIOSurface2D(
-      current_context->cgl_context(),
+      context->cgl_context(),
       GL_TEXTURE_RECTANGLE_ARB,
       GL_RGBA,
       rounded_size.width(),
@@ -251,17 +191,20 @@ bool IOSurfaceTexture::MapIOSurfaceToTextureWithContextCurrent(
       io_surface_.get(),
       plane);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-  if (cgl_error != kCGLNoError) {
-    LOG(ERROR) << "CGLTexImageIOSurface2D: " << cgl_error;
-    UnrefIOSurfaceWithContextCurrent();
-    return false;
-  }
   GetAndSaveGLError();
-  if (gl_error_ != GL_NO_ERROR) {
-    LOG(ERROR) << "GL error in MapIOSurfaceToTexture: " << gl_error_;
+
+  // Return failure if an error was encountered by CGL or GL.
+  if (cgl_error != kCGLNoError) {
+    LOG(ERROR) << "CGLTexImageIOSurface2D failed with CGL error: " << cgl_error;
     UnrefIOSurfaceWithContextCurrent();
     return false;
   }
+  if (gl_error_ != GL_NO_ERROR) {
+    LOG(ERROR) << "Hit GL error in SetIOSurface: " << gl_error_;
+    UnrefIOSurfaceWithContextCurrent();
+    return false;
+  }
+
   return true;
 }
 
@@ -271,34 +214,13 @@ void IOSurfaceTexture::UnrefIOSurface() {
   UnrefIOSurfaceWithContextCurrent();
 }
 
-void IOSurfaceTexture::DrawQuad(const SurfaceQuad& quad) {
-  TRACE_EVENT0("gpu", "IOSurfaceTexture::DrawQuad");
-
-  glEnableClientState(GL_VERTEX_ARRAY); CHECK_AND_SAVE_GL_ERROR();
-  glEnableClientState(GL_TEXTURE_COORD_ARRAY); CHECK_AND_SAVE_GL_ERROR();
-
-  glVertexPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad.verts_[0].x_);
-  glTexCoordPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad.verts_[0].tx_);
-  glDrawArrays(GL_QUADS, 0, 4); CHECK_AND_SAVE_GL_ERROR();
-
-  glDisableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-}
-
 void IOSurfaceTexture::UnrefIOSurfaceWithContextCurrent() {
   if (texture_) {
     glDeleteTextures(1, &texture_);
     texture_ = 0;
   }
-  pixel_io_surface_size_ = gfx::Size();
-  scale_factor_ = 1;
-  dip_io_surface_size_ = gfx::Size();
+  pixel_size_ = gfx::Size();
   io_surface_.reset();
-
-  // Forget the ID, because even if it is still around when we want to use it
-  // again, OSX may have reused the same ID for a new tab and we don't want to
-  // blit random tab contents.
-  io_surface_handle_ = 0;
 
   EvictionMarkEvicted();
 }
