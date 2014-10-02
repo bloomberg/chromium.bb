@@ -4,15 +4,15 @@
  */
 
 #accessibility-menu {
-  -webkit-padding-after: 25px;
-  -webkit-padding-before: 15px;
   -webkit-padding-end: 80px;
   -webkit-padding-start: 25px;
+  padding-bottom: 25px;
+  padding-top: 15px;
 }
 
 .checkboxrow {
-  -webkit-margin-before: 10px;
   display: -webkit-box;
+  margin-top: 10px;
 }
 
 .checkboxlabel {

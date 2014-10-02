@@ -106,10 +106,10 @@
 
 #progress-dots {
   -webkit-box-pack: center;
-  -webkit-margin-before: 15px;
   -webkit-transition: opacity 200ms ease-in-out,
                       visibility 200ms ease-in-out;
   display: -webkit-box;
+  margin-top: 15px;
 }
 
 /* Hidden for the duration of initial transition. */

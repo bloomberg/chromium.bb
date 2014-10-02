@@ -31,31 +31,31 @@
 }
 
 #update #update-cancel-hint {
-  -webkit-margin-before: 15px;
   -webkit-margin-start: 45px;
   color: rgb(170, 0, 0);
+  margin-top: 15px;
   position: absolute;
 }
 
 #update #update-upper-label {
-  -webkit-margin-after: 4px;
+  margin-bottom: 4px;
 }
 
 #update #checking-updates-label {
-  -webkit-margin-after: 90px;
+  margin-bottom: 90px;
 }
 
 #update #update-bottom-label {
-  -webkit-margin-after: 4px;
-  -webkit-margin-before: 4px;
+  margin-bottom: 4px;
+  margin-top: 4px;
   text-align: left;
 }
 
 #update progress {
-  -webkit-margin-after: 4px;
-  -webkit-margin-before: 34px;
   border: solid 1px #bbb;
   height: 15px;
+  margin-bottom: 4px;
+  margin-top: 34px;
   padding: 1px;
   width: 300px;
 }
@@ -69,8 +69,8 @@
 }
 
 #update .progress-message {
-  -webkit-margin-before: 4px;
   color: #a3a3a3;
   font-size: 13px;
+  margin-top: 4px;
   text-align: center;
 }

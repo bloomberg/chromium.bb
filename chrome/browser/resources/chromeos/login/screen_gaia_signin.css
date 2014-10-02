@@ -18,8 +18,8 @@
 }
 
 #signin-right {
-  -webkit-margin-before: 80px;
   -webkit-margin-start: 30px;
+  margin-top: 80px;
   top: 60px;
   width: 200px;
 }

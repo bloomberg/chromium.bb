@@ -128,8 +128,8 @@ html[highlight=strong] .dropdown-title:focus {
 }
 
 .dropdown-divider hr {
-  -webkit-margin-after: 2px;
-  -webkit-margin-before: 2px;
+  margin-bottom: 2px;
+  margin-top: 2px;
 }
 
 .dropdown-item.disabled-item {

@@ -68,8 +68,8 @@ progress {
 }
 
 ul {
-  -webkit-margin-after: 25px;
-  -webkit-margin-before: 0;
+  margin-bottom: 25px;
+  margin-top: 0;
 }
 
 .aligned-to-start {

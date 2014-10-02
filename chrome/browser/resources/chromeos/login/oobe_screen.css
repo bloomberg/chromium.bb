@@ -128,7 +128,7 @@ html[dir=rtl] .step-controls {
 }
 
 .step-extra-controls > *:not(:first-child) {
-  -webkit-margin-before: 7px;
+  margin-top: 7px;
 }
 
 html[dir=rtl] .step-extra-controls {

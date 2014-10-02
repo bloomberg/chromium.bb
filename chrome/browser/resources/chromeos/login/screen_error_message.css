@@ -58,8 +58,8 @@
 }
 
 .error-icon {
-  -webkit-margin-after: 40px;
   height: 64px;
+  margin-bottom: 40px;
 }
 
 .error-title {
@@ -83,7 +83,7 @@
 }
 
 .error-message-paragraph {
-  -webkit-margin-before: 20px;
+  margin-top: 20px;
 }
 
 .error-message-paragraph a {

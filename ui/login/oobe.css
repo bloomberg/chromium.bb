@@ -226,11 +226,11 @@ span.bold {
 
 .throbber {
   -webkit-animation: throbber-animation 1s steps(36) infinite;
-  -webkit-margin-before: 2px;
   -webkit-margin-end: 4px;
   background-image: url(chrome://theme/IDR_CROS_DEFAULT_THROBBER);
   display: inline-block;
   height: 16px;
+  margin-top: 2px;
   width: 16px;
 }
 

@@ -10,9 +10,9 @@
 }
 
 #oauth-enroll-step-contents {
-  -webkit-margin-after: 10px;
   color: #666;
   display: -webkit-box;
+  margin-bottom: 10px;
 }
 
 #oauth-enroll-step-contents > div {
@@ -54,10 +54,10 @@
 
 #oauth-enroll-signin-right {
   -webkit-flex: 0 0 auto;
-  -webkit-margin-before: 30px;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 30px;
   font-size: 12px;
+  margin-top: 30px;
   width: 200px;
 }
 
@@ -68,7 +68,7 @@
 }
 
 #oauth-enroll-signin-right > div {
-  -webkit-margin-before: 20px;
+  margin-top: 20px;
 }
 
 #oauth-enroll-learn-more-link,

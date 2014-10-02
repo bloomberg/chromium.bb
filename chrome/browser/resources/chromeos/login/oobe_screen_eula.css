@@ -78,8 +78,8 @@
 }
 
 #eula .step-contents {
-  -webkit-margin-after: 30px;
   -webkit-margin-start: 32px;
+  margin-bottom: 30px;
 }
 
 #eula .credits {

@@ -13,8 +13,8 @@
 }
 
 #terms-of-service .step-contents {
-  -webkit-margin-after: 49px;
   -webkit-margin-start: 32px;
+  margin-bottom: 49px;
 }
 
 #terms-of-service h1 {
