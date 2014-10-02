@@ -139,11 +139,6 @@ video {
   cursor: none;
 }
 
-/* Hides controls when disabled mode */
-#video-player[disabled] > #controls-wrapper .tool {
-  display: none;
-}
-
 .tool {
   transition: opacity 180ms linear;
 }
