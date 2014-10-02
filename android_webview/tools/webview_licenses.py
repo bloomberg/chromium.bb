@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,7 +22,6 @@ import multiprocessing
 import optparse
 import os
 import re
-import subprocess
 import sys
 import textwrap
 
@@ -40,6 +39,7 @@ third_party = \
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
 import licenses
 
+import copyright_scanner
 import known_issues
 
 class InputApi(object):
@@ -97,41 +97,12 @@ class ScanResult(object):
   Ok, Warnings, Errors = range(3)
 
 # Needs to be a top-level function for multiprocessing
-def _FindCopyrights(files_to_scan):
-  args = [os.path.join('android_webview', 'tools', 'find_copyrights.pl')]
-  p = subprocess.Popen(
-    args=args, cwd=REPOSITORY_ROOT,
-    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  lines = p.communicate(files_to_scan)[0].splitlines()
+def _FindCopyrightViolations(files_to_scan_as_string):
+  return copyright_scanner.FindCopyrightViolations(
+    REPOSITORY_ROOT, files_to_scan_as_string)
 
-  offending_files = []
-  allowed_copyrights = '^(?:\*No copyright\*' \
-      '|20[0-9][0-9](?:-20[0-9][0-9])? The Chromium Authors\. ' \
-      'All rights reserved.*)$'
-  allowed_copyrights_re = re.compile(allowed_copyrights)
-  for l in lines:
-    entries = l.split('\t')
-    if entries[1] == "GENERATED FILE":
-      continue
-    copyrights = entries[1].split(' / ')
-    for c in copyrights:
-      if c and not allowed_copyrights_re.match(c):
-        offending_files.append(os.path.normpath(entries[0]))
-        break
-  return offending_files
-
-def _ShardString(s, delimiter, shard_len):
-  result = []
-  index = 0
-  last_pos = 0
-  for m in re.finditer(delimiter, s):
-    index += 1
-    if index % shard_len == 0:
-      result.append(s[last_pos:m.end()])
-      last_pos = m.end()
-  if not index % shard_len == 0:
-    result.append(s[last_pos:])
-  return result
+def _ShardList(l, shard_len):
+  return [l[i:i + shard_len] for i in range(0, len(l), shard_len)]
 
 def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   """Checks that all files which are not in a listed third-party directory,
@@ -185,16 +156,12 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   # This is not part of open source chromium, but are included on some bots.
   excluded_dirs_list.append('skia/tools/clusterfuzz-data')
 
-  args = [os.path.join('android_webview', 'tools', 'find_files.pl'),
-          '.'
-          ] + excluded_dirs_list
-  p = subprocess.Popen(args=args, cwd=REPOSITORY_ROOT, stdout=subprocess.PIPE)
-  files_to_scan = p.communicate()[0]
-
-  sharded_files_to_scan = _ShardString(files_to_scan, '\n', 2000)
+  files_to_scan = copyright_scanner.FindFiles(
+    REPOSITORY_ROOT, ['.'], excluded_dirs_list)
+  sharded_files_to_scan = _ShardList(files_to_scan, 2000)
   pool = multiprocessing.Pool()
   offending_files_chunks = pool.map_async(
-      _FindCopyrights, sharded_files_to_scan).get(999999)
+      _FindCopyrightViolations, sharded_files_to_scan).get(999999)
   pool.close()
   pool.join()
   # Flatten out the result
@@ -234,7 +201,8 @@ def _ReadFile(path):
     The contents of the file as a string.
   """
 
-  return open(os.path.join(REPOSITORY_ROOT, path), 'rb').read()
+  with open(os.path.join(REPOSITORY_ROOT, path), 'rb') as f:
+    return f.read()
 
 
 def _FindThirdPartyDirs():
@@ -347,14 +315,16 @@ def main():
   parser = optparse.OptionParser(formatter=FormatterWithNewLines(),
                                  usage='%prog [options]')
   parser.description = (__doc__ +
-                       '\nCommands:\n' \
-                       '  scan Check licenses.\n' \
-                       '  notice Generate Android NOTICE file on stdout.\n' \
-                       '  incompatible_directories Scan for incompatibly'
-                       ' licensed directories.\n'
-                       '  all_incompatible_directories Scan for incompatibly'
-                       ' licensed directories (even those in'
-                       ' known_issues.py).\n')
+                        '\nCommands:\n'
+                        '  scan Check licenses.\n'
+                        '  notice Generate Android NOTICE file on stdout.\n'
+                        '  incompatible_directories Scan for incompatibly'
+                        ' licensed directories.\n'
+                        '  all_incompatible_directories Scan for incompatibly'
+                        ' licensed directories (even those in'
+                        ' known_issues.py).\n'
+                        '  display_copyrights Display autorship on the files'
+                        ' using names provided via stdin.\n')
   (_, args) = parser.parse_args()
   if len(args) != 1:
     parser.print_help()
@@ -372,6 +342,11 @@ def main():
     return _ProcessIncompatibleResult(GetUnknownIncompatibleDirectories())
   elif args[0] == 'all_incompatible_directories':
     return _ProcessIncompatibleResult(GetIncompatibleDirectories())
+  elif args[0] == 'display_copyrights':
+    files = sys.stdin.read().splitlines()
+    for f, c in zip(files, copyright_scanner.FindCopyrights('.', files)):
+      print f, '\t', ' / '.join(sorted(c))
+    return ScanResult.Ok
   parser.print_help()
   return ScanResult.Errors
 
