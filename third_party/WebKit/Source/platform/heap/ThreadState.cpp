@@ -269,6 +269,16 @@ private:
     ThreadCondition m_resume;
 };
 
+BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state)
+    : m_storage(storage)
+    , m_gcInfo(gcInfo)
+    , m_threadState(state)
+    , m_terminating(false)
+    , m_tracedAfterOrphaned(false)
+{
+    ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
+}
+
 // Statically unfold the heap initialization loop so the compiler statically
 // knows the heap index when using HeapIndexTrait.
 template<int num> struct InitializeHeaps {
@@ -300,6 +310,7 @@ ThreadState::ThreadState()
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
     , m_inGC(false)
+    , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
     , m_isTerminating(false)
     , m_lowCollectionRate(false)
     , m_numberOfSweeperTasks(0)
@@ -568,6 +579,27 @@ void ThreadState::visitPersistents(Visitor* visitor)
 {
     m_persistents->trace(visitor);
     WrapperPersistentRegion::trace(m_liveWrapperPersistents, visitor);
+}
+
+bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
+{
+    // If thread is terminating ignore conservative pointers.
+    if (m_isTerminating)
+        return false;
+
+    // This checks for normal pages and for large objects which span the extent
+    // of several normal pages.
+    BaseHeapPage* page = heapPageFromAddress(address);
+    if (page) {
+        page->checkAndMarkPointer(visitor, address);
+        // Whether or not the pointer was within an object it was certainly
+        // within a page that is part of the heap, so we don't want to ask the
+        // other other heaps or put this address in the
+        // HeapDoesNotContainCache.
+        return true;
+    }
+
+    return false;
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -852,10 +884,6 @@ void ThreadState::prepareForGC()
         if (sweepRequested())
             heap->clearLiveAndMarkDead();
     }
-    // Add the regions allocated by this thread to the region search tree.
-    for (size_t i = 0; i < m_allocatedRegionsSinceLastGC.size(); ++i)
-        Heap::addPageMemoryRegion(m_allocatedRegionsSinceLastGC[i]);
-    m_allocatedRegionsSinceLastGC.clear();
     setSweepRequested();
 }
 
@@ -867,10 +895,28 @@ void ThreadState::setupHeapsForTermination()
 
 BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
 {
+    BaseHeapPage* cachedPage = heapContainsCache()->lookup(address);
+#if !ENABLE(ASSERT)
+    if (cachedPage)
+        return cachedPage;
+#endif
+
     for (int i = 0; i < NumberOfHeaps; i++) {
-        if (BaseHeapPage* page = m_heaps[i]->heapPageFromAddress(address))
+        BaseHeapPage* page = m_heaps[i]->heapPageFromAddress(address);
+        if (page) {
+            // Asserts that make sure heapPageFromAddress takes addresses from
+            // the whole aligned blinkPageSize memory area. This is necessary
+            // for the negative cache to work.
+            ASSERT(page->isLargeObject() || page == m_heaps[i]->heapPageFromAddress(roundToBlinkPageStart(address)));
+            if (roundToBlinkPageStart(address) != roundToBlinkPageEnd(address))
+                ASSERT(page->isLargeObject() || page == m_heaps[i]->heapPageFromAddress(roundToBlinkPageEnd(address) - 1));
+            ASSERT(!cachedPage || page == cachedPage);
+            if (!cachedPage)
+                heapContainsCache()->addEntry(address, page);
             return page;
+        }
     }
+    ASSERT(!cachedPage);
     return 0;
 }
 
