@@ -35,6 +35,7 @@ class BASE_EXPORT PickleIterator {
   bool ReadUInt32(uint32* result) WARN_UNUSED_RESULT;
   bool ReadInt64(int64* result) WARN_UNUSED_RESULT;
   bool ReadUInt64(uint64* result) WARN_UNUSED_RESULT;
+  bool ReadSizeT(size_t* result) WARN_UNUSED_RESULT;
   bool ReadFloat(float* result) WARN_UNUSED_RESULT;
   bool ReadDouble(double* result) WARN_UNUSED_RESULT;
   bool ReadString(std::string* result) WARN_UNUSED_RESULT;
@@ -172,6 +173,10 @@ class BASE_EXPORT Pickle {
                   uint64* result) const WARN_UNUSED_RESULT {
     return iter->ReadUInt64(result);
   }
+  bool ReadSizeT(PickleIterator* iter,
+                 size_t* result) const WARN_UNUSED_RESULT {
+    return iter->ReadSizeT(result);
+  }
   bool ReadFloat(PickleIterator* iter,
                  float* result) const WARN_UNUSED_RESULT {
     return iter->ReadFloat(result);
@@ -247,6 +252,11 @@ class BASE_EXPORT Pickle {
   }
   bool WriteUInt64(uint64 value) {
     return WritePOD(value);
+  }
+  bool WriteSizeT(size_t value) {
+    // Always write size_t as a 64-bit value to ensure compatibility between
+    // 32-bit and 64-bit processes.
+    return WritePOD(static_cast<uint64>(value));
   }
   bool WriteFloat(float value) {
     return WritePOD(value);

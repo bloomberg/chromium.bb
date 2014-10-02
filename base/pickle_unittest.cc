@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Remove when this file is in the base namespace.
@@ -15,32 +16,26 @@ using base::string16;
 
 namespace {
 
-const int testint = 2093847192;
-const std::string teststr("Hello world");  // note non-aligned string length
-const std::wstring testwstr(L"Hello, world");
-const char testdata[] = "AAA\0BBB\0";
-const int testdatalen = arraysize(testdata) - 1;
 const bool testbool1 = false;
 const bool testbool2 = true;
+const int testint = 2093847192;
+const long testlong = 1093847192;
 const uint16 testuint16 = 32123;
+const uint32 testuint32 = 1593847192;
+const int64 testint64 = -0x7E8CA9253104BDFCLL;
+const uint64 testuint64 = 0xCE8CA9253104BDF7ULL;
+const size_t testsizet = 0xFEDC7654;
 const float testfloat = 3.1415926935f;
 const double testdouble = 2.71828182845904523;
+const std::string teststring("Hello world");  // note non-aligned string length
+const std::wstring testwstring(L"Hello, world");
+const base::string16 teststring16(base::ASCIIToUTF16("Hello, world"));
+const char testdata[] = "AAA\0BBB\0";
+const int testdatalen = arraysize(testdata) - 1;
 
 // checks that the result
 void VerifyResult(const Pickle& pickle) {
   PickleIterator iter(pickle);
-
-  int outint;
-  EXPECT_TRUE(pickle.ReadInt(&iter, &outint));
-  EXPECT_EQ(testint, outint);
-
-  std::string outstr;
-  EXPECT_TRUE(pickle.ReadString(&iter, &outstr));
-  EXPECT_EQ(teststr, outstr);
-
-  std::wstring outwstr;
-  EXPECT_TRUE(pickle.ReadWString(&iter, &outwstr));
-  EXPECT_EQ(testwstr, outwstr);
 
   bool outbool;
   EXPECT_TRUE(pickle.ReadBool(&iter, &outbool));
@@ -48,9 +43,33 @@ void VerifyResult(const Pickle& pickle) {
   EXPECT_TRUE(pickle.ReadBool(&iter, &outbool));
   EXPECT_TRUE(outbool);
 
+  int outint;
+  EXPECT_TRUE(pickle.ReadInt(&iter, &outint));
+  EXPECT_EQ(testint, outint);
+
+  long outlong;
+  EXPECT_TRUE(pickle.ReadLong(&iter, &outlong));
+  EXPECT_EQ(testlong, outlong);
+
   uint16 outuint16;
   EXPECT_TRUE(pickle.ReadUInt16(&iter, &outuint16));
   EXPECT_EQ(testuint16, outuint16);
+
+  uint32 outuint32;
+  EXPECT_TRUE(pickle.ReadUInt32(&iter, &outuint32));
+  EXPECT_EQ(testuint32, outuint32);
+
+  int64 outint64;
+  EXPECT_TRUE(pickle.ReadInt64(&iter, &outint64));
+  EXPECT_EQ(testint64, outint64);
+
+  uint64 outuint64;
+  EXPECT_TRUE(pickle.ReadUInt64(&iter, &outuint64));
+  EXPECT_EQ(testuint64, outuint64);
+
+  size_t outsizet;
+  EXPECT_TRUE(pickle.ReadSizeT(&iter, &outsizet));
+  EXPECT_EQ(testsizet, outsizet);
 
   float outfloat;
   EXPECT_TRUE(pickle.ReadFloat(&iter, &outfloat));
@@ -59,6 +78,18 @@ void VerifyResult(const Pickle& pickle) {
   double outdouble;
   EXPECT_TRUE(pickle.ReadDouble(&iter, &outdouble));
   EXPECT_EQ(testdouble, outdouble);
+
+  std::string outstring;
+  EXPECT_TRUE(pickle.ReadString(&iter, &outstring));
+  EXPECT_EQ(teststring, outstring);
+
+  std::wstring outwstring;
+  EXPECT_TRUE(pickle.ReadWString(&iter, &outwstring));
+  EXPECT_EQ(testwstring, outwstring);
+
+  base::string16 outstring16;
+  EXPECT_TRUE(pickle.ReadString16(&iter, &outstring16));
+  EXPECT_EQ(teststring16, outstring16);
 
   const char* outdata;
   int outdatalen;
@@ -75,14 +106,21 @@ void VerifyResult(const Pickle& pickle) {
 TEST(PickleTest, EncodeDecode) {
   Pickle pickle;
 
-  EXPECT_TRUE(pickle.WriteInt(testint));
-  EXPECT_TRUE(pickle.WriteString(teststr));
-  EXPECT_TRUE(pickle.WriteWString(testwstr));
   EXPECT_TRUE(pickle.WriteBool(testbool1));
   EXPECT_TRUE(pickle.WriteBool(testbool2));
+  EXPECT_TRUE(pickle.WriteInt(testint));
+  EXPECT_TRUE(
+      pickle.WriteLongUsingDangerousNonPortableLessPersistableForm(testlong));
   EXPECT_TRUE(pickle.WriteUInt16(testuint16));
+  EXPECT_TRUE(pickle.WriteUInt32(testuint32));
+  EXPECT_TRUE(pickle.WriteInt64(testint64));
+  EXPECT_TRUE(pickle.WriteUInt64(testuint64));
+  EXPECT_TRUE(pickle.WriteSizeT(testsizet));
   EXPECT_TRUE(pickle.WriteFloat(testfloat));
   EXPECT_TRUE(pickle.WriteDouble(testdouble));
+  EXPECT_TRUE(pickle.WriteString(teststring));
+  EXPECT_TRUE(pickle.WriteWString(testwstring));
+  EXPECT_TRUE(pickle.WriteString16(teststring16));
   EXPECT_TRUE(pickle.WriteData(testdata, testdatalen));
   VerifyResult(pickle);
 
@@ -94,6 +132,27 @@ TEST(PickleTest, EncodeDecode) {
   Pickle pickle3;
   pickle3 = pickle;
   VerifyResult(pickle3);
+}
+
+// Tests that reading/writing a size_t works correctly when the source process
+// is 64-bit.  We rely on having both 32- and 64-bit trybots to validate both
+// arms of the conditional in this test.
+TEST(PickleTest, SizeTFrom64Bit) {
+  Pickle pickle;
+  // Under the hood size_t is always written as a 64-bit value, so simulate a
+  // 64-bit size_t even on 32-bit architectures by explicitly writing a uint64.
+  EXPECT_TRUE(pickle.WriteUInt64(testuint64));
+
+  PickleIterator iter(pickle);
+  size_t outsizet;
+  if (sizeof(size_t) < sizeof(uint64)) {
+    // ReadSizeT() should return false when the original written value can't be
+    // represented as a size_t.
+    EXPECT_FALSE(pickle.ReadSizeT(&iter, &outsizet));
+  } else {
+    EXPECT_TRUE(pickle.ReadSizeT(&iter, &outsizet));
+    EXPECT_EQ(testuint64, outsizet);
+  }
 }
 
 // Tests that we can handle really small buffers.
