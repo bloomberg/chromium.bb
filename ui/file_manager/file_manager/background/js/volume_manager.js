@@ -12,9 +12,11 @@
  * @param {string} volumeId ID of the volume.
  * @param {DOMFileSystem} fileSystem The file system object for this volume.
  * @param {string} error The error if an error is found.
- * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
+ * @param {?string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
  *     |'unknown') (as defined in chromeos/disks/disk_mount_manager.cc).
  *     Can be null.
+ * @param {?string} devicePath Identifier of the device that the volume belongs
+ *     to. Can be null.
  * @param {boolean} isReadOnly True if the volume is read only.
  * @param {!{displayName:string, isCurrentProfile:boolean}} profile Profile
  *     information.
@@ -29,6 +31,7 @@ function VolumeInfo(
     fileSystem,
     error,
     deviceType,
+    devicePath,
     isReadOnly,
     profile,
     label,
@@ -66,6 +69,7 @@ function VolumeInfo(
   // TODO(hidehiko): Rename to make this more understandable.
   this.error_ = error;
   this.deviceType_ = deviceType;
+  this.devicePath_ = devicePath;
   this.isReadOnly_ = isReadOnly;
   this.profile_ = Object.freeze(profile);
   this.extensionId_ = extensionId;
@@ -116,6 +120,12 @@ VolumeInfo.prototype = {
    */
   get deviceType() {
     return this.deviceType_;
+  },
+  /**
+   * @return {string} Device identifier.
+   */
+  get devicePath() {
+    return this.devicePath_;
   },
   /**
    * @return {boolean} Whether read only or not.
@@ -233,6 +243,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
               null,  // File system is not found.
               volumeMetadata.mountCondition,
               volumeMetadata.deviceType,
+              volumeMetadata.devicePath,
               volumeMetadata.isReadOnly,
               volumeMetadata.profile,
               localizedLabel,
@@ -259,6 +270,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             fileSystem,
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
+            volumeMetadata.devicePath,
             volumeMetadata.isReadOnly,
             volumeMetadata.profile,
             localizedLabel,

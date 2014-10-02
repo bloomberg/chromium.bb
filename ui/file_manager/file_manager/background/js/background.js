@@ -65,7 +65,7 @@ function Background() {
   this.deviceHandler_.addEventListener(
       DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
       function(event) {
-        this.navigateToVolume(event.volumeId);
+        this.navigateToVolume_(event.devicePath);
       }.bind(this));
 
   /**
@@ -226,13 +226,17 @@ Background.prototype.getSimilarWindows = function(url) {
 /**
  * Opens the root directory of the volume in Files.app.
  * @param {string} volumeId ID of a volume to be opened.
+ * @private
  */
-Background.prototype.navigateToVolume = function(volumeId) {
+Background.prototype.navigateToVolume_ = function(devicePath) {
   VolumeManager.getInstance().then(function(volumeManager) {
     var volumeInfoList = volumeManager.volumeInfoList;
-    var index = volumeInfoList.findIndex(volumeId);
-    var volumeInfo = volumeInfoList.item(index);
-    return volumeInfo.resolveDisplayRoot();
+    for (var i = 0; i < volumeInfoList.length; i++) {
+      if (volumeInfoList.item(i).devicePath == devicePath)
+        return volumeInfoList.item(i).resolveDisplayRoot();
+    }
+    return Promise.reject(
+        'Volume having the device path: ' + devicePath + ' is not found.');
   }).then(function(entry) {
     launchFileManager(
         {currentDirectoryURL: entry.toURL()},

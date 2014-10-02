@@ -44,6 +44,7 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId) {
       fileSystem,
       '',     // error
       '',     // deviceType
+      '',     // devicePath
       false,  // isReadonly
       {isCurrentProfile: true, displayName: ''},  // profile
       '');    // label

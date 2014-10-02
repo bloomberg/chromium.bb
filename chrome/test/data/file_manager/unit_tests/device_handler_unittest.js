@@ -66,6 +66,9 @@ function setUp() {
         addListener: function(listener) {
           this.dispatch = listener;
         }
+      },
+      getAll: function(callback) {
+        callback([]);
       }
     },
     runtime: {
