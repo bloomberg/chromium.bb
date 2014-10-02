@@ -3460,13 +3460,6 @@
    fun:_ZN16sync_file_system13drive_backend14SyncEngineTest5SetUpEv
 }
 {
-   bug_419364
-   Memcheck:Uninitialized
-   fun:_ZN8chromeos21IsExternalFileURLTypeEN7storage14FileSystemTypeE
-   fun:_ZN8chromeos12_GLOBAL__N_132CreateIsolatedURLFromVirtualPathERKN7storage17FileSystemContextERKN4base8FilePathE
-   fun:_ZN8chromeos12_GLOBAL__N_19URLHelper13RunOnUIThreadE10scoped_ptrIS1_N4base14DefaultDeleterIS1_EEE
-}
-{
    bug_419373
    Memcheck:Uninitialized
    fun:_ZNK5blink20InlineFlowBoxPainter49roundedFrameRectClampedToLineTopAndBottomIfNeededEv
