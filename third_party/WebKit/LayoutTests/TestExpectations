@@ -1404,7 +1404,7 @@ crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/text-shadow-n
 crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-02-d-agi.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-04-d-agi.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] fast/text/aat-morx.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] fast/text/aat-morx.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/aat-morx.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/apply-start-width-after-skipped-text.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/bidi-explicit-embedding-past-end.html [ Pass Failure ]
