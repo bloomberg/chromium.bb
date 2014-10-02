@@ -38,15 +38,15 @@
         ],
       },
       'copies': [
-          {
+        {
           'destination': '<(PRODUCT_DIR)/android_webview_assets',
           'files': [],
-	  'conditions': [
+          'conditions': [
             ['icu_use_data_file_flag==1', {
               'files': [
                 '<(PRODUCT_DIR)/icudtl.dat',
               ],
-	    }],
+            }],
           ],
         },
       ],'includes': [ '../../build/java_apk.gypi' ],
