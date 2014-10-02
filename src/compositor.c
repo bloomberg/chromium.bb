@@ -3947,66 +3947,16 @@ weston_output_transform_coordinate(struct weston_output *output,
 				   wl_fixed_t device_x, wl_fixed_t device_y,
 				   wl_fixed_t *x, wl_fixed_t *y)
 {
-	wl_fixed_t tx, ty;
-	wl_fixed_t width, height;
-	float zoom_scale, zx, zy;
+	struct weston_vector p = { {
+		wl_fixed_to_double(device_x),
+		wl_fixed_to_double(device_y),
+		0.0,
+		1.0 } };
 
-	width = wl_fixed_from_int(output->width * output->current_scale - 1);
-	height = wl_fixed_from_int(output->height * output->current_scale - 1);
+	weston_matrix_transform(&output->matrix, &p);
 
-	switch(output->transform) {
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	default:
-		tx = device_x;
-		ty = device_y;
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-		tx = device_y;
-		ty = height - device_x;
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		tx = width - device_x;
-		ty = height - device_y;
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		tx = width - device_y;
-		ty = device_x;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		tx = width - device_x;
-		ty = device_y;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		tx = width - device_y;
-		ty = height - device_x;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		tx = device_x;
-		ty = height - device_y;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		tx = device_y;
-		ty = device_x;
-		break;
-	}
-
-	tx /= output->current_scale;
-	ty /= output->current_scale;
-
-	if (output->zoom.active) {
-		zoom_scale = output->zoom.spring_z.current;
-		zx = (wl_fixed_to_double(tx) * (1.0f - zoom_scale) +
-		      output->width / 2.0f *
-		      (zoom_scale + output->zoom.trans_x));
-		zy = (wl_fixed_to_double(ty) * (1.0f - zoom_scale) +
-		      output->height / 2.0f *
-		      (zoom_scale + output->zoom.trans_y));
-		tx = wl_fixed_from_double(zx);
-		ty = wl_fixed_from_double(zy);
-	}
-
-	*x = tx + wl_fixed_from_int(output->x);
-	*y = ty + wl_fixed_from_int(output->y);
+	*x = wl_fixed_from_double(p.f[0] / p.f[3]);
+	*y = wl_fixed_from_double(p.f[1] / p.f[3]);
 }
 
 static void
