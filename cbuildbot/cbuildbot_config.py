@@ -2505,6 +2505,7 @@ _config.add_group('beaglebone-release-group',
   ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
+    images=['base', 'test'],
 
     # This build doesn't generate signed images, so don't try to release them.
     paygen=False,
