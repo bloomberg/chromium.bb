@@ -364,7 +364,7 @@ Command.Rotate.prototype.revertView = function(canvas, imageView) {
 /**
  * Crop command.
  *
- * @param {Rect} imageRect Crop rectangle in image coordinates.
+ * @param {ImageRect} imageRect Crop rectangle in image coordinates.
  * @constructor
  * @extends {Command}
  */
@@ -380,7 +380,8 @@ Command.Crop.prototype.execute = function(
     document, srcCanvas, callback, uiContext) {
   var result = this.createCanvas_(
       document, srcCanvas, this.imageRect_.width, this.imageRect_.height);
-  Rect.drawImage(result.getContext('2d'), srcCanvas, null, this.imageRect_);
+  ImageRect.drawImage(
+      result.getContext('2d'), srcCanvas, null, this.imageRect_);
   var delay;
   if (uiContext.imageView) {
     delay = uiContext.imageView.replaceAndAnimate(result, this.imageRect_, 0);
@@ -427,11 +428,11 @@ Command.Filter.prototype.execute = function(
     } else {
       var viewport = uiContext.imageView.viewport_;
 
-      var imageStrip = new Rect(viewport.getImageBounds());
+      var imageStrip = new ImageRect(viewport.getImageBounds());
       imageStrip.top = previousRow;
       imageStrip.height = updatedRow - previousRow;
 
-      var screenStrip = new Rect(viewport.getImageBoundsOnScreen());
+      var screenStrip = new ImageRect(viewport.getImageBoundsOnScreen());
       screenStrip.top = Math.round(viewport.imageToScreenY(previousRow));
       screenStrip.height =
           Math.round(viewport.imageToScreenY(updatedRow)) - screenStrip.top;

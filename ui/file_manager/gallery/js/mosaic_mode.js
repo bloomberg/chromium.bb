@@ -258,7 +258,7 @@ Mosaic.prototype.getSelectedTile = function() {
 
 /**
  * @param {number} index Tile index.
- * @return {Rect} Tile's image rectangle.
+ * @return {ImageRect} Tile's image rectangle.
  */
 Mosaic.prototype.getTileRect = function(index) {
   var tile = this.tiles_[index];
@@ -553,16 +553,15 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
   }.bind(this), 100);
 
   // Tiles only in the viewport (visible).
-  var visibleRect = new Rect(0,
-                             0,
-                             this.clientWidth,
-                             this.clientHeight);
+  var visibleRect = new ImageRect(
+      0, 0, this.clientWidth, this.clientHeight);
 
   // Tiles in the viewport and also some distance on the left and right.
-  var renderableRect = new Rect(-this.clientWidth,
-                                0,
-                                3 * this.clientWidth,
-                                this.clientHeight);
+  var renderableRect = new ImageRect(
+      -this.clientWidth,
+      0,
+      3 * this.clientWidth,
+      this.clientHeight);
 
   // Unload tiles out of scope.
   for (var index = 0; index < this.tiles_.length; index++) {
@@ -606,8 +605,9 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
 /**
  * Applies reset the zoom transform.
  *
- * @param {Rect} tileRect Tile rectangle. Reset the transform if null.
- * @param {Rect} imageRect Large image rectangle. Reset the transform if null.
+ * @param {ImageRect} tileRect Tile rectangle. Reset the transform if null.
+ * @param {ImageRect} imageRect Large image rectangle. Reset the transform if
+ *     null.
  * @param {boolean=} opt_instant True of the transition should be instant.
  */
 Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
@@ -1968,7 +1968,7 @@ Mosaic.Tile.prototype.scrollIntoView = function(opt_animated) {
 };
 
 /**
- * @return {Rect} Rectangle occupied by the tile's image,
+ * @return {ImageRect} Rectangle occupied by the tile's image,
  *   relative to the viewport.
  */
 Mosaic.Tile.prototype.getImageRect = function() {
@@ -1976,7 +1976,7 @@ Mosaic.Tile.prototype.getImageRect = function() {
     return null;
 
   var margin = Mosaic.Layout.SPACING / 2;
-  return new Rect(this.left_ - this.container_.scrollLeft, this.top_,
+  return new ImageRect(this.left_ - this.container_.scrollLeft, this.top_,
       this.width_, this.height_).inflate(-margin, -margin);
 };
 

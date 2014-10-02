@@ -95,7 +95,8 @@ ImageView.prototype.draw = function() {
       this.displayedContentGeneration_ !== this.contentGeneration_) {
     this.displayedContentGeneration_ = this.contentGeneration_;
     ImageUtil.trace.resetTimer('paint');
-    this.paintDeviceRect(this.contentCanvas_, new Rect(this.contentCanvas_));
+    this.paintDeviceRect(
+        this.contentCanvas_, new ImageRect(this.contentCanvas_));
     ImageUtil.trace.reportTimer('paint');
   }
 };
@@ -158,7 +159,7 @@ ImageView.prototype.getContentRevision = function() {
  *
  * @param {HTMLCanvasElement} canvas Canvas containing whole image. The canvas
  *     may not be full resolution (scaled).
- * @param {Rect} imageRect Rectangle region of the canvas to be rendered.
+ * @param {ImageRect} imageRect Rectangle region of the canvas to be rendered.
  */
 ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
   // Map the rectangle in full resolution image to the rectangle in the device
@@ -166,13 +167,13 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
   var deviceBounds = this.viewport_.getDeviceBounds();
   var scaleX = deviceBounds.width / canvas.width;
   var scaleY = deviceBounds.height / canvas.height;
-  var deviceRect = new Rect(
+  var deviceRect = new ImageRect(
       imageRect.left * scaleX,
       imageRect.top * scaleY,
       imageRect.width * scaleX,
       imageRect.height * scaleY);
 
-  Rect.drawImage(
+  ImageRect.drawImage(
       this.screenImage_.getContext('2d'), canvas, deviceRect, imageRect);
 };
 
@@ -404,7 +405,7 @@ ImageView.prototype.prefetch = function(item, delay) {
 
 /**
  * Unloads content.
- * @param {Rect} zoomToRect Target rectangle for zoom-out-effect.
+ * @param {ImageRect} zoomToRect Target rectangle for zoom-out-effect.
  */
 ImageView.prototype.unload = function(zoomToRect) {
   if (this.unloadTimer_) {
@@ -500,7 +501,7 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
   this.thumbnailCanvas_ = canvas.ownerDocument.createElement('canvas');
   this.thumbnailCanvas_.width = Math.round(canvas.width / downScale);
   this.thumbnailCanvas_.height = Math.round(canvas.height / downScale);
-  Rect.drawImage(this.thumbnailCanvas_.getContext('2d'), canvas);
+  ImageRect.drawImage(this.thumbnailCanvas_.getContext('2d'), canvas);
   ImageUtil.trace.reportTimer('thumb');
 };
 
@@ -573,7 +574,7 @@ ImageView.prototype.setTransform_ = function(
 };
 
 /**
- * @param {Rect} screenRect Target rectangle in screen coordinates.
+ * @param {ImageRect} screenRect Target rectangle in screen coordinates.
  * @return {ImageView.Effect.Zoom} Zoom effect object.
  */
 ImageView.prototype.createZoomEffect = function(screenRect) {
@@ -587,7 +588,7 @@ ImageView.prototype.createZoomEffect = function(screenRect) {
  * the new image to visualize the operation.
  *
  * @param {HTMLCanvasElement} canvas New content canvas.
- * @param {Rect} imageCropRect The crop rectangle in image coordinates.
+ * @param {ImageRect} imageCropRect The crop rectangle in image coordinates.
  *                             Null for rotation operations.
  * @param {number} rotate90 Rotation angle in 90 degree increments.
  * @return {number} Animation duration.
@@ -625,7 +626,7 @@ ImageView.prototype.replaceAndAnimate = function(
  * while fading in the new image.
  *
  * @param {HTMLCanvasElement} canvas New content canvas.
- * @param {Rect} imageCropRect The crop rectangle in image coordinates.
+ * @param {ImageRect} imageCropRect The crop rectangle in image coordinates.
  * @return {number} Animation duration.
  */
 ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
@@ -769,7 +770,7 @@ ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
  *
  * @param {number} previousImageWidth Width of the full resolution image.
  * @param {number} previousImageHeight Height of the full resolution image.
- * @param {Rect} imageCropRect Crop rectangle in the full resolution image.
+ * @param {ImageRect} imageCropRect Crop rectangle in the full resolution image.
  * @param {number=} opt_duration Duration of the effect.
  * @constructor
  * @extends {ImageView.Effect}
@@ -796,7 +797,8 @@ ImageView.Effect.Zoom.prototype.transform = function(element, viewport) {
 /**
  * Effect to zoom to a screen rectangle.
  *
- * @param {Rect} screenRect Rectangle in the application window's coordinate.
+ * @param {ImageRect} screenRect Rectangle in the application window's
+ *     coordinate.
  * @param {number=} opt_duration Duration of effect.
  * @constructor
  * @extends {ImageView.Effect}

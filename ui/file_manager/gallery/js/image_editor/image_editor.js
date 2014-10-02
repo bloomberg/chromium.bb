@@ -615,9 +615,9 @@ ImageEditor.prototype.onDoubleTap_ = function(x, y) {
 /**
  * Hide the tools that overlap the given rectangular frame.
  *
- * @param {Rect} frame Hide the tool that overlaps this rect.
- * @param {Rect} transparent But do not hide the tool that is completely inside
- *                           this rect.
+ * @param {ImageRect} frame Hide the tool that overlaps this rect.
+ * @param {ImageRect} transparent But do not hide the tool that is completely
+ *     inside this rect.
  */
 ImageEditor.prototype.hideOverlappingTools = function(frame, transparent) {
   var tools = this.rootContainer_.ownerDocument.querySelectorAll('.dimmable');

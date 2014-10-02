@@ -243,7 +243,7 @@ SlideMode.prototype.initDom_ = function() {
 
 /**
  * Load items, display the selected item.
- * @param {Rect} zoomFromRect Rectangle for zoom effect.
+ * @param {ImageRect} zoomFromRect Rectangle for zoom effect.
  * @param {function} displayCallback Called when the image is displayed.
  * @param {function} loadCallback Called when the image is displayed.
  */
@@ -329,7 +329,7 @@ SlideMode.prototype.enter = function(
 
 /**
  * Leave the mode.
- * @param {Rect} zoomToRect Rectangle for zoom effect.
+ * @param {ImageRect} zoomToRect Rectangle for zoom effect.
  * @param {function} callback Called when the image is committed and
  *   the zoom-out animation has started.
  */
@@ -406,7 +406,7 @@ SlideMode.prototype.getSelectedIndex = function() {
 };
 
 /**
- * @return {Rect} Screen rectangle of the selected image.
+ * @return {ImageRect} Screen rectangle of the selected image.
  */
 SlideMode.prototype.getSelectedImageRect = function() {
   if (this.getSelectedIndex() < 0)
@@ -550,7 +550,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
 /**
  * Unload the current image.
  *
- * @param {Rect} zoomToRect Rectangle for zoom effect.
+ * @param {ImageRect} zoomToRect Rectangle for zoom effect.
  * @private
  */
 SlideMode.prototype.unloadImage_ = function(zoomToRect) {

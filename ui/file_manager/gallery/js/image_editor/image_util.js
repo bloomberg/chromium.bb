@@ -82,15 +82,15 @@ ImageUtil.between = function(min, value, max) {
 /**
  * Rectangle constructor takes 0, 1, 2 or 4 arguments.
  * Supports following variants:
- *   new Rect(left, top, width, height)
- *   new Rect(width, height)
- *   new Rect(rect)         // anything with left, top, width, height properties
- *   new Rect(bounds)       // anything with left, top, right, bottom properties
- *   new Rect(canvas|image) // anything with width and height properties.
- *   new Rect()             // empty rectangle.
+ *   new ImageRect(left, top, width, height)
+ *   new ImageRect(width, height)
+ *   new ImageRect(rect)         // anything with left, top, width, height.
+ *   new ImageRect(bounds)       // anything with left, top, right, bottom.
+ *   new ImageRect(canvas|image) // anything with width and height.
+ *   new ImageRect()             // empty rectangle.
  * @constructor
  */
-function Rect() {
+function ImageRect() {
   switch (arguments.length) {
     case 4:
       this.left = arguments[0];
@@ -135,11 +135,11 @@ function Rect() {
       this.height = 0;
       return;
   }
-  console.error('Invalid Rect constructor arguments:',
+  console.error('Invalid ImageRect constructor arguments:',
                 Array.apply(null, arguments));
 }
 
-Rect.prototype = {
+ImageRect.prototype = {
   /**
    * Obtains the x coordinate of right edge. The most right pixels in the
    * rectangle are (x = right - 1) and the pixels (x = right) are not included
@@ -163,10 +163,10 @@ Rect.prototype = {
 
 /**
  * @param {number} factor Factor to scale.
- * @return {Rect} A rectangle with every dimension scaled.
+ * @return {ImageRect} A rectangle with every dimension scaled.
  */
-Rect.prototype.scale = function(factor) {
-  return new Rect(
+ImageRect.prototype.scale = function(factor) {
+  return new ImageRect(
       this.left * factor,
       this.top * factor,
       this.width * factor,
@@ -176,28 +176,28 @@ Rect.prototype.scale = function(factor) {
 /**
  * @param {number} dx Difference in X.
  * @param {number} dy Difference in Y.
- * @return {Rect} A rectangle shifted by (dx,dy), same size.
+ * @return {ImageRect} A rectangle shifted by (dx,dy), same size.
  */
-Rect.prototype.shift = function(dx, dy) {
-  return new Rect(this.left + dx, this.top + dy, this.width, this.height);
+ImageRect.prototype.shift = function(dx, dy) {
+  return new ImageRect(this.left + dx, this.top + dy, this.width, this.height);
 };
 
 /**
  * @param {number} x Coordinate of the left top corner.
  * @param {number} y Coordinate of the left top corner.
- * @return {Rect} A rectangle with left==x and top==y, same size.
+ * @return {ImageRect} A rectangle with left==x and top==y, same size.
  */
-Rect.prototype.moveTo = function(x, y) {
-  return new Rect(x, y, this.width, this.height);
+ImageRect.prototype.moveTo = function(x, y) {
+  return new ImageRect(x, y, this.width, this.height);
 };
 
 /**
  * @param {number} dx Difference in X.
  * @param {number} dy Difference in Y.
- * @return {Rect} A rectangle inflated by (dx, dy), same center.
+ * @return {ImageRect} A rectangle inflated by (dx, dy), same center.
  */
-Rect.prototype.inflate = function(dx, dy) {
-  return new Rect(
+ImageRect.prototype.inflate = function(dx, dy) {
+  return new ImageRect(
       this.left - dx, this.top - dy, this.width + 2 * dx, this.height + 2 * dy);
 };
 
@@ -206,16 +206,16 @@ Rect.prototype.inflate = function(dx, dy) {
  * @param {number} y Coordinate of the point.
  * @return {boolean} True if the point lies inside the rectangle.
  */
-Rect.prototype.inside = function(x, y) {
+ImageRect.prototype.inside = function(x, y) {
   return this.left <= x && x < this.left + this.width &&
          this.top <= y && y < this.top + this.height;
 };
 
 /**
- * @param {Rect} rect Rectangle to check.
+ * @param {ImageRect} rect Rectangle to check.
  * @return {boolean} True if this rectangle intersects with the |rect|.
  */
-Rect.prototype.intersects = function(rect) {
+ImageRect.prototype.intersects = function(rect) {
   return (this.left + this.width) > rect.left &&
          (rect.left + rect.width) > this.left &&
          (this.top + this.height) > rect.top &&
@@ -223,10 +223,10 @@ Rect.prototype.intersects = function(rect) {
 };
 
 /**
- * @param {Rect} rect Rectangle to check.
+ * @param {ImageRect} rect Rectangle to check.
  * @return {boolean} True if this rectangle containing the |rect|.
  */
-Rect.prototype.contains = function(rect) {
+ImageRect.prototype.contains = function(rect) {
   return (this.left <= rect.left) &&
          (rect.left + rect.width) <= (this.left + this.width) &&
          (this.top <= rect.top) &&
@@ -236,18 +236,18 @@ Rect.prototype.contains = function(rect) {
 /**
  * @return {boolean} True if rectangle is empty.
  */
-Rect.prototype.isEmpty = function() {
+ImageRect.prototype.isEmpty = function() {
   return this.width === 0 || this.height === 0;
 };
 
 /**
  * Clamp the rectangle to the bounds by moving it.
  * Decrease the size only if necessary.
- * @param {Rect} bounds Bounds.
- * @return {Rect} Calculated rectangle.
+ * @param {ImageRect} bounds Bounds.
+ * @return {ImageRect} Calculated rectangle.
  */
-Rect.prototype.clamp = function(bounds) {
-  var rect = new Rect(this);
+ImageRect.prototype.clamp = function(bounds) {
+  var rect = new ImageRect(this);
 
   if (rect.width > bounds.width) {
     rect.left = bounds.left;
@@ -275,7 +275,7 @@ Rect.prototype.clamp = function(bounds) {
 /**
  * @return {string} String representation.
  */
-Rect.prototype.toString = function() {
+ImageRect.prototype.toString = function() {
   return '(' + this.left + ',' + this.top + '):' +
          '(' + (this.left + this.width) + ',' + (this.top + this.height) + ')';
 };
@@ -287,12 +287,14 @@ Rect.prototype.toString = function() {
  * Draw the image in context with appropriate scaling.
  * @param {CanvasRenderingContext2D} context Context to draw.
  * @param {Image} image Image to draw.
- * @param {Rect=} opt_dstRect Rectangle in the canvas (whole canvas by default).
- * @param {Rect=} opt_srcRect Rectangle in the image (whole image by default).
+ * @param {ImageRect=} opt_dstRect Rectangle in the canvas (whole canvas by
+ *     default).
+ * @param {ImageRect=} opt_srcRect Rectangle in the image (whole image by
+ *     default).
  */
-Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
-  opt_dstRect = opt_dstRect || new Rect(context.canvas);
-  opt_srcRect = opt_srcRect || new Rect(image);
+ImageRect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
+  opt_dstRect = opt_dstRect || new ImageRect(context.canvas);
+  opt_srcRect = opt_srcRect || new ImageRect(image);
   if (opt_dstRect.isEmpty() || opt_srcRect.isEmpty())
     return;
   context.drawImage(image,
@@ -303,9 +305,9 @@ Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
 /**
  * Draw a box around the rectangle.
  * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {Rect} rect Rectangle.
+ * @param {ImageRect} rect Rectangle.
  */
-Rect.outline = function(context, rect) {
+ImageRect.outline = function(context, rect) {
   context.strokeRect(
       rect.left - 0.5, rect.top - 0.5, rect.width + 1, rect.height + 1);
 };
@@ -313,19 +315,19 @@ Rect.outline = function(context, rect) {
 /**
  * Fill the rectangle.
  * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {Rect} rect Rectangle.
+ * @param {ImageRect} rect Rectangle.
  */
-Rect.fill = function(context, rect) {
+ImageRect.fill = function(context, rect) {
   context.fillRect(rect.left, rect.top, rect.width, rect.height);
 };
 
 /**
  * Fills the space between the two rectangles.
  * @param {CanvasRenderingContext2D} context Context to draw.
- * @param {Rect} inner Inner rectangle.
- * @param {Rect} outer Outer rectangle.
+ * @param {ImageRect} inner Inner rectangle.
+ * @param {ImageRect} outer Outer rectangle.
  */
-Rect.fillBetween = function(context, inner, outer) {
+ImageRect.fillBetween = function(context, inner, outer) {
   var innerRight = inner.left + inner.width;
   var innerBottom = inner.top + inner.height;
   var outerRight = outer.left + outer.width;

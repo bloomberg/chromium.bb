@@ -205,7 +205,7 @@ ImageEditor.Mode.Crop.prototype.getCommand = function() {
  */
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
   var rect = this.getViewport().screenToImageRect(
-      new Rect(this.getViewport().getImageBoundsOnScreenClipped()));
+      new ImageRect(this.getViewport().getImageBoundsOnScreenClipped()));
   rect = rect.inflate(
       -Math.round(rect.width / 6), -Math.round(rect.height / 6));
   this.cropRect_ = new DraggableRect(rect, this.getViewport());
@@ -262,7 +262,7 @@ ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
 /**
  * A draggable rectangle over the image.
  *
- * @param {Rect} rect Initial size of the image.
+ * @param {ImageRect} rect Initial size of the image.
  * @param {Viewport} viewport Viewport.
  * @constructor
  */
@@ -371,10 +371,10 @@ DraggableRect.prototype.getBottom = function() {
 
 /**
  * Obtains the geometry of the rectangle.
- * @return {Rect} Geometry of the rectangle.
+ * @return {ImageRect} Geometry of the rectangle.
  */
 DraggableRect.prototype.getRect = function() {
-  return new Rect(this.bounds_);
+  return new ImageRect(this.bounds_);
 };
 
 /**
