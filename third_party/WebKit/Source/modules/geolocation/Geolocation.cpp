@@ -29,6 +29,7 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
@@ -137,10 +138,28 @@ Geoposition* Geolocation::lastPosition()
     return m_lastPosition.get();
 }
 
+void Geolocation::recordOriginTypeAccess() const
+{
+    ASSERT(frame());
+
+    Document* document = this->document();
+    ASSERT(document);
+
+    // It is required by canAccessFeatureRequiringSecureOrigin() but isn't
+    // actually used. This could be used later if a warning is shown in the
+    // developer console.
+    String insecureOriginMsg;
+    UseCounter::Feature counter = document->securityOrigin()->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)
+        ? UseCounter::GeolocationSecureOrigin : UseCounter::GeolocationInsecureOrigin;
+    UseCounter::count(document, counter);
+}
+
 void Geolocation::getCurrentPosition(PositionCallback* successCallback, PositionErrorCallback* errorCallback, const Dictionary& options)
 {
     if (!frame())
         return;
+
+    recordOriginTypeAccess();
 
     GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, PositionOptions::create(options));
     startRequest(notifier);
@@ -152,6 +171,8 @@ int Geolocation::watchPosition(PositionCallback* successCallback, PositionErrorC
 {
     if (!frame())
         return 0;
+
+    recordOriginTypeAccess();
 
     GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, PositionOptions::create(options));
     startRequest(notifier);

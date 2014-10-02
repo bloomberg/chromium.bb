@@ -164,6 +164,11 @@ private:
     // position, the set is then cleared. The oneshots are removed everywhere.
     void makeCachedPositionCallbacks();
 
+    // Record whether the origin trying to access Geolocation would be allowed
+    // to access a feature that can only be accessed by secure origins.
+    // See http://goo.gl/lq4gCo
+    void recordOriginTypeAccess() const;
+
     GeoNotifierSet m_oneShots;
     GeolocationWatchers m_watchers;
     GeoNotifierSet m_pendingForPermissionNotifiers;
