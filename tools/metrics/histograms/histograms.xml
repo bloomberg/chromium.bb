@@ -43255,6 +43255,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="558" label="ScreenOrientationType"/>
   <int value="559" label="ScreenOrientationLock"/>
   <int value="560" label="ScreenOrientationUnlock"/>
+  <int value="561" label="GeolocationSecureOrigin"/>
+  <int value="562" label="GeolocationInsecureOrigin"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
