@@ -408,7 +408,6 @@
       'fonts/skia/FontCacheSkia.cpp',
       'fonts/skia/FontCustomPlatformDataSkia.cpp',
       'fonts/skia/FontPlatformDataSkia.cpp',
-      'fonts/skia/SimpleFontDataSkia.cpp',
       'fonts/win/FontCacheSkiaWin.cpp',
       'fonts/win/FontFallbackWin.cpp',
       'fonts/win/FontFallbackWin.h',

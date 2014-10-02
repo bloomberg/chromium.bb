@@ -160,8 +160,6 @@ protected:
 private:
     void platformInit();
     void platformGlyphInit();
-    void platformCharWidthInit();
-    void platformDestroy();
 
     PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&, float scaleFactor) const;
     PassRefPtr<SimpleFontData> platformCreateScaledFontData(const FontDescription&, float scaleFactor) const;

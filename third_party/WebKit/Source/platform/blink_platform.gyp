@@ -253,7 +253,6 @@
           # Cherry-pick files excluded by the broader regular expressions above.
           ['include', 'fonts/opentype/OpenTypeTypes\\.h$'],
           ['include', 'fonts/opentype/OpenTypeVerticalData\\.(cpp|h)$'],
-          ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
         ],
         'dependencies': [
           '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
@@ -327,8 +326,6 @@
 
           ['exclude', 'fonts/skia/FontCacheSkia\\.cpp$'],
 
-          ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
-
           ['include', 'geometry/mac/FloatPointMac\\.mm$'],
           ['include', 'geometry/mac/FloatRectMac\\.mm$'],
           ['include', 'geometry/mac/FloatSizeMac\\.mm$'],
@@ -369,7 +366,6 @@
           ['include', 'fonts/opentype/'],
           ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
           ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-          ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontPlatformDataWin\\.cpp$'],
