@@ -100,5 +100,80 @@
         }
       }
     ]
+  },
+  "Mac ASan Tests (1)": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "cc_unittests",
+      "chromedriver_unittests",
+      "components_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "crypto_unittests",
+      "gcm_unit_tests",
+      "gpu_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sql_unittests",
+      "url_unittests",
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Mac ASan Tests (2)": {
+    "gtest_tests": [
+      "net_unittests",
+      "sync_unit_tests",
+      "ui_unittests",
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Mac ASan Tests (3)": {
+    "gtest_tests": [
+      "interactive_ui_tests",
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
+  },
+  "Mac ASan 64 Tests (1)": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "cc_unittests",
+      "chromedriver_unittests",
+      "components_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "crypto_unittests",
+      "gcm_unit_tests",
+      "gpu_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sql_unittests",
+      "unit_tests",
+      "url_unittests",
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Mac ASan 64 Tests (2)": {
+    "gtest_tests": [
+      "net_unittests",
+      "sync_unit_tests",
+      "ui_unittests",
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Mac ASan 64 Tests (3)": {
+    "gtest_tests": [
+      "interactive_ui_tests",
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
   }
 }
