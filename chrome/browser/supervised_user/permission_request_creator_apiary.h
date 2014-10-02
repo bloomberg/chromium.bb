@@ -46,6 +46,8 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
       const GURL& url_requested,
       const SuccessCallback& callback) OVERRIDE;
 
+  void set_url_fetcher_id_for_testing(int id) { url_fetcher_id_ = id; }
+
  private:
   struct Request;
   typedef ScopedVector<Request>::iterator RequestIterator;
@@ -74,6 +76,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper_;
   net::URLRequestContextGetter* context_;
   GURL apiary_url_;
+  int url_fetcher_id_;
 
   ScopedVector<Request> requests_;
 };

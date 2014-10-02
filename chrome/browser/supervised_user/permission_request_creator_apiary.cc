@@ -36,7 +36,9 @@ const char kState[] = "PENDING";
 static const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
 struct PermissionRequestCreatorApiary::Request {
-  Request(const GURL& url_requested, const SuccessCallback& callback);
+  Request(const GURL& url_requested,
+          const SuccessCallback& callback,
+          int url_fetcher_id);
   ~Request();
 
   GURL url_requested;
@@ -44,15 +46,18 @@ struct PermissionRequestCreatorApiary::Request {
   scoped_ptr<OAuth2TokenService::Request> access_token_request;
   std::string access_token;
   bool access_token_expired;
+  int url_fetcher_id;
   scoped_ptr<net::URLFetcher> url_fetcher;
 };
 
 PermissionRequestCreatorApiary::Request::Request(
     const GURL& url_requested,
-    const SuccessCallback& callback)
+    const SuccessCallback& callback,
+    int url_fetcher_id)
     : url_requested(url_requested),
       callback(callback),
-      access_token_expired(false) {
+      access_token_expired(false),
+      url_fetcher_id(url_fetcher_id) {
 }
 
 PermissionRequestCreatorApiary::Request::~Request() {}
@@ -66,7 +71,8 @@ PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
       oauth2_token_service_(oauth2_token_service),
       signin_wrapper_(signin_wrapper.Pass()),
       context_(context),
-      apiary_url_(apiary_url) {
+      apiary_url_(apiary_url),
+      url_fetcher_id_(0) {
   DCHECK(apiary_url_.is_valid());
 }
 
@@ -93,7 +99,7 @@ bool PermissionRequestCreatorApiary::IsEnabled() const {
 void PermissionRequestCreatorApiary::CreatePermissionRequest(
     const GURL& url_requested,
     const SuccessCallback& callback) {
-  requests_.push_back(new Request(url_requested, callback));
+  requests_.push_back(new Request(url_requested, callback, url_fetcher_id_));
   StartFetching(requests_.back());
 }
 
@@ -126,10 +132,11 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   }
   DCHECK(it != requests_.end());
   (*it)->access_token = access_token;
-  const int id = 0;
 
-  (*it)->url_fetcher.reset(
-      URLFetcher::Create(id, apiary_url_, URLFetcher::POST, this));
+  (*it)->url_fetcher.reset(URLFetcher::Create((*it)->url_fetcher_id,
+                                              apiary_url_,
+                                              URLFetcher::POST,
+                                              this));
 
   (*it)->url_fetcher->SetRequestContext(context_);
   (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

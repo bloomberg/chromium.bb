@@ -764,12 +764,16 @@ void SupervisedUserService::SetActive(bool active) {
   if (active_) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kPermissionRequestApiUrl)) {
-      scoped_ptr<PermissionRequestCreator> creator =
-          PermissionRequestCreatorApiary::CreateWithProfile(
-              profile_,
-              GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kPermissionRequestApiUrl)));
-      permissions_creators_.push_back(creator.release());
+      GURL url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPermissionRequestApiUrl));
+      if (url.is_valid()) {
+        scoped_ptr<PermissionRequestCreator> creator =
+            PermissionRequestCreatorApiary::CreateWithProfile(profile_, url);
+        permissions_creators_.push_back(creator.release());
+      } else {
+        LOG(WARNING) << "Got invalid URL for "
+                     << switches::kPermissionRequestApiUrl;
+      }
     } else {
       permissions_creators_.push_back(new PermissionRequestCreatorSync(
           GetSettingsService(),
