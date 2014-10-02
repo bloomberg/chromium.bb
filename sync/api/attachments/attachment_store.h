@@ -25,10 +25,8 @@ class AttachmentId;
 //
 // Destroying this object does not necessarily cancel outstanding async
 // operations. If you need cancel like semantics, use WeakPtr in the callbacks.
-class SYNC_EXPORT AttachmentStore : public base::RefCounted<AttachmentStore> {
+class SYNC_EXPORT AttachmentStoreBase {
  public:
-  AttachmentStore();
-
   // TODO(maniscalco): Consider udpating Read and Write methods to support
   // resumable transfers (bug 353292).
 
@@ -42,6 +40,9 @@ class SYNC_EXPORT AttachmentStore : public base::RefCounted<AttachmentStore> {
                               scoped_ptr<AttachmentIdList>)> ReadCallback;
   typedef base::Callback<void(const Result&)> WriteCallback;
   typedef base::Callback<void(const Result&)> DropCallback;
+
+  AttachmentStoreBase();
+  virtual ~AttachmentStoreBase();
 
   // Asynchronously reads the attachments identified by |ids|.
   //
@@ -81,9 +82,22 @@ class SYNC_EXPORT AttachmentStore : public base::RefCounted<AttachmentStore> {
   // successfully.
   virtual void Drop(const AttachmentIdList& ids,
                     const DropCallback& callback) = 0;
+};
+
+// AttachmentStore is an interface exposed to data type and AttachmentService
+// code. Also contains factory methods for default implementations.
+class SYNC_EXPORT AttachmentStore
+    : public AttachmentStoreBase,
+      public base::RefCountedThreadSafe<AttachmentStore> {
+ public:
+  AttachmentStore();
+
+  // Creates an AttachmentStoreHandle backed by in-memory implementation of
+  // attachment store. For now frontend lives on the same thread as backend.
+  static scoped_refptr<AttachmentStore> CreateInMemoryStore();
 
  protected:
-  friend class base::RefCounted<AttachmentStore>;
+  friend class base::RefCountedThreadSafe<AttachmentStore>;
   virtual ~AttachmentStore();
 };
 

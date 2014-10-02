@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/api/attachments/fake_attachment_store.h"
+#include "sync/api/attachments/attachment_store.h"
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
@@ -18,10 +18,10 @@ namespace syncer {
 const char kTestData1[] = "test data 1";
 const char kTestData2[] = "test data 2";
 
-class FakeAttachmentStoreTest : public testing::Test {
+class InMemoryAttachmentStoreTest : public testing::Test {
  protected:
   base::MessageLoop message_loop;
-  scoped_refptr<FakeAttachmentStore> store;
+  scoped_refptr<AttachmentStore> store;
   AttachmentStore::Result result;
   scoped_ptr<AttachmentMap> attachments;
   scoped_ptr<AttachmentIdList> failed_attachment_ids;
@@ -33,18 +33,20 @@ class FakeAttachmentStoreTest : public testing::Test {
   scoped_refptr<base::RefCountedString> some_data1;
   scoped_refptr<base::RefCountedString> some_data2;
 
-  FakeAttachmentStoreTest()
-      : store(new FakeAttachmentStore(base::ThreadTaskRunnerHandle::Get())) {}
+  InMemoryAttachmentStoreTest()
+      : store(AttachmentStore::CreateInMemoryStore()) {}
 
   virtual void SetUp() {
     Clear();
-    read_callback = base::Bind(&FakeAttachmentStoreTest::CopyResultAttachments,
-                               base::Unretained(this),
-                               &result,
-                               &attachments,
-                               &failed_attachment_ids);
-    write_callback = base::Bind(
-        &FakeAttachmentStoreTest::CopyResult, base::Unretained(this), &result);
+    read_callback =
+        base::Bind(&InMemoryAttachmentStoreTest::CopyResultAttachments,
+                   base::Unretained(this),
+                   &result,
+                   &attachments,
+                   &failed_attachment_ids);
+    write_callback = base::Bind(&InMemoryAttachmentStoreTest::CopyResult,
+                                base::Unretained(this),
+                                &result);
     drop_callback = write_callback;
 
     some_data1 = new base::RefCountedString;
@@ -86,7 +88,7 @@ class FakeAttachmentStoreTest : public testing::Test {
 
 // Verify that we do not overwrite existing attachments and that we do not treat
 // it as an error.
-TEST_F(FakeAttachmentStoreTest, Write_NoOverwriteNoError) {
+TEST_F(InMemoryAttachmentStoreTest, Write_NoOverwriteNoError) {
   // Create two attachments with the same id but different data.
   Attachment attachment1 = Attachment::Create(some_data1);
   Attachment attachment2 =
@@ -120,7 +122,7 @@ TEST_F(FakeAttachmentStoreTest, Write_NoOverwriteNoError) {
 }
 
 // Verify that we can write some attachments and read them back.
-TEST_F(FakeAttachmentStoreTest, Write_RoundTrip) {
+TEST_F(InMemoryAttachmentStoreTest, Write_RoundTrip) {
   Attachment attachment1 = Attachment::Create(some_data1);
   Attachment attachment2 = Attachment::Create(some_data2);
   AttachmentList some_attachments;
@@ -150,7 +152,7 @@ TEST_F(FakeAttachmentStoreTest, Write_RoundTrip) {
 }
 
 // Try to read two attachments when only one exists.
-TEST_F(FakeAttachmentStoreTest, Read_OneNotFound) {
+TEST_F(InMemoryAttachmentStoreTest, Read_OneNotFound) {
   Attachment attachment1 = Attachment::Create(some_data1);
   Attachment attachment2 = Attachment::Create(some_data2);
 
@@ -176,7 +178,7 @@ TEST_F(FakeAttachmentStoreTest, Read_OneNotFound) {
 
 // Try to drop two attachments when only one exists. Verify that no error occurs
 // and that the existing attachment was dropped.
-TEST_F(FakeAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
+TEST_F(InMemoryAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
   // First, create two attachments.
   Attachment attachment1 = Attachment::Create(some_data1);
   Attachment attachment2 = Attachment::Create(some_data2);
@@ -223,7 +225,7 @@ TEST_F(FakeAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
 
 // Verify that attempting to drop an attachment that does not exist is not an
 // error.
-TEST_F(FakeAttachmentStoreTest, Drop_DoesNotExist) {
+TEST_F(InMemoryAttachmentStoreTest, Drop_DoesNotExist) {
   Attachment attachment1 = Attachment::Create(some_data1);
   AttachmentList some_attachments;
   some_attachments.push_back(attachment1);

@@ -16,6 +16,8 @@
 
 namespace syncer {
 
+namespace {
+
 class MockAttachmentStore : public AttachmentStore,
                             public base::SupportsWeakPtr<MockAttachmentStore> {
  public:
@@ -149,6 +151,8 @@ class MockAttachmentUploader
 
   DISALLOW_COPY_AND_ASSIGN(MockAttachmentUploader);
 };
+
+}  // namespace
 
 class AttachmentServiceImplTest : public testing::Test,
                                   public AttachmentService::Delegate {

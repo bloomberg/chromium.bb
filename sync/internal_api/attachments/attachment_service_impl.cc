@@ -11,7 +11,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment.h"
-#include "sync/api/attachments/fake_attachment_store.h"
 #include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
@@ -145,8 +144,8 @@ AttachmentServiceImpl::~AttachmentServiceImpl() {
 
 // Static.
 scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
-  scoped_refptr<syncer::AttachmentStore> attachment_store(
-      new syncer::FakeAttachmentStore(base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<syncer::AttachmentStore> attachment_store =
+      AttachmentStore::CreateInMemoryStore();
   scoped_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
   scoped_ptr<AttachmentDownloader> attachment_downloader(

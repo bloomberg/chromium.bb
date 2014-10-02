@@ -153,10 +153,10 @@ class DeviceInfoSyncServiceTest : public testing::Test,
 
  protected:
   int num_device_info_changed_callbacks_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
   scoped_ptr<DeviceInfoSyncService> sync_service_;
   scoped_ptr<TestChangeProcessor> sync_processor_;
-  base::MessageLoopForUI message_loop_;
 };
 
 // Sync with empty initial data.

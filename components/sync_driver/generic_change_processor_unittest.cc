@@ -12,7 +12,7 @@
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/attachments/attachment_id.h"
-#include "sync/api/attachments/fake_attachment_store.h"
+#include "sync/api/attachments/attachment_store.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_merge_result.h"
@@ -147,8 +147,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
   void ConstructGenericChangeProcessor(syncer::ModelType type) {
-    scoped_refptr<syncer::AttachmentStore> attachment_store(
-        new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
+    scoped_refptr<syncer::AttachmentStore> attachment_store =
+        syncer::AttachmentStore::CreateInMemoryStore();
     scoped_ptr<MockAttachmentService> mock_attachment_service(
         new MockAttachmentService(attachment_store));
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
