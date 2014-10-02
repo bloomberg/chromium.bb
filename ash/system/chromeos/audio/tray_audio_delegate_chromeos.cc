@@ -60,5 +60,11 @@ void TrayAudioDelegateChromeOs::SetOutputVolumeLevel(int level) {
   CrasAudioHandler::Get()->SetOutputVolumePercent(level);
 }
 
+void TrayAudioDelegateChromeOs::SetInternalSpeakerChannelMode(
+    AudioChannelMode mode) {
+  CrasAudioHandler::Get()->SwapInternalSpeakerLeftRightChannel(
+      mode == LEFT_RIGHT_SWAPPED);
+}
+
 }  // namespace system
 }  // namespace ash

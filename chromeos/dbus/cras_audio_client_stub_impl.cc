@@ -150,6 +150,9 @@ void CrasAudioClientStubImpl::RemoveActiveInputNode(uint64 node_id) {
   }
 }
 
+void CrasAudioClientStubImpl::SwapLeftRight(uint64 node_id, bool swap) {
+}
+
 void CrasAudioClientStubImpl::AddActiveOutputNode(uint64 node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)

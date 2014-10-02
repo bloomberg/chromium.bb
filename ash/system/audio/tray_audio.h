@@ -8,6 +8,7 @@
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/display_observer.h"
 
 namespace ash {
 
@@ -20,7 +21,8 @@ class VolumeView;
 }
 
 class TrayAudio : public TrayImageItem,
-                  public AudioObserver {
+                  public AudioObserver,
+                  public gfx::DisplayObserver {
  public:
   TrayAudio(SystemTray* system_tray,
             scoped_ptr<system::TrayAudioDelegate> audio_delegate);
@@ -56,6 +58,14 @@ class TrayAudio : public TrayImageItem,
   virtual void OnAudioNodesChanged() OVERRIDE;
   virtual void OnActiveOutputNodeChanged() OVERRIDE;
   virtual void OnActiveInputNodeChanged() OVERRIDE;
+
+  // Overridden from gfx::DisplayObserver.
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t changed_metrics) OVERRIDE;
+
+  void ChangeInternalSpeakerChannelMode();
 
   DISALLOW_COPY_AND_ASSIGN(TrayAudio);
 };

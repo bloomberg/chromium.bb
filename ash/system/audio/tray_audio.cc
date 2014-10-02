@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "ash/ash_constants.h"
+#include "ash/display/display_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/audio/tray_audio_delegate.h"
@@ -26,6 +27,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -45,9 +47,11 @@ TrayAudio::TrayAudio(SystemTray* system_tray,
       volume_view_(NULL),
       pop_up_volume_view_(false) {
   Shell::GetInstance()->system_tray_notifier()->AddAudioObserver(this);
+  Shell::GetScreen()->AddObserver(this);
 }
 
 TrayAudio::~TrayAudio() {
+  Shell::GetScreen()->RemoveObserver(this);
   Shell::GetInstance()->system_tray_notifier()->RemoveAudioObserver(this);
 }
 
@@ -131,6 +135,42 @@ void TrayAudio::OnActiveOutputNodeChanged() {
 
 void TrayAudio::OnActiveInputNodeChanged() {
   Update();
+}
+
+void TrayAudio::OnDisplayAdded(const gfx::Display& new_display) {
+  if (new_display.id() != gfx::Display::InternalDisplayId())
+    return;
+  ChangeInternalSpeakerChannelMode();
+}
+
+void TrayAudio::OnDisplayRemoved(const gfx::Display& old_display) {
+  if (old_display.id() != gfx::Display::InternalDisplayId())
+    return;
+  ChangeInternalSpeakerChannelMode();
+}
+
+void TrayAudio::OnDisplayMetricsChanged(const gfx::Display& display,
+                                        uint32_t changed_metrics) {
+  if (display.id() != gfx::Display::InternalDisplayId())
+    return;
+
+  if (changed_metrics & gfx::DisplayObserver::DISPLAY_METRIC_ROTATION)
+    ChangeInternalSpeakerChannelMode();
+}
+
+void TrayAudio::ChangeInternalSpeakerChannelMode() {
+  // Swap left/right channel only if it is in Yoga mode.
+  system::TrayAudioDelegate::AudioChannelMode channel_mode =
+      system::TrayAudioDelegate::NORMAL;
+  if (gfx::Display::InternalDisplayId() != gfx::Display::kInvalidDisplayID) {
+    const DisplayInfo& display_info =
+        Shell::GetInstance()->display_manager()->GetDisplayInfo(
+            gfx::Display::InternalDisplayId());
+    if (display_info.rotation() == gfx::Display::ROTATE_180)
+      channel_mode = system::TrayAudioDelegate::LEFT_RIGHT_SWAPPED;
+  }
+
+  audio_delegate_->SetInternalSpeakerChannelMode(channel_mode);
 }
 
 void TrayAudio::Update() {

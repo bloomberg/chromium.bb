@@ -174,6 +174,17 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  virtual void SwapLeftRight(uint64 node_id, bool swap) OVERRIDE {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSwapLeftRight);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint64(node_id);
+    writer.AppendBool(swap);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     cras_proxy_ = bus->GetObjectProxy(cras::kCrasServiceName,

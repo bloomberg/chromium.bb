@@ -36,6 +36,7 @@ class CHROMEOS_EXPORT CrasAudioClientStubImpl : public CrasAudioClient {
   virtual void RemoveActiveInputNode(uint64 node_id) OVERRIDE;
   virtual void AddActiveOutputNode(uint64 node_id) OVERRIDE;
   virtual void RemoveActiveOutputNode(uint64 node_id) OVERRIDE;
+  virtual void SwapLeftRight(uint64 node_id, bool swap) OVERRIDE;
 
   // Updates |node_list_| to contain |audio_nodes|.
   void SetAudioNodesForTesting(const AudioNodeList& audio_nodes);

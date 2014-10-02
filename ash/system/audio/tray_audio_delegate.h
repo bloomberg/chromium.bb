@@ -12,6 +12,10 @@ class ASH_EXPORT TrayAudioDelegate {
  public:
 
   enum { kNoAudioDeviceIcon = -1 };
+  enum AudioChannelMode {
+    NORMAL,
+    LEFT_RIGHT_SWAPPED,
+  };
 
   virtual ~TrayAudioDelegate() {}
 
@@ -40,6 +44,9 @@ class ASH_EXPORT TrayAudioDelegate {
 
   // Sets the volume level of the output device in the range 0%-100%
   virtual void SetOutputVolumeLevel(int level) = 0;
+
+  // Sets the internal speaker's channel mode.
+  virtual void SetInternalSpeakerChannelMode(AudioChannelMode mode) = 0;
 };
 
 }  // namespace system

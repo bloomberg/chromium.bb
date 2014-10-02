@@ -25,6 +25,7 @@ class ASH_EXPORT TrayAudioDelegateChromeOs : public TrayAudioDelegate {
   virtual bool IsOutputAudioMuted() OVERRIDE;
   virtual void SetOutputAudioIsMuted(bool is_muted) OVERRIDE;
   virtual void SetOutputVolumeLevel(int level) OVERRIDE;
+  virtual void SetInternalSpeakerChannelMode(AudioChannelMode mode) OVERRIDE;
 };
 
 }  // namespace system

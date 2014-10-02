@@ -92,6 +92,10 @@ void TrayAudioDelegateWin::SetOutputVolumeLevel(int level) {
   volume_control->SetMasterVolume(volume_level, NULL);
 }
 
+void TrayAudioDelegateWin::SetInternalSpeakerChannelMode(
+    AudioChannelMode mode) {
+}
+
 ScopedComPtr<ISimpleAudioVolume>
 TrayAudioDelegateWin::CreateDefaultVolumeControl() {
   ScopedComPtr<ISimpleAudioVolume> volume_control;

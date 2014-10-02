@@ -184,6 +184,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Removes all active audio nodes, including the primary active ones.
   virtual void RemoveAllActiveNodes();
 
+  // Swaps the left and right channel of the internal speaker.
+  // Swap the left and right channel if |swap| is true; otherwise, swap the left
+  // and right channel back to the normal mode.
+  // If the feature is not supported on the device, nothing happens.
+  virtual void SwapInternalSpeakerLeftRightChannel(bool swap);
+
   // Enables error logging.
   virtual void LogErrors();
 

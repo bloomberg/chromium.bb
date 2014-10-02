@@ -115,6 +115,13 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   // removing an active output node added by AddActiveOutputNode.
   virtual void RemoveActiveOutputNode(uint64 node_id) = 0;
 
+  // Swaps the left and right channel of the primary active output device.
+  // Swap the left and right channel if |swap| is true; otherwise, swap the left
+  // and right channel back to the normal mode.
+  // The dbus message will be dropped if this feature is not supported on the
+  // |node_id|.
+  virtual void SwapLeftRight(uint64 node_id, bool swap) = 0;
+
   // Creates the instance.
   static CrasAudioClient* Create();
 
