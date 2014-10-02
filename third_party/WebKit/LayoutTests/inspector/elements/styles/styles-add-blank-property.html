@@ -27,14 +27,14 @@ function test()
         treeElement.valueElement.textContent = "1px";
         treeElement.valueElement.firstChild.select();
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up"));
-        InspectorTest.runAfterPendingDispatches(incrementProperty);
+        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", incrementProperty);
     }
 
     function incrementProperty()
     {
         // Increment again.
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up"));
-        InspectorTest.runAfterPendingDispatches(commitProperty);
+        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", commitProperty);
     }
 
     function commitProperty()
@@ -61,7 +61,7 @@ function test()
         treeElement.kickFreeFlowStyleEditForTest();
 
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(reloadStyles.bind(this, addAndCommitMiddleProperty));
+        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", reloadStyles.bind(this, addAndCommitMiddleProperty));
     }
 
     function addAndCommitMiddleProperty()
@@ -75,8 +75,8 @@ function test()
         treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
         treeElement.valueElement.textContent = "third-value";
 
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(reloadStyles.bind(this, dumpAndComplete));
+        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", reloadStyles.bind(this, dumpAndComplete));
     }
 
     function dumpAndComplete()
@@ -88,8 +88,7 @@ function test()
     }
 
     function reloadStyles(callback) {
-        InspectorTest.selectNodeWithId("other");
-        InspectorTest.runAfterPendingDispatches(otherCallback);
+        InspectorTest.selectNodeAndWaitForStyles("other", otherCallback);
 
         function otherCallback()
         {
