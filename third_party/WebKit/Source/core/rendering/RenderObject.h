@@ -1021,15 +1021,6 @@ public:
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
-    bool shouldDoFullPaintInvalidationIfSelfPaintingLayer() const { return m_bitfields.shouldDoFullPaintInvalidationIfSelfPaintingLayer(); }
-    void setShouldDoFullPaintInvalidationIfSelfPaintingLayer(bool b)
-    {
-        m_bitfields.setShouldDoFullPaintInvalidationIfSelfPaintingLayer(b);
-
-        if (b)
-            markContainingBlockChainForPaintInvalidation();
-    }
-
     bool onlyNeededPositionedMovementLayout() const { return m_bitfields.onlyNeededPositionedMovementLayout(); }
     void setOnlyNeededPositionedMovementLayout(bool b) { m_bitfields.setOnlyNeededPositionedMovementLayout(b); }
 
@@ -1077,7 +1068,7 @@ public:
 
     bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() const
     {
-        return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer() || shouldInvalidateSelection();
+        return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
     }
 
     bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransform() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
@@ -1209,7 +1200,6 @@ private:
         RenderObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
             , m_shouldInvalidateOverflowForPaint(false)
-            , m_shouldDoFullPaintInvalidationIfSelfPaintingLayer(false)
             // FIXME: We should remove mayNeedPaintInvalidation once we are able to
             // use the other layout flags to detect the same cases. crbug.com/370118
             , m_mayNeedPaintInvalidation(false)
@@ -1251,10 +1241,9 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 15 in the second.
+        // 32 bits have been used in the first word, and 14 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
-        ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidationIfSelfPaintingLayer, ShouldDoFullPaintInvalidationIfSelfPaintingLayer);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
         ADD_BOOLEAN_BITFIELD(onlyNeededPositionedMovementLayout, OnlyNeededPositionedMovementLayout);
