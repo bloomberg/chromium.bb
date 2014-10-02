@@ -43,8 +43,9 @@ const int kShowAnimationDurationMs = 350;
 const int kHideAnimationDurationMs = 100;
 
 // The opacity of virtual keyboard container when show animation starts or
-// hide animation finishes.
-// TODO(rsadam@): Investigate why setting this to zero crashes.
+// hide animation finishes. This cannot be zero because we call Show() on the
+// keyboard window before setting the opacity back to 1.0. Since windows are not
+// allowed to be shown with zero opacity, we always animate to 0.01 instead.
 const float kAnimationStartOrAfterHideOpacity = 0.01f;
 
 // Event targeter for the keyboard container.

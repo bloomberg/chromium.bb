@@ -60,7 +60,11 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
     int new_height = pos.height();
     bounds.set_y(bounds.y() + bounds.height() - new_height);
     bounds.set_height(new_height);
-    keyboard->SetBounds(bounds);
+    // Keyboard bounds should only be reset when it actually changes. Otherwise
+    // it interrupts the initial animation of showing the keyboard. Described in
+    // crbug.com/356753.
+    if (bounds != keyboard->bounds())
+      keyboard->SetBounds(bounds);
   }
 
   // Overridden from content::WebContentsDelegate:
