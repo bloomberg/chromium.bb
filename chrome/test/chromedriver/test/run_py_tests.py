@@ -132,10 +132,16 @@ _ANDROID_NEGATIVE_FILTER['chrome_shell'] = (
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testSwitchToWindow',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+        # https://code.google.com/p/chromedriver/issues/detail?id=913
+        'ChromeDriverTest.testChromeDriverReceiveAndSendLargeData',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome_shell'])
+    _ANDROID_NEGATIVE_FILTER['chrome_shell'] + [
+        # https://code.google.com/p/chromedriver/issues/detail?id=913
+        'ChromeDriverTest.testChromeDriverSendLargeData',
+    ]
+)
 
 
 class ChromeDriverBaseTest(unittest.TestCase):
