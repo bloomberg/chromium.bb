@@ -1501,6 +1501,4 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/text-combine-shrink-t
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
-crbug.com/419515 battery-status/page-visibility.html [ Crash ]
-
 crbug.com/419566 inspector/timeline/timeline-bound-function.html [ Pass Timeout ]
