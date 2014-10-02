@@ -481,7 +481,7 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "gcdPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"],
     "whitelist": [
       "11B478CEC461C766A2DC1E5BEEB7970AE06DC9C2",  // http://crbug.com/394124
