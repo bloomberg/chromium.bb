@@ -10,6 +10,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     CancelAnimationFrame : "CancelAnimationFrame"
     CompositeLayers : "CompositeLayers"
     ConsoleTime : "ConsoleTime"
+    CpuProfile : "CpuProfile"
     DecodeImage : "Decode Image"
     DecodeLazyPixelRef : "Decode LazyPixelRef"
     DrawFrame : "DrawFrame"
