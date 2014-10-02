@@ -8,7 +8,9 @@
 
 #include "base/base_paths.h"
 #include "base/base_paths_win.h"
+#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
@@ -17,7 +19,9 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/test/scoped_path_override.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/test/test_shortcut_win.h"
+#include "base/win/registry.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -30,6 +34,16 @@ namespace {
 const wchar_t kManganeseExe[] = L"manganese.exe";
 const wchar_t kIronExe[] = L"iron.exe";
 const wchar_t kOtherIco[] = L"other.ico";
+
+// For registry tests.
+const wchar_t kTestProgid[] = L"TestApp";
+const wchar_t kTestOpenCommand[] = L"C:\\test.exe";
+const wchar_t kTestFileTypeName[] = L"Test File Type";
+const wchar_t kTestIconPath[] = L"D:\\test.ico";
+const wchar_t* kTestFileExtensions[] = {
+    L"test1",
+    L"test2",
+};
 
 // TODO(huangs): Separate this into generic shortcut tests and Chrome-specific
 // tests. Specifically, we should not overly rely on getting shortcut properties
@@ -790,6 +804,128 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
       chrome_exe_));
   ASSERT_TRUE(base::PathExists(shortcut_path));
   ASSERT_TRUE(base::PathExists(shortcut_path.DirName()));
+}
+
+class ShellUtilRegistryTest : public testing::Test {
+ public:
+  ShellUtilRegistryTest() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
+
+    // .test2 files already have a default application.
+    base::win::RegKey key;
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        key.Create(
+            HKEY_CURRENT_USER, L"Software\\Classes\\.test2", KEY_ALL_ACCESS));
+    EXPECT_EQ(ERROR_SUCCESS, key.WriteValue(L"", L"SomeOtherApp"));
+  }
+
+  static base::CommandLine OpenCommand() {
+    base::FilePath open_command_path(kTestOpenCommand);
+    return base::CommandLine(open_command_path);
+  }
+
+  static std::set<base::string16> FileExtensions() {
+    std::set<base::string16> file_extensions;
+    for (size_t i = 0; i < arraysize(kTestFileExtensions); ++i)
+      file_extensions.insert(kTestFileExtensions[i]);
+    return file_extensions;
+  }
+
+ private:
+  registry_util::RegistryOverrideManager registry_overrides_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellUtilRegistryTest);
+};
+
+TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
+  // Create file associations.
+  EXPECT_TRUE(ShellUtil::AddFileAssociations(kTestProgid,
+                                             OpenCommand(),
+                                             kTestFileTypeName,
+                                             base::FilePath(kTestIconPath),
+                                             FileExtensions()));
+
+  // Ensure that the registry keys have been correctly set.
+  base::win::RegKey key;
+  std::wstring value;
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\TestApp", KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"Test File Type", value);
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     L"Software\\Classes\\TestApp\\DefaultIcon",
+                     KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"D:\\test.ico,0", value);
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     L"Software\\Classes\\TestApp\\shell\\open\\command",
+                     KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"\"C:\\test.exe\"", value);
+
+  // .test1 should be default-associated with our test app.
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\.test1", KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"TestApp", value);
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     L"Software\\Classes\\.test1\\OpenWithProgids",
+                     KEY_READ));
+  EXPECT_TRUE(key.HasValue(L"TestApp"));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"TestApp", &value));
+  EXPECT_EQ(L"", value);
+
+  // .test2 should still be associated with the other app (should not have been
+  // overridden). But it should have our app in its Open With list.
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\.test2", KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"SomeOtherApp", value);
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     L"Software\\Classes\\.test2\\OpenWithProgids",
+                     KEY_READ));
+  EXPECT_TRUE(key.HasValue(L"TestApp"));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"TestApp", &value));
+  EXPECT_EQ(L"", value);
+}
+
+TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
+  // Create file associations.
+  EXPECT_TRUE(ShellUtil::AddFileAssociations(kTestProgid,
+                                             OpenCommand(),
+                                             kTestFileTypeName,
+                                             base::FilePath(kTestIconPath),
+                                             FileExtensions()));
+
+  // Delete them.
+  EXPECT_TRUE(ShellUtil::DeleteFileAssociations(kTestProgid));
+
+  // The class key should have been completely deleted.
+  base::win::RegKey key;
+  std::wstring value;
+  ASSERT_NE(
+      ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\TestApp", KEY_READ));
+
+  // We don't currently delete the associations with the particular extensions.
+  // Still, ensure that .test2 is still associated with the other app.
+  // TODO(mgiuca): Update this expectation when we delete the associations.
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\.test2", KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"SomeOtherApp", value);
 }
 
 TEST(ShellUtilTest, BuildAppModelIdBasic) {

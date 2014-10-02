@@ -12,6 +12,7 @@
 #include <windows.h>
 
 #include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -26,6 +27,7 @@ class BrowserDistribution;
 
 namespace base {
 class CancellationFlag;
+class CommandLine;
 }
 
 // This is a utility class that provides common shell integration methods
@@ -599,6 +601,38 @@ class ShellUtil {
   // required by the base32 standard for inputs that aren't a multiple of 5
   // bytes.
   static base::string16 ByteArrayToBase32(const uint8* bytes, size_t size);
+
+  // Associates a set of file extensions with a particular application in the
+  // Windows registry, for the current user only. If an extension has no
+  // existing default association, the given application becomes the default.
+  // Otherwise, the application is added to the Open With menu for this type,
+  // but does not become the default.
+  //
+  // |prog_id| is the ProgId used by Windows for file associations with this
+  // application. Must not be empty or start with a '.'.
+  // |command_line| is the command to execute when opening a file via this
+  // association. It should contain "%1" (to tell Windows to pass the filename
+  // as an argument).
+  // |file_type_name| and |icon_path| are the friendly name, and the path of the
+  // icon, respectively, that will be used for files of these types when
+  // associated with this application by default. (They are NOT the name/icon
+  // that will represent the application under the Open With menu.)
+  // |file_extensions| is the set of extensions to associate. They must not be
+  // empty or start with a '.'.
+  // Returns true on success, false on failure.
+  static bool AddFileAssociations(
+      const base::string16& prog_id,
+      const base::CommandLine& command_line,
+      const base::string16& file_type_name,
+      const base::FilePath& icon_path,
+      const std::set<base::string16>& file_extensions);
+
+  // Deletes all associations with a particular application in the Windows
+  // registry, for the current user only.
+  // |prog_id| is the ProgId used by Windows for file associations with this
+  // application, as given to AddFileAssociations. All information associated
+  // with this name will be deleted.
+  static bool DeleteFileAssociations(const base::string16& prog_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);
