@@ -96,7 +96,7 @@ class TestStream : public QuicDataStream {
   }
 
   void SendBody(const string& data, bool fin) {
-    WriteOrBufferData(data, fin, NULL);
+    WriteOrBufferData(data, fin, nullptr);
   }
 
   MOCK_METHOD0(OnCanWrite, void());
@@ -172,7 +172,7 @@ class TestSession : public QuicSession {
   }
 
   QuicConsumedData SendStreamData(QuicStreamId id) {
-    return WritevData(id, IOVector(), 0, true, MAY_FEC_PROTECT, NULL);
+    return WritevData(id, IOVector(), 0, true, MAY_FEC_PROTECT, nullptr);
   }
 
   using QuicSession::PostProcessAfterData;
@@ -268,12 +268,12 @@ TEST_P(QuicSessionTest, IsClosedStreamDefault) {
 }
 
 TEST_P(QuicSessionTest, ImplicitlyCreatedStreams) {
-  ASSERT_TRUE(session_.GetIncomingDataStream(7) != NULL);
+  ASSERT_TRUE(session_.GetIncomingDataStream(7) != nullptr);
   // Both 3 and 5 should be implicitly created.
   EXPECT_FALSE(session_.IsClosedStream(3));
   EXPECT_FALSE(session_.IsClosedStream(5));
-  ASSERT_TRUE(session_.GetIncomingDataStream(5) != NULL);
-  ASSERT_TRUE(session_.GetIncomingDataStream(3) != NULL);
+  ASSERT_TRUE(session_.GetIncomingDataStream(5) != nullptr);
+  ASSERT_TRUE(session_.GetIncomingDataStream(3) != nullptr);
 }
 
 TEST_P(QuicSessionTest, IsClosedStreamLocallyCreated) {

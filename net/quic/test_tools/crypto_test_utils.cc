@@ -130,7 +130,7 @@ bool HexChar(char c, uint8* value) {
 }
 
 // A ChannelIDSource that works in asynchronous mode unless the |callback|
-// argument to GetChannelIDKey is NULL.
+// argument to GetChannelIDKey is nullptr.
 class AsyncTestChannelIDSource : public ChannelIDSource,
                                  public CryptoTestUtils::CallbackSource {
  public:
@@ -146,12 +146,12 @@ class AsyncTestChannelIDSource : public ChannelIDSource,
       ChannelIDSourceCallback* callback) OVERRIDE {
     // Synchronous mode.
     if (!callback) {
-      return sync_source_->GetChannelIDKey(hostname, channel_id_key, NULL);
+      return sync_source_->GetChannelIDKey(hostname, channel_id_key, nullptr);
     }
 
     // Asynchronous mode.
     QuicAsyncStatus status =
-        sync_source_->GetChannelIDKey(hostname, &channel_id_key_, NULL);
+        sync_source_->GetChannelIDKey(hostname, &channel_id_key_, nullptr);
     if (status != QUIC_SUCCESS) {
       return QUIC_FAILURE;
     }
@@ -227,7 +227,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     crypto_config.SetProofVerifier(FakeProofVerifierForTesting());
   }
   bool is_https = false;
-  AsyncTestChannelIDSource* async_channel_id_source = NULL;
+  AsyncTestChannelIDSource* async_channel_id_source = nullptr;
   if (options.channel_id_enabled) {
     is_https = true;
 
@@ -255,10 +255,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
 
   if (options.channel_id_enabled) {
     scoped_ptr<ChannelIDKey> channel_id_key;
-    QuicAsyncStatus status =
-        crypto_config.channel_id_source()->GetChannelIDKey(kServerHostname,
-                                                           &channel_id_key,
-                                                           NULL);
+    QuicAsyncStatus status = crypto_config.channel_id_source()->GetChannelIDKey(
+        kServerHostname, &channel_id_key, nullptr);
     EXPECT_EQ(QUIC_SUCCESS, status);
     EXPECT_EQ(channel_id_key->SerializeKey(),
               server->crypto_negotiated_params().channel_id);
@@ -288,7 +286,7 @@ void CryptoTestUtils::CommunicateHandshakeMessages(
     QuicCryptoStream* a,
     PacketSavingConnection* b_conn,
     QuicCryptoStream* b) {
-  CommunicateHandshakeMessagesAndRunCallbacks(a_conn, a, b_conn, b, NULL);
+  CommunicateHandshakeMessagesAndRunCallbacks(a_conn, a, b_conn, b, nullptr);
 }
 
 // static
@@ -580,7 +578,7 @@ CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
 
   for (;;) {
     const char* tagstr = va_arg(ap, const char*);
-    if (tagstr == NULL) {
+    if (tagstr == nullptr) {
       break;
     }
 

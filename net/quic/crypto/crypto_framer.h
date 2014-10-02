@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE CryptoFramer {
 
   // ParseMessage parses exactly one message from the given StringPiece. If
   // there is an error, the message is truncated, or the message has trailing
-  // garbage then NULL will be returned.
+  // garbage then nullptr will be returned.
   static CryptoHandshakeMessage* ParseMessage(base::StringPiece in);
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   size_t InputBytesRemaining() const { return buffer_.length(); }
 
   // Returns a new QuicData owned by the caller that contains a serialized
-  // |message|, or NULL if there was an error.
+  // |message|, or nullptr if there was an error.
   static QuicData* ConstructHandshakeMessage(
       const CryptoHandshakeMessage& message);
 

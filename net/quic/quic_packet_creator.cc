@@ -104,13 +104,13 @@ void QuicPacketCreator::set_max_packets_per_fec_group(
 
 bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
   DCHECK(!HasPendingFrames());
-  return fec_group_.get() != NULL && fec_group_->NumReceivedPackets() > 0 &&
-      (force_close || fec_group_->NumReceivedPackets() >=
-                      max_packets_per_fec_group_);
+  return fec_group_.get() != nullptr && fec_group_->NumReceivedPackets() > 0 &&
+         (force_close ||
+          fec_group_->NumReceivedPackets() >= max_packets_per_fec_group_);
 }
 
 bool QuicPacketCreator::IsFecGroupOpen() const {
-  return fec_group_.get() != NULL;
+  return fec_group_.get() != nullptr;
 }
 
 void QuicPacketCreator::StartFecProtectingPackets() {
@@ -132,7 +132,7 @@ void QuicPacketCreator::StartFecProtectingPackets() {
 }
 
 void QuicPacketCreator::StopFecProtectingPackets() {
-  if (fec_group_.get() != NULL) {
+  if (fec_group_.get() != nullptr) {
     LOG(DFATAL) << "Cannot stop FEC protection with open FEC group.";
     return;
   }
@@ -150,14 +150,14 @@ bool QuicPacketCreator::IsFecEnabled() const {
 }
 
 InFecGroup QuicPacketCreator::MaybeUpdateLengthsAndStartFec() {
-  if (fec_group_.get() != NULL) {
+  if (fec_group_.get() != nullptr) {
     // Don't update any lengths when an FEC group is open, to ensure same
     // packet header size in all packets within a group.
     return IN_FEC_GROUP;
   }
   if (!queued_frames_.empty()) {
     // Don't change creator state if there are frames queued.
-    return fec_group_.get() == NULL ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
+    return fec_group_.get() == nullptr ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
   }
 
   // Update sequence number length only on packet and FEC group boundaries.
@@ -283,7 +283,7 @@ size_t QuicPacketCreator::CreateStreamFrameWithNotifier(
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const QuicFrames& frames,
     QuicSequenceNumberLength original_length) {
-  DCHECK(fec_group_.get() == NULL);
+  DCHECK(fec_group_.get() == nullptr);
   const QuicSequenceNumberLength saved_length = sequence_number_length_;
   const QuicSequenceNumberLength saved_next_length =
       next_sequence_number_length_;
@@ -316,7 +316,7 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(
     DCHECK(success);
   }
   SerializedPacket packet = SerializePacket();
-  DCHECK(packet.retransmittable_frames == NULL);
+  DCHECK(packet.retransmittable_frames == nullptr);
   return packet;
 }
 
@@ -325,8 +325,8 @@ bool QuicPacketCreator::HasPendingFrames() const {
 }
 
 bool QuicPacketCreator::HasPendingRetransmittableFrames() const {
-  return queued_retransmittable_frames_.get() != NULL &&
-      !queued_retransmittable_frames_->frames().empty();
+  return queued_retransmittable_frames_.get() != nullptr &&
+         !queued_retransmittable_frames_->frames().empty();
 }
 
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
@@ -353,7 +353,7 @@ size_t QuicPacketCreator::PacketSize() const {
   if (!queued_frames_.empty()) {
     return packet_size_;
   }
-  if (fec_group_.get() == NULL) {
+  if (fec_group_.get() == nullptr) {
     // Update sequence number length on packet and FEC boundary.
     sequence_number_length_ = next_sequence_number_length_;
   }
@@ -402,10 +402,11 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
 }
 
 SerializedPacket QuicPacketCreator::SerializeFec() {
-  if (fec_group_.get() == NULL || fec_group_->NumReceivedPackets() <= 0) {
+  if (fec_group_.get() == nullptr || fec_group_->NumReceivedPackets() <= 0) {
     LOG(DFATAL) << "SerializeFEC called but no group or zero packets in group.";
     // TODO(jri): Make this a public method of framer?
-    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
+    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0,
+                               nullptr);
     return kNoPacket;
   }
   DCHECK_EQ(0u, queued_frames_.size());
@@ -415,7 +416,7 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   fec_data.fec_group = fec_group_->min_protected_packet();
   fec_data.redundancy = fec_group_->payload_parity();
   SerializedPacket serialized = framer_->BuildFecPacket(header, fec_data);
-  fec_group_.reset(NULL);
+  fec_group_.reset(nullptr);
   packet_size_ = 0;
   LOG_IF(DFATAL, !serialized.packet)
       << "Failed to serialize fec packet for group:" << fec_data.fec_group;
@@ -486,7 +487,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   packet_size_ += ExpansionOnNewFrame() + frame_len;
 
   if (save_retransmittable_frames && ShouldRetransmit(frame)) {
-    if (queued_retransmittable_frames_.get() == NULL) {
+    if (queued_retransmittable_frames_.get() == nullptr) {
       queued_retransmittable_frames_.reset(new RetransmittableFrames());
     }
     if (frame.type == STREAM_FRAME) {
@@ -503,7 +504,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 }
 
 void QuicPacketCreator::MaybeAddPadding() {
-  if (queued_retransmittable_frames_.get() == NULL) {
+  if (queued_retransmittable_frames_.get() == nullptr) {
     return;
   }
   if (!queued_retransmittable_frames_->HasCryptoHandshake()) {

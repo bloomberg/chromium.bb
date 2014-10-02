@@ -24,7 +24,7 @@ const size_t kNoncePrefixSize = 0;
 // System NSS doesn't support ChaCha20+Poly1305 yet.
 
 ChaCha20Poly1305Encrypter::ChaCha20Poly1305Encrypter()
-    : AeadBaseEncrypter(CKM_INVALID_MECHANISM, NULL, kKeySize,
+    : AeadBaseEncrypter(CKM_INVALID_MECHANISM, nullptr, kKeySize,
                         kAuthTagSize, kNoncePrefixSize) {
   NOTIMPLEMENTED();
 }

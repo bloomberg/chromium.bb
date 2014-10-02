@@ -91,7 +91,7 @@ bool CryptoUtils::DeriveKeys(StringPiece premaster_secret,
   size_t key_bytes = crypters->encrypter->GetKeySize();
   size_t nonce_prefix_bytes = crypters->encrypter->GetNoncePrefixSize();
   size_t subkey_secret_bytes =
-      subkey_secret == NULL ? 0 : premaster_secret.length();
+      subkey_secret == nullptr ? 0 : premaster_secret.length();
 
   StringPiece nonce = client_nonce;
   string nonce_storage;
@@ -117,7 +117,7 @@ bool CryptoUtils::DeriveKeys(StringPiece premaster_secret,
       return false;
     }
   }
-  if (subkey_secret != NULL) {
+  if (subkey_secret != nullptr) {
     hkdf.subkey_secret().CopyToString(subkey_secret);
   }
 

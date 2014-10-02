@@ -26,7 +26,7 @@ QuicErrorCode ReadUint32(const CryptoHandshakeMessage& msg,
                          uint32 default_value,
                          uint32* out,
                          string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   QuicErrorCode error = msg.GetUint32(tag, out);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -96,7 +96,7 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
     HelloType hello_type,
     string* error_details) {
   DCHECK(!negotiated_);
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   uint32 value;
   QuicErrorCode error = ReadUint32(peer_hello,
                                    tag_,
@@ -155,7 +155,7 @@ QuicErrorCode QuicNegotiableTag::ReadVector(
     const QuicTag** out,
     size_t* out_length,
     string* error_details) const {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   QuicErrorCode error = msg.GetTaglist(tag_, out, out_length);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -181,7 +181,7 @@ QuicErrorCode QuicNegotiableTag::ProcessPeerHello(
     HelloType hello_type,
     string* error_details) {
   DCHECK(!negotiated_);
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   const QuicTag* received_tags;
   size_t received_tags_length;
   QuicErrorCode error = ReadVector(peer_hello, &received_tags,
@@ -204,7 +204,7 @@ QuicErrorCode QuicNegotiableTag::ProcessPeerHello(
                                   received_tags_length,
                                   QuicUtils::LOCAL_PRIORITY,
                                   &negotiated_tag,
-                                  NULL)) {
+                                  nullptr)) {
       *error_details = "Unsupported " + QuicUtils::TagToString(tag_);
       return QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP;
     }
@@ -262,7 +262,7 @@ QuicErrorCode QuicFixedUint32::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value_);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -330,7 +330,7 @@ QuicErrorCode QuicFixedTag::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value_);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -398,7 +398,7 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
   const QuicTag* received_tags;
   size_t received_tags_length;
   QuicErrorCode error =
@@ -667,7 +667,7 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
 
   QuicErrorCode error = QUIC_NO_ERROR;
   if (error == QUIC_NO_ERROR) {

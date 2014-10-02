@@ -113,7 +113,7 @@ void SendAlgorithmSimulator::TransferBytes(QuicByteCount max_bytes,
 
 SendAlgorithmSimulator::PacketEvent SendAlgorithmSimulator::NextSendEvent() {
   QuicTime::Delta next_send_time = QuicTime::Delta::Infinite();
-  Transfer* transfer = NULL;
+  Transfer* transfer = nullptr;
   for (vector<Transfer>::iterator it = pending_transfers_.begin();
        it != pending_transfers_.end(); ++it) {
     // If we've already sent enough bytes, wait for them to be acked.
@@ -143,12 +143,12 @@ SendAlgorithmSimulator::PacketEvent SendAlgorithmSimulator::NextSendEvent() {
 SendAlgorithmSimulator::PacketEvent SendAlgorithmSimulator::NextAckEvent() {
   if (sent_packets_.empty()) {
     DVLOG(1) << "No outstanding packets to ack for any transfer.";
-    return PacketEvent(QuicTime::Delta::Infinite(), NULL);
+    return PacketEvent(QuicTime::Delta::Infinite(), nullptr);
   }
 
   // For each connection, find the next acked packet.
   QuicTime::Delta ack_time = QuicTime::Delta::Infinite();
-  Transfer* transfer = NULL;
+  Transfer* transfer = nullptr;
   for (vector<Transfer>::iterator it = pending_transfers_.begin();
        it != pending_transfers_.end(); ++it) {
     QuicTime::Delta transfer_ack_time = FindNextAcked(&(*it));

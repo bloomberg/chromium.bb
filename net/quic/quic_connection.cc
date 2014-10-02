@@ -315,7 +315,7 @@ void QuicConnection::OnPacket() {
 
 void QuicConnection::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnPublicResetPacket(packet);
   }
   CloseConnection(QUIC_PUBLIC_RESET, true);
@@ -336,7 +336,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
   }
   DCHECK_NE(version(), received_version);
 
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnProtocolVersionMismatch(received_version);
   }
 
@@ -367,7 +367,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnSuccessfulVersionNegotiation(received_version);
   }
   DVLOG(1) << ENDPOINT << "version negotiated " << received_version;
@@ -390,7 +390,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     CloseConnection(QUIC_INTERNAL_ERROR, false);
     return;
   }
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnVersionNegotiationPacket(packet);
   }
 
@@ -439,7 +439,7 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnPacketHeader(header);
   }
 
@@ -454,7 +454,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected ConnectionId: "
              << header.public_header.connection_id << " instead of "
              << connection_id_;
-    if (debug_visitor_.get() != NULL) {
+    if (debug_visitor_.get() != nullptr) {
       debug_visitor_->OnIncorrectConnectionId(
           header.public_header.connection_id);
     }
@@ -476,7 +476,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
           header.packet_sequence_number)) {
     DVLOG(1) << ENDPOINT << "Packet " << header.packet_sequence_number
              << " no longer being waited for.  Discarding.";
-    if (debug_visitor_.get() != NULL) {
+    if (debug_visitor_.get() != nullptr) {
       debug_visitor_->OnDuplicatePacket(header.packet_sequence_number);
     }
     return false;
@@ -496,7 +496,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
         DCHECK_EQ(header.public_header.versions[0], version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
         visitor_->OnSuccessfulVersionNegotiation(version());
-        if (debug_visitor_.get() != NULL) {
+        if (debug_visitor_.get() != nullptr) {
           debug_visitor_->OnSuccessfulVersionNegotiation(version());
         }
       }
@@ -507,7 +507,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
       packet_generator_.StopSendingVersion();
       version_negotiation_state_ = NEGOTIATED_VERSION;
       visitor_->OnSuccessfulVersionNegotiation(version());
-      if (debug_visitor_.get() != NULL) {
+      if (debug_visitor_.get() != nullptr) {
         debug_visitor_->OnSuccessfulVersionNegotiation(version());
       }
     }
@@ -526,14 +526,14 @@ void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
   DCHECK_EQ(IN_FEC_GROUP, last_header_.is_in_fec_group);
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
-  if (group != NULL) {
+  if (group != nullptr) {
     group->Update(last_decrypted_packet_level_, last_header_, payload);
   }
 }
 
 bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnStreamFrame(frame);
   }
   if (frame.stream_id != kCryptoStreamId &&
@@ -549,7 +549,7 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
 
 bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnAckFrame(incoming_ack);
   }
   DVLOG(1) << ENDPOINT << "OnAckFrame: " << incoming_ack;
@@ -596,7 +596,7 @@ void QuicConnection::ProcessStopWaitingFrame(
 bool QuicConnection::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnCongestionFeedbackFrame(feedback);
   }
   last_congestion_frames_.push_back(feedback);
@@ -617,7 +617,7 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
     return false;
   }
 
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnStopWaitingFrame(frame);
   }
 
@@ -627,7 +627,7 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
 
 bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnPingFrame(frame);
   }
   last_ping_frames_.push_back(frame);
@@ -718,7 +718,7 @@ void QuicConnection::OnFecData(const QuicFecData& fec) {
   DCHECK_EQ(IN_FEC_GROUP, last_header_.is_in_fec_group);
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
-  if (group != NULL) {
+  if (group != nullptr) {
     group->UpdateFec(last_decrypted_packet_level_,
                      last_header_.packet_sequence_number, fec);
   }
@@ -726,7 +726,7 @@ void QuicConnection::OnFecData(const QuicFecData& fec) {
 
 bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnRstStreamFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Stream reset with error "
@@ -738,7 +738,7 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
 bool QuicConnection::OnConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Connection " << connection_id()
@@ -751,7 +751,7 @@ bool QuicConnection::OnConnectionCloseFrame(
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnGoAwayFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Go away received with error "
@@ -763,7 +763,7 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
 
 bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnWindowUpdateFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "WindowUpdate received for stream: "
@@ -774,7 +774,7 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
 
 bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   DCHECK(connected_);
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnBlockedFrame(frame);
   }
   DVLOG(1) << ENDPOINT << "Blocked frame received for stream: "
@@ -1025,7 +1025,7 @@ QuicConsumedData QuicConnection::SendStreamData(
 
   // This notifier will be owned by the AckNotifierManager (or deleted below if
   // no data or FIN was consumed).
-  QuicAckNotifier* notifier = NULL;
+  QuicAckNotifier* notifier = nullptr;
   if (delegate) {
     notifier = new QuicAckNotifier(delegate);
   }
@@ -1100,7 +1100,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   if (!connected_) {
     return;
   }
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnPacketReceived(self_address, peer_address, packet);
   }
   last_packet_revived_ = false;
@@ -1118,7 +1118,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
       if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
           undecryptable_packets_.size() < kMaxUndecryptablePackets) {
         QueueUndecryptablePacket(packet);
-      } else if (debug_visitor_.get() != NULL) {
+      } else if (debug_visitor_.get() != nullptr) {
         debug_visitor_->OnUndecryptablePacket();
       }
     }
@@ -1335,8 +1335,8 @@ bool QuicConnection::WritePacket(QueuedPacket* packet) {
   }
   delete packet->serialized_packet.retransmittable_frames;
   delete packet->serialized_packet.packet;
-  packet->serialized_packet.retransmittable_frames = NULL;
-  packet->serialized_packet.packet = NULL;
+  packet->serialized_packet.retransmittable_frames = nullptr;
+  packet->serialized_packet.packet = nullptr;
   return true;
 }
 
@@ -1359,7 +1359,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
       packet->encryption_level,
       sequence_number,
       *packet->serialized_packet.packet);
-  if (encrypted == NULL) {
+  if (encrypted == nullptr) {
     LOG(DFATAL) << ENDPOINT << "Failed to encrypt packet number "
                 << sequence_number;
     // CloseConnection does not send close packet, so no infinite loop here.
@@ -1371,7 +1371,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   // Others are deleted at the end of this call.
   scoped_ptr<QuicEncryptedPacket> encrypted_deleter;
   if (IsConnectionClose(*packet)) {
-    DCHECK(connection_close_packet_.get() == NULL);
+    DCHECK(connection_close_packet_.get() == nullptr);
     connection_close_packet_.reset(encrypted);
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
@@ -1408,7 +1408,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(sequence_number,
                                  packet->original_sequence_number,
@@ -1530,8 +1530,9 @@ void QuicConnection::OnHandshakeComplete() {
 
 void QuicConnection::SendOrQueuePacket(QueuedPacket packet) {
   // The caller of this function is responsible for checking CanWrite().
-  if (packet.serialized_packet.packet == NULL) {
-    LOG(DFATAL) << "NULL packet passed in to SendOrQueuePacket";
+  if (packet.serialized_packet.packet == nullptr) {
+    LOG(DFATAL)
+        << "packet.serialized_packet.packet == nullptr in to SendOrQueuePacket";
     return;
   }
 
@@ -1670,7 +1671,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
   // new keys installed and hence any undecryptable packets will
   // never be able to be decrypted.
   if (encryption_level_ == ENCRYPTION_FORWARD_SECURE) {
-    if (debug_visitor_.get() != NULL) {
+    if (debug_visitor_.get() != nullptr) {
       // TODO(rtenneti): perhaps more efficient to pass the number of
       // undecryptable packets as the argument to OnUndecryptablePacket so that
       // we just need to call OnUndecryptablePacket once?
@@ -1684,7 +1685,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
 
 void QuicConnection::MaybeProcessRevivedPacket() {
   QuicFecGroup* group = GetFecGroup();
-  if (!connected_ || group == NULL || !group->CanRevive()) {
+  if (!connected_ || group == nullptr || !group->CanRevive()) {
     return;
   }
   QuicPacketHeader revived_header;
@@ -1706,7 +1707,7 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   delete group;
 
   last_packet_revived_ = true;
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnRevivedPacket(revived_header,
                                     StringPiece(revived_payload, len));
   }
@@ -1719,14 +1720,14 @@ void QuicConnection::MaybeProcessRevivedPacket() {
 QuicFecGroup* QuicConnection::GetFecGroup() {
   QuicFecGroupNumber fec_group_num = last_header_.fec_group;
   if (fec_group_num == 0) {
-    return NULL;
+    return nullptr;
   }
   if (group_map_.count(fec_group_num) == 0) {
     if (group_map_.size() >= kMaxFecGroups) {  // Too many groups
       if (fec_group_num < group_map_.begin()->first) {
         // The group being requested is a group we've seen before and deleted.
         // Don't recreate it.
-        return NULL;
+        return nullptr;
       }
       // Clear the lowest group number.
       delete group_map_.begin()->second;
@@ -1774,7 +1775,7 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
     return;
   }
   connected_ = false;
-  if (debug_visitor_.get() != NULL) {
+  if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnConnectionClosed(error, from_peer);
   }
   visitor_->OnConnectionClosed(error, from_peer);
@@ -1976,9 +1977,9 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     QuicConnection* connection,
     AckBundling send_ack)
     : connection_(connection),
-      already_in_batch_mode_(connection != NULL &&
+      already_in_batch_mode_(connection != nullptr &&
                              connection->packet_generator_.InBatchMode()) {
-  if (connection_  == NULL) {
+  if (connection_ == nullptr) {
     return;
   }
   // Move generator into batch mode. If caller wants us to include an ack,
@@ -1998,7 +1999,7 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
 }
 
 QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
-  if (connection_  == NULL) {
+  if (connection_ == nullptr) {
     return;
   }
   // If we changed the generator's batch state, restore original batch state.
@@ -2015,7 +2016,7 @@ HasRetransmittableData QuicConnection::IsRetransmittable(
   // Retransmitted packets retransmittable frames are owned by the unacked
   // packet map, but are not present in the serialized packet.
   if (packet.transmission_type != NOT_RETRANSMISSION ||
-      packet.serialized_packet.retransmittable_frames != NULL) {
+      packet.serialized_packet.retransmittable_frames != nullptr) {
     return HAS_RETRANSMITTABLE_DATA;
   } else {
     return NO_RETRANSMITTABLE_DATA;

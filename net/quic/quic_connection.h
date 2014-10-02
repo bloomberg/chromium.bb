@@ -578,7 +578,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // encryption_level. Returns true on successful write, and false if the writer
   // was blocked and the write needs to be tried again. Notifies the
   // SentPacketManager when the write is successful and sets
-  // retransmittable frames to NULL.
+  // retransmittable frames to nullptr.
   // Saves the connection close packet for later transmission, even if the
   // writer is write blocked.
   bool WritePacket(QueuedPacket* packet);
@@ -646,8 +646,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // to be sent if there are no outstanding packets.
   QuicPacketSequenceNumber GetLeastUnacked() const;
 
-  // Get the FEC group associate with the last processed packet or NULL, if the
-  // group has already been deleted.
+  // Get the FEC group associate with the last processed packet or nullptr, if
+  // the group has already been deleted.
   QuicFecGroup* GetFecGroup();
 
   // Closes any FEC groups protecting packets before |sequence_number|.

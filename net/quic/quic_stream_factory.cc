@@ -234,7 +234,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
           was_alternate_protocol_recently_broken),
       server_info_(server_info),
       net_log_(net_log),
-      session_(NULL),
+      session_(nullptr),
       weak_factory_(this) {}
 
 QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
@@ -418,7 +418,7 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
   AddressList address(session_->connection()->peer_address());
   if (factory_->OnResolution(server_id_, address)) {
     session_->connection()->SendConnectionClose(QUIC_CONNECTION_IP_POOLED);
-    session_ = NULL;
+    session_ = nullptr;
     return OK;
   }
 
@@ -452,7 +452,7 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
     net_log_ = net_log;
     callback_ = callback;
   } else {
-    factory_ = NULL;
+    factory_ = nullptr;
   }
   if (rv == OK)
     DCHECK(stream_);
@@ -465,7 +465,7 @@ void QuicStreamRequest::set_stream(scoped_ptr<QuicHttpStream> stream) {
 }
 
 void QuicStreamRequest::OnRequestComplete(int rv) {
-  factory_ = NULL;
+  factory_ = nullptr;
   callback_.Run(rv);
 }
 
@@ -496,7 +496,7 @@ QuicStreamFactory::QuicStreamFactory(
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
-      quic_server_info_factory_(NULL),
+      quic_server_info_factory_(nullptr),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
       clock_(clock),
@@ -565,7 +565,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     return ERR_IO_PENDING;
   }
 
-  QuicServerInfo* quic_server_info = NULL;
+  QuicServerInfo* quic_server_info = nullptr;
   if (quic_server_info_factory_) {
     QuicCryptoClientConfig::CachedState* cached =
         crypto_config_.LookupOrCreate(server_id);
@@ -653,7 +653,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
 }
 
 // Returns a newly created QuicHttpStream owned by the caller, if a
-// matching session already exists.  Returns NULL otherwise.
+// matching session already exists.  Returns nullptr otherwise.
 scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
     const QuicServerId& server_id,
     const BoundNetLog& net_log) {
@@ -909,7 +909,7 @@ int QuicStreamFactory::CreateSession(
     const HttpServerProperties::NetworkStats* stats =
         http_server_properties_->GetServerNetworkStats(
             server_id.host_port_pair());
-    if (stats != NULL) {
+    if (stats != nullptr) {
       config.SetInitialRoundTripTimeUsToSend(stats->srtt.InMicroseconds());
     }
   }
@@ -929,7 +929,7 @@ int QuicStreamFactory::CreateSession(
                         closed_during_initialize);
   if (closed_during_initialize) {
     DLOG(DFATAL) << "Session closed during initialize";
-    *session = NULL;
+    *session = nullptr;
     return ERR_CONNECTION_CLOSED;
   }
   return OK;

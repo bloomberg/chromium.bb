@@ -160,7 +160,7 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
 
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
-  stream_->WriteOrBufferData(kData1, false, NULL);
+  stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
@@ -169,7 +169,7 @@ TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
 
   // Write no data and no fin.  If we consume nothing we should not be write
   // blocked.
-  EXPECT_DFATAL(stream_->WriteOrBufferData(StringPiece(), false, NULL), "");
+  EXPECT_DFATAL(stream_->WriteOrBufferData(StringPiece(), false, nullptr), "");
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
@@ -180,7 +180,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
   // we should be write blocked a not all the data was consumed.
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(1, false)));
-  stream_->WriteOrBufferData(StringPiece(kData1, 2), false, NULL);
+  stream_->WriteOrBufferData(StringPiece(kData1, 2), false, nullptr);
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
@@ -193,7 +193,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfFinNotConsumedWithData) {
   // last data)
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(2, false)));
-  stream_->WriteOrBufferData(StringPiece(kData1, 2), true, NULL);
+  stream_->WriteOrBufferData(StringPiece(kData1, 2), true, nullptr);
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
@@ -204,7 +204,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
   // as the fin was not consumed.
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, false)));
-  stream_->WriteOrBufferData(StringPiece(), true, NULL);
+  stream_->WriteOrBufferData(StringPiece(), true, nullptr);
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
@@ -220,11 +220,11 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
-  stream_->WriteOrBufferData(kData1, false, NULL);
+  stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   // Queue a bytes_consumed write.
-  stream_->WriteOrBufferData(kData2, false, NULL);
+  stream_->WriteOrBufferData(kData2, false, nullptr);
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
@@ -256,11 +256,11 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectAlways) {
   // Write first data onto stream, which will cause one session write.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
-  stream_->WriteOrBufferData(kData1, false, NULL);
+  stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   // Queue a bytes_consumed write.
-  stream_->WriteOrBufferData(kData2, false, NULL);
+  stream_->WriteOrBufferData(kData2, false, nullptr);
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
@@ -292,11 +292,11 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectOptional) {
   // Write first data onto stream, which will cause one session write.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
-  stream_->WriteOrBufferData(kData1, false, NULL);
+  stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   // Queue a bytes_consumed write.
-  stream_->WriteOrBufferData(kData2, false, NULL);
+  stream_->WriteOrBufferData(kData2, false, nullptr);
 
   // Make sure we get the tail of the first write followed by the bytes_consumed
   InSequence s;
@@ -336,7 +336,7 @@ TEST_F(ReliableQuicStreamTest, RstAlwaysSentIfNoFinSent) {
   // Write some data, with no FIN.
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(1, false)));
-  stream_->WriteOrBufferData(StringPiece(kData1, 1), false, NULL);
+  stream_->WriteOrBufferData(StringPiece(kData1, 1), false, nullptr);
   EXPECT_FALSE(fin_sent());
   EXPECT_FALSE(rst_sent());
 
@@ -359,7 +359,7 @@ TEST_F(ReliableQuicStreamTest, RstNotSentIfFinSent) {
   // Write some data, with FIN.
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(1, true)));
-  stream_->WriteOrBufferData(StringPiece(kData1, 1), true, NULL);
+  stream_->WriteOrBufferData(StringPiece(kData1, 1), true, nullptr);
   EXPECT_TRUE(fin_sent());
   EXPECT_FALSE(rst_sent());
 
@@ -513,7 +513,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
 
   // Handle the ack of the first write.
   proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
-  proxy_delegate = NULL;
+  proxy_delegate = nullptr;
 
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _)).WillOnce(
       DoAll(WithArgs<5>(Invoke(CreateFunctor(

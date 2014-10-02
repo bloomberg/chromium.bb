@@ -116,7 +116,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
       const CryptoHandshakeMessage& server_config_update);
 
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
-  // |in| may be NULL if the call did not result from a received message.
+  // |in| may be nullptr if the call did not result from a received message.
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);
 
   // Start the handshake process.

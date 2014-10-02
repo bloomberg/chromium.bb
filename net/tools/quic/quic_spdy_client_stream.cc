@@ -82,12 +82,12 @@ ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
 
   bool send_fin_with_headers = fin && body.empty();
   size_t bytes_sent = body.size();
-  header_bytes_written_ = WriteHeaders(
-      header_block, send_fin_with_headers, NULL);
+  header_bytes_written_ =
+      WriteHeaders(header_block, send_fin_with_headers, nullptr);
   bytes_sent += header_bytes_written_;
 
   if (!body.empty()) {
-    WriteOrBufferData(body, fin, NULL);
+    WriteOrBufferData(body, fin, nullptr);
   }
 
   return bytes_sent;
@@ -120,7 +120,7 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
 
 // Sends body data to the server and returns the number of bytes sent.
 void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
-  WriteOrBufferData(data, fin, NULL);
+  WriteOrBufferData(data, fin, nullptr);
 }
 
 }  // namespace tools

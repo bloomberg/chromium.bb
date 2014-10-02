@@ -92,7 +92,7 @@ void QuicSpdyServerStream::SendResponse() {
   // Find response in cache. If not found, send error response.
   const QuicInMemoryCache::Response* response =
       QuicInMemoryCache::GetInstance()->GetResponse(headers_);
-  if (response == NULL) {
+  if (response == nullptr) {
     SendErrorResponse();
     return;
   }
@@ -132,10 +132,10 @@ void QuicSpdyServerStream::SendHeadersAndBody(
   SpdyHeaderBlock header_block =
       SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
 
-  WriteHeaders(header_block, body.empty(), NULL);
+  WriteHeaders(header_block, body.empty(), nullptr);
 
   if (!body.empty()) {
-    WriteOrBufferData(body, true, NULL);
+    WriteOrBufferData(body, true, nullptr);
   }
 }
 

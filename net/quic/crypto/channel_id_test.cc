@@ -196,7 +196,7 @@ TEST(ChannelIDTest, VerifyKnownAnswerTest) {
   string r;
   string s;
 
-  for (size_t i = 0; test_vector[i].msg != NULL; i++) {
+  for (size_t i = 0; test_vector[i].msg != nullptr; i++) {
     SCOPED_TRACE(i);
     // Decode the test vector.
     ASSERT_TRUE(DecodeHexString(test_vector[i].msg, &msg));
@@ -227,7 +227,7 @@ TEST(ChannelIDTest, SignAndVerify) {
   const string hostname = "foo.example.com";
   scoped_ptr<ChannelIDKey> channel_id_key;
   QuicAsyncStatus status =
-      source->GetChannelIDKey(hostname, &channel_id_key, NULL);
+      source->GetChannelIDKey(hostname, &channel_id_key, nullptr);
   ASSERT_EQ(QUIC_SUCCESS, status);
 
   string signature;

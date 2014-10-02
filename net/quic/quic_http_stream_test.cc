@@ -193,8 +193,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                   writes_[i].packet->length());
     };
 
-    socket_data_.reset(new StaticSocketDataProvider(NULL, 0, mock_writes_.get(),
-                                                    writes_.size()));
+    socket_data_.reset(new StaticSocketDataProvider(
+        nullptr, 0, mock_writes_.get(), writes_.size()));
 
     MockUDPClientSocket* socket = new MockUDPClientSocket(socket_data_.get(),
                                                           net_log_.net_log());
@@ -228,13 +228,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_.reset(
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),
-                              NULL,
+                              nullptr,
                               &transport_security_state_,
-                              make_scoped_ptr((QuicServerInfo*)NULL),
+                              make_scoped_ptr((QuicServerInfo*)nullptr),
                               DefaultQuicConfig(),
                               base::MessageLoop::current()->
                                   message_loop_proxy().get(),
-                              NULL));
+                              nullptr));
     session_->InitializeSession(QuicServerId(kServerHostname, kServerPort,
                                              false, PRIVACY_MODE_DISABLED),
                                 &crypto_config_,
@@ -344,7 +344,7 @@ INSTANTIATE_TEST_CASE_P(Version, QuicHttpStreamTest,
 
 TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
   Initialize();
-  EXPECT_EQ(NULL, stream_->RenewStreamForAuth());
+  EXPECT_EQ(nullptr, stream_->RenewStreamForAuth());
 }
 
 TEST_P(QuicHttpStreamTest, CanFindEndOfResponse) {
@@ -599,7 +599,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   ASSERT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
                                                  callback_.callback()));
 
-  upload_data_stream.AppendChunk(NULL, 0, true);
+  upload_data_stream.AppendChunk(nullptr, 0, true);
 
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
@@ -646,7 +646,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   ASSERT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
                                                  callback_.callback()));
 
-  upload_data_stream.AppendChunk(NULL, 0, true);
+  upload_data_stream.AppendChunk(nullptr, 0, true);
 
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
@@ -766,9 +766,9 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
 
-  // Set Delegate to NULL and make sure EffectivePriority returns highest
+  // Set Delegate to nullptr and make sure EffectivePriority returns highest
   // priority.
-  reliable_stream->SetDelegate(NULL);
+  reliable_stream->SetDelegate(nullptr);
   DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
   reliable_stream->SetDelegate(delegate);

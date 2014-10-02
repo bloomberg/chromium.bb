@@ -59,7 +59,7 @@ class GcmSupportChecker {
 };
 
 // static
-PK11_DecryptFunction GcmSupportChecker::pk11_decrypt_func_ = NULL;
+PK11_DecryptFunction GcmSupportChecker::pk11_decrypt_func_ = nullptr;
 
 base::LazyInstance<GcmSupportChecker>::Leaky g_gcm_support_checker =
     LAZY_INSTANCE_INITIALIZER;
@@ -78,7 +78,7 @@ SECStatus My_Decrypt(PK11SymKey* key,
   // being used, then NSS will support AES-GCM directly.
   PK11_DecryptFunction pk11_decrypt_func =
       GcmSupportChecker::pk11_decrypt_func();
-  if (pk11_decrypt_func != NULL) {
+  if (pk11_decrypt_func != nullptr) {
     return pk11_decrypt_func(key, mechanism, param, out, out_len, max_len, enc,
                              enc_len);
   }
@@ -104,7 +104,7 @@ SECStatus My_Decrypt(PK11SymKey* key,
     return SECFailure;
   }
 
-  SECItem my_param = { siBuffer, NULL, 0 };
+  SECItem my_param = { siBuffer, nullptr, 0 };
 
   // Step 2. Let H = CIPH_K(128 '0' bits).
   unsigned char ghash_key[16] = {0};

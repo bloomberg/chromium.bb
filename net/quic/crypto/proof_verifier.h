@@ -63,7 +63,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
   // to a description of the problem. In either case it may set |*details|,
   // which the caller takes ownership of.
   //
-  // |context| specifies an implementation specific struct (which may be NULL
+  // |context| specifies an implementation specific struct (which may be nullptr
   // for some implementations) that provides useful information for the
   // verifier, e.g. logging handles.
   //

@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
   virtual ~Curve25519KeyExchange();
 
   // New creates a new object from a private key. If the private key is
-  // invalid, NULL is returned.
+  // invalid, nullptr is returned.
   static Curve25519KeyExchange* New(const base::StringPiece& private_key);
 
   // NewPrivateKey returns a private key, generated from |rand|, suitable for

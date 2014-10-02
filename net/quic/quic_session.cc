@@ -337,7 +337,7 @@ void QuicSession::OnCanWrite() {
       has_pending_handshake_ = false;  // We just popped it.
     }
     ReliableQuicStream* stream = GetStream(stream_id);
-    if (stream != NULL && !stream->flow_controller()->IsBlocked()) {
+    if (stream != nullptr && !stream->flow_controller()->IsBlocked()) {
       // If the stream can't write all bytes, it'll re-add itself to the blocked
       // list.
       stream->OnCanWrite();
@@ -621,11 +621,11 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
 QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
   if (stream_id == kCryptoStreamId) {
     DLOG(FATAL) << "Attempt to call GetDataStream with the crypto stream id";
-    return NULL;
+    return nullptr;
   }
   if (stream_id == kHeadersStreamId) {
     DLOG(FATAL) << "Attempt to call GetDataStream with the headers stream id";
-    return NULL;
+    return nullptr;
   }
 
   DataStreamMap::iterator it = stream_map_.find(stream_id);
@@ -634,7 +634,7 @@ QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
   }
 
   if (IsClosedStream(stream_id)) {
-    return NULL;
+    return nullptr;
   }
 
   if (stream_id % 2 == next_stream_id_ % 2) {
@@ -643,7 +643,7 @@ QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
     if (connection()->connected()) {
       connection()->SendConnectionClose(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
     }
-    return NULL;
+    return nullptr;
   }
 
   return GetIncomingDataStream(stream_id);
@@ -651,7 +651,7 @@ QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
 
 QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
   if (IsClosedStream(stream_id)) {
-    return NULL;
+    return nullptr;
   }
 
   implicitly_created_streams_.erase(stream_id);
@@ -666,7 +666,7 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
                    << ", max delta: " << kMaxStreamIdDelta;
         connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
       }
-      return NULL;
+      return nullptr;
     }
     if (largest_peer_created_stream_id_ == 0) {
       if (is_server()) {
@@ -683,8 +683,8 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
     largest_peer_created_stream_id_ = stream_id;
   }
   QuicDataStream* stream = CreateIncomingDataStream(stream_id);
-  if (stream == NULL) {
-    return NULL;
+  if (stream == nullptr) {
+    return nullptr;
   }
   ActivateStream(stream);
   return stream;
@@ -725,7 +725,7 @@ size_t QuicSession::GetNumOpenStreams() const {
 void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
 #ifndef NDEBUG
   ReliableQuicStream* stream = GetStream(id);
-  if (stream != NULL) {
+  if (stream != nullptr) {
     LOG_IF(DFATAL, priority != stream->EffectivePriority())
         << ENDPOINT << "Stream " << id
         << "Priorities do not match.  Got: " << priority

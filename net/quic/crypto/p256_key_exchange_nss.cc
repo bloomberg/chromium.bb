@@ -41,7 +41,7 @@ P256KeyExchange::~P256KeyExchange() {
 P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   if (key.size() < 2) {
     DVLOG(1) << "Key pair is too small.";
-    return NULL;
+    return nullptr;
   }
 
   const uint8* data = reinterpret_cast<const uint8*>(key.data());
@@ -50,14 +50,14 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   key.remove_prefix(2);
   if (key.size() < size) {
     DVLOG(1) << "Key pair does not contain key material.";
-    return NULL;
+    return nullptr;
   }
 
   StringPiece private_piece(key.data(), size);
   key.remove_prefix(size);
   if (key.empty()) {
     DVLOG(1) << "Key pair does not contain public key.";
-    return NULL;
+    return nullptr;
   }
 
   StringPiece public_piece(key);
@@ -71,7 +71,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
 
   if (!key_pair.get()) {
     DVLOG(1) << "Can't decrypt private key.";
-    return NULL;
+    return nullptr;
   }
 
   // Perform some sanity checks on the public key.
@@ -81,14 +81,14 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
       !public_key->u.ec.publicValue.data ||
       public_key->u.ec.publicValue.data[0] != kUncompressedECPointForm) {
     DVLOG(1) << "Key is invalid.";
-    return NULL;
+    return nullptr;
   }
 
   // Ensure that the key is using the correct curve, i.e., NIST P-256.
   const SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
   if (!oid_data) {
     DVLOG(1) << "Can't get P-256's OID.";
-    return NULL;
+    return nullptr;
   }
 
   if (public_key->u.ec.DEREncodedParams.len != oid_data->oid.len + 2 ||
@@ -192,15 +192,15 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
           key_pair_->key(),
           &peer_public_key,
           PR_FALSE,
-          NULL,
-          NULL,
+          nullptr,
+          nullptr,
           CKM_ECDH1_DERIVE, /* mechanism */
           CKM_GENERIC_SECRET_KEY_GEN, /* target */
           CKA_DERIVE,
           0,
           CKD_NULL, /* kdf */
-          NULL,
-          NULL));
+          nullptr,
+          nullptr));
 
   if (!premaster_secret.get()) {
     DVLOG(1) << "Can't derive ECDH shared key.";
@@ -230,4 +230,3 @@ StringPiece P256KeyExchange::public_value() const {
 QuicTag P256KeyExchange::tag() const { return kP256; }
 
 }  // namespace net
-

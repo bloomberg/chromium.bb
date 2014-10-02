@@ -1080,7 +1080,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Reason why this packet was transmitted.
   TransmissionType transmission_type;
   // Stores the sequence numbers of all transmissions of this packet.
-  // Must always be NULL or have multiple elements.
+  // Must always be nullptr or have multiple elements.
   SequenceNumberList* all_transmissions;
   // In flight packets have not been abandoned or lost.
   bool in_flight;

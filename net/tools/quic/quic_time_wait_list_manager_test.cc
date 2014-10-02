@@ -106,7 +106,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
   }
 
   void AddConnectionId(QuicConnectionId connection_id) {
-    AddConnectionId(connection_id, QuicVersionMax(), NULL);
+    AddConnectionId(connection_id, QuicVersionMax(), nullptr);
   }
 
   void AddConnectionId(QuicConnectionId connection_id,
@@ -122,7 +122,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
 
   void ProcessPacket(QuicConnectionId connection_id,
                      QuicPacketSequenceNumber sequence_number) {
-    QuicEncryptedPacket packet(NULL, 0);
+    QuicEncryptedPacket packet(nullptr, 0);
     time_wait_list_manager_.ProcessPacket(server_address_,
                                           client_address_,
                                           connection_id,
@@ -152,11 +152,11 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
         BuildUnsizedDataPacket(&framer_, header, frames).packet);
-    EXPECT_TRUE(packet != NULL);
+    EXPECT_TRUE(packet != nullptr);
     QuicEncryptedPacket* encrypted = framer_.EncryptPacket(ENCRYPTION_NONE,
                                                            sequence_number,
                                                            *packet);
-    EXPECT_TRUE(encrypted != NULL);
+    EXPECT_TRUE(encrypted != nullptr);
     return encrypted;
   }
 
@@ -377,9 +377,9 @@ TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
   const int kConnectionId2 = 456;
   const int kConnectionId3 = 789;
 
-  AddConnectionId(kConnectionId1, QuicVersionMin(), NULL);
-  AddConnectionId(kConnectionId2, QuicVersionMax(), NULL);
-  AddConnectionId(kConnectionId3, QuicVersionMax(), NULL);
+  AddConnectionId(kConnectionId1, QuicVersionMin(), nullptr);
+  AddConnectionId(kConnectionId2, QuicVersionMax(), nullptr);
+  AddConnectionId(kConnectionId3, QuicVersionMax(), nullptr);
 
   EXPECT_EQ(QuicVersionMin(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(

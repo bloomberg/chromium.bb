@@ -90,7 +90,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
     headers_["content-length"] = "11";
     framer_.set_visitor(&visitor_);
     EXPECT_EQ(QuicVersionMax(), session_.connection()->version());
-    EXPECT_TRUE(headers_stream_ != NULL);
+    EXPECT_TRUE(headers_stream_ != nullptr);
   }
 
   QuicConsumedData SaveIov(const IOVector& data) {
@@ -127,9 +127,9 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
                                 QuicPriority priority,
                                 SpdyFrameType type) {
     // Write the headers and capture the outgoing data
-    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, _, NULL))
+    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, _, nullptr))
         .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
-    headers_stream_->WriteHeaders(stream_id, headers_, fin, NULL);
+    headers_stream_->WriteHeaders(stream_id, headers_, fin, nullptr);
 
     // Parse the outgoing data and check that it matches was was written.
     if (type == SYN_STREAM) {
@@ -143,7 +143,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
         .WillRepeatedly(WithArgs<1, 2>(
             Invoke(this, &QuicHeadersStreamTest::SaveHeaderData)));
     if (fin) {
-      EXPECT_CALL(visitor_, OnStreamFrameData(stream_id, NULL, 0, true));
+      EXPECT_CALL(visitor_, OnStreamFrameData(stream_id, nullptr, 0, true));
     }
     framer_.ProcessInput(saved_data_.data(), saved_data_.length());
     EXPECT_FALSE(framer_.HasError()) << framer_.error_code();

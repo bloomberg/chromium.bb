@@ -94,7 +94,7 @@ class SendAlgorithmSimulator {
           send_time(QuicTime::Zero()),
           ack_time(QuicTime::Zero()),
           lost(false),
-          transfer(NULL) {}
+          transfer(nullptr) {}
     SentPacket(QuicPacketSequenceNumber sequence_number,
                QuicTime send_time,
                QuicTime ack_time,

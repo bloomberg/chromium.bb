@@ -47,7 +47,7 @@ TEST(QuicCryptoClientConfigTest, CachedState_GenerationCounter) {
 
 TEST(QuicCryptoClientConfigTest, CachedState_SetProofVerifyDetails) {
   QuicCryptoClientConfig::CachedState state;
-  EXPECT_TRUE(state.proof_verify_details() == NULL);
+  EXPECT_TRUE(state.proof_verify_details() == nullptr);
   ProofVerifyDetails* details = new TestProofVerifyDetails;
   state.SetProofVerifyDetails(details);
   EXPECT_EQ(details, state.proof_verify_details());
@@ -132,7 +132,7 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
                          &state,
                          QuicWallTime::Zero(),
                          &rand,
-                         NULL,  // channel_id_key
+                         nullptr,  // channel_id_key
                          &params,
                          &chlo,
                          &error_details);

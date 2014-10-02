@@ -45,7 +45,7 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
 }  // namespace
 
 CryptoFramer::CryptoFramer()
-    : visitor_(NULL),
+    : visitor_(nullptr),
       num_entries_(0),
       values_len_(0) {
   Clear();
@@ -61,7 +61,7 @@ CryptoHandshakeMessage* CryptoFramer::ParseMessage(StringPiece in) {
   framer.set_visitor(&visitor);
   if (!framer.ProcessInput(in) || visitor.error() ||
       framer.InputBytesRemaining()) {
-    return NULL;
+    return nullptr;
   }
 
   return visitor.release();
@@ -104,22 +104,22 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
   }
 
   if (num_entries > kMaxEntries) {
-    return NULL;
+    return nullptr;
   }
 
 
   QuicDataWriter writer(len);
   if (!writer.WriteUInt32(message.tag())) {
     DCHECK(false) << "Failed to write message tag.";
-    return NULL;
+    return nullptr;
   }
   if (!writer.WriteUInt16(num_entries)) {
     DCHECK(false) << "Failed to write size.";
-    return NULL;
+    return nullptr;
   }
   if (!writer.WriteUInt16(0)) {
     DCHECK(false) << "Failed to write padding.";
-    return NULL;
+    return nullptr;
   }
 
   uint32 end_offset = 0;
@@ -131,30 +131,30 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
       // because parts of the code may need to reserialize received messages
       // and those messages may, legitimately include padding.
       DCHECK(false) << "Message needed padding but already contained a PAD tag";
-      return NULL;
+      return nullptr;
     }
 
     if (it->first > kPAD && need_pad_tag) {
       need_pad_tag = false;
       if (!WritePadTag(&writer, pad_length, &end_offset)) {
-        return NULL;
+        return nullptr;
       }
     }
 
     if (!writer.WriteUInt32(it->first)) {
       DCHECK(false) << "Failed to write tag.";
-      return NULL;
+      return nullptr;
     }
     end_offset += it->second.length();
     if (!writer.WriteUInt32(end_offset)) {
       DCHECK(false) << "Failed to write end offset.";
-      return NULL;
+      return nullptr;
     }
   }
 
   if (need_pad_tag) {
     if (!WritePadTag(&writer, pad_length, &end_offset)) {
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -165,20 +165,20 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
       need_pad_value = false;
       if (!writer.WriteRepeatedByte('-', pad_length)) {
         DCHECK(false) << "Failed to write padding.";
-        return NULL;
+        return nullptr;
       }
     }
 
     if (!writer.WriteBytes(it->second.data(), it->second.length())) {
       DCHECK(false) << "Failed to write value.";
-      return NULL;
+      return nullptr;
     }
   }
 
   if (need_pad_value) {
     if (!writer.WriteRepeatedByte('-', pad_length)) {
       DCHECK(false) << "Failed to write padding.";
-      return NULL;
+      return nullptr;
     }
   }
 

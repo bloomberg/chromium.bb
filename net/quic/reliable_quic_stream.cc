@@ -274,7 +274,7 @@ void ReliableQuicStream::WriteOrBufferData(
   }
 
   scoped_refptr<ProxyAckNotifierDelegate> proxy_delegate;
-  if (ack_notifier_delegate != NULL) {
+  if (ack_notifier_delegate != nullptr) {
     proxy_delegate = new ProxyAckNotifierDelegate(ack_notifier_delegate);
   }
 
@@ -298,7 +298,7 @@ void ReliableQuicStream::WriteOrBufferData(
     write_completed = true;
   }
 
-  if ((proxy_delegate.get() != NULL) &&
+  if ((proxy_delegate.get() != nullptr) &&
       (consumed_data.bytes_consumed > 0 || consumed_data.fin_consumed)) {
     proxy_delegate->WroteData(write_completed);
   }
@@ -317,13 +317,13 @@ void ReliableQuicStream::OnCanWrite() {
     if (consumed_data.bytes_consumed == pending_data->data.size() &&
         fin == consumed_data.fin_consumed) {
       queued_data_.pop_front();
-      if (delegate != NULL) {
+      if (delegate != nullptr) {
         delegate->WroteData(true);
       }
     } else {
       if (consumed_data.bytes_consumed > 0) {
         pending_data->data.erase(0, consumed_data.bytes_consumed);
-        if (delegate != NULL) {
+        if (delegate != nullptr) {
           delegate->WroteData(false);
         }
       }

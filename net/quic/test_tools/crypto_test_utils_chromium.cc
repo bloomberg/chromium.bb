@@ -137,7 +137,7 @@ ProofVerifier* CryptoTestUtils::FakeProofVerifierForTesting() {
 
 // static
 ProofVerifyContext* CryptoTestUtils::FakeProofVerifyContextForTesting() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace test

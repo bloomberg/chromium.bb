@@ -38,7 +38,7 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     const GURL& url) const {
   ResponseMap::const_iterator it = responses_.find(GetKey(url));
   if (it == responses_.end()) {
-    return NULL;
+    return nullptr;
   }
   return it->second;
 }
@@ -83,7 +83,7 @@ void QuicInMemoryCache::AddSpecialResponse(StringPiece path,
                                            SpecialResponseType response_type) {
   GURL url("http://" + path.as_string());
 
-  AddResponse(url, NULL, string());
+  AddResponse(url, nullptr, string());
   responses_[GetKey(url)]->response_type_ = response_type;
 }
 

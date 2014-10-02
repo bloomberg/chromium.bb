@@ -217,7 +217,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // chain and proof in the case of secure QUIC. Returns true if successfully
   // filled |out|.
   //
-  // |cached_network_params| is optional, and can be NULL.
+  // |cached_network_params| is optional, and can be nullptr.
   bool BuildServerConfigUpdateMessage(
       const IPEndPoint& client_ip,
       const QuicClock* clock,
@@ -392,11 +392,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // ParseConfigProtobuf parses the given config protobuf and returns a
   // scoped_refptr<Config> if successful. The caller adopts the reference to the
-  // Config. On error, ParseConfigProtobuf returns NULL.
+  // Config. On error, ParseConfigProtobuf returns nullptr.
   scoped_refptr<Config> ParseConfigProtobuf(QuicServerConfigProtobuf* protobuf);
 
   // NewSourceAddressToken returns a fresh source address token for the given
-  // IP address. |cached_network_params| is optional, and can be NULL.
+  // IP address. |cached_network_params| is optional, and can be nullptr.
   std::string NewSourceAddressToken(
       const Config& config,
       const IPEndPoint& ip,
@@ -429,8 +429,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool replay_protection_;
 
   // configs_ satisfies the following invariants:
-  //   1) configs_.empty() <-> primary_config_ == NULL
-  //   2) primary_config_ != NULL -> primary_config_->is_primary
+  //   1) configs_.empty() <-> primary_config_ == nullptr
+  //   2) primary_config_ != nullptr -> primary_config_->is_primary
   //   3) ∀ c∈configs_, c->is_primary <-> c == primary_config_
   mutable base::Lock configs_lock_;
   // configs_ contains all active server configs. It's expected that there are

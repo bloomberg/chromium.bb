@@ -25,14 +25,14 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   SerializedPacket CreateRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
-    return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER, NULL,
-                            0, new RetransmittableFrames());
+    return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
+                            nullptr, 0, new RetransmittableFrames());
   }
 
   SerializedPacket CreateNonRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
-    return SerializedPacket(
-        sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
+    return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
+                            nullptr, 0, nullptr);
   }
 
   void VerifyInFlightPackets(QuicPacketSequenceNumber* packets,
@@ -84,7 +84,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     size_t num_retransmittable_packets = 0;
     for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
          it != unacked_packets_.end(); ++it) {
-      if (it->retransmittable_frames != NULL) {
+      if (it->retransmittable_frames != nullptr) {
         ++num_retransmittable_packets;
       }
     }
@@ -106,13 +106,13 @@ TEST_F(QuicUnackedPacketMapTest, RttOnly) {
 
   QuicPacketSequenceNumber unacked[] = { 1 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
-  VerifyInFlightPackets(NULL, 0);
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyInFlightPackets(nullptr, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.IncreaseLargestObserved(1);
-  VerifyUnackedPackets(NULL, 0);
-  VerifyInFlightPackets(NULL, 0);
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyUnackedPackets(nullptr, 0);
+  VerifyInFlightPackets(nullptr, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 }
 
 TEST_F(QuicUnackedPacketMapTest, DiscardOldRttOnly) {
@@ -141,17 +141,17 @@ TEST_F(QuicUnackedPacketMapTest, RetransmittableInflightAndRtt) {
   unacked_packets_.RemoveRetransmittability(1);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.IncreaseLargestObserved(1);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.RemoveFromInFlight(1);
-  VerifyUnackedPackets(NULL, 0);
-  VerifyInFlightPackets(NULL, 0);
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyUnackedPackets(nullptr, 0);
+  VerifyInFlightPackets(nullptr, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 }
 
 TEST_F(QuicUnackedPacketMapTest, RetransmittedPacket) {
@@ -171,23 +171,23 @@ TEST_F(QuicUnackedPacketMapTest, RetransmittedPacket) {
   unacked_packets_.RemoveRetransmittability(1);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.IncreaseLargestObserved(2);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.RemoveFromInFlight(2);
   QuicPacketSequenceNumber unacked2[] = { 1 };
   VerifyUnackedPackets(unacked, arraysize(unacked2));
   VerifyInFlightPackets(unacked, arraysize(unacked2));
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.RemoveFromInFlight(1);
-  VerifyUnackedPackets(NULL, 0);
-  VerifyInFlightPackets(NULL, 0);
-  VerifyRetransmittablePackets(NULL, 0);
+  VerifyUnackedPackets(nullptr, 0);
+  VerifyInFlightPackets(nullptr, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
 }
 
 TEST_F(QuicUnackedPacketMapTest, RetransmitThreeTimes) {

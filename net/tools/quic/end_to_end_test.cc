@@ -241,39 +241,39 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void set_client_initial_flow_control_receive_window(uint32 window) {
-    CHECK(client_.get() == NULL);
+    CHECK(client_.get() == nullptr);
     DVLOG(1) << "Setting client initial flow control window: " << window;
     client_config_.SetInitialFlowControlWindowToSend(window);
   }
 
   void set_client_initial_stream_flow_control_receive_window(uint32 window) {
-    CHECK(client_.get() == NULL);
+    CHECK(client_.get() == nullptr);
     DVLOG(1) << "Setting client initial stream flow control window: " << window;
     client_config_.SetInitialStreamFlowControlWindowToSend(window);
   }
 
   void set_client_initial_session_flow_control_receive_window(uint32 window) {
-    CHECK(client_.get() == NULL);
+    CHECK(client_.get() == nullptr);
     DVLOG(1) << "Setting client initial session flow control window: "
              << window;
     client_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
   void set_server_initial_flow_control_receive_window(uint32 window) {
-    CHECK(server_thread_.get() == NULL);
+    CHECK(server_thread_.get() == nullptr);
     DVLOG(1) << "Setting server initial flow control window: " << window;
     server_config_.SetInitialFlowControlWindowToSend(window);
   }
 
   void set_server_initial_stream_flow_control_receive_window(uint32 window) {
-    CHECK(server_thread_.get() == NULL);
+    CHECK(server_thread_.get() == nullptr);
     DVLOG(1) << "Setting server initial stream flow control window: "
              << window;
     server_config_.SetInitialStreamFlowControlWindowToSend(window);
   }
 
   void set_server_initial_session_flow_control_receive_window(uint32 window) {
-    CHECK(server_thread_.get() == NULL);
+    CHECK(server_thread_.get() == nullptr);
     DVLOG(1) << "Setting server initial session flow control window: "
              << window;
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
@@ -502,7 +502,7 @@ TEST_P(EndToEndTest, MultipleRequestResponse) {
 
 TEST_P(EndToEndTest, MultipleClients) {
   ASSERT_TRUE(Initialize());
-  scoped_ptr<QuicTestClient> client2(CreateQuicClient(NULL));
+  scoped_ptr<QuicTestClient> client2(CreateQuicClient(nullptr));
 
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");
@@ -833,7 +833,7 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   // before HTTP framing is complete, we send an error and close the stream,
   // and the second write is picked up as writing on a closed stream.
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
-  ASSERT_TRUE(stream != NULL);
+  ASSERT_TRUE(stream != nullptr);
   ReliableQuicStreamPeer::SetStreamBytesWritten(3, stream);
 
   client_->SendData("bar", true);

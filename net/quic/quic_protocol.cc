@@ -105,7 +105,7 @@ QuicStreamFrame::QuicStreamFrame()
     : stream_id(0),
       fin(false),
       offset(0),
-      notifier(NULL) {}
+      notifier(nullptr) {}
 
 QuicStreamFrame::QuicStreamFrame(const QuicStreamFrame& frame)
     : stream_id(frame.stream_id),
@@ -123,8 +123,7 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
       fin(fin),
       offset(offset),
       data(data),
-      notifier(NULL) {
-}
+      notifier(nullptr) {}
 
 string* QuicStreamFrame::GetDataAsString() const {
   string* data_string = new string();
@@ -709,13 +708,13 @@ ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
 }
 
 TransmissionInfo::TransmissionInfo()
-    : retransmittable_frames(NULL),
+    : retransmittable_frames(nullptr),
       sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
       sent_time(QuicTime::Zero()),
       bytes_sent(0),
       nack_count(0),
       transmission_type(NOT_RETRANSMISSION),
-      all_transmissions(NULL),
+      all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false) {}
 
@@ -728,7 +727,7 @@ TransmissionInfo::TransmissionInfo(
       bytes_sent(0),
       nack_count(0),
       transmission_type(NOT_RETRANSMISSION),
-      all_transmissions(NULL),
+      all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false) {}
 

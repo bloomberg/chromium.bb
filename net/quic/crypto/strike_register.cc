@@ -400,7 +400,7 @@ void StrikeRegister::DropOldestNode() {
   // (whereq) when walking down the tree.
 
   uint32 p = internal_node_head_ >> 8, *wherep = &internal_node_head_,
-         *whereq = NULL;
+         *whereq = nullptr;
   while ((p & kExternalFlag) == 0) {
     whereq = wherep;
     InternalNode* inode = &internal_nodes_[p];

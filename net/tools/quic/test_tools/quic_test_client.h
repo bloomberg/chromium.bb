@@ -138,7 +138,7 @@ class QuicTestClient : public SimpleClient,
   // ConnectionId instead of a random one.
   void UseConnectionId(QuicConnectionId connection_id);
 
-  // Returns NULL if the maximum number of streams have already been created.
+  // Returns nullptr if the maximum number of streams have already been created.
   QuicSpdyClientStream* GetOrCreateStream();
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }

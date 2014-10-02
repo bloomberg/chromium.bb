@@ -30,10 +30,9 @@ QuicCryptoServerStream::QuicCryptoServerStream(
     QuicSession* session)
     : QuicCryptoStream(session),
       crypto_config_(crypto_config),
-      validate_client_hello_cb_(NULL),
+      validate_client_hello_cb_(nullptr),
       num_handshake_messages_(0),
-      num_server_config_update_messages_sent_(0) {
-}
+      num_server_config_update_messages_sent_(0) {}
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {
   CancelOutstandingCallbacks();
@@ -41,7 +40,7 @@ QuicCryptoServerStream::~QuicCryptoServerStream() {
 
 void QuicCryptoServerStream::CancelOutstandingCallbacks() {
   // Detach from the validation callback.  Calling this multiple times is safe.
-  if (validate_client_hello_cb_ != NULL) {
+  if (validate_client_hello_cb_ != nullptr) {
     validate_client_hello_cb_->Cancel();
   }
 }
@@ -62,7 +61,7 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     return;
   }
 
-  if (validate_client_hello_cb_ != NULL) {
+  if (validate_client_hello_cb_ != nullptr) {
     // Already processing some other handshake message.  The protocol
     // does not allow for clients to send multiple handshake messages
     // before the server has a chance to respond.
@@ -82,8 +81,8 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
     const CryptoHandshakeMessage& message,
     const ValidateClientHelloResultCallback::Result& result) {
   // Clear the callback that got us here.
-  DCHECK(validate_client_hello_cb_ != NULL);
-  validate_client_hello_cb_ = NULL;
+  DCHECK(validate_client_hello_cb_ != nullptr);
+  validate_client_hello_cb_ = nullptr;
 
   string error_details;
   CryptoHandshakeMessage reply;
@@ -153,7 +152,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
   // Now that the handshake is complete, send an updated server config and
   // source-address token to the client.
-  SendServerConfigUpdate(NULL);
+  SendServerConfigUpdate(nullptr);
 }
 
 void QuicCryptoServerStream::SendServerConfigUpdate(
@@ -178,7 +177,7 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
   DVLOG(1) << "Server: Sending server config update: "
            << server_config_update_message.DebugString();
   const QuicData& data = server_config_update_message.GetSerialized();
-  WriteOrBufferData(string(data.data(), data.length()), false, NULL);
+  WriteOrBufferData(string(data.data(), data.length()), false, nullptr);
 
   ++num_server_config_update_messages_sent_;
 }
@@ -240,14 +239,12 @@ QuicCryptoServerStream::ValidateCallback::ValidateCallback(
     QuicCryptoServerStream* parent) : parent_(parent) {
 }
 
-void QuicCryptoServerStream::ValidateCallback::Cancel() {
-  parent_ = NULL;
-}
+void QuicCryptoServerStream::ValidateCallback::Cancel() { parent_ = nullptr; }
 
 void QuicCryptoServerStream::ValidateCallback::RunImpl(
     const CryptoHandshakeMessage& client_hello,
     const Result& result) {
-  if (parent_ != NULL) {
+  if (parent_ != nullptr) {
     parent_->FinishProcessingHandshakeMessage(client_hello, result);
   }
 }

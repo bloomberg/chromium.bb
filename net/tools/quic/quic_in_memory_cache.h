@@ -69,7 +69,7 @@ class QuicInMemoryCache {
   static QuicInMemoryCache* GetInstance();
 
   // Retrieve a response from this cache for a given request.
-  // If no appropriate response exists, NULL is returned.
+  // If no appropriate response exists, nullptr is returned.
   // Currently, responses are selected based on request URI only.
   const Response* GetResponse(const BalsaHeaders& request_headers) const;
 

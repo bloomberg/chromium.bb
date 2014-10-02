@@ -98,7 +98,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
         maker_(GetParam(), 0, clock_),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
-            new ChannelIDService(new DefaultChannelIDStore(NULL),
+            new ChannelIDService(new DefaultChannelIDStore(nullptr),
                                  base::MessageLoopProxy::current())),
         factory_(&host_resolver_,
                  &socket_factory_,
@@ -142,13 +142,13 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   int GetSourcePortForNewSessionInner(const HostPortPair& destination,
                                       bool goaway_received) {
     // Should only be called if there is no active session for this destination.
-    EXPECT_EQ(NULL, CreateIfSessionExists(destination, net_log_).get());
+    EXPECT_EQ(nullptr, CreateIfSessionExists(destination, net_log_).get());
     size_t socket_count = socket_factory_.udp_client_sockets().size();
 
     MockRead reads[] = {
       MockRead(ASYNC, OK, 0)  // EOF
     };
-    DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+    DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
     socket_data.StopAfter(1);
     socket_factory_.AddSocketDataProvider(&socket_data);
 
@@ -184,7 +184,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     }
 
     factory_.OnSessionClosed(session);
-    EXPECT_EQ(NULL, CreateIfSessionExists(destination, net_log_).get());
+    EXPECT_EQ(nullptr, CreateIfSessionExists(destination, net_log_).get());
     EXPECT_TRUE(socket_data.at_read_eof());
     EXPECT_TRUE(socket_data.at_write_eof());
     return port;
@@ -218,14 +218,14 @@ INSTANTIATE_TEST_CASE_P(Version, QuicStreamFactoryTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicStreamFactoryTest, CreateIfSessionExists) {
-  EXPECT_EQ(NULL, CreateIfSessionExists(host_port_pair_, net_log_).get());
+  EXPECT_EQ(nullptr, CreateIfSessionExists(host_port_pair_, net_log_).get());
 }
 
 TEST_P(QuicStreamFactoryTest, Create) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -267,7 +267,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -296,7 +296,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -331,8 +331,8 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -379,7 +379,7 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -426,8 +426,8 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -481,8 +481,8 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -550,7 +550,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -564,7 +564,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -611,8 +611,8 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -628,7 +628,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -680,8 +680,8 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -698,7 +698,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
@@ -747,7 +747,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
@@ -764,7 +764,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -814,8 +814,8 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -834,7 +834,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -889,8 +889,8 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data1.StopAfter(1);
@@ -910,7 +910,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -962,10 +962,10 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_data.StopAfter(1);
   socket_factory_.AddSocketDataProvider(&socket_data);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_data2.StopAfter(1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
@@ -990,7 +990,7 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   EXPECT_EQ(true, QuicStreamFactoryPeer::IsLiveSession(&factory_, session));
   EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
       &factory_, host_port_pair_, is_https_));
-  EXPECT_EQ(NULL, CreateIfSessionExists(host_port_pair_, net_log_).get());
+  EXPECT_EQ(nullptr, CreateIfSessionExists(host_port_pair_, net_log_).get());
 
   // Create a new request for the same destination and verify that a
   // new session is created.
@@ -1089,7 +1089,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 }
 
 TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
-  DeterministicSocketData socket_data(NULL, 0, NULL, 0);
+  DeterministicSocketData socket_data(nullptr, 0, nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   host_resolver_.rules()->AddSimulatedFailure(kDefaultServerHostName);
@@ -1111,7 +1111,7 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
 
 TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
   MockConnect connect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
-  DeterministicSocketData socket_data(NULL, 0, NULL, 0);
+  DeterministicSocketData socket_data(nullptr, 0, nullptr, 0);
   socket_data.set_connect_data(connect);
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
@@ -1135,7 +1135,7 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
   {
     QuicStreamRequest request(&factory_);
@@ -1193,7 +1193,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.empty() ? nullptr  : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
@@ -1201,7 +1201,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   MockRead reads2[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data2(reads2, arraysize(reads2), NULL, 0);
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data2.StopAfter(1);
 
@@ -1256,7 +1256,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.empty() ? nullptr  : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
@@ -1264,7 +1264,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   MockRead reads2[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data2(reads2, arraysize(reads2), NULL, 0);
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data2.StopAfter(1);
 
@@ -1320,7 +1320,7 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.empty() ? nullptr  : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
@@ -1328,7 +1328,7 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   MockRead reads2[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data2(reads2, arraysize(reads2), NULL, 0);
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data2.StopAfter(1);
 
@@ -1349,7 +1349,7 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
                                          net_log_, CompletionCallback()));
 
   // Add a cert and verify that stream saw the event.
-  factory_.OnCertAdded(NULL);
+  factory_.OnCertAdded(nullptr);
   EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_FALSE(factory_.require_confirmation());
@@ -1384,7 +1384,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   DeterministicSocketData socket_data(reads, arraysize(reads),
-                                      writes.empty() ? NULL  : &writes[0],
+                                      writes.empty() ? nullptr  : &writes[0],
                                       writes.size());
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
@@ -1392,7 +1392,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   MockRead reads2[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  DeterministicSocketData socket_data2(reads2, arraysize(reads2), NULL, 0);
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data2.StopAfter(1);
 
@@ -1413,7 +1413,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
                                          net_log_, CompletionCallback()));
 
   // Change the CA cert and verify that stream saw the event.
-  factory_.OnCACertChanged(NULL);
+  factory_.OnCACertChanged(nullptr);
   EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_FALSE(factory_.require_confirmation());

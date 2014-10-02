@@ -193,7 +193,7 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
     while (read) {
         read = ReadAndDispatchSinglePacket(
             fd_, port_, dispatcher_.get(),
-            overflow_supported_ ? &packets_dropped_ : NULL);
+            overflow_supported_ ? &packets_dropped_ : nullptr);
     }
   }
   if (event->in_events & EPOLLOUT) {

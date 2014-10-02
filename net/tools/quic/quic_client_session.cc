@@ -27,7 +27,7 @@ void QuicClientSession::InitializeSession(
     QuicCryptoClientConfig* crypto_config) {
   QuicClientSessionBase::InitializeSession();
   crypto_stream_.reset(
-      new QuicCryptoClientStream(server_id, this, NULL, crypto_config));
+      new QuicCryptoClientStream(server_id, this, nullptr, crypto_config));
 }
 
 void QuicClientSession::OnProofValid(
@@ -41,17 +41,17 @@ void QuicClientSession::OnProofVerifyDetailsAvailable(
 QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
-    return NULL;
+    return nullptr;
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
              << "Already " << GetNumOpenStreams() << " open.";
-    return NULL;
+    return nullptr;
   }
   if (goaway_received()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
              << "Already received goaway.";
-    return NULL;
+    return nullptr;
   }
   QuicSpdyClientStream* stream
       = new QuicSpdyClientStream(GetNextStreamId(), this);
@@ -75,7 +75,7 @@ int QuicClientSession::GetNumSentClientHellos() const {
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace tools

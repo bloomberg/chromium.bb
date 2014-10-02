@@ -212,12 +212,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   typedef base::hash_map<QuicStreamId, QuicDataStream*> DataStreamMap;
 
   // Creates a new stream, owned by the caller, to handle a peer-initiated
-  // stream.  Returns NULL and does error handling if the stream can not be
+  // stream.  Returns nullptr and does error handling if the stream can not be
   // created.
   virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) = 0;
 
   // Create a new stream, owned by the caller, to handle a locally-initiated
-  // stream.  Returns NULL if max streams have already been opened.
+  // stream.  Returns nullptr if max streams have already been opened.
   virtual QuicDataStream* CreateOutgoingDataStream() = 0;
 
   // Return the reserved crypto stream.

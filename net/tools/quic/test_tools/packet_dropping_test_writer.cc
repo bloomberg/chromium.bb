@@ -46,7 +46,7 @@ class DelayAlarm : public QuicAlarm::Delegate {
 };
 
 PacketDroppingTestWriter::PacketDroppingTestWriter()
-    : clock_(NULL),
+    : clock_(nullptr),
       cur_buffer_size_(0),
       config_mutex_(),
       fake_packet_loss_percentage_(0),
@@ -90,7 +90,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   if (fake_blocked_socket_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_blocked_socket_percentage_)) {
-    CHECK(on_can_write_.get() != NULL);
+    CHECK(on_can_write_.get() != nullptr);
     DVLOG(1) << "Blocking socket.";
     if (!write_unblocked_alarm_->IsSet()) {
       // Set the alarm to fire immediately.
@@ -134,14 +134,16 @@ WriteResult PacketDroppingTestWriter::WritePacket(
 }
 
 bool PacketDroppingTestWriter::IsWriteBlocked() const {
-  if (write_unblocked_alarm_.get() != NULL && write_unblocked_alarm_->IsSet()) {
+  if (write_unblocked_alarm_.get() != nullptr &&
+      write_unblocked_alarm_->IsSet()) {
     return true;
   }
   return QuicPacketWriterWrapper::IsWriteBlocked();
 }
 
 void PacketDroppingTestWriter::SetWritable() {
-  if (write_unblocked_alarm_.get() != NULL && write_unblocked_alarm_->IsSet()) {
+  if (write_unblocked_alarm_.get() != nullptr &&
+      write_unblocked_alarm_->IsSet()) {
     write_unblocked_alarm_->Cancel();
   }
   QuicPacketWriterWrapper::SetWritable();

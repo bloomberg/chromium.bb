@@ -50,7 +50,7 @@ QuicData* EncryptWithNonce(ChaCha20Poly1305Encrypter* encrypter,
 
   if (!encrypter->Encrypt(nonce, associated_data, plaintext,
                           reinterpret_cast<unsigned char*>(ciphertext.get()))) {
-    return NULL;
+    return nullptr;
   }
 
   return new QuicData(ciphertext.release(), ciphertext_size, true);
@@ -62,7 +62,7 @@ TEST(ChaCha20Poly1305EncrypterTest, Encrypt) {
     return;
   }
 
-  for (size_t i = 0; test_vectors[i].key != NULL; i++) {
+  for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // Decode the test vector.
     string key;
     string pt;
@@ -80,8 +80,8 @@ TEST(ChaCha20Poly1305EncrypterTest, Encrypt) {
     scoped_ptr<QuicData> encrypted(EncryptWithNonce(
         &encrypter, iv,
         // This deliberately tests that the encrypter can handle an AAD that
-        // is set to NULL, as opposed to a zero-length, non-NULL pointer.
-        StringPiece(aad.length() ? aad.data() : NULL, aad.length()), pt));
+        // is set to nullptr, as opposed to a zero-length, non-nullptr pointer.
+        StringPiece(aad.length() ? aad.data() : nullptr, aad.length()), pt));
     ASSERT_TRUE(encrypted.get());
 
     test::CompareCharArraysWithHexError("ciphertext", encrypted->data(),

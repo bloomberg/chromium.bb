@@ -7,11 +7,11 @@
 namespace net {
 
 ScopedEVPAEADCtx::ScopedEVPAEADCtx() {
-  ctx_.aead = NULL;
+  ctx_.aead = nullptr;
 }
 
 ScopedEVPAEADCtx::~ScopedEVPAEADCtx() {
-  if (ctx_.aead != NULL) {
+  if (ctx_.aead != nullptr) {
     EVP_AEAD_CTX_cleanup(&ctx_);
   }
 }

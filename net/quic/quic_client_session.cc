@@ -94,7 +94,7 @@ void RecordHandshakeState(HandshakeState state) {
 
 }  // namespace
 
-QuicClientSession::StreamRequest::StreamRequest() : stream_(NULL) {}
+QuicClientSession::StreamRequest::StreamRequest() : stream_(nullptr) {}
 
 QuicClientSession::StreamRequest::~StreamRequest() {
   CancelRequest();
@@ -196,7 +196,7 @@ QuicClientSession::~QuicClientSession() {
     DCHECK(observers_.empty());
     CloseAllObservers(ERR_UNEXPECTED);
 
-    connection()->set_debug_visitor(NULL);
+    connection()->set_debug_visitor(nullptr);
     net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 
     while (!stream_requests_.empty()) {
@@ -361,21 +361,21 @@ void QuicClientSession::CancelRequest(StreamRequest* request) {
 QuicReliableClientStream* QuicClientSession::CreateOutgoingDataStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
-    return NULL;
+    return nullptr;
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
              << "Already " << GetNumOpenStreams() << " open.";
-    return NULL;
+    return nullptr;
   }
   if (goaway_received()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
              << "Already received goaway.";
-    return NULL;
+    return nullptr;
   }
   if (going_away_) {
     RecordUnexpectedOpenStreams(CREATE_OUTGOING_RELIABLE_STREAM);
-    return NULL;
+    return nullptr;
   }
   return CreateOutgoingReliableStreamImpl();
 }
@@ -510,7 +510,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
-  return NULL;
+  return nullptr;
 }
 
 void QuicClientSession::CloseStream(QuicStreamId stream_id) {

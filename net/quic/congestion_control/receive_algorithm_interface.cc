@@ -15,7 +15,7 @@ ReceiveAlgorithmInterface* ReceiveAlgorithmInterface::Create(
     case kTCP:
       return new TcpReceiver();
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace net

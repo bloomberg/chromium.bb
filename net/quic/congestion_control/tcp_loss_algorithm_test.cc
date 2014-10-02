@@ -26,7 +26,7 @@ class TcpLossAlgorithmTest : public ::testing::Test {
 
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
-                            NULL, 0, new RetransmittableFrames());
+                            nullptr, 0, new RetransmittableFrames());
     unacked_packets_.AddPacket(packet);
     unacked_packets_.SetSent(sequence_number, clock_.Now(), 1000, true);
   }
@@ -58,11 +58,11 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1Packet) {
   // No loss on one ack.
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.NackPacket(1, 1);
-  VerifyLosses(2, NULL, 0);
+  VerifyLosses(2, nullptr, 0);
   // No loss on two acks.
   unacked_packets_.RemoveFromInFlight(3);
   unacked_packets_.NackPacket(1, 2);
-  VerifyLosses(3, NULL, 0);
+  VerifyLosses(3, nullptr, 0);
   // Loss on three acks.
   unacked_packets_.RemoveFromInFlight(4);
   unacked_packets_.NackPacket(1, 3);
@@ -117,7 +117,7 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmit1Packet) {
   // Early retransmit when the final packet gets acked and the first is nacked.
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.NackPacket(1, 1);
-  VerifyLosses(2, NULL, 0);
+  VerifyLosses(2, nullptr, 0);
   EXPECT_EQ(clock_.Now().Add(rtt_stats_.SmoothedRtt().Multiply(1.25)),
             loss_algorithm_.GetLossTimeout());
 
@@ -175,7 +175,7 @@ TEST_F(TcpLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
   unacked_packets_.IncreaseLargestObserved(2);
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.NackPacket(1, 1);
-  VerifyLosses(2, NULL, 0);
+  VerifyLosses(2, nullptr, 0);
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 

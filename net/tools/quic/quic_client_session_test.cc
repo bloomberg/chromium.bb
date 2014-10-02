@@ -91,7 +91,7 @@ TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
   session_->OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(NULL, session_->CreateOutgoingDataStream());
+  EXPECT_EQ(nullptr, session_->CreateOutgoingDataStream());
 }
 
 TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {

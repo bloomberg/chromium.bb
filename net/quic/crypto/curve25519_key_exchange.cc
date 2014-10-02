@@ -32,7 +32,7 @@ Curve25519KeyExchange* Curve25519KeyExchange::New(
                  header_out_of_sync);
 
   if (private_key.size() != crypto::curve25519::kScalarBytes) {
-    return NULL;
+    return nullptr;
   }
 
   ka = new Curve25519KeyExchange();

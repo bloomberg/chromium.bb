@@ -41,7 +41,7 @@ class QuicCryptoServerConfigPeer {
  public:
   static string GetPrimaryOrbit(const QuicCryptoServerConfig& config) {
     base::AutoLock lock(config.configs_lock_);
-    CHECK(config.primary_config_.get() != NULL);
+    CHECK(config.primary_config_.get() != nullptr);
     return string(reinterpret_cast<const char*>(config.primary_config_->orbit),
                   kOrbitSize);
   }
@@ -60,7 +60,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
         stream_(crypto_config_, &session_),
-        strike_register_client_(NULL) {
+        strike_register_client_(nullptr) {
     config_.SetDefaults();
     session_.config()->SetDefaults();
     session_.SetCryptoStream(&stream_);
@@ -150,7 +150,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   QuicServerId server_id(kServerHostname, kServerPort, false,
                          PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicCryptoClientStream> client(new QuicCryptoClientStream(
-      server_id, client_session.get(), NULL, &client_crypto_config));
+      server_id, client_session.get(), nullptr, &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   // Do a first handshake in order to prime the client config with the server's
@@ -182,8 +182,8 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   reinterpret_cast<MockRandom*>(client_conn->random_generator())->ChangeValue();
   client_session.reset(new TestClientSession(client_conn, client_config));
   server_session.reset(new TestSession(server_conn, config_));
-  client.reset(new QuicCryptoClientStream(
-      server_id, client_session.get(), NULL, &client_crypto_config));
+  client.reset(new QuicCryptoClientStream(server_id, client_session.get(),
+                                          nullptr, &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   server.reset(new QuicCryptoServerStream(crypto_config_,
@@ -245,7 +245,7 @@ TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {
-  crypto_config_.SetProofSource(NULL);
+  crypto_config_.SetProofSource(nullptr);
   client_options_.dont_verify_certs = true;
 
   // Only 2 client hellos need to be sent in the no-certs case: one to get the
@@ -277,7 +277,7 @@ TEST_P(QuicCryptoServerStreamTest, ChannelIDAsync) {
 
 TEST_P(QuicCryptoServerStreamTest, OnlySendSCUPAfterHandshakeComplete) {
   // An attempt to send a SCUP before completing handshake should fail.
-  stream_.SendServerConfigUpdate(NULL);
+  stream_.SendServerConfigUpdate(nullptr);
   EXPECT_EQ(0, stream_.num_server_config_update_messages_sent());
 }
 

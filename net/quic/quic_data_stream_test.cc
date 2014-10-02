@@ -299,7 +299,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
   EXPECT_CALL(*connection_, SendBlocked(kClientDataStreamId1));
   EXPECT_CALL(*session_, WritevData(kClientDataStreamId1, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kWindow, true)));
-  stream_->WriteOrBufferData(body, false, NULL);
+  stream_->WriteOrBufferData(body, false, nullptr);
 
   // Should have sent as much as possible, resulting in no send window left.
   EXPECT_EQ(0u,
@@ -535,7 +535,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {
   EXPECT_CALL(*session_, WritevData(kClientDataStreamId1, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, fin)));
 
-  stream_->WriteOrBufferData(body, fin, NULL);
+  stream_->WriteOrBufferData(body, fin, nullptr);
 }
 
 }  // namespace

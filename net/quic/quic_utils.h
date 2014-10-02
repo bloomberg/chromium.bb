@@ -34,7 +34,7 @@ class NET_EXPORT_PRIVATE QuicUtils {
   //
   // Which list has priority is determined by |priority|.
   //
-  // If |out_index| is non-NULL and a match is found then the index of that
+  // If |out_index| is non-nullptr and a match is found then the index of that
   // match in |their_tags| is written to |out_index|.
   static bool FindMutualTag(const QuicTagVector& our_tags,
                             const QuicTag* their_tags,

@@ -111,7 +111,7 @@ bool QuicCryptoClientConfig::CachedState::IsEmpty() const {
 const CryptoHandshakeMessage*
 QuicCryptoClientConfig::CachedState::GetServerConfig() const {
   if (server_config_.empty()) {
-    return NULL;
+    return nullptr;
   }
 
   if (!scfg_.get()) {
@@ -292,7 +292,7 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
   certs_ = other.certs_;
   server_config_sig_ = other.server_config_sig_;
   server_config_valid_ = other.server_config_valid_;
-  if (other.proof_verify_details_.get() != NULL) {
+  if (other.proof_verify_details_.get() != nullptr) {
     proof_verify_details_.reset(other.proof_verify_details_->Clone());
   }
   ++generation_counter_;
@@ -398,7 +398,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out,
     string* error_details) const {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
 
   FillInchoateClientHello(server_id, preferred_version, cached,
                           out_params, out);
@@ -437,7 +437,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   size_t key_exchange_index;
   if (!QuicUtils::FindMutualTag(
           aead, their_aeads, num_their_aeads, QuicUtils::LOCAL_PRIORITY,
-          &out_params->aead, NULL) ||
+          &out_params->aead, nullptr) ||
       !QuicUtils::FindMutualTag(
           kexs, their_key_exchanges, num_their_key_exchanges,
           QuicUtils::LOCAL_PRIORITY, &out_params->key_exchange,
@@ -524,7 +524,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
                                  out_params->aead, out_params->client_nonce,
                                  out_params->server_nonce, hkdf_input,
                                  CryptoUtils::CLIENT, &crypters,
-                                 NULL /* subkey secret */)) {
+                                 nullptr /* subkey secret */)) {
       *error_details = "Symmetric key setup failed";
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
@@ -567,7 +567,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
            out_params->initial_premaster_secret, out_params->aead,
            out_params->client_nonce, out_params->server_nonce, hkdf_input,
            CryptoUtils::CLIENT, &out_params->initial_crypters,
-           NULL /* subkey secret */)) {
+           nullptr /* subkey secret */)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -581,7 +581,7 @@ QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
     const vector<string>& cached_certs,
     CachedState* cached,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
 
   StringPiece scfg;
   if (!message.GetStringPiece(kSCFG, &scfg)) {
@@ -612,7 +612,7 @@ QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
 
     cached->SetProof(certs, proof);
   } else {
-    if (proof_verifier() != NULL) {
+    if (proof_verifier() != nullptr) {
       // Secure QUIC: clear existing proof as we have been sent a new SCFG
       // without matching proof/certs.
       cached->ClearProof();
@@ -639,7 +639,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     bool is_https,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
 
   if (rej.tag() != kREJ) {
     *error_details = "Message is not REJ";
@@ -692,7 +692,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
 
   if (server_hello.tag() != kSHLO) {
     *error_details = "Bad tag";
@@ -767,7 +767,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerConfigUpdate(
     CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
-  DCHECK(error_details != NULL);
+  DCHECK(error_details != nullptr);
 
   if (server_config_update.tag() != kSCUP) {
     *error_details = "ServerConfigUpdate must have kSCUP tag.";

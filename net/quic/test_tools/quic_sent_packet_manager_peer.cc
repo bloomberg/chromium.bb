@@ -96,7 +96,7 @@ bool QuicSentPacketManagerPeer::IsRetransmission(
   DCHECK(sent_packet_manager->HasRetransmittableFrames(sequence_number));
   return sent_packet_manager->HasRetransmittableFrames(sequence_number) &&
       sent_packet_manager->unacked_packets_.GetTransmissionInfo(
-          sequence_number).all_transmissions != NULL;
+          sequence_number).all_transmissions != nullptr;
 }
 
 // static
@@ -127,7 +127,7 @@ size_t QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
   for (QuicUnackedPacketMap::const_iterator it =
            sent_packet_manager->unacked_packets_.begin();
        it != sent_packet_manager->unacked_packets_.end(); ++it) {
-    if (it->retransmittable_frames != NULL) {
+    if (it->retransmittable_frames != nullptr) {
       ++num_unacked_packets;
     }
   }

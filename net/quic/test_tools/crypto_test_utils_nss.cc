@@ -45,7 +45,7 @@ class TestChannelIDSource : public ChannelIDSource {
 
     crypto::ECPrivateKey* keypair = crypto::ECPrivateKey::Create();
     if (!keypair) {
-      return NULL;
+      return nullptr;
     }
     hostname_to_key_[hostname] = keypair;
     return keypair->Copy();

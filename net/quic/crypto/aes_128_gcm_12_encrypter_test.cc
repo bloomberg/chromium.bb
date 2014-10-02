@@ -217,7 +217,7 @@ QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
 
   if (!encrypter->Encrypt(nonce, associated_data, plaintext,
                           reinterpret_cast<unsigned char*>(ciphertext.get()))) {
-    return NULL;
+    return nullptr;
   }
 
   return new QuicData(ciphertext.release(), ciphertext_size, true);
@@ -228,7 +228,7 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
     SCOPED_TRACE(i);
     const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
-    for (size_t j = 0; test_vectors[j].key != NULL; j++) {
+    for (size_t j = 0; test_vectors[j].key != nullptr; j++) {
       // Decode the test vector.
       string key;
       string iv;
@@ -257,7 +257,8 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
       scoped_ptr<QuicData> encrypted(EncryptWithNonce(
           &encrypter, iv,
           // This deliberately tests that the encrypter can handle an AAD that
-          // is set to NULL, as opposed to a zero-length, non-NULL pointer.
+          // is set to nullptr, as opposed to a zero-length, non-nullptr
+          // pointer.
           aad.length() ? aad : StringPiece(), pt));
       ASSERT_TRUE(encrypted.get());
 

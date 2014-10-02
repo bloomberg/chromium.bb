@@ -187,7 +187,7 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       packet_writer_factory_(packet_writer_factory),
       connection_writer_factory_(this),
       supported_versions_(supported_versions),
-      current_packet_(NULL),
+      current_packet_(nullptr),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
       framer_visitor_(new QuicFramerVisitor(this)) {
   framer_.set_visitor(framer_visitor_.get());
@@ -199,7 +199,7 @@ QuicDispatcher::~QuicDispatcher() {
 }
 
 void QuicDispatcher::Initialize(QuicServerPacketWriter* writer) {
-  DCHECK(writer_ == NULL);
+  DCHECK(writer_ == nullptr);
   writer_.reset(writer);
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
 }
@@ -220,7 +220,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 
 bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     const QuicPacketPublicHeader& header) {
-  QuicSession* session = NULL;
+  QuicSession* session = nullptr;
 
   QuicConnectionId connection_id = header.connection_id;
   SessionMap::iterator it = session_map_.find(connection_id);
@@ -240,7 +240,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
                                   current_client_address_);
     }
 
-    if (session == NULL) {
+    if (session == nullptr) {
       DVLOG(1) << "Failed to create session for " << connection_id;
       // Add this connection_id fo the time-wait state, to safely reject future
       // packets.
@@ -254,8 +254,8 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       // Use the version in the packet if possible, otherwise assume the latest.
       QuicVersion version = header.version_flag ? header.versions.front() :
           supported_versions_.front();
-      time_wait_list_manager_->AddConnectionIdToTimeWait(
-          connection_id, version, NULL);
+      time_wait_list_manager_->AddConnectionIdToTimeWait(connection_id, version,
+                                                         nullptr);
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
       return HandlePacketForTimeWait(header);
     }

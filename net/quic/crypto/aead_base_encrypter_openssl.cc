@@ -56,7 +56,7 @@ bool AeadBaseEncrypter::SetKey(StringPiece key) {
   EVP_AEAD_CTX_cleanup(ctx_.get());
 
   if (!EVP_AEAD_CTX_init(ctx_.get(), aead_alg_, key_, key_size_,
-                         auth_tag_size_, NULL)) {
+                         auth_tag_size_, nullptr)) {
     DLogOpenSslErrors();
     return false;
   }
@@ -117,7 +117,7 @@ QuicData* AeadBaseEncrypter::EncryptPacket(
   if (!Encrypt(StringPiece(reinterpret_cast<char*>(nonce), nonce_size),
                associated_data, plaintext,
                reinterpret_cast<unsigned char*>(ciphertext.get()))) {
-    return NULL;
+    return nullptr;
   }
 
   return new QuicData(ciphertext.release(), ciphertext_size, true);

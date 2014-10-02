@@ -80,7 +80,7 @@ QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
   if (!decrypter->Decrypt(nonce, associated_data, ciphertext,
                           reinterpret_cast<unsigned char*>(plaintext.get()),
                           &plaintext_size)) {
-    return NULL;
+    return nullptr;
   }
   return new QuicData(plaintext.release(), plaintext_size, true);
 }
@@ -91,7 +91,7 @@ TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
     return;
   }
 
-  for (size_t i = 0; test_vectors[i].key != NULL; i++) {
+  for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // If not present then decryption is expected to fail.
     bool has_pt = test_vectors[i].pt;
 
@@ -114,8 +114,8 @@ TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
     scoped_ptr<QuicData> decrypted(DecryptWithNonce(
         &decrypter, iv,
         // This deliberately tests that the decrypter can handle an AAD that
-        // is set to NULL, as opposed to a zero-length, non-NULL pointer.
-        StringPiece(aad.length() ? aad.data() : NULL, aad.length()), ct));
+        // is set to nullptr, as opposed to a zero-length, non-nullptr pointer.
+        StringPiece(aad.length() ? aad.data() : nullptr, aad.length()), ct));
     if (!decrypted.get()) {
       EXPECT_FALSE(has_pt);
       continue;

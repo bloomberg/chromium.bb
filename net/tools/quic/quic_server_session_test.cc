@@ -265,7 +265,7 @@ TEST_P(QuicServerSessionTest, MaxOpenStreamsImplicit) {
 TEST_P(QuicServerSessionTest, GetEvenIncomingError) {
   // Incoming streams on the server session must be odd.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
-  EXPECT_EQ(NULL,
+  EXPECT_EQ(nullptr,
             QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 4));
 }
 

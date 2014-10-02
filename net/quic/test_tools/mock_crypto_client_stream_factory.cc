@@ -15,8 +15,8 @@ namespace net {
 
 MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
     : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE),
-      last_stream_(NULL),
-      proof_verify_details_(NULL) {
+      last_stream_(nullptr),
+      proof_verify_details_(nullptr) {
 }
 
 QuicCryptoClientStream*
@@ -25,7 +25,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     QuicClientSession* session,
     QuicCryptoClientConfig* crypto_config) {
   last_stream_ = new MockCryptoClientStream(
-      server_id, session, NULL, crypto_config, handshake_mode_,
+      server_id, session, nullptr, crypto_config, handshake_mode_,
       proof_verify_details_);
   return last_stream_;
 }

@@ -60,7 +60,7 @@ QuicPriority QuicCryptoStream::EffectivePriority() const {
 
 void QuicCryptoStream::SendHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  SendHandshakeMessage(message, NULL);
+  SendHandshakeMessage(message, nullptr);
 }
 
 void QuicCryptoStream::SendHandshakeMessage(

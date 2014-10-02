@@ -422,7 +422,7 @@ class ScopedZLib {
     DEFLATE,
   };
 
-  explicit ScopedZLib(Type type) : z_(NULL), type_(type) {}
+  explicit ScopedZLib(Type type) : z_(nullptr), type_(type) {}
 
   void reset(z_stream* z) {
     Clear();
@@ -444,7 +444,7 @@ class ScopedZLib {
     } else {
       inflateEnd(z_);
     }
-    z_ = NULL;
+    z_ = nullptr;
   }
 
   z_stream* z_;

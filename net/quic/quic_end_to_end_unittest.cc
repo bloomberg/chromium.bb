@@ -59,7 +59,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
   }
 
   virtual HttpCache* GetCache() OVERRIDE {
-    return NULL;
+    return nullptr;
   }
 
   virtual HttpNetworkSession* GetSession() OVERRIDE { return session_.get(); };
@@ -85,8 +85,8 @@ class QuicEndToEndTest : public PlatformTest {
     request_.load_flags = 0;
 
     params_.enable_quic = true;
-    params_.quic_clock = NULL;
-    params_.quic_random = NULL;
+    params_.quic_clock = nullptr;
+    params_.quic_random = nullptr;
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
     params_.transport_security_state = &transport_security_state_;

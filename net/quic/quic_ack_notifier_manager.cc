@@ -86,7 +86,7 @@ void AckNotifierManager::OnSerializedPacket(
 
   for (QuicFrames::const_iterator it = frames->frames().begin();
        it != frames->frames().end(); ++it) {
-    if (it->type == STREAM_FRAME && it->stream_frame->notifier != NULL) {
+    if (it->type == STREAM_FRAME && it->stream_frame->notifier != nullptr) {
       QuicAckNotifier* notifier = it->stream_frame->notifier;
 
       // The AckNotifier needs to know it is tracking this packet's sequence

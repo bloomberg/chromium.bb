@@ -262,7 +262,7 @@ QuicData* DecryptWithNonce(Aes128Gcm12Decrypter* decrypter,
   if (!decrypter->Decrypt(nonce, associated_data, ciphertext,
                           reinterpret_cast<unsigned char*>(plaintext.get()),
                           &plaintext_size)) {
-    return NULL;
+    return nullptr;
   }
   return new QuicData(plaintext.release(), plaintext_size, true);
 }
@@ -272,7 +272,7 @@ TEST(Aes128Gcm12DecrypterTest, Decrypt) {
     SCOPED_TRACE(i);
     const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
-    for (size_t j = 0; test_vectors[j].key != NULL; j++) {
+    for (size_t j = 0; test_vectors[j].key != nullptr; j++) {
       // If not present then decryption is expected to fail.
       bool has_pt = test_vectors[j].pt;
 
@@ -316,7 +316,8 @@ TEST(Aes128Gcm12DecrypterTest, Decrypt) {
       scoped_ptr<QuicData> decrypted(DecryptWithNonce(
           &decrypter, iv,
           // This deliberately tests that the decrypter can handle an AAD that
-          // is set to NULL, as opposed to a zero-length, non-NULL pointer.
+          // is set to nullptr, as opposed to a zero-length, non-nullptr
+          // pointer.
           aad.length() ? aad : StringPiece(), ciphertext));
       if (!decrypted.get()) {
         EXPECT_FALSE(has_pt);

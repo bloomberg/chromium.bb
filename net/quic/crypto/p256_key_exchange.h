@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   virtual ~P256KeyExchange();
 
   // New creates a new key exchange object from a private key. If
-  // |private_key| is invalid, NULL is returned.
+  // |private_key| is invalid, nullptr is returned.
   static P256KeyExchange* New(base::StringPiece private_key);
 
   // |NewPrivateKey| returns a private key, suitable for passing to |New|.
@@ -77,4 +77,3 @@ class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
 
 }  // namespace net
 #endif  // NET_QUIC_CRYPTO_P256_KEY_EXCHANGE_H_
-

@@ -117,7 +117,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         "NONC", nonce_hex_.c_str(),
         "VER\0", client_version_.data(),
         "$padding", static_cast<int>(kClientHelloMinimumSize),
-        NULL);
+        nullptr);
     ShouldSucceed(client_hello);
     // The message should be rejected because the source-address token is
     // missing.
@@ -334,7 +334,7 @@ TEST_P(CryptoServerTest, BadSNI) {
         "CHLO",
         "SNI", kBadSNIs[i],
         "VER\0", client_version.data(),
-        NULL));
+        nullptr));
     const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE
     };
@@ -357,7 +357,7 @@ TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       "PDMD", "X509",
       "VER\0", client_version_.data(),
-      NULL));
+      nullptr));
 
   StringPiece cert, proof;
   EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
@@ -374,7 +374,7 @@ TEST_P(CryptoServerTest, TooSmall) {
   ShouldFailMentioning("too small", CryptoTestUtils::Message(
         "CHLO",
         "VER\0", client_version_.data(),
-        NULL));
+        nullptr));
   const HandshakeFailureReason kRejectReasons[] = {
     SERVER_CONFIG_INCHOATE_HELLO_FAILURE
   };
@@ -395,7 +395,7 @@ TEST_P(CryptoServerTest, BadSourceAddressToken) {
         "CHLO",
         "STK", kBadSourceAddressTokens[i],
         "VER\0", client_version_.data(),
-        NULL));
+        nullptr));
     const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE
     };
@@ -416,7 +416,7 @@ TEST_P(CryptoServerTest, BadClientNonce) {
         "CHLO",
         "NONC", kBadNonces[i],
         "VER\0", client_version_.data(),
-        NULL));
+        nullptr));
     const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE
     };
@@ -437,7 +437,7 @@ TEST_P(CryptoServerTest, DowngradeAttack) {
   ShouldFailMentioning("Downgrade", InchoateClientHello(
       "CHLO",
       "VER\0", bad_version.data(),
-      NULL));
+      nullptr));
   const HandshakeFailureReason kRejectReasons[] = {
     SERVER_CONFIG_INCHOATE_HELLO_FAILURE
   };
@@ -456,7 +456,7 @@ TEST_P(CryptoServerTest, CorruptServerConfig) {
       "NONC", nonce_hex_.c_str(),
       "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
+      nullptr);
   ShouldSucceed(msg);
   ASSERT_EQ(kREJ, out_.tag());
   const HandshakeFailureReason kRejectReasons[] = {
@@ -477,7 +477,7 @@ TEST_P(CryptoServerTest, CorruptSourceAddressToken) {
       "NONC", nonce_hex_.c_str(),
       "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
+      nullptr);
   ShouldSucceed(msg);
   ASSERT_EQ(kREJ, out_.tag());
   const HandshakeFailureReason kRejectReasons[] = {
@@ -498,7 +498,7 @@ TEST_P(CryptoServerTest, CorruptClientNonceAndSourceAddressToken) {
       "NONC", (string(1, 'X') + nonce_hex_).c_str(),
       "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
+      nullptr);
   ShouldSucceed(msg);
   ASSERT_EQ(kREJ, out_.tag());
   const HandshakeFailureReason kRejectReasons[] = {
@@ -521,7 +521,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
       "SNO\0", (string(1, 'X') + nonce_hex_).c_str(),
       "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
+      nullptr);
   ShouldSucceed(msg);
   ASSERT_EQ(kREJ, out_.tag());
   const HandshakeFailureReason kRejectReasons[] = {
@@ -544,7 +544,7 @@ TEST_P(CryptoServerTest, ReplayProtection) {
       "NONC", nonce_hex_.c_str(),
       "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
+      nullptr);
   ShouldSucceed(msg);
   // The message should be rejected because the strike-register is still
   // quiescent.
@@ -649,7 +649,7 @@ TEST_P(CryptoServerTestNoConfig, DontCrash) {
   ShouldFailMentioning("No config", InchoateClientHello(
       "CHLO",
       "VER\0", client_version_.data(),
-      NULL));
+      nullptr));
 
   const HandshakeFailureReason kRejectReasons[] = {
     SERVER_CONFIG_INCHOATE_HELLO_FAILURE
@@ -691,7 +691,7 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
       "NONC", nonce_hex_.c_str(),
       "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
+      nullptr);
 
   // Clear the message tag.
   out_.set_tag(0);

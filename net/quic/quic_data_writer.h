@@ -66,9 +66,9 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   }
 
  private:
-  // Returns the location that the data should be written at, or NULL if there
-  // is not enough room. Call EndWrite with the returned offset and the given
-  // length to pad out for the next write.
+  // Returns the location that the data should be written at, or nullptr if
+  // there is not enough room. Call EndWrite with the returned offset and the
+  // given length to pad out for the next write.
   char* BeginWrite(size_t length);
 
   char* buffer_;

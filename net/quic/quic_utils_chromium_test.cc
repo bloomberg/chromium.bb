@@ -25,7 +25,7 @@ TEST(QuicUtilsChromiumTest, FindOrNullTest) {
   const map<int, int>& const_m = m;
   const int* p2 = FindOrNull(const_m, 0);
   CHECK_EQ(*p2, 3);
-  CHECK(FindOrNull(m, 1) == NULL);
+  CHECK(FindOrNull(m, 1) == nullptr);
 }
 
 TEST(QuicUtilsChromiumTest, FindOrDieTest) {

@@ -77,9 +77,9 @@ bool AeadBaseEncrypter::Encrypt(StringPiece nonce,
   // it's not PK11_OriginFortezzaHack, so we pass PK11_OriginUnwrap as a
   // placeholder.
   crypto::ScopedPK11SymKey aead_key(PK11_ImportSymKey(
-      slot, key_mechanism, PK11_OriginUnwrap, CKA_ENCRYPT, &key_item, NULL));
+      slot, key_mechanism, PK11_OriginUnwrap, CKA_ENCRYPT, &key_item, nullptr));
   PK11_FreeSlot(slot);
-  slot = NULL;
+  slot = nullptr;
   if (!aead_key) {
     DVLOG(1) << "PK11_ImportSymKey failed";
     return false;
@@ -127,7 +127,7 @@ QuicData* AeadBaseEncrypter::EncryptPacket(
   if (!Encrypt(StringPiece(reinterpret_cast<char*>(nonce), nonce_size),
                associated_data, plaintext,
                reinterpret_cast<unsigned char*>(ciphertext.get()))) {
-    return NULL;
+    return nullptr;
   }
 
   return new QuicData(ciphertext.release(), ciphertext_size, true);

@@ -52,7 +52,7 @@ void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
   QuicSession::OnConnectionClosed(error, from_peer);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
-  if (crypto_stream_.get() != NULL) {
+  if (crypto_stream_.get() != nullptr) {
     crypto_stream_->CancelOutstandingCallbacks();
   }
   visitor_->OnConnectionClosed(connection()->connection_id(), error);
@@ -157,7 +157,7 @@ bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {
 QuicDataStream* QuicServerSession::CreateIncomingDataStream(
     QuicStreamId id) {
   if (!ShouldCreateIncomingDataStream(id)) {
-    return NULL;
+    return nullptr;
   }
 
   return new QuicSpdyServerStream(id, this);
@@ -165,7 +165,7 @@ QuicDataStream* QuicServerSession::CreateIncomingDataStream(
 
 QuicDataStream* QuicServerSession::CreateOutgoingDataStream() {
   DLOG(ERROR) << "Server push not yet supported";
-  return NULL;
+  return nullptr;
 }
 
 QuicCryptoServerStream* QuicServerSession::GetCryptoStream() {

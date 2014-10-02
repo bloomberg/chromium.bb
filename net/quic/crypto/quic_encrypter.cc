@@ -22,7 +22,7 @@ QuicEncrypter* QuicEncrypter::Create(QuicTag algorithm) {
       return new NullEncrypter();
     default:
       LOG(FATAL) << "Unsupported algorithm: " << algorithm;
-      return NULL;
+      return nullptr;
   }
 }
 

@@ -59,7 +59,7 @@ bool AeadBaseDecrypter::SetKey(StringPiece key) {
 
   EVP_AEAD_CTX_cleanup(ctx_.get());
   if (!EVP_AEAD_CTX_init(ctx_.get(), aead_alg_, key_, key_size_,
-                         auth_tag_size_, NULL)) {
+                         auth_tag_size_, nullptr)) {
     DLogOpenSslErrors();
     return false;
   }
@@ -106,7 +106,7 @@ QuicData* AeadBaseDecrypter::DecryptPacket(
     StringPiece associated_data,
     StringPiece ciphertext) {
   if (ciphertext.length() < auth_tag_size_) {
-    return NULL;
+    return nullptr;
   }
   size_t plaintext_size = ciphertext.length();
   scoped_ptr<char[]> plaintext(new char[plaintext_size]);
@@ -120,7 +120,7 @@ QuicData* AeadBaseDecrypter::DecryptPacket(
                associated_data, ciphertext,
                reinterpret_cast<uint8*>(plaintext.get()),
                &plaintext_size)) {
-    return NULL;
+    return nullptr;
   }
   return new QuicData(plaintext.release(), plaintext_size, true);
 }

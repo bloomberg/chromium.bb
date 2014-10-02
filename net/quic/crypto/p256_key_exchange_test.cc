@@ -26,8 +26,8 @@ TEST(P256KeyExchange, SharedKey) {
     scoped_ptr<P256KeyExchange> alice(P256KeyExchange::New(alice_private));
     scoped_ptr<P256KeyExchange> bob(P256KeyExchange::New(bob_private));
 
-    ASSERT_TRUE(alice.get() != NULL);
-    ASSERT_TRUE(bob.get() != NULL);
+    ASSERT_TRUE(alice.get() != nullptr);
+    ASSERT_TRUE(bob.get() != nullptr);
 
     const base::StringPiece alice_public(alice->public_value());
     const base::StringPiece bob_public(bob->public_value());

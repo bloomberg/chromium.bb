@@ -33,14 +33,13 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          QuicRandom* random_generator,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
-      debug_delegate_(NULL),
+      debug_delegate_(nullptr),
       packet_creator_(connection_id, framer, random_generator),
       batch_mode_(false),
       should_fec_protect_(false),
       should_send_ack_(false),
       should_send_feedback_(false),
-      should_send_stop_waiting_(false) {
-}
+      should_send_stop_waiting_(false) {}
 
 QuicPacketGenerator::~QuicPacketGenerator() {
   for (QuicFrames::iterator it = queued_control_frames_.begin();
@@ -141,7 +140,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                          HAS_RETRANSMITTABLE_DATA, handshake)) {
     QuicFrame frame;
     size_t bytes_consumed;
-    if (notifier != NULL) {
+    if (notifier != nullptr) {
       // We want to track which packet this stream frame ends up in.
       bytes_consumed = packet_creator_.CreateStreamFrameWithNotifier(
           id, data, offset + total_bytes_consumed, fin, notifier, &frame);

@@ -52,10 +52,10 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Adds the given connection_id to time wait state for kTimeWaitPeriod.
   // Henceforth, any packet bearing this connection_id should not be processed
-  // while the connection_id remains in this list. If a non-NULL |close_packet|
-  // is provided, it is sent again when packets are received for added
-  // connection_ids. If NULL, a public reset packet is sent with the specified
-  // |version|. DCHECKs that connection_id is not already on the list.
+  // while the connection_id remains in this list. If a non-nullptr
+  // |close_packet| is provided, it is sent again when packets are received for
+  // added connection_ids. If nullptr, a public reset packet is sent with the
+  // specified |version|. DCHECKs that connection_id is not already on the list.
   void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
                                  QuicVersion version,
                                  QuicEncryptedPacket* close_packet);  // Owned.

@@ -102,8 +102,8 @@ class QuicDispatcherTest : public ::testing::Test {
       : crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
         dispatcher_(config_, crypto_config_, &eps_),
-        session1_(NULL),
-        session2_(NULL) {
+        session1_(nullptr),
+        session2_(nullptr) {
     dispatcher_.Initialize(1);
   }
 

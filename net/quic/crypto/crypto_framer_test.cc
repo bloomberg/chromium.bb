@@ -88,7 +88,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessage) {
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  ASSERT_TRUE(data.get() != NULL);
+  ASSERT_TRUE(data.get() != nullptr);
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),
                                       arraysize(packet));
@@ -125,7 +125,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageWithTwoKeys) {
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  ASSERT_TRUE(data.get() != NULL);
+  ASSERT_TRUE(data.get() != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),
@@ -152,7 +152,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageZeroLength) {
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  ASSERT_TRUE(data.get() != NULL);
+  ASSERT_TRUE(data.get() != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),
@@ -168,7 +168,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageTooManyEntries) {
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  EXPECT_TRUE(data.get() == NULL);
+  EXPECT_TRUE(data.get() == nullptr);
 }
 
 TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSize) {
@@ -204,7 +204,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSize) {
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  ASSERT_TRUE(data.get() != NULL);
+  ASSERT_TRUE(data.get() != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),
@@ -242,7 +242,7 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSizePadLast) {
 
   CryptoFramer framer;
   scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
-  ASSERT_TRUE(data.get() != NULL);
+  ASSERT_TRUE(data.get() != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet),

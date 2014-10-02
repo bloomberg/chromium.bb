@@ -96,7 +96,8 @@ class CryptoTestUtils {
 
   // CommunicateHandshakeMessagesAndRunCallbacks moves messages from |a| to |b|
   // and back until |a|'s handshake has completed. If |callback_source| is not
-  // NULL, CommunicateHandshakeMessagesAndRunCallbacks also runs callbacks from
+  // nullptr, CommunicateHandshakeMessagesAndRunCallbacks also runs callbacks
+  // from
   // |callback_source| between processing messages.
   static void CommunicateHandshakeMessagesAndRunCallbacks(
       PacketSavingConnection* a_conn,
@@ -151,7 +152,7 @@ class CryptoTestUtils {
 
   // Message constructs a handshake message from a variable number of
   // arguments. |message_tag| is passed to |ParseTag| and used as the tag of
-  // the resulting message. The arguments are taken in pairs and NULL
+  // the resulting message. The arguments are taken in pairs and nullptr
   // terminated. The first of each pair is the tag of a tag/value and is given
   // as an argument to |ParseTag|. The second is the value of the tag/value
   // pair and is either a hex dump, preceeded by a '#', or a raw value.
@@ -160,7 +161,7 @@ class CryptoTestUtils {
   //       "CHLO",
   //       "NOCE", "#11223344",
   //       "SNI", "www.example.com",
-  //       NULL);
+  //       nullptr);
   static CryptoHandshakeMessage Message(const char* message_tag, ...);
 
   // BuildMessage is the same as |Message|, but takes the variable arguments

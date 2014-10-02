@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE QuicEncrypter {
 
   // Returns a newly created QuicData object containing the encrypted
   // |plaintext| as well as a MAC over both |plaintext| and |associated_data|,
-  // or NULL if there is an error. |sequence_number| is appended to the
+  // or nullptr if there is an error. |sequence_number| is appended to the
   // |nonce_prefix| value provided in SetNoncePrefix() to form the nonce.
   virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
                                   base::StringPiece associated_data,

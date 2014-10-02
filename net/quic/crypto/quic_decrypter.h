@@ -52,7 +52,7 @@ class NET_EXPORT_PRIVATE QuicDecrypter {
                        size_t* output_length) = 0;
 
   // Returns a newly created QuicData object containing the decrypted
-  // |ciphertext| or NULL if there is an error. |sequence_number| is
+  // |ciphertext| or nullptr if there is an error. |sequence_number| is
   // appended to the |nonce_prefix| value provided in SetNoncePrefix()
   // to form the nonce.
   // TODO(wtc): add a way for DecryptPacket to report decryption failure due

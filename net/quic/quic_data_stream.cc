@@ -29,7 +29,7 @@ QuicPriority kDefaultPriority = 3;
 QuicDataStream::QuicDataStream(QuicStreamId id,
                                QuicSession* session)
     : ReliableQuicStream(id, session),
-      visitor_(NULL),
+      visitor_(nullptr),
       headers_decompressed_(false),
       priority_(kDefaultPriority),
       decompression_failed_(false),
@@ -175,7 +175,7 @@ void QuicDataStream::OnClose() {
     Visitor* visitor = visitor_;
     // Calling Visitor::OnClose() may result the destruction of the visitor,
     // so we need to ensure we don't call it again.
-    visitor_ = NULL;
+    visitor_ = nullptr;
     visitor->OnClose(this);
   }
 }

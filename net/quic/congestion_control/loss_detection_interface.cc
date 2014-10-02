@@ -19,7 +19,7 @@ LossDetectionInterface* LossDetectionInterface::Create(
       return new TimeLossAlgorithm();
   }
   LOG(DFATAL) << "Unknown loss detection algorithm:" << loss_type;
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace net

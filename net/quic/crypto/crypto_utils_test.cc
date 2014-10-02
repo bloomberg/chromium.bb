@@ -68,7 +68,7 @@ TEST(CryptoUtilsTest, TestExportKeyingMaterial) {
       "3132333435363700",
       "58585858585858585858585858585858",
       16,
-      NULL
+      nullptr
     },
     // Make sure nulls in the context are fine
     { "d862c2e36b0a42f7827c67ebc8d44df7",
@@ -102,7 +102,7 @@ TEST(CryptoUtilsTest, TestExportKeyingMaterial) {
     ASSERT_TRUE(DecodeHexString(test_vector[i].label, &label));
     ASSERT_TRUE(DecodeHexString(test_vector[i].context, &context));
     size_t result_len = test_vector[i].result_len;
-    bool expect_ok = test_vector[i].expected != NULL;
+    bool expect_ok = test_vector[i].expected != nullptr;
     string expected;
     if (expect_ok) {
       ASSERT_TRUE(DecodeHexString(test_vector[i].expected, &expected));

@@ -23,21 +23,21 @@ QuicCryptoClientStream::ChannelIDSourceCallbackImpl::
 
 void QuicCryptoClientStream::ChannelIDSourceCallbackImpl::Run(
     scoped_ptr<ChannelIDKey>* channel_id_key) {
-  if (stream_ == NULL) {
+  if (stream_ == nullptr) {
     return;
   }
 
   stream_->channel_id_key_.reset(channel_id_key->release());
   stream_->channel_id_source_callback_run_ = true;
-  stream_->channel_id_source_callback_ = NULL;
-  stream_->DoHandshakeLoop(NULL);
+  stream_->channel_id_source_callback_ = nullptr;
+  stream_->DoHandshakeLoop(nullptr);
 
   // The ChannelIDSource owns this object and will delete it when this method
   // returns.
 }
 
 void QuicCryptoClientStream::ChannelIDSourceCallbackImpl::Cancel() {
-  stream_ = NULL;
+  stream_ = nullptr;
 }
 
 QuicCryptoClientStream::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
@@ -51,22 +51,22 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Run(
     bool ok,
     const string& error_details,
     scoped_ptr<ProofVerifyDetails>* details) {
-  if (stream_ == NULL) {
+  if (stream_ == nullptr) {
     return;
   }
 
   stream_->verify_ok_ = ok;
   stream_->verify_error_details_ = error_details;
   stream_->verify_details_.reset(details->release());
-  stream_->proof_verify_callback_ = NULL;
-  stream_->DoHandshakeLoop(NULL);
+  stream_->proof_verify_callback_ = nullptr;
+  stream_->DoHandshakeLoop(nullptr);
 
   // The ProofVerifier owns this object and will delete it when this method
   // returns.
 }
 
 void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
-  stream_ = NULL;
+  stream_ = nullptr;
 }
 
 QuicCryptoClientStream::QuicCryptoClientStream(
@@ -82,10 +82,9 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       generation_counter_(0),
       channel_id_sent_(false),
       channel_id_source_callback_run_(false),
-      channel_id_source_callback_(NULL),
+      channel_id_source_callback_(nullptr),
       verify_context_(verify_context),
-      proof_verify_callback_(NULL) {
-}
+      proof_verify_callback_(nullptr) {}
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
   if (channel_id_source_callback_) {
@@ -123,7 +122,7 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 
 bool QuicCryptoClientStream::CryptoConnect() {
   next_state_ = STATE_INITIALIZE;
-  DoHandshakeLoop(NULL);
+  DoHandshakeLoop(nullptr);
   return true;
 }
 
@@ -163,7 +162,7 @@ void QuicCryptoClientStream::HandleServerConfigUpdateMessage(
     proof_verify_callback_->Cancel();
   }
   next_state_ = STATE_INITIALIZE_SCUP;
-  DoHandshakeLoop(NULL);
+  DoHandshakeLoop(nullptr);
 }
 
 // kMaxClientHellos is the maximum number of times that we'll send a client
@@ -297,7 +296,7 @@ void QuicCryptoClientStream::DoSendCHLO(
     CloseConnectionWithDetails(error, error_details);
     return;
   }
-  channel_id_sent_ = (channel_id_key_.get() != NULL);
+  channel_id_sent_ = (channel_id_key_.get() != nullptr);
   if (cached->proof_verify_details()) {
     client_session()->OnProofVerifyDetailsAvailable(
         *cached->proof_verify_details());
@@ -481,10 +480,10 @@ void QuicCryptoClientStream::DoReceiveSHLO(
   // We sent a CHLO that we expected to be accepted and now we're hoping
   // for a SHLO from the server to confirm that.
   if (in->tag() == kREJ) {
-    // alternative_decrypter will be NULL if the original alternative
+    // alternative_decrypter will be nullptr if the original alternative
     // decrypter latched and became the primary decrypter. That happens
     // if we received a message encrypted with the INITIAL key.
-    if (session()->connection()->alternative_decrypter() == NULL) {
+    if (session()->connection()->alternative_decrypter() == nullptr) {
       // The rejection was sent encrypted!
       CloseConnectionWithDetails(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
                                  "encrypted REJ message");
@@ -500,10 +499,10 @@ void QuicCryptoClientStream::DoReceiveSHLO(
     return;
   }
 
-  // alternative_decrypter will be NULL if the original alternative
+  // alternative_decrypter will be nullptr if the original alternative
   // decrypter latched and became the primary decrypter. That happens
   // if we received a message encrypted with the INITIAL key.
-  if (session()->connection()->alternative_decrypter() != NULL) {
+  if (session()->connection()->alternative_decrypter() != nullptr) {
     // The server hello was sent without encryption.
     CloseConnectionWithDetails(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
                                "unencrypted SHLO message");

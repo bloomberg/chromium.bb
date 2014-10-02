@@ -76,7 +76,7 @@ bool ChannelIDVerifier::VerifyRaw(StringPiece key,
   HASH_End(sha256, hash_buf, &hash_item.len, sizeof(hash_buf));
   HASH_Destroy(sha256);
 
-  return PK11_Verify(&public_key, &signature_item, &hash_item, NULL) ==
+  return PK11_Verify(&public_key, &signature_item, &hash_item, nullptr) ==
          SECSuccess;
 }
 

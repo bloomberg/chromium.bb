@@ -18,27 +18,27 @@ namespace test {
 
 TEST(CertCompressor, EmptyChain) {
   vector<string> chain;
-  const string compressed =
-      CertCompressor::CompressChain(chain, StringPiece(), StringPiece(), NULL);
+  const string compressed = CertCompressor::CompressChain(
+      chain, StringPiece(), StringPiece(), nullptr);
   EXPECT_EQ("00", base::HexEncode(compressed.data(), compressed.size()));
 
   vector<string> chain2, cached_certs;
-  ASSERT_TRUE(
-      CertCompressor::DecompressChain(compressed, cached_certs, NULL, &chain2));
+  ASSERT_TRUE(CertCompressor::DecompressChain(compressed, cached_certs, nullptr,
+                                              &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
 }
 
 TEST(CertCompressor, Compressed) {
   vector<string> chain;
   chain.push_back("testcert");
-  const string compressed =
-      CertCompressor::CompressChain(chain, StringPiece(), StringPiece(), NULL);
+  const string compressed = CertCompressor::CompressChain(
+      chain, StringPiece(), StringPiece(), nullptr);
   ASSERT_GE(compressed.size(), 2u);
   EXPECT_EQ("0100", base::HexEncode(compressed.substr(0, 2).data(), 2));
 
   vector<string> chain2, cached_certs;
-  ASSERT_TRUE(
-      CertCompressor::DecompressChain(compressed, cached_certs, NULL, &chain2));
+  ASSERT_TRUE(CertCompressor::DecompressChain(compressed, cached_certs, nullptr,
+                                              &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
   EXPECT_EQ(chain[0], chain2[0]);
 }
@@ -73,7 +73,7 @@ TEST(CertCompressor, Cached) {
   uint64 hash = QuicUtils::FNV1a_64_Hash(chain[0].data(), chain[0].size());
   StringPiece hash_bytes(reinterpret_cast<char*>(&hash), sizeof(hash));
   const string compressed =
-      CertCompressor::CompressChain(chain, StringPiece(), hash_bytes, NULL);
+      CertCompressor::CompressChain(chain, StringPiece(), hash_bytes, nullptr);
 
   EXPECT_EQ("02" /* cached */ +
             base::HexEncode(hash_bytes.data(), hash_bytes.size()) +
@@ -82,8 +82,8 @@ TEST(CertCompressor, Cached) {
 
   vector<string> cached_certs, chain2;
   cached_certs.push_back(chain[0]);
-  ASSERT_TRUE(
-      CertCompressor::DecompressChain(compressed, cached_certs, NULL, &chain2));
+  ASSERT_TRUE(CertCompressor::DecompressChain(compressed, cached_certs, nullptr,
+                                              &chain2));
   EXPECT_EQ(chain.size(), chain2.size());
   EXPECT_EQ(chain[0], chain2[0]);
 }
@@ -95,26 +95,26 @@ TEST(CertCompressor, BadInputs) {
   const string bad_entry("04");
   EXPECT_FALSE(CertCompressor::DecompressChain(
       base::HexEncode(bad_entry.data(), bad_entry.size()),
-      cached_certs, NULL, &chain));
+      cached_certs, nullptr, &chain));
 
   /* no terminator */
   const string no_terminator("01");
   EXPECT_FALSE(CertCompressor::DecompressChain(
       base::HexEncode(no_terminator.data(), no_terminator.size()),
-      cached_certs, NULL, &chain));
+      cached_certs, nullptr, &chain));
 
   /* hash truncated */
   const string hash_truncated("0200");
   EXPECT_FALSE(CertCompressor::DecompressChain(
       base::HexEncode(hash_truncated.data(), hash_truncated.size()),
-      cached_certs, NULL, &chain));
+      cached_certs, nullptr, &chain));
 
   /* hash and index truncated */
   const string hash_and_index_truncated("0300");
   EXPECT_FALSE(CertCompressor::DecompressChain(
       base::HexEncode(hash_and_index_truncated.data(),
                       hash_and_index_truncated.size()),
-      cached_certs, NULL, &chain));
+      cached_certs, nullptr, &chain));
 
   /* without a CommonCertSets */
   const string without_a_common_cert_set(
@@ -122,7 +122,7 @@ TEST(CertCompressor, BadInputs) {
   EXPECT_FALSE(CertCompressor::DecompressChain(
       base::HexEncode(without_a_common_cert_set.data(),
                       without_a_common_cert_set.size()),
-      cached_certs, NULL, &chain));
+      cached_certs, nullptr, &chain));
 
   scoped_ptr<CommonCertSets> common_sets(
       CryptoTestUtils::MockCommonCertSets("foo", 42, 1));
@@ -133,7 +133,7 @@ TEST(CertCompressor, BadInputs) {
   EXPECT_FALSE(CertCompressor::DecompressChain(
       base::HexEncode(incorrect_hash_and_index.data(),
                       incorrect_hash_and_index.size()),
-      cached_certs, NULL, &chain));
+      cached_certs, nullptr, &chain));
 }
 
 }  // namespace test

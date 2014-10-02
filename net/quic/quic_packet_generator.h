@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // attaches a QuicAckNotifier to any created stream frames, which
   // will be called once the frame is ACKed by the peer. The
   // QuicAckNotifier is owned by the QuicConnection. |notifier| may
-  // be NULL.
+  // be nullptr.
   QuicConsumedData ConsumeData(QuicStreamId id,
                                const IOVector& data,
                                QuicStreamOffset offset,

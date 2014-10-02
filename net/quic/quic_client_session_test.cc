@@ -43,14 +43,14 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicClientSessionTest()
       : connection_(
             new PacketSavingConnection(false, SupportedVersions(GetParam()))),
-        session_(connection_, GetSocket().Pass(), NULL,
+        session_(connection_, GetSocket().Pass(), nullptr,
                  &transport_security_state_,
-                 make_scoped_ptr((QuicServerInfo*)NULL), DefaultQuicConfig(),
+                 make_scoped_ptr((QuicServerInfo*)nullptr), DefaultQuicConfig(),
                  base::MessageLoop::current()->message_loop_proxy().get(),
                  &net_log_) {
     session_.InitializeSession(QuicServerId(kServerHostname, kServerPort, false,
                                             PRIVACY_MODE_DISABLED),
-                                &crypto_config_, NULL);
+                                &crypto_config_, nullptr);
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
   }
@@ -131,7 +131,7 @@ TEST_P(QuicClientSessionTest, MaxNumStreamsViaRequest) {
   session_.CloseStream(streams[0]->id());
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_TRUE(stream != NULL);
+  EXPECT_TRUE(stream != nullptr);
 }
 
 TEST_P(QuicClientSessionTest, GoAwayReceived) {
@@ -140,7 +140,7 @@ TEST_P(QuicClientSessionTest, GoAwayReceived) {
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
   session_.OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(NULL, session_.CreateOutgoingDataStream());
+  EXPECT_EQ(nullptr, session_.CreateOutgoingDataStream());
 }
 
 TEST_P(QuicClientSessionTest, CanPool) {

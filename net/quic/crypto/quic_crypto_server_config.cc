@@ -112,7 +112,7 @@ class ValidateClientHelloHelper {
   }
 
   ~ValidateClientHelloHelper() {
-    LOG_IF(DFATAL, done_cb_ != NULL)
+    LOG_IF(DFATAL, done_cb_ != nullptr)
         << "Deleting ValidateClientHelloHelper with a pending callback.";
   }
 
@@ -129,8 +129,8 @@ class ValidateClientHelloHelper {
 
  private:
   void DetachCallback() {
-    LOG_IF(DFATAL, done_cb_ == NULL) << "Callback already detached.";
-    done_cb_ = NULL;
+    LOG_IF(DFATAL, done_cb_ == nullptr) << "Callback already detached.";
+    done_cb_ = nullptr;
   }
 
   ValidateClientHelloResultCallback::Result* result_;
@@ -227,7 +227,7 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
     QuicRandom* rand)
     : replay_protection_(true),
       configs_lock_(),
-      primary_config_(NULL),
+      primary_config_(nullptr),
       next_config_promotion_time_(QuicWallTime::Zero()),
       server_nonce_strike_register_lock_(),
       strike_register_no_startup_period_(false),
@@ -251,7 +251,7 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
 }
 
 QuicCryptoServerConfig::~QuicCryptoServerConfig() {
-  primary_config_ = NULL;
+  primary_config_ = nullptr;
 }
 
 // static
@@ -367,13 +367,13 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
 
   if (!msg.get()) {
     LOG(WARNING) << "Failed to parse server config message";
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<Config> config(ParseConfigProtobuf(protobuf));
   if (!config.get()) {
     LOG(WARNING) << "Failed to parse server config message";
-    return NULL;
+    return nullptr;
   }
 
   {
@@ -382,7 +382,7 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
       LOG(WARNING) << "Failed to add config because another with the same "
                       "server config id already exists: "
                    << base::HexEncode(config->id.data(), config->id.size());
-      return NULL;
+      return nullptr;
     }
 
     configs_[config->id] = config;
@@ -624,7 +624,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   size_t key_exchange_index;
   if (!QuicUtils::FindMutualTag(requested_config->aead, their_aeads,
                                 num_their_aeads, QuicUtils::LOCAL_PRIORITY,
-                                &params->aead, NULL) ||
+                                &params->aead, nullptr) ||
       !QuicUtils::FindMutualTag(
           requested_config->kexs, their_key_exchanges, num_their_key_exchanges,
           QuicUtils::LOCAL_PRIORITY, &params->key_exchange,
@@ -685,7 +685,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
                                  info.client_nonce, info.server_nonce,
                                  hkdf_input, CryptoUtils::SERVER, &crypters,
-                                 NULL /* subkey secret */)) {
+                                 nullptr /* subkey secret */)) {
       *error_details = "Symmetric key setup failed";
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
@@ -727,7 +727,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                                info.client_nonce, info.server_nonce, hkdf_input,
                                CryptoUtils::SERVER,
                                &params->initial_crypters,
-                               NULL /* subkey secret */)) {
+                               nullptr /* subkey secret */)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -775,8 +775,11 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   out->SetVector(kVER, supported_version_tags);
   out->SetStringPiece(
       kSourceAddressTokenTag,
-      NewSourceAddressToken(
-          *requested_config.get(), client_address, rand, info.now, NULL));
+      NewSourceAddressToken(*requested_config.get(),
+                            client_address,
+                            rand,
+                            info.now,
+                            nullptr));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -878,7 +881,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
              << base::HexEncode(
                  reinterpret_cast<const char*>(primary_config_->orbit),
                  kOrbitSize);
-    if (primary_config_changed_cb_.get() != NULL) {
+    if (primary_config_changed_cb_.get() != nullptr) {
       primary_config_changed_cb_->Run(primary_config_->id);
     }
 
@@ -900,7 +903,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
            << " scid: " << base::HexEncode(primary_config_->id.data(),
                                            primary_config_->id.size());
   next_config_promotion_time_ = QuicWallTime::Zero();
-  if (primary_config_changed_cb_.get() != NULL) {
+  if (primary_config_changed_cb_.get() != nullptr) {
     primary_config_changed_cb_->Run(primary_config_->id);
   }
 }
@@ -1016,7 +1019,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   {
     base::AutoLock locked(strike_register_client_lock_);
 
-    if (strike_register_client_.get() == NULL) {
+    if (strike_register_client_.get() == nullptr) {
       strike_register_client_.reset(new LocalStrikeRegisterClient(
           strike_register_max_entries_,
           static_cast<uint32>(info->now.ToUNIXSeconds()),
@@ -1053,7 +1056,7 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
                                             clock->WallNow(),
                                             cached_network_params));
 
-  if (proof_source_ == NULL) {
+  if (proof_source_ == nullptr) {
     // Insecure QUIC, can send SCFG without proof.
     return true;
   }
@@ -1091,7 +1094,7 @@ void QuicCryptoServerConfig::BuildRejection(
                           info.client_ip,
                           rand,
                           info.now,
-                          NULL));
+                          nullptr));
   if (replay_protection_) {
     out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
   }
@@ -1106,7 +1109,7 @@ void QuicCryptoServerConfig::BuildRejection(
   const QuicTag* their_proof_demands;
   size_t num_their_proof_demands;
 
-  if (proof_source_.get() == NULL ||
+  if (proof_source_.get() == nullptr ||
       client_hello.GetTaglist(kPDMD, &their_proof_demands,
                               &num_their_proof_demands) !=
           QUIC_NO_ERROR) {
@@ -1187,7 +1190,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   if (msg->tag() != kSCFG) {
     LOG(WARNING) << "Server config message has tag " << msg->tag()
                  << " expected " << kSCFG;
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<Config> config(new Config);
@@ -1215,7 +1218,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   StringPiece scid;
   if (!msg->GetStringPiece(kSCID, &scid)) {
     LOG(WARNING) << "Server config message is missing SCID";
-    return NULL;
+    return nullptr;
   }
   config->id = scid.as_string();
 
@@ -1223,7 +1226,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   size_t aead_len;
   if (msg->GetTaglist(kAEAD, &aead_tags, &aead_len) != QUIC_NO_ERROR) {
     LOG(WARNING) << "Server config message is missing AEAD";
-    return NULL;
+    return nullptr;
   }
   config->aead = vector<QuicTag>(aead_tags, aead_tags + aead_len);
 
@@ -1231,19 +1234,19 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   size_t kexs_len;
   if (msg->GetTaglist(kKEXS, &kexs_tags, &kexs_len) != QUIC_NO_ERROR) {
     LOG(WARNING) << "Server config message is missing KEXS";
-    return NULL;
+    return nullptr;
   }
 
   StringPiece orbit;
   if (!msg->GetStringPiece(kORBT, &orbit)) {
     LOG(WARNING) << "Server config message is missing ORBT";
-    return NULL;
+    return nullptr;
   }
 
   if (orbit.size() != kOrbitSize) {
     LOG(WARNING) << "Orbit value in server config is the wrong length."
                     " Got " << orbit.size() << " want " << kOrbitSize;
-    return NULL;
+    return nullptr;
   }
   COMPILE_ASSERT(sizeof(config->orbit) == kOrbitSize, orbit_incorrect_size);
   memcpy(config->orbit, orbit.data(), sizeof(config->orbit));
@@ -1255,12 +1258,12 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
       strike_register_client = strike_register_client_.get();
     }
 
-    if (strike_register_client != NULL &&
+    if (strike_register_client != nullptr &&
         !strike_register_client->IsKnownOrbit(orbit)) {
       LOG(WARNING)
           << "Rejecting server config with orbit that the strike register "
           "client doesn't know about.";
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -1268,7 +1271,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
     LOG(WARNING) << "Server config has " << kexs_len
                  << " key exchange methods configured, but "
                  << protobuf->key_size() << " private keys";
-    return NULL;
+    return nullptr;
   }
 
   const QuicTag* proof_demand_tags;
@@ -1300,7 +1303,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
     if (private_key.empty()) {
       LOG(WARNING) << "Server config contains key exchange method without "
                       "corresponding private key: " << tag;
-      return NULL;
+      return nullptr;
     }
 
     scoped_ptr<KeyExchange> ka;
@@ -1310,7 +1313,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
         if (!ka.get()) {
           LOG(WARNING) << "Server config contained an invalid curve25519"
                           " private key.";
-          return NULL;
+          return nullptr;
         }
         break;
       case kP256:
@@ -1318,20 +1321,20 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
         if (!ka.get()) {
           LOG(WARNING) << "Server config contained an invalid P-256"
                           " private key.";
-          return NULL;
+          return nullptr;
         }
         break;
       default:
         LOG(WARNING) << "Server config message contains unknown key exchange "
                         "method: " << tag;
-        return NULL;
+        return nullptr;
     }
 
     for (vector<KeyExchange*>::const_iterator i = config->key_exchanges.begin();
          i != config->key_exchanges.end(); ++i) {
       if ((*i)->tag() == tag) {
         LOG(WARNING) << "Duplicate key exchange in config: " << tag;
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -1422,7 +1425,7 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
   SourceAddressToken source_address_token;
   source_address_token.set_ip(IPAddressToPackedString(ip_address));
   source_address_token.set_timestamp(now.ToUNIXSeconds());
-  if (cached_network_params != NULL) {
+  if (cached_network_params != nullptr) {
     source_address_token.set_cached_network_parameters(*cached_network_params);
   }
 
@@ -1526,7 +1529,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
   InsertStatus nonce_error;
   {
     base::AutoLock auto_lock(server_nonce_strike_register_lock_);
-    if (server_nonce_strike_register_.get() == NULL) {
+    if (server_nonce_strike_register_.get() == nullptr) {
       server_nonce_strike_register_.reset(new StrikeRegister(
           server_nonce_strike_register_max_entries_,
           static_cast<uint32>(now.ToUNIXSeconds()),
@@ -1561,7 +1564,7 @@ QuicCryptoServerConfig::Config::Config()
       is_primary(false),
       primary_time(QuicWallTime::Zero()),
       priority(0),
-      source_address_token_boxer(NULL) {}
+      source_address_token_boxer(nullptr) {}
 
 QuicCryptoServerConfig::Config::~Config() { STLDeleteElements(&key_exchanges); }
 

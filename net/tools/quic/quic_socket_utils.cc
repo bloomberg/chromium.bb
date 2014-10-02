@@ -26,9 +26,9 @@ namespace tools {
 IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr *hdr) {
   if (hdr->msg_controllen > 0) {
     for (cmsghdr* cmsg = CMSG_FIRSTHDR(hdr);
-         cmsg != NULL;
+         cmsg != nullptr;
          cmsg = CMSG_NXTHDR(hdr, cmsg)) {
-      const uint8* addr_data = NULL;
+      const uint8* addr_data = nullptr;
       int len = 0;
       if (cmsg->cmsg_type == IPV6_PKTINFO) {
         in6_pktinfo* info = reinterpret_cast<in6_pktinfo*>CMSG_DATA(cmsg);
@@ -56,7 +56,7 @@ bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr *hdr,
   if (hdr->msg_controllen > 0) {
     struct cmsghdr *cmsg;
     for (cmsg = CMSG_FIRSTHDR(hdr);
-         cmsg != NULL;
+         cmsg != nullptr;
          cmsg = CMSG_NXTHDR(hdr, cmsg)) {
       if (cmsg->cmsg_type == SO_RXQ_OVFL) {
         *dropped_packets = *(reinterpret_cast<int*>CMSG_DATA(cmsg));
@@ -102,7 +102,7 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
                                 uint32* dropped_packets,
                                 IPAddressNumber* self_address,
                                 IPEndPoint* peer_address) {
-  CHECK(peer_address != NULL);
+  CHECK(peer_address != nullptr);
   const int kSpaceForOverflowAndIp =
       CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(in6_pktinfo));
   char cbuf[kSpaceForOverflowAndIp];
@@ -134,10 +134,10 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
     return -1;
   }
 
-  if (dropped_packets != NULL) {
+  if (dropped_packets != nullptr) {
     GetOverflowFromMsghdr(&hdr, dropped_packets);
   }
-  if (self_address != NULL) {
+  if (self_address != nullptr) {
     *self_address = QuicSocketUtils::GetAddressFromMsghdr(&hdr);
   }
 

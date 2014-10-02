@@ -28,9 +28,9 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
                                 kMaxTcpCongestionWindow, stats);
     case kBBR:
       LOG(DFATAL) << "BbrTcpSender is not supported.";
-      return NULL;
+      return nullptr;
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace net

@@ -87,8 +87,8 @@ class MockQuicData {
 
   void AddDelayedSocketDataToFactory(MockClientSocketFactory* factory,
                                      size_t delay) {
-    MockRead* reads = reads_.empty() ? NULL  : &reads_[0];
-    MockWrite* writes = writes_.empty() ? NULL  : &writes_[0];
+    MockRead* reads = reads_.empty() ? nullptr  : &reads_[0];
+    MockWrite* writes = writes_.empty() ? nullptr  : &writes_[0];
     socket_data_.reset(new DelayedSocketData(
         delay, reads, reads_.size(), writes, writes_.size()));
     factory->AddSocketDataProvider(socket_data_.get());
@@ -114,7 +114,7 @@ class QuicNetworkTransactionTest
         auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         random_generator_(0),
-        hanging_data_(NULL, 0, NULL, 0) {
+        hanging_data_(nullptr, 0, nullptr, 0) {
     request_.method = "GET";
     request_.url = GURL("http://www.google.com/");
     request_.load_flags = 0;
@@ -223,8 +223,8 @@ class QuicNetworkTransactionTest
 
   void CheckWasQuicResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
-    ASSERT_TRUE(response != NULL);
-    ASSERT_TRUE(response->headers.get() != NULL);
+    ASSERT_TRUE(response != nullptr);
+    ASSERT_TRUE(response->headers.get() != nullptr);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_npn_negotiated);
@@ -234,8 +234,8 @@ class QuicNetworkTransactionTest
 
   void CheckWasHttpResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
-    ASSERT_TRUE(response != NULL);
-    ASSERT_TRUE(response->headers.get() != NULL);
+    ASSERT_TRUE(response != nullptr);
+    ASSERT_TRUE(response->headers.get() != nullptr);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_FALSE(response->was_fetched_via_spdy);
     EXPECT_FALSE(response->was_npn_negotiated);
@@ -445,7 +445,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
     MockRead(ASYNC, OK)
   };
 
-  StaticSocketDataProvider data(http_reads, arraysize(http_reads), NULL, 0);
+  StaticSocketDataProvider data(http_reads, arraysize(http_reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
@@ -465,7 +465,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   MockQuicData mock_quic_data;
@@ -502,7 +502,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   MockQuicData mock_quic_data;
@@ -540,7 +540,7 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSocketDataProvider(&http_data);
 
@@ -562,7 +562,7 @@ TEST_P(QuicNetworkTransactionTest,
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSocketDataProvider(&http_data);
 
@@ -586,7 +586,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   MockQuicData mock_quic_data;
@@ -720,7 +720,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
                          DEFAULT_PRIORITY,
                          &address,
                          CompletionCallback(),
-                         NULL,
+                         nullptr,
                          net_log_.bound());
 
   CreateSessionWithNextProtos();
@@ -761,7 +761,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
                          DEFAULT_PRIORITY,
                          &address,
                          CompletionCallback(),
-                         NULL,
+                         nullptr,
                          net_log_.bound());
 
   CreateSessionWithNextProtos();
@@ -797,7 +797,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                         CompletionCallback(), NULL, net_log_.bound());
+                         CompletionCallback(), nullptr, net_log_.bound());
 
   CreateSessionWithNextProtos();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -822,7 +822,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
     MockRead(ASYNC, OK),  // EOF
   };
   StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job which will succeed even though the alternate job fails.
@@ -834,7 +834,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   CreateSessionWithNextProtos();
@@ -849,7 +849,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
   StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job which will succeed even though the alternate job fails.
@@ -861,7 +861,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   CreateSessionWithNextProtos();
@@ -877,7 +877,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
   StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job will also fail.
@@ -886,7 +886,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   http_data.set_connect_data(MockConnect(ASYNC, ERR_SOCKET_NOT_CONNECTED));
   socket_factory_.AddSocketDataProvider(&http_data);
 
@@ -908,14 +908,14 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
   };
   StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   AddHangingNonAlternateProtocolSocketData();
 
   // Second Alternate-protocol job which will race with the TCP job.
   StaticSocketDataProvider quic_data2(quic_reads, arraysize(quic_reads),
-                                      NULL, 0);
+                                      nullptr, 0);
   socket_factory_.AddSocketDataProvider(&quic_data2);
 
   // Final job that will proceed when the QUIC job fails.
@@ -927,7 +927,7 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   CreateSessionWithNextProtos();
@@ -948,7 +948,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
     MockRead(ASYNC, ERR_IO_PENDING),
   };
   StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
   // Main job that will proceed when the QUIC job fails.
@@ -960,7 +960,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   CreateSessionWithNextProtos();
@@ -972,7 +972,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
 
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
   // Alternate-protocol job will fail before creating a QUIC session.
-  StaticSocketDataProvider quic_data(NULL, 0, NULL, 0);
+  StaticSocketDataProvider quic_data(nullptr, 0, nullptr, 0);
   quic_data.set_connect_data(MockConnect(SYNCHRONOUS,
                                          ERR_INTERNET_DISCONNECTED));
   socket_factory_.AddSocketDataProvider(&quic_data);
@@ -986,7 +986,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   CreateSessionWithNextProtos();
@@ -1015,7 +1015,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   };
 
   StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     NULL, 0);
+                                     nullptr, 0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
   // In order for a new QUIC session to be established via alternate-protocol
@@ -1029,7 +1029,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
                          DEFAULT_PRIORITY,
                          &address,
                          CompletionCallback(),
-                         NULL,
+                         nullptr,
                          net_log_.bound());
 
   CreateSessionWithNextProtos();

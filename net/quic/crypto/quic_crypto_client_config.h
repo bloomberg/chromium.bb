@@ -46,9 +46,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // IsEmpty returns true if |server_config_| is empty.
     bool IsEmpty() const;
 
-    // GetServerConfig returns the parsed contents of |server_config|, or NULL
-    // if |server_config| is empty. The return value is owned by this object
-    // and is destroyed when this object is.
+    // GetServerConfig returns the parsed contents of |server_config|, or
+    // nullptr if |server_config| is empty. The return value is owned by this
+    // object and is destroyed when this object is.
     const CryptoHandshakeMessage* GetServerConfig() const;
 
     // SetServerConfig checks that |server_config| parses correctly and stores
@@ -144,7 +144,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   void ClearCachedStates();
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
-  // source-address token or SCFG from a server. If |cached| is non-NULL, the
+  // source-address token or SCFG from a server. If |cached| is non-nullptr, the
   // source-address token will be taken from it. |out_params| is used in order
   // to store the cached certs that were sent as hints to the server in
   // |out_params->cached_certs|. |preferred_version| is the version of the

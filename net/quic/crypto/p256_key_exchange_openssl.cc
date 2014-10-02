@@ -26,23 +26,24 @@ P256KeyExchange::~P256KeyExchange() {}
 P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   if (key.empty()) {
     DVLOG(1) << "Private key is empty";
-    return NULL;
+    return nullptr;
   }
 
   const uint8* keyp = reinterpret_cast<const uint8*>(key.data());
-  crypto::ScopedEC_KEY private_key(d2i_ECPrivateKey(NULL, &keyp, key.size()));
+  crypto::ScopedEC_KEY private_key(d2i_ECPrivateKey(nullptr, &keyp,
+                                                    key.size()));
   if (!private_key.get() || !EC_KEY_check_key(private_key.get())) {
     DVLOG(1) << "Private key is invalid.";
-    return NULL;
+    return nullptr;
   }
 
   uint8 public_key[kUncompressedP256PointBytes];
   if (EC_POINT_point2oct(EC_KEY_get0_group(private_key.get()),
                          EC_KEY_get0_public_key(private_key.get()),
                          POINT_CONVERSION_UNCOMPRESSED, public_key,
-                         sizeof(public_key), NULL) != sizeof(public_key)) {
+                         sizeof(public_key), nullptr) != sizeof(public_key)) {
     DVLOG(1) << "Can't get public key.";
-    return NULL;
+    return nullptr;
   }
 
   return new P256KeyExchange(private_key.release(), public_key);
@@ -56,7 +57,7 @@ string P256KeyExchange::NewPrivateKey() {
     return string();
   }
 
-  int key_len = i2d_ECPrivateKey(key.get(), NULL);
+  int key_len = i2d_ECPrivateKey(key.get(), nullptr);
   if (key_len <= 0) {
     DVLOG(1) << "Can't convert private key to string";
     return string();
@@ -90,14 +91,14 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
           EC_KEY_get0_group(private_key_.get()),
           point.get(),
           reinterpret_cast<const uint8*>(peer_public_value.data()),
-          peer_public_value.size(), NULL)) {
+          peer_public_value.size(), nullptr)) {
     DVLOG(1) << "Can't convert peer public value to curve point.";
     return false;
   }
 
   uint8 result[kP256FieldBytes];
   if (ECDH_compute_key(result, sizeof(result), point.get(), private_key_.get(),
-                       NULL) != sizeof(result)) {
+                       nullptr) != sizeof(result)) {
     DVLOG(1) << "Can't compute ECDH shared key.";
     return false;
   }
@@ -114,4 +115,3 @@ StringPiece P256KeyExchange::public_value() const {
 QuicTag P256KeyExchange::tag() const { return kP256; }
 
 }  // namespace net
-

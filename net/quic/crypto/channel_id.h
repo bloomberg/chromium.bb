@@ -36,7 +36,7 @@ class ChannelIDSourceCallback {
   virtual ~ChannelIDSourceCallback() {}
 
   // Run is called on the original thread to mark the completion of an
-  // asynchonous GetChannelIDKey operation. If |*channel_id_key| is not NULL
+  // asynchonous GetChannelIDKey operation. If |*channel_id_key| is not nullptr
   // then the channel ID lookup is successful. |Run| may take ownership of
   // |*channel_id_key| by calling |release| on it.
   virtual void Run(scoped_ptr<ChannelIDKey>* channel_id_key) = 0;

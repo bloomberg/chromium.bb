@@ -56,7 +56,7 @@ class QuicCryptoServerConfigPeer {
       QuicRandom* rand,
       QuicWallTime now) {
     return server_config_->NewSourceAddressToken(
-        *GetConfig(config_id), ip, rand, now, NULL);
+        *GetConfig(config_id), ip, rand, now, nullptr);
   }
 
   HandshakeFailureReason ValidateSourceAddressToken(string config_id,
@@ -81,11 +81,11 @@ class QuicCryptoServerConfigPeer {
   }
 
   // CheckConfigs compares the state of the Configs in |server_config_| to the
-  // description given as arguments. The arguments are given as NULL-terminated
-  // pairs. The first of each pair is the server config ID of a Config. The
-  // second is a boolean describing whether the config is the primary. For
-  // example:
-  //   CheckConfigs(NULL);  // checks that no Configs are loaded.
+  // description given as arguments. The arguments are given as
+  // nullptr-terminated pairs. The first of each pair is the server config ID of
+  // a Config. The second is a boolean describing whether the config is the
+  // primary. For example:
+  //   CheckConfigs(nullptr);  // checks that no Configs are loaded.
   //
   //   // Checks that exactly three Configs are loaded with the given IDs and
   //   // status.
@@ -93,7 +93,7 @@ class QuicCryptoServerConfigPeer {
   //     "id1", false,
   //     "id2", true,
   //     "id3", false,
-  //     NULL);
+  //     nullptr);
   void CheckConfigs(const char* server_config_id1, ...) {
     va_list ap;
     va_start(ap, server_config_id1);
@@ -372,12 +372,11 @@ class CryptoServerConfigsTest : public ::testing::Test {
   }
 
   // SetConfigs constructs suitable config protobufs and calls SetConfigs on
-  // |config_|. The arguments are given as NULL-terminated pairs. The first of
-  // each pair is the server config ID of a Config. The second is the
-  // |primary_time| of that Config, given in epoch seconds. (Although note
-  // that, in these tests, time is set to 1000 seconds since the epoch.) For
-  // example:
-  //   SetConfigs(NULL);  // calls |config_.SetConfigs| with no protobufs.
+  // |config_|. The arguments are given as nullptr-terminated pairs. The first
+  // of each pair is the server config ID of a Config. The second is the
+  // |primary_time| of that Config, given in epoch seconds. (Although note that,
+  // in these tests, time is set to 1000 seconds since the epoch.) For example:
+  //   SetConfigs(nullptr);  // calls |config_.SetConfigs| with no protobufs.
   //
   //   // Calls |config_.SetConfigs| with two protobufs: one for a Config with
   //   // a |primary_time| of 900 and priority 1, and another with
@@ -386,7 +385,7 @@ class CryptoServerConfigsTest : public ::testing::Test {
   //   CheckConfigs(
   //     "id1", 900, 1,
   //     "id2", 1000, 2,
-  //     NULL);
+  //     nullptr);
   //
   // If the server config id starts with "INVALID" then the generated protobuf
   // will be invalid.
@@ -444,29 +443,29 @@ class CryptoServerConfigsTest : public ::testing::Test {
 };
 
 TEST_F(CryptoServerConfigsTest, NoConfigs) {
-  test_peer_.CheckConfigs(NULL);
+  test_peer_.CheckConfigs(nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, MakePrimaryFirst) {
   // Make sure that "b" is primary even though "a" comes first.
   SetConfigs("a", 1100, 1,
              "b", 900, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, MakePrimarySecond) {
   // Make sure that a remains primary after b is added.
   SetConfigs("a", 900, 1,
              "b", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, Delete) {
@@ -474,19 +473,19 @@ TEST_F(CryptoServerConfigsTest, Delete) {
   SetConfigs("a", 800, 1,
              "b", 900, 1,
              "c", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
       "c", false,
-      NULL);
+      nullptr);
   SetConfigs("b", 900, 1,
              "c", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "b", true,
       "c", false,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, DeletePrimary) {
@@ -494,36 +493,36 @@ TEST_F(CryptoServerConfigsTest, DeletePrimary) {
   SetConfigs("a", 800, 1,
              "b", 900, 1,
              "c", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
       "c", false,
-      NULL);
+      nullptr);
   SetConfigs("a", 800, 1,
              "c", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", true,
       "c", false,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, FailIfDeletingAllConfigs) {
   // Ensure that configs get deleted when removed.
   SetConfigs("a", 800, 1,
              "b", 900, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
-      NULL);
-  SetConfigs(NULL);
+      nullptr);
+  SetConfigs(nullptr);
   // Config change is rejected, still using old configs.
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, ChangePrimaryTime) {
@@ -531,23 +530,23 @@ TEST_F(CryptoServerConfigsTest, ChangePrimaryTime) {
   SetConfigs("a", 400, 1,
              "b", 800, 1,
              "c", 1200, 1,
-             NULL);
+             nullptr);
   test_peer_.SelectNewPrimaryConfig(500);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
       "c", false,
-      NULL);
+      nullptr);
   SetConfigs("a", 1200, 1,
              "b", 800, 1,
              "c", 400, 1,
-             NULL);
+             nullptr);
   test_peer_.SelectNewPrimaryConfig(500);
   test_peer_.CheckConfigs(
       "a", false,
       "b", false,
       "c", true,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, AllConfigsInThePast) {
@@ -555,13 +554,13 @@ TEST_F(CryptoServerConfigsTest, AllConfigsInThePast) {
   SetConfigs("a", 400, 1,
              "b", 800, 1,
              "c", 1200, 1,
-             NULL);
+             nullptr);
   test_peer_.SelectNewPrimaryConfig(1500);
   test_peer_.CheckConfigs(
       "a", false,
       "b", false,
       "c", true,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, AllConfigsInTheFuture) {
@@ -569,13 +568,13 @@ TEST_F(CryptoServerConfigsTest, AllConfigsInTheFuture) {
   SetConfigs("a", 400, 1,
              "b", 800, 1,
              "c", 1200, 1,
-             NULL);
+             nullptr);
   test_peer_.SelectNewPrimaryConfig(100);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
       "c", false,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, SortByPriority) {
@@ -584,64 +583,64 @@ TEST_F(CryptoServerConfigsTest, SortByPriority) {
   SetConfigs("a", 900, 1,
              "b", 900, 2,
              "c", 900, 3,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
       "c", false,
-      NULL);
+      nullptr);
   test_peer_.SelectNewPrimaryConfig(800);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
       "c", false,
-      NULL);
+      nullptr);
   test_peer_.SelectNewPrimaryConfig(1000);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
       "c", false,
-      NULL);
+      nullptr);
 
   // Change priorities and expect sort order to change.
   SetConfigs("a", 900, 2,
              "b", 900, 1,
              "c", 900, 0,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", false,
       "c", true,
-      NULL);
+      nullptr);
   test_peer_.SelectNewPrimaryConfig(800);
   test_peer_.CheckConfigs(
       "a", false,
       "b", false,
       "c", true,
-      NULL);
+      nullptr);
   test_peer_.SelectNewPrimaryConfig(1000);
   test_peer_.CheckConfigs(
       "a", false,
       "b", false,
       "c", true,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, AdvancePrimary) {
   // Check that a new primary config is enabled at the right time.
   SetConfigs("a", 900, 1,
              "b", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.SelectNewPrimaryConfig(1000);
   test_peer_.CheckConfigs(
       "a", true,
       "b", false,
-      NULL);
+      nullptr);
   test_peer_.SelectNewPrimaryConfig(1101);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
-      NULL);
+      nullptr);
 }
 
 TEST_F(CryptoServerConfigsTest, InvalidConfigs) {
@@ -649,21 +648,21 @@ TEST_F(CryptoServerConfigsTest, InvalidConfigs) {
   SetConfigs("a", 800, 1,
              "b", 900, 1,
              "c", 1100, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
       "c", false,
-      NULL);
+      nullptr);
   SetConfigs("a", 800, 1,
              "c", 1100, 1,
              "INVALID1", 1000, 1,
-             NULL);
+             nullptr);
   test_peer_.CheckConfigs(
       "a", false,
       "b", true,
       "c", false,
-      NULL);
+      nullptr);
 }
 
 }  // namespace test

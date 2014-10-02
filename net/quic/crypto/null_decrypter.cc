@@ -53,7 +53,7 @@ QuicData* NullDecrypter::DecryptPacket(QuicPacketSequenceNumber /*seq_number*/,
 
   uint128 hash;
   if (!ReadHash(&reader, &hash)) {
-    return NULL;
+    return nullptr;
   }
 
   StringPiece plaintext = reader.ReadRemainingPayload();
@@ -63,7 +63,7 @@ QuicData* NullDecrypter::DecryptPacket(QuicPacketSequenceNumber /*seq_number*/,
   plaintext.AppendToString(&buffer);
 
   if (hash != ComputeHash(buffer)) {
-    return NULL;
+    return nullptr;
   }
   return new QuicData(plaintext.data(), plaintext.length());
 }

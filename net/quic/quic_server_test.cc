@@ -26,7 +26,7 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
                     crypto_config_,
                     new QuicDispatcher::DefaultPacketWriterFactory(),
                     &helper_) {
-    dispatcher_.Initialize(NULL);
+    dispatcher_.Initialize(nullptr);
   }
 
   void DispatchPacket(const QuicEncryptedPacket& packet) {

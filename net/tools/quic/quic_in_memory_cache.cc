@@ -72,7 +72,7 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     const BalsaHeaders& request_headers) const {
   ResponseMap::const_iterator it = responses_.find(GetKey(request_headers));
   if (it == responses_.end()) {
-    return NULL;
+    return nullptr;
   }
   return it->second;
 }

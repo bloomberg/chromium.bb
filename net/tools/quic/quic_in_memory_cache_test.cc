@@ -64,7 +64,7 @@ class QuicInMemoryCacheTest : public ::testing::Test {
     QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
     const QuicInMemoryCache::Response* cached_response =
         cache->GetResponse(request_headers);
-    if (cached_response != NULL) {
+    if (cached_response != nullptr) {
       std::string cached_response_headers_str, response_headers_str;
       cached_response->headers().DumpToString(&cached_response_headers_str);
       response_headers.DumpToString(&response_headers_str);

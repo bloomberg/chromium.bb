@@ -22,7 +22,7 @@ QuicDecrypter* QuicDecrypter::Create(QuicTag algorithm) {
       return new NullDecrypter();
     default:
       LOG(FATAL) << "Unsupported algorithm: " << algorithm;
-      return NULL;
+      return nullptr;
   }
 }
 

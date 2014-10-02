@@ -123,7 +123,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
 
   // Pointer to the active callback that will receive the result of
   // the client hello validation request and forward it to
-  // FinishProcessingHandshakeMessage for processing.  NULL if no
+  // FinishProcessingHandshakeMessage for processing.  nullptr if no
   // handshake message is being validated.
   ValidateCallback* validate_client_hello_cb_;
 

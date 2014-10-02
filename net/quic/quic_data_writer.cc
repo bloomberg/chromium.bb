@@ -28,7 +28,7 @@ QuicDataWriter::~QuicDataWriter() {
 
 char* QuicDataWriter::take() {
   char* rv = buffer_;
-  buffer_ = NULL;
+  buffer_ = nullptr;
   capacity_ = 0;
   length_ = 0;
   return rv;
@@ -119,11 +119,11 @@ bool QuicDataWriter::WriteIOVector(const IOVector& data) {
 
 char* QuicDataWriter::BeginWrite(size_t length) {
   if (length_ > capacity_) {
-    return NULL;
+    return nullptr;
   }
 
   if (capacity_ - length_ < length) {
-    return NULL;
+    return nullptr;
   }
 
 #ifdef ARCH_CPU_64_BITS
