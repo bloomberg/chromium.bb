@@ -94,6 +94,7 @@ CONTENT_EXPORT extern const char kEnableBleedingEdgeRenderingFastPaths[];
 CONTENT_EXPORT extern const char kDisableDeferredFilters[];
 CONTENT_EXPORT extern const char kEnableLayerSquashing[];
 CONTENT_EXPORT extern const char kEnableContainerCulling[];
+CONTENT_EXPORT extern const char kEnableCredentialManagerAPI[];
 CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kEnableBrowserSideNavigation[];

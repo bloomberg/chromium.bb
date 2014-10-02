@@ -178,6 +178,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     WebRuntimeFeatures::enableNetworkInformation(true);
   }
+
+  if (command_line.HasSwitch(switches::kEnableCredentialManagerAPI))
+    WebRuntimeFeatures::enableCredentialManagerAPI(true);
 }
 
 }  // namespace content

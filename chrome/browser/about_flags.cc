@@ -1935,6 +1935,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTabAudioMuting)
   },
 #endif  // defined(USE_AURA)
+  {
+    "enable-credential-manager-api",
+    IDS_FLAGS_CREDENTIAL_MANAGER_API_NAME,
+    IDS_FLAGS_CREDENTIAL_MANAGER_API_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableCredentialManagerAPI)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

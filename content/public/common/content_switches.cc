@@ -307,6 +307,9 @@ const char kEnableLayerSquashing[] =
 // Enable experimental container node culling.
 const char kEnableContainerCulling[]        = "enable-container-culling";
 
+// Enable the experimental Credential Manager JavaScript API.
+const char kEnableCredentialManagerAPI[]    = "enable-credential-manager-api";
+
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 
