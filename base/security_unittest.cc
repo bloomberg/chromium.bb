@@ -149,12 +149,6 @@ TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
 
 // The tests bellow check for overflows in new[] and calloc().
 
-#if defined(OS_IOS) || defined(OS_WIN) || defined(THREAD_SANITIZER)
-  #define DISABLE_ON_IOS_AND_WIN_AND_TSAN(function) DISABLED_##function
-#else
-  #define DISABLE_ON_IOS_AND_WIN_AND_TSAN(function) function
-#endif
-
 // There are platforms where these tests are known to fail. We would like to
 // be able to easily check the status on the bots, but marking tests as
 // FAILS_ is too clunky.
@@ -173,10 +167,16 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
+#if defined(OS_IOS) || defined(OS_WIN) || defined(THREAD_SANITIZER) || defined(OS_MACOSX)
+#define MAYBE_NewOverflow DISABLED_NewOverflow
+#else
+#define MAYBE_NewOverflow NewOverflow
+#endif
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
 // Crashes on Windows Dbg builds, disable there as well.
-TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN_AND_TSAN(NewOverflow)) {
+// Fails on Mac 10.8 http://crbug.com/227092
+TEST(SecurityTest, MAYBE_NewOverflow) {
   const size_t kArraySize = 4096;
   // We want something "dynamic" here, so that the compiler doesn't
   // immediately reject crazy arrays.
