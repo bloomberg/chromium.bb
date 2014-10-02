@@ -495,7 +495,7 @@ def CombineMatches(matches):
       continue
 
     # Combine the reason if the current match is already in there.
-    found_match.reason += match.reason
+    found_match.reason += '\n' + match.reason
     if match.min_distance < found_match.min_distance:
       found_match.min_distance = match.min_distance
       found_match.min_distance_info = match.min_distance_info
@@ -503,10 +503,11 @@ def CombineMatches(matches):
   for stack_index, cl, match in combined_matches:
     if match.min_distance_info:
       file_name, min_crashed_line, min_changed_line = match.min_distance_info
-      match.reason += \
-          ('\nMinimum distance from crash line to modified line: %d. '
-           '(file: %s, crashed on: %d, modified: %d).\n' %
-           (match.min_distance, file_name, min_crashed_line, min_changed_line))
+      match.reason = match.reason.strip()
+      match.reason += (
+          '\nMinimum distance from crash line to modified line: %d. '
+          '(file: %s, crashed on: %d, modified: %d).' %
+          (match.min_distance, file_name, min_crashed_line, min_changed_line))
 
   return combined_matches
 

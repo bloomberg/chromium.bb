@@ -224,16 +224,10 @@ def NormalizePath(path, parsed_deps):
       # 'Source' but chromium uses 'src/', and blink component path is
       # 'src/third_party/WebKit/Source', so add 'Source/' in front of the
       # normalized path.
-      if not (lower_normalized_path.startswith('src/') or
-              lower_normalized_path.startswith('source/')):
-
-        if (lower_component_path.endswith('src/') or
-            lower_component_path.endswith('source/')):
+      if (lower_component_path == 'src/third_party/webkit/source' and
+          not lower_normalized_path.startswith('source/')):
           normalized_path = (current_component_path.split('/')[-2] + '/' +
                              normalized_path)
-
-        else:
-          normalized_path = 'src/' + normalized_path
 
       component_name = parsed_deps[component_path]['name']
 
@@ -528,15 +522,16 @@ def MatchListToResultList(matches):
     revision_url = match.revision_url
     component_name = match.component_name
     author = match.author
-    reason = match.reason
+    reason = match.reason.strip()
     review_url = match.review_url
     reviewers = match.reviewers
     # For matches, line content do not exist.
     line_content = None
     message = match.message
+    time = match.time
 
     result = Result(suspected_cl, revision_url, component_name, author, reason,
-                    review_url, reviewers, line_content, message)
+                    review_url, reviewers, line_content, message, time)
     result_list.append(result)
 
   return result_list
@@ -561,6 +556,7 @@ def BlameListToResultList(blame_list):
     reason = (
         'The CL last changed line %s of file %s, which is stack frame %d.' %
         (blame.line_number, blame.file, blame.stack_frame_index))
+    time = blame.time
     # Blame object does not have review url and reviewers.
     review_url = None
     reviewers = None
@@ -568,7 +564,7 @@ def BlameListToResultList(blame_list):
     message = blame.message
 
     result = Result(suspected_cl, revision_url, component_name, author, reason,
-                    review_url, reviewers, line_content, message)
+                    review_url, reviewers, line_content, message, time)
     result_list.append(result)
 
   return result_list

@@ -93,6 +93,8 @@ class GitParser(ParserInterface):
       author = trs[1].getElementsByTagName(
           'td')[0].firstChild.nodeValue.split('<')[0]
       revision['author'] = author
+      revision['time'] = trs[1].getElementsByTagName(
+          'td')[0].firstChild.nodeValue
 
       # Retrive and set message.
       revision['message'] = pre.firstChild.nodeValue
@@ -183,6 +185,7 @@ class GitParser(ParserInterface):
 
     # Set author, message and URL of this CL.
     revision['author'] = json_revision['author']['name']
+    revision['time'] = json_revision['author']['time']
     revision['message'] = json_revision['message']
     revision['url'] = url
 
@@ -283,7 +286,8 @@ class GitParser(ParserInterface):
 
         (revision_info, _) = self.ParseChangelog(component, revision, revision)
         message = revision_info[revision]['message']
-        return (content, revision, author, revision_url, message)
+        time = revision_info[revision]['time']
+        return (content, revision, author, revision_url, message, time)
 
     # Return none if the region does not exist.
     return None

@@ -20,8 +20,9 @@ class Blame(object):
     file_name: The name of the file.
     line_number: The line that caused a crash.
     author: The author of this line on the latest revision.
-    crash_revision: The revision that caused the crash.
     revision: The latest revision of this line before the crash revision.
+    message: The commit message for the revision.
+    time: When the revision was committed.
     url: The url of the change for the revision.
     range_start: The starting range of the regression for this component.
     range_end: The ending range of the regression.
@@ -29,7 +30,7 @@ class Blame(object):
   """
 
   def __init__(self, line_content, component_name, stack_frame_index,
-               file_name, line_number, author, revision, message,
+               file_name, line_number, author, revision, message, time,
                url, range_start, range_end):
     # Set all the variables from the arguments.
     self.line_content = line_content
@@ -40,6 +41,7 @@ class Blame(object):
     self.author = author
     self.revision = revision
     self.message = message
+    self.time = time
     self.url = url
     self.range_start = range_start
     self.range_end = range_end
@@ -133,9 +135,9 @@ class BlameList(object):
       return
 
     # Create blame object from the parsed info and add it to the list.
-    (line_content, revision, author, url, message) = parsed_blame_info
+    (line_content, revision, author, url, message, time) = parsed_blame_info
     blame = Blame(line_content, component_name, stack_frame_index, file_name,
-                  crashed_line_number, author, revision, message, url,
+                  crashed_line_number, author, revision, message, time, url,
                   range_start, range_end)
 
     with self.blame_list_lock:

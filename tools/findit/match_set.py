@@ -39,6 +39,7 @@ class Match(object):
     review_url: The codereview URL that reviews this CL.
     reviewers: The list of people that reviewed this CL.
     reason: The reason why this CL is suspected.
+    time: When this CL was committed.
   """
   REVERT_PATTERN = re.compile(r'(revert\w*) r?(\d+)', re.I)
 
@@ -60,6 +61,7 @@ class Match(object):
     self.review_url = ''
     self.reviewers = []
     self.reason = None
+    self.time = revision['time']
 
   def ParseMessage(self, message, codereview_api_url):
     """Parses the message.
