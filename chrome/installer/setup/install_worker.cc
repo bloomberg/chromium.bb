@@ -31,6 +31,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
@@ -45,6 +46,7 @@
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
+#include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -185,14 +187,20 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   }
 }
 
-base::string16 GetRegCommandKey(BrowserDistribution* dist,
-                                const wchar_t* name) {
-  base::string16 cmd_key(dist->GetVersionKey());
+base::string16 GetRegistrationDataCommandKey(
+    const AppRegistrationData& reg_data,
+    const wchar_t* name) {
+  base::string16 cmd_key(reg_data.GetVersionKey());
   cmd_key.append(1, base::FilePath::kSeparators[0])
       .append(google_update::kRegCommandsKey)
       .append(1, base::FilePath::kSeparators[0])
       .append(name);
   return cmd_key;
+}
+
+base::string16 GetRegCommandKey(BrowserDistribution* dist,
+                                const wchar_t* name) {
+  return GetRegistrationDataCommandKey(dist->GetAppRegistrationData(), name);
 }
 
 // Adds work items to create (or delete if uninstalling) app commands to launch
@@ -236,14 +244,14 @@ void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
 }
 
 void AddLegacyAppCommandRemovalItem(const InstallerState& installer_state,
-                                    BrowserDistribution* distribution,
+                                    const AppRegistrationData& reg_data,
                                     const wchar_t* name,
                                     WorkItemList* work_item_list) {
   // These failures are ignored because this is a clean-up operation that
   // shouldn't block an install or update on failing.
   work_item_list->AddDeleteRegKeyWorkItem(
       installer_state.root_key(),
-      GetRegCommandKey(distribution, name),
+      GetRegistrationDataCommandKey(reg_data, name),
       KEY_WOW64_32KEY)->set_ignore_failure(true);
 }
 
@@ -397,17 +405,18 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
       AddFirewallRulesWorkItems(
           installer_state, p.distribution(), is_new_install, list);
       AddLegacyAppCommandRemovalItem(
-          installer_state, p.distribution(), kLegacyCmdInstallExtension, list);
+          installer_state,
+          p.distribution()->GetAppRegistrationData(),
+          kLegacyCmdInstallExtension,
+          list);
 
       if (p.distribution()->AppHostIsSupported()) {
         // Unconditionally remove the "install-application" command from the app
         // hosts's key.
-        AddLegacyAppCommandRemovalItem(
-            installer_state,
-            BrowserDistribution::GetSpecificDistribution(
-                BrowserDistribution::CHROME_APP_HOST),
-            kLegacyCmdInstallApp,
-            list);
+        UpdatingAppRegistrationData app_launcher_reg_data(
+            installer::kAppLauncherGuid);
+        AddLegacyAppCommandRemovalItem(installer_state, app_launcher_reg_data,
+                                       kLegacyCmdInstallApp, list);
       }
     }
     if (p.is_chrome_binaries()) {
