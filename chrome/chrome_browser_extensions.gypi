@@ -622,6 +622,8 @@
       'browser/extensions/extension_management.h',
       'browser/extensions/extension_management_constants.cc',
       'browser/extensions/extension_management_constants.h',
+      'browser/extensions/extension_management_internal.cc',
+      'browser/extensions/extension_management_internal.h',
       'browser/extensions/extension_message_bubble_controller.cc',
       'browser/extensions/extension_message_bubble_controller.h',
       'browser/extensions/extension_renderer_state.cc',

@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -20,7 +17,6 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/url_pattern_set.h"
 
 class GURL;
 class PrefService;
@@ -30,6 +26,13 @@ class BrowserContext;
 }  // namespace content
 
 namespace extensions {
+
+namespace internal {
+
+struct IndividualSettings;
+struct GlobalSettings;
+
+}  // namespace internal
 
 // Tracks the management policies that affect extensions and provides interfaces
 // for observing and obtaining the global settings for all extensions, as well
@@ -41,7 +44,7 @@ class ExtensionManagement : public KeyedService {
    public:
     virtual ~Observer() {}
 
-    // Will be called when an extension management preference changes.
+    // Called when the extension management settings change.
     virtual void OnExtensionManagementSettingsChanged() = 0;
   };
 
@@ -59,48 +62,6 @@ class ExtensionManagement : public KeyedService {
     INSTALLATION_RECOMMENDED,
   };
 
-  // Class to hold extension management settings for one or a group of
-  // extensions. Settings can be applied to an individual extension identified
-  // by an ID, a group of extensions with specific |update_url| or all
-  // extensions at once.
-  struct IndividualSettings {
-    IndividualSettings();
-    ~IndividualSettings();
-
-    void Reset();
-
-    // Extension installation mode. Setting this to INSTALLATION_FORCED or
-    // INSTALLATION_RECOMMENDED will enable extension auto-loading (only
-    // applicable to single extension), and in this case the |update_url| must
-    // be specified, containing the update URL for this extension.
-    // Note that |update_url| will be ignored for INSTALLATION_ALLOWED and
-    // INSTALLATION_BLOCKED installation mode.
-    // These settings will override the default settings, and unspecified
-    // settings will take value from default settings.
-    InstallationMode installation_mode;
-    std::string update_url;
-  };
-
-  // Global extension management settings, applicable to all extensions.
-  struct GlobalSettings {
-    GlobalSettings();
-    ~GlobalSettings();
-
-    void Reset();
-
-    // Settings specifying which URLs are allowed to install extensions, will be
-    // enforced only if |has_restricted_install_sources| is set to true.
-    URLPatternSet install_sources;
-    bool has_restricted_install_sources;
-
-    // Settings specifying all allowed app/extension types, will be enforced
-    // only of |has_restricted_allowed_types| is set to true.
-    std::vector<Manifest::Type> allowed_types;
-    bool has_restricted_allowed_types;
-  };
-
-  typedef std::map<ExtensionId, IndividualSettings> SettingsIdMap;
-
   explicit ExtensionManagement(PrefService* pref_service);
   virtual ~ExtensionManagement();
 
@@ -109,12 +70,15 @@ class ExtensionManagement : public KeyedService {
 
   // Get the ManagementPolicy::Provider controlled by extension management
   // policy settings.
-  ManagementPolicy::Provider* GetProvider();
+  ManagementPolicy::Provider* GetProvider() const;
 
   // Checks if extensions are blacklisted by default, by policy. When true,
   // this means that even extensions without an ID should be blacklisted (e.g.
   // from the command line, or when loaded as an unpacked extension).
-  bool BlacklistedByDefault();
+  bool BlacklistedByDefault() const;
+
+  // Returns installation mode for an extension.
+  InstallationMode GetInstallationMode(const ExtensionId& id) const;
 
   // Returns the force install list, in format specified by
   // ExternalPolicyLoader::AddExtension().
@@ -124,16 +88,18 @@ class ExtensionManagement : public KeyedService {
   bool IsInstallationAllowed(const ExtensionId& id) const;
 
   // Returns true if an extension download should be allowed to proceed.
-  bool IsOffstoreInstallAllowed(const GURL& url, const GURL& referrer_url);
+  bool IsOffstoreInstallAllowed(const GURL& url,
+                                const GURL& referrer_url) const;
 
-  // Helper function to read |settings_by_id_| with |id| as key. Returns a
-  // constant reference to default settings if |id| does not exist.
-  const IndividualSettings& ReadById(const ExtensionId& id) const;
-
-  // Returns a constant reference to |global_settings_|.
-  const GlobalSettings& ReadGlobalSettings() const;
+  // Returns true if an extension with manifest type |manifest_type| is
+  // allowed to be installed.
+  bool IsAllowedManifestType(Manifest::Type manifest_type) const;
 
  private:
+  typedef base::ScopedPtrHashMap<ExtensionId, internal::IndividualSettings>
+      SettingsIdMap;
+  friend class ExtensionManagementServiceTest;
+
   // Load all extension management preferences from |pref_service|, and
   // refresh the settings.
   void Refresh();
@@ -149,10 +115,17 @@ class ExtensionManagement : public KeyedService {
   void OnExtensionPrefChanged();
   void NotifyExtensionManagementPrefChanged();
 
+  // Helper function to read |settings_by_id_| with |id| as key. Returns a
+  // constant reference to default settings if |id| does not exist.
+  const internal::IndividualSettings* ReadById(const ExtensionId& id) const;
+
+  // Returns a constant reference to |global_settings_|.
+  const internal::GlobalSettings* ReadGlobalSettings() const;
+
   // Helper function to access |settings_by_id_| with |id| as key.
   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for
   // |id| yet.
-  IndividualSettings* AccessById(const ExtensionId& id);
+  internal::IndividualSettings* AccessById(const ExtensionId& id);
 
   // A map containing all IndividualSettings applied to an individual extension
   // identified by extension ID. The extension ID is used as index key of the
@@ -167,10 +140,10 @@ class ExtensionManagement : public KeyedService {
   // URL), all unspecified part will take value from |default_settings_|.
   // For all other extensions, all settings from |default_settings_| will be
   // enforced.
-  IndividualSettings default_settings_;
+  scoped_ptr<internal::IndividualSettings> default_settings_;
 
   // Extension settings applicable to all extensions.
-  GlobalSettings global_settings_;
+  scoped_ptr<internal::GlobalSettings> global_settings_;
 
   PrefService* pref_service_;
 

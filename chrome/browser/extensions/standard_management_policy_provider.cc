@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 
-#include <algorithm>
 #include <string>
 
 #include "base/logging.h"
@@ -77,16 +76,12 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   if (Manifest::IsComponentLocation(extension->location()))
     return true;
 
-  // Fields in |by_id| will automatically fall back to default settings if
-  // they are not specified by policy.
-  const ExtensionManagement::IndividualSettings& by_id =
-      settings_->ReadById(extension->id());
-  const ExtensionManagement::GlobalSettings& global =
-      settings_->ReadGlobalSettings();
+  ExtensionManagement::InstallationMode installation_mode =
+      settings_->GetInstallationMode(extension->id());
 
   // Force-installed extensions cannot be overwritten manually.
   if (!Manifest::IsPolicyLocation(extension->location()) &&
-      by_id.installation_mode == ExtensionManagement::INSTALLATION_FORCED) {
+      installation_mode == ExtensionManagement::INSTALLATION_FORCED) {
     return ReturnLoadError(extension, error);
   }
 
@@ -107,19 +102,15 @@ bool StandardManagementPolicyProvider::UserMayLoad(
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
     case Manifest::TYPE_PLATFORM_APP:
     case Manifest::TYPE_SHARED_MODULE: {
-      if (global.has_restricted_allowed_types &&
-          std::find(global.allowed_types.begin(),
-                    global.allowed_types.end(),
-                    extension->GetType()) == global.allowed_types.end()) {
+      if (!settings_->IsAllowedManifestType(extension->GetType()))
         return ReturnLoadError(extension, error);
-      }
       break;
     }
     case Manifest::NUM_LOAD_TYPES:
       NOTREACHED();
   }
 
-  if (by_id.installation_mode == ExtensionManagement::INSTALLATION_BLOCKED)
+  if (installation_mode == ExtensionManagement::INSTALLATION_BLOCKED)
     return ReturnLoadError(extension, error);
 
   return true;
