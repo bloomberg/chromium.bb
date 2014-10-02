@@ -16836,6 +16836,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicDiskCache.EntryState" enum="QuicDiskCacheEntryState">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Tracks the opening and closing of disk cache entries. Recorded each time a
+    disk cache entry is either opened or closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicEphemeralPortsSuggested">
   <owner>rch@chromium.org</owner>
   <summary>The number of ports suggested per server.</summary>
@@ -49709,6 +49717,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Port mismatch: IPv6 IPv6"/>
   <int value="6" label="Address and port match: IPv4 IPv4"/>
   <int value="7" label="Address and port match: IPv6 IPv6"/>
+</enum>
+
+<enum name="QuicDiskCacheEntryState" type="int">
+  <int value="0" label="Opened"/>
+  <int value="1" label="Closed"/>
 </enum>
 
 <enum name="QuicErrorCodes" type="int">
