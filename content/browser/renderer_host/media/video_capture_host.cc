@@ -202,6 +202,7 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureHost, message)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Start, OnStartCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Pause, OnPauseCapture)
+    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, OnResumeCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Stop, OnStopCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady, OnReceiveEmptyBuffer)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
@@ -295,8 +296,34 @@ void VideoCaptureHost::OnStopCapture(int device_id) {
 void VideoCaptureHost::OnPauseCapture(int device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureHost::OnPauseCapture, device_id " << device_id;
-  // Not used.
-  Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_ERROR));
+
+  VideoCaptureControllerID controller_id(device_id);
+  EntryMap::iterator it = entries_.find(controller_id);
+  if (it == entries_.end())
+    return;
+
+  if (it->second) {
+    media_stream_manager_->video_capture_manager()->PauseCaptureForClient(
+        it->second.get(), controller_id, this);
+  }
+}
+
+void VideoCaptureHost::OnResumeCapture(
+    int device_id,
+    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureParams& params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "VideoCaptureHost::OnResumeCapture, device_id " << device_id;
+
+  VideoCaptureControllerID controller_id(device_id);
+  EntryMap::iterator it = entries_.find(controller_id);
+  if (it == entries_.end())
+    return;
+
+  if (it->second) {
+    media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
+        session_id, params, it->second.get(), controller_id, this);
+  }
 }
 
 void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id,

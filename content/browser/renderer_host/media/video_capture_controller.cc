@@ -103,7 +103,8 @@ struct VideoCaptureController::ControllerClient {
         render_process_handle(render_process),
         session_id(session_id),
         parameters(params),
-        session_closed(false) {}
+        session_closed(false),
+        paused(false) {}
 
   ~ControllerClient() {}
 
@@ -135,6 +136,10 @@ struct VideoCaptureController::ControllerClient {
   // implicitly), we could avoid tracking this state here in the Controller, and
   // simplify the code in both places.
   bool session_closed;
+
+  // Indicates whether the client is paused, if true, VideoCaptureController
+  // stops updating its buffer.
+  bool paused;
 };
 
 // Receives events from the VideoCaptureDevice and posts them to a
@@ -267,6 +272,22 @@ int VideoCaptureController::RemoveClient(
   delete client;
 
   return session_id;
+}
+
+void VideoCaptureController::PauseOrResumeClient(
+    const VideoCaptureControllerID& id,
+    VideoCaptureControllerEventHandler* event_handler,
+    bool pause) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "VideoCaptureController::PauseOrResumeClient, id "
+           << id.device_id << ", " << pause;
+
+  ControllerClient* client = FindClient(id, event_handler, controller_clients_);
+  if (!client)
+    return;
+
+  DCHECK(client->paused != pause);
+  client->paused = pause;
 }
 
 void VideoCaptureController::StopSession(int session_id) {
@@ -573,7 +594,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     for (ControllerClients::iterator client_it = controller_clients_.begin();
          client_it != controller_clients_.end(); ++client_it) {
       ControllerClient* client = *client_it;
-      if (client->session_closed)
+      if (client->session_closed || client->paused)
         continue;
 
       if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
@@ -684,9 +705,19 @@ VideoCaptureController::FindClient(
   return NULL;
 }
 
-int VideoCaptureController::GetClientCount() {
+int VideoCaptureController::GetClientCount() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return controller_clients_.size();
+}
+
+int VideoCaptureController::GetActiveClientCount() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  int active_client_count = 0;
+  for (ControllerClient* client : controller_clients_) {
+    if (!client->paused)
+      ++active_client_count;
+  }
+  return active_client_count;
 }
 
 }  // namespace content

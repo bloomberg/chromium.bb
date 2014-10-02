@@ -308,7 +308,7 @@ void VideoCaptureManager::StartCaptureForClient(
   LogVideoCaptureEvent(VIDEO_CAPTURE_EVENT_START_CAPTURE);
 
   // First client starts the device.
-  if (entry->video_capture_controller->GetClientCount() == 0) {
+  if (entry->video_capture_controller->GetActiveClientCount() == 0) {
     DVLOG(1) << "VideoCaptureManager starting device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
 
@@ -365,6 +365,71 @@ void VideoCaptureManager::StopCaptureForClient(
 
   // If controller has no more clients, delete controller and device.
   DestroyDeviceEntryIfNoClients(entry);
+}
+
+void VideoCaptureManager::PauseCaptureForClient(
+    VideoCaptureController* controller,
+    VideoCaptureControllerID client_id,
+    VideoCaptureControllerEventHandler* client_handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(controller);
+  DCHECK(client_handler);
+  DeviceEntry* entry = GetDeviceEntryForController(controller);
+  if (!entry) {
+    NOTREACHED();
+    return;
+  }
+
+  // We only pause the MEDIA_DEVICE_VIDEO_CAPTURE entry to release camera to
+  // system.
+  if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
+    return;
+
+  controller->PauseOrResumeClient(client_id, client_handler, true);
+  if (controller->GetActiveClientCount() != 0)
+    return;
+
+  // There is no more client, release the camera.
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
+                 base::Unretained(entry)));
+}
+
+void VideoCaptureManager::ResumeCaptureForClient(
+    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureParams& params,
+    VideoCaptureController* controller,
+    VideoCaptureControllerID client_id,
+    VideoCaptureControllerEventHandler* client_handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(controller);
+  DCHECK(client_handler);
+
+  DeviceEntry* entry = GetDeviceEntryForController(controller);
+  if (!entry) {
+    NOTREACHED();
+    return;
+  }
+
+  // We only pause/resume the MEDIA_DEVICE_VIDEO_CAPTURE entry.
+  if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
+    return;
+
+  controller->PauseOrResumeClient(client_id, client_handler, false);
+  if (controller->GetActiveClientCount() != 1)
+    return;
+
+  // This is first active client, allocate the camera.
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &VideoCaptureManager::DoStartDeviceOnDeviceThread,
+          this,
+          session_id,
+          entry,
+          params,
+          base::Passed(entry->video_capture_controller->NewDeviceClient())));
 }
 
 bool VideoCaptureManager::GetDeviceSupportedFormats(

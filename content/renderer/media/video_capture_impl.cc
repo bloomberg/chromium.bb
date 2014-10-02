@@ -73,7 +73,10 @@ void VideoCaptureImpl::DeInit() {
 
 void VideoCaptureImpl::SuspendCapture(bool suspend) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  suspended_ = suspend;
+  Send(suspend ?
+       static_cast<IPC::Message*>(new VideoCaptureHostMsg_Pause(device_id_)) :
+       static_cast<IPC::Message*>(
+           new VideoCaptureHostMsg_Resume(device_id_, session_id_, params_)));
 }
 
 void VideoCaptureImpl::StartCapture(

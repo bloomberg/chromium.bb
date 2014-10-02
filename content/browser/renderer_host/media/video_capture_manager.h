@@ -84,6 +84,28 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                             VideoCaptureControllerEventHandler* client_handler,
                             bool aborted_due_to_error);
 
+  // Called by VideoCaptureHost to pause to update video buffer specified by
+  // |client_id| and |client_handler|. If all clients of |controller| are
+  // paused, the corresponding device will be closed.
+  void PauseCaptureForClient(
+      VideoCaptureController* controller,
+      VideoCaptureControllerID client_id,
+      VideoCaptureControllerEventHandler* client_handler);
+
+  // Called by VideoCaptureHost to resume to update video buffer specified by
+  // |client_id| and |client_handler|. The |session_id| and |params| should be
+  // same as those used in StartCaptureForClient().
+  // If this is first active client of |controller|, device will be allocated
+  // and it will take a little time to resume.
+  // Allocating device could failed if other app holds the camera, the error
+  // will be notified through VideoCaptureControllerEventHandler::OnError().
+  void ResumeCaptureForClient(
+      media::VideoCaptureSessionId session_id,
+      const media::VideoCaptureParams& params,
+      VideoCaptureController* controller,
+      VideoCaptureControllerID client_id,
+      VideoCaptureControllerEventHandler* client_handler);
+
   // Retrieves all capture supported formats for a particular device. Returns
   // false if the |capture_session_id| is not found. The supported formats are
   // cached during device(s) enumeration, and depending on the underlying

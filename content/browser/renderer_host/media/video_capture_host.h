@@ -123,6 +123,10 @@ class CONTENT_EXPORT VideoCaptureHost
   // IPC message: Pause capture on device referenced by |device_id|.
   void OnPauseCapture(int device_id);
 
+  void OnResumeCapture(int device_id,
+                       media::VideoCaptureSessionId session_id,
+                       const media::VideoCaptureParams& params);
+
   // IPC message: Receive an empty buffer from renderer. Send it to device
   // referenced by |device_id|.
   void OnReceiveEmptyBuffer(int device_id, int buffer_id, uint32 sync_point);

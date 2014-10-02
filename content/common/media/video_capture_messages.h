@@ -87,6 +87,13 @@ IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Start,
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Pause,
                      int /* device_id */)
 
+// Resume the video capture specified by |device_id|, |session_id| and
+// |params|.
+IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Resume,
+                     int, /* device_id */
+                     media::VideoCaptureSessionId, /* session_id */
+                     media::VideoCaptureParams /* params */)
+
 // Close the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
                      int /* device_id */)
