@@ -251,7 +251,6 @@
       ['OS=="linux" or OS=="android" or OS=="win"', {
         'sources/': [
           # Cherry-pick files excluded by the broader regular expressions above.
-          ['include', 'fonts/harfbuzz/FontHarfBuzz\\.cpp$'],
           ['include', 'fonts/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
           ['include', 'fonts/harfbuzz/HarfBuzzFaceSkia\\.cpp$'],
           ['include', 'fonts/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
@@ -337,7 +336,6 @@
           ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
 
           # Mac uses Harfbuzz.
-          ['include', 'fonts/harfbuzz/FontHarfBuzz\\.cpp$'],
           ['include', 'fonts/harfbuzz/HarfBuzzFaceCoreText\\.mm$'],
           ['include', 'fonts/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
           ['include', 'fonts/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
