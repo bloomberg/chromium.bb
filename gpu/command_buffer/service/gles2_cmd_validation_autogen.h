@@ -32,6 +32,8 @@ ValueValidator<GLenum> get_max_index_type;
 ValueValidator<GLenum> get_tex_param_target;
 ValueValidator<GLenum> hint_mode;
 ValueValidator<GLenum> hint_target;
+ValueValidator<GLenum> image_internal_format;
+ValueValidator<GLenum> image_usage;
 ValueValidator<GLenum> index_type;
 ValueValidator<GLenum> matrix_mode;
 ValueValidator<GLenum> pixel_store;

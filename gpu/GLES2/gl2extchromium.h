@@ -103,8 +103,8 @@ typedef GLboolean (GL_APIENTRY PFNGLUNMAPBUFFERCHROMIUM) (GLuint target);
 #endif  /* GL_CHROMIUM_pixel_transfer_buffer_object */
 
 /* GL_CHROMIUM_image */
-#ifndef GL_CHROMIUM_map_image
-#define GL_CHROMIUM_map_image 1
+#ifndef GL_CHROMIUM_image
+#define GL_CHROMIUM_image 1
 
 #ifndef GL_IMAGE_ROWBYTES_CHROMIUM
 #define GL_IMAGE_ROWBYTES_CHROMIUM 0x78F0
@@ -132,16 +132,39 @@ GL_APICALL void GL_APIENTRY glUnmapImageCHROMIUM(GLuint image_id);
 typedef GLuint(GL_APIENTRYP PFNGLCREATEIMAGECHROMIUMPROC)(
     GLsizei width,
     GLsizei height,
-    GLenum internalformat);
+    GLenum internalformat,
+    GLenum usage);
 typedef void (
-    GL_APIENTRYP PFNGLDESTROYIMAGECHROMIUMPROC) (GLuint image_id);
-typedef void (
-    GL_APIENTRYP PFNGLGETIMAGEPARAMETERIVCHROMIUMPROC) (
-    GLuint image_id, GLenum pname, GLint* params);
-typedef void* (GL_APIENTRYP PFNGLMAPIMAGECHROMIUMPROC) (
-    GLuint image_id, GLenum access);
-typedef void (GL_APIENTRYP PFNGLUNMAPIMAGECHROMIUMPROC) (GLuint image_id);
-#endif  /* GL_CHROMIUM_map_image */
+    GL_APIENTRYP PFNGLDESTROYIMAGECHROMIUMPROC)(GLuint image_id);
+typedef void* (GL_APIENTRYP PFNGLMAPIMAGECHROMIUMPROC)(GLuint image_id);
+typedef void (GL_APIENTRYP PFNGLUNMAPIMAGECHROMIUMPROC)(GLuint image_id);
+#endif  /* GL_CHROMIUM_image */
+
+  /* GL_CHROMIUM_gpu_memory_buffer_image */
+#ifndef GL_CHROMIUM_gpu_memory_buffer_image
+#define GL_CHROMIUM_gpu_memory_buffer_image 1
+
+#ifndef GL_MAP_CHROMIUM
+#define GL_MAP_CHROMIUM 0x78F1
+#endif
+
+#ifndef GL_SCANOUT_CHROMIUM
+#define GL_SCANOUT_CHROMIUM 0x78F2
+#endif
+
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL GLuint GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM(
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage);
+#endif
+typedef GLuint(GL_APIENTRYP PFNGLCREATEGPUMEMORYBUFFERIMAGECHROMIUMPROC) (
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage);
+#endif  /* GL_CHROMIUM_gpu_memory_buffer_image */
 
 /* GL_CHROMIUM_map_sub */
 #ifndef GL_CHROMIUM_map_sub

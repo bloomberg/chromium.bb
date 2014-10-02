@@ -737,6 +737,13 @@ void GLES2InterfaceStub::GetImageParameterivCHROMIUM(GLuint /* image_id */,
                                                      GLenum /* pname */,
                                                      GLint* /* params */) {
 }
+GLuint GLES2InterfaceStub::CreateGpuMemoryBufferImageCHROMIUM(
+    GLsizei /* width */,
+    GLsizei /* height */,
+    GLenum /* internalformat */,
+    GLenum /* usage */) {
+  return 0;
+}
 void GLES2InterfaceStub::GetTranslatedShaderSourceANGLE(GLuint /* shader */,
                                                         GLsizei /* bufsize */,
                                                         GLsizei* /* length */,

@@ -195,6 +195,7 @@ GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint textur
 GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (GLsizei width, GLsizei height, GLenum internalformat, GLenum usage);
 GL_APICALL void         GL_APIENTRY glDestroyImageCHROMIUM (GLuint image_id);
 GL_APICALL void         GL_APIENTRY glGetImageParameterivCHROMIUM (GLuint image_id, GLenum pname, GLint* params);
+GL_APICALL GLuint       GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM (GLsizei width, GLsizei height, GLenum internalformat, GLenum usage);
 GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* source);
 GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);
 GL_APICALL void         GL_APIENTRY glTexImageIOSurface2DCHROMIUM (GLenumTextureBindTarget target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);

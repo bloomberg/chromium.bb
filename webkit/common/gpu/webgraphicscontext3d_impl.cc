@@ -928,6 +928,14 @@ DELEGATE_TO_GL_1R(mapImageCHROMIUM, MapImageCHROMIUM, WGC3Duint, void*);
 
 DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
 
+DELEGATE_TO_GL_4R(createGpuMemoryBufferImageCHROMIUM,
+                  CreateGpuMemoryBufferImageCHROMIUM,
+                  WGC3Dsizei,
+                  WGC3Dsizei,
+                  WGC3Denum,
+                  WGC3Denum,
+                  WGC3Duint);
+
 DELEGATE_TO_GL_6(framebufferTexture2DMultisampleEXT,
                  FramebufferTexture2DMultisampleEXT,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint, WGC3Dsizei)

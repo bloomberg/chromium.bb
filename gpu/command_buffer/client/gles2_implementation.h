@@ -552,6 +552,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void UnmapImageCHROMIUMHelper(GLuint image_id);
   void GetImageParameterivCHROMIUMHelper(
       GLuint image_id, GLenum pname, GLint* params);
+  GLuint CreateGpuMemoryBufferImageCHROMIUMHelper(GLsizei width,
+                                                  GLsizei height,
+                                                  GLenum internalformat,
+                                                  GLenum usage);
 
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32* param);

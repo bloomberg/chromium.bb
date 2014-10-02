@@ -1181,6 +1181,20 @@ _NAMED_TYPE_INFO = {
       'GL_RGBA8_OES',
     ],
   },
+  'ImageInternalFormat': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_RGB',
+      'GL_RGBA',
+    ],
+  },
+  'ImageUsage': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_MAP_CHROMIUM',
+      'GL_SCANOUT_CHROMIUM'
+    ],
+  },
   'VertexAttribType': {
     'type': 'GLenum',
     'valid': [
@@ -1488,6 +1502,17 @@ _FUNCTION_INFO = {
   },
   'GetImageParameterivCHROMIUM': {
     'type': 'Manual',
+    'client_test': False,
+    'gen_cmd': False,
+    'expectation': False,
+    'extension': True,
+    'chromium': True,
+  },
+  'CreateGpuMemoryBufferImageCHROMIUM': {
+    'type': 'Manual',
+    'cmd_args':
+        'GLsizei width, GLsizei height, GLenum internalformat, GLenum usage',
+    'result': ['GLuint'],
     'client_test': False,
     'gen_cmd': False,
     'expectation': False,

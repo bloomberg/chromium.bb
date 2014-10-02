@@ -136,6 +136,10 @@
 #define GL_IMAGE_MAP_CHROMIUM                            0x78F1
 #define GL_IMAGE_SCANOUT_CHROMIUM                        0x78F2
 
+// GL_CHROMIUM_gpu_memory_buffer_image
+#define GL_MAP_CHROMIUM                                  0x78F1
+#define GL_SCANOUT_CHROMIUM                              0x78F2
+
 // GL_CHROMIUM_schedule_overlay_plane
 #define GL_OVERLAY_TRANSFORM_NONE_CHROMIUM               0x9245
 #define GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM    0x9246

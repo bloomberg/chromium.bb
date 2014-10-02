@@ -3467,6 +3467,23 @@ std::string GLES2Util::GetStringHintTarget(uint32_t value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringImageInternalFormat(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_RGB, "GL_RGB"}, {GL_RGBA, "GL_RGBA"},
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringImageUsage(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_MAP_CHROMIUM, "GL_MAP_CHROMIUM"},
+      {GL_SCANOUT_CHROMIUM, "GL_SCANOUT_CHROMIUM"},
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringIndexType(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_UNSIGNED_BYTE, "GL_UNSIGNED_BYTE"},

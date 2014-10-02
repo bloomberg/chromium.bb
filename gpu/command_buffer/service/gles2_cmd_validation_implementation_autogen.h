@@ -237,6 +237,16 @@ static const GLenum valid_hint_target_table[] = {
     GL_GENERATE_MIPMAP_HINT,
 };
 
+static const GLenum valid_image_internal_format_table[] = {
+    GL_RGB,
+    GL_RGBA,
+};
+
+static const GLenum valid_image_usage_table[] = {
+    GL_MAP_CHROMIUM,
+    GL_SCANOUT_CHROMIUM,
+};
+
 static const GLenum valid_index_type_table[] = {
     GL_UNSIGNED_BYTE,
     GL_UNSIGNED_SHORT,
@@ -544,6 +554,9 @@ Validators::Validators()
                            arraysize(valid_get_tex_param_target_table)),
       hint_mode(valid_hint_mode_table, arraysize(valid_hint_mode_table)),
       hint_target(valid_hint_target_table, arraysize(valid_hint_target_table)),
+      image_internal_format(valid_image_internal_format_table,
+                            arraysize(valid_image_internal_format_table)),
+      image_usage(valid_image_usage_table, arraysize(valid_image_usage_table)),
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
       matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),

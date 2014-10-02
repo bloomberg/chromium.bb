@@ -811,6 +811,13 @@ void GLES2GetImageParameterivCHROMIUM(GLuint image_id,
                                       GLint* params) {
   gles2::GetGLContext()->GetImageParameterivCHROMIUM(image_id, pname, params);
 }
+GLuint GLES2CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
+                                               GLsizei height,
+                                               GLenum internalformat,
+                                               GLenum usage) {
+  return gles2::GetGLContext()->CreateGpuMemoryBufferImageCHROMIUM(
+      width, height, internalformat, usage);
+}
 void GLES2GetTranslatedShaderSourceANGLE(GLuint shader,
                                          GLsizei bufsize,
                                          GLsizei* length,
@@ -1734,6 +1741,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetImageParameterivCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glGetImageParameterivCHROMIUM),
+    },
+    {
+     "glCreateGpuMemoryBufferImageCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(
+         glCreateGpuMemoryBufferImageCHROMIUM),
     },
     {
      "glGetTranslatedShaderSourceANGLE",

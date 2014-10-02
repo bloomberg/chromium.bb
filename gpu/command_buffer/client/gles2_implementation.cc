@@ -2210,10 +2210,8 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
             "GL_CHROMIUM_flipy "
             "GL_EXT_unpack_subimage "
             "GL_CHROMIUM_map_sub";
-        if (capabilities_.image) {
-          // The first space character is intentional.
-          str += " GL_CHROMIUM_image";
-        }
+        if (capabilities_.image)
+          str += " GL_CHROMIUM_image GL_CHROMIUM_gpu_memory_buffer_image";
         if (capabilities_.future_sync_points)
           str += " GL_CHROMIUM_future_sync_point";
         break;
@@ -3997,6 +3995,30 @@ void GLES2Implementation::RetireSyncPointCHROMIUM(GLuint sync_point) {
   gpu_control_->RetireSyncPoint(sync_point);
 }
 
+namespace {
+
+bool ValidImageFormat(GLenum internalformat) {
+  switch (internalformat) {
+    case GL_RGB:
+    case GL_RGBA:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool ValidImageUsage(GLenum usage) {
+  switch (usage) {
+    case GL_MAP_CHROMIUM:
+    case GL_SCANOUT_CHROMIUM:
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 GLuint GLES2Implementation::CreateImageCHROMIUMHelper(GLsizei width,
                                                       GLsizei height,
                                                       GLenum internalformat,
@@ -4147,6 +4169,74 @@ void GLES2Implementation::GetImageParameterivCHROMIUM(
       << static_cast<const void*>(params) << ")");
   GetImageParameterivCHROMIUMHelper(image_id, pname, params);
   CheckGLError();
+}
+
+GLuint GLES2Implementation::CreateGpuMemoryBufferImageCHROMIUMHelper(
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage) {
+  if (width <= 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glCreateGpuMemoryBufferImageCHROMIUM", "width <= 0");
+    return 0;
+  }
+
+  if (height <= 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCreateGpuMemoryBufferImageCHROMIUM",
+               "height <= 0");
+    return 0;
+  }
+
+  if (!ValidImageFormat(internalformat)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCreateGpuMemoryBufferImageCHROMIUM",
+               "invalid format");
+    return 0;
+  }
+
+  if (!ValidImageUsage(usage)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCreateGpuMemoryBufferImageCHROMIUM",
+               "invalid usage");
+    return 0;
+  }
+
+  // Flush the command stream to ensure ordering in case the newly
+  // returned image_id has recently been in use with a different buffer.
+  helper_->CommandBufferHelper::Flush();
+
+  // Create new buffer.
+  GLuint buffer_id = gpu_memory_buffer_tracker_->CreateBuffer(
+      width,
+      height,
+      internalformat == GL_RGBA ? GL_RGBA8_OES : GL_RGB8_OES,
+      usage);
+  if (buffer_id == 0) {
+    SetGLError(GL_OUT_OF_MEMORY,
+               "glCreateGpuMemoryBufferImageCHROMIUM",
+               "out of GPU memory");
+    return 0;
+  }
+  return buffer_id;
+}
+
+GLuint GLES2Implementation::CreateGpuMemoryBufferImageCHROMIUM(
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glCreateGpuMemoryBufferImageCHROMIUM(" << width
+                     << ", " << height << ", "
+                     << GLES2Util::GetStringImageInternalFormat(internalformat)
+                     << ", " << GLES2Util::GetStringImageUsage(usage) << ")");
+  GLuint image_id = CreateGpuMemoryBufferImageCHROMIUMHelper(
+      width, height, internalformat, usage);
+  CheckGLError();
+  return image_id;
 }
 
 bool GLES2Implementation::ValidateSize(const char* func, GLsizeiptr size) {

@@ -1290,6 +1290,17 @@ void GLES2TraceImplementation::GetImageParameterivCHROMIUM(GLuint image_id,
   gl_->GetImageParameterivCHROMIUM(image_id, pname, params);
 }
 
+GLuint GLES2TraceImplementation::CreateGpuMemoryBufferImageCHROMIUM(
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::CreateGpuMemoryBufferImageCHROMIUM");
+  return gl_->CreateGpuMemoryBufferImageCHROMIUM(
+      width, height, internalformat, usage);
+}
+
 void GLES2TraceImplementation::GetTranslatedShaderSourceANGLE(GLuint shader,
                                                               GLsizei bufsize,
                                                               GLsizei* length,
