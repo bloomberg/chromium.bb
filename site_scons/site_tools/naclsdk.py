@@ -354,19 +354,21 @@ def AddBiasForPNaCl(env, temporarily_allow=True):
     return
 
   if env.Bit('target_arm'):
-    env.AppendUnique(CCFLAGS=['--pnacl-arm-bias'],
-                     ASPPFLAGS=['--pnacl-arm-bias'])
+    bias_flag = '--pnacl-bias=arm'
   elif env.Bit('target_x86_32'):
-    env.AppendUnique(CCFLAGS=['--pnacl-i686-bias'],
-                     ASPPFLAGS=['--pnacl-i686-bias'])
+    bias_flag = '--pnacl-bias=x86-32'
   elif env.Bit('target_x86_64'):
-    env.AppendUnique(CCFLAGS=['--pnacl-x86_64-bias'],
-                     ASPPFLAGS=['--pnacl-x86_64-bias'])
+    bias_flag = '--pnacl-bias=x86-64'
   elif env.Bit('target_mips32'):
-    env.AppendUnique(CCFLAGS=['--pnacl-mips-bias'],
-                     ASPPFLAGS=['--pnacl-mips-bias'])
+    bias_flag = '--pnacl-bias=mips32'
   else:
     raise Exception("Unknown architecture!")
+
+  if env.Bit('nonsfi_nacl'):
+    bias_flag += '-nonsfi'
+
+  env.AppendUnique(CCFLAGS=[bias_flag],
+                   ASPPFLAGS=[bias_flag])
 
 
 def ValidateSdk(env):

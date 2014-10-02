@@ -3034,6 +3034,14 @@ def AllowInlineAssembly(env):
       return False
     env.AddBiasForPNaCl()
     env.PNaClForceNative()
+
+    if env.Bit('target_x86_32'):
+      env.AppendUnique(CCFLAGS=['--target=i686-unknown-nacl'])
+    elif env.Bit('target_x86_64'):
+      env.AppendUnique(CCFLAGS=['--target=x86_64-unknown-nacl'])
+    elif env.Bit('target_arm'):
+      env.AppendUnique(CCFLAGS=['--target=arm-unknown-nacl',
+                                '-mfloat-abi=hard'])
   return True
 
 nacl_env.AddMethod(AllowInlineAssembly)

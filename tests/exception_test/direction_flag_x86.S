@@ -48,7 +48,11 @@ get_x86_direction_flag:
         setb %al
 
         add $4, %esp
+#if defined(__native_client_nonsfi__)
+        ret
+#else
         naclret
+#endif
 
 #else
 # error Unknown platform
