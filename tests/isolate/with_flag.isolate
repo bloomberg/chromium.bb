@@ -10,11 +10,9 @@
           'with_flag.py',
           '<(FLAG)',
         ],
-        'isolate_dependency_tracked': [
-          'with_flag.py',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           'files1/',
+          'with_flag.py',
         ],
       },
     }],

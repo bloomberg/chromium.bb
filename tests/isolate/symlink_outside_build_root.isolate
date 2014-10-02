@@ -9,11 +9,9 @@
           'python',
           'symlink_outside_build_root.py',
         ],
-        'isolate_dependency_tracked': [
-          'symlink_outside_build_root.py',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           'link_outside_build_root/',
+          'symlink_outside_build_root.py',
         ],
       },
     }],

@@ -9,7 +9,7 @@
           'python',
           'fail.py',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           'fail.py',
         ],
       },

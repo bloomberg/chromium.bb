@@ -9,11 +9,9 @@
           'python',
           'symlink_partial.py',
         ],
-        'isolate_dependency_tracked': [
-          'symlink_partial.py',
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           'files2/test_file2.txt',
+          'symlink_partial.py',
         ],
       },
     }],

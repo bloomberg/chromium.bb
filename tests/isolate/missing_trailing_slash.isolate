@@ -3,7 +3,7 @@
 # can be found in the LICENSE file.
 {
   'variables': {
-    'isolate_dependency_untracked': [
+    'files': [
       # Directory missing trailing slash.
       'files1',
     ],

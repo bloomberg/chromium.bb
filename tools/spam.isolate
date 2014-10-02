@@ -7,7 +7,7 @@
       'python',
       'spam.py',
     ],
-    'isolate_dependency_tracked': [
+    'files': [
       'spam.py',
     ],
   },

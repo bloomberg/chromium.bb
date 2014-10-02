@@ -3,7 +3,7 @@
 # can be found in the LICENSE file.
 {
   'variables': {
-    'isolate_dependency_tracked': [
+    'files': [
       'A_file_that_do_not_exist',
     ],
   },

@@ -8,11 +8,9 @@
       'touch_only.py',
       '<(FLAG)',
     ],
-    'isolate_dependency_tracked': [
-      'touch_only.py',
-    ],
-    'isolate_dependency_touched': [
+    'files': [
       'files1/test_file1.txt',
+      'touch_only.py',
     ],
   },
 }

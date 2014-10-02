@@ -3,11 +3,9 @@
 # can be found in the LICENSE file.
 {
   'variables': {
-    'isolate_dependency_tracked': [
+    'files': [
       # Includes itself.
       'no_run.isolate',
-    ],
-    'isolate_dependency_untracked': [
       'files1/',
     ],
   },

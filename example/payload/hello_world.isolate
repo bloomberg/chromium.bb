@@ -3,7 +3,7 @@
 # can be found in the LICENSE file.
 {
   'variables': {
-    'isolate_dependency_tracked': [
+    'files': [
       'hello_world.py',
     ],
   },

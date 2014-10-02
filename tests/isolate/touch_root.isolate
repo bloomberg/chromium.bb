@@ -9,7 +9,7 @@
           'python',
           'touch_root.py',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           '../../isolate.py',
           'touch_root.py',
         ],

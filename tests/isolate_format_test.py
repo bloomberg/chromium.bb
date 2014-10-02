@@ -15,8 +15,6 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolate_format
 import run_isolated
-# Create shortcuts.
-from isolate_format import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
 
 # Access to a protected member XXX of a client class
@@ -66,37 +64,31 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS=="amiga" or OS=="atari" or OS=="coleco" or OS=="dendy"', {
           'variables': {
-            KEY_TRACKED: ['a'],
-            KEY_UNTRACKED: ['b'],
-            KEY_TOUCHED: ['touched'],
+            'files': ['a', 'b', 'touched'],
           },
         }],
         ['OS=="atari"', {
           'variables': {
-            KEY_TRACKED: ['c', 'x'],
-            KEY_UNTRACKED: ['d'],
-            KEY_TOUCHED: ['touched_a'],
+            'files': ['c', 'd', 'touched_a', 'x'],
             'command': ['echo', 'Hello World'],
             'read_only': 2,
           },
         }],
         ['OS=="amiga" or OS=="coleco" or OS=="dendy"', {
           'variables': {
-            KEY_TRACKED: ['e', 'x'],
-            KEY_UNTRACKED: ['f'],
-            KEY_TOUCHED: ['touched_e'],
+            'files': ['e', 'f', 'touched_e', 'x'],
             'command': ['echo', 'You should get an Atari'],
           },
         }],
         ['OS=="amiga"', {
           'variables': {
-            KEY_TRACKED: ['g'],
+            'files': ['g'],
             'read_only': 1,
           },
         }],
         ['OS=="amiga" or OS=="atari" or OS=="dendy"', {
           'variables': {
-            KEY_UNTRACKED: ['h'],
+            'files': ['h'],
           },
         }],
       ],
@@ -155,9 +147,7 @@ class IsolateFormatTest(unittest.TestCase):
     value = {
       'variables': {
         'command': ['echo', 'You should get an Atari'],
-        KEY_TRACKED: ['a'],
-        KEY_UNTRACKED: ['b'],
-        KEY_TOUCHED: ['touched'],
+        'files': ['a', 'b', 'touched'],
         'read_only': 1,
       },
     }
@@ -192,7 +182,7 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS=="linux"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_linux',
               'file_common',
             ],
@@ -204,7 +194,7 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS=="mac"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_mac',
               'file_common',
             ],
@@ -238,7 +228,7 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS=="linux" and chromeos==1', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_linux',
               'file_common',
             ],
@@ -250,7 +240,7 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS=="mac" and chromeos==0', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_mac',
               'file_common',
             ],
@@ -262,7 +252,7 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS=="win" and chromeos==0', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_win',
               'file_common',
             ],
@@ -388,7 +378,7 @@ class IsolateFormatTest(unittest.TestCase):
 
   def test_ConfigSettings_union(self):
     lhs_values = {}
-    rhs_values = {KEY_UNTRACKED: ['data/', 'test/data/']}
+    rhs_values = {'files': ['data/', 'test/data/']}
     lhs = isolate_format.ConfigSettings(lhs_values, '/src/net/third_party/nss')
     rhs = isolate_format.ConfigSettings(rhs_values, '/src/base')
     out = lhs.union(rhs)
@@ -434,7 +424,7 @@ class IsolateFormatTest(unittest.TestCase):
   def test_pretty_print_mid_size(self):
     value = {
       'variables': {
-        KEY_TOUCHED: [
+        'files': [
           'file1',
           'file2',
         ],
@@ -442,13 +432,11 @@ class IsolateFormatTest(unittest.TestCase):
       'conditions': [
         ['OS==\"foo\"', {
           'variables': {
-            KEY_UNTRACKED: [
-              'dir1',
-              'dir2',
-            ],
-            KEY_TRACKED: [
-              'file4',
+            'files': [
+              'dir1/',
+              'dir2/',
               'file3',
+              'file4',
             ],
             'command': ['python', '-c', 'print "H\\i\'"'],
             'read_only': 2,
@@ -464,7 +452,7 @@ class IsolateFormatTest(unittest.TestCase):
     expected = (
         "{\n"
         "  'variables': {\n"
-        "    'isolate_dependency_touched': [\n"
+        "    'files': [\n"
         "      'file1',\n"
         "      'file2',\n"
         "    ],\n"
@@ -477,15 +465,13 @@ class IsolateFormatTest(unittest.TestCase):
         "          '-c',\n"
         "          'print \"H\\i\'\"',\n"
         "        ],\n"
-        "        'read_only': 2,\n"
-        "        'isolate_dependency_tracked': [\n"
-        "          'file4',\n"
+        "        'files': [\n"
+        "          'dir1/',\n"
+        "          'dir2/',\n"
         "          'file3',\n"
+        "          'file4',\n"
         "        ],\n"
-        "        'isolate_dependency_untracked': [\n"
-        "          'dir1',\n"
-        "          'dir2',\n"
-        "        ],\n"
+        "        'read_only': 2,\n"
         "      },\n"
         "    }],\n"
         "    ['OS==\"bar\"', {\n"
@@ -554,14 +540,14 @@ class IsolateFormatTest(unittest.TestCase):
   def test_load_with_globals(self):
     values = {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_common',
         ],
       },
       'conditions': [
         ['OS=="linux"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_linux',
             ],
             'read_only': 1,
@@ -569,7 +555,7 @@ class IsolateFormatTest(unittest.TestCase):
         }],
         ['OS=="mac" or OS=="win"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_non_linux',
             ],
             'read_only': 0,
@@ -624,14 +610,14 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
   def test_load_with_includes(self):
     included_isolate = {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_common',
         ],
       },
       'conditions': [
         ['OS=="linux"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_linux',
             ],
             'read_only': 1,
@@ -639,7 +625,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
         ['OS=="mac" or OS=="win"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_non_linux',
             ],
             'read_only': 0,
@@ -652,14 +638,14 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
     values = {
       'includes': ['included.isolate'],
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           'file_less_common',
         ],
       },
       'conditions': [
         ['OS=="mac"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_mac',
             ],
             'read_only': 2,
@@ -726,14 +712,14 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'command': [
               'foo', 'linux',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               'file_linux',
             ],
           },
         }],
         ['OS=="mac" or OS=="win"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_non_linux',
             ],
           },
@@ -747,7 +733,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'command': [
               'foo', 'linux_or_mac',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               'other/file',
             ],
           },
@@ -762,7 +748,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       'conditions': [
         ['OS=="amiga"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_amiga',
             ],
           },
@@ -772,7 +758,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'command': [
               'foo', 'mac',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               'file_mac',
             ],
           },
@@ -863,14 +849,14 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'command': [
               'foo', 'linux', '<(PATH)',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_linux',
             ],
           },
         }],
         ['OS=="mac" or OS=="win"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_non_linux',
             ],
           },
@@ -884,7 +870,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'command': [
               'foo', 'linux_or_mac', '<(PATH)',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/other/file',
             ],
           },
@@ -899,7 +885,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       'conditions': [
         ['OS=="amiga"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_amiga',
             ],
           },
@@ -909,7 +895,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'command': [
               'foo', 'mac', '<(PATH)',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_mac',
             ],
           },

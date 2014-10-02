@@ -49,7 +49,7 @@ def archive(isolate_server, script):
   isolate = {
     'variables': {
       'command': ['python', base_script],
-      'isolate_dependency_tracked': [base_script],
+      'files': [base_script],
     },
   }
   tempdir = tempfile.mkdtemp(prefix='run_on_bots')

@@ -9,7 +9,7 @@
           'python',
           'simple.py',
         ],
-        'isolate_dependency_tracked': [
+        'files': [
           'simple.py',
         ],
       },

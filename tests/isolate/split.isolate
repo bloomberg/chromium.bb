@@ -7,7 +7,7 @@
       'python',
       'split.py',
     ],
-    'isolate_dependency_tracked': [
+    'files': [
       '<(DEPTH)/split.py',
       '<(PRODUCT_DIR)/subdir/42.txt',
       'test/data/foo.txt',

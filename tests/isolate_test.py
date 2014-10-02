@@ -768,14 +768,14 @@ class IsolateLoad(IsolateBase):
             'command': [
               'foo', 'linux',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               'file_linux',
             ],
           },
         }],
         ['OS=="mac" or OS=="win"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_non_linux',
             ],
           },
@@ -789,7 +789,7 @@ class IsolateLoad(IsolateBase):
             'command': [
               'foo', 'linux_or_mac',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               'other/file',
             ],
           },
@@ -804,7 +804,7 @@ class IsolateLoad(IsolateBase):
       'conditions': [
         ['OS=="amiga"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               'file_amiga',
             ],
           },
@@ -814,7 +814,7 @@ class IsolateLoad(IsolateBase):
             'command': [
               'foo', 'mac',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               'file_mac',
             ],
           },
@@ -950,14 +950,14 @@ class IsolateLoad(IsolateBase):
             'command': [
               'foo', 'linux', '<(PATH)', '<(EXTRA)',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_linux',
             ],
           },
         }],
         ['OS=="mac" or OS=="win"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_non_linux',
             ],
           },
@@ -971,7 +971,7 @@ class IsolateLoad(IsolateBase):
             'command': [
               'foo', 'linux_or_mac', '<(PATH)', '<(EXTRA)',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/other/file',
             ],
           },
@@ -986,7 +986,7 @@ class IsolateLoad(IsolateBase):
       'conditions': [
         ['OS=="amiga"', {
           'variables': {
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_amiga',
             ],
           },
@@ -996,7 +996,7 @@ class IsolateLoad(IsolateBase):
             'command': [
               'foo', 'mac', '<(PATH)', '<(EXTRA)',
             ],
-            'isolate_dependency_tracked': [
+            'files': [
               '<(PATH)/file_mac',
             ],
           },
@@ -1149,7 +1149,7 @@ class IsolateCommand(IsolateBase):
           '  \'conditions\':['
           '    [\'OS=="dendy"\', {'
           '      \'variables\': {'
-          '        \'isolate_dependency_tracked\': [\'foo\'],'
+          '        \'files\': [\'foo\'],'
           '      },'
           '    }],'
           '  ],'
@@ -1205,7 +1205,7 @@ class IsolateCommand(IsolateBase):
           '  \'conditions\':['
           '    [\'OS=="dendy"\', {'
           '      \'variables\': {'
-          '        \'isolate_dependency_tracked\': [\'foo\'],'
+          '        \'files\': [\'foo\'],'
           '      },'
           '    }],'
           '  ],'
@@ -1233,7 +1233,7 @@ class IsolateCommand(IsolateBase):
           '  \'conditions\':['
           '    [\'OS=="dendy"\', {'
           '      \'variables\': {'
-          '        \'isolate_dependency_tracked\': [\'bar\'],'
+          '        \'files\': [\'bar\'],'
           '      },'
           '    }],'
           '  ],'
@@ -1408,7 +1408,7 @@ class IsolateCommand(IsolateBase):
           '    [\'OS=="dendy"\', {'
           '      \'variables\': {'
           '        \'command\': [\'foo\'],'
-          '        \'isolate_dependency_tracked\': [\'foo\'],'
+          '        \'files\': [\'foo\'],'
           '      },'
           '    }],'
           '  ],'
@@ -1428,12 +1428,12 @@ class IsolateCommand(IsolateBase):
           '    [\'OS=="dendy"\', {'
           '      \'variables\': {'
           '        \'command\': [\'foo\'],'
-          '        \'isolate_dependency_tracked\': [\'foo\'],'
+          '        \'files\': [\'foo\'],'
           '      },'
           '    }],'
           '    [\'foo=="baz"\', {'
           '      \'variables\': {'
-          '        \'isolate_dependency_tracked\': [\'bar\'],'
+          '        \'files\': [\'bar\'],'
           '      },'
           '    }],'
           '  ],'
