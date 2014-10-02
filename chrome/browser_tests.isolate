@@ -166,6 +166,7 @@
           '../chromeos/test/data/',
           '../ui/file_manager/file_manager/',
           '../ui/webui/resources/js/',
+          '../chrome/browser/resources/chromeos/wallpaper_manager/',
           '<(PRODUCT_DIR)/chromevox_test_data/',
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/keyboard_resources.pak',

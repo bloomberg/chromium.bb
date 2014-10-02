@@ -7,6 +7,9 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "grit/browser_resources.h"
@@ -67,4 +70,26 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, DevLaunchApp) {
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, StableLaunchApp) {
   extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
   VerifyWallpaperManagerLoaded();
+}
+
+class WallpaperManagerJsTest : public InProcessBrowserTest {
+ public:
+  void RunTest(const base::FilePath& file) {
+    GURL url = ui_test_utils::GetTestUrl(
+        base::FilePath(
+            FILE_PATH_LITERAL("chromeos/wallpaper_manager/unit_tests")),
+        file);
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
+
+    const std::vector<int> empty_libraries;
+    EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, empty_libraries));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WallpaperManagerJsTest, EventPageTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL("event_page_unittest.html")));
 }
