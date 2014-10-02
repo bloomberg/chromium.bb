@@ -7,6 +7,7 @@
       'target_name': 'compile_all_resources',
       'type': 'none',
       'dependencies': [
+        '../../chrome/browser/resources/bookmark_manager/js/compiled_resources.gyp:*',
         '../../chrome/browser/resources/downloads/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/history/compiled_resources.gyp:*',
