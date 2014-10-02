@@ -24,6 +24,7 @@
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '../url/url.gyp:url_lib',
         '../third_party/libxml/libxml.gyp:libxml',
+        'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
       ],
       'include_dirs': [
@@ -286,6 +287,7 @@
         'common/api/api.gyp:cast_channel_proto',
         'common/api/api.gyp:extensions_api',
         'extensions_common',
+        'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
       ],
       'include_dirs': [
