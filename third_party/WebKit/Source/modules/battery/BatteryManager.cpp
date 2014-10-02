@@ -41,8 +41,11 @@ ScriptPromise BatteryManager::startRequest(ScriptState* scriptState)
     m_resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
 
-    if (m_state == Resolved) {
+    ASSERT(executionContext());
+    // If the context is in a stopped state already, do not start updating.
+    if (m_state == Resolved || executionContext()->activeDOMObjectsAreStopped()) {
         // FIXME: Consider returning the same promise in this case. See crbug.com/385025.
+        m_state = Resolved;
         m_resolver->resolve(this);
     } else if (m_state == NotStarted) {
         m_state = Pending;
@@ -89,6 +92,7 @@ void BatteryManager::didUpdateData()
     }
 
     Document* document = toDocument(executionContext());
+    ASSERT(document);
     if (document->activeDOMObjectsAreSuspended() || document->activeDOMObjectsAreStopped())
         return;
 
@@ -148,6 +152,7 @@ bool BatteryManager::hasPendingActivity() const
 void BatteryManager::trace(Visitor* visitor)
 {
     visitor->trace(m_batteryStatus);
+    PlatformEventController::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
 }
 

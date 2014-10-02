@@ -15,6 +15,7 @@ class Document;
 class Event;
 
 class DeviceSingleWindowEventController : public NoBaseWillBeGarbageCollectedFinalized<DeviceSingleWindowEventController>, public PlatformEventController, public DOMWindowLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceSingleWindowEventController);
 public:
     virtual ~DeviceSingleWindowEventController();
 

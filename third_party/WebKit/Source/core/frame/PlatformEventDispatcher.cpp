@@ -41,7 +41,7 @@ void PlatformEventDispatcher::removeController(PlatformEventController* controll
     if (index == kNotFound)
         return;
 
-    m_controllers[index] = 0;
+    m_controllers[index] = nullptr;
     m_needsPurge = true;
 
     if (!m_isDispatching)

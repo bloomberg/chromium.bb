@@ -74,6 +74,7 @@ void DeviceSingleWindowEventController::didRemoveAllEventListeners(LocalDOMWindo
 void DeviceSingleWindowEventController::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
+    PlatformEventController::trace(visitor);
 }
 
 } // namespace blink

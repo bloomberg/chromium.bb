@@ -5,6 +5,7 @@
 #ifndef PlatformEventDispatcher_h
 #define PlatformEventDispatcher_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ protected:
 private:
     void purgeControllers();
 
-    Vector<PlatformEventController*> m_controllers;
+    WillBePersistentHeapVector<RawPtrWillBeMember<PlatformEventController> > m_controllers;
     bool m_needsPurge;
     bool m_isDispatching;
 };
