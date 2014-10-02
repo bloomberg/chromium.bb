@@ -307,10 +307,11 @@ class BrowserActionsContainer
   // are displayed.
   void SetChevronVisibility();
 
-  // Given a number of |icons| and whether to |display_chevron|, returns the
-  // amount of pixels needed to draw the entire container.  For convenience,
+  // Given a number of |icons|, returns the pixels needed to draw the entire
+  // container (including the chevron if the number of icons is not all the
+  // icons and there's not a separate overflow container). For convenience,
   // callers can set |icons| to -1 to mean "all icons".
-  int IconCountToWidth(int icons, bool display_chevron) const;
+  int IconCountToWidth(int icons) const;
 
   // Given a pixel width, returns the number of icons that fit.  (This
   // automatically determines whether a chevron will be needed and includes it
@@ -318,9 +319,11 @@ class BrowserActionsContainer
   size_t WidthToIconCount(int pixels) const;
 
   // Returns the absolute minimum size you can shrink the container down to and
-  // still show it.  This assumes a visible chevron because the only way we
-  // would not have a chevron when shrinking down this far is if there were no
-  // icons, in which case the container wouldn't be shown at all.
+  // still show it. If there's no chevron (i.e., there's a separate overflow
+  // container), this leaves only enough room for the resize area; otherwise,
+  // this assumes a visible chevron because the only way we would not have a
+  // chevron when shrinking down this far is if there were no icons, in which
+  // case the container wouldn't be shown at all.
   int MinimumNonemptyWidth() const;
 
   // Animate to the target size (unless testing, in which case we go straight to

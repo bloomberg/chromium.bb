@@ -305,9 +305,8 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
     // the main container.
     int row_count =
         ((std::max(0, icon_count - 1)) / icons_per_overflow_menu_row_) + 1;
-    return gfx::Size(
-        IconCountToWidth(icons_per_overflow_menu_row_, false),
-        row_count * IconHeight());
+    return gfx::Size(IconCountToWidth(icons_per_overflow_menu_row_),
+                     row_count * IconHeight());
   }
 
   // If there are no actions to show, then don't show the container at all.
@@ -322,7 +321,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
   // In other words: MinimumNonemptyWidth() < width() - resize < ClampTo(MAX).
   int preferred_width = std::min(
       std::max(MinimumNonemptyWidth(), container_width_ - resize_amount_),
-      IconCountToWidth(-1, false));
+      IconCountToWidth(-1));
   return gfx::Size(preferred_width, IconHeight());
 }
 
@@ -333,7 +332,7 @@ int BrowserActionsContainer::GetHeightForWidth(int width) const {
 }
 
 gfx::Size BrowserActionsContainer::GetMinimumSize() const {
-  int min_width = std::min(MinimumNonemptyWidth(), IconCountToWidth(-1, false));
+  int min_width = std::min(MinimumNonemptyWidth(), IconCountToWidth(-1));
   return gfx::Size(min_width, IconHeight());
 }
 
@@ -349,11 +348,10 @@ void BrowserActionsContainer::Layout() {
 
   // If the icons don't all fit, show the chevron (unless suppressed).
   int max_x = GetPreferredSize().width();
-  if (IconCountToWidth(-1, false) > max_x && !suppress_chevron_ && chevron_) {
+  if (IconCountToWidth(-1) > max_x && !suppress_chevron_ && chevron_) {
     chevron_->SetVisible(true);
     gfx::Size chevron_size(chevron_->GetPreferredSize());
-    max_x -=
-        ToolbarView::kStandardSpacing + chevron_size.width() + kChevronSpacing;
+    max_x -= chevron_size.width() + kChevronSpacing;
     chevron_->SetBounds(
         width() - ToolbarView::kStandardSpacing - chevron_size.width(),
         0,
@@ -362,6 +360,8 @@ void BrowserActionsContainer::Layout() {
   } else if (chevron_) {
     chevron_->SetVisible(false);
   }
+  // Subtract off the trailing padding.
+  max_x -= ToolbarView::kStandardSpacing;
 
   // Now draw the icons for the browser actions in the available space.
   int icon_width = IconWidth(false);
@@ -598,7 +598,7 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   // Up until now we've only been modifying the resize_amount, but now it is
   // time to set the container size to the size we have resized to, and then
   // animate to the nearest icon count size if necessary (which may be 0).
-  int max_width = IconCountToWidth(-1, false);
+  int max_width = IconCountToWidth(-1);
   container_width_ =
       std::min(std::max(0, container_width_ - resize_amount), max_width);
 
@@ -641,8 +641,7 @@ content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
 
 extensions::ActiveTabPermissionGranter*
     BrowserActionsContainer::GetActiveTabPermissionGranter() {
-  content::WebContents* web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* web_contents = GetCurrentWebContents();
   if (!web_contents)
     return NULL;
   return extensions::TabHelper::FromWebContents(web_contents)->
@@ -910,14 +909,16 @@ Browser* BrowserActionsContainer::GetBrowser() {
 
 void BrowserActionsContainer::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
-  if (!tp || !chevron_)
-    return;
-
-  chevron_->SetImage(views::Button::STATE_NORMAL,
-                     *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
-
-  const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
-  highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
+  if (tp && chevron_) {
+    chevron_->SetImage(views::Button::STATE_NORMAL,
+                       *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
+  }
+  // Highlighting only takes place on the main bar, so no need for it in
+  // overflow.
+  if (!in_overflow_mode()) {
+    const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
+    highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
+  }
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
@@ -934,10 +935,7 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 }
 
 int BrowserActionsContainer::GetPreferredWidth() {
-  size_t visible_actions = GetIconCount();
-  return IconCountToWidth(
-      visible_actions,
-      chevron_ && visible_actions < browser_action_views_.size());
+  return IconCountToWidth(GetIconCount());
 }
 
 void BrowserActionsContainer::SetChevronVisibility() {
@@ -947,15 +945,16 @@ void BrowserActionsContainer::SetChevronVisibility() {
   }
 }
 
-int BrowserActionsContainer::IconCountToWidth(int icons,
-                                              bool display_chevron) const {
+int BrowserActionsContainer::IconCountToWidth(int icons) const {
   if (icons < 0)
     icons = browser_action_views_.size();
-  if ((icons == 0) && !display_chevron)
+  bool display_chevron =
+      chevron_ && static_cast<size_t>(icons) < browser_action_views_.size();
+  if (icons == 0 && !display_chevron)
     return ToolbarView::kStandardSpacing;
   int icons_size =
       (icons == 0) ? 0 : ((icons * IconWidth(true)) - kItemSpacing);
-  int chevron_size = chevron_ && display_chevron ?
+  int chevron_size = display_chevron ?
       (kChevronSpacing + chevron_->GetPreferredSize().width()) : 0;
   // In overflow mode, our padding is to use item spacing on either end (just so
   // we can see the drop indicator). Otherwise we use the standard toolbar
@@ -969,7 +968,7 @@ int BrowserActionsContainer::IconCountToWidth(int icons,
 
 size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
   // Check for widths large enough to show the entire icon set.
-  if (pixels >= IconCountToWidth(-1, false))
+  if (pixels >= IconCountToWidth(-1))
     return browser_action_views_.size();
 
   // We reserve space for the padding on either side of the toolbar...
@@ -993,8 +992,7 @@ int BrowserActionsContainer::MinimumNonemptyWidth() const {
 
 void BrowserActionsContainer::Animate(gfx::Tween::Type tween_type,
                                       size_t num_visible_icons) {
-  int target_size = IconCountToWidth(num_visible_icons,
-      num_visible_icons < browser_action_views_.size());
+  int target_size = IconCountToWidth(num_visible_icons);
   if (resize_animation_ && !disable_animations_during_testing_) {
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
