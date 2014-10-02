@@ -139,6 +139,7 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
+[ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
 
 # We don't have full plane2 support on XP.
 [ XP ] fast/text/international/plane2.html [ WontFix ]

@@ -928,7 +928,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
     TextRun textRun(text());
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-
     BidiCharacterRun* run;
     TextDirection textDirection = styleToUse->direction();
     if (isOverride(styleToUse->unicodeBidi())) {
@@ -1107,6 +1106,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             } else {
                 TextRun run = constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
+                run.setUseComplexCodePath(!canUseSimpleFontCodePath());
                 ASSERT(run.charactersLength() >= run.length());
                 run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
                 run.setXPos(leadWidth + currMaxWidth);

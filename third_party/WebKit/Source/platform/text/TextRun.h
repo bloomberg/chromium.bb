@@ -66,6 +66,7 @@ public:
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
         , m_characterScanForCodePath(characterScanForCodePath)
+        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_tabSize(0)
         , m_normalizeSpace(false)
@@ -85,6 +86,7 @@ public:
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
         , m_characterScanForCodePath(characterScanForCodePath)
+        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_tabSize(0)
         , m_normalizeSpace(false)
@@ -103,6 +105,7 @@ public:
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
         , m_characterScanForCodePath(characterScanForCodePath)
+        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_tabSize(0)
         , m_normalizeSpace(normalizeSpace)
@@ -130,6 +133,7 @@ public:
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
         , m_characterScanForCodePath(characterScanForCodePath)
+        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_tabSize(0)
         , m_normalizeSpace(normalizeSpace)
@@ -196,12 +200,14 @@ public:
     bool ltr() const { return m_direction == LTR; }
     bool directionalOverride() const { return m_directionalOverride; }
     bool characterScanForCodePath() const { return m_characterScanForCodePath; }
+    bool useComplexCodePath() const { return m_useComplexCodePath; }
     bool spacingDisabled() const { return m_disableSpacing; }
 
     void disableSpacing() { m_disableSpacing = true; }
     void setDirection(TextDirection direction) { m_direction = direction; }
     void setDirectionalOverride(bool override) { m_directionalOverride = override; }
     void setCharacterScanForCodePath(bool scan) { m_characterScanForCodePath = scan; }
+    void setUseComplexCodePath(bool useComplex) { m_useComplexCodePath = useComplex; }
 
     class RenderingContext : public RefCounted<RenderingContext> {
     public:
@@ -236,6 +242,7 @@ private:
     unsigned m_direction : 1;
     unsigned m_directionalOverride : 1; // Was this direction set by an override character.
     unsigned m_characterScanForCodePath : 1;
+    unsigned m_useComplexCodePath : 1;
     unsigned m_disableSpacing : 1;
     unsigned m_tabSize;
     bool m_normalizeSpace;

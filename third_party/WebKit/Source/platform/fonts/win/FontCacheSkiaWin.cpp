@@ -76,7 +76,9 @@ FontCache::FontCache()
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData*)
+PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
+    const FontDescription& fontDescription, UChar32 character,
+    const SimpleFontData* originalFontData)
 {
     // First try the specified font with standard style & weight.
     if (fontDescription.style() == FontStyleItalic
@@ -159,6 +161,15 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
         family = panUniFonts[i];
         FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
         data = getFontPlatformData(fontDescription, createByFamily);
+    }
+
+    // For font fallback we want to match the subpixel behavior of the original
+    // font. Mixing subpixel and non-subpixel in the same text run looks really
+    // odd and causes problems with preferred width calculations.
+    if (data && originalFontData) {
+        const FontPlatformData& platformData = originalFontData->platformData();
+        data->setMinSizeForAntiAlias(platformData.minSizeForAntiAlias());
+        data->setMinSizeForSubpixel(platformData.minSizeForSubpixel());
     }
 
     // When i-th font (0-base) in |panUniFonts| contains a character and

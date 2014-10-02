@@ -297,6 +297,9 @@ CodePath Font::codePath(const TextRun& run) const
     if (fontDescription().textRendering() == OptimizeLegibility || fontDescription().textRendering() == GeometricPrecision)
         return ComplexPath;
 
+    if (run.useComplexCodePath())
+        return ComplexPath;
+
     if (!run.characterScanForCodePath())
         return SimplePath;
 

@@ -521,6 +521,7 @@ ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, con
 
     TextRun run = constructTextRun(text, font, text, from, len, text->style());
     run.setCharacterScanForCodePath(!text->canUseSimpleFontCodePath());
+    run.setUseComplexCodePath(!text->canUseSimpleFontCodePath());
     run.setTabSize(!collapseWhiteSpace, text->style()->tabSize());
     run.setXPos(xPos);
     return font.width(run, fallbackFonts, &glyphOverflow);
