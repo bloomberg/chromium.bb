@@ -749,10 +749,11 @@ def prepare_for_archival(options, cwd):
 def isolate_and_archive(options, cwd, isolate_server, namespace):
   """Isolates and uploads isolated tree.
 
-  Uses parsed options object.
+  Returns hash of the *.isolated file on success, None on failure.
   """
   with tools.Profiler('GenerateHashtable'):
     success = False
+    isolated_hash = None
     try:
       complete_state, infiles, isolated_hash = prepare_for_archival(
           options, cwd)
@@ -775,7 +776,7 @@ def isolate_and_archive(options, cwd, isolate_server, namespace):
       # important so no stale swarm job is executed.
       if not success and os.path.isfile(options.isolated):
         os.remove(options.isolated)
-  return success
+  return isolated_hash[0] if success else None
 
 
 def parse_archive_command_line(args, cwd):
@@ -815,9 +816,9 @@ def CMDarchive(parser, args):
   if not file_path.is_url(options.isolate_server):
     parser.error('Not a valid server URL: %s' % options.isolate_server)
   auth.ensure_logged_in(options.isolate_server)
-  success = isolate_and_archive(
+  isolated_hash = isolate_and_archive(
       options, os.getcwd(), options.isolate_server, options.namespace)
-  return int(not success)
+  return int(not isolated_hash)
 
 
 @subcommand.usage('-- GEN_JSON_1 GEN_JSON_2 ...')
@@ -839,6 +840,10 @@ def CMDbatcharchive(parser, args):
   """
   isolateserver.add_isolate_server_options(parser, False)
   auth.add_auth_options(parser)
+  parser.add_option(
+      '--dump-json',
+      metavar='FILE',
+      help='Write isolated hashes of archived trees to this file as JSON')
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options)
@@ -866,13 +871,17 @@ def CMDbatcharchive(parser, args):
 
   # Perform the archival.
   # TODO(vadimsh): Start optimizing this by removing redundant work.
-  failed = False
+  isolated_hashes = {}
   for cwd, opts in work_units:
-    success = isolate_and_archive(
+    target_name = os.path.splitext(os.path.basename(opts.isolated))[0]
+    isolated_hashes[target_name] = isolate_and_archive(
         opts, cwd, options.isolate_server, options.namespace)
-    failed = failed or not success
 
-  return int(failed)
+  if options.dump_json:
+    tools.write_json(options.dump_json, isolated_hashes, False)
+
+  # 'isolate_and_archive' returns None on failure. At least one None -> failure.
+  return int(not all(isolated_hashes.itervalues()))
 
 
 def CMDcheck(parser, args):

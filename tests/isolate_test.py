@@ -1254,6 +1254,7 @@ class IsolateCommand(IsolateBase):
     self.mock(sys, 'stdout', cStringIO.StringIO())
     cmd = [
       '--isolate-server', 'http://localhost:1',
+      '--dump-json', 'json_output.json',
       os.path.join(self.cwd, 'x.isolated.gen.json'),
       os.path.join(self.cwd, 'y.isolated.gen.json'),
     ]
@@ -1299,6 +1300,12 @@ class IsolateCommand(IsolateBase):
     actual[1]['infiles']['bar'].pop('m')
     actual[1]['infiles']['bar'].pop('t')
     self.assertEqual(expected, actual)
+
+    expected_json = {
+      'x': isolated_format.hash_file('x.isolated', ALGO),
+      'y': isolated_format.hash_file('y.isolated', ALGO),
+    }
+    self.assertEqual(expected_json, tools.read_json('json_output.json'))
 
   def test_CMDcheck_empty(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
