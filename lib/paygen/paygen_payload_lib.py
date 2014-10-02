@@ -17,6 +17,7 @@ import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_image
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib.paygen import dryrun_lib
@@ -220,11 +221,42 @@ class _PaygenPayload(object):
 
     return arg_list
 
+  def _PatchKernel(self, image_file):
+    """Copy kernel A into kernel B and patch it if B is currently empty.
+
+    If there's no kernel in slot B, this is an old style image and needs to
+    be updated. We do that by copying the kernel in slot A into slot B, and
+    then patching it with the normally signed vblock in the stateful partition.
+
+    Args:
+      image_file: The image file which may have a kernel which needs to be
+      patched.
+    """
+    with cros_image.LoopbackPartitions(image_file,
+                                       util_path=self.generator_dir) as lb:
+      cros_build_lib.SudoRunCommand(['chmod', 'a+r', lb.parts[4]])
+      with open(lb.parts[4]) as kern_b:
+        start = kern_b.read(65536)
+        if any(byte != '\0' for byte in start):
+          return
+
+      logging.info('%s: Kernel B is empty, patching kernel A.', image_file)
+      cros_build_lib.SudoRunCommand(['dd', 'if=%s' % lb.parts[2],
+                                     'of=%s' % lb.parts[4]])
+      with osutils.TempDir(prefix='paygen_payload.') as mp:
+        osutils.MountDir(lb.parts[1], mp)
+        try:
+          vblock_path = os.path.join(mp, 'vmlinuz_hd.vblock')
+          cros_build_lib.SudoRunCommand(['dd', 'if=%s' % vblock_path,
+                                         'of=%s' % lb.parts[4], 'conv=notrunc'])
+        finally:
+          osutils.UmountDir(mp, lazy=False, cleanup=False)
+
   def _PrepareImage(self, image, image_file):
     """Download an prepare an image for delta generation.
 
-    Preparation includes downloading, extracting and converting the image into
-    an on-disk format, as necessary.
+    Preparation includes downloading, extracting and copying/patch the kernel
+    in slot A into slot B as necessary.
 
     Args:
       image: an object representing the image we're processing
@@ -235,35 +267,32 @@ class _PaygenPayload(object):
 
     # Figure out what we're downloading and how to handle it.
     image_handling_by_type = {
-        'signed': (None, True),
-        'test': (self.TEST_IMAGE_NAME, False),
-        'recovery': (self.RECOVERY_IMAGE_NAME, True),
+        'signed': None,
+        'test': self.TEST_IMAGE_NAME,
+        'recovery': self.RECOVERY_IMAGE_NAME,
     }
-    extract_file, _ = image_handling_by_type[image.get('image_type', 'signed')]
+    extract_file = image_handling_by_type[image.get('image_type', 'signed')]
 
-    # Are we donwloading an archive that contains the image?
+    # Are we downloading an archive that contains the image?
     if extract_file:
       # Archive will be downloaded to a temporary location.
       with tempfile.NamedTemporaryFile(
-          prefix='image-archive-', suffix='.tar.xz', dir=self.work_dir,
-          delete=False) as temp_file:
-        download_file = temp_file.name
+          prefix='image-archive-', suffix='.tar.xz',
+          dir=self.work_dir) as temp_file:
+
+        # Download the image file or archive.
+        self.cache.GetFileCopy(image.uri, temp_file.name)
+
+        cros_build_lib.RunCommand(
+            ['tar', '-xJf', temp_file.name, extract_file], cwd=self.work_dir)
+
+        # Rename it into the desired image name.
+        shutil.move(os.path.join(self.work_dir, extract_file), image_file)
     else:
-      download_file = image_file
+      # Download the image file or archive.
+      self.cache.GetFileCopy(image.uri, image_file)
 
-    # Download the image file or archive.
-    self.cache.GetFileCopy(image.uri, download_file)
-
-    # If we downloaded an archive, extract the image file from it.
-    if extract_file:
-      cmd = ['tar', '-xJf', download_file, extract_file]
-      cros_build_lib.RunCommand(cmd, cwd=self.work_dir)
-
-      # Rename it into the desired image name.
-      shutil.move(os.path.join(self.work_dir, extract_file), image_file)
-
-      # It's safe to delete the archive at this point.
-      os.remove(download_file)
+    self._PatchKernel(image_file)
 
   def _GenerateUnsignedPayload(self):
     """Generate the unsigned delta into self.payload_file."""
