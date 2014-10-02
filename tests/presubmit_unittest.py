@@ -1189,9 +1189,9 @@ class InputApiUnittest(PresubmitTestsBase):
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cpplint', 'cStringIO', 'canned_checks', 'change',
       'environ', 'glob', 'host_url', 'is_committing', 'json', 'logging',
-      'marshal', 'os_listdir', 'os_walk', 'os_path', 'owners_db', 'pickle',
-      'platform', 'python_executable', 're', 'rietveld', 'subprocess', 'tbr',
-      'tempfile', 'time', 'traceback', 'unittest', 'urllib2', 'version',
+      'marshal', 'os_listdir', 'os_walk', 'os_path', 'os_stat', 'owners_db',
+      'pickle', 'platform', 'python_executable', 're', 'rietveld', 'subprocess',
+      'tbr', 'tempfile', 'time', 'traceback', 'unittest', 'urllib2', 'version',
       'verbose',
     ]
     # If this test fails, you should add the relevant test.
