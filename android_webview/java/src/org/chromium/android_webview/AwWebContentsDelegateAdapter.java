@@ -147,6 +147,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         final Handler handler = new Handler(ThreadUtils.getUiThreadLooper()) {
             @Override
             public void handleMessage(Message msg) {
+                if (contentViewCore.getWebContents() == null) return;
+
                 switch(msg.what) {
                     case msgContinuePendingReload: {
                         contentViewCore.getWebContents().getNavigationController()
