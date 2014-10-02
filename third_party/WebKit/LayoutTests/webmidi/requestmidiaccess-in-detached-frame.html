@@ -13,19 +13,16 @@ document.body.appendChild(iframe);
 contentNavigator = iframe.contentWindow.navigator;
 document.body.removeChild(iframe);
 
-// set testRunner configuration so that requestMIDIAccess returns "InvalidStateError".
+// set testRunner configuration so that requestMIDIAccess returns "AbortError".
 contentNavigator.requestMIDIAccess().then(function() {
     testFailed("requestMIDIAccess() does not fail unexpectedly.");
     finishJSTest();
-}, function() {
-    errorName = error.name;
-    shouldBe("errorName", "'InvalidStateError'");
+}, function(error) {
+    window.errorName = error.name;
+    shouldBeEqualToString("errorName", 'AbortError');
     testPassed("requestMIDIAccess() fail as expected.");
     finishJSTest();
 });
-// FIXME: errorCallback should be called, but due to the Blink Promise impelementation the
-// returned Promise never be resolved nor rejected.
-finishJSTest();
 
 </script>
 </body>

@@ -20,8 +20,10 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     , m_isPromiseCalled(false)
 #endif
 {
-    if (executionContext()->activeDOMObjectsAreStopped())
+    if (executionContext()->activeDOMObjectsAreStopped()) {
         m_state = ResolvedOrRejected;
+        m_resolver.clear();
+    }
 }
 
 void ScriptPromiseResolver::suspend()
