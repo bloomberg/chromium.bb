@@ -1314,7 +1314,7 @@ TEST_PPAPI_OUT_OF_PROCESS(PDF)
 #else
 #define MAYBE_FlashDRM FlashDRM
 #endif
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashDRM) {
   RunTest(
 #if (defined(OS_WIN) && defined(ENABLE_RLZ)) || defined(OS_CHROMEOS)
           // Only implemented on Windows and ChromeOS currently.

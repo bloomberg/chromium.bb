@@ -660,7 +660,15 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
 
 // Test that an input field is not rendered with the yellow autofilled
 // background color when choosing an option from the datalist suggestion list.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnSelectOptionFromDatalist) {
+#if defined(OS_MACOSX)
+// Flakily triggers and assert on Mac.
+// http://crbug.com/419868
+#define MAYBE_OnSelectOptionFromDatalist DISABLED_OnSelectOptionFromDatalist
+#else
+#define MAYBE_OnSelectOptionFromDatalist OnSelectOptionFromDatalist
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       MAYBE_OnSelectOptionFromDatalist) {
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(),
