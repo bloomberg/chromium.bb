@@ -64,6 +64,8 @@ base::FilePath SourceFile::Resolve(const base::FilePath& source_root) const {
   }
 
   converted.assign(&value_[2], value_.size() - 2);
+  if (source_root.empty())
+    return UTF8ToFilePath(converted).NormalizePathSeparatorsTo('/');
   return source_root.Append(UTF8ToFilePath(converted))
       .NormalizePathSeparatorsTo('/');
 }

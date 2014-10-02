@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "tools/gn/commands.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parser.h"
 #include "tools/gn/scheduler.h"
@@ -17,20 +18,31 @@
 namespace commands {
 
 const char kSwitchDumpTree[] = "dump-tree";
+const char kSwitchInPlace[] = "in-place";
 
 const char kFormat[] = "format";
 const char kFormat_HelpShort[] =
-    "format: Format .gn file.";
+    "format: Format .gn file. (ALPHA, WILL DESTROY DATA!)";
 const char kFormat_Help[] =
-    "gn format: Format .gn file. (ALPHA, WILL CURRENTLY DESTROY DATA!)\n"
-    "\n"
-    "  gn format //some/BUILD.gn\n"
-    "  gn format some\\BUILD.gn\n"
+    "gn format [--dump-tree] [--in-place] BUILD.gn\n"
     "\n"
     "  Formats .gn file to a standard format. THIS IS NOT FULLY IMPLEMENTED\n"
     "  YET! IT WILL EAT YOUR BEAUTIFUL .GN FILES. AND YOUR LAUNDRY.\n"
     "  At a minimum, make sure everything is `git commit`d so you can\n"
-    "  `git checkout -f` to recover.\n";
+    "  `git checkout -f` to recover.\n"
+    "\n"
+    "Arguments\n"
+    "  --dump-tree\n"
+    "      For debugging only, dumps the parse tree.\n"
+    "\n"
+    "  --in-place\n"
+    "      Instead writing the formatted file to stdout, replace the input\n"
+    "      with the formatted output.\n"
+    "\n"
+    "Examples\n"
+    "  gn format //some/BUILD.gn\n"
+    "  gn format some\\BUILD.gn\n"
+    "  gn format /abspath/some/BUILD.gn\n";
 
 namespace {
 
@@ -490,15 +502,14 @@ void Printer::Sequence(SequenceStyle style,
 
 }  // namespace
 
-bool FormatFileToString(const std::string& input_filename,
+bool FormatFileToString(Setup* setup,
+                        const SourceFile& file,
                         bool dump_tree,
                         std::string* output) {
-  Setup setup;
   Err err;
-  SourceFile input_file(input_filename);
   const ParseNode* parse_node =
-      setup.scheduler().input_file_manager()->SyncLoadFile(
-          LocationRange(), &setup.build_settings(), input_file, &err);
+      setup->scheduler().input_file_manager()->SyncLoadFile(
+          LocationRange(), &setup->build_settings(), file, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return false;
@@ -532,13 +543,16 @@ int RunFormat(const std::vector<std::string>& args) {
   bool dump_tree =
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchDumpTree);
 
-  std::string input_name = args[0];
-  if (input_name[0] != '/') {
-    std::replace(input_name.begin(), input_name.end(), '\\', '/');
-    input_name = "//" + input_name;
-  }
+  Setup setup;
+  SourceDir source_dir =
+      SourceDirForCurrentDirectory(setup.build_settings().root_path());
+  SourceFile file = source_dir.ResolveRelativeFile(args[0]);
+
   std::string output_string;
-  if (FormatFileToString(input_name, dump_tree, &output_string)) {
+  if (FormatFileToString(&setup, file, dump_tree, &output_string)) {
+    bool in_place =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
+    CHECK(!in_place) << "TODO(scottmg)";
     printf("%s", output_string.c_str());
   }
 

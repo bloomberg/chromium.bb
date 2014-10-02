@@ -6,19 +6,25 @@
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/commands.h"
+#include "tools/gn/setup.h"
 
 namespace commands {
-bool FormatFileToString(const std::string& input_filename,
+bool FormatFileToString(Setup* setup,
+                        const SourceFile& file,
                         bool dump_tree,
                         std::string* output);
 }  // namespace commands
 
 #define FORMAT_TEST(n)                                                 \
   TEST(Format, n) {                                                    \
+    ::Setup setup;                                                     \
     std::string out;                                                   \
     std::string expected;                                              \
     EXPECT_TRUE(commands::FormatFileToString(                          \
-        "//tools/gn/format_test_data/" #n ".gn", false, &out));        \
+        &setup,                                                        \
+        SourceFile("//tools/gn/format_test_data/" #n ".gn"),           \
+        false,                                                         \
+        &out));                                                        \
     ASSERT_TRUE(base::ReadFileToString(                                \
         base::FilePath(FILE_PATH_LITERAL("tools/gn/format_test_data/") \
                            FILE_PATH_LITERAL(#n)                       \
