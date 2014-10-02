@@ -270,18 +270,6 @@ class BrowserAddedObserver {
 bool TakeEntirePageSnapshot(content::RenderViewHost* rvh,
                             SkBitmap* bitmap) WARN_UNUSED_RESULT;
 
-#if defined(OS_WIN)
-// Saves a snapshot of the entire screen to a file named
-// ChromiumSnapshotYYYYMMDDHHMMSS.png to |directory|, returning true on success.
-// The path to the file produced is returned in |screenshot_path| if non-NULL.
-bool SaveScreenSnapshotToDirectory(const base::FilePath& directory,
-                                   base::FilePath* screenshot_path);
-
-// Saves a snapshot of the entire screen as above to the current user's desktop.
-// The Chrome path provider must be registered prior to calling this function.
-bool SaveScreenSnapshotToDesktop(base::FilePath* screenshot_path);
-#endif
-
 // Configures the geolocation provider to always return the given position.
 void OverrideGeolocation(double latitude, double longitude);
 

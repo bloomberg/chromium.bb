@@ -1811,9 +1811,6 @@
           ],
         }],
         ['OS=="win"', {
-          'dependencies': [
-            '../ui/snapshot/snapshot.gyp:snapshot_test_support',
-          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],

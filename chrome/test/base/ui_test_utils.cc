@@ -77,7 +77,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
-#include "ui/snapshot/test/snapshot_desktop.h"
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
@@ -97,33 +96,6 @@ using content::WebContents;
 namespace ui_test_utils {
 
 namespace {
-
-#if defined(OS_WIN)
-const char kSnapshotBaseName[] = "ChromiumSnapshot";
-const char kSnapshotExtension[] = ".png";
-
-base::FilePath GetSnapshotFileName(const base::FilePath& snapshot_directory) {
-  base::Time::Exploded the_time;
-
-  base::Time::Now().LocalExplode(&the_time);
-  std::string filename(base::StringPrintf("%s%04d%02d%02d%02d%02d%02d%s",
-      kSnapshotBaseName, the_time.year, the_time.month, the_time.day_of_month,
-      the_time.hour, the_time.minute, the_time.second, kSnapshotExtension));
-
-  base::FilePath snapshot_file = snapshot_directory.AppendASCII(filename);
-  if (base::PathExists(snapshot_file)) {
-    int index = 0;
-    std::string suffix;
-    base::FilePath trial_file;
-    do {
-      suffix = base::StringPrintf(" (%d)", ++index);
-      trial_file = snapshot_file.InsertBeforeExtensionASCII(suffix);
-    } while (base::PathExists(trial_file));
-    snapshot_file = trial_file;
-  }
-  return snapshot_file;
-}
-#endif  // defined(OS_WIN)
 
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
@@ -504,46 +476,6 @@ Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
   EXPECT_EQ(original_browsers_.size() + 1, chrome::GetTotalBrowserCount());
   return GetBrowserNotInSet(original_browsers_);
 }
-
-#if defined(OS_WIN)
-
-bool SaveScreenSnapshotToDirectory(const base::FilePath& directory,
-                                   base::FilePath* screenshot_path) {
-  bool succeeded = false;
-  base::FilePath out_path(GetSnapshotFileName(directory));
-
-  MONITORINFO monitor_info = {};
-  monitor_info.cbSize = sizeof(monitor_info);
-  HMONITOR main_monitor = MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
-  if (GetMonitorInfo(main_monitor, &monitor_info)) {
-    RECT& rect = monitor_info.rcMonitor;
-
-    std::vector<unsigned char> png_data;
-    gfx::Rect bounds(
-        gfx::Size(rect.right - rect.left, rect.bottom - rect.top));
-    if (ui::GrabDesktopSnapshot(bounds, &png_data) &&
-        png_data.size() <= INT_MAX) {
-      int bytes = static_cast<int>(png_data.size());
-      int written = base::WriteFile(
-          out_path, reinterpret_cast<char*>(&png_data[0]), bytes);
-      succeeded = (written == bytes);
-    }
-  }
-
-  if (succeeded && screenshot_path != NULL)
-    *screenshot_path = out_path;
-
-  return succeeded;
-}
-
-bool SaveScreenSnapshotToDesktop(base::FilePath* screenshot_path) {
-  base::FilePath desktop;
-
-  return PathService::Get(base::DIR_USER_DESKTOP, &desktop) &&
-      SaveScreenSnapshotToDirectory(desktop, screenshot_path);
-}
-
-#endif  // defined(OS_WIN)
 
 void OverrideGeolocation(double latitude, double longitude) {
   content::Geoposition position;
