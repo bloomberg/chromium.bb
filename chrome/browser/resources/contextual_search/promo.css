@@ -24,7 +24,7 @@ a.colored-link {
 }
 
 #button-container {
-  text-align: right;
+  text-align: end;
   width: 100%;
 }
 
@@ -41,17 +41,42 @@ a.colored-link {
   margin: 24px 16px 4px 16px;
 }
 
+/* Some properties below can be overridden in landscape orientation. */
 #heading {
   font-size: 24px;
   letter-spacing: 1px;
   margin-top: 0;
   text-align: center;
 }
-
 #header-image {
-  display: block;
   height: 100px;
   margin: 0 auto 24px auto;
+}
+.portrait {
+  display: block;
+}
+.landscape {
+  display: none;
+}
+
+/* Landscape */
+@media screen and (orientation:landscape) {
+  #heading {
+    padding-top: 16px;
+  }
+  #header-image {
+    margin: 0 24px;
+  }
+  .portrait {
+    display: none;
+  }
+  .landscape {
+    display: block;
+    float: left;
+  }
+  html[dir='rtl'] .landscape {
+    float: right;
+  }
 }
 
 .label {
