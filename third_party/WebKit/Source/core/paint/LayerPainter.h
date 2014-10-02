@@ -10,8 +10,6 @@
 
 namespace blink {
 
-enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
-
 class ClipRect;
 struct PaintInfo;
 class LayoutPoint;
@@ -53,6 +51,8 @@ private:
     void paintTransformedLayerIntoFragments(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
+    enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
+
     void clipToRect(const LayerPaintingInfo&, GraphicsContext*, const ClipRect&, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
     void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
 
@@ -60,7 +60,6 @@ private:
     // layers).
     bool shouldPaintLayerInSoftwareMode(const LayerPaintingInfo&, PaintLayerFlags paintFlags);
 
-private:
     RenderLayer& m_renderLayer;
 };
 

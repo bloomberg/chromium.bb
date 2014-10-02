@@ -9,7 +9,6 @@
 #include "core/page/Page.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
-#include "core/rendering/LayerFragment.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
