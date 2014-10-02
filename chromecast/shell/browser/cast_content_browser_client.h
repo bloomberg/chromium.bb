@@ -50,6 +50,12 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       bool expired_previous_decision,
       const base::Callback<void(bool)>& callback,
       content::CertificateRequestResultType* result) OVERRIDE;
+  virtual void SelectClientCertificate(
+      int render_process_id,
+      int render_frame_id,
+      const net::HttpNetworkSession* network_session,
+      net::SSLCertRequestInfo* cert_request_info,
+      const base::Callback<void(net::X509Certificate*)>& callback) OVERRIDE;
   virtual bool CanCreateWindow(
       const GURL& opener_url,
       const GURL& opener_top_level_frame_url,
@@ -73,6 +79,9 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       content::FileDescriptorInfo* mappings) OVERRIDE;
 
  private:
+  net::X509Certificate* SelectClientCertificateOnIOThread(
+      GURL requesting_url);
+
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);

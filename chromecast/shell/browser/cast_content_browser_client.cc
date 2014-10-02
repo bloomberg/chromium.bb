@@ -13,6 +13,7 @@
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
 #include "chromecast/shell/browser/cast_browser_process.h"
+#include "chromecast/shell/browser/cast_network_delegate.h"
 #include "chromecast/shell/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/shell/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
@@ -23,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 namespace chromecast {
 namespace shell {
@@ -132,6 +134,54 @@ void CastContentBrowserClient::AllowCertificateError(
   // Otherwise, any fatal certificate errors will cause an abort.
   *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
   return;
+}
+
+void CastContentBrowserClient::SelectClientCertificate(
+    int render_process_id,
+    int render_view_id,
+    const net::HttpNetworkSession* network_session,
+    net::SSLCertRequestInfo* cert_request_info,
+    const base::Callback<void(net::X509Certificate*)>& callback) {
+  GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
+
+  if (!requesting_url.is_valid()) {
+    LOG(ERROR) << "Invalid URL string: "
+               << requesting_url.possibly_invalid_spec();
+    callback.Run(NULL);
+    return;
+  }
+
+  // In our case there are no relevant certs in the cert_request_info. The cert
+  // we need to return (if permitted) is the Cast device cert, which we can
+  // access directly through the ClientAuthSigner instance. However, we need to
+  // be on the IO thread to determine whether the app is whitelisted to return
+  // it, because CastNetworkDelegate is bound to the IO thread.
+  // Subsequently, the callback must then itself be performed back here
+  // on the UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &CastContentBrowserClient::SelectClientCertificateOnIOThread,
+          base::Unretained(this),
+          requesting_url),
+      callback);
+}
+
+net::X509Certificate*
+CastContentBrowserClient::SelectClientCertificateOnIOThread(
+    GURL requesting_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  CastNetworkDelegate* network_delegate =
+      url_request_context_factory_->app_network_delegate();
+  if (network_delegate->IsWhitelisted(requesting_url, false)) {
+    return CastNetworkDelegate::DeviceCert();
+  } else {
+    LOG(ERROR) << "Invalid host for client certificate request: "
+               << requesting_url.host();
+    return NULL;
+  }
 }
 
 bool CastContentBrowserClient::CanCreateWindow(
