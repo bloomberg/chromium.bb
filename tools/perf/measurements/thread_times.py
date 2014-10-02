@@ -22,7 +22,7 @@ class ThreadTimes(page_test.PageTest):
     self._timeline_controller = timeline_controller.TimelineController()
     if self.options.report_silk_details:
       # We need the other traces in order to have any details to report.
-      self.timeline_controller.trace_categories = None
+      self._timeline_controller.trace_categories = None
     else:
       self._timeline_controller.trace_categories = \
           tracing_category_filter.CreateNoOverheadFilter().filter_string
