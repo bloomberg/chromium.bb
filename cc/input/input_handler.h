@@ -123,11 +123,6 @@ class CC_EXPORT InputHandler {
                                   const gfx::Point& anchor) = 0;
   virtual void PinchGestureEnd() = 0;
 
-  virtual void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
-                                       bool anchor_point,
-                                       float page_scale,
-                                       base::TimeDelta duration) = 0;
-
   // Request another callback to InputHandlerClient::Animate().
   virtual void SetNeedsAnimate() = 0;
 

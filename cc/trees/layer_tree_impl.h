@@ -48,6 +48,7 @@ class LayerTreeImpl;
 class LayerTreeSettings;
 class MemoryHistory;
 class OutputSurface;
+class PageScaleAnimation;
 class PaintTimeCounter;
 class PictureLayerImpl;
 class Proxy;
@@ -321,6 +322,13 @@ class CC_EXPORT LayerTreeImpl {
     return top_controls_content_offset_ + top_controls_delta_;
   }
 
+  void SetPageScaleAnimation(
+      const gfx::Vector2d& target_offset,
+      bool anchor_point,
+      float page_scale,
+      base::TimeDelta duration);
+  scoped_ptr<PageScaleAnimation> TakePageScaleAnimation();
+
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
   void ReleaseResourcesRecursive(LayerImpl* current);
@@ -391,6 +399,8 @@ class CC_EXPORT LayerTreeImpl {
   float top_controls_content_offset_;
   float top_controls_delta_;
   float sent_top_controls_delta_;
+
+  scoped_ptr<PageScaleAnimation> page_scale_animation_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

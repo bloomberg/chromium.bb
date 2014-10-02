@@ -13,6 +13,7 @@
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/math_util.h"
+#include "cc/input/page_scale_animation.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/delegated_renderer_layer_impl.h"
@@ -1154,7 +1155,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
     did_request_redraw_ = false;
     did_request_animate_ = false;
-    host_impl_->StartPageScaleAnimation(gfx::Vector2d(), false, 2.f, duration);
+    host_impl_->active_tree()->SetPageScaleAnimation(
+        gfx::Vector2d(),
+        false,
+        2.f,
+        duration);
+    host_impl_->ActivateSyncTree();
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_TRUE(did_request_animate_);
 
@@ -1192,8 +1198,9 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
     did_request_redraw_ = false;
     did_request_animate_ = false;
-    host_impl_->StartPageScaleAnimation(
+    host_impl_->active_tree()->SetPageScaleAnimation(
         gfx::Vector2d(25, 25), true, min_page_scale, duration);
+    host_impl_->ActivateSyncTree();
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_TRUE(did_request_animate_);
 
@@ -1242,7 +1249,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
 
-    host_impl_->StartPageScaleAnimation(gfx::Vector2d(), true, 1.f, duration);
+    host_impl_->active_tree()->SetPageScaleAnimation(
+        gfx::Vector2d(),
+        true,
+        1.f,
+        duration);
+    host_impl_->ActivateSyncTree();
     host_impl_->Animate(start_time);
     host_impl_->Animate(halfway_through_animation);
     EXPECT_TRUE(did_request_redraw_);
@@ -1254,6 +1266,91 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
     EXPECT_EQ(scroll_info->page_scale_delta, 1);
     ExpectNone(*scroll_info, scroll_layer->id());
   }
+}
+
+TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
+  host_impl_->CreatePendingTree();
+  CreateScrollAndContentsLayers(
+      host_impl_->pending_tree(),
+      gfx::Size(100, 100));
+  host_impl_->ActivateSyncTree();
+  DrawFrame();
+
+  LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
+  DCHECK(scroll_layer);
+
+  float min_page_scale = 0.5f;
+  float max_page_scale = 4.f;
+  host_impl_->sync_tree()->SetPageScaleFactorAndLimits(1.f,
+                                                       min_page_scale,
+                                                       max_page_scale);
+  host_impl_->ActivateSyncTree();
+
+  base::TimeTicks start_time = base::TimeTicks() +
+                               base::TimeDelta::FromSeconds(1);
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+  base::TimeTicks halfway_through_animation = start_time + duration / 2;
+  base::TimeTicks end_time = start_time + duration;
+  float target_scale = 2.f;
+
+  scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
+
+  // Make sure TakePageScaleAnimation works properly.
+  host_impl_->sync_tree()->SetPageScaleAnimation(
+      gfx::Vector2d(),
+      false,
+      target_scale,
+      duration);
+  scoped_ptr<PageScaleAnimation> psa =
+      host_impl_->sync_tree()->TakePageScaleAnimation();
+  EXPECT_EQ(target_scale, psa->target_page_scale_factor());
+  EXPECT_EQ(duration, psa->duration());
+  EXPECT_EQ(nullptr, host_impl_->sync_tree()->TakePageScaleAnimation());
+
+  // Recreate the PSA. Nothing should happen here since the tree containing the
+  // PSA hasn't been activated yet.
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  host_impl_->sync_tree()->SetPageScaleAnimation(
+      gfx::Vector2d(),
+      false,
+      target_scale,
+      duration);
+  host_impl_->Animate(halfway_through_animation);
+  EXPECT_FALSE(did_request_animate_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // Activate the sync tree. This should cause the animation to become enabled.
+  // It should also clear the pointer on the sync tree.
+  host_impl_->ActivateSyncTree();
+  EXPECT_EQ(nullptr, host_impl_->sync_tree()->TakePageScaleAnimation().get());
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_TRUE(did_request_animate_);
+
+  // From here on, make sure the animation runs as normal.
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  host_impl_->Animate(start_time);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_TRUE(did_request_animate_);
+
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  host_impl_->Animate(halfway_through_animation);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_TRUE(did_request_animate_);
+
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  did_request_commit_ = false;
+  host_impl_->Animate(end_time);
+  EXPECT_TRUE(did_request_commit_);
+  EXPECT_FALSE(did_request_animate_);
+
+  scoped_ptr<ScrollAndScaleSet> scroll_info =
+      host_impl_->ProcessScrollDeltas();
+  EXPECT_EQ(scroll_info->page_scale_delta, target_scale);
+  ExpectContains(*scroll_info, scroll_layer->id(), gfx::Vector2d(-50, -50));
 }
 
 class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "cc/base/cc_export.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -23,7 +24,7 @@ class TimingFunction;
 //
 // All sizes and vectors in this class's public methods are in the root scroll
 // layer's coordinate space.
-class PageScaleAnimation {
+class CC_EXPORT PageScaleAnimation {
  public:
   // Construct with the state at the beginning of the animation.
   static scoped_ptr<PageScaleAnimation> Create(

@@ -17,6 +17,7 @@
 #include "cc/base/util.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
+#include "cc/input/page_scale_animation.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_iterator.h"
@@ -218,6 +219,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
       page_scale_factor(), min_page_scale_factor(), max_page_scale_factor(),
       target_tree->page_scale_delta() / target_tree->sent_page_scale_delta());
   target_tree->set_sent_page_scale_delta(1);
+
+  target_tree->page_scale_animation_ = page_scale_animation_.Pass();
 
   if (page_scale_layer_ && inner_viewport_scroll_layer_) {
     target_tree->SetViewportLayersFromIds(
@@ -1456,6 +1459,47 @@ void LayerTreeImpl::InputScrollAnimationFinished() {
 
 BlockingTaskRunner* LayerTreeImpl::BlockingMainThreadTaskRunner() const {
   return proxy()->blocking_main_thread_task_runner();
+}
+
+void LayerTreeImpl::SetPageScaleAnimation(
+    const gfx::Vector2d& target_offset,
+    bool anchor_point,
+    float page_scale,
+    base::TimeDelta duration) {
+  if (!InnerViewportScrollLayer())
+    return;
+
+  gfx::ScrollOffset scroll_total = TotalScrollOffset();
+  gfx::SizeF scaled_scrollable_size = ScrollableSize();
+  gfx::SizeF viewport_size = InnerViewportContainerLayer()->bounds();
+
+  // Easing constants experimentally determined.
+  scoped_ptr<TimingFunction> timing_function =
+      CubicBezierTimingFunction::Create(.8, 0, .3, .9);
+
+  // TODO(miletus) : Pass in ScrollOffset.
+  page_scale_animation_ =
+      PageScaleAnimation::Create(ScrollOffsetToVector2dF(scroll_total),
+                                 total_page_scale_factor(),
+                                 viewport_size,
+                                 scaled_scrollable_size,
+                                 timing_function.Pass());
+
+  if (anchor_point) {
+    gfx::Vector2dF anchor(target_offset);
+    page_scale_animation_->ZoomWithAnchor(anchor,
+                                          page_scale,
+                                          duration.InSecondsF());
+  } else {
+    gfx::Vector2dF scaled_target_offset = target_offset;
+    page_scale_animation_->ZoomTo(scaled_target_offset,
+                                  page_scale,
+                                  duration.InSecondsF());
+  }
+}
+
+scoped_ptr<PageScaleAnimation> LayerTreeImpl::TakePageScaleAnimation() {
+  return page_scale_animation_.Pass();
 }
 
 }  // namespace cc
