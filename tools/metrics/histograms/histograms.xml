@@ -33084,10 +33084,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SSL.InsecureContent" enum="InsecureContentType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>lgarron@chromium.org</owner>
   <summary>
-    Keeps track of various insecure content events, such as loading http script
-    from an https page.
+    Keeps track of various insecure content events, such as loading an HTTP
+    script from an HTTPS page.
   </summary>
 </histogram>
 
@@ -44653,6 +44653,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="21" label="Ran by sites.google.com"/>
   <int value="22" label="Displayed by picasaweb.google.com"/>
   <int value="23" label="Ran by picasaweb.google.com"/>
+  <int value="24" label="Displayed by google.com/reader/"/>
+  <int value="25" label="Ran by google.com/reader/"/>
+  <int value="26" label="Displayed by code.google.com"/>
+  <int value="27" label="Ran by code.google.com"/>
+  <int value="28" label="Displayed by groups.google.com"/>
+  <int value="29" label="Ran by groups.google.com"/>
+  <int value="30" label="Displayed by maps.google.com"/>
+  <int value="31" label="Ran by maps.google.com"/>
+  <int value="32" label="Displayed by google.com/support/"/>
+  <int value="33" label="Ran by google.com/support/"/>
+  <int value="34" label="Displayed by google.com/intl/"/>
+  <int value="35" label="Ran by google.com/intl/"/>
 </enum>
 
 <enum name="InstantControllerEvent" type="int">
