@@ -5,69 +5,88 @@
 #include "content/browser/renderer_host/input/gesture_text_selector.h"
 
 #include "ui/events/event_constants.h"
-#include "ui/events/gesture_detection/gesture_event_data.h"
+#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
+using ui::GestureDetector;
+using ui::MotionEvent;
+
 namespace content {
+namespace {
+scoped_ptr<GestureDetector> CreateGestureDetector(
+    ui::GestureListener* listener) {
+  GestureDetector::Config config =
+      ui::DefaultGestureProviderConfig().gesture_detector_config;
+
+  ui::DoubleTapListener* null_double_tap_listener = nullptr;
+
+  // Doubletap, showpress and longpress detection are not required, and
+  // should be explicitly disabled for efficiency.
+  scoped_ptr<ui::GestureDetector> detector(
+      new ui::GestureDetector(config, listener, null_double_tap_listener));
+  detector->set_longpress_enabled(false);
+  detector->set_showpress_enabled(false);
+
+  return detector.Pass();
+}
+
+}  // namespace
 
 GestureTextSelector::GestureTextSelector(GestureTextSelectorClient* client)
-    : client_(client),
-      text_selection_triggered_(false),
-      anchor_x_(0.0f),
-      anchor_y_(0.0f) {
+    : client_(client), text_selection_triggered_(false) {
+  DCHECK(client);
 }
 
 GestureTextSelector::~GestureTextSelector() {
 }
 
-bool GestureTextSelector::OnTouchEvent(const ui::MotionEvent& event) {
-  if (event.GetAction() == ui::MotionEvent::ACTION_DOWN) {
+bool GestureTextSelector::OnTouchEvent(const MotionEvent& event) {
+  if (event.GetAction() == MotionEvent::ACTION_DOWN) {
     // Only trigger selection on ACTION_DOWN to prevent partial touch or gesture
     // sequences from being forwarded.
     text_selection_triggered_ = ShouldStartTextSelection(event);
   }
-  return text_selection_triggered_;
-}
 
-bool GestureTextSelector::OnGestureEvent(const ui::GestureEventData& gesture) {
   if (!text_selection_triggered_)
     return false;
 
-  switch (gesture.type()) {
-    case ui::ET_GESTURE_TAP: {
-      client_->LongPress(gesture.time, gesture.x, gesture.y);
-      break;
-    }
-    case ui::ET_GESTURE_SCROLL_BEGIN: {
-      client_->Unselect();
-      anchor_x_ = gesture.x;
-      anchor_y_ = gesture.y;
-      break;
-    }
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
-      // TODO(changwan): check if we can show handles on ET_GESTURE_SCROLL_END
-      // instead. Currently it is not possible as ShowSelectionHandles should
-      // be called before we change the selection.
-      client_->ShowSelectionHandlesAutomatically();
-      client_->SelectRange(anchor_x_, anchor_y_, gesture.x, gesture.y);
-      break;
-    }
-    default:
-      // Suppress all other gestures when we are selecting text.
-      break;
-  }
+  if (!gesture_detector_)
+    gesture_detector_ = CreateGestureDetector(this);
+
+  gesture_detector_->OnTouchEvent(event);
+
+  // Always return true, even if |gesture_detector_| technically doesn't
+  // consume the event, to prevent a partial touch stream from being forwarded.
+  return true;
+}
+
+bool GestureTextSelector::OnSingleTapUp(const MotionEvent& e) {
+  DCHECK(text_selection_triggered_);
+  client_->LongPress(e.GetEventTime(), e.GetX(), e.GetY());
+  return true;
+}
+
+bool GestureTextSelector::OnScroll(const MotionEvent& e1,
+                                   const MotionEvent& e2,
+                                   float distance_x,
+                                   float distance_y) {
+  DCHECK(text_selection_triggered_);
+  // TODO(changwan): check if we can show handles after the scroll finishes
+  // instead. Currently it is not possible as ShowSelectionHandles should
+  // be called before we change the selection.
+  client_->ShowSelectionHandlesAutomatically();
+  client_->SelectRange(e1.GetX(), e1.GetY(), e2.GetX(), e2.GetY());
   return true;
 }
 
 // static
-bool GestureTextSelector::ShouldStartTextSelection(
-    const ui::MotionEvent& event) {
+bool GestureTextSelector::ShouldStartTextSelection(const MotionEvent& event) {
   DCHECK_GT(event.GetPointerCount(), 0u);
   // Currently we are supporting stylus-only cases.
-  const bool is_stylus =
-      event.GetToolType(0) == ui::MotionEvent::TOOL_TYPE_STYLUS;
+  const bool is_stylus = event.GetToolType(0) == MotionEvent::TOOL_TYPE_STYLUS;
   const bool is_only_secondary_button_pressed =
-      event.GetButtonState() == ui::MotionEvent::BUTTON_SECONDARY;
+      event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
   return is_stylus && is_only_secondary_button_pressed;
 }
 

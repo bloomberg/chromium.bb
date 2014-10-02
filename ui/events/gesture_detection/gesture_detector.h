@@ -12,13 +12,15 @@
 
 namespace ui {
 
+class DoubleTapListener;
+class GestureListener;
 class MotionEvent;
 
 // Port of GestureDetector.java from Android
 // * platform/frameworks/base/core/java/android/view/GestureDetector.java
 // * Change-Id: Ib470735ec929b0b358fca4597e92dc81084e675f
 // * Please update the Change-Id as upstream Android changes are pulled.
-class GestureDetector {
+class GESTURE_DETECTION_EXPORT GestureDetector {
  public:
   struct GESTURE_DETECTION_EXPORT Config {
     Config();
@@ -68,71 +70,6 @@ class GestureDetector {
     base::TimeDelta two_finger_tap_timeout;
   };
 
-  class GestureListener {
-   public:
-    virtual ~GestureListener() {}
-    virtual bool OnDown(const MotionEvent& e) = 0;
-    virtual void OnShowPress(const MotionEvent& e) = 0;
-    virtual bool OnSingleTapUp(const MotionEvent& e) = 0;
-    virtual void OnLongPress(const MotionEvent& e) = 0;
-    virtual bool OnScroll(const MotionEvent& e1,
-                          const MotionEvent& e2,
-                          float distance_x,
-                          float distance_y) = 0;
-    virtual bool OnFling(const MotionEvent& e1,
-                         const MotionEvent& e2,
-                         float velocity_x,
-                         float velocity_y) = 0;
-    // Added for Chromium (Aura).
-    virtual bool OnSwipe(const MotionEvent& e1,
-                         const MotionEvent& e2,
-                         float velocity_x,
-                         float velocity_y) = 0;
-    virtual bool OnTwoFingerTap(const MotionEvent& e1,
-                                const MotionEvent& e2) = 0;
-  };
-
-  class DoubleTapListener {
-   public:
-    virtual ~DoubleTapListener() {}
-    virtual bool OnSingleTapConfirmed(const MotionEvent& e) = 0;
-    virtual bool OnDoubleTap(const MotionEvent& e) = 0;
-    virtual bool OnDoubleTapEvent(const MotionEvent& e) = 0;
-  };
-
-  // A convenience class to extend when you only want to listen for a subset
-  // of all the gestures. This implements all methods in the
-  // |GestureListener| and |DoubleTapListener| but does
-  // nothing and returns false for all applicable methods.
-  class SimpleGestureListener : public GestureListener,
-                                public DoubleTapListener {
-   public:
-    // GestureListener implementation.
-    virtual bool OnDown(const MotionEvent& e) OVERRIDE;
-    virtual void OnShowPress(const MotionEvent& e) OVERRIDE;
-    virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE;
-    virtual void OnLongPress(const MotionEvent& e) OVERRIDE;
-    virtual bool OnScroll(const MotionEvent& e1,
-                          const MotionEvent& e2,
-                          float distance_x,
-                          float distance_y) OVERRIDE;
-    virtual bool OnFling(const MotionEvent& e1,
-                         const MotionEvent& e2,
-                         float velocity_x,
-                         float velocity_y) OVERRIDE;
-    virtual bool OnSwipe(const MotionEvent& e1,
-                         const MotionEvent& e2,
-                         float velocity_x,
-                         float velocity_y) OVERRIDE;
-    virtual bool OnTwoFingerTap(const MotionEvent& e1,
-                                const MotionEvent& e2) OVERRIDE;
-
-    // DoubleTapListener implementation.
-    virtual bool OnSingleTapConfirmed(const MotionEvent& e) OVERRIDE;
-    virtual bool OnDoubleTap(const MotionEvent& e) OVERRIDE;
-    virtual bool OnDoubleTapEvent(const MotionEvent& e) OVERRIDE;
-  };
-
   GestureDetector(const Config& config,
                   GestureListener* listener,
                   DoubleTapListener* optional_double_tap_listener);
@@ -150,6 +87,7 @@ class GestureDetector {
   bool is_double_tapping() const { return is_double_tapping_; }
 
   void set_longpress_enabled(bool enabled) { longpress_enabled_ = enabled; }
+  void set_showpress_enabled(bool enabled) { showpress_enabled_ = enabled; }
 
  private:
   void Init(const Config& config);
@@ -200,6 +138,7 @@ class GestureDetector {
   float down_focus_y_;
 
   bool longpress_enabled_;
+  bool showpress_enabled_;
   bool swipe_enabled_;
   bool two_finger_tap_enabled_;
 

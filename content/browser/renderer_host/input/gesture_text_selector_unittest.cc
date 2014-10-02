@@ -10,13 +10,10 @@
 #include "content/browser/renderer_host/input/gesture_text_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/test/mock_motion_event.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-using ui::GestureEventData;
-using ui::GestureEventDetails;
 using ui::MotionEvent;
 using ui::test::MockMotionEvent;
 
@@ -48,32 +45,11 @@ class GestureTextSelectorTest : public testing::Test,
     event_log_.push_back("SelectRange");
   }
 
-  virtual void Unselect() OVERRIDE {
-    event_log_.push_back("Unselect");
-  }
-
   virtual void LongPress(base::TimeTicks time, float x, float y) OVERRIDE {
     event_log_.push_back("LongPress");
   }
 
  protected:
-  static GestureEventData CreateGesture(ui::EventType type,
-                                        base::TimeTicks event_time,
-                                        float x,
-                                        float y) {
-    return GestureEventData(GestureEventDetails(type),
-                            0,
-                            MotionEvent::TOOL_TYPE_FINGER,
-                            event_time,
-                            x,
-                            y,
-                            x,
-                            y,
-                            1,
-                            gfx::RectF(0, 0, 0, 0),
-                            0);
-  }
-
   scoped_ptr<GestureTextSelector> selector_;
   std::vector<std::string> event_log_;
 };
@@ -142,75 +118,9 @@ TEST_F(GestureTextSelectorTest, PenDragging) {
   action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
-  EXPECT_TRUE(event_log_.empty());
-
-  // 3. DOUBLE TAP
-  // Suppress most gesture events when in text selection mode.
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  const GestureEventData double_tap =
-      CreateGesture(ui::ET_GESTURE_DOUBLE_TAP, event_time, x2, y2);
-  EXPECT_TRUE(selector_->OnGestureEvent(double_tap));
-  EXPECT_TRUE(event_log_.empty());
-
-  // 4. ET_GESTURE_SCROLL_BEGIN
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  const GestureEventData scroll_begin =
-      CreateGesture(ui::ET_GESTURE_SCROLL_BEGIN, event_time, x1, y1);
-  EXPECT_TRUE(selector_->OnGestureEvent(scroll_begin));
-  EXPECT_EQ(1u, event_log_.size());  // Unselect
-
-  // 5. ET_GESTURE_SCROLL_UPDATE
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  const GestureEventData scroll_update =
-      CreateGesture(ui::ET_GESTURE_SCROLL_UPDATE, event_time, x2, y2);
-  EXPECT_TRUE(selector_->OnGestureEvent(scroll_update));
-  EXPECT_EQ(3u, event_log_.size());  // Unselect, Show, SelectRange
-  EXPECT_STREQ("SelectRange", event_log_.back().c_str());
-
-  // 6. ACTION_UP
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x2, y2);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
-  action_up.set_button_state(0);
-  EXPECT_TRUE(selector_->OnTouchEvent(action_up));
-  EXPECT_EQ(3u, event_log_.size());  // NO CHANGE
-
-  // 7. ET_GESTURE_SCROLL_END
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  const GestureEventData scroll_end =
-      CreateGesture(ui::ET_GESTURE_SCROLL_END, event_time, x2, y2);
-  EXPECT_TRUE(selector_->OnGestureEvent(scroll_end));
-  EXPECT_EQ(3u, event_log_.size());  // NO CHANGE
-}
-
-TEST_F(GestureTextSelectorTest, TapToSelectWord) {
-  base::TimeTicks event_time = base::TimeTicks::Now();
-  const float x1 = 50.0f;
-  const float y1 = 30.0f;
-  const float x2 = 51.0f;
-  const float y2 = 31.0f;
-  // 1. ACTION_DOWN with stylus + button
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
-  action_down.set_button_state(MotionEvent::BUTTON_SECONDARY);
-  EXPECT_TRUE(selector_->OnTouchEvent(action_down));
-  EXPECT_TRUE(event_log_.empty());
-
-  // 5. TAP_DOWN
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  const GestureEventData tap_down =
-      CreateGesture(ui::ET_GESTURE_TAP_DOWN, event_time, x2, y2);
-  EXPECT_TRUE(selector_->OnGestureEvent(tap_down));
-  EXPECT_TRUE(event_log_.empty());
-
-  // 2. ACTION_MOVE
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
-  action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
-  EXPECT_TRUE(selector_->OnTouchEvent(action_move));
-  EXPECT_TRUE(event_log_.empty());
+  ASSERT_EQ(2u, event_log_.size());
+  EXPECT_STREQ("Show", event_log_[0].c_str());
+  EXPECT_STREQ("SelectRange", event_log_[1].c_str());
 
   // 3. ACTION_UP
   event_time += base::TimeDelta::FromMilliseconds(10);
@@ -218,14 +128,38 @@ TEST_F(GestureTextSelectorTest, TapToSelectWord) {
   action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
+  ASSERT_EQ(2u, event_log_.size());  // NO CHANGE
+}
+
+TEST_F(GestureTextSelectorTest, TapTriggersLongPressSelection) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float x1 = 50.0f;
+  const float y1 = 30.0f;
+  const float x2 = 51.0f;
+  const float y2 = 31.0f;
+  // 1. ACTION_DOWN with stylus + button
+  event_time += base::TimeDelta::FromMilliseconds(1);
+  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
+  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_down.set_button_state(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 4. TAP
-  event_time += base::TimeDelta::FromMilliseconds(10);
-  const GestureEventData tap =
-      CreateGesture(ui::ET_GESTURE_TAP, event_time, x1, y1);
-  EXPECT_TRUE(selector_->OnGestureEvent(tap));
-  EXPECT_EQ(1u, event_log_.size());  // LongPress
+  // 2. ACTION_MOVE
+  event_time += base::TimeDelta::FromMilliseconds(1);
+  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
+  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_move));
+  EXPECT_TRUE(event_log_.empty());
+
+  // 3. ACTION_UP
+  event_time += base::TimeDelta::FromMilliseconds(1);
+  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x2, y2);
+  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_up.set_button_state(0);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_up));
+  ASSERT_EQ(1u, event_log_.size());
   EXPECT_STREQ("LongPress", event_log_.back().c_str());
 }
 

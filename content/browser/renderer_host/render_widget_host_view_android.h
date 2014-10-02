@@ -205,7 +205,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // GestureTextSelectorClient implementation.
   virtual void ShowSelectionHandlesAutomatically() OVERRIDE;
   virtual void SelectRange(float x1, float y1, float x2, float y2) OVERRIDE;
-  virtual void Unselect() OVERRIDE;
   virtual void LongPress(base::TimeTicks time, float x, float y) OVERRIDE;
 
   // Non-virtual methods

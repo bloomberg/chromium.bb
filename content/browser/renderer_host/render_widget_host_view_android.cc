@@ -696,13 +696,11 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
       selection_controller_->WillHandleTouchEvent(event))
     return true;
 
+  if (gesture_text_selector_.OnTouchEvent(event))
+    return true;
+
   if (!gesture_provider_.OnTouchEvent(event))
     return false;
-
-  if (gesture_text_selector_.OnTouchEvent(event)) {
-    gesture_provider_.OnTouchEventAck(false);
-    return true;
-  }
 
   if (host_->ShouldForwardTouchEvent()) {
     blink::WebTouchEvent web_event = CreateWebTouchEventFromMotionEvent(event);
@@ -1596,16 +1594,12 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
 
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
-  if (gesture_text_selector_.OnGestureEvent(gesture))
-    return;
-
   SendGestureEvent(CreateWebGestureEventFromGestureEventData(gesture));
 }
 
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
   RunAckCallbacks();
 }
-
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
@@ -1760,11 +1754,6 @@ void RenderWidgetHostViewAndroid::SelectRange(
   if (content_view_core_)
     static_cast<WebContentsImpl*>(content_view_core_->GetWebContents())->
         SelectRange(gfx::Point(x1, y1), gfx::Point(x2, y2));
-}
-
-void RenderWidgetHostViewAndroid::Unselect() {
-  if (content_view_core_)
-    content_view_core_->GetWebContents()->Unselect();
 }
 
 void RenderWidgetHostViewAndroid::LongPress(

@@ -10,7 +10,9 @@
 #include "base/debug/trace_event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
+#include "ui/events/gesture_detection/gesture_listeners.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/gesture_detection/scale_gesture_listeners.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
@@ -72,10 +74,9 @@ GestureProvider::Config::~Config() {
 
 // GestureProvider::GestureListener
 
-class GestureProvider::GestureListenerImpl
-    : public ScaleGestureDetector::ScaleGestureListener,
-      public GestureDetector::GestureListener,
-      public GestureDetector::DoubleTapListener {
+class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
+                                             public GestureListener,
+                                             public DoubleTapListener {
  public:
   GestureListenerImpl(const GestureProvider::Config& config,
                       GestureProviderClient* client)
@@ -192,7 +193,7 @@ class GestureProvider::GestureListenerImpl
     GestureTouchUMAHistogram::RecordGestureEvent(gesture);
   }
 
-  // ScaleGestureDetector::ScaleGestureListener implementation.
+  // ScaleGestureListener implementation.
   virtual bool OnScaleBegin(const ScaleGestureDetector& detector,
                             const MotionEvent& e) OVERRIDE {
     if (ignore_multitouch_zoom_events_ && !detector.InDoubleTapMode())
@@ -262,7 +263,7 @@ class GestureProvider::GestureListenerImpl
     return true;
   }
 
-  // GestureDetector::GestureListener implementation.
+  // GestureListener implementation.
   virtual bool OnDown(const MotionEvent& e) OVERRIDE {
     GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN);
     Send(CreateGesture(tap_details, e));
@@ -442,7 +443,7 @@ class GestureProvider::GestureListenerImpl
     return false;
   }
 
-  // GestureDetector::DoubleTapListener implementation.
+  // DoubleTapListener implementation.
   virtual bool OnSingleTapConfirmed(const MotionEvent& e) OVERRIDE {
     // Long taps in the edges of the screen have their events delayed by
     // ContentViewHolder for tab swipe operations. As a consequence of the delay

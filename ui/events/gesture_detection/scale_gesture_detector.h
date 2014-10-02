@@ -11,12 +11,13 @@
 namespace ui {
 
 class MotionEvent;
+class ScaleGestureListener;
 
 // Port of ScaleGestureDetector.java from Android
 // * platform/frameworks/base/core/java/android/view/ScaleGestureDetector.java
 // * Change-Id: I3e7926a4f6f9ab4951f380bd004499c78b3bda69
 // * Please update the Change-Id as upstream Android changes are pulled.
-class ScaleGestureDetector {
+class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
  public:
   struct GESTURE_DETECTION_EXPORT Config {
     Config();
@@ -36,34 +37,6 @@ class ScaleGestureDetector {
     // Minimum pinch span change before pinch occurs (in dips). See
     // crbug.com/373318.
     float min_pinch_update_span_delta;
-  };
-
-  class ScaleGestureListener {
-   public:
-    virtual ~ScaleGestureListener() {}
-    virtual bool OnScale(const ScaleGestureDetector& detector,
-                         const MotionEvent& e) = 0;
-    virtual bool OnScaleBegin(const ScaleGestureDetector& detector,
-                              const MotionEvent& e) = 0;
-    virtual void OnScaleEnd(const ScaleGestureDetector& detector,
-                            const MotionEvent& e) = 0;
-  };
-
-  // A convenience class to extend when you only want to listen for a subset of
-  // scaling-related events. This implements all methods in
-  // |ScaleGestureListener| but does nothing.
-  // |OnScale()| returns false so that a subclass can retrieve the accumulated
-  // scale factor in an overridden |OnScaleEnd()|.
-  // |OnScaleBegin() returns true.
-  class SimpleScaleGestureListener : public ScaleGestureListener {
-   public:
-    // ScaleGestureListener implementation.
-    virtual bool OnScale(const ScaleGestureDetector&,
-                         const MotionEvent&) OVERRIDE;
-    virtual bool OnScaleBegin(const ScaleGestureDetector&,
-                              const MotionEvent&) OVERRIDE;
-    virtual void OnScaleEnd(const ScaleGestureDetector&,
-                            const MotionEvent&) OVERRIDE;
   };
 
   ScaleGestureDetector(const Config& config, ScaleGestureListener* listener);
