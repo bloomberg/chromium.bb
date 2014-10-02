@@ -861,7 +861,7 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
                                         const GURL& target_url,
                                         WebContents* new_contents) {
   if (target_url.SchemeIs(content::kChromeDevToolsScheme) &&
-      target_url.query().find("toolbox=true") != std::string::npos) {
+      target_url.path().rfind("toolbox.html") != std::string::npos) {
     CHECK(can_dock_);
     toolbox_web_contents_ = new_contents;
   }
