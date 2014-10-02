@@ -574,9 +574,9 @@
           ],
         },
         {
-          # GN version: //third_party/libjingle:libpeerconnection
-          'target_name': 'libpeerconnection',
-          'type': '<(libpeer_target_type)',
+          # GN version: //third_party/libjingle:libpeerconnection (shared with ':libpeerconnection')
+          'target_name': 'libjingle_mediaengine',
+          'type': 'static_library',
           'sources': [
             # Note: sources list duplicated in GN build.
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.cc',
@@ -589,13 +589,27 @@
             '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
           ],
           'dependencies': [
-            '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
+            'libjingle_webrtc_common',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
             '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',
+          ],
+        },
+        {
+          # GN version: //third_party/libjingle:libpeerconnection
+          'target_name': 'libpeerconnection',
+          'type': '<(libpeer_target_type)',
+          'dependencies': [
+            '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '<@(libjingle_peerconnection_additional_deps)',
-            'libjingle_webrtc_common',
+            'libjingle_mediaengine',
           ],
           'conditions': [
+            ['libpeer_target_type=="static_library" and OS=="mac"', {
+              # TODO(serya): Temporary workaround for crbug.com/418915. Remove when fixed.
+              'sources': [
+                'overrides/empty.cc',
+              ]
+            }],
             ['libpeer_target_type!="static_library"', {
               'sources': [
                 'overrides/initialize_module.cc',
@@ -644,6 +658,36 @@
             }],
           ],
         },  # target libpeerconnection
+      ],
+    }],
+    ['enable_webrtc==1 and OS=="android"', {
+      'targets': [
+        {
+          # GN version: //third_party/libjingle:libjingle_peerconnection_so
+          'target_name': 'libjingle_peerconnection_so',
+          'type': 'shared_library',
+          'dependencies': [
+            '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+            '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:field_trial_default',
+            'libjingle_mediaengine',
+          ],
+          'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
+          'sources': [
+            '<(libjingle_source)/talk/app/webrtc/java/jni/peerconnection_jni.cc',
+          ],
+        },
+        {
+          # GN version: //third_party/libjingle:libjingle_peerconnection_java
+          'target_name': 'libjingle_peerconnection_javalib',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': '<(libjingle_source)/talk/app/webrtc/java',
+          },
+          'dependencies': [
+            'libjingle_peerconnection_so',
+          ],
+          'includes': [ '../../build/java.gypi' ],
+        },
       ],
     }],
   ],

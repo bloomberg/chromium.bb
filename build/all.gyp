@@ -827,6 +827,7 @@
           'type': 'none',
           'dependencies': [
             '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection_javalib',
             '../tools/android/android_tools.gyp:android_tools',
             '../tools/android/android_tools.gyp:memconsumer',
             # Unit test bundles packaged as an apk.
