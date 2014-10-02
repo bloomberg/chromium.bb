@@ -200,8 +200,10 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
     commit_pending_ = true;
   } else {
     // Wait for the command to complete on the GPU to allow for throttling.
-    command_buffer_->Echo(base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
-                                     weak_ptr_factory_.GetWeakPtr()));
+    command_buffer_->SignalSyncPoint(
+        sync_point_,
+        base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   return PP_OK_COMPLETIONPENDING;

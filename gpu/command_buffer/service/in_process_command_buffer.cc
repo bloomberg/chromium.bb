@@ -703,10 +703,6 @@ void InProcessCommandBuffer::SignalQueryOnGpuThread(
 
 void InProcessCommandBuffer::SetSurfaceVisible(bool visible) {}
 
-void InProcessCommandBuffer::Echo(const base::Closure& callback) {
-  QueueTask(WrapCallback(callback));
-}
-
 uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
   base::WaitableEvent completion(true, false);
   uint32 stream_id = 0;

@@ -241,10 +241,6 @@ void CommandBufferClientImpl::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void CommandBufferClientImpl::Echo(const base::Closure& callback) {
-  command_buffer_->Echo(callback);
-}
-
 uint32 CommandBufferClientImpl::CreateStreamTexture(uint32 texture_id) {
   // TODO(piman)
   NOTIMPLEMENTED();

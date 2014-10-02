@@ -108,7 +108,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual void SignalQuery(uint32 query_id,
                            const base::Closure& callback) OVERRIDE;
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void Echo(const base::Closure& callback) OVERRIDE;
   virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).

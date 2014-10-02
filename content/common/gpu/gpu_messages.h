@@ -540,14 +540,6 @@ IPC_SYNC_MESSAGE_ROUTED5_1(GpuCommandBufferMsg_CreateVideoEncoder,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
                     gpu::error::ContextLostReason /* reason */)
 
-// Request that the GPU process reply with the given message. Reply may be
-// delayed.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Echo,
-                    IPC::Message /* reply */)
-
-// Response to a GpuChannelMsg_Echo message.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EchoAck)
-
 // Send to stub on surface visibility change.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
 

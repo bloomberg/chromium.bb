@@ -166,9 +166,6 @@ void OutputSurface::SetUpContext3d() {
   context_provider_->SetLostContextCallback(
       base::Bind(&OutputSurface::DidLoseOutputSurface,
                  base::Unretained(this)));
-  context_provider_->ContextSupport()->SetSwapBuffersCompleteCallback(
-      base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                 base::Unretained(this)));
   context_provider_->SetMemoryPolicyChangedCallback(
       base::Bind(&OutputSurface::SetMemoryPolicy,
                  base::Unretained(this)));
@@ -186,8 +183,6 @@ void OutputSurface::ResetContext3d() {
         ContextProvider::LostContextCallback());
     context_provider_->SetMemoryPolicyChangedCallback(
         ContextProvider::MemoryPolicyChangedCallback());
-    if (gpu::ContextSupport* support = context_provider_->ContextSupport())
-      support->SetSwapBuffersCompleteCallback(base::Closure());
   }
   context_provider_ = NULL;
 }
@@ -244,6 +239,12 @@ void OutputSurface::SwapBuffers(CompositorFrame* frame) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
         frame->gl_frame_data->sub_buffer_rect);
   }
+  uint32_t sync_point =
+      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
+  context_provider_->ContextSupport()->SignalSyncPoint(
+      sync_point,
+      base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   client_->DidSwapBuffers();
 }

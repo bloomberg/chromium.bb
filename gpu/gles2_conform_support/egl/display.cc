@@ -314,10 +314,6 @@ void Display::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void Display::Echo(const base::Closure& callback) {
-  NOTIMPLEMENTED();
-}
-
 uint32 Display::CreateStreamTexture(uint32 texture_id) {
   NOTIMPLEMENTED();
   return 0;

@@ -225,8 +225,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
-  // Echo, RetireSyncPoint, or WaitSyncPoint).
-  if (decoder_.get() && message.type() != GpuCommandBufferMsg_Echo::ID &&
+  // RetireSyncPoint or WaitSyncPoint).
+  if (decoder_.get() &&
       message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
       message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
@@ -246,7 +246,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnSetGetBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ProduceFrontBuffer,
                         OnProduceFrontBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Echo, OnEcho);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForTokenInRange,
                                     OnWaitForTokenInRange);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
@@ -383,11 +382,6 @@ void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
       FROM_HERE,
       base::Bind(&GpuCommandBufferStub::PollWork, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay));
-}
-
-void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEcho");
-  Send(new IPC::Message(message));
 }
 
 bool GpuCommandBufferStub::MakeCurrent() {

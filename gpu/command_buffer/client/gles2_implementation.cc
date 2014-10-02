@@ -2849,23 +2849,11 @@ void GLES2Implementation::GetVertexAttribiv(
 
 void GLES2Implementation::Swap() {
   SwapBuffers();
-  gpu_control_->Echo(
-      base::Bind(&GLES2Implementation::OnSwapBuffersComplete,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GLES2Implementation::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
-  PostSubBufferCHROMIUM(sub_buffer.x(),
-                        sub_buffer.y(),
-                        sub_buffer.width(),
-                        sub_buffer.height());
-  gpu_control_->Echo(base::Bind(&GLES2Implementation::OnSwapBuffersComplete,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void GLES2Implementation::SetSwapBuffersCompleteCallback(
-      const base::Closure& swap_buffers_complete_callback) {
-  swap_buffers_complete_callback_ = swap_buffers_complete_callback;
+  PostSubBufferCHROMIUM(
+      sub_buffer.x(), sub_buffer.y(), sub_buffer.width(), sub_buffer.height());
 }
 
 static GLenum GetGLESOverlayTransform(gfx::OverlayTransform plane_transform) {
@@ -2906,11 +2894,6 @@ void GLES2Implementation::ScheduleOverlayPlane(
                                uv_rect.y(),
                                uv_rect.width(),
                                uv_rect.height());
-}
-
-void GLES2Implementation::OnSwapBuffersComplete() {
-  if (!swap_buffers_complete_callback_.is_null())
-    swap_buffers_complete_callback_.Run();
 }
 
 GLboolean GLES2Implementation::EnableFeatureCHROMIUM(

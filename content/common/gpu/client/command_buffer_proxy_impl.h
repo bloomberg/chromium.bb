@@ -112,7 +112,6 @@ class CommandBufferProxyImpl
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void Echo(const base::Closure& callback) OVERRIDE;
   virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
   int GetRouteID() const;
@@ -159,7 +158,6 @@ class CommandBufferProxyImpl
   // Message handlers:
   void OnUpdateState(const gpu::CommandBuffer::State& state);
   void OnDestroyed(gpu::error::ContextLostReason reason);
-  void OnEchoAck();
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
   void OnSetMemoryAllocation(const gpu::MemoryAllocation& allocation);
   void OnSignalSyncPointAck(uint32 id);
@@ -185,9 +183,6 @@ class CommandBufferProxyImpl
   int route_id_;
   unsigned int flush_count_;
   int32 last_put_offset_;
-
-  // Tasks to be invoked in echo responses.
-  std::queue<base::Closure> echo_tasks_;
 
   base::Closure channel_error_callback_;
 

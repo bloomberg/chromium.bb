@@ -28,9 +28,6 @@ class ContextSupport {
   virtual void Swap() = 0;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) = 0;
 
-  virtual void SetSwapBuffersCompleteCallback(
-      const base::Closure& callback) = 0;
-
   // Schedule a texture to be presented as an overlay synchronously with the
   // primary surface during the next buffer swap.
   // This method is not stateful and needs to be re-scheduled every frame.

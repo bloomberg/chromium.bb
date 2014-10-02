@@ -64,9 +64,6 @@ class GPU_EXPORT GpuControl {
 
   virtual void SetSurfaceVisible(bool visible) = 0;
 
-  // Invokes the callback once the context has been flushed.
-  virtual void Echo(const base::Closure& callback) = 0;
-
   // Attaches an external stream to the texture given by |texture_id| and
   // returns a stream identifier.
   virtual uint32_t CreateStreamTexture(uint32_t texture_id) = 0;

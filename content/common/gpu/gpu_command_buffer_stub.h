@@ -166,7 +166,6 @@ class GpuCommandBufferStub
                                  IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset, uint32 flush_count,
                     const std::vector<ui::LatencyInfo>& latency_info);
-  void OnEcho(const IPC::Message& message);
   void OnRescheduled();
   void OnRegisterTransferBuffer(int32 id,
                                 base::SharedMemoryHandle transfer_buffer,

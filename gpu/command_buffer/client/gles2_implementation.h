@@ -222,9 +222,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // ContextSupport implementation.
   virtual void Swap() OVERRIDE;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
-  virtual void SetSwapBuffersCompleteCallback(
-      const base::Closure& swap_buffers_complete_callback)
-          OVERRIDE;
   virtual void ScheduleOverlayPlane(int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
@@ -604,8 +601,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   void RunIfContextNotLost(const base::Closure& callback);
 
-  void OnSwapBuffersComplete();
-
   // Validate if an offset is valid, i.e., non-negative and fit into 32-bit.
   // If not, generate an approriate error, and return false.
   bool ValidateOffset(const char* func, GLintptr offset);
@@ -784,8 +779,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   GpuControl* gpu_control_;
 
   Capabilities capabilities_;
-
-  base::Closure swap_buffers_complete_callback_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

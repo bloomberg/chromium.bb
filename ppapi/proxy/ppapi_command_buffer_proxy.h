@@ -60,7 +60,6 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void Echo(const base::Closure& callback) OVERRIDE;
   virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
  private:

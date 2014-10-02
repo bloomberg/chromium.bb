@@ -383,10 +383,6 @@ void GLManager::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void GLManager::Echo(const base::Closure& callback) {
-  NOTIMPLEMENTED();
-}
-
 uint32 GLManager::CreateStreamTexture(uint32 texture_id) {
   NOTIMPLEMENTED();
   return 0;

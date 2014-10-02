@@ -27,8 +27,6 @@ class TestContextSupport : public gpu::ContextSupport {
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
   virtual uint32 InsertFutureSyncPointCHROMIUM() OVERRIDE;
   virtual void RetireSyncPointCHROMIUM(uint32 sync_point) OVERRIDE;
-  virtual void SetSwapBuffersCompleteCallback(
-      const base::Closure& callback) OVERRIDE;
   virtual void ScheduleOverlayPlane(int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
@@ -62,13 +60,9 @@ class TestContextSupport : public gpu::ContextSupport {
   }
 
  private:
-  void OnSwapBuffersComplete();
-
   std::vector<base::Closure> sync_point_callbacks_;
   SurfaceVisibleCallback set_visible_callback_;
   ScheduleOverlayPlaneCallback schedule_overlay_plane_callback_;
-
-  base::Closure swap_buffers_complete_callback_;
 
   SwapType last_swap_type_;
   gfx::Rect last_partial_swap_rect_;

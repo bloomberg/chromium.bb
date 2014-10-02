@@ -60,9 +60,6 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
 
 void TestContextSupport::Swap() {
   last_swap_type_ = SWAP;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&TestContextSupport::OnSwapBuffersComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 uint32 TestContextSupport::InsertFutureSyncPointCHROMIUM() {
@@ -77,9 +74,6 @@ void TestContextSupport::RetireSyncPointCHROMIUM(uint32 sync_point) {
 void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
   last_swap_type_ = PARTIAL_SWAP;
   last_partial_swap_rect_ = sub_buffer;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&TestContextSupport::OnSwapBuffersComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TestContextSupport::ScheduleOverlayPlane(
@@ -95,16 +89,6 @@ void TestContextSupport::ScheduleOverlayPlane(
                                          display_bounds,
                                          uv_rect);
   }
-}
-
-void TestContextSupport::SetSwapBuffersCompleteCallback(
-    const base::Closure& callback) {
-  swap_buffers_complete_callback_ = callback;
-}
-
-void TestContextSupport::OnSwapBuffersComplete() {
-  if (!swap_buffers_complete_callback_.is_null())
-    swap_buffers_complete_callback_.Run();
 }
 
 }  // namespace cc

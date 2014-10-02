@@ -42,7 +42,6 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EchoAck, OnEchoAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetMemoryAllocation,
                         OnSetMemoryAllocation);
@@ -73,13 +72,6 @@ void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason) {
     // Avoid calling the error callback more than once.
     channel_error_callback_.Reset();
   }
-}
-
-void CommandBufferProxyImpl::OnEchoAck() {
-  DCHECK(!echo_tasks_.empty());
-  base::Closure callback = echo_tasks_.front();
-  echo_tasks_.pop();
-  callback.Run();
 }
 
 void CommandBufferProxyImpl::OnConsoleMessage(
@@ -352,19 +344,6 @@ void CommandBufferProxyImpl::DestroyGpuMemoryBuffer(int32 id) {
 
 int CommandBufferProxyImpl::GetRouteID() const {
   return route_id_;
-}
-
-void CommandBufferProxyImpl::Echo(const base::Closure& callback) {
-  if (last_state_.error != gpu::error::kNoError) {
-    return;
-  }
-
-  if (!Send(new GpuCommandBufferMsg_Echo(
-           route_id_, GpuCommandBufferMsg_EchoAck(route_id_)))) {
-    return;
-  }
-
-  echo_tasks_.push(callback);
 }
 
 uint32 CommandBufferProxyImpl::CreateStreamTexture(uint32 texture_id) {

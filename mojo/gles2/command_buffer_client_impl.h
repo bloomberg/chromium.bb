@@ -68,7 +68,6 @@ class CommandBufferClientImpl : public CommandBufferClient,
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) override;
   virtual void SetSurfaceVisible(bool visible) override;
-  virtual void Echo(const base::Closure& callback) override;
   virtual uint32 CreateStreamTexture(uint32 texture_id) override;
 
  private:
