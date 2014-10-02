@@ -1081,9 +1081,9 @@ function init() {
     fakebox = document.createElement('div');
     fakebox.id = IDS.FAKEBOX;
     var fakeboxHtml = [];
+    fakeboxHtml.push('<div id="' + IDS.FAKEBOX_TEXT + '"></div>');
     fakeboxHtml.push('<input id="' + IDS.FAKEBOX_INPUT +
         '" autocomplete="off" tabindex="-1" type="url" aria-hidden="true">');
-    fakeboxHtml.push('<div id="' + IDS.FAKEBOX_TEXT + '"></div>');
     fakeboxHtml.push('<div id="cursor"></div>');
     fakebox.innerHTML = fakeboxHtml.join('');
 
@@ -1154,7 +1154,10 @@ function init() {
     if (inputbox) {
       inputbox.onpaste = function(event) {
         event.preventDefault();
-        searchboxApiHandle.paste();
+        // Send pasted text to Omnibox.
+        var text = event.clipboardData.getData('text/plain');
+        if (text)
+          searchboxApiHandle.paste(text);
       };
       inputbox.ondrop = function(event) {
         event.preventDefault();
