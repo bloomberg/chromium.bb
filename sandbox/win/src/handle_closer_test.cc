@@ -108,7 +108,6 @@ TEST(HandleCloserTest, CheckForMarkerFiles) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetTestState(EVERY_STATE);
-  sandbox::TargetPolicy* policy = runner.GetPolicy();
 
   base::string16 command = base::string16(L"CheckForFileHandles Y");
   for (int i = 0; i < arraysize(kFileExtensions); ++i) {

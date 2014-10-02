@@ -88,14 +88,16 @@ TargetProcess::~TargetProcess() {
   // from showing up in purify.
   if (sandbox_process_info_.IsValid()) {
     ::WaitForSingleObject(sandbox_process_info_.process_handle(), 50);
+    // At this point, the target process should have been killed.  Check.
     if (!::GetExitCodeProcess(sandbox_process_info_.process_handle(),
                               &exit_code) || (STILL_ACTIVE == exit_code)) {
-      // It is an error to destroy this object while the target process is still
-      // alive because we need to destroy the IPC subsystem and cannot risk to
-      // have an IPC reach us after this point.
+      // Something went wrong.  We don't know if the target is in a state where
+      // it can manage to do another IPC call.  If it can, and we've destroyed
+      // the |ipc_server_|, it will crash the broker.  So we intentionally leak
+      // that.
       if (shared_section_.IsValid())
         shared_section_.Take();
-      SharedMemIPCServer* server = ipc_server_.release();
+      ipc_server_.release();
       sandbox_process_info_.TakeProcessHandle();
       return;
     }

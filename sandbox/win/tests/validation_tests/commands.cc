@@ -15,15 +15,15 @@ namespace {
 // Returns the HKEY corresponding to name. If there is no HKEY corresponding
 // to the name it returns NULL.
 HKEY GetHKEYFromString(const base::string16 &name) {
-  if (L"HKLM" == name)
+  if (name == L"HKLM")
     return HKEY_LOCAL_MACHINE;
-  else if (L"HKCR" == name)
+  if (name == L"HKCR")
     return HKEY_CLASSES_ROOT;
-  else if (L"HKCC" == name)
+  if (name == L"HKCC")
     return HKEY_CURRENT_CONFIG;
-  else if (L"HKCU" == name)
+  if (name == L"HKCU")
     return HKEY_CURRENT_USER;
-  else if (L"HKU" == name)
+  if (name == L"HKU")
     return HKEY_USERS;
 
   return NULL;
@@ -34,8 +34,8 @@ void trim_quote(base::string16* string) {
   base::string16::size_type pos1 = string->find_first_not_of(L'"');
   base::string16::size_type pos2 = string->find_last_not_of(L'"');
 
-  if (base::string16::npos == pos1 || base::string16::npos == pos2)
-    (*string) = L"";
+  if (pos1 == base::string16::npos || pos2 == base::string16::npos)
+    string->clear();
   else
     (*string) = string->substr(pos1, pos2 + 1);
 }
@@ -56,16 +56,12 @@ int TestOpenFile(base::string16 path, bool for_write) {
                       FILE_FLAG_BACKUP_SEMANTICS,
                       NULL);  // No template.
 
-  if (INVALID_HANDLE_VALUE != file) {
+  if (file != INVALID_HANDLE_VALUE) {
     ::CloseHandle(file);
     return sandbox::SBOX_TEST_SUCCEEDED;
-  } else {
-    if (ERROR_ACCESS_DENIED == ::GetLastError()) {
-      return sandbox::SBOX_TEST_DENIED;
-    } else {
-      return sandbox::SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-    }
   }
+  return (::GetLastError() == ERROR_ACCESS_DENIED) ?
+      sandbox::SBOX_TEST_DENIED : sandbox::SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 }  // namespace
@@ -73,70 +69,49 @@ int TestOpenFile(base::string16 path, bool for_write) {
 namespace sandbox {
 
 SBOX_TESTS_COMMAND int ValidWindow(int argc, wchar_t **argv) {
-  if (1 != argc)
-    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-
-  HWND window = reinterpret_cast<HWND>(static_cast<ULONG_PTR>(_wtoi(argv[0])));
-
-  return TestValidWindow(window);
+  return (argc == 1) ?
+      TestValidWindow(
+          reinterpret_cast<HWND>(static_cast<ULONG_PTR>(_wtoi(argv[0])))) :
+      SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 int TestValidWindow(HWND window) {
-  if (::IsWindow(window))
-    return SBOX_TEST_SUCCEEDED;
-
-  return SBOX_TEST_DENIED;
+  return ::IsWindow(window) ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
 }
 
 SBOX_TESTS_COMMAND int OpenProcessCmd(int argc, wchar_t **argv) {
-  if (2 != argc)
-    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-
-  DWORD process_id = _wtol(argv[0]);
-  DWORD access_mask = _wtol(argv[1]);
-  return TestOpenProcess(process_id, access_mask);
+  return (argc == 2) ?
+      TestOpenProcess(_wtol(argv[0]), _wtol(argv[1])) :
+      SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 int TestOpenProcess(DWORD process_id, DWORD access_mask) {
   HANDLE process = ::OpenProcess(access_mask,
                                  FALSE,  // Do not inherit handle.
                                  process_id);
-  if (NULL == process) {
-    if (ERROR_ACCESS_DENIED == ::GetLastError()) {
-      return SBOX_TEST_DENIED;
-    } else {
-      return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-    }
-  } else {
+  if (process != NULL) {
     ::CloseHandle(process);
     return SBOX_TEST_SUCCEEDED;
   }
+  return (::GetLastError() == ERROR_ACCESS_DENIED) ?
+      sandbox::SBOX_TEST_DENIED : sandbox::SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 SBOX_TESTS_COMMAND int OpenThreadCmd(int argc, wchar_t **argv) {
-  if (1 != argc)
-    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-
-  DWORD thread_id = _wtoi(argv[0]);
-  return TestOpenThread(thread_id);
+  return (argc == 1) ?
+      TestOpenThread(_wtoi(argv[0])) : SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 int TestOpenThread(DWORD thread_id) {
-
   HANDLE thread = ::OpenThread(THREAD_QUERY_INFORMATION,
                                FALSE,  // Do not inherit handles.
                                thread_id);
-
-  if (NULL == thread) {
-    if (ERROR_ACCESS_DENIED == ::GetLastError()) {
-      return SBOX_TEST_DENIED;
-    } else {
-      return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-    }
-  } else {
+  if (thread != NULL) {
     ::CloseHandle(thread);
     return SBOX_TEST_SUCCEEDED;
   }
+  return (::GetLastError() == ERROR_ACCESS_DENIED) ?
+      sandbox::SBOX_TEST_DENIED : sandbox::SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 SBOX_TESTS_COMMAND int OpenFileCmd(int argc, wchar_t **argv) {
@@ -154,12 +129,11 @@ int TestOpenReadFile(const base::string16& path) {
 }
 
 int TestOpenWriteFile(int argc, wchar_t **argv) {
-  if (1 != argc)
+  if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   base::string16 path = argv[0];
   trim_quote(&path);
-
   return TestOpenWriteFile(path);
 }
 
@@ -168,7 +142,7 @@ int TestOpenWriteFile(const base::string16& path) {
 }
 
 SBOX_TESTS_COMMAND int OpenKey(int argc, wchar_t **argv) {
-  if (0 == argc || argc > 2)
+  if (argc != 1 && argc != 2)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   // Get the hive.
@@ -176,7 +150,7 @@ SBOX_TESTS_COMMAND int OpenKey(int argc, wchar_t **argv) {
 
   // Get the subkey.
   base::string16 subkey;
-  if (2 == argc) {
+  if (argc == 2) {
     subkey = argv[1];
     trim_quote(&subkey);
   }
@@ -191,15 +165,12 @@ int TestOpenKey(HKEY base_key, base::string16 subkey) {
                                  0,  // Reserved, must be 0.
                                  MAXIMUM_ALLOWED,
                                  &key);
-  if (ERROR_SUCCESS == err_code) {
+  if (err_code == ERROR_SUCCESS) {
     ::RegCloseKey(key);
     return SBOX_TEST_SUCCEEDED;
-  } else if (ERROR_INVALID_HANDLE == err_code ||
-             ERROR_ACCESS_DENIED  == err_code) {
-    return SBOX_TEST_DENIED;
-  } else {
-    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
+  return (err_code == ERROR_INVALID_HANDLE || err_code == ERROR_ACCESS_DENIED) ?
+      SBOX_TEST_DENIED : SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 }
 
 // Returns true if the current's thread desktop is the interactive desktop.
@@ -207,14 +178,12 @@ int TestOpenKey(HKEY base_key, base::string16 subkey) {
 // the object name.
 bool IsInteractiveDesktop(bool* is_interactive) {
   HDESK current_desk = ::GetThreadDesktop(::GetCurrentThreadId());
-  if (NULL == current_desk) {
+  if (current_desk == NULL)
     return false;
-  }
   wchar_t current_desk_name[256] = {0};
   if (!::GetUserObjectInformationW(current_desk, UOI_NAME, current_desk_name,
-                                  sizeof(current_desk_name), NULL)) {
+                                   sizeof(current_desk_name), NULL))
     return false;
-  }
   *is_interactive = (0 == _wcsicmp(L"default", current_desk_name));
   return true;
 }
@@ -225,9 +194,8 @@ SBOX_TESTS_COMMAND int OpenInteractiveDesktop(int, wchar_t **) {
 
 int TestOpenInputDesktop() {
   bool is_interactive = false;
-  if (IsInteractiveDesktop(&is_interactive) && is_interactive) {
+  if (IsInteractiveDesktop(&is_interactive) && is_interactive)
     return SBOX_TEST_SUCCEEDED;
-  }
   HDESK desk = ::OpenInputDesktop(0, FALSE, DESKTOP_CREATEWINDOW);
   if (desk) {
     ::CloseDesktop(desk);
@@ -242,13 +210,9 @@ SBOX_TESTS_COMMAND int SwitchToSboxDesktop(int, wchar_t **) {
 
 int TestSwitchDesktop() {
   HDESK desktop = ::GetThreadDesktop(::GetCurrentThreadId());
-  if (NULL == desktop) {
+  if (desktop == NULL)
     return SBOX_TEST_FAILED;
-  }
-  if (::SwitchDesktop(desktop)) {
-    return SBOX_TEST_SUCCEEDED;
-  }
-  return SBOX_TEST_DENIED;
+  return ::SwitchDesktop(desktop) ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
 }
 
 SBOX_TESTS_COMMAND int OpenAlternateDesktop(int, wchar_t **argv) {
@@ -267,9 +231,8 @@ int TestOpenAlternateDesktop(wchar_t *desktop_name) {
                                        DACL_SECURITY_INFORMATION, NULL, NULL,
                                        NULL, NULL);
       ::CloseHandle(test_handle);
-      if (result == ERROR_SUCCESS) {
+      if (result == ERROR_SUCCESS)
         return SBOX_TEST_SUCCEEDED;
-      }
     } else if (::GetLastError() != ERROR_ACCESS_DENIED) {
       return SBOX_TEST_FAILED;
     }
@@ -277,12 +240,10 @@ int TestOpenAlternateDesktop(wchar_t *desktop_name) {
 
   // Open by name with WRITE_DAC.
   desktop = ::OpenDesktop(desktop_name, 0, FALSE, WRITE_DAC);
-  if (desktop || ::GetLastError() != ERROR_ACCESS_DENIED) {
-    ::CloseDesktop(desktop);
-    return SBOX_TEST_SUCCEEDED;
-  }
-
-  return SBOX_TEST_DENIED;
+  if (!desktop && ::GetLastError() == ERROR_ACCESS_DENIED)
+    return SBOX_TEST_DENIED;
+  ::CloseDesktop(desktop);
+  return SBOX_TEST_SUCCEEDED;
 }
 
 BOOL CALLBACK DesktopTestEnumProc(LPTSTR desktop_name, LPARAM result) {
@@ -294,16 +255,13 @@ SBOX_TESTS_COMMAND int EnumAlternateWinsta(int, wchar_t **) {
 }
 
 int TestEnumAlternateWinsta() {
-  int result = SBOX_TEST_DENIED;
   // Try to enumerate the destops on the alternate windowstation.
-  if (::EnumDesktopsW(NULL, DesktopTestEnumProc, 0)) {
-    return SBOX_TEST_SUCCEEDED;
-  }
-  return SBOX_TEST_DENIED;
+  return ::EnumDesktopsW(NULL, DesktopTestEnumProc, 0) ?
+      SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
 }
 
 SBOX_TESTS_COMMAND int SleepCmd(int argc, wchar_t **argv) {
-  if (1 != argc)
+  if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   ::Sleep(_wtoi(argv[0]));
@@ -323,10 +281,8 @@ SBOX_TESTS_COMMAND int AllocateCmd(int argc, wchar_t **argv) {
     return SBOX_TEST_DENIED;
   }
 
-  if (!::VirtualFree(memory, 0, MEM_RELEASE))
-    return SBOX_TEST_FAILED;
-
-  return SBOX_TEST_SUCCEEDED;
+  return ::VirtualFree(memory, 0, MEM_RELEASE) ?
+      SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
 }
 
 

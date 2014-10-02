@@ -153,7 +153,6 @@ TEST(ValidationSuite, TestWindows) {
 TEST(ValidationSuite, TestProcessDenyLockdown) {
   TestRunner runner;
   TestRunner target;
-  wchar_t command[1024] = {0};
 
   target.SetAsynchronous(true);
 
@@ -171,7 +170,6 @@ TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
 
   TestRunner runner;
   TestRunner target;
-  wchar_t command[1024] = {0};
 
   target.SetAsynchronous(true);
   target.GetPolicy()->SetDelayedIntegrityLevel(INTEGRITY_LEVEL_LOW);
@@ -193,7 +191,6 @@ TEST(ValidationSuite, TestProcessDenyBelowLowIntegrity) {
 
   TestRunner runner;
   TestRunner target;
-  wchar_t command[1024] = {0};
 
   target.SetAsynchronous(true);
   target.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_LOW);

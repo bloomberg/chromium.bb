@@ -286,22 +286,26 @@ TEST(PolicyEngineTest, WCharOpcodes1) {
                                                        CASE_SENSITIVE,
                                                        kPolNone);
   EXPECT_EQ(EVAL_FALSE, op5b->Evaluate(&pp_tc1, 1, &mc1));
+  EXPECT_EQ(24, mc1.position);
 
   // Test that we function if the string does not fit. In this case we
   // try to match 'the lazy dog' against 'he lazy dog'.
+  // !!! Are we supposed to Evaluate() this opcode and test the result?
   PolicyOpcode* op6 = opcode_maker.MakeOpWStringMatch(0, txt4, 2,
                                                       CASE_SENSITIVE, kPolNone);
-  EXPECT_EQ(24, mc1.position);
+  EXPECT_EQ(EVAL_FALSE, op6->Evaluate(&pp_tc1, 1, &mc1));
 
   // Testing matching against 'g' which should be the last char.
   MatchContext mc2;
   PolicyOpcode* op7 = opcode_maker.MakeOpWStringMatch(0, txt6, kSeekForward,
                                                       CASE_SENSITIVE, kPolNone);
   EXPECT_EQ(EVAL_TRUE, op7->Evaluate(&pp_tc1, 1, &mc2));
+  EXPECT_EQ(37, mc2.position);
 
   // Trying to match again should fail since we are in the last char.
   // This also covers a couple of boundary conditions.
   EXPECT_EQ(EVAL_FALSE, op7->Evaluate(&pp_tc1, 1, &mc2));
+  EXPECT_EQ(37, mc2.position);
 }
 
 TEST(PolicyEngineTest, WCharOpcodes2) {
