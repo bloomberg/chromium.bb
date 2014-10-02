@@ -390,8 +390,6 @@
       'fonts/cocoa/FontPlatformDataCocoa.mm',
       'fonts/harfbuzz/HarfBuzzFace.cpp',
       'fonts/harfbuzz/HarfBuzzFace.h',
-      'fonts/harfbuzz/HarfBuzzFaceCoreText.mm',
-      'fonts/harfbuzz/HarfBuzzFaceSkia.cpp',
       'fonts/harfbuzz/HarfBuzzShaper.cpp',
       'fonts/harfbuzz/HarfBuzzShaper.h',
       'fonts/linux/FontCacheLinux.cpp',
