@@ -2247,6 +2247,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.DeviceType" enum="RemotePlaybackDeviceType">
+  <owner>avayvod@google.com</owner>
+  <summary>
+    Records the type of the remote playback device selected by the user. This
+    will be recorded when the user has chosen the device from the media route
+    chooser dialog.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.VideoEncodeAcceleratorInitializeSuccess"
     enum="BooleanSuccess">
   <owner>posciak@chromium.org</owner>
@@ -50019,6 +50028,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Other Device Tab"/>
   <int value="2" label="Restore Window"/>
   <int value="3" label="Show More"/>
+</enum>
+
+<enum name="RemotePlaybackDeviceType" type="int">
+  <int value="0" label="Cast Generic Media Player"/>
+  <int value="1" label="Cast YouTube Player"/>
+  <int value="2" label="Non-Cast YouTube Player"/>
 </enum>
 
 <enum name="RenderViewContextMenuItem" type="int">
