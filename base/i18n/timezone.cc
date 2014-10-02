@@ -4,6 +4,8 @@
 
 #include "base/i18n/timezone.h"
 
+#include <string.h>
+
 #include <map>
 
 #include "base/memory/singleton.h"
@@ -22,7 +24,8 @@ class TimezoneMap {
   }
 
   std::string CountryCodeForTimezone(const std::string& olson_code) {
-    std::map<std::string, std::string>::iterator iter = map_.find(olson_code);
+    std::map<const char*, const char*, CompareCStrings>::iterator iter =
+      map_.find(olson_code.c_str());
     if (iter != map_.end())
       return iter->second;
 
@@ -35,9 +38,10 @@ class TimezoneMap {
     // <http://www.ietf.org/timezones/data/zone.tab> and is a part of public
     // domain.
     struct OlsonCodeData {
-      std::string country_code;
-      std::string olson_code;
-    } olson_code_data[] = {
+      const char* country_code;
+      const char* olson_code;
+    };
+    static const OlsonCodeData olson_code_data[] = {
         { "AD", "Europe/Andorra" },
         { "AE", "Asia/Dubai" },
         { "AF", "Asia/Kabul" },
@@ -459,17 +463,17 @@ class TimezoneMap {
         { "GB", "Etc/UCT" },
     };
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(olson_code_data); ++i) {
+    for (size_t i = 0; i < arraysize(olson_code_data); ++i)
       map_[olson_code_data[i].olson_code] = olson_code_data[i].country_code;
-    }
 
     // These are mapping from old codenames to new codenames. They are also
     // part of public domain, and available at
     // <http://www.ietf.org/timezones/data/backward>.
     struct LinkData {
-      std::string old_code;
-      std::string new_code;
-    } link_data[] = {
+      const char* old_code;
+      const char* new_code;
+    };
+    static const LinkData link_data[] = {
         { "Africa/Asmera", "Africa/Asmara" },
         { "Africa/Timbuktu", "Africa/Bamako" },
         { "America/Argentina/ComodRivadavia", "America/Argentina/Catamarca" },
@@ -582,14 +586,18 @@ class TimezoneMap {
         { "Zulu", "Etc/UTC" },
     };
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(link_data); ++i) {
+    for (size_t i = 0; i < arraysize(link_data); ++i)
       map_[link_data[i].old_code] = map_[link_data[i].new_code];
-    }
   }
 
   friend struct DefaultSingletonTraits<TimezoneMap>;
 
-  std::map<std::string, std::string> map_;
+  struct CompareCStrings {
+    bool operator()(const char* str1, const char* str2) const {
+      return strcmp(str1, str2) < 0;
+    }
+  };
+  std::map<const char*, const char*, CompareCStrings> map_;
 
   DISALLOW_COPY_AND_ASSIGN(TimezoneMap);
 };
