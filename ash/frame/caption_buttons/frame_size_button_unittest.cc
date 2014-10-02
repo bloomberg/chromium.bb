@@ -62,8 +62,8 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE {
     if (details.is_add && details.child == this) {
-      caption_button_container_ =
-          new FrameCaptionButtonContainerView(GetWidget());
+      caption_button_container_ = new FrameCaptionButtonContainerView(
+          GetWidget(), FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
 
       // Set arbitrary images for the container's buttons so that the buttons
       // have non-empty sizes.

@@ -19,8 +19,8 @@ namespace {
 
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate(bool can_maximize, bool can_minimize)
-      : can_maximize_(can_maximize), can_minimize_(can_minimize) {}
+  explicit TestWidgetDelegate(bool can_maximize) : can_maximize_(can_maximize) {
+  }
   virtual ~TestWidgetDelegate() {
   }
 
@@ -29,12 +29,11 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   virtual bool CanMinimize() const OVERRIDE {
-    return can_minimize_;
+    return can_maximize_;
   }
 
  private:
   bool can_maximize_;
-  bool can_minimize_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
@@ -48,11 +47,6 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     MAXIMIZE_DISALLOWED
   };
 
-  enum MinimizeAllowed {
-    MINIMIZE_ALLOWED,
-    MINIMIZE_DISALLOWED
-  };
-
   FrameCaptionButtonContainerViewTest() {
   }
 
@@ -62,13 +56,11 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
   // Creates a widget which allows maximizing based on |maximize_allowed|.
   // The caller takes ownership of the returned widget.
   views::Widget* CreateTestWidget(
-      MaximizeAllowed maximize_allowed,
-      MinimizeAllowed minimize_allowed) WARN_UNUSED_RESULT {
+      MaximizeAllowed maximize_allowed) WARN_UNUSED_RESULT {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
     params.delegate = new TestWidgetDelegate(
-        maximize_allowed == MAXIMIZE_ALLOWED,
-        minimize_allowed == MINIMIZE_ALLOWED);
+        maximize_allowed == MAXIMIZE_ALLOWED);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = CurrentContext();
     widget->Init(params);
@@ -118,8 +110,10 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
 TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   // All the buttons should be visible when minimizing and maximizing are
   // allowed.
-  FrameCaptionButtonContainerView container1(
-      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
+  scoped_ptr<views::Widget> widget_can_maximize(
+      CreateTestWidget(MAXIMIZE_ALLOWED));
+  FrameCaptionButtonContainerView container1(widget_can_maximize.get(),
+      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   SetMockImages(&container1);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
@@ -131,8 +125,10 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
 
   // The minimize button should be visible when minimizing is allowed but
   // maximizing is disallowed.
-  FrameCaptionButtonContainerView container2(
-      CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_ALLOWED));
+  scoped_ptr<views::Widget> widget_cannot_maximize(
+      CreateTestWidget(MAXIMIZE_DISALLOWED));
+  FrameCaptionButtonContainerView container2(widget_cannot_maximize.get(),
+      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   SetMockImages(&container2);
   container2.Layout();
   FrameCaptionButtonContainerView::TestApi t2(&container2);
@@ -144,8 +140,8 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
 
   // Neither the minimize button nor the size button should be visible when
   // neither minimizing nor maximizing are allowed.
-  FrameCaptionButtonContainerView container3(
-      CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_DISALLOWED));
+  FrameCaptionButtonContainerView container3(widget_cannot_maximize.get(),
+      FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED);
   SetMockImages(&container3);
   container3.Layout();
   FrameCaptionButtonContainerView::TestApi t3(&container3);
@@ -160,8 +156,10 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
 // correct placement of the buttons.
 TEST_F(FrameCaptionButtonContainerViewTest,
        TestUpdateSizeButtonVisibilityAnimation) {
-  FrameCaptionButtonContainerView container(
-      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
+  scoped_ptr<views::Widget> widget_can_maximize(
+      CreateTestWidget(MAXIMIZE_ALLOWED));
+  FrameCaptionButtonContainerView container(widget_can_maximize.get(),
+      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   SetMockImages(&container);
   container.SetBoundsRect(gfx::Rect(container.GetPreferredSize()));
   container.Layout();

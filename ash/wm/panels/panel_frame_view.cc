@@ -39,7 +39,8 @@ const char* PanelFrameView::GetClassName() const {
 void PanelFrameView::InitHeaderPainter() {
   header_painter_.reset(new DefaultHeaderPainter);
 
-  caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
+  caption_button_container_ = new FrameCaptionButtonContainerView(frame_,
+      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   AddChildView(caption_button_container_);
 
   header_painter_->Init(frame_, this, caption_button_container_);

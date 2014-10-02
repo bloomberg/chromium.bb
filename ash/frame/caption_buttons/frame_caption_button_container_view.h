@@ -33,8 +33,18 @@ class ASH_EXPORT FrameCaptionButtonContainerView
  public:
   static const char kViewClassName[];
 
+  // Whether the frame can be minimized (either via the maximize/restore button
+  // or via a dedicated button).
+  enum MinimizeAllowed {
+    MINIMIZE_ALLOWED,
+    MINIMIZE_DISALLOWED
+  };
+
   // |frame| is the views::Widget that the caption buttons act on.
-  explicit FrameCaptionButtonContainerView(views::Widget* frame);
+  // |minimize_allowed| indicates whether the frame can be minimized (either via
+  // the maximize/restore button or via a dedicated button).
+  FrameCaptionButtonContainerView(views::Widget* frame,
+                                  MinimizeAllowed minimize_allowed);
   virtual ~FrameCaptionButtonContainerView();
 
   // For testing.

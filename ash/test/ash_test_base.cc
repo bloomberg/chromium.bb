@@ -261,7 +261,6 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     aura::client::ParentWindowWithContext(window, root, bounds);
   }
   window->SetProperty(aura::client::kCanMaximizeKey, true);
-  window->SetProperty(aura::client::kCanMinimizeKey, true);
   return window;
 }
 
