@@ -127,7 +127,8 @@ class ScreenMac : public gfx::Screen {
       gfx::NativeView view) const OVERRIDE {
     NSWindow* window = nil;
 #if !defined(USE_AURA)
-    window = [view window];
+    if (view)
+      window = [view window];
 #endif
     if (!window)
       return GetPrimaryDisplay();

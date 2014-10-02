@@ -71,6 +71,8 @@ class GFX_EXPORT Screen {
   virtual std::vector<gfx::Display> GetAllDisplays() const = 0;
 
   // Returns the display nearest the specified window.
+  // If the window is NULL or the window is not rooted to a display this will
+  // return the primary display.
   virtual gfx::Display GetDisplayNearestWindow(NativeView view) const = 0;
 
   // Returns the display nearest the specified point.

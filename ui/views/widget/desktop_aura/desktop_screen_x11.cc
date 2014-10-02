@@ -157,6 +157,9 @@ std::vector<gfx::Display> DesktopScreenX11::GetAllDisplays() const {
 
 gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
     gfx::NativeView window) const {
+  if (!window)
+    return GetPrimaryDisplay();
+
   // Getting screen bounds here safely is hard.
   //
   // You'd think we'd be able to just call window->GetBoundsInScreen(), but we
