@@ -14,6 +14,8 @@ import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.Callable;
 
@@ -48,8 +50,18 @@ public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
             }
         };
         mProfile = ThreadUtils.runOnUiThreadBlocking(profileCallable);
-        while (!ExternalPrerenderHandler.hasCookieStoreLoaded(mProfile))
-            Thread.sleep(CHECK_COOKIE_STORE_FREQUENCY_MS);
+        final Callable<Boolean> cookieStoreCallable = new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return ExternalPrerenderHandler.checkCookieStoreLoadedForTesting(mProfile);
+            }
+        };
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ThreadUtils.runOnUiThreadBlockingNoException(cookieStoreCallable);
+            }
+        }, CHECK_COOKIE_STORE_FREQUENCY_MS, 5000));
     }
 
     @MediumTest
