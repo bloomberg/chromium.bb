@@ -521,6 +521,13 @@ function WallpaperManager(dialogDom) {
                                         self.onWallpaperChanged_.bind(self,
                                             selectedItem, selectedItem.baseURL),
                                         errorHandler);
+                WallpaperUtil.enabledExperimentalFeatureCallback(function() {
+                  WallpaperUtil.storePictureToSyncFileSystem(
+                    selectedItem.baseURL,
+                    e.target.result,
+                    function() {}
+                  );
+                });
               });
             }, errorHandler);
           }, errorHandler);
@@ -833,7 +840,13 @@ function WallpaperManager(dialogDom) {
         self.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.THUMBNAIL,
             success, errorHandler);
       };
-
+      var onCustomWallpaperSuccess = function(thumbnailData, wallpaperData) {
+        WallpaperUtil.enabledExperimentalFeatureCallback(function() {
+          WallpaperUtil.storePictureToSyncFileSystem(fileName, wallpaperData,
+                                             function() {});
+        });
+        saveThumbnail(thumbnailData);
+      };
       var success = function(dirEntry) {
         dirEntry.getFile(fileName, {create: true}, function(fileEntry) {
           fileEntry.createWriter(function(fileWriter) {
@@ -843,13 +856,15 @@ function WallpaperManager(dialogDom) {
               reader.addEventListener('error', errorHandler);
               reader.addEventListener('load', function(e) {
                 self.setCustomWallpaper(e.target.result, layout, true, fileName,
-                                        saveThumbnail, function() {
+                function(thumbnail) {
+                  onCustomWallpaperSuccess(thumbnail, e.target.result);
+                },
+                function() {
                   self.removeCustomWallpaper(fileName);
                   errorHandler();
                 });
               });
             });
-
             fileWriter.addEventListener('error', errorHandler);
             fileWriter.write(file);
           }, errorHandler);

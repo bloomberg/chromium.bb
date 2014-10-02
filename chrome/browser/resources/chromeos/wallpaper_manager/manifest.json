@@ -18,7 +18,8 @@
     "unlimitedStorage",
     {"fileSystem": ["write"]},
     "wallpaperPrivate",
-    "https://storage.googleapis.com/"
+    "https://storage.googleapis.com/",
+    "syncFileSystem"
   ],
   "app": {
     "background": {
