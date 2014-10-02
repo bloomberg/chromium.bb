@@ -57,7 +57,7 @@ CREATE TABLE `buildTable` (
   `master_build_id` int(11) DEFAULT NULL,
   `buildbot_generation` int(11) NOT NULL,
   `builder_name` varchar(80) NOT NULL,
-  `waterfall` enum('chromeos','chromiumos','chromiumos.tryserver','chromeos_release') NOT NULL,
+  `waterfall` enum('chromeos','chromiumos','chromiumos.tryserver','chromeos_release','chromeos.branch') NOT NULL,
   `build_number` int(11) NOT NULL,
   `build_config` varchar(80) NOT NULL,
   `bot_hostname` varchar(80) NOT NULL,
