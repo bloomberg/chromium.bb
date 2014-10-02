@@ -52,7 +52,6 @@ class BaseHeap;
 class BaseHeapPage;
 class FinalizedHeapObjectHeader;
 struct GCInfo;
-class HeapContainsCache;
 class HeapObjectHeader;
 class PageMemory;
 class PersistentNode;
@@ -62,6 +61,7 @@ class SafePointBarrier;
 class SafePointAwareMutexLocker;
 template<typename Header> class ThreadHeap;
 class CallbackStack;
+class PageMemoryRegion;
 
 typedef uint8_t* Address;
 
@@ -548,7 +548,6 @@ public:
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
-    HeapContainsCache* heapContainsCache() { return m_heapContainsCache.get(); }
     BaseHeapPage* contains(Address address) { return heapPageFromAddress(address); }
     BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
@@ -578,10 +577,6 @@ public:
 
     // Visit all persistents allocated on this thread.
     void visitPersistents(Visitor*);
-
-    // Checks a given address and if a pointer into the oilpan heap marks
-    // the object to which it points.
-    bool checkAndMarkPointer(Visitor*, Address);
 
 #if ENABLE(GC_PROFILE_MARKING)
     const GCInfo* findGCInfo(Address);
@@ -630,6 +625,8 @@ public:
     void unregisterSweepingTask();
 
     Mutex& sweepMutex() { return m_sweepMutex; }
+
+    Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
 
 private:
     explicit ThreadState();
@@ -703,7 +700,6 @@ private:
     size_t m_noAllocationCount;
     bool m_inGC;
     BaseHeap* m_heaps[NumberOfHeaps];
-    OwnPtr<HeapContainsCache> m_heapContainsCache;
     HeapStats m_stats;
     HeapStats m_statsAfterLastGC;
 
@@ -722,6 +718,8 @@ private:
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;
 #endif
+
+    Vector<PageMemoryRegion*> m_allocatedRegionsSinceLastGC;
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;
@@ -822,13 +820,7 @@ public:
     ThreadState* threadState() const { return m_threadState; }
     const GCInfo* gcInfo() { return m_gcInfo; }
     virtual bool isLargeObject() { return false; }
-    virtual void markOrphaned()
-    {
-        m_threadState = 0;
-        m_gcInfo = 0;
-        m_terminating = false;
-        m_tracedAfterOrphaned = false;
-    }
+    virtual void markOrphaned();
     bool orphaned() { return !m_threadState; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }

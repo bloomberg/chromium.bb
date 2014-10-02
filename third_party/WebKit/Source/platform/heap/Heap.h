@@ -573,92 +573,43 @@ protected:
     friend class ThreadHeap<Header>;
 };
 
-class AddressEntry {
-public:
-    AddressEntry() : m_address(0) { }
-
-    explicit AddressEntry(Address address) : m_address(address) { }
-
-    Address address() const { return m_address; }
-
-private:
-    Address m_address;
-};
-
-class PositiveEntry : public AddressEntry {
-public:
-    PositiveEntry()
-        : AddressEntry()
-        , m_containingPage(0)
-    {
-    }
-
-    PositiveEntry(Address address, BaseHeapPage* containingPage)
-        : AddressEntry(address)
-        , m_containingPage(containingPage)
-    {
-    }
-
-    BaseHeapPage* result() const { return m_containingPage; }
-
-    typedef BaseHeapPage* LookupResult;
-
-private:
-    BaseHeapPage* m_containingPage;
-};
-
-class NegativeEntry : public AddressEntry {
-public:
-    NegativeEntry() : AddressEntry() { }
-
-    NegativeEntry(Address address, bool) : AddressEntry(address) { }
-
-    bool result() const { return true; }
-
-    typedef bool LookupResult;
-};
-
-// A HeapExtentCache provides a fast way of taking an arbitrary
-// pointer-sized word, and determining whether it can be interpreted
+// A HeapDoesNotContainCache provides a fast way of taking an arbitrary
+// pointer-sized word, and determining whether it cannot be interpreted
 // as a pointer to an area that is managed by the garbage collected
-// Blink heap. There is a cache of 'pages' that have previously been
-// determined to be wholly inside the heap. The size of these pages must be
+// Blink heap. This is a cache of 'pages' that have previously been
+// determined to be wholly outside of the heap. The size of these pages must be
 // smaller than the allocation alignment of the heap pages. We determine
-// on-heap-ness by rounding down the pointer to the nearest page and looking up
-// the page in the cache. If there is a miss in the cache we can ask the heap
-// to determine the status of the pointer by iterating over all of the heap.
-// The result is then cached in the two-way associative page cache.
+// off-heap-ness by rounding down the pointer to the nearest page and looking up
+// the page in the cache. If there is a miss in the cache we can determine the
+// status of the pointer precisely using the heap RegionTree.
 //
-// A HeapContainsCache is a positive cache. Therefore, it must be flushed when
-// memory is removed from the Blink heap. The HeapDoesNotContainCache is a
-// negative cache, so it must be flushed when memory is added to the heap.
-template<typename Entry>
-class HeapExtentCache {
+// The HeapDoesNotContainCache is a negative cache, so it must be
+// flushed when memory is added to the heap.
+class HeapDoesNotContainCache {
 public:
-    HeapExtentCache()
-        : m_entries(adoptArrayPtr(new Entry[HeapExtentCache::numberOfEntries]))
-        , m_hasEntries(false)
+    HeapDoesNotContainCache()
+        : m_entries(adoptArrayPtr(new Address[HeapDoesNotContainCache::numberOfEntries]))
+        , m_hasEntries(true)
     {
+        // Start by flushing the cache in a non-empty state to initialize all the cache entries.
+        flush();
     }
 
     void flush();
-    bool contains(Address);
     bool isEmpty() { return !m_hasEntries; }
 
     // Perform a lookup in the cache.
     //
-    // If lookup returns null/false the argument address was not found in
+    // If lookup returns false, the argument address was not found in
     // the cache and it is unknown if the address is in the Blink
     // heap.
     //
-    // If lookup returns true/a page, the argument address was found in the
-    // cache. For the HeapContainsCache this means the address is in the heap.
-    // For the HeapDoesNotContainCache this means the address is not in the
-    // heap.
-    PLATFORM_EXPORT typename Entry::LookupResult lookup(Address);
+    // If lookup returns true, the argument address was found in the
+    // cache which means the address is not in the heap.
+    PLATFORM_EXPORT bool lookup(Address);
 
     // Add an entry to the cache.
-    PLATFORM_EXPORT void addEntry(Address, typename Entry::LookupResult);
+    PLATFORM_EXPORT void addEntry(Address);
 
 private:
     static const int numberOfEntriesLog2 = 12;
@@ -666,21 +617,9 @@ private:
 
     static size_t hash(Address);
 
-    WTF::OwnPtr<Entry[]> m_entries;
+    WTF::OwnPtr<Address[]> m_entries;
     bool m_hasEntries;
-
-    friend class ThreadState;
 };
-
-// Normally these would be typedefs instead of subclasses, but that makes them
-// very hard to forward declare.
-class HeapContainsCache : public HeapExtentCache<PositiveEntry> {
-public:
-    BaseHeapPage* lookup(Address);
-    void addEntry(Address, BaseHeapPage*);
-};
-
-class HeapDoesNotContainCache : public HeapExtentCache<NegativeEntry> { };
 
 // FIXME: This is currently used by the WebAudio code.
 // We should attempt to restructure the WebAudio code so that the main thread
@@ -875,10 +814,6 @@ public:
 
     ThreadState* threadState() { return m_threadState; }
     HeapStats& stats() { return m_threadState->stats(); }
-    void flushHeapContainsCache()
-    {
-        m_threadState->heapContainsCache()->flush();
-    }
 
     inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
@@ -1072,7 +1007,33 @@ public:
     static FreePagePool* freePagePool() { return s_freePagePool; }
     static OrphanedPagePool* orphanedPagePool() { return s_orphanedPagePool; }
 
+    // This look-up uses the region search tree and a negative contains cache to
+    // provide an efficient mapping from arbitrary addresses to the containing
+    // heap-page if one exists.
+    static BaseHeapPage* lookup(Address);
+    static void addPageMemoryRegion(PageMemoryRegion*);
+    static void removePageMemoryRegion(PageMemoryRegion*);
+
 private:
+    // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
+    // by base addresses.
+    class RegionTree {
+    public:
+        explicit RegionTree(PageMemoryRegion* region) : m_region(region), m_left(0), m_right(0) { }
+        ~RegionTree()
+        {
+            delete m_left;
+            delete m_right;
+        }
+        PageMemoryRegion* lookup(Address);
+        static void add(RegionTree*, RegionTree**);
+        static void remove(PageMemoryRegion*, RegionTree**);
+    private:
+        PageMemoryRegion* m_region;
+        RegionTree* m_left;
+        RegionTree* m_right;
+    };
+
     static Visitor* s_markingVisitor;
     static Vector<OwnPtr<blink::WebThread> >* s_markingThreads;
     static CallbackStack* s_markingStack;
@@ -1084,6 +1045,7 @@ private:
     static bool s_lastGCWasConservative;
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
+    static RegionTree* s_regionTree;
     friend class ThreadState;
 };
 
