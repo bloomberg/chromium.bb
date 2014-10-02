@@ -276,17 +276,46 @@ bool VariationsService::CreateTrialsFromSeed() {
       GetHardwareClass(),
       base::Bind(&OverrideUIString));
 
+  const base::Time now = base::Time::Now();
+
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.
   const int64 last_fetch_time_internal =
       local_state_->GetInt64(prefs::kVariationsLastFetchTime);
   if (last_fetch_time_internal) {
-    const base::Time now = base::Time::Now();
     const base::TimeDelta delta =
         now - base::Time::FromInternalValue(last_fetch_time_internal);
     // Log the value in number of minutes.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", delta.InMinutes(),
         1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+  }
+
+  // Log the skew between the seed date and the system clock/build time to
+  // analyze whether either could be used to make old variations seeds expire
+  // after some time.
+  const int64 seed_date_internal =
+      local_state_->GetInt64(prefs::kVariationsSeedDate);
+  if (seed_date_internal) {
+    const base::Time seed_date =
+        base::Time::FromInternalValue(seed_date_internal);
+    const int system_clock_delta_days = (now - seed_date).InDays();
+    if (system_clock_delta_days < 0) {
+      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.SystemClockBehindBy",
+                               -system_clock_delta_days);
+    } else {
+      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.SystemClockAheadBy",
+                               system_clock_delta_days);
+    }
+
+    const int build_time_delta_days =
+        (base::GetBuildTime() - seed_date).InDays();
+    if (build_time_delta_days < 0) {
+      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.BuildTimeBehindBy",
+                               -build_time_delta_days);
+    } else {
+      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.BuildTimeAheadBy",
+                               build_time_delta_days);
+    }
   }
 
   return true;

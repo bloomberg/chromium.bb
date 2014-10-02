@@ -36795,6 +36795,46 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Variations.SeedDateSkew.BuildTimeAheadBy" units="days">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logged on startup when creating field trials from the variations seed if the
+    build time is ahead of or within 24 hours of the kVariationsSeedDate. Used
+    as an experiment to see whether the build time could be used to discard very
+    old seeds.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedDateSkew.BuildTimeBehindBy" units="days">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logged on startup when creating field trials from the variations seed if the
+    build time is behind the kVariationsSeedDate by a day or more. Used as an
+    experiment to see whether the build time could be used to discard very old
+    seeds.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedDateSkew.SystemClockAheadBy" units="days">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logged on startup when creating field trials from the variations seed if the
+    system clock is ahead of or within 24 hours of the kVariationsSeedDate. Used
+    as an experiment to see whether the system clock could be used to discard
+    very old seeds.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedDateSkew.SystemClockBehindBy" units="days">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logged on startup when creating field trials from the variations seed if the
+    system clock is behind the kVariationsSeedDate by a day or more. Used as an
+    experiment to see whether the system clock could be used to discard very old
+    seeds.
+  </summary>
+</histogram>
+
 <histogram name="Variations.SeedEmpty" enum="VariationsSeedEmpty">
   <owner>asvitkine@chromium.org</owner>
   <summary>
