@@ -9682,25 +9682,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
         </message>
       </if>
 
-      <!-- Android First-run messages -->
-      <if expr="is_android">
-        <message name="IDS_FIRSTRUN_TAKE_TOUR" desc="Button or link to begin a product tour of Chrome">
-          Take a tour
-        </message>
-        <message name="IDS_FIRSTRUN_SETTINGS_LINK" desc="Link to take user to Chrome's settings menu.">
-          Settings
-        </message>
-        <message name="IDS_FIRSTRUN_TOS_EXPLANATION" desc="Message explaining that use of Chrome is governed by Chrome's terms of service.">
-          Your use of Chrome is subject to the Chrome <ph name="BEGIN_LINK1">&lt;a href="#" id="tos-link"&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a href="$1"&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/a&gt;</ph>.
-        </message>
-        <message name="IDS_FIRSTRUN_SIGNED_IN_TITLE" desc="Message informing the user that they are now signed in." formatter_data="android_java">
-          You're now signed in to Chrome.
-        </message>
-        <message name="IDS_FIRSTRUN_SIGNED_IN_DESCRIPTION" desc="Message informing the user what is being synced." formatter_data="android_java">
-          Your open tabs, bookmarks, history, and more are being synced with your Google Account.
-        </message>
-      </if>
-
       <!-- First run bubble popup -->
       <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
         You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>

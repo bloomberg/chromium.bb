@@ -12,7 +12,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,9 +34,10 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
 
     @SmallTest
     @Feature({"Main"})
-    public void testChromeWelcomePageLoads() throws InterruptedException {
-        String welcomeUrl = "chrome://welcome/";
-        final ChromeShellActivity activity = launchChromeShellWithUrl(welcomeUrl);
+    public void testChromeUrlPageLoads() throws InterruptedException {
+        // Test flags page because it will *probably* never get removed.
+        String flagsUrl = "chrome://flags/";
+        final ChromeShellActivity activity = launchChromeShellWithUrl(flagsUrl);
         waitForActiveShellToBeDoneLoading();
 
         // Make sure the activity was created as expected.
@@ -56,8 +56,7 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
         assertNotNull(contentViewCore.get().getContainerView());
 
         // Ensure the correct page has been loaded, ie. not interstitial, and title/url should
-        // be sane. Note, a typical correct title is: "Welcome to Chromium", whereas a wrong one
-        // would be on the form "chrome://welcome/ is not available".
+        // be sane.
         final AtomicBoolean isShowingInterstitialPage = new AtomicBoolean();
         final AtomicReference<String> url = new AtomicReference<String>();
         final AtomicReference<String> title = new AtomicReference<String>();
@@ -73,11 +72,9 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
         assertFalse("Showed interstitial page instead of welcome page",
                 isShowingInterstitialPage.get());
         assertNotNull("URL was null", url.get());
-        assertTrue("URL did not contain: " + welcomeUrl + ". Was: " + url.get(),
-                url.get().contains(welcomeUrl));
+        assertTrue("URL did not contain: " + flagsUrl + ". Was: " + url.get(),
+                url.get().contains(flagsUrl));
         assertNotNull("Title was null", title.get());
-        assertFalse("Title should not contain: " + welcomeUrl + ". Was: " + title.get(),
-                title.get().toLowerCase(Locale.US).contains(welcomeUrl));
     }
 
     /**

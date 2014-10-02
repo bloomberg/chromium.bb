@@ -92,7 +92,6 @@ extern const char kChromeUIVoiceSearchURL[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativeRecentTabsURL[];
-extern const char kChromeUIWelcomeURL[];
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -19,9 +19,6 @@
       </if>
       <structure name="IDR_ABOUT_MEMORY_CSS" file="resources\about_memory.css" type="chrome_html" />
       <structure name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      <if expr="is_android">
-        <structure name="IDR_ABOUT_WELCOME_HTML" file="resources\about_welcome_android\about_welcome_android.html" flattenhtml="true" type="chrome_html" />
-      </if>
       <if expr="enable_app_list">
         <structure name="IDR_APP_LIST_START_PAGE_CSS" file="resources\app_list\start_page.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />

@@ -96,10 +96,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   virtual void HandlePopupNavigation(chrome::NavigateParams* params);
 
-  // Called to determine if chrome://welcome should contain links to the terms
-  // of service and the privacy notice.
-  virtual bool ShouldWelcomePageLinkToTermsOfService();
-
   bool HasPrerenderedUrl(GURL gurl);
 
   void MakeLoadURLParams(

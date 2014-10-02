@@ -232,11 +232,6 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
   }
 }
 
-bool TabAndroid::ShouldWelcomePageLinkToTermsOfService() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
   prerender::PrerenderManager* prerender_manager = GetPrerenderManager();
   if (!prerender_manager)

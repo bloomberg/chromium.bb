@@ -99,7 +99,6 @@ const char kChromeUIVoiceSearchURL[] = "chrome://voicesearch/";
 const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
 const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
 const char kChromeUINativeRecentTabsURL[] = "chrome-native://recent-tabs/";
-const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -259,10 +258,6 @@ const char kChromeUIThemePath[] = "theme";
 #if defined(ENABLE_FULL_PRINTING)
 const char kChromeUIPrintHost[] = "print";
 #endif  // ENABLE_FULL_PRINTING
-
-#if defined(OS_ANDROID)
-const char kChromeUIWelcomeHost[] = "welcome";
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 const char kChromeUILinuxProxyConfigHost[] = "linux-proxy-config";
@@ -604,9 +599,7 @@ const char* const kChromeHostURLs[] = {
   content::kChromeUIServiceWorkerInternalsHost,
   content::kChromeUITracingHost,
   content::kChromeUIWebRTCInternalsHost,
-#if defined(OS_ANDROID)
-  kChromeUIWelcomeHost,
-#else
+#if !defined(OS_ANDROID)
   kChromeUIAppLauncherPageHost,
   kChromeUIBookmarksHost,
   kChromeUIDownloadsHost,
