@@ -201,6 +201,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
+#include "ui/base/touch/touch_device.h"
 #include "ui/base/win/shell.h"
 #endif  // OS_WIN
 
@@ -1127,7 +1128,22 @@ void Browser::TabStripEmpty() {
 }
 
 bool Browser::CanOverscrollContent() const {
-#if defined(USE_AURA)
+#if defined(OS_WIN)
+  // Don't enable overscroll on Windows machines unless they have a touch
+  // screen as these machines typically don't have a touchpad capable of
+  // horizontal scrolling. We are purposefully biased towards "no" here,
+  // so that we don't waste resources capturing screenshots for horizontal
+  // overscroll navigation unnecessarily.
+  bool allow_overscroll = ui::IsTouchDevicePresent();
+#elif defined(USE_AURA)
+  bool allow_overscroll = true;
+#else
+  bool allow_overscroll = false;
+#endif
+
+  if (!allow_overscroll)
+    return false;
+
   const std::string value = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
   bool overscroll_enabled = value != "0";
@@ -1143,9 +1159,6 @@ bool Browser::CanOverscrollContent() const {
   if (value == "1" && bookmark_bar_state_ == BookmarkBar::DETACHED)
     return false;
   return true;
-#else
-  return false;
-#endif
 }
 
 bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
