@@ -229,7 +229,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   if (decoder_.get() && message.type() != GpuCommandBufferMsg_Echo::ID &&
       message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
-      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID) {
+      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
+      message.type() != GpuCommandBufferMsg_SignalSyncPoint::ID) {
     if (!MakeCurrent())
       return false;
     have_context = true;
