@@ -23,6 +23,7 @@ class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
       : KeyEventConverterEvdev(
             fd,
             base::FilePath(kTestDevicePath),
+            1,
             modifiers,
             base::Bind(&MockKeyEventConverterEvdev::DispatchEventForTest,
                        base::Unretained(this))) {

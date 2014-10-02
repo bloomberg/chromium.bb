@@ -12,6 +12,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "ui/events/device_data_manager.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
@@ -47,6 +48,7 @@ bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
 scoped_ptr<EventConverterEvdev> CreateConverter(
     int fd,
     const base::FilePath& path,
+    int id,
     const EventDeviceInfo& devinfo,
     const EventDispatchCallback& dispatch,
     EventModifiersEvdev* modifiers,
@@ -61,6 +63,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
         make_scoped_ptr(new EventReaderLibevdevCros(
             fd,
             path,
+            id,
             gesture_interp.PassAs<EventReaderLibevdevCros::Delegate>()));
     return libevdev_reader.PassAs<EventConverterEvdev>();
   }
@@ -70,11 +73,11 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   scoped_ptr<EventConverterEvdev> converter;
   if (devinfo.HasAbsXY())
     return make_scoped_ptr<EventConverterEvdev>(
-        new TouchEventConverterEvdev(fd, path, devinfo, dispatch));
+        new TouchEventConverterEvdev(fd, path, id, devinfo, dispatch));
 
   // Everything else: use KeyEventConverterEvdev.
   return make_scoped_ptr<EventConverterEvdev>(
-      new KeyEventConverterEvdev(fd, path, modifiers, dispatch));
+      new KeyEventConverterEvdev(fd, path, id, modifiers, dispatch));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -87,6 +90,7 @@ void OpenInputDevice(
     const base::FilePath& path,
     EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
+    int device_id,
     scoped_refptr<base::TaskRunner> reply_runner,
     const EventDispatchCallback& dispatch,
     base::Callback<void(scoped_ptr<EventConverterEvdev>)> reply_callback) {
@@ -112,8 +116,8 @@ void OpenInputDevice(
     return;
   }
 
-  scoped_ptr<EventConverterEvdev> converter =
-      CreateConverter(fd, path, devinfo, dispatch, modifiers, cursor);
+  scoped_ptr<EventConverterEvdev> converter = CreateConverter(
+      fd, path, device_id, devinfo, dispatch, modifiers, cursor);
 
   // Reply with the constructed converter.
   reply_runner->PostTask(FROM_HERE,
@@ -131,10 +135,10 @@ void CloseInputDevice(const base::FilePath& path,
 
 }  // namespace
 
-EventFactoryEvdev::EventFactoryEvdev(
-    CursorDelegateEvdev* cursor,
-    DeviceManager* device_manager)
-    : device_manager_(device_manager),
+EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
+                                     DeviceManager* device_manager)
+    : last_device_id_(0),
+      device_manager_(device_manager),
       cursor_(cursor),
       dispatch_callback_(
           base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
@@ -163,6 +167,8 @@ void EventFactoryEvdev::AttachInputDevice(
   // Add initialized device to map.
   converters_[path] = converter.release();
   converters_[path]->Start();
+
+  NotifyHotplugEventObserver(*converters_[path]);
 }
 
 void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
@@ -181,6 +187,7 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
                      event.path(),
                      &modifiers_,
                      cursor_,
+                     NextDeviceId(),
                      ui_task_runner_,
                      dispatch_callback_,
                      base::Bind(&EventFactoryEvdev::AttachInputDevice,
@@ -219,6 +226,8 @@ void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
     // on UI since the polling happens on UI.
     converter->Stop();
 
+    NotifyHotplugEventObserver(*converter);
+
     // Dispatch task to close from the worker pool, since close may block.
     base::WorkerPool::PostTask(
         FROM_HERE,
@@ -238,6 +247,30 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
                            /* changed_button_flags */ 0);
     DispatchEvent(&mouse_event);
   }
+}
+
+void EventFactoryEvdev::NotifyHotplugEventObserver(
+    const EventConverterEvdev& converter) {
+  // For now the only information propagated is related to touchscreens. Ignore
+  // events for everything but touchscreens.
+  if (!converter.HasTouchscreen())
+    return;
+
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  std::vector<TouchscreenDevice> touchscreens;
+  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
+    if (it->second->HasTouchscreen()) {
+      touchscreens.push_back(TouchscreenDevice(it->second->id(),
+                                               it->second->GetTouchscreenSize(),
+                                               false /* is_internal */));
+    }
+  }
+
+  observer->OnTouchscreenDevicesUpdated(touchscreens);
+}
+
+int EventFactoryEvdev::NextDeviceId() {
+  return ++last_device_id_;
 }
 
 }  // namespace ui

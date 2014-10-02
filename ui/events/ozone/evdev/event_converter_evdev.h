@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
@@ -19,14 +20,23 @@ typedef base::Callback<void(Event*)> EventDispatchCallback;
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
     : public base::MessagePumpLibevent::Watcher {
  public:
-  EventConverterEvdev(int fd, const base::FilePath& path);
+  EventConverterEvdev(int fd, const base::FilePath& path, int id);
   virtual ~EventConverterEvdev();
+
+  int id() const { return id_; }
 
   // Start reading events.
   void Start();
 
   // Stop reading events.
   void Stop();
+
+  // Returns true of the converter is used for a touchscreen device.
+  virtual bool HasTouchscreen() const;
+
+  // Returns the size of the touchscreen device if the converter is used for a
+  // touchscreen device.
+  virtual gfx::Size GetTouchscreenSize() const;
 
  protected:
   // base::MessagePumpLibevent::Watcher:
@@ -37,6 +47,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Path to input device.
   base::FilePath path_;
+
+  // Uniquely identifies an event converter.
+  int id_;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

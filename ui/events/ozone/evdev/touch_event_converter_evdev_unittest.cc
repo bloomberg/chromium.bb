@@ -75,6 +75,7 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
     : TouchEventConverterEvdev(
           fd,
           path,
+          1,
           EventDeviceInfo(),
           base::Bind(&MockTouchEventConverterEvdev::DispatchCallback,
                      base::Unretained(this))) {

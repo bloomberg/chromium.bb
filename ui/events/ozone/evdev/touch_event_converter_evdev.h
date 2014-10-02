@@ -27,9 +27,14 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   };
   TouchEventConverterEvdev(int fd,
                            base::FilePath path,
+                           int id,
                            const EventDeviceInfo& info,
                            const EventDispatchCallback& dispatch);
   virtual ~TouchEventConverterEvdev();
+
+  // EventConverterEvdev:
+  virtual bool HasTouchscreen() const OVERRIDE;
+  virtual gfx::Size GetTouchscreenSize() const OVERRIDE;
 
  private:
   friend class MockTouchEventConverterEvdev;
@@ -76,6 +81,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Output range for y-axis.
   float y_min_pixels_;
   float y_num_pixels_;
+
+  // Size of the touchscreen as reported by the driver.
+  gfx::Size native_size_;
 
   // Touch point currently being updated from the /dev/input/event* stream.
   int current_slot_;

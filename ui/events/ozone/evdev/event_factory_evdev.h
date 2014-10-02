@@ -47,6 +47,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);
 
+  void NotifyHotplugEventObserver(const EventConverterEvdev& converter);
+
+  int NextDeviceId();
+
   // DeviceEventObserver overrides:
   //
   // Callback for device add (on UI thread).
@@ -57,6 +61,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
+
+  // Used to uniquely identify input devices.
+  int last_device_id_;
 
   // Interface for scanning & monitoring input devices.
   DeviceManager* device_manager_;  // Not owned.

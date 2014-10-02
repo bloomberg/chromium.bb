@@ -21,6 +21,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
  public:
   KeyEventConverterEvdev(int fd,
                          base::FilePath path,
+                         int id,
                          EventModifiersEvdev* modifiers,
                          const EventDispatchCallback& dispatch);
   virtual ~KeyEventConverterEvdev();

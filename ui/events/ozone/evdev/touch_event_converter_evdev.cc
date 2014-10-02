@@ -75,9 +75,10 @@ namespace ui {
 TouchEventConverterEvdev::TouchEventConverterEvdev(
     int fd,
     base::FilePath path,
+    int id,
     const EventDeviceInfo& info,
     const EventDispatchCallback& callback)
-    : EventConverterEvdev(fd, path),
+    : EventConverterEvdev(fd, path, id),
       callback_(callback),
       syn_dropped_(false),
       is_type_a_(false),
@@ -91,22 +92,19 @@ TouchEventConverterEvdev::~TouchEventConverterEvdev() {
 }
 
 void TouchEventConverterEvdev::Init(const EventDeviceInfo& info) {
-  gfx::Screen *screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
   if (!screen)
     return;  // No scaling.
   gfx::Display display = screen->GetPrimaryDisplay();
   gfx::Size size = display.GetSizeInPixel();
 
-  pressure_min_ = info.GetAbsMinimum(ABS_MT_PRESSURE),
-  pressure_max_ = info.GetAbsMaximum(ABS_MT_PRESSURE),
-  x_min_tuxels_ = info.GetAbsMinimum(ABS_MT_POSITION_X),
-  x_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_X) - x_min_tuxels_ + 1,
-  y_min_tuxels_ = info.GetAbsMinimum(ABS_MT_POSITION_Y),
-  y_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1,
-  x_min_pixels_ = x_min_tuxels_,
-  x_num_pixels_ = x_num_tuxels_,
-  y_min_pixels_ = y_min_tuxels_,
-  y_num_pixels_ = y_num_tuxels_,
+  pressure_min_ = info.GetAbsMinimum(ABS_MT_PRESSURE);
+  pressure_max_ = info.GetAbsMaximum(ABS_MT_PRESSURE);
+  x_min_tuxels_ = info.GetAbsMinimum(ABS_MT_POSITION_X);
+  x_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_X) - x_min_tuxels_ + 1;
+  y_min_tuxels_ = info.GetAbsMinimum(ABS_MT_POSITION_Y);
+  y_num_tuxels_ = info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1;
+  native_size_ = gfx::Size(x_num_tuxels_, y_num_tuxels_);
 
   // Map coordinates onto screen.
   x_min_pixels_ = 0;
@@ -140,6 +138,14 @@ bool TouchEventConverterEvdev::Reinitialize() {
     return true;
   }
   return false;
+}
+
+bool TouchEventConverterEvdev::HasTouchscreen() const {
+  return true;
+}
+
+gfx::Size TouchEventConverterEvdev::GetTouchscreenSize() const {
+  return native_size_;
 }
 
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
