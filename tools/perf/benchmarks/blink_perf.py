@@ -124,6 +124,7 @@ class BlinkPerfCSS(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
+@benchmark.Disabled('android-webview') # crbug.com/419692
 class BlinkPerfCanvas(benchmark.Benchmark):
   tag = 'canvas'
   test = _BlinkPerfMeasurement
@@ -205,6 +206,7 @@ class BlinkPerfShadowDOM(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
+@benchmark.Disabled('android-webview') # crbug.com/419690
 class BlinkPerfXMLHttpRequest(benchmark.Benchmark):
   tag = 'xml_http_request'
   test = _BlinkPerfMeasurement

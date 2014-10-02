@@ -44,7 +44,7 @@ class MediaNetworkSimulation(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-@benchmark.Disabled('l')
+@benchmark.Disabled('l', 'android-webview') # WebView: crbug.com/419689
 class MediaAndroid(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
@@ -82,6 +82,7 @@ class MediaChromeOS(benchmark.Benchmark):
   options = {'page_label_filter_exclude': 'is_4k,is_50fps'}
 
 
+@benchmark.Disabled('android-webview') # crbug.com/419689
 class MediaSourceExtensions(benchmark.Benchmark):
   """Obtains media metrics for key media source extensions functions."""
   test = _MSEMeasurement
