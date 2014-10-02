@@ -135,6 +135,8 @@ public:
 
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
 
+    BLINK_EXPORT static void enableTextBlobs(bool);
+
 private:
     WebRuntimeFeatures();
 };

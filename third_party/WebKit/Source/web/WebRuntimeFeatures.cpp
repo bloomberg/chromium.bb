@@ -298,4 +298,9 @@ void WebRuntimeFeatures::enableCredentialManagerAPI(bool enable)
     RuntimeEnabledFeatures::setCredentialManagerEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableTextBlobs(bool enable)
+{
+    RuntimeEnabledFeatures::setTextBlobEnabled(enable);
+}
+
 } // namespace blink
