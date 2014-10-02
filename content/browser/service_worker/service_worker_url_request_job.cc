@@ -30,6 +30,17 @@
 
 namespace content {
 
+namespace {
+
+// Keep in sync with kDevToolsRequestInitiator and
+// kDevToolsEmulateNetworkConditionsClientId defined in
+// devtools_network_transaction.cc and InspectorResourceAgent.cpp.
+const char kDevToolsRequestInitiator[] = "X-DevTools-Request-Initiator";
+const char kDevToolsEmulateNetworkConditionsClientId[] =
+    "X-DevTools-Emulate-Network-Conditions-Client-Id";
+
+}  // namespace
+
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
@@ -274,8 +285,13 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->url = request_->url();
   request->method = request_->method();
   const net::HttpRequestHeaders& headers = request_->extra_request_headers();
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
+    if (it.name() == kDevToolsRequestInitiator ||
+        it.name() == kDevToolsEmulateNetworkConditionsClientId) {
+      continue;
+    }
     request->headers[it.name()] = it.value();
+  }
   request->blob_uuid = blob_uuid;
   request->blob_size = blob_size;
   request->referrer = GURL(request_->referrer());

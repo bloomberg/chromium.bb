@@ -13,6 +13,9 @@
 
 namespace {
 
+// Keep in sync with kDevToolsRequestInitiator and
+// kDevToolsEmulateNetworkConditionsClientId defined in
+// service_worker_url_request_job.cc and InspectorResourceAgent.cpp.
 const char kDevToolsRequestInitiator[] = "X-DevTools-Request-Initiator";
 const char kDevToolsEmulateNetworkConditionsClientId[] =
     "X-DevTools-Emulate-Network-Conditions-Client-Id";
