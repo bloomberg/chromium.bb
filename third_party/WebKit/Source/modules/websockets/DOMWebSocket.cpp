@@ -599,17 +599,17 @@ void DOMWebSocket::didConnect(const String& subprotocol, const String& extension
     m_eventQueue->dispatch(Event::create(EventTypeNames::open));
 }
 
-void DOMWebSocket::didReceiveMessage(const String& msg)
+void DOMWebSocket::didReceiveTextMessage(const String& msg)
 {
-    WTF_LOG(Network, "WebSocket %p didReceiveMessage() Text message '%s'", this, msg.utf8().data());
+    WTF_LOG(Network, "WebSocket %p didReceiveTextMessage() Text message '%s'", this, msg.utf8().data());
     if (m_state != OPEN)
         return;
     m_eventQueue->dispatch(MessageEvent::create(msg, SecurityOrigin::create(m_url)->toString()));
 }
 
-void DOMWebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
+void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > binaryData)
 {
-    WTF_LOG(Network, "WebSocket %p didReceiveBinaryData() %lu byte binary message", this, static_cast<unsigned long>(binaryData->size()));
+    WTF_LOG(Network, "WebSocket %p didReceiveBinaryMessage() %lu byte binary message", this, static_cast<unsigned long>(binaryData->size()));
     switch (m_binaryType) {
     case BinaryTypeBlob: {
         size_t size = binaryData->size();
@@ -635,9 +635,9 @@ void DOMWebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
     }
 }
 
-void DOMWebSocket::didReceiveMessageError()
+void DOMWebSocket::didError()
 {
-    WTF_LOG(Network, "WebSocket %p didReceiveMessageError()", this);
+    WTF_LOG(Network, "WebSocket %p didError()", this);
     m_state = CLOSED;
     m_eventQueue->dispatch(Event::create(EventTypeNames::error));
 }

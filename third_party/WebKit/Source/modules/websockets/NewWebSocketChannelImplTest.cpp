@@ -52,13 +52,13 @@ public:
     virtual ~MockWebSocketChannelClient() { }
 
     MOCK_METHOD2(didConnect, void(const String&, const String&));
-    MOCK_METHOD1(didReceiveMessage, void(const String&));
-    virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData) OVERRIDE
+    MOCK_METHOD1(didReceiveTextMessage, void(const String&));
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload) OVERRIDE
     {
-        didReceiveBinaryDataMock(*binaryData);
+        didReceiveBinaryMessageMock(*payload);
     }
-    MOCK_METHOD1(didReceiveBinaryDataMock, void(const Vector<char>&));
-    MOCK_METHOD0(didReceiveMessageError, void());
+    MOCK_METHOD1(didReceiveBinaryMessageMock, void(const Vector<char>&));
+    MOCK_METHOD0(didError, void());
     MOCK_METHOD1(didConsumeBufferedAmount, void(unsigned long));
     MOCK_METHOD0(didStartClosingHandshake, void());
     MOCK_METHOD3(didClose, void(ClosingHandshakeCompletionStatus, unsigned short, const String&));
@@ -525,8 +525,8 @@ TEST_F(NewWebSocketChannelImplTest, receiveText)
     connect();
     {
         InSequence s;
-        EXPECT_CALL(*channelClient(), didReceiveMessage(String("FOO")));
-        EXPECT_CALL(*channelClient(), didReceiveMessage(String("BAR")));
+        EXPECT_CALL(*channelClient(), didReceiveTextMessage(String("FOO")));
+        EXPECT_CALL(*channelClient(), didReceiveTextMessage(String("BAR")));
     }
 
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeText, "FOOX", 3);
@@ -536,7 +536,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveText)
 TEST_F(NewWebSocketChannelImplTest, receiveTextContinuation)
 {
     connect();
-    EXPECT_CALL(*channelClient(), didReceiveMessage(String("BAZ")));
+    EXPECT_CALL(*channelClient(), didReceiveTextMessage(String("BAZ")));
 
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeText, "BX", 1);
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeContinuation, "AX", 1);
@@ -551,7 +551,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveTextNonLatin1)
         0x0914,
         0x0000
     };
-    EXPECT_CALL(*channelClient(), didReceiveMessage(String(nonLatin1String)));
+    EXPECT_CALL(*channelClient(), didReceiveTextMessage(String(nonLatin1String)));
 
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeText, "\xe7\x8b\x90\xe0\xa4\x94", 6);
 }
@@ -564,7 +564,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveTextNonLatin1Continuation)
         0x0914,
         0x0000
     };
-    EXPECT_CALL(*channelClient(), didReceiveMessage(String(nonLatin1String)));
+    EXPECT_CALL(*channelClient(), didReceiveTextMessage(String(nonLatin1String)));
 
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeText, "\xe7\x8b", 2);
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeContinuation, "\x90\xe0", 2);
@@ -577,7 +577,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinary)
     connect();
     Vector<char> fooVector;
     fooVector.append("FOO", 3);
-    EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(fooVector));
+    EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(fooVector));
 
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "FOOx", 3);
 }
@@ -587,7 +587,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryContinuation)
     connect();
     Vector<char> bazVector;
     bazVector.append("BAZ", 3);
-    EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(bazVector));
+    EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(bazVector));
 
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeBinary, "Bx", 1);
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeContinuation, "Ax", 1);
@@ -602,22 +602,22 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryWithNullBytes)
         {
             Vector<char> v;
             v.append("\0AR", 3);
-            EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+            EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
         }
         {
             Vector<char> v;
             v.append("B\0Z", 3);
-            EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+            EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
         }
         {
             Vector<char> v;
             v.append("QU\0", 3);
-            EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+            EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
         }
         {
             Vector<char> v;
             v.append("\0\0\0", 3);
-            EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+            EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
         }
     }
 
@@ -632,7 +632,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonLatin1UTF8)
     connect();
     Vector<char> v;
     v.append("\xe7\x8b\x90\xe0\xa4\x94", 6);
-    EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+    EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
 
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "\xe7\x8b\x90\xe0\xa4\x94", 6);
 }
@@ -642,7 +642,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonLatin1UTF8Continuation)
     connect();
     Vector<char> v;
     v.append("\xe7\x8b\x90\xe0\xa4\x94", 6);
-    EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+    EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
 
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeBinary, "\xe7\x8b", 2);
     handleClient()->didReceiveData(handle(), false, WebSocketHandle::MessageTypeContinuation, "\x90\xe0", 2);
@@ -655,7 +655,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonUTF8)
     connect();
     Vector<char> v;
     v.append("\x80\xff", 2);
-    EXPECT_CALL(*channelClient(), didReceiveBinaryDataMock(v));
+    EXPECT_CALL(*channelClient(), didReceiveBinaryMessageMock(v));
 
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "\x80\xff", 2);
 }
@@ -718,7 +718,7 @@ TEST_F(NewWebSocketChannelImplTest, failFromBrowser)
     {
         InSequence s;
 
-        EXPECT_CALL(*channelClient(), didReceiveMessageError());
+        EXPECT_CALL(*channelClient(), didError());
         EXPECT_CALL(*channelClient(), didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, WebSocketChannel::CloseEventCodeAbnormalClosure, String()));
     }
 
@@ -731,7 +731,7 @@ TEST_F(NewWebSocketChannelImplTest, failFromWebSocket)
     {
         InSequence s;
 
-        EXPECT_CALL(*channelClient(), didReceiveMessageError());
+        EXPECT_CALL(*channelClient(), didError());
         EXPECT_CALL(*channelClient(), didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, WebSocketChannel::CloseEventCodeAbnormalClosure, String()));
     }
 

@@ -163,24 +163,24 @@ void WebSocketImpl::didConnect(const String& subprotocol, const String& extensio
     m_client->didConnect();
 }
 
-void WebSocketImpl::didReceiveMessage(const String& message)
+void WebSocketImpl::didReceiveTextMessage(const String& payload)
 {
-    m_client->didReceiveMessage(WebString(message));
+    m_client->didReceiveMessage(WebString(payload));
 }
 
-void WebSocketImpl::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
+void WebSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload)
 {
     switch (m_binaryType) {
     case BinaryTypeBlob:
         // FIXME: Handle Blob after supporting WebBlob.
         break;
     case BinaryTypeArrayBuffer:
-        m_client->didReceiveArrayBuffer(WebArrayBuffer(ArrayBuffer::create(binaryData->data(), binaryData->size())));
+        m_client->didReceiveArrayBuffer(WebArrayBuffer(ArrayBuffer::create(payload->data(), payload->size())));
         break;
     }
 }
 
-void WebSocketImpl::didReceiveMessageError()
+void WebSocketImpl::didError()
 {
     m_client->didReceiveMessageError();
 }

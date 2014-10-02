@@ -115,9 +115,9 @@ public:
 
     // WebSocketChannelClient functions.
     virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
-    virtual void didReceiveMessage(const String& message) OVERRIDE;
-    virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) OVERRIDE;
-    virtual void didReceiveMessageError() OVERRIDE;
+    virtual void didReceiveTextMessage(const String& message) OVERRIDE;
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) OVERRIDE;
+    virtual void didError() OVERRIDE;
     virtual void didConsumeBufferedAmount(unsigned long) OVERRIDE;
     virtual void didStartClosingHandshake() OVERRIDE;
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;

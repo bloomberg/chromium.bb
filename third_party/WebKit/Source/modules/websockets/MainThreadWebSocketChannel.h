@@ -125,8 +125,8 @@ private:
 
     void disconnectHandle();
 
-    // Calls didReceiveMessageError() on m_client if we haven't yet.
-    void callDidReceiveMessageError();
+    // Calls didError() on m_client if we haven't yet.
+    void callDidError();
 
     bool appendToBuffer(const char* data, size_t len);
     void skipBuffer(size_t len);
@@ -209,7 +209,7 @@ private:
 
     Timer<MainThreadWebSocketChannel> m_resumeTimer;
     bool m_suspended;
-    bool m_didFailOfClientAlreadyRun;
+    bool m_didSendErrorToClient;
     // Set to true iff this instance called disconnect() on m_handle.
     bool m_hasCalledDisconnectOnHandle;
     bool m_receivedClosingHandshake;

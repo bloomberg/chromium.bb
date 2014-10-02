@@ -42,9 +42,9 @@ class WebSocketChannelClient : public GarbageCollectedMixin {
 public:
     virtual ~WebSocketChannelClient() { }
     virtual void didConnect(const String& subprotocol, const String& extensions) { }
-    virtual void didReceiveMessage(const String&) { }
-    virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) { }
-    virtual void didReceiveMessageError() { }
+    virtual void didReceiveTextMessage(const String&) { }
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) { }
+    virtual void didError() { }
     virtual void didConsumeBufferedAmount(unsigned long consumed) { }
     virtual void didStartClosingHandshake() { }
     enum ClosingHandshakeCompletionStatus {

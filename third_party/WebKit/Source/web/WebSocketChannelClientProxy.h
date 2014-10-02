@@ -31,17 +31,17 @@ public:
     {
         m_impl->didConnect(subprotocol, extensions);
     }
-    virtual void didReceiveMessage(const String& message) OVERRIDE
+    virtual void didReceiveTextMessage(const String& payload) OVERRIDE
     {
-        m_impl->didReceiveMessage(message);
+        m_impl->didReceiveTextMessage(payload);
     }
-    virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData) OVERRIDE
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload) OVERRIDE
     {
-        m_impl->didReceiveBinaryData(binaryData);
+        m_impl->didReceiveBinaryMessage(payload);
     }
-    virtual void didReceiveMessageError() OVERRIDE
+    virtual void didError() OVERRIDE
     {
-        m_impl->didReceiveMessageError();
+        m_impl->didError();
     }
     virtual void didConsumeBufferedAmount(unsigned long consumed) OVERRIDE
     {

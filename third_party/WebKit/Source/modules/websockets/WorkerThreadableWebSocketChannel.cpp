@@ -287,30 +287,30 @@ void Peer::didConnect(const String& subprotocol, const String& extensions)
     m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConnect, m_bridge, subprotocol, extensions));
 }
 
-static void workerGlobalScopeDidReceiveMessage(ExecutionContext* context, Bridge* bridge, const String& message)
+static void workerGlobalScopeDidReceiveTextMessage(ExecutionContext* context, Bridge* bridge, const String& payload)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
-        bridge->client()->didReceiveMessage(message);
+        bridge->client()->didReceiveTextMessage(payload);
 }
 
-void Peer::didReceiveMessage(const String& message)
+void Peer::didReceiveTextMessage(const String& payload)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveMessage, m_bridge, message));
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
 }
 
-static void workerGlobalScopeDidReceiveBinaryData(ExecutionContext* context, Bridge* bridge, PassOwnPtr<Vector<char> > binaryData)
+static void workerGlobalScopeDidReceiveBinaryMessage(ExecutionContext* context, Bridge* bridge, PassOwnPtr<Vector<char> > payload)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
-        bridge->client()->didReceiveBinaryData(binaryData);
+        bridge->client()->didReceiveBinaryMessage(payload);
 }
 
-void Peer::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
+void Peer::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryData, m_bridge, binaryData));
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, payload));
 }
 
 static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, Bridge* bridge, unsigned long consumed)
@@ -356,17 +356,17 @@ void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion,
     m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidClose, m_bridge, closingHandshakeCompletion, code, reason));
 }
 
-static void workerGlobalScopeDidReceiveMessageError(ExecutionContext* context, Bridge* bridge)
+static void workerGlobalScopeDidError(ExecutionContext* context, Bridge* bridge)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
-        bridge->client()->didReceiveMessageError();
+        bridge->client()->didError();
 }
 
-void Peer::didReceiveMessageError()
+void Peer::didError()
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveMessageError, m_bridge));
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
 }
 
 void Peer::trace(Visitor* visitor)

@@ -65,7 +65,7 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_client(client)
     , m_resumeTimer(this, &MainThreadWebSocketChannel::resumeTimerFired)
     , m_suspended(false)
-    , m_didFailOfClientAlreadyRun(false)
+    , m_didSendErrorToClient(false)
     , m_hasCalledDisconnectOnHandle(false)
     , m_receivedClosingHandshake(false)
     , m_closingTimer(this, &MainThreadWebSocketChannel::closingTimerFired)
@@ -178,12 +178,12 @@ void MainThreadWebSocketChannel::disconnectHandle()
     m_handle->disconnect();
 }
 
-void MainThreadWebSocketChannel::callDidReceiveMessageError()
+void MainThreadWebSocketChannel::callDidError()
 {
-    if (!m_client || m_didFailOfClientAlreadyRun)
+    if (!m_client || m_didSendErrorToClient)
         return;
-    m_didFailOfClientAlreadyRun = true;
-    m_client->didReceiveMessageError();
+    m_didSendErrorToClient = true;
+    m_client->didError();
 }
 
 void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
@@ -204,7 +204,7 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
     m_hasContinuousFrame = false;
     m_continuousFrameData.clear();
 
-    callDidReceiveMessageError();
+    callDidError();
 
     if (m_state != ChannelClosed)
         disconnectHandle(); // Will call didCloseSocketStream().
@@ -364,7 +364,7 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
     WTF_LOG(Network, "Error Message: '%s', FailURL: '%s'", message.utf8().data(), failingURL.utf8().data());
 
     if (m_state != ChannelClosing && m_state != ChannelClosed)
-        callDidReceiveMessageError();
+        callDidError();
 
     if (m_state != ChannelClosed)
         disconnectHandle();
@@ -616,9 +616,9 @@ bool MainThreadWebSocketChannel::processFrame()
                 if (message.isNull())
                     failAsError("Could not decode a text frame as UTF-8.");
                 else
-                    m_client->didReceiveMessage(message);
+                    m_client->didReceiveTextMessage(message);
             } else if (m_continuousFrameOpCode == WebSocketFrame::OpCodeBinary) {
-                m_client->didReceiveBinaryData(continuousFrameData.release());
+                m_client->didReceiveBinaryMessage(continuousFrameData.release());
             }
         }
         break;
@@ -634,7 +634,7 @@ bool MainThreadWebSocketChannel::processFrame()
             if (message.isNull())
                 failAsError("Could not decode a text frame as UTF-8.");
             else
-                m_client->didReceiveMessage(message);
+                m_client->didReceiveTextMessage(message);
         } else {
             m_hasContinuousFrame = true;
             m_continuousFrameOpCode = WebSocketFrame::OpCodeText;
@@ -649,7 +649,7 @@ bool MainThreadWebSocketChannel::processFrame()
             OwnPtr<Vector<char> > binaryData = adoptPtr(new Vector<char>(frame.payloadLength));
             memcpy(binaryData->data(), frame.payload, frame.payloadLength);
             skipBuffer(frameEnd - m_buffer.data());
-            m_client->didReceiveBinaryData(binaryData.release());
+            m_client->didReceiveBinaryMessage(binaryData.release());
         } else {
             m_hasContinuousFrame = true;
             m_continuousFrameOpCode = WebSocketFrame::OpCodeBinary;
