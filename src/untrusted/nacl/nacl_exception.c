@@ -26,11 +26,16 @@ static int set_up_irt_exception_handling(void) {
 }
 
 int nacl_exception_set_handler(nacl_exception_handler_t handler) {
+  return nacl_exception_get_and_set_handler(handler, NULL);
+}
+
+int nacl_exception_get_and_set_handler(nacl_exception_handler_t handler,
+                                       nacl_exception_handler_t *old) {
   if (irt_exception_handling.exception_handler == NULL) {
     if (!set_up_irt_exception_handling())
       return ENOSYS;
   }
-  return irt_exception_handling.exception_handler(handler, NULL);
+  return irt_exception_handling.exception_handler(handler, old);
 }
 
 int nacl_exception_set_stack(void *stack, size_t size) {

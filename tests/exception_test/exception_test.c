@@ -15,8 +15,6 @@
 
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/tests/common/register_set.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
@@ -243,22 +241,17 @@ void test_exception_stack_alignments(void) {
 }
 
 void test_getting_previous_handler(void) {
-  /*
-   * The direct IRT call and NaCl syscall exposes old handler as API
-   * whereas nacl_exception_set_handler() does not. This test
-   * exercises that path.
-   */
   int rc;
   nacl_exception_handler_t prev_handler;
 
-  rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
+  rc = nacl_exception_get_and_set_handler(exception_handler, NULL);
   assert(rc == 0);
 
-  rc = NACL_SYSCALL(exception_handler)(NULL, &prev_handler);
+  rc = nacl_exception_get_and_set_handler(NULL, &prev_handler);
   assert(rc == 0);
   assert(prev_handler == exception_handler);
 
-  rc = NACL_SYSCALL(exception_handler)(NULL, &prev_handler);
+  rc = nacl_exception_get_and_set_handler(NULL, &prev_handler);
   assert(rc == 0);
   assert(prev_handler == NULL);
 }

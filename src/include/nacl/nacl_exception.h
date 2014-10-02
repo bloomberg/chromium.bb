@@ -250,6 +250,15 @@ typedef void (*nacl_exception_handler_t)(struct NaClExceptionContext *context);
 int nacl_exception_set_handler(nacl_exception_handler_t handler);
 
 /*
+ * Set the exception handler function and obtain the previous handler.
+ * This applies to all threads in the process. |old| may be NULL in
+ * which case previous handler is not obtained.
+ * @return 0 on success. A positive errno value on error.
+ */
+int nacl_exception_get_and_set_handler(nacl_exception_handler_t handler,
+                                       nacl_exception_handler_t *old);
+
+/*
  * Set the stack that the exception handler will run on.  This applies
  * to the current thread only.  This API is similar to sigaltstack()
  * in POSIX.

@@ -12,7 +12,12 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_exception_set_handler(nacl_exception_handler_t handler) {
-  return -NACL_SYSCALL(exception_handler)(handler, NULL);
+  return nacl_exception_get_and_set_handler(handler, NULL);
+}
+
+int nacl_exception_get_and_set_handler(nacl_exception_handler_t handler,
+                                       nacl_exception_handler_t *old) {
+  return -NACL_SYSCALL(exception_handler)(handler, old);
 }
 
 int nacl_exception_set_stack(void *stack, size_t size) {
