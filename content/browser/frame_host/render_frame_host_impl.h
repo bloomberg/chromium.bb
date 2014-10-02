@@ -75,17 +75,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // RenderFrame.
     STATE_DEFAULT = 0,
     // The RFH has not received the SwapOutACK yet, but the new page has
-    // committed in a different RFH. The number of active frames of the RFH
-    // SiteInstanceImpl is not zero. Upon reception of the SwapOutACK, the RFH
-    // will be swapped out.
+    // committed in a different RFH.  Upon reception of the SwapOutACK, the RFH
+    // will either enter STATE_SWAPPED_OUT (if it is a main frame and there are
+    // other active frames in its SiteInstance) or it will be deleted.
     STATE_PENDING_SWAP_OUT,
-    // The RFH has not received the SwapOutACK yet, but the new page has
-    // committed in a different RFH. The number of active frames of the RFH
-    // SiteInstanceImpl is zero. Upon reception of the SwapOutACK, the RFH will
-    // be shutdown.
-    STATE_PENDING_SHUTDOWN,
     // The RFH is swapped out and stored inside a RenderFrameProxyHost, being
-    // used as a placeholder to allow cross-process communication.
+    // used as a placeholder to allow cross-process communication.  Only main
+    // frames can enter this state.
     STATE_SWAPPED_OUT,
   };
   // Helper function to determine whether the RFH state should contribute to the
@@ -214,11 +210,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const TransitionLayerData& transition_data);
 
   // Tells the renderer that this RenderFrame is being swapped out for one in a
-  // different renderer process.  It should run its unload handler, move to
-  // a blank document and create a RenderFrameProxy to replace the RenderFrame.
-  // The renderer should preserve the Proxy object until it exits, in case we
-  // come back.  The renderer can exit if it has no other active RenderFrames,
-  // but not until WasSwappedOut is called (when it is no longer visible).
+  // different renderer process.  It should run its unload handler and move to
+  // a blank document.  If |proxy| is not null, it should also create a
+  // RenderFrameProxy to replace the RenderFrame. The renderer should preserve
+  // the RenderFrameProxy object until it exits, in case we come back.  The
+  // renderer can exit if it has no other active RenderFrames, but not until
+  // WasSwappedOut is called.
   void SwapOut(RenderFrameProxyHost* proxy);
 
   bool is_waiting_for_beforeunload_ack() const {
@@ -238,10 +235,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The current state of this RFH.
   RenderFrameHostImplState rfh_state() const { return rfh_state_; }
-
-  // Set |this| as pending shutdown. |on_swap_out| will be called
-  // when the SwapOutACK is received, or when the unload timer times out.
-  void SetPendingShutdown(const base::Closure& on_swap_out);
 
   // Sends the given navigation message. Use this rather than sending it
   // yourself since this does the internal bookkeeping described below. This
@@ -551,10 +544,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // long to execute, depending on the number of active frames in the
   // SiteInstance.
   scoped_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
-
-  // Called after receiving the SwapOutACK when the RFH is in the pending
-  // shutdown state. Also called if the unload timer times out.
-  base::Closure pending_shutdown_on_swap_out_;
 
   ServiceRegistryImpl service_registry_;
 

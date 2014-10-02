@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -298,9 +300,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   RenderFrameProxyHost* GetRenderFrameProxyHost(
       SiteInstance* instance) const;
 
-  // Deletes a RenderFrameHost that was pending shutdown.
-  void ClearPendingShutdownRFHForSiteInstance(int32 site_instance_id,
-                                              RenderFrameHostImpl* rfh);
+  // Returns whether |render_frame_host| is on the pending deletion list.
+  bool IsPendingDeletion(RenderFrameHostImpl* render_frame_host);
+
+  // If |render_frame_host| is on the pending deletion list, this deletes it.
+  // Returns whether it was deleted.
+  bool DeleteFromPendingList(RenderFrameHostImpl* render_frame_host);
 
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.
@@ -416,9 +421,15 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // since there could be Web UI switching as well. Call this for every commit.
   void CommitPending();
 
-  // Runs the unload handler in the current page, after the new page has
-  // committed.
-  void SwapOutOldPage(RenderFrameHostImpl* old_render_frame_host);
+  // Runs the unload handler in the old RenderFrameHost, after the new
+  // RenderFrameHost has committed.  |old_render_frame_host| will either be
+  // deleted or put on the pending delete list during this call.
+  void SwapOutOldFrame(scoped_ptr<RenderFrameHostImpl> old_render_frame_host);
+
+  // Holds |render_frame_host| until it can be deleted when its swap out ACK
+  // arrives.
+  void MoveToPendingDeleteHosts(
+      scoped_ptr<RenderFrameHostImpl> render_frame_host);
 
   // Shutdown all RenderFrameProxyHosts in a SiteInstance. This is called to
   // shutdown frames when all the frames in a SiteInstance are confirmed to be
@@ -507,10 +518,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   typedef base::hash_map<int32, RenderFrameProxyHost*> RenderFrameProxyHostMap;
   RenderFrameProxyHostMap proxy_hosts_;
 
-  // A map of RenderFrameHosts pending shutdown.
-  typedef base::hash_map<int32, linked_ptr<RenderFrameHostImpl> >
-      RFHPendingDeleteMap;
-  RFHPendingDeleteMap pending_delete_hosts_;
+  // A list of RenderFrameHosts waiting to shut down after swapping out.  We use
+  // a linked list since we expect frequent deletes and no indexed access, and
+  // because sets don't appear to support linked_ptrs.
+  typedef std::list<linked_ptr<RenderFrameHostImpl> > RFHPendingDeleteList;
+  RFHPendingDeleteList pending_delete_hosts_;
 
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).

@@ -307,13 +307,13 @@ class RenderFrameHostManagerTest
     // Make sure that we start to run the unload handler at the time of commit.
     bool expecting_rfh_shutdown = false;
     if (old_rfh != active_rfh && !rfh_observer.deleted()) {
+      EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT,
+                old_rfh->rfh_state());
       if (!old_rfh->GetSiteInstance()->active_frame_count()) {
         expecting_rfh_shutdown = true;
-        EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SHUTDOWN,
-                  old_rfh->rfh_state());
-      } else {
-        EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT,
-                  old_rfh->rfh_state());
+        EXPECT_TRUE(
+            old_rfh->frame_tree_node()->render_manager()->IsPendingDeletion(
+                old_rfh));
       }
     }
 
@@ -1549,7 +1549,9 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SHUTDOWN, rfh1->rfh_state());
+  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+  EXPECT_TRUE(
+      rfh1->frame_tree_node()->render_manager()->IsPendingDeletion(rfh1));
 
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();

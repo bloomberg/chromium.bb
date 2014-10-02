@@ -407,6 +407,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 #endif
   IPC_END_MESSAGE_MAP()
 
+  // No further actions here, since we may have been deleted.
   return handled;
 }
 
@@ -785,17 +786,24 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
 
   // If this RenderFrameHost is not in the default state, it must have already
   // gone through this, therefore just return.
-  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT)
+  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT) {
+    NOTREACHED() << "RFH should be in default state when calling SwapOut.";
     return;
+  }
 
   SetState(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT);
   swapout_event_monitor_timeout_->Start(
       base::TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
 
-  set_render_frame_proxy_host(proxy);
+  // There may be no proxy if there are no active views in the process.
+  int proxy_routing_id = MSG_ROUTING_NONE;
+  if (proxy) {
+    set_render_frame_proxy_host(proxy);
+    proxy_routing_id = proxy->GetRoutingID();
+  }
 
   if (IsRenderFrameLive())
-    Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID()));
+    Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id));
 
   if (!GetParent())
     delegate_->SwappedOut(this);
@@ -879,7 +887,6 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
   return render_view_host_->is_waiting_for_close_ack_ ||
-      rfh_state_ == STATE_PENDING_SHUTDOWN ||
       rfh_state_ == STATE_PENDING_SWAP_OUT;
 }
 
@@ -889,24 +896,19 @@ void RenderFrameHostImpl::OnSwapOutACK() {
 
 void RenderFrameHostImpl::OnSwappedOut() {
   // Ignore spurious swap out ack.
-  if (rfh_state_ != STATE_PENDING_SWAP_OUT &&
-      rfh_state_ != STATE_PENDING_SHUTDOWN)
+  if (rfh_state_ != STATE_PENDING_SWAP_OUT)
     return;
 
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
   swapout_event_monitor_timeout_->Stop();
 
-  switch (rfh_state_) {
-    case STATE_PENDING_SWAP_OUT:
-      SetState(STATE_SWAPPED_OUT);
-      break;
-    case STATE_PENDING_SHUTDOWN:
-      DCHECK(!pending_shutdown_on_swap_out_.is_null());
-      pending_shutdown_on_swap_out_.Run();
-      break;
-    default:
-      NOTREACHED();
+  if (frame_tree_node_->render_manager()->DeleteFromPendingList(this)) {
+    // We are now deleted.
+    return;
   }
+
+  // If this RFH wasn't pending deletion, then it is now swapped out.
+  SetState(RenderFrameHostImpl::STATE_SWAPPED_OUT);
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
@@ -1179,6 +1181,10 @@ void RenderFrameHostImpl::OnHidePopup() {
 #endif
 
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
+  // Only main frames should be swapped out and retained inside a proxy host.
+  if (rfh_state == STATE_SWAPPED_OUT)
+    CHECK(!GetParent());
+
   // We update the number of RenderFrameHosts in a SiteInstance when the swapped
   // out status of a RenderFrameHost gets flipped to/from active.
   if (!IsRFHStateActive(rfh_state_) && IsRFHStateActive(rfh_state))
@@ -1206,11 +1212,6 @@ void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
     render_view_host_->is_waiting_for_close_ack_ = false;
   }
   rfh_state_ = rfh_state;
-}
-
-void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
-  pending_shutdown_on_swap_out_ = on_swap_out;
-  SetState(STATE_PENDING_SHUTDOWN);
 }
 
 bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {

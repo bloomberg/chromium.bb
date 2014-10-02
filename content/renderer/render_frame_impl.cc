@@ -1051,12 +1051,15 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // clearing the page.  We also allow this process to exit if there are no
     // other active RenderFrames in it.
 
-    // Send an UpdateState message before we get swapped out. Create the
-    // RenderFrameProxy as well so its routing id is registered for receiving
-    // IPC messages.
+    // Send an UpdateState message before we get swapped out.
     render_view_->SyncNavigationState();
-    proxy = RenderFrameProxy::CreateProxyToReplaceFrame(this,
-                                                        proxy_routing_id);
+
+    // If we need a proxy to replace this, create it now so its routing id is
+    // registered for receiving IPC messages.
+    if (proxy_routing_id != MSG_ROUTING_NONE) {
+      proxy = RenderFrameProxy::CreateProxyToReplaceFrame(this,
+                                                          proxy_routing_id);
+    }
 
     // Synchronously run the unload handler before sending the ACK.
     // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
