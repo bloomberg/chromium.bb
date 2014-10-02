@@ -11,7 +11,7 @@
 
 namespace media {
 
-const char kWebMEncryptInitDataType[] = "webm";
+const char kWebMInitDataType[] = "webm";
 
 // Fills an initialized DecryptConfig, which can be sent to the Decryptor if
 // the stream has potentially encrypted frames. Also sets |data_offset| which

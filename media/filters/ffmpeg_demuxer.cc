@@ -170,7 +170,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
       return;
 
     encryption_key_id_.assign(enc_key_id);
-    demuxer_->FireNeedKey(kWebMEncryptInitDataType, enc_key_id);
+    demuxer_->FireNeedKey(kWebMInitDataType, enc_key_id);
   }
 }
 

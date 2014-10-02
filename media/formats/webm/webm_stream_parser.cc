@@ -277,7 +277,7 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
 
 void WebMStreamParser::FireNeedKey(const std::string& key_id) {
   std::vector<uint8> key_id_vector(key_id.begin(), key_id.end());
-  need_key_cb_.Run(kWebMEncryptInitDataType, key_id_vector);
+  need_key_cb_.Run(kWebMInitDataType, key_id_vector);
 }
 
 }  // namespace media

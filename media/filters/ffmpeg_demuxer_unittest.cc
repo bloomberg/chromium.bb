@@ -358,7 +358,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_MultitrackText) {
 }
 
 TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
-  EXPECT_CALL(*this, NeedKeyCBMock(kWebMEncryptInitDataType, NotNull(),
+  EXPECT_CALL(*this, NeedKeyCBMock(kWebMInitDataType, NotNull(),
                                    DecryptConfig::kDecryptionKeySize))
       .Times(Exactly(2));
 

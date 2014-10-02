@@ -1221,7 +1221,7 @@ TEST_F(ChunkDemuxerTest, Init) {
     if (is_audio_encrypted || is_video_encrypted) {
       int need_key_count = (is_audio_encrypted ? 1 : 0) +
                            (is_video_encrypted ? 1 : 0);
-      EXPECT_CALL(*this, NeedKeyMock(kWebMEncryptInitDataType, NotNull(),
+      EXPECT_CALL(*this, NeedKeyMock(kWebMInitDataType, NotNull(),
                                      DecryptConfig::kDecryptionKeySize))
           .Times(Exactly(need_key_count));
     }
