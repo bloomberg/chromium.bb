@@ -17,12 +17,6 @@
 
 namespace crypto {
 
-namespace {
-
-typedef ScopedOpenSSL<ECDSA_SIG, ECDSA_SIG_free>::Type ScopedECDSA_SIG;
-
-}  // namespace
-
 ECSignatureCreatorImpl::ECSignatureCreatorImpl(ECPrivateKey* key)
     : key_(key), signature_len_(0) {
   EnsureOpenSSLInit();

@@ -54,7 +54,7 @@ bool HMAC::Sign(const base::StringPiece& data,
   DCHECK(!plat_->key.empty());  // Init must be called before Sign.
 
   ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> result(digest, digest_length);
-  return ::HMAC(hash_alg_ == SHA1 ? EVP_sha1() : EVP_sha256(),
+  return !!::HMAC(hash_alg_ == SHA1 ? EVP_sha1() : EVP_sha256(),
                 &plat_->key[0], plat_->key.size(),
                 reinterpret_cast<const unsigned char*>(data.data()),
                 data.size(),

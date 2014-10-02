@@ -68,9 +68,8 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
   signature->resize(RSA_size(rsa_key.get()));
 
   unsigned int len = 0;
-  bool success = RSA_sign(ToOpenSSLDigestType(hash_alg), data, data_len,
-                          vector_as_array(signature), &len, rsa_key.get());
-  if (!success) {
+  if (!RSA_sign(ToOpenSSLDigestType(hash_alg), data, data_len,
+                vector_as_array(signature), &len, rsa_key.get())) {
     signature->clear();
     return false;
   }
