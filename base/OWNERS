@@ -1,9 +1,11 @@
 mark@chromium.org
 darin@chromium.org
-brettw@chromium.org
 willchan@chromium.org
 ajwong@chromium.org
 thakis@chromium.org
+danakj@chromium.org
+rvargas@chromium.org
+thestig@chromium.org
 
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
