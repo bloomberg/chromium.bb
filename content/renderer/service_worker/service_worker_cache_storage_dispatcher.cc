@@ -85,10 +85,12 @@ ServiceWorkerResponse ResponseFromWebResponse(
   ServiceWorkerHeaderMap headers;
   web_response.visitHTTPHeaderFields(MakeHeaderVisitor(&headers).get());
 
-  return ServiceWorkerResponse(
-      web_response.url(), web_response.status(),
-      base::UTF16ToASCII(web_response.statusText()), headers,
-      base::UTF16ToASCII(web_response.blobUUID()));
+  return ServiceWorkerResponse(web_response.url(),
+                               web_response.status(),
+                               base::UTF16ToASCII(web_response.statusText()),
+                               web_response.responseType(),
+                               headers,
+                               base::UTF16ToASCII(web_response.blobUUID()));
 }
 
 void PopulateWebResponseFromResponse(
@@ -97,6 +99,8 @@ void PopulateWebResponseFromResponse(
   web_response->setURL(response.url);
   web_response->setStatus(response.status_code);
   web_response->setStatusText(base::ASCIIToUTF16(response.status_text));
+  web_response->setResponseType(response.response_type);
+
   for (ServiceWorkerHeaderMap::const_iterator i = response.headers.begin(),
                                             end = response.headers.end();
        i != end; ++i) {

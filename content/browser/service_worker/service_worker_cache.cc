@@ -19,6 +19,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 
 namespace content {
 
@@ -39,6 +40,43 @@ const int kMaxCacheBytes = 512 * 1024 * 1024;
 
 // Buffer size for cache and blob reading/writing.
 const int kBufferSize = 1024 * 512;
+
+blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
+    ServiceWorkerRequestResponseHeaders_ResponseType response_type) {
+  switch (response_type) {
+    case ServiceWorkerRequestResponseHeaders_ResponseType_BASIC_TYPE:
+      return blink::WebServiceWorkerResponseTypeBasic;
+    case ServiceWorkerRequestResponseHeaders_ResponseType_CORS_TYPE:
+      return blink::WebServiceWorkerResponseTypeCORS;
+    case ServiceWorkerRequestResponseHeaders_ResponseType_DEFAULT_TYPE:
+      return blink::WebServiceWorkerResponseTypeDefault;
+    case ServiceWorkerRequestResponseHeaders_ResponseType_ERROR_TYPE:
+      return blink::WebServiceWorkerResponseTypeError;
+    case ServiceWorkerRequestResponseHeaders_ResponseType_OPAQUE_TYPE:
+      return blink::WebServiceWorkerResponseTypeOpaque;
+  }
+  NOTREACHED();
+  return blink::WebServiceWorkerResponseTypeOpaque;
+}
+
+ServiceWorkerRequestResponseHeaders_ResponseType
+WebResponseTypeToProtoResponseType(
+    blink::WebServiceWorkerResponseType response_type) {
+  switch (response_type) {
+    case blink::WebServiceWorkerResponseTypeBasic:
+      return ServiceWorkerRequestResponseHeaders_ResponseType_BASIC_TYPE;
+    case blink::WebServiceWorkerResponseTypeCORS:
+      return ServiceWorkerRequestResponseHeaders_ResponseType_CORS_TYPE;
+    case blink::WebServiceWorkerResponseTypeDefault:
+      return ServiceWorkerRequestResponseHeaders_ResponseType_DEFAULT_TYPE;
+    case blink::WebServiceWorkerResponseTypeError:
+      return ServiceWorkerRequestResponseHeaders_ResponseType_ERROR_TYPE;
+    case blink::WebServiceWorkerResponseTypeOpaque:
+      return ServiceWorkerRequestResponseHeaders_ResponseType_OPAQUE_TYPE;
+  }
+  NOTREACHED();
+  return ServiceWorkerRequestResponseHeaders_ResponseType_OPAQUE_TYPE;
+}
 
 struct ResponseReadContext {
   ResponseReadContext(scoped_refptr<net::IOBufferWithSize> buff,
@@ -265,9 +303,10 @@ void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv) {
 
   ServiceWorkerRequestResponseHeaders headers;
   headers.set_method(put_context->request->method);
-
   headers.set_status_code(put_context->response->status_code);
   headers.set_status_text(put_context->response->status_text);
+  headers.set_response_type(
+      WebResponseTypeToProtoResponseType(put_context->response->response_type));
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->request->headers.begin();
        it != put_context->request->headers.end();
@@ -449,12 +488,13 @@ void MatchDidReadHeaderData(
     return;
   }
 
-  scoped_ptr<ServiceWorkerResponse> response(
-      new ServiceWorkerResponse(request->url,
-                                headers->status_code(),
-                                headers->status_text(),
-                                ServiceWorkerHeaderMap(),
-                                ""));
+  scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse(
+      request->url,
+      headers->status_code(),
+      headers->status_text(),
+      ProtoResponseTypeToWebResponseType(headers->response_type()),
+      ServiceWorkerHeaderMap(),
+      ""));
 
   for (int i = 0; i < headers->response_headers_size(); ++i) {
     const ServiceWorkerRequestResponseHeaders::HeaderMap header =

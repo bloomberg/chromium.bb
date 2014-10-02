@@ -47,6 +47,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebServiceWorkerCacheError.h",
   "+third_party/WebKit/public/platform/WebServiceWorkerError.h",
   "+third_party/WebKit/public/platform/WebServiceWorkerEventResult.h",
+  "+third_party/WebKit/public/platform/WebServiceWorkerResponseType.h",
   "+third_party/WebKit/public/platform/WebServiceWorkerState.h",
   "+third_party/WebKit/public/platform/WebString.h",
   "+third_party/WebKit/public/platform/WebVibration.h",

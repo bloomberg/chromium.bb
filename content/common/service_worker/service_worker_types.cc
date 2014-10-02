@@ -31,17 +31,21 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
-ServiceWorkerResponse::ServiceWorkerResponse() : status_code(0) {}
+ServiceWorkerResponse::ServiceWorkerResponse()
+    : status_code(0), response_type(blink::WebServiceWorkerResponseTypeOpaque) {
+}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     const GURL& url,
     int status_code,
     const std::string& status_text,
+    blink::WebServiceWorkerResponseType response_type,
     const ServiceWorkerHeaderMap& headers,
     const std::string& blob_uuid)
     : url(url),
       status_code(status_code),
       status_text(status_text),
+      response_type(response_type),
       headers(headers),
       blob_uuid(blob_uuid) {}
 

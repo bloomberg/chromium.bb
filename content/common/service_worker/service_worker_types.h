@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 #include "url/gurl.h"
 
@@ -94,6 +95,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerResponse(const GURL& url,
                         int status_code,
                         const std::string& status_text,
+                        blink::WebServiceWorkerResponseType response_type,
                         const ServiceWorkerHeaderMap& headers,
                         const std::string& blob_uuid);
   ~ServiceWorkerResponse();
@@ -101,6 +103,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   GURL url;
   int status_code;
   std::string status_text;
+  blink::WebServiceWorkerResponseType response_type;
   ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
 };

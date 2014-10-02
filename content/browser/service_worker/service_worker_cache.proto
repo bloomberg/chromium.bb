@@ -22,9 +22,19 @@ message ServiceWorkerRequestResponseHeaders {
     required string name = 1;
     required string value = 2;
   }
+
+  enum ResponseType {
+    BASIC_TYPE = 0;
+    CORS_TYPE = 1;
+    DEFAULT_TYPE = 2;
+    ERROR_TYPE = 3;
+    OPAQUE_TYPE = 4;
+  }
+
   required string method = 1;
   required int32 status_code = 2;
   required string status_text = 3;
   repeated HeaderMap request_headers = 4;
   repeated HeaderMap response_headers = 5;
+  required ResponseType response_type = 6;
 }

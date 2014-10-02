@@ -31,6 +31,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
                           blink::WebServiceWorkerStateLast)
 
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseType,
+                          blink::WebServiceWorkerResponseTypeLast)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(url)
@@ -50,6 +53,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(status_code)
   IPC_STRUCT_TRAITS_MEMBER(status_text)
+  IPC_STRUCT_TRAITS_MEMBER(response_type)
   IPC_STRUCT_TRAITS_MEMBER(headers)
   IPC_STRUCT_TRAITS_MEMBER(blob_uuid)
 IPC_STRUCT_TRAITS_END()

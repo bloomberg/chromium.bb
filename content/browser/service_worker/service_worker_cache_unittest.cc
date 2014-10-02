@@ -105,14 +105,21 @@ class ServiceWorkerCacheTest : public testing::Test {
     blob_handle_ =
         blob_storage_context->context()->AddFinishedBlob(blob_data.get());
 
-    body_response_ = ServiceWorkerResponse(GURL("http://example.com/body.html"),
-                                           200,
-                                           "OK",
-                                           headers,
-                                           blob_handle_->uuid());
+    body_response_ =
+        ServiceWorkerResponse(GURL("http://example.com/body.html"),
+                              200,
+                              "OK",
+                              blink::WebServiceWorkerResponseTypeDefault,
+                              headers,
+                              blob_handle_->uuid());
 
-    no_body_response_ = ServiceWorkerResponse(
-        GURL("http://example.com/no_body.html"), 200, "OK", headers, "");
+    no_body_response_ =
+        ServiceWorkerResponse(GURL("http://example.com/no_body.html"),
+                              200,
+                              "OK",
+                              blink::WebServiceWorkerResponseTypeDefault,
+                              headers,
+                              "");
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -126,11 +133,14 @@ class ServiceWorkerCacheTest : public testing::Test {
 
   scoped_ptr<ServiceWorkerResponse> CopyFetchResponse(
       const ServiceWorkerResponse& response) {
-    return make_scoped_ptr(new ServiceWorkerResponse(response.url,
-                                                     response.status_code,
-                                                     response.status_text,
-                                                     response.headers,
-                                                     response.blob_uuid));
+    scoped_ptr<ServiceWorkerResponse> sw_response(
+        new ServiceWorkerResponse(response.url,
+                                  response.status_code,
+                                  response.status_text,
+                                  response.response_type,
+                                  response.headers,
+                                  response.blob_uuid));
+    return sw_response.Pass();
   }
 
   bool Put(const ServiceWorkerFetchRequest& request,
@@ -237,6 +247,14 @@ class ServiceWorkerCacheTest : public testing::Test {
         return false;
     }
     return true;
+  }
+
+  bool TestResponseType(blink::WebServiceWorkerResponseType response_type) {
+    body_response_.response_type = response_type;
+    EXPECT_TRUE(Put(body_request_, body_response_));
+    EXPECT_TRUE(Match(body_request_));
+    EXPECT_TRUE(Delete(body_request_));
+    return response_type == callback_response_->response_type;
   }
 
   virtual bool MemoryOnly() { return false; }
@@ -419,7 +437,8 @@ TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
 
 // TODO(jkarlin): Once SimpleCache is working bug-free on Windows reenable these
 // tests. In the meanwhile we know that Windows operations will be a little
-// flaky (though not crashy). See https://crbug.com/409109
+// flaky (though not crashy). See https://crbug.com/409109 and
+// https://crbug.com/416940.
 #ifndef OS_WIN
 TEST_P(ServiceWorkerCacheTestP, DeleteNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
@@ -460,13 +479,25 @@ TEST_P(ServiceWorkerCacheTestP, QuickStressBody) {
     ASSERT_TRUE(Delete(body_request_));
   }
 }
+
+TEST_P(ServiceWorkerCacheTestP, PutResponseType) {
+  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeBasic));
+  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeCORS));
+  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeDefault));
+  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeError));
+  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeOpaque));
+}
 #endif  // OS_WIN
 
 TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerResponseHeaders) {
   // ServiceWorkerCache depends on ServiceWorkerResponse having caseless
   // headers so that it can quickly lookup vary headers.
-  ServiceWorkerResponse response(
-      GURL("http://www.example.com"), 200, "OK", ServiceWorkerHeaderMap(), "");
+  ServiceWorkerResponse response(GURL("http://www.example.com"),
+                                 200,
+                                 "OK",
+                                 blink::WebServiceWorkerResponseTypeDefault,
+                                 ServiceWorkerHeaderMap(),
+                                 "");
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);

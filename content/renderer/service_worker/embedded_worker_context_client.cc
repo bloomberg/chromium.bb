@@ -290,6 +290,7 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
   ServiceWorkerResponse response(web_response.url(),
                                  web_response.status(),
                                  web_response.statusText().utf8(),
+                                 web_response.responseType(),
                                  headers,
                                  web_response.blobUUID().utf8());
   script_context_->DidHandleFetchEvent(
