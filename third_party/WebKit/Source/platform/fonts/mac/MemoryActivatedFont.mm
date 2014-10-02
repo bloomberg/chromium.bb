@@ -21,7 +21,7 @@
  */
 
 // This file provides additional functionality to the Mac FontPlatformData class
-// defined in WebCore/platform/cocoa/FontPlatformDataCocoa.mm .
+// defined in WebCore/platform/mac/FontPlatformDataMac.mm.
 // Because we want to support loading fonts between processes in the face of
 // font loading being blocked by the sandbox, we need a mechnasim to both
 // do the loading of in-memory fonts and keep track of them.
