@@ -1,0 +1,184 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/child/geofencing/geofencing_dispatcher.h"
+
+#include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
+#include "content/child/thread_safe_sender.h"
+#include "content/child/worker_thread_task_runner.h"
+#include "content/common/geofencing_messages.h"
+#include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
+#include "third_party/WebKit/public/platform/WebGeofencingError.h"
+#include "third_party/WebKit/public/platform/WebGeofencingRegistration.h"
+
+using blink::WebGeofencingError;
+
+namespace content {
+
+namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<GeofencingDispatcher>>::Leaky
+    g_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
+
+GeofencingDispatcher* const kHasBeenDeleted =
+    reinterpret_cast<GeofencingDispatcher*>(0x1);
+
+int CurrentWorkerId() {
+  return WorkerTaskRunner::Instance()->CurrentWorkerId();
+}
+
+}  // namespace
+
+GeofencingDispatcher::GeofencingDispatcher(ThreadSafeSender* sender)
+    : thread_safe_sender_(sender) {
+  g_dispatcher_tls.Pointer()->Set(this);
+}
+
+GeofencingDispatcher::~GeofencingDispatcher() {
+  g_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
+}
+
+bool GeofencingDispatcher::Send(IPC::Message* msg) {
+  return thread_safe_sender_->Send(msg);
+}
+
+void GeofencingDispatcher::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(GeofencingDispatcher, msg)
+    IPC_MESSAGE_HANDLER(GeofencingMsg_RegisterRegionComplete,
+                        OnRegisterRegionComplete)
+    IPC_MESSAGE_HANDLER(GeofencingMsg_UnregisterRegionComplete,
+                        OnUnregisterRegionComplete)
+    IPC_MESSAGE_HANDLER(GeofencingMsg_GetRegisteredRegionsComplete,
+                        OnGetRegisteredRegionsComplete)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  DCHECK(handled) << "Unhandled message:" << msg.type();
+}
+
+void GeofencingDispatcher::RegisterRegion(
+    const blink::WebString& region_id,
+    const blink::WebCircularGeofencingRegion& region,
+    blink::WebGeofencingCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = region_registration_requests_.Add(callbacks);
+  Send(new GeofencingHostMsg_RegisterRegion(
+      CurrentWorkerId(), request_id, region_id.utf8(), region));
+}
+
+void GeofencingDispatcher::UnregisterRegion(
+    const blink::WebString& region_id,
+    blink::WebGeofencingCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = region_unregistration_requests_.Add(callbacks);
+  Send(new GeofencingHostMsg_UnregisterRegion(
+      CurrentWorkerId(), request_id, region_id.utf8()));
+}
+
+void GeofencingDispatcher::GetRegisteredRegions(
+    blink::WebGeofencingRegionsCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = get_registered_regions_requests_.Add(callbacks);
+  Send(new GeofencingHostMsg_GetRegisteredRegions(CurrentWorkerId(),
+                                                  request_id));
+}
+
+GeofencingDispatcher* GeofencingDispatcher::GetOrCreateThreadSpecificInstance(
+    ThreadSafeSender* thread_safe_sender) {
+  if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
+    NOTREACHED() << "Re-instantiating TLS GeofencingDispatcher.";
+    g_dispatcher_tls.Pointer()->Set(NULL);
+  }
+  if (g_dispatcher_tls.Pointer()->Get())
+    return g_dispatcher_tls.Pointer()->Get();
+
+  GeofencingDispatcher* dispatcher =
+      new GeofencingDispatcher(thread_safe_sender);
+  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
+    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  return dispatcher;
+}
+
+GeofencingDispatcher* GeofencingDispatcher::GetThreadSpecificInstance() {
+  if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted)
+    return NULL;
+  return g_dispatcher_tls.Pointer()->Get();
+}
+
+void GeofencingDispatcher::OnRegisterRegionComplete(int thread_id,
+                                                    int request_id,
+                                                    GeofencingStatus status) {
+  blink::WebGeofencingCallbacks* callbacks =
+      region_registration_requests_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  if (status == GEOFENCING_STATUS_OK) {
+    callbacks->onSuccess();
+  } else {
+    callbacks->onError(new WebGeofencingError(
+        WebGeofencingError::ErrorTypeAbort,
+        blink::WebString::fromUTF8(GeofencingStatusToString(status))));
+  }
+  region_registration_requests_.Remove(request_id);
+}
+
+void GeofencingDispatcher::OnUnregisterRegionComplete(int thread_id,
+                                                      int request_id,
+                                                      GeofencingStatus status) {
+  blink::WebGeofencingCallbacks* callbacks =
+      region_unregistration_requests_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  if (status == GEOFENCING_STATUS_OK) {
+    callbacks->onSuccess();
+  } else {
+    callbacks->onError(new WebGeofencingError(
+        WebGeofencingError::ErrorTypeAbort,
+        blink::WebString::fromUTF8(GeofencingStatusToString(status))));
+  }
+  region_unregistration_requests_.Remove(request_id);
+}
+
+void GeofencingDispatcher::OnGetRegisteredRegionsComplete(
+    int thread_id,
+    int request_id,
+    GeofencingStatus status,
+    const GeofencingRegistrations& regions) {
+  blink::WebGeofencingRegionsCallbacks* callbacks =
+      get_registered_regions_requests_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  if (status == GEOFENCING_STATUS_OK) {
+    scoped_ptr<blink::WebVector<blink::WebGeofencingRegistration>> result(
+        new blink::WebVector<blink::WebGeofencingRegistration>(regions.size()));
+    size_t index = 0;
+    for (GeofencingRegistrations::const_iterator it = regions.begin();
+         it != regions.end();
+         ++it, ++index) {
+      (*result)[index].id = blink::WebString::fromUTF8(it->first);
+      (*result)[index].region = it->second;
+    }
+    callbacks->onSuccess(result.release());
+  } else {
+    callbacks->onError(new WebGeofencingError(
+        WebGeofencingError::ErrorTypeAbort,
+        blink::WebString::fromUTF8(GeofencingStatusToString(status))));
+  }
+  get_registered_regions_requests_.Remove(request_id);
+}
+
+void GeofencingDispatcher::OnWorkerRunLoopStopped() {
+  delete this;
+}
+
+}  // namespace content

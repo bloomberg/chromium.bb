@@ -8,6 +8,7 @@ include_rules = [
   # header-only types, and some selected common code.
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebBatteryStatus.h",
+  "+third_party/WebKit/public/platform/WebCircularGeofencingRegion.h",
   "+third_party/WebKit/public/platform/WebCString.h",
   "+third_party/WebKit/public/platform/WebDeviceMotionData.h",
   "+third_party/WebKit/public/platform/WebDeviceOrientationData.h",

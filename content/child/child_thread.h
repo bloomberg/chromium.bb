@@ -40,6 +40,7 @@ class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
+class GeofencingMessageFilter;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
@@ -246,6 +247,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
 
   scoped_ptr<base::PowerMonitor> power_monitor_;
+
+  scoped_refptr<GeofencingMessageFilter> geofencing_message_filter_;
 
   bool in_browser_process_;
 

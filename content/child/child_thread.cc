@@ -32,6 +32,7 @@
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
+#include "content/child/geofencing/geofencing_message_filter.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/quota_dispatcher.h"
@@ -288,11 +289,15 @@ void ChildThread::Init(const Options& options) {
   quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
                                               quota_message_filter_.get()));
 
+  geofencing_message_filter_ =
+      new GeofencingMessageFilter(thread_safe_sender_.get());
+
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
+  channel_->AddFilter(geofencing_message_filter_->GetFilter());
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {

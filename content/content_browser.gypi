@@ -674,6 +674,8 @@
       'browser/gamepad/raw_input_data_fetcher_win.h',
       'browser/gamepad/xbox_data_fetcher_mac.cc',
       'browser/gamepad/xbox_data_fetcher_mac.h',
+      'browser/geofencing/geofencing_dispatcher_host.cc',
+      'browser/geofencing/geofencing_dispatcher_host.h',
       'browser/geolocation/empty_wifi_data_provider.cc',
       'browser/geolocation/empty_wifi_data_provider.h',
       'browser/geolocation/geolocation_dispatcher_host.cc',

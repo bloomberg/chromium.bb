@@ -34,6 +34,7 @@ class MessageLoop;
 namespace content {
 class FlingCurveConfiguration;
 class WebCryptoImpl;
+class WebGeofencingProviderImpl;
 
 class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
@@ -153,6 +154,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void didStopWorkerRunLoop(
       const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual blink::WebCrypto* crypto() OVERRIDE;
+  virtual blink::WebGeofencingProvider* geofencingProvider() OVERRIDE;
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
@@ -176,6 +178,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   int shared_timer_suspended_;  // counter
   base::ThreadLocalStorage::Slot current_thread_slot_;
   WebCryptoImpl web_crypto_;
+  scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
 };
 
 }  // namespace content

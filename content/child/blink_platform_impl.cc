@@ -32,6 +32,7 @@
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
+#include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/child/touch_fling_gesture_curve.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
@@ -422,7 +423,13 @@ BlinkPlatformImpl::BlinkPlatformImpl()
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
-      current_thread_slot_(&DestroyCurrentThread) {}
+      current_thread_slot_(&DestroyCurrentThread) {
+  // ChildThread may not exist in some tests.
+  if (ChildThread::current()) {
+    geofencing_provider_.reset(new WebGeofencingProviderImpl(
+        ChildThread::current()->thread_safe_sender()));
+  }
+}
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
 }
@@ -1018,6 +1025,9 @@ blink::WebCrypto* BlinkPlatformImpl::crypto() {
   return &web_crypto_;
 }
 
+blink::WebGeofencingProvider* BlinkPlatformImpl::geofencingProvider() {
+  return geofencing_provider_.get();
+}
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {
   return &native_theme_engine_;
