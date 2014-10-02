@@ -46,7 +46,8 @@ class WebApplicationCacheHostImpl
   virtual void selectCacheWithoutManifest();
   virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL);
   virtual void didReceiveResponseForMainResource(const blink::WebURLResponse&);
-  virtual void didReceiveDataForMainResource(const char* data, int len);
+  // TODO(tyoshino): Revive didReceiveDataForMainResource once Blink side
+  // refactoring is done. See crbug.com/418885.
   virtual void didFinishLoadingMainResource(bool success);
   virtual blink::WebApplicationCacheHost::Status status();
   virtual bool startUpdate();

@@ -40,7 +40,8 @@ class SharedWorkerWebApplicationCacheHostImpl
       const blink::WebApplicationCacheHost*) {}
   virtual void didReceiveResponseForMainResource(const blink::WebURLResponse&) {
   }
-  virtual void didReceiveDataForMainResource(const char* data, int len) {}
+  // TODO(tyoshino): Revive didReceiveDataForMainResource once Blink side
+  // refactoring is done. See crbug.com/418885.
   virtual void didFinishLoadingMainResource(bool success) {}
 
   // Cache selection is also different for workers. We know at construction

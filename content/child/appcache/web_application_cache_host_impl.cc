@@ -255,13 +255,6 @@ void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
     is_new_master_entry_ = NO;
 }
 
-void WebApplicationCacheHostImpl::didReceiveDataForMainResource(
-    const char* data, int len) {
-  if (is_new_master_entry_ == NO)
-    return;
-  // TODO(michaeln): write me
-}
-
 void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
   if (is_new_master_entry_ == NO)
     return;
