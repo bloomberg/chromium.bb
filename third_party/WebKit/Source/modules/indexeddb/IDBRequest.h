@@ -62,8 +62,10 @@ class IDBRequest
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
+    void dispose();
     virtual void trace(Visitor*) OVERRIDE;
 
+    ScriptState* scriptState() { return m_scriptState.get(); }
     ScriptValue result(ExceptionState&);
     DOMError* error(ExceptionState&) const;
     ScriptValue source() const;
@@ -133,7 +135,6 @@ protected:
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(IDBAny*);
     void setResult(IDBAny*);
-    ScriptState* scriptState() { return m_scriptState.get(); }
 
     bool m_contextStopped;
     Member<IDBTransaction> m_transaction;
@@ -142,6 +143,7 @@ protected:
 
 private:
     void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> >);
+    void setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>>);
     void handleBlobAcks();
 
     RefPtr<ScriptState> m_scriptState;

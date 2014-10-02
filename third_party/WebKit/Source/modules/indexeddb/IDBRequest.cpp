@@ -38,6 +38,7 @@
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
@@ -77,6 +78,11 @@ IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction*
 IDBRequest::~IDBRequest()
 {
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
+    ASSERT(!m_blobInfo || m_blobInfo->size() == 0);
+}
+
+void IDBRequest::dispose()
+{
     handleBlobAcks();
 }
 
@@ -199,10 +205,17 @@ void IDBRequest::setResultCursor(IDBCursor* cursor, IDBKey* key, IDBKey* primary
     m_cursorKey = key;
     m_cursorPrimaryKey = primaryKey;
     m_cursorValue = value;
-    ASSERT(!m_blobInfo.get());
-    m_blobInfo = blobInfo;
+    setBlobInfo(blobInfo);
 
     onSuccessInternal(IDBAny::create(cursor));
+}
+
+void IDBRequest::setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+{
+    ASSERT(!m_blobInfo);
+    m_blobInfo = blobInfo;
+    if (m_blobInfo && m_blobInfo->size() > 0)
+        V8PerIsolateData::from(scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->registerRequest(*this);
 }
 
 void IDBRequest::handleBlobAcks()
@@ -210,6 +223,7 @@ void IDBRequest::handleBlobAcks()
     if (m_blobInfo.get() && m_blobInfo->size()) {
         m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
         m_blobInfo.clear();
+        V8PerIsolateData::from(scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->unregisterRequest(*this);
     }
 }
 
@@ -296,8 +310,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassOwnPtr<Vect
         m_pendingCursor.clear();
     }
 
-    ASSERT(!m_blobInfo.get());
-    m_blobInfo = blobInfo;
+    setBlobInfo(blobInfo);
     onSuccessInternal(IDBAny::create(valueBuffer, m_blobInfo.get()));
 }
 
@@ -324,8 +337,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<V
 
     RefPtr<SharedBuffer> valueBuffer = prpValueBuffer;
     IDBKey* primaryKey = prpPrimaryKey;
-    ASSERT(!m_blobInfo.get());
-    m_blobInfo = blobInfo;
+    setBlobInfo(blobInfo);
 
 #if ENABLE(ASSERT)
     assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, m_blobInfo.get(), primaryKey, keyPath);
@@ -447,8 +459,11 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     IDBCursor* cursorToNotify = 0;
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
-        if (cursorToNotify)
+        if (cursorToNotify) {
+            if (m_blobInfo && m_blobInfo->size() > 0)
+                V8PerIsolateData::from(scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->unregisterRequest(*this);
             cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release(), m_blobInfo.release());
+        }
     }
 
     if (event->type() == EventTypeNames::upgradeneeded) {

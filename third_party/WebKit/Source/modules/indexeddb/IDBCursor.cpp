@@ -73,6 +73,11 @@ IDBCursor::IDBCursor(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection dir
 
 IDBCursor::~IDBCursor()
 {
+    ASSERT(!m_blobInfo || m_blobInfo->size() == 0);
+}
+
+void IDBCursor::dispose()
+{
     handleBlobAcks();
 }
 
@@ -327,6 +332,8 @@ void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<Shared
         handleBlobAcks();
         m_blobInfo = blobInfo;
         m_valueDirty = true;
+        if (m_blobInfo && m_blobInfo->size() > 0)
+            V8PerIsolateData::from(m_request->scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->registerCursor(*this);
     }
 
     m_gotValue = true;
@@ -353,6 +360,7 @@ void IDBCursor::handleBlobAcks()
         ASSERT(m_request);
         m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
         m_blobInfo.clear();
+        V8PerIsolateData::from(m_request->scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->unregisterCursor(*this);
     }
 }
 
