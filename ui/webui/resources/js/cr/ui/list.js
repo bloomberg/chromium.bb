@@ -341,7 +341,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @param {ListItem=} item The list item to measure.
+     * @param {cr.ui.ListItem=} item The list item to measure.
      * @return {number} The height of the given item. If the fixed height on CSS
      * is set by 'px', uses that value as height. Otherwise, measures the size.
      * @private
@@ -394,9 +394,9 @@ cr.define('cr.ui', function() {
     /**
      * Creates an item (dataModel.item(0)) and measures its height. The item is
      * cached instead of creating a new one every time..
-     * @param {ListItem=} opt_item The list item to use to do the measuring. If
-     *     this is not provided an item will be created based on the first value
-     *     in the model.
+     * @param {cr.ui.ListItem=} opt_item The list item to use to do the
+     *     measuring. If this is not provided an item will be created based on
+     *     the first value in the model.
      * @return {{height: number, marginTop: number, marginBottom: number,
      *     width: number, marginLeft: number, marginRight: number}}
      *     The height and width of the item, taking

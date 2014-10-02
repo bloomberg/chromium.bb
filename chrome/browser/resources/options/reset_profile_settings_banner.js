@@ -12,6 +12,7 @@ cr.define('options', function() {
    * ResetProfileSettingsBanner class
    * Provides encapsulated handling of the Reset Profile Settings banner.
    * @constructor
+   * @extends {options.SettingsBannerBase}
    */
   function ResetProfileSettingsBanner() {}
 
@@ -22,6 +23,9 @@ cr.define('options', function() {
 
     /**
      * Initializes the banner's event handlers.
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove the suppression. See the explanation in
+     * chrome/browser/resources/options/automatic_settings_reset_banner.js.
      */
     initialize: function() {
       this.showMetricName = 'AutomaticReset_WebUIBanner_BannerShown';

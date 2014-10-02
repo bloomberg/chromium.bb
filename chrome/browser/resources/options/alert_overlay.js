@@ -75,7 +75,7 @@ cr.define('options', function() {
      * @override
      */
     willHidePage: function() {
-      canShow_ = false;
+      this.canShow_ = false;
     },
 
     /** @override */
@@ -93,10 +93,10 @@ cr.define('options', function() {
    *     no button is shown.
    * @param {string} cancelTitle The title of the cancel button. If undefined or
    *     empty, no button is shown.
-   * @param {function} okCallback A function to be called when the user presses
-   *     the ok button.  The alert window will be closed automatically.  Can be
-   *     undefined.
-   * @param {function} cancelCallback A function to be called when the user
+   * @param {function()} okCallback A function to be called when the user
+   *     presses the ok button.  The alert window will be closed automatically.
+   *     Can be undefined.
+   * @param {function()} cancelCallback A function to be called when the user
    *     presses the cancel button.  The alert window will be closed
    *     automatically.  Can be undefined.
    */

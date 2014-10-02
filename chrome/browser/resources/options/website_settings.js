@@ -149,7 +149,7 @@ cr.define('options.ContentSettings', function() {
            which will be used to sort the origins in the main/allowed list.
      * @param {!Object} blockedDict An optional dictionary of origins to their
            usage, which will be used to sort the origins in the blocked list.
-     * @param {bool} isGloballyEnabled If the content setting is turned on.
+     * @param {boolean} isGloballyEnabled If the content setting is turned on.
      * @private
      */
     populateOrigins: function(allowedDict, blockedDict, isGloballyEnabled) {

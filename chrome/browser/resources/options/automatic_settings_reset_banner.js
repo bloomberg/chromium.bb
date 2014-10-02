@@ -23,6 +23,12 @@ cr.define('options', function() {
 
     /**
      * Initializes the banner's event handlers.
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove the suppression. Suppression is needed because
+     * method dismiss() is attached to AutomaticSettingsResetBanner at run-time
+     * via "Forward public APIs to protected implementations" pattern (see
+     * below). Currently the compiler pass and cr.js handles only forwarding to
+     * private implementations using cr.makePublic().
      */
     initialize: function() {
       this.showMetricName = 'AutomaticSettingsReset_WebUIBanner_BannerShown';

@@ -75,7 +75,7 @@ cr.define('options.network', function() {
 
   /**
    * Indicates the current SIM lock type of the cellular device.
-   * @type {boolean}
+   * @type {string}
    * @private
    */
   var cellularSimLockType_ = '';
@@ -949,7 +949,7 @@ cr.define('options.network', function() {
                 entry));
       if (entry.menu)
         return new NetworkMenuItem(entry);
-      return undefined;
+      assertNotReached();
     },
 
     /**
@@ -989,12 +989,20 @@ cr.define('options.network', function() {
 
   /**
    * Chrome callback for updating network controls.
-   * @param {{wiredList: Array.<NetworkInfo>, wirelessList: Array.<NetworkInfo>,
-   *     vpnList: Array.<NetworkInfo>, rememberedList: Array.<NetworkInfo>,
-   *     wifiAvailable: boolean, wifiEnabled: boolean, wimaxAvailable: boolean,
-   *     wimaxEnabled: boolean, cellularAvailable: boolean,
-   *     cellularEnabled: boolean, cellularSupportsScan: boolean}} data
-   *     Description of available network devices and their corresponding state.
+   * @param {{cellularAvailable: boolean,
+   *          cellularEnabled: boolean,
+   *          cellularSimAbsent: boolean,
+   *          cellularSimLockType: string,
+   *          cellularSupportsScan: boolean,
+   *          rememberedList: Array.<NetworkInfo>,
+   *          vpnList: Array.<NetworkInfo>,
+   *          wifiAvailable: boolean,
+   *          wifiEnabled: boolean,
+   *          wimaxAvailable: boolean,
+   *          wimaxEnabled: boolean,
+   *          wiredList: Array.<NetworkInfo>,
+   *          wirelessList: Array.<NetworkInfo>}} data Description of available
+   *     network devices and their corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
     var networkList = $('network-list');

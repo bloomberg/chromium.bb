@@ -12,7 +12,7 @@ cr.exportPath('options');
  *            setupCompleted: (boolean|undefined),
  *            setupInProgress: (boolean|undefined),
  *            signedIn: (boolean|undefined),
- *            signinAllowed: boolean,
+ *            signinAllowed: (boolean|undefined),
  *            signoutAllowed: (boolean|undefined),
  *            statusText: (string|undefined),
  *            syncSystemEnabled: (boolean|undefined)}}

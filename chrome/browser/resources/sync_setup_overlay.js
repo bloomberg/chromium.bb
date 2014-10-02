@@ -276,7 +276,7 @@ cr.define('options', function() {
       var googlePassphrase = false;
       if (!$('sync-existing-passphrase-container').hidden) {
         // If we were prompted for an existing passphrase, use it.
-        customPassphrase = $('choose-data-types-form').passphrase.value;
+        customPassphrase = getRequiredElement('passphrase').value;
         usePassphrase = true;
         // If we were displaying the 'enter your old google password' prompt,
         // then that means this is the user's google password.

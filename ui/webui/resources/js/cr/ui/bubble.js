@@ -494,14 +494,14 @@ cr.define('cr.ui', function() {
         // left-click on the bubble's target element (allowing the target to
         // handle the event and close the bubble itself).
         case 'mousedown':
-          if (event.button == 0 &&
-              this.anchorNode_.contains(assertInstanceof(event.target, Node))) {
+          var target = assertInstanceof(event.target, Node);
+          if (event.button == 0 && this.anchorNode_.contains(target))
             break;
-          }
         // Close the bubble when the underlying document is scrolled.
         case 'mousewheel':
         case 'scroll':
-          if (this.contains(assertInstanceof(event.target, Node)))
+          var target = assertInstanceof(event.target, Node);
+          if (this.contains(target))
             break;
         // Close the bubble when the window is resized.
         case 'resize':

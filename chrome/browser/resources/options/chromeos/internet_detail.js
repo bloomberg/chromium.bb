@@ -1190,7 +1190,7 @@ cr.define('options.internet', function() {
   /**
    * Method called from Chrome when the ONC properties for the displayed
    * network may have changed.
-   * @param {Object} update The updated ONC dictionary for the network.
+   * @param {Object} oncData The updated ONC dictionary for the network.
    */
   DetailsInternetPage.updateConnectionData = function(oncData) {
     var detailsPage = DetailsInternetPage.getInstance();

@@ -93,7 +93,7 @@ var STRING_zero = '0';
  * template that, if processed again with the same data, will remain
  * unchanged.
  *
- * @param {boolean} opt_debugging Optional flag to collect debugging
+ * @param {boolean=} opt_debugging Optional flag to collect debugging
  *     information while processing the template.  Only takes effect
  *     in MAPS_DEBUG.
  */

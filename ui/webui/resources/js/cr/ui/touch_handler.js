@@ -788,6 +788,8 @@ cr.define('cr.ui', function() {
       this.disableTap_ = true;
 
       // Dispatch to the LONG_PRESS
+      assert(typeof this.startTouchX_ == 'number');
+      assert(typeof this.startTouchY_ == 'number');
       this.dispatchEventXY_(TouchHandler.EventType.LONG_PRESS, this.element_,
           /** @type {number} */(this.startTouchX_),
           /** @type {number} */(this.startTouchY_));

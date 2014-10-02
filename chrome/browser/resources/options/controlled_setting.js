@@ -55,6 +55,12 @@ cr.define('options', function() {
      * Handle changes to the associated pref by hiding any currently visible
      * bubble and updating the controlledBy property.
      * @param {Event} event Pref change event.
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove the suppression. |controlledBy| property is defined
+     * by cr.defineProperty(). Currently null can't be assigned to such
+     * properties due to implementation of ChromePass.java. See this discussion
+     * to change nulls to empty string below:
+     * https://chromiumcodereview.appspot.com/11066015/
      */
     handlePrefChange: function(event) {
       PageManager.hideBubble();

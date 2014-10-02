@@ -92,8 +92,8 @@ function load() {
           'doNotTrackConfirm',
           loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
           'do-not-track-confirm-overlay',
-          /** @type {HTMLInputElement} */($('do-not-track-confirm-ok')),
-          /** @type {HTMLInputElement} */($('do-not-track-confirm-cancel')),
+          /** @type {HTMLButtonElement} */($('do-not-track-confirm-ok')),
+          /** @type {HTMLButtonElement} */($('do-not-track-confirm-cancel')),
           $('do-not-track-enabled')['pref'],
           $('do-not-track-enabled')['metric']),
       BrowserOptions.getInstance());
@@ -105,8 +105,8 @@ function load() {
             'spellingConfirm',
             loadTimeData.getString('spellingConfirmOverlayTabTitle'),
             'spelling-confirm-overlay',
-            /** @type {HTMLInputElement} */($('spelling-confirm-ok')),
-            /** @type {HTMLInputElement} */($('spelling-confirm-cancel')),
+            /** @type {HTMLButtonElement} */($('spelling-confirm-ok')),
+            /** @type {HTMLButtonElement} */($('spelling-confirm-cancel')),
             $('spelling-enabled-control')['pref'],
             $('spelling-enabled-control')['metric']),
         BrowserOptions.getInstance());

@@ -44,7 +44,12 @@ cr.define('options', function() {
       };
     },
 
-    /** @override */
+    /**
+     * @override
+     * @suppress {checkTypes}
+     * TODO(vitalyp): remove the suppression. See the explanation in
+     * chrome/browser/resources/options/automatic_settings_reset_banner.js.
+     */
     didShowPage: function() {
       ResetProfileSettingsBanner.dismiss();
       chrome.send('onShowResetProfileDialog');
@@ -70,6 +75,9 @@ cr.define('options', function() {
   /**
    * Chrome callback to notify ResetProfileSettingsOverlay that the reset
    * operation has terminated.
+   * @suppress {checkTypes}
+   * TODO(vitalyp): remove the suppression. See the explanation in
+   * chrome/browser/resources/options/automatic_settings_reset_banner.js.
    */
   ResetProfileSettingsOverlay.doneResetting = function() {
     AutomaticSettingsResetBanner.dismiss();

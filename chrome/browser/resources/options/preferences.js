@@ -152,8 +152,8 @@ cr.define('options', function() {
     /**
      * Adds an event listener to the target.
      * @param {string} type The name of the event.
-     * @param {!Function|{handleEvent:Function}} handler The handler for the
-     *     event. This is called when the event is dispatched.
+     * @param {EventListenerType} handler The handler for the event. This is
+     *     called when the event is dispatched.
      */
     addEventListener: function(type, handler) {
       cr.EventTarget.prototype.addEventListener.call(this, type, handler);
