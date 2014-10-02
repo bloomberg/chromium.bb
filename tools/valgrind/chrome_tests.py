@@ -11,6 +11,7 @@ import multiprocessing
 import optparse
 import os
 import stat
+import subprocess
 import sys
 
 import logging_utils
@@ -26,6 +27,10 @@ class MultipleGTestFiltersSpecified(Exception): pass
 class BuildDirNotFound(Exception): pass
 
 class BuildDirAmbiguous(Exception): pass
+
+class ExecutableNotFound(Exception): pass
+
+class BadBinary(Exception): pass
 
 class ChromeTests:
   SLOW_TOOLS = ["memcheck", "tsan", "tsan_rv", "drmemory"]
@@ -115,7 +120,24 @@ class ChromeTests:
         cmd.append(arg)
     if exe:
       self._EnsureBuildDirFound()
-      cmd.append(os.path.join(self._options.build_dir, exe))
+      exe_path = os.path.join(self._options.build_dir, exe)
+      if not os.path.exists(exe_path):
+        raise ExecutableNotFound("Couldn't find '%s'" % exe_path)
+
+      # Make sure we don't try to test ASan-built binaries
+      # with other dynamic instrumentation-based tools.
+      # TODO(timurrrr): also check TSan and MSan?
+      # `nm` might not be available, so use try-except.
+      try:
+        nm_output = subprocess.check_output(["nm", exe_path])
+        if nm_output.find("__asan_init") != -1:
+          raise BadBinary("You're trying to run an executable instrumented "
+                          "with AddressSanitizer under %s. Please provide "
+                          "an uninstrumented executable." % tool_name)
+      except OSError:
+        pass
+
+      cmd.append(exe_path)
       # Valgrind runs tests slowly, so slow tests hurt more; show elapased time
       # so we can find the slowpokes.
       cmd.append("--gtest_print_time")

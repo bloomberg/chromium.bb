@@ -1165,44 +1165,6 @@ class RaceVerifier(object):
    return self.Main(args, False, min_runtime_in_seconds)
 
 
-class EmbeddedTool(BaseTool):
-  """Abstract class for tools embedded directly into the test binary.
-  """
-  # TODO(glider): need to override Execute() and support process chaining here.
-
-  def ToolCommand(self):
-    # In the simplest case just the args of the script.
-    return self._args
-
-
-class Asan(EmbeddedTool):
-  """AddressSanitizer, a memory error detector.
-
-  More information at
-  http://dev.chromium.org/developers/testing/addresssanitizer
-  """
-  def __init__(self):
-    super(Asan, self).__init__()
-    self._timeout = 1200
-    if common.IsMac():
-      self._env["DYLD_NO_PIE"] = "1"
-
-
-  def ToolName(self):
-    return "asan"
-
-  def ToolCommand(self):
-    # TODO(glider): use pipes instead of the ugly wrapper here once they
-    # are supported.
-    procs = [os.path.join(self._source_dir, "tools", "valgrind",
-                              "asan", "asan_wrapper.sh")]
-    procs.extend(self._args)
-    return procs
-
-  def Analyze(sels, unused_check_sanity):
-    return 0
-
-
 class ToolFactory:
   def Create(self, tool_name):
     if tool_name == "memcheck":
@@ -1223,8 +1185,6 @@ class ToolFactory:
       return DrMemory(False, True)
     if tool_name == "tsan_rv":
       return RaceVerifier()
-    if tool_name == "asan":
-      return Asan()
     try:
       platform_name = common.PlatformNames()[0]
     except common.NotImplementedError:
