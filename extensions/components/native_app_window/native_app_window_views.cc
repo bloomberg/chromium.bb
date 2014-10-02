@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/native_app_window/native_app_window_views.h"
+#include "extensions/components/native_app_window/native_app_window_views.h"
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/render_view_host.h"

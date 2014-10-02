@@ -7,15 +7,16 @@
       'target_name': 'native_app_window',
       'type': 'static_library',
       'dependencies': [
-        '../base/base.gyp:base',
-        '../content/content.gyp:content_browser',
-        '../extensions/extensions.gyp:extensions_browser',
-        '../extensions/extensions.gyp:extensions_common',
-        '../skia/skia.gyp:skia',
-        '../ui/views/views.gyp:views',
+        '../../base/base.gyp:base',
+        '../../content/content.gyp:content_browser',
+        '../../skia/skia.gyp:skia',
+        '../../ui/views/views.gyp:views',
+        '../../ui/views/controls/webview/webview.gyp:webview',
+        '../extensions.gyp:extensions_browser',
+        '../extensions.gyp:extensions_common',
       ],
       'include_dirs': [
-        '..',
+        '../..',
       ],
       'sources': [
         'native_app_window/native_app_window_views.cc',

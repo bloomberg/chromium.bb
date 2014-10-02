@@ -5,7 +5,7 @@
 #ifndef ATHENA_EXTENSIONS_ATHENA_NATIVE_APP_WINDOW_VIEWS_H_
 #define ATHENA_EXTENSIONS_ATHENA_NATIVE_APP_WINDOW_VIEWS_H_
 
-#include "components/native_app_window/native_app_window_views.h"
+#include "extensions/components/native_app_window/native_app_window_views.h"
 
 namespace athena {
 

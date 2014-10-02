@@ -2738,6 +2738,9 @@
             }],
             ['OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
+              'dependencies': [
+                '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
+              ],
             }],
           ],
         }],

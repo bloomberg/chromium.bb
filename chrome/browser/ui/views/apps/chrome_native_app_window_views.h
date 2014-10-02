@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/native_app_window/native_app_window_views.h"
+#include "extensions/components/native_app_window/native_app_window_views.h"
 #include "ui/views/context_menu_controller.h"
 
 namespace apps {

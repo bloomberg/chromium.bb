@@ -205,6 +205,7 @@ static_library("ui") {
       sources += rebase_path(
           gypi_values.chrome_browser_ui_views_non_mac_sources,
           ".", "//chrome")
+      deps += [ "//extensions/components/native_app_window" ]
     }
     if (use_ash) {
       sources += rebase_path(gypi_values.chrome_browser_ui_ash_views_sources,

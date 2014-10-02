@@ -51,7 +51,6 @@ group("all_components") {
     "//components/language_usage_metrics",
     "//components/leveldb_proto",
     "//components/metrics",
-    "//components/native_app_window",
     "//components/navigation_interception",
     "//components/navigation_metrics",
     "//components/network_time",
@@ -113,10 +112,6 @@ group("all_components") {
   if (!is_chromeos) {
     deps -= [ "//components/pairing" ]
   }
-  if (!toolkit_views) {
-    deps -= [ "//components/native_app_window" ]
-  }
-
   if (is_ios) {
     deps -= [ "//components/keyed_service/content" ]
   }

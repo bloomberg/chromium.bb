@@ -4,8 +4,8 @@ include_rules = [
   "+athena/screen/public",
   "+athena/util",
   "+components/captive_portal",
-  "+components/native_app_window",
   "+components/user_manager",
+  "+extensions/components/native_app_window",
 
   # Library used for calculating CRC-32 needed for HWID verification.
   "+third_party/zlib",

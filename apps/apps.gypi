@@ -75,7 +75,7 @@
         ],
         ['toolkit_views==1', {
           'dependencies': [
-            '../components/components.gyp:native_app_window',
+            '../extensions/extensions.gyp:extensions_browser',
             '../ui/strings/ui_strings.gyp:ui_strings',
             '../ui/views/views.gyp:views',
           ],
