@@ -421,6 +421,25 @@ def IsMoveOnlyKind(kind):
   return IsObjectKind(kind) or IsAnyHandleKind(kind)
 
 
+def IsCloneableKind(kind):
+  def ContainsHandles(kind, visited_kinds):
+    if kind in visited_kinds:
+      # No need to examine the kind again.
+      return False
+    visited_kinds.add(kind)
+    if IsAnyHandleKind(kind):
+      return True
+    if IsAnyArrayKind(kind):
+      return ContainsHandles(kind.kind, visited_kinds)
+    if IsStructKind(kind):
+      for field in kind.fields:
+        if ContainsHandles(field.kind, visited_kinds):
+          return True
+    return False
+
+  return not ContainsHandles(kind, set())
+
+
 def HasCallbacks(interface):
   for method in interface.methods:
     if method.response_parameters != None:

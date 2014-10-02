@@ -51,6 +51,34 @@ TEST_F(StructTest, Rect) {
   CheckRect(*rect);
 }
 
+TEST_F(StructTest, Clone) {
+  NamedRegionPtr region;
+
+  NamedRegionPtr clone_region = region.Clone();
+  EXPECT_TRUE(clone_region.is_null());
+
+  region = NamedRegion::New();
+  clone_region = region.Clone();
+  EXPECT_TRUE(clone_region->name.is_null());
+  EXPECT_TRUE(clone_region->rects.is_null());
+
+  region->name = "hello world";
+  clone_region = region.Clone();
+  EXPECT_EQ(region->name, clone_region->name);
+
+  region->rects = Array<RectPtr>(2);
+  region->rects[1] = MakeRect();
+  clone_region = region.Clone();
+  EXPECT_EQ(2u, clone_region->rects.size());
+  EXPECT_TRUE(clone_region->rects[0].is_null());
+  CheckRect(*clone_region->rects[1]);
+
+  // NoDefaultFieldValues contains handles, so Clone() is not available, but
+  // NoDefaultFieldValuesPtr should still compile.
+  NoDefaultFieldValuesPtr no_default_field_values(NoDefaultFieldValues::New());
+  EXPECT_FALSE(no_default_field_values->f13.is_valid());
+}
+
 // Serialization test of a struct with no pointer or handle members.
 TEST_F(StructTest, Serialization_Basic) {
   RectPtr rect(MakeRect());

@@ -67,6 +67,13 @@ class StructPtr {
     std::swap(ptr_, other->ptr_);
   }
 
+  // Please note that calling this method will fail compilation if the value
+  // type |Struct| doesn't have a Clone() method defined (which usually means
+  // that it contains Mojo handles).
+  StructPtr Clone() const {
+    return is_null() ? StructPtr() : ptr_->Clone();
+  }
+
  private:
   typedef Struct* StructPtr::*Testable;
 
@@ -130,6 +137,10 @@ class InlinedStructPtr {
   void Swap(InlinedStructPtr* other) {
     std::swap(value_, other->value_);
     std::swap(is_null_, other->is_null_);
+  }
+
+  InlinedStructPtr Clone() const {
+    return is_null() ? InlinedStructPtr() : value_.Clone();
   }
 
  private:

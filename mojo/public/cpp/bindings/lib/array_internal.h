@@ -451,6 +451,10 @@ template <typename T> struct ArrayTraits<T, false> {
   static inline void PushBack(std::vector<T>* vec, ForwardType value) {
     vec->push_back(value);
   }
+  static inline void Clone(const std::vector<T>& src_vec,
+                           std::vector<T>* dest_vec) {
+    dest_vec->assign(src_vec.begin(), src_vec.end());
+  }
 };
 
 template <typename T> struct ArrayTraits<T, true> {
@@ -498,6 +502,12 @@ template <typename T> struct ArrayTraits<T, true> {
       new (new_storage.at(i).buf) T(at(vec, i).Pass());
     vec->swap(new_storage);
     Finalize(&new_storage);
+  }
+  static inline void Clone(const std::vector<StorageType>& src_vec,
+                           std::vector<StorageType>* dest_vec) {
+    Resize(dest_vec, src_vec.size());
+    for (size_t i = 0; i < src_vec.size(); ++i)
+      at(dest_vec, i) = at(&src_vec, i).Clone();
   }
 };
 

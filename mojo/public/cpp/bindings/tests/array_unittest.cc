@@ -7,11 +7,18 @@
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace test {
 namespace {
+
+using mojo::internal::Array_Data;
+using mojo::internal::ArrayValidateParams;
+using mojo::internal::FixedBuffer;
+using mojo::internal::NoValidateParams;
+using mojo::internal::String_Data;
 
 class CopyableType {
  public:
@@ -131,6 +138,71 @@ TEST_F(ArrayTest, HandlesAreClosed) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe1_value));
 }
 
+TEST_F(ArrayTest, Clone) {
+  {
+    // Test POD.
+    Array<int32_t> array(3);
+    for (size_t i = 0; i < array.size(); ++i)
+      array[i] = static_cast<int32_t>(i);
+
+    Array<int32_t> clone_array = array.Clone();
+    EXPECT_EQ(array.size(), clone_array.size());
+    for (size_t i = 0; i < array.size(); ++i)
+      EXPECT_EQ(array[i], clone_array[i]);
+  }
+
+  {
+    // Test copyable object.
+    Array<String> array(2);
+    array[0] = "hello";
+    array[1] = "world";
+
+    Array<String> clone_array = array.Clone();
+    EXPECT_EQ(array.size(), clone_array.size());
+    for (size_t i = 0; i < array.size(); ++i)
+      EXPECT_EQ(array[i], clone_array[i]);
+  }
+
+  {
+    // Test struct.
+    Array<RectPtr> array(2);
+    array[1] = Rect::New();
+    array[1]->x = 1;
+    array[1]->y = 2;
+    array[1]->width = 3;
+    array[1]->height = 4;
+
+    Array<RectPtr> clone_array = array.Clone();
+    EXPECT_EQ(array.size(), clone_array.size());
+    EXPECT_TRUE(clone_array[0].is_null());
+    EXPECT_EQ(array[1]->x, clone_array[1]->x);
+    EXPECT_EQ(array[1]->y, clone_array[1]->y);
+    EXPECT_EQ(array[1]->width, clone_array[1]->width);
+    EXPECT_EQ(array[1]->height, clone_array[1]->height);
+  }
+
+  {
+    // Test array of array.
+    Array<Array<int8_t>> array(2);
+    array[1] = Array<int8_t>(2);
+    array[1][0] = 0;
+    array[1][1] = 1;
+
+    Array<Array<int8_t>> clone_array = array.Clone();
+    EXPECT_EQ(array.size(), clone_array.size());
+    EXPECT_TRUE(clone_array[0].is_null());
+    EXPECT_EQ(array[1].size(), clone_array[1].size());
+    EXPECT_EQ(array[1][0], clone_array[1][0]);
+    EXPECT_EQ(array[1][1], clone_array[1][1]);
+  }
+
+  {
+    // Test that array of handles still works although Clone() is not available.
+    Array<ScopedMessagePipeHandle> array(10);
+    EXPECT_FALSE(array[0].is_valid());
+  }
+}
+
 TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
   Array<int32_t> array(4);
   for (size_t i = 0; i < array.size(); ++i)
@@ -139,10 +211,9 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U + 4*4U, size);
 
-  internal::FixedBuffer buf(size);
-  internal::Array_Data<int32_t>* data;
-  SerializeArray_<internal::ArrayValidateParams<0, false,
-                  internal::NoValidateParams> >(
+  FixedBuffer buf(size);
+  Array_Data<int32_t>* data;
+  SerializeArray_<ArrayValidateParams<0, false, NoValidateParams>>(
       array.Pass(), &buf, &data);
 
   Array<int32_t> array2;
@@ -154,7 +225,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
 }
 
 TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
-  Array<Array<int32_t> > array(2);
+  Array<Array<int32_t>> array(2);
   for (size_t j = 0; j < array.size(); ++j) {
     Array<int32_t> inner(4);
     for (size_t i = 0; i < inner.size(); ++i)
@@ -165,14 +236,14 @@ TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U + 2*8U + 2*(8U + 4*4U), size);
 
-  internal::FixedBuffer buf(size);
-  internal::Array_Data<internal::Array_Data<int32_t>*>* data;
-  SerializeArray_<internal::ArrayValidateParams<0, false,
-                  internal::ArrayValidateParams<0, false,
-                  internal::NoValidateParams> > >(
+  FixedBuffer buf(size);
+  Array_Data<Array_Data<int32_t>*>* data;
+  SerializeArray_<ArrayValidateParams<0, false,
+                  ArrayValidateParams<0, false,
+                  NoValidateParams>>>(
       array.Pass(), &buf, &data);
 
-  Array<Array<int32_t> > array2;
+  Array<Array<int32_t>> array2;
   Deserialize_(data, &array2);
 
   EXPECT_EQ(2U, array2.size());
@@ -192,10 +263,9 @@ TEST_F(ArrayTest, Serialization_ArrayOfBool) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U + 8U, size);
 
-  internal::FixedBuffer buf(size);
-  internal::Array_Data<bool>* data;
-  SerializeArray_<internal::ArrayValidateParams<0, false,
-                  internal::NoValidateParams> >(
+  FixedBuffer buf(size);
+  Array_Data<bool>* data;
+  SerializeArray_<ArrayValidateParams<0, false, NoValidateParams>>(
       array.Pass(), &buf, &data);
 
   Array<bool> array2;
@@ -220,11 +290,11 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
                 8U),  // string length of 1 padded to 8
             size);
 
-  internal::FixedBuffer buf(size);
-  internal::Array_Data<internal::String_Data*>* data;
-  SerializeArray_<internal::ArrayValidateParams<0, false,
-                  internal::ArrayValidateParams<0, false,
-                  internal::NoValidateParams> > >(
+  FixedBuffer buf(size);
+  Array_Data<String_Data*>* data;
+  SerializeArray_<ArrayValidateParams<0, false,
+                  ArrayValidateParams<0, false,
+                  NoValidateParams>>>(
       array.Pass(), &buf, &data);
 
   Array<String> array2;

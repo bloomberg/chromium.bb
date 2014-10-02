@@ -21,6 +21,9 @@ class {{struct.name}} {
 
   {{struct.name}}();
   ~{{struct.name}}();
+{%  if struct|is_cloneable_kind %}
+  {{struct.name}}Ptr Clone() const;
+{%- endif %}
 
 {#--- Getters #}
 {%  for field in struct.fields %}

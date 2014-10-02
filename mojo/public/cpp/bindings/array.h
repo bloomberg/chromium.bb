@@ -105,6 +105,16 @@ class Array {
     vec_.swap(*other);
   }
 
+  // Please note that calling this method will fail compilation if the element
+  // type cannot be cloned (which usually means that it is a Mojo handle type or
+  // a type contains Mojo handles).
+  Array Clone() const {
+    Array result;
+    result.is_null_ = is_null_;
+    Traits::Clone(vec_, &result.vec_);
+    return result.Pass();
+  }
+
  private:
   typedef std::vector<StorageType> Array::*Testable;
 

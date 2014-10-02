@@ -6,10 +6,23 @@
 }
 
 {{struct.name}}::{{struct.name}}()
-{%-for field in struct.fields %}
+{%- for field in struct.fields %}
     {% if loop.first %}:{% else %} {% endif %} {{field.name}}({{field|default_value}}){% if not loop.last %},{% endif %}
 {%- endfor %} {
 }
 
 {{struct.name}}::~{{struct.name}}() {
 }
+{%  if struct|is_cloneable_kind %}
+{{struct.name}}Ptr {{struct.name}}::Clone() const {
+  {{struct.name}}Ptr rv(New());
+{%-   for field in struct.fields %}
+{%-     if field.kind|is_struct_kind or field.kind|is_any_array_kind %}
+  rv->{{field.name}} = {{field.name}}.Clone();
+{%-     else %}
+  rv->{{field.name}} = {{field.name}};
+{%-     endif %}
+{%-   endfor %}
+  return rv.Pass();
+}
+{%  endif %}
