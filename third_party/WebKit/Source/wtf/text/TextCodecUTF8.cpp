@@ -147,7 +147,7 @@ static inline UChar* appendCharacter(UChar* destination, int character)
     ASSERT(character != nonCharacter);
     ASSERT(!U_IS_SURROGATE(character));
     if (U_IS_BMP(character))
-        *destination++ = character;
+        *destination++ = static_cast<UChar>(character);
     else {
         *destination++ = U16_LEAD(character);
         *destination++ = U16_TRAIL(character);
@@ -204,11 +204,11 @@ bool TextCodecUTF8::handlePartialSequence<LChar>(LChar*& destination, const uint
             m_partialSequenceSize = count;
         }
         int character = decodeNonASCIISequence(m_partialSequence, count);
-        if ((character == nonCharacter) || (character > 0xff))
+        if (character & ~0xff)
             return true;
 
         m_partialSequenceSize -= count;
-        *destination++ = character;
+        *destination++ = static_cast<LChar>(character);
     } while (m_partialSequenceSize);
 
     return false;
@@ -340,7 +340,7 @@ String TextCodecUTF8::decode(const char* bytes, size_t length, FlushBehavior flu
                 goto upConvertTo16Bit;
 
             source += count;
-            *destination++ = character;
+            *destination++ = static_cast<LChar>(character);
         }
     } while (flush && m_partialSequenceSize);
 

@@ -65,11 +65,6 @@ namespace WTF {
 
     class CaseFoldingHash {
     public:
-        template<typename T> static inline UChar foldCase(T ch)
-        {
-            return WTF::Unicode::foldCase(ch);
-        }
-
         static unsigned hash(const UChar* data, unsigned length)
         {
             return StringHasher::computeHashAndMaskTop8Bits<UChar, foldCase<UChar> >(data, length);
@@ -125,6 +120,18 @@ namespace WTF {
         }
 
         static const bool safeToCompareToEmptyOrDeleted = false;
+
+    private:
+        // Private so no one uses this in the belief that it will return the
+        // correctly-folded code point in all cases (see comment below).
+        template<typename T> static inline UChar foldCase(T ch)
+        {
+            // It's possible for WTF::Unicode::foldCase() to return a 32-bit
+            // value that's not representable as a UChar.  However, since this
+            // is rare and deterministic, and the result of this is merely used
+            // for hashing, go ahead and clamp the value.
+            return static_cast<UChar>(WTF::Unicode::foldCase(ch));
+        }
     };
 
     // This hash can be used in cases where the key is a hash of a string, but we don't

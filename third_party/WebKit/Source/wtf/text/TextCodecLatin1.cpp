@@ -154,7 +154,7 @@ useLookupTable:
             if (table[*source] > 0xff)
                 goto upConvertTo16Bit;
 
-            *destination = table[*source];
+            *destination = static_cast<LChar>(table[*source]);
         }
 
         ++source;
@@ -222,7 +222,7 @@ static CString encodeComplexWindowsLatin1(const CharType* characters, size_t len
     for (size_t i = 0; i < length; ) {
         UChar32 c;
         U16_NEXT(characters, i, length, c);
-        unsigned char b = c;
+        unsigned char b = static_cast<unsigned char>(c);
         // Do an efficient check to detect characters other than 00-7F and A0-FF.
         if (b != c || (c & 0xE0) == 0x80) {
             // Look for a way to encode this with Windows Latin-1.
@@ -256,7 +256,7 @@ CString TextCodecLatin1::encodeCommon(const CharType* characters, size_t length,
         UChar ored = 0;
         for (size_t i = 0; i < length; ++i) {
             UChar c = characters[i];
-            bytes[i] = c;
+            bytes[i] = static_cast<char>(c);
             ored |= c;
         }
 

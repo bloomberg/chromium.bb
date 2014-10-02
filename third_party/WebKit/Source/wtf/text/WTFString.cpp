@@ -443,7 +443,7 @@ Vector<UChar> String::charactersWithNullTermination() const
     Vector<UChar> result;
     result.reserveInitialCapacity(length() + 1);
     appendTo(result);
-    result.append(0);
+    result.append('\0');
     return result;
 }
 
@@ -751,7 +751,7 @@ CString String::ascii() const
 
     for (unsigned i = 0; i < length; ++i) {
         UChar ch = characters[i];
-        characterBuffer[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : ch;
+        characterBuffer[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : static_cast<char>(ch);
     }
 
     return result;
@@ -777,7 +777,7 @@ CString String::latin1() const
 
     for (unsigned i = 0; i < length; ++i) {
         UChar ch = characters[i];
-        characterBuffer[i] = ch > 0xff ? '?' : ch;
+        characterBuffer[i] = ch > 0xff ? '?' : static_cast<char>(ch);
     }
 
     return result;
@@ -1261,8 +1261,8 @@ Vector<char> asciiDebug(StringImpl* impl)
         UChar ch = (*impl)[i];
         if (isASCIIPrintable(ch)) {
             if (ch == '\\')
-                buffer.append(ch);
-            buffer.append(ch);
+                buffer.append('\\');
+            buffer.append(static_cast<char>(ch));
         } else {
             buffer.append('\\');
             buffer.append('u');

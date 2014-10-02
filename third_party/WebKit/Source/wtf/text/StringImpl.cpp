@@ -608,7 +608,7 @@ PassRefPtr<StringImpl> StringImpl::upper()
             LChar c = characters8()[i];
             if (UNLIKELY(c == smallLetterSharpS))
                 ++numberSharpSCharacters;
-            UChar upper = Unicode::toUpper(c);
+            UChar upper = static_cast<UChar>(Unicode::toUpper(c));
             if (UNLIKELY(upper > 0xff)) {
                 // Since this upper-cased character does not fit in an 8-bit string, we need to take the 16-bit path.
                 goto upconvert;
@@ -776,7 +776,7 @@ PassRefPtr<StringImpl> StringImpl::fill(UChar character)
         LChar* data;
         RefPtr<StringImpl> newImpl = createUninitialized(m_length, data);
         for (unsigned i = 0; i < m_length; ++i)
-            data[i] = character;
+            data[i] = static_cast<LChar>(character);
         return newImpl.release();
     }
     UChar* data;

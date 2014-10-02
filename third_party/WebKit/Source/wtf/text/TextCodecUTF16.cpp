@@ -150,14 +150,14 @@ CString TextCodecUTF16::encode(const UChar* characters, size_t length, Unencodab
     if (m_littleEndian) {
         for (size_t i = 0; i < length; ++i) {
             UChar c = characters[i];
-            bytes[i * 2] = c;
+            bytes[i * 2] = static_cast<char>(c);
             bytes[i * 2 + 1] = c >> 8;
         }
     } else {
         for (size_t i = 0; i < length; ++i) {
             UChar c = characters[i];
             bytes[i * 2] = c >> 8;
-            bytes[i * 2 + 1] = c;
+            bytes[i * 2 + 1] = static_cast<char>(c);
         }
     }
 

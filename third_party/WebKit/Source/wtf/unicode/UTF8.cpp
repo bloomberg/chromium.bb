@@ -334,7 +334,7 @@ ConversionResult convertUTF8ToUTF16(
                     orAllData |= replacementCharacter;
                 }
             } else {
-                *target++ = character; // normal case
+                *target++ = static_cast<UChar>(character); // normal case
                 orAllData |= character;
             }
         } else if (U_IS_SUPPLEMENTARY(character)) {

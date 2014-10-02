@@ -72,7 +72,7 @@ static CString encodeComplexUserDefined(const CharType* characters, size_t lengt
     for (size_t i = 0; i < length; ) {
         UChar32 c;
         U16_NEXT(characters, i, length, c);
-        signed char signedByte = c;
+        signed char signedByte = static_cast<signed char>(c);
         if ((signedByte & 0xF7FF) == c)
             bytes[resultLength++] = signedByte;
         else {
@@ -99,7 +99,7 @@ CString TextCodecUserDefined::encodeCommon(const CharType* characters, size_t le
     UChar ored = 0;
     for (size_t i = 0; i < length; ++i) {
         UChar c = characters[i];
-        bytes[i] = c;
+        bytes[i] = static_cast<char>(c);
         ored |= c;
     }
 

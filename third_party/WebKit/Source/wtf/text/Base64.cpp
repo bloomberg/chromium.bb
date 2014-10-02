@@ -151,7 +151,7 @@ static inline bool base64DecodeInternal(const T* data, unsigned length, Vector<c
     unsigned outLength = 0;
     bool hadError = false;
     for (unsigned idx = 0; idx < length; ++idx) {
-        unsigned ch = data[idx];
+        UChar ch = data[idx];
         if (ch == '=') {
             ++equalsSignCount;
             // There should never be more than 2 padding characters.
