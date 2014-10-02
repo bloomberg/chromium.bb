@@ -92,7 +92,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleEnableHighContrast(bool enabled);
   void HandleEnableVirtualKeyboard(bool enabled);
   void HandleEnableScreenMagnifier(bool enabled);
-  void HandleEnableSpokenFeedback();
+  void HandleEnableSpokenFeedback(bool /* enabled */);
   void HandleInitialized();
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);

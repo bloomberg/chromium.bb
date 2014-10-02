@@ -261,12 +261,14 @@ void CoreOobeHandler::HandleEnableVirtualKeyboard(bool enabled) {
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
+#if !defined(USE_ATHENA)
   // TODO(nkostylev): Add support for partial screen magnifier.
   DCHECK(MagnificationManager::Get());
   MagnificationManager::Get()->SetMagnifierEnabled(enabled);
+#endif
 }
 
-void CoreOobeHandler::HandleEnableSpokenFeedback() {
+void CoreOobeHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
   AccessibilityManager::Get()->ToggleSpokenFeedback(

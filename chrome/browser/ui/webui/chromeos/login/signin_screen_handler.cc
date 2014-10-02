@@ -1150,7 +1150,12 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem() {
+#if defined(USE_ATHENA)
+  chromeos::DBusThreadManager::Get()->
+      GetPowerManagerClient()->RequestShutdown();
+#else
   ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+#endif
 }
 
 void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {
