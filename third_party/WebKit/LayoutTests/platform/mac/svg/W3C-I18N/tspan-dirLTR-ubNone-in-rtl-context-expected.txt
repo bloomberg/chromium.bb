@@ -3,15 +3,15 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
     RenderSVGContainer {g} at (33,222) size 651x143
-      RenderSVGText {text} at (99,133) size 262x21 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (178,0) size 83x20
-          chunk 1 (middle anchor) text run 1 at (277.73,150.00) startOffset 0 endOffset 14 width 82.79 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
+      RenderSVGText {text} at (98,133) size 264x21 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (178,0) size 85x20
+          chunk 1 (middle anchor) text run 1 at (277.14,150.00) startOffset 0 endOffset 14 width 84.15 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
         RenderSVGTSpan {tspan} at (0,0) size 168x20
-          RenderSVGInlineText {#text} at (11,0) size 167x20
-            chunk 1 (middle anchor) text run 1 at (110.87,150.00) startOffset 0 endOffset 8 width 44.80 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
-            chunk 1 (middle anchor) text run 1 at (155.67,150.00) startOffset 0 endOffset 13 width 122.06: "dirLTR ubNone"
+          RenderSVGInlineText {#text} at (11,0) size 168x20
+            chunk 1 (middle anchor) text run 1 at (110.10,150.00) startOffset 0 endOffset 8 width 44.98 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
+            chunk 1 (middle anchor) text run 1 at (155.08,150.00) startOffset 0 endOffset 13 width 122.06: "dirLTR ubNone"
         RenderSVGInlineText {#text} at (0,0) size 12x20
-          chunk 1 (middle anchor) text run 1 at (99.48,150.00) startOffset 0 endOffset 2 width 11.39 RTL: "\"!"
+          chunk 1 (middle anchor) text run 1 at (98.71,150.00) startOffset 0 endOffset 2 width 11.39 RTL: "\"!"
       RenderSVGText {text} at (20,171) size 85x12 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 85x12
           chunk 1 text run 1 at (20.00,180.00) startOffset 0 endOffset 18 width 84.46: "Reference graphic:"

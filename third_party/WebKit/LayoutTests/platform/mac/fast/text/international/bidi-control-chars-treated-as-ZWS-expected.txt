@@ -12,5 +12,5 @@ layer at (0,0) size 800x600
           text run at (0,0) width 8: "a"
           text run at (7,0) width 8 LTR override: "\x{202D}e\x{300}"
         RenderBR {BR} at (14,14) size 1x0
-        RenderText {#text} at (0,18) size 14x17
-          text run at (0,18) width 14: "ae\x{300}"
+        RenderText {#text} at (0,18) size 15x17
+          text run at (0,18) width 15: "ae\x{300}"

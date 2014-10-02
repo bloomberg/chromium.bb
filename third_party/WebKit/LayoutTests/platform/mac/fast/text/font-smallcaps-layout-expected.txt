@@ -10,13 +10,13 @@ layer at (0,0) size 800x32
 layer at (-500,32) size 1000x366 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (-500,32) size 1000x366 [bgcolor=#90EE90]
     RenderBlock {P} at (0,30) size 500x306 [color=#FF0000] [bgcolor=#FFB6C1]
-      RenderText {#text} at (0,0) size 500x306
+      RenderText {#text} at (0,0) size 489x306
         text run at (0,0) width 376: "Lorem ipsum dolor sit amet,"
-        text run at (0,34) width 445: "consectetuer adipiscing elit, sed"
-        text run at (0,68) width 378: "diam nonummy nibh euismod"
-        text run at (0,102) width 487: "tincidunt ut laoreet dolore magna"
-        text run at (0,136) width 491: "aliquam erat volutpat. Ut wisi enim"
-        text run at (0,170) width 500: "ad minim veniam, quis nostrud exerci"
-        text run at (0,204) width 380: "tation ullamcorper suscipit"
+        text run at (0,34) width 446: "consectetuer adipiscing elit, sed"
+        text run at (0,68) width 379: "diam nonummy nibh euismod"
+        text run at (0,102) width 485: "tincidunt ut laoreet dolore magna"
+        text run at (0,136) width 489: "aliquam erat volutpat. Ut wisi enim"
+        text run at (0,170) width 410: "ad minim veniam, quis nostrud"
+        text run at (0,204) width 471: "exerci tation ullamcorper suscipit"
         text run at (0,238) width 395: "lobortis nisl ut aliquip ex ea"
-        text run at (0,272) width 279: "commodo consequat."
+        text run at (0,272) width 277: "commodo consequat."

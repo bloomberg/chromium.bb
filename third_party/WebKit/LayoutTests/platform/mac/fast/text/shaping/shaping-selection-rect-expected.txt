@@ -7,20 +7,20 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 655x16
           text run at (0,0) width 655: "The selection should cover the all of the below text. There should be no blank between either C and F."
       RenderBlock {DIV} at (0,32) size 784x18
-        RenderText {#text} at (0,0) size 34x17
-          text run at (0,0) width 34: "ABC"
-        RenderInline {SPAN} at (0,0) size 31x17
-          RenderText {#text} at (34,0) size 31x17
-            text run at (34,0) width 31 RTL override: "DEF"
-        RenderText {#text} at (65,0) size 29x17
-          text run at (65,0) width 29: "GHI"
+        RenderText {#text} at (0,0) size 33x17
+          text run at (0,0) width 33: "ABC"
+        RenderInline {SPAN} at (0,0) size 32x17
+          RenderText {#text} at (32,0) size 32x17
+            text run at (32,0) width 32 RTL override: "DEF"
+        RenderText {#text} at (63,0) size 29x17
+          text run at (63,0) width 29: "GHI"
       RenderBlock {DIV} at (0,50) size 784x18
-        RenderText {#text} at (0,0) size 34x17
-          text run at (0,0) width 34: "ABC"
-        RenderInline {SPAN} at (0,0) size 31x17
-          RenderText {#text} at (34,0) size 31x17
-            text run at (34,0) width 31 RTL override: "DEF"
-        RenderText {#text} at (65,0) size 29x17
-          text run at (65,0) width 29: "GHI"
+        RenderText {#text} at (0,0) size 33x17
+          text run at (0,0) width 33: "ABC"
+        RenderInline {SPAN} at (0,0) size 32x17
+          RenderText {#text} at (32,0) size 32x17
+            text run at (32,0) width 32 RTL override: "DEF"
+        RenderText {#text} at (63,0) size 29x17
+          text run at (63,0) width 29: "GHI"
 selection start: position 1 of child 0 {#text} of child 2 {DIV} of body
 selection end:   position 3 of child 2 {#text} of child 4 {DIV} of body

@@ -16,8 +16,8 @@ width=227
 width=227
 width=33
 width=33
-width=223
-width=223
+width=227
+width=227
 width=33
 width=33
 
