@@ -6,3 +6,4 @@ sky@chromium.org
 jamescook@chromium.org
 
 per-file immersive_mode_controller*=pkotwicz@chromium.org
+per-file *x11*=erg@chromium.org

@@ -12,8 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/command_observer.h"
+#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,7 +49,9 @@ struct GlobalMenuBarCommand;
 // libdbusmenu-gtk code. Since we don't have GtkWindows anymore, we need to
 // interface directly with the lower level libdbusmenu-glib, which we
 // opportunistically dlopen() since not everyone is running Ubuntu.
-class GlobalMenuBarX11 : public CommandObserver,
+class GlobalMenuBarX11 : public AvatarMenuObserver,
+                         public chrome::BrowserListObserver,
+                         public CommandObserver,
                          public content::NotificationObserver,
                          public TabRestoreServiceObserver,
                          public views::DesktopWindowTreeHostObserverX11 {
@@ -103,6 +108,8 @@ class GlobalMenuBarX11 : public CommandObserver,
   // Updates the visibility of the bookmark bar on pref changes.
   void OnBookmarkBarVisibilityChanged();
 
+  void RebuildProfilesMenu();
+
   // Find the first index of the item in |menu| with the tag |tag_id|.
   int GetIndexOfMenuItemWithTag(DbusmenuMenuitem* menu, int tag_id);
 
@@ -113,6 +120,12 @@ class GlobalMenuBarX11 : public CommandObserver,
 
   // Deleter function for HistoryItem implementation detail.
   static void DeleteHistoryItem(void* void_item);
+
+  // Overridden from AvatarMenuObserver:
+  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
+
+  // Overridden from chrome::BrowserListObserver:
+  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
   // Overridden from CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
@@ -136,6 +149,12 @@ class GlobalMenuBarX11 : public CommandObserver,
                      DbusmenuMenuitem*, unsigned int);
   CHROMEG_CALLBACK_0(GlobalMenuBarX11, void, OnHistoryMenuAboutToShow,
                      DbusmenuMenuitem*);
+  CHROMEG_CALLBACK_1(GlobalMenuBarX11, void, OnProfileItemActivated,
+                     DbusmenuMenuitem*, unsigned int);
+  CHROMEG_CALLBACK_1(GlobalMenuBarX11, void, OnEditProfileItemActivated,
+                     DbusmenuMenuitem*, unsigned int);
+  CHROMEG_CALLBACK_1(GlobalMenuBarX11, void, OnCreateProfileItemActivated,
+                     DbusmenuMenuitem*, unsigned int);
 
   Browser* browser_;
   Profile* profile_;
@@ -149,6 +168,7 @@ class GlobalMenuBarX11 : public CommandObserver,
   DbusmenuServer* server_;
   DbusmenuMenuitem* root_item_;
   DbusmenuMenuitem* history_menu_;
+  DbusmenuMenuitem* profiles_menu_;
 
   // Tracks value of the kShowBookmarkBar preference.
   PrefChangeRegistrar pref_change_registrar_;
@@ -156,6 +176,8 @@ class GlobalMenuBarX11 : public CommandObserver,
   history::TopSites* top_sites_;
 
   TabRestoreService* tab_restore_service_;  // weak
+
+  scoped_ptr<AvatarMenu> avatar_menu_;
 
   content::NotificationRegistrar registrar_;
 

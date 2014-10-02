@@ -15,13 +15,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -113,6 +117,7 @@ const char kTypeSeparator[] = "separator";
 // Data set on GObjectgs.
 const char kTypeTag[] = "type-tag";
 const char kHistoryItem[] = "history-item";
+const char kProfileId[] = "profile-id";
 
 // The maximum number of most visited items to display.
 const unsigned int kMostVisitedCount = 8;
@@ -133,6 +138,7 @@ const int TAG_MOST_VISITED = 1;
 const int TAG_RECENTLY_CLOSED = 2;
 const int TAG_MOST_VISITED_HEADER = 3;
 const int TAG_RECENTLY_CLOSED_HEADER = 4;
+const int TAG_PROFILES = 5;
 
 GlobalMenuBarCommand file_menu[] = {
   { IDS_NEW_TAB, IDC_NEW_TAB },
@@ -241,6 +247,11 @@ GlobalMenuBarCommand help_menu[] = {
   { MENU_END, MENU_END }
 };
 
+GlobalMenuBarCommand profiles_menu[] = {
+  { MENU_SEPARATOR, MENU_SEPARATOR },
+  { MENU_END, MENU_END }
+};
+
 void EnsureMethodsLoaded() {
   static bool attempted_load = false;
   if (attempted_load)
@@ -320,6 +331,7 @@ GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
       server_(NULL),
       root_item_(NULL),
       history_menu_(NULL),
+      profiles_menu_(NULL),
       top_sites_(NULL),
       tab_restore_service_(NULL),
       weak_ptr_factory_(this) {
@@ -339,6 +351,7 @@ GlobalMenuBarX11::~GlobalMenuBarX11() {
     g_object_unref(server_);
     host_->RemoveObserver(this);
   }
+  BrowserList::RemoveObserver(this);
 }
 
 // static
@@ -384,6 +397,8 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
   history_menu_ = BuildStaticMenu(
       root_item_, IDS_HISTORY_MENU_LINUX, history_menu);
   BuildStaticMenu(root_item_, IDS_TOOLS_MENU_LINUX, tools_menu);
+  profiles_menu_ = BuildStaticMenu(
+      root_item_, IDS_PROFILES_OPTIONS_GROUP_NAME, profiles_menu);
   BuildStaticMenu(root_item_, IDS_HELP_MENU_LINUX, help_menu);
 
   // We have to connect to |history_menu_item|'s "activate" signal instead of
@@ -420,6 +435,15 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
     registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
                    content::Source<history::TopSites>(top_sites_));
   }
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  DCHECK(profile_manager);
+  avatar_menu_.reset(new AvatarMenu(
+      &profile_manager->GetProfileInfoCache(), this, NULL));
+  avatar_menu_->RebuildMenu();
+  BrowserList::AddObserver(this);
+
+  RebuildProfilesMenu();
 
   server_set_root(server_, root_item_);
 }
@@ -587,6 +611,63 @@ void GlobalMenuBarX11::OnBookmarkBarVisibilityChanged() {
   }
 }
 
+void GlobalMenuBarX11::RebuildProfilesMenu() {
+  ClearMenuSection(profiles_menu_, TAG_PROFILES);
+
+  // Don't call avatar_menu_->GetActiveProfileIndex() as the as the index might
+  // be incorrect if RebuildProfilesMenu() is called while we deleting the
+  // active profile and closing all its browser windows.
+  int active_profile_index = -1;
+
+  for (size_t i = 0; i < avatar_menu_->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& item = avatar_menu_->GetItemAt(i);
+    base::string16 title = item.name;
+    gfx::ElideString(title, kMaximumMenuWidthInChars, &title);
+
+    DbusmenuMenuitem* menu_item = BuildMenuItem(
+        base::UTF16ToUTF8(title), TAG_PROFILES);
+    g_object_set_data(G_OBJECT(menu_item), kProfileId, GINT_TO_POINTER(i));
+    g_signal_connect(menu_item, "item-activated",
+                     G_CALLBACK(OnProfileItemActivatedThunk), this);
+    menuitem_property_set(menu_item, kPropertyToggleType, kTypeCheckmark);
+    menuitem_property_set_int(menu_item, kPropertyToggleState, item.active);
+
+    if (item.active)
+      active_profile_index = i;
+
+    menuitem_child_add_position(profiles_menu_, menu_item, i);
+    g_object_unref(menu_item);
+  }
+
+  // There is a separator between the list of profiles and the possible actions.
+  int index = avatar_menu_->GetNumberOfItems() + 1;
+
+  DbusmenuMenuitem* edit_profile_item = BuildMenuItem(
+      l10n_util::GetStringUTF8(IDS_PROFILES_MANAGE_BUTTON_LABEL), TAG_PROFILES);
+  DbusmenuMenuitem* create_profile_item = BuildMenuItem(
+      l10n_util::GetStringUTF8(IDS_PROFILES_CREATE_BUTTON_LABEL),
+      TAG_PROFILES);
+
+  // There is no active profile in Guest mode, in which case the action buttons
+  // should be disabled.
+  if (active_profile_index >= 0) {
+    g_object_set_data(G_OBJECT(edit_profile_item), kProfileId,
+                      GINT_TO_POINTER(active_profile_index));
+    g_signal_connect(edit_profile_item, "item-activated",
+                     G_CALLBACK(OnEditProfileItemActivatedThunk), this);
+    g_signal_connect(create_profile_item, "item-activated",
+                     G_CALLBACK(OnCreateProfileItemActivatedThunk), this);
+  } else {
+    menuitem_property_set_bool(edit_profile_item, kPropertyEnabled, false);
+    menuitem_property_set_bool(create_profile_item, kPropertyEnabled, false);
+  }
+
+  menuitem_child_add_position(profiles_menu_, edit_profile_item, index++);
+  menuitem_child_add_position(profiles_menu_, create_profile_item, index);
+  g_object_unref(edit_profile_item);
+  g_object_unref(create_profile_item);
+}
+
 int GlobalMenuBarX11::GetIndexOfMenuItemWithTag(DbusmenuMenuitem* menu,
                                                 int tag_id) {
   GList* childs = menuitem_get_children(menu);
@@ -628,6 +709,17 @@ void GlobalMenuBarX11::DeleteHistoryItem(void* void_item) {
   HistoryItem* item =
       reinterpret_cast<GlobalMenuBarX11::HistoryItem*>(void_item);
   delete item;
+}
+
+void GlobalMenuBarX11::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
+  RebuildProfilesMenu();
+}
+
+void GlobalMenuBarX11::OnBrowserSetLastActive(Browser* browser) {
+  // Rebuild the avatar menu so that the items have the correct active state.
+  avatar_menu_->RebuildMenu();
+  avatar_menu_->ActiveBrowserChanged(browser);
+  RebuildProfilesMenu();
 }
 
 void GlobalMenuBarX11::EnabledStateChangedForCommand(int id, bool enabled) {
@@ -789,4 +881,21 @@ void GlobalMenuBarX11::OnHistoryMenuAboutToShow(DbusmenuMenuitem* item) {
       TabRestoreServiceChanged(tab_restore_service_);
     }
   }
+}
+
+void GlobalMenuBarX11::OnProfileItemActivated(DbusmenuMenuitem* sender,
+                                              unsigned int timestamp) {
+  int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(sender), kProfileId));
+  avatar_menu_->SwitchToProfile(id, false, ProfileMetrics::SWITCH_PROFILE_MENU);
+}
+
+void GlobalMenuBarX11::OnEditProfileItemActivated(DbusmenuMenuitem* sender,
+                                                  unsigned int timestamp) {
+  int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(sender), kProfileId));
+  avatar_menu_->EditProfile(id);
+}
+
+void GlobalMenuBarX11::OnCreateProfileItemActivated(DbusmenuMenuitem* sender,
+                                                    unsigned int timestamp) {
+  avatar_menu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_MENU);
 }
