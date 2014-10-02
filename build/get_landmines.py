@@ -58,7 +58,6 @@ def print_landmines():
   print 'ninja dependency cycle: crbug.com/408192'
   if platform() == 'android':
     print 'Clobber: To delete stale generated .java files.'
-    print 'Delete stale generated .java files again. crbug.com/349592'
 
 
 def main():

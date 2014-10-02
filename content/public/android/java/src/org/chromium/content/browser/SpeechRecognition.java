@@ -19,7 +19,6 @@ import android.speech.SpeechRecognizer;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content_public.common.SpeechRecognitionErrorCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,30 +89,30 @@ public class SpeechRecognition {
 
         @Override
         public void onError(int error) {
-            int code = SpeechRecognitionErrorCode.NONE;
+            int code = SpeechRecognitionError.NONE;
 
             // Translate Android SpeechRecognizer errors to Web Speech API errors.
             switch(error) {
                 case SpeechRecognizer.ERROR_AUDIO:
-                    code = SpeechRecognitionErrorCode.AUDIO;
+                    code = SpeechRecognitionError.AUDIO;
                     break;
                 case SpeechRecognizer.ERROR_CLIENT:
-                    code = SpeechRecognitionErrorCode.ABORTED;
+                    code = SpeechRecognitionError.ABORTED;
                     break;
                 case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
                 case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                    code = SpeechRecognitionErrorCode.NOT_ALLOWED;
+                    code = SpeechRecognitionError.NOT_ALLOWED;
                     break;
                 case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
                 case SpeechRecognizer.ERROR_NETWORK:
                 case SpeechRecognizer.ERROR_SERVER:
-                    code = SpeechRecognitionErrorCode.NETWORK;
+                    code = SpeechRecognitionError.NETWORK;
                     break;
                 case SpeechRecognizer.ERROR_NO_MATCH:
-                    code = SpeechRecognitionErrorCode.NO_MATCH;
+                    code = SpeechRecognitionError.NO_MATCH;
                     break;
                 case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                    code = SpeechRecognitionErrorCode.NO_SPEECH;
+                    code = SpeechRecognitionError.NO_SPEECH;
                     break;
                 default:
                     assert false;
@@ -143,7 +142,7 @@ public class SpeechRecognition {
             // We assume that onResults is called only once, at the end of a session, thus we
             // terminate. If one day the recognition provider changes dictation mode behavior to
             // call onResults several times, we should terminate only if (!mContinuous).
-            terminate(SpeechRecognitionErrorCode.NONE);
+            terminate(SpeechRecognitionError.NONE);
         }
 
         @Override
@@ -238,7 +237,7 @@ public class SpeechRecognition {
             mState = STATE_IDLE;
         }
 
-        if (error != SpeechRecognitionErrorCode.NONE)
+        if (error != SpeechRecognitionError.NONE)
             nativeOnRecognitionError(mNativeSpeechRecognizerImplAndroid, error);
 
         mRecognizer.destroy();
@@ -271,7 +270,7 @@ public class SpeechRecognition {
             return;
 
         mRecognizer.cancel();
-        terminate(SpeechRecognitionErrorCode.ABORTED);
+        terminate(SpeechRecognitionError.ABORTED);
     }
 
     @CalledByNative

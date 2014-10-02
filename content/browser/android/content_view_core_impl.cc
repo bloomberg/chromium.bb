@@ -70,17 +70,10 @@ using blink::WebInputEvent;
 // Describes the type and enabled state of a select popup item.
 namespace {
 
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
-enum PopupItemType {
-  // Popup item is of type group
-  POPUP_ITEM_TYPE_GROUP,
-
-  // Popup item is disabled
-  POPUP_ITEM_TYPE_DISABLED,
-
-  // Popup item is enabled
-  POPUP_ITEM_TYPE_ENABLED,
+enum {
+#define DEFINE_POPUP_ITEM_TYPE(name, value) POPUP_ITEM_TYPE_##name = value,
+#include "content/browser/android/popup_item_type_list.h"
+#undef DEFINE_POPUP_ITEM_TYPE
 };
 
 } //namespace
@@ -115,37 +108,37 @@ ScopedJavaLocalRef<jobject> CreateJavaRect(
 int ToGestureEventType(WebInputEvent::Type type) {
   switch (type) {
     case WebInputEvent::GestureScrollBegin:
-      return GESTURE_EVENT_TYPE_SCROLL_START;
+      return SCROLL_START;
     case WebInputEvent::GestureScrollEnd:
-      return GESTURE_EVENT_TYPE_SCROLL_END;
+      return SCROLL_END;
     case WebInputEvent::GestureScrollUpdate:
-      return GESTURE_EVENT_TYPE_SCROLL_BY;
+      return SCROLL_BY;
     case WebInputEvent::GestureFlingStart:
-      return GESTURE_EVENT_TYPE_FLING_START;
+      return FLING_START;
     case WebInputEvent::GestureFlingCancel:
-      return GESTURE_EVENT_TYPE_FLING_CANCEL;
+      return FLING_CANCEL;
     case WebInputEvent::GestureShowPress:
-      return GESTURE_EVENT_TYPE_SHOW_PRESS;
+      return SHOW_PRESS;
     case WebInputEvent::GestureTap:
-      return GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
+      return SINGLE_TAP_CONFIRMED;
     case WebInputEvent::GestureTapUnconfirmed:
-      return GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
+      return SINGLE_TAP_UNCONFIRMED;
     case WebInputEvent::GestureTapDown:
-      return GESTURE_EVENT_TYPE_TAP_DOWN;
+      return TAP_DOWN;
     case WebInputEvent::GestureTapCancel:
-      return GESTURE_EVENT_TYPE_TAP_CANCEL;
+      return TAP_CANCEL;
     case WebInputEvent::GestureDoubleTap:
-      return GESTURE_EVENT_TYPE_DOUBLE_TAP;
+      return DOUBLE_TAP;
     case WebInputEvent::GestureLongPress:
-      return GESTURE_EVENT_TYPE_LONG_PRESS;
+      return LONG_PRESS;
     case WebInputEvent::GestureLongTap:
-      return GESTURE_EVENT_TYPE_LONG_TAP;
+      return LONG_TAP;
     case WebInputEvent::GesturePinchBegin:
-      return GESTURE_EVENT_TYPE_PINCH_BEGIN;
+      return PINCH_BEGIN;
     case WebInputEvent::GesturePinchEnd:
-      return GESTURE_EVENT_TYPE_PINCH_END;
+      return PINCH_END;
     case WebInputEvent::GesturePinchUpdate:
-      return GESTURE_EVENT_TYPE_PINCH_BY;
+      return PINCH_BY;
     case WebInputEvent::GestureTwoFingerTap:
     case WebInputEvent::GestureScrollUpdateWithoutPropagation:
     default:

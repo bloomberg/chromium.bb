@@ -22,7 +22,6 @@
         '../content/content.gyp:screen_orientation_values_java',
         '../content/content.gyp:selection_event_type_java',
         '../content/content.gyp:speech_recognition_error_java',
-        '../content/content.gyp:top_controls_state_java',
         '../media/media.gyp:media_android_imageformat_list',
         '../net/net.gyp:cert_verify_status_android_java',
         '../net/net.gyp:certificate_mime_types_java',

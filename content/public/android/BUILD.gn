@@ -42,7 +42,14 @@ android_library("content_java") {
 
   srcjar_deps = [
     ":common_aidl",
-    ":content_public_android_java_enums_srcjar",
+    ":content_gamepad_mapping_java",
+    ":gesture_event_type_java",
+    ":popup_item_type_java",
+    ":result_codes_java",
+    ":selection_event_type_java",
+    ":speech_recognition_error_java",
+    ":top_controls_state_java",
+    ":screen_orientation_values_java",
   ]
 
   DEPRECATED_java_in_dir = "java/src"
@@ -103,27 +110,85 @@ java_strings_grd("content_strings_grd") {
   ]
 }
 
-java_cpp_enum("content_public_android_java_enums_srcjar") {
+java_cpp_template("gesture_event_type_java") {
   sources = [
-    "//content/browser/android/content_view_core_impl.cc",
-    "//content/browser/android/gesture_event_type.h",
-    "//content/browser/renderer_host/input/selection_event_type.h",
-    "//content/browser/gamepad/gamepad_standard_mappings.h",
-    "//content/public/common/result_codes.h",
-    "//content/public/common/screen_orientation_values.h",
-    "//content/public/common/speech_recognition_error.h",
-    "//content/public/common/top_controls_state.h",
+    "java/src/org/chromium/content/browser/GestureEventType.template",
   ]
-  outputs = [
-    "org/chromium/content/browser/GestureEventType.java",
-    "org/chromium/content/browser/input/CanonicalAxisIndex.java",
-    "org/chromium/content/browser/input/CanonicalButtonIndex.java",
-    "org/chromium/content/browser/input/PopupItemType.java",
-    "org/chromium/content/browser/input/SelectionEventType.java",
-    "org/chromium/content_public/common/ResultCode.java",
-    "org/chromium/content_public/common/ScreenOrientationValues.java",
-    "org/chromium/content_public/common/SpeechRecognitionErrorCode.java",
-    "org/chromium/content_public/common/TopControlsState.java",
+  package_name = "org/chromium/content/browser"
+  inputs = [
+    "//content/browser/android/gesture_event_type_list.h"
+  ]
+}
+
+java_cpp_template("popup_item_type_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/input/PopupItemType.template",
+  ]
+  package_name = "org/chromium/content/browser/input"
+  inputs = [
+    "//content/browser/android/popup_item_type_list.h"
+  ]
+}
+
+java_cpp_template("result_codes_java") {
+  sources = [
+    "java/src/org/chromium/content/common/ResultCodes.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/public/common/result_codes_list.h"
+  ]
+}
+
+java_cpp_template("selection_event_type_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/input/SelectionEventType.template",
+  ]
+  package_name = "org/chromium/content/browser/input"
+  inputs = [
+    "//content/browser/renderer_host/input/selection_event_type_list.h"
+  ]
+}
+
+java_cpp_template("speech_recognition_error_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/SpeechRecognitionError.template",
+  ]
+  package_name = "org/chromium/content/browser"
+  inputs = [
+    "//content/public/common/speech_recognition_error_list.h"
+  ]
+}
+
+java_cpp_template("top_controls_state_java") {
+  sources = [
+    "java/src/org/chromium/content/common/TopControlsState.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/public/common/top_controls_state_list.h"
+  ]
+}
+
+java_cpp_template("screen_orientation_values_java") {
+  sources = [
+    "java/src/org/chromium/content_public/common/ScreenOrientationValues.template",
+  ]
+  package_name = "org/chromium/content_public/common"
+  inputs = [
+    "//content/public/common/screen_orientation_values_list.h"
+  ]
+}
+
+java_cpp_template("content_gamepad_mapping_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/input/CanonicalAxisIndex.template",
+    "java/src/org/chromium/content/browser/input/CanonicalButtonIndex.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/browser/gamepad/canonical_axis_index_list.h",
+    "//content/browser/gamepad/canonical_button_index_list.h",
   ]
 }
 
