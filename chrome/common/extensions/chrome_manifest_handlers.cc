@@ -5,8 +5,6 @@
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
@@ -25,6 +23,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
+#include "chrome/common/extensions/manifest_handlers/extension_action_handler.h"
 #include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -46,11 +45,11 @@ void RegisterChromeManifestHandlers() {
   (new AppLaunchManifestHandler)->Register();
   (new AutomationHandler)->Register();
   (new BluetoothManifestHandler)->Register();
-  (new BrowserActionHandler)->Register();
   (new CommandsHandler)->Register();
   (new ContentScriptsHandler)->Register();
   (new DefaultLocaleHandler)->Register();
   (new DevToolsPageHandler)->Register();
+  (new ExtensionActionHandler)->Register();
   (new FileBrowserHandlerParser)->Register();
   (new HomepageURLHandler)->Register();
 #if defined(OS_CHROMEOS)
@@ -61,7 +60,6 @@ void RegisterChromeManifestHandlers() {
   (new OAuth2ManifestHandler)->Register();
   (new OmniboxHandler)->Register();
   (new OptionsPageManifestHandler)->Register();
-  (new PageActionHandler)->Register();
   (new PluginsHandler)->Register();
   (new RequirementsHandler)->Register();  // Depends on plugins.
   (new SettingsOverridesHandler)->Register();

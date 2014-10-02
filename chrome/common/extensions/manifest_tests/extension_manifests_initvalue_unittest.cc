@@ -75,8 +75,6 @@ TEST_F(InitValueManifestTest, InitFromValueInvalid) {
              errors::kInvalidPermissions),
     Testcase("init_invalid_permissions_item_invalid.json",
              errors::kInvalidPermission),
-    Testcase("init_invalid_page_actions_multi.json",
-             errors::kInvalidPageActionsListSize),
     Testcase("init_invalid_options_url_invalid.json",
              errors::kInvalidOptionsPage),
     Testcase("init_invalid_locale_invalid.json", errors::kInvalidDefaultLocale),
@@ -129,10 +127,6 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
   EXPECT_EQ("concise name", extension->short_name());
 
   Testcase testcases[] = {
-    // Test that an empty list of page actions does not stop a browser action
-    // from being loaded.
-    Testcase("init_valid_empty_page_actions.json"),
-
     // Test with a minimum_chrome_version.
     Testcase("init_valid_minimum_chrome.json"),
 

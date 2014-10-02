@@ -580,10 +580,6 @@
     "dependencies": ["manifest:page_action"],
     "contexts": ["blessed_extension"]
   },
-  "pageActions": {
-    "dependencies": ["manifest:page_actions"],
-    "contexts": ["blessed_extension"]
-  },
   "pageCapture": {
     "dependencies": ["permission:pageCapture"],
     "contexts": ["blessed_extension"]

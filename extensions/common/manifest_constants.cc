@@ -110,7 +110,6 @@ const char kPageActionIcons[] = "icons";
 const char kPageActionId[] = "id";
 const char kPageActionPopup[] = "popup";
 const char kPageActionPopupPath[] = "path";
-const char kPageActions[] = "page_actions";
 const char kPermissions[] = "permissions";
 const char kPlatformAppBackground[] = "app.background";
 const char kPlatformAppBackgroundPage[] = "app.background.page";
@@ -545,12 +544,6 @@ const char kInvalidPageActionPopup[] =
     "Invalid type for page action popup.";
 const char kInvalidPageActionPopupPath[] =
     "Invalid value for page action popup path [*].";
-const char kInvalidPageActionsList[] =
-    "Invalid value for 'page_actions'.";
-const char kInvalidPageActionsListSize[] =
-    "Invalid value for 'page_actions'. There can be at most one page action.";
-const char kInvalidPageActionTypeValue[] =
-    "Invalid value for 'page_actions[*].type', expected 'tab' or 'permanent'.";
 const char kInvalidPermissionWithDetail[] =
     "Invalid value for 'permissions[*]': *.";
 const char kInvalidPermission[] =

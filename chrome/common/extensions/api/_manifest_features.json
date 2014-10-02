@@ -273,11 +273,6 @@
     "channel": "stable",
     "extension_types": ["extension"]
   },
-  "page_actions": {
-    "channel": "stable",
-    "extension_types": ["extension"],
-    "max_manifest_version": 1
-  },
   "permissions": {
     "channel": "stable",
     "extension_types": [
