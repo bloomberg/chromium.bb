@@ -24,11 +24,11 @@ enum OrientationType {
     GarbageCollected,
     RuntimeEnabled=ScreenOrientation
 ] interface ScreenOrientation : EventTarget {
-    readonly attribute unsigned short angle;
-    readonly attribute DOMString type;
+    [MeasureAs=ScreenOrientationAngle] readonly attribute unsigned short angle;
+    [MeasureAs=ScreenOrientationType] readonly attribute DOMString type;
 
-    [CallWith=ScriptState] Promise lock(OrientationLockType orientation);
-    void unlock();
+    [CallWith=ScriptState, MeasureAs=ScreenOrientationLock] Promise lock(OrientationLockType orientation);
+    [MeasureAs=ScreenOrientationUnlock] void unlock();
 
     attribute EventHandler onchange;
 };
