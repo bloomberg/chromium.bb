@@ -844,6 +844,10 @@ crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure NeedsMa
 
 crbug.com/412758 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash NeedsManualRebaseline ]
 
+crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
+crbug.com/419696 [ Mac Debug ] virtual/antialiasedtext/fast/text/font-linux-normalize.html [ Crash Pass ]
+crbug.com/419696 [ Mac Debug ] virtual/antialiasedtext/fast/text/font-variant-width.html [ Failure Pass ]
+
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
 crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
