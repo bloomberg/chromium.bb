@@ -87,6 +87,7 @@ function WebViewInternal(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
   this.attached = false;
+  this.pendingGuestCreation = false;
   this.elementAttached = false;
 
   this.beforeFirstNavigation = true;
@@ -142,6 +143,7 @@ WebViewInternal.prototype.reset = function() {
   // heard back from createGuest yet. We will not reset the flag in this case so
   // that we don't end up allocating a second guest.
   if (this.guestInstanceId) {
+    GuestViewInternal.destroyGuest(this.guestInstanceId);
     this.guestInstanceId = undefined;
     this.beforeFirstNavigation = true;
     this.validPartitionId = true;
@@ -542,25 +544,18 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
     this.browserPluginNode.removeAttribute('internalinstanceid');
     this.internalInstanceId = parseInt(newValue);
 
-    if (!this.deferredAttachState) {
-      this.parseAttributes();
-      return;
-    }
-
     if (!!this.guestInstanceId && this.guestInstanceId != 0) {
-      window.setTimeout(function() {
-        var isNewWindow = this.deferredAttachState ?
-            this.deferredAttachState.isNewWindow : false;
-        var params = this.buildAttachParams(isNewWindow);
-        guestViewInternalNatives.AttachGuest(
-            this.internalInstanceId,
-            this.guestInstanceId,
-            params,
-            function(w) {
-              this.contentWindow = w;
-            }.bind(this)
-        );
-      }.bind(this), 0);
+      var isNewWindow = this.deferredAttachState ?
+          this.deferredAttachState.isNewWindow : false;
+      var params = this.buildAttachParams(isNewWindow);
+      guestViewInternalNatives.AttachGuest(
+          this.internalInstanceId,
+          this.guestInstanceId,
+          params,
+          function(w) {
+            this.contentWindow = w;
+          }.bind(this)
+      );
     }
 
     return;
@@ -641,24 +636,20 @@ WebViewInternal.prototype.hasNavigated = function() {
 WebViewInternal.prototype.parseSrcAttribute = function(result) {
   if (!this.partition.validPartitionId) {
     result.error = ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
-    return false;
+    return;
   }
   this.src = this.webviewNode.getAttribute('src');
 
   if (!this.src) {
-    return true;
-  }
-
-  if (!this.elementAttached) {
-    return true;
+    return;
   }
 
   if (!this.hasGuestInstanceID()) {
     if (this.beforeFirstNavigation) {
       this.beforeFirstNavigation = false;
-      this.allocateInstanceId();
+      this.createGuest();
     }
-    return true;
+    return;
   }
 
   // Navigate to this.src.
@@ -668,17 +659,23 @@ WebViewInternal.prototype.parseSrcAttribute = function(result) {
 
 /** @return {boolean} */
 WebViewInternal.prototype.parseAttributes = function() {
+  if (!this.elementAttached) {
+    return;
+  }
   var hasNavigated = this.hasNavigated();
   var attributeValue = this.webviewNode.getAttribute('partition');
   var result = this.partition.fromAttribute(attributeValue, hasNavigated);
-  return this.parseSrcAttribute(result);
+  this.parseSrcAttribute(result);
 };
 
 WebViewInternal.prototype.hasGuestInstanceID = function() {
   return this.guestInstanceId != undefined;
 };
 
-WebViewInternal.prototype.allocateInstanceId = function() {
+WebViewInternal.prototype.createGuest = function() {
+  if (this.pendingGuestCreation) {
+    return;
+  }
   var storagePartitionId =
       this.webviewNode.getAttribute(WEB_VIEW_ATTRIBUTE_PARTITION) ||
       this.webviewNode[WEB_VIEW_ATTRIBUTE_PARTITION];
@@ -689,9 +686,15 @@ WebViewInternal.prototype.allocateInstanceId = function() {
       'webview',
       params,
       function(guestInstanceId) {
+        this.pendingGuestCreation = false;
+        if (!this.elementAttached) {
+          GuestViewInternal.destroyGuest(this.guestInstanceId);
+          return;
+        }
         this.attachWindow(guestInstanceId, false);
       }.bind(this)
   );
+  this.pendingGuestCreation = true;
 };
 
 WebViewInternal.prototype.onFrameNameChanged = function(name) {
@@ -701,10 +704,6 @@ WebViewInternal.prototype.onFrameNameChanged = function(name) {
   } else {
     this.webviewNode.setAttribute('name', this.name);
   }
-};
-
-WebViewInternal.prototype.onPluginDestroyed = function() {
-  this.reset();
 };
 
 WebViewInternal.prototype.dispatchEvent = function(webViewEvent) {
@@ -755,7 +754,6 @@ WebViewInternal.prototype.onAttach = function(storagePartitionId) {
   this.webviewNode.setAttribute('partition', storagePartitionId);
   this.partition.fromAttribute(storagePartitionId, this.hasNavigated());
 };
-
 
 /** @private */
 WebViewInternal.prototype.getUserAgent = function() {

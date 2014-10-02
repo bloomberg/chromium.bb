@@ -125,11 +125,6 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ReclaimCompositorResources,
                     int /* browser_plugin_instance_id */,
                     FrameHostMsg_ReclaimCompositorResources_Params /* params */)
 
-// When a BrowserPlugin has been removed from the embedder's DOM, it informs
-// the browser process to cleanup the guest.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
-                    int /* browser_plugin_instance_id */)
-
 // Tells the guest it has been shown or hidden.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
                     int /* browser_plugin_instance_id */,

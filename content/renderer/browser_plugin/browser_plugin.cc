@@ -83,13 +83,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
 
 BrowserPlugin::~BrowserPlugin() {
   browser_plugin_manager()->RemoveBrowserPlugin(browser_plugin_instance_id_);
-
-  if (!ready())
-    return;
-
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_PluginDestroyed(render_view_routing_id_,
-                                               browser_plugin_instance_id_));
 }
 
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -174,7 +167,6 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
   BrowserPluginMsg_CompositorFrameSwapped::Param param;
   if (!BrowserPluginMsg_CompositorFrameSwapped::Read(&message, &param))
     return;
-
   // Note that there is no need to send ACK for this message.
   // If the guest has updated pixels then it is no longer crashed.
   guest_crashed_ = false;
@@ -317,6 +309,8 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 
   g_plugin_container_map.Get().insert(std::make_pair(container_, this));
 
+  browser_plugin_manager()->AddBrowserPlugin(browser_plugin_instance_id_, this);
+
   // This is a way to notify observers of our attributes that this plugin is
   // available in render tree.
   // TODO(lazyboy): This should be done through the delegate instead. Perhaps
@@ -324,7 +318,6 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   UpdateDOMAttribute("internalinstanceid",
                      base::IntToString(browser_plugin_instance_id_));
 
-  browser_plugin_manager()->AddBrowserPlugin(browser_plugin_instance_id_, this);
   return true;
 }
 

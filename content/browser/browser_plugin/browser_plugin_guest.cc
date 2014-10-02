@@ -87,6 +87,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       last_can_compose_inline_(true),
+      guest_proxy_routing_id_(MSG_ROUTING_NONE),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
@@ -134,10 +135,6 @@ bool BrowserPluginGuest::LockMouse(bool allowed) {
   return embedder_web_contents()->GotResponseToLockMouseRequest(allowed);
 }
 
-void BrowserPluginGuest::Destroy() {
-  delegate_->Destroy();
-}
-
 WebContentsImpl* BrowserPluginGuest::CreateNewGuestWindow(
     const WebContents::CreateParams& params) {
   WebContentsImpl* new_contents =
@@ -175,7 +172,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeSetComposition,
                         OnImeSetComposition)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed, OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
@@ -200,13 +196,15 @@ void BrowserPluginGuest::Initialize(
   guest_window_rect_ = gfx::Rect(params.origin,
                                  params.resize_guest_params.view_size);
 
+  WebContentsViewGuest* new_view =
+      static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
+  if (attached())
+    new_view->OnGuestDetached(embedder_web_contents_->GetView());
+
   // Once a BrowserPluginGuest has an embedder WebContents, it's considered to
   // be attached.
   embedder_web_contents_ = embedder_web_contents;
-
-  WebContentsViewGuest* new_view =
-      static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-  new_view->OnGuestInitialized(embedder_web_contents->GetView());
+  new_view->OnGuestAttached(embedder_web_contents->GetView());
 
   RendererPreferences* renderer_prefs =
       GetWebContents()->GetMutableRendererPrefs();
@@ -336,7 +334,6 @@ void BrowserPluginGuest::SwapCompositorFrame(
   guest_params.output_surface_id = output_surface_id;
   guest_params.producing_route_id = host_routing_id;
   guest_params.producing_host_id = host_process_id;
-
   SendMessageToEmbedder(
       new BrowserPluginMsg_CompositorFrameSwapped(
           browser_plugin_instance_id(), guest_params));
@@ -454,7 +451,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_ImeConfirmComposition::ID:
     case BrowserPluginHostMsg_ImeSetComposition::ID:
     case BrowserPluginHostMsg_LockMouse_ACK::ID:
-    case BrowserPluginHostMsg_PluginDestroyed::ID:
     case BrowserPluginHostMsg_ReclaimCompositorResources::ID:
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
@@ -520,20 +516,21 @@ void BrowserPluginGuest::Attach(
     int browser_plugin_instance_id,
     WebContentsImpl* embedder_web_contents,
     const BrowserPluginHostMsg_Attach_Params& params) {
-  if (attached())
-    return;
-
   delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id);
 
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
   // does not create a new RenderView on navigation.
   if (has_render_view_) {
+    // This will trigger a callback to RenderViewReady after a round-trip IPC.
     static_cast<RenderViewHostImpl*>(
         GetWebContents()->GetRenderViewHost())->Init();
-    WebContentsViewGuest* new_view =
+    WebContentsViewGuest* web_contents_view =
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-    new_view->CreateViewForWidget(web_contents()->GetRenderViewHost());
+    if (!web_contents()->GetRenderViewHost()->GetView()) {
+      web_contents_view->CreateViewForWidget(
+          web_contents()->GetRenderViewHost());
+    }
   }
 
   Initialize(browser_plugin_instance_id, params, embedder_web_contents);
@@ -542,11 +539,18 @@ void BrowserPluginGuest::Attach(
 
   // Create a swapped out RenderView for the guest in the embedder render
   // process, so that the embedder can access the guest's window object.
-  int guest_routing_id =
-      GetWebContents()->CreateSwappedOutRenderView(
-          embedder_web_contents_->GetSiteInstance());
+  // On reattachment, we can reuse the same swapped out RenderView because
+  // the embedder process will always be the same even if the embedder
+  // WebContents changes.
+  if (guest_proxy_routing_id_ == MSG_ROUTING_NONE) {
+    guest_proxy_routing_id_ =
+        GetWebContents()->CreateSwappedOutRenderView(
+            embedder_web_contents_->GetSiteInstance());
+  }
 
-  delegate_->DidAttach(guest_routing_id);
+  delegate_->DidAttach(guest_proxy_routing_id_);
+
+  has_render_view_ = true;
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }
@@ -658,10 +662,6 @@ void BrowserPluginGuest::OnLockMouseAck(int browser_plugin_instance_id,
   pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
-}
-
-void BrowserPluginGuest::OnPluginDestroyed(int browser_plugin_instance_id) {
-  Destroy();
 }
 
 void BrowserPluginGuest::OnResizeGuest(

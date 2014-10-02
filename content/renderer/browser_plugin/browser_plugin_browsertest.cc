@@ -31,9 +31,6 @@ const char kHTMLForBrowserPluginObject[] =
     " src='foo' type='%s'></object>"
     "<script>document.querySelector('object').nonExistentAttribute;</script>";
 
-const char kHTMLForSourcelessPluginObject[] =
-    "<object id='browserplugin' width='640px' height='480px' type='%s'>";
-
 std::string GetHTMLForBrowserPluginObject() {
   return base::StringPrintf(kHTMLForBrowserPluginObject,
                             kBrowserPluginMimeType);
@@ -171,35 +168,6 @@ TEST_F(BrowserPluginTest, InitialResize) {
   EXPECT_EQ(640, params.resize_guest_params.view_size.width());
   EXPECT_EQ(480, params.resize_guest_params.view_size.height());
   ASSERT_TRUE(browser_plugin);
-}
-
-TEST_F(BrowserPluginTest, RemovePlugin) {
-  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
-  ASSERT_TRUE(browser_plugin);
-
-  EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_PluginDestroyed::ID));
-  ExecuteJavaScript("x = document.getElementById('browserplugin'); "
-                    "x.parentNode.removeChild(x);");
-  ProcessPendingMessages();
-  EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_PluginDestroyed::ID));
-}
-
-// This test verifies that PluginDestroyed messages do not get sent from a
-// BrowserPlugin that has never navigated.
-TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
-  std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
-                                        kBrowserPluginMimeType);
-  LoadHTML(html.c_str());
-  EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_PluginDestroyed::ID));
-  ExecuteJavaScript("x = document.getElementById('browserplugin'); "
-                    "x.parentNode.removeChild(x);");
-  ProcessPendingMessages();
-  EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_PluginDestroyed::ID));
 }
 
 }  // namespace content

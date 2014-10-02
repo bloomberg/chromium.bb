@@ -77,6 +77,7 @@ class ExtensionOptionsGuest
   scoped_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;
   GURL options_page_;
+  bool has_navigated_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionOptionsGuest);
 };

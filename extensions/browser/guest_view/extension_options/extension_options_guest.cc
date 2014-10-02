@@ -40,7 +40,8 @@ ExtensionOptionsGuest::ExtensionOptionsGuest(
     : GuestView<ExtensionOptionsGuest>(browser_context, guest_instance_id),
       extension_options_guest_delegate_(
           extensions::ExtensionsAPIClient::Get()
-              ->CreateExtensionOptionsGuestDelegate(this)) {
+              ->CreateExtensionOptionsGuestDelegate(this)),
+      has_navigated_(false) {
 }
 
 ExtensionOptionsGuest::~ExtensionOptionsGuest() {
@@ -108,10 +109,16 @@ void ExtensionOptionsGuest::CreateWebContents(
 
 void ExtensionOptionsGuest::DidAttachToEmbedder() {
   SetUpAutoSize();
+
+  // We should not re-navigate on reattachment.
+  if (has_navigated_)
+    return;
+
   web_contents()->GetController().LoadURL(options_page_,
                                           content::Referrer(),
                                           ui::PAGE_TRANSITION_LINK,
                                           std::string());
+  has_navigated_ = true;
 }
 
 void ExtensionOptionsGuest::DidInitialize() {

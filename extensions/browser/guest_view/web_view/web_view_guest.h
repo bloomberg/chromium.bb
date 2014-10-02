@@ -58,7 +58,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   static const char Type[];
 
   // Request navigating the guest to the provided |src| URL.
-  void NavigateGuest(const std::string& src);
+  void NavigateGuest(const std::string& src, bool force_navigation);
 
   // Shows the context menu for the guest.
   // |items| acts as a filter. This restricts the current context's default
@@ -343,10 +343,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Stores whether the contents of the guest can be transparent.
   bool guest_opaque_;
 
+  // Stores the src URL of the WebView.
+  GURL src_;
+
   // Handles the JavaScript dialog requests.
   JavaScriptDialogHelper javascript_dialog_helper_;
 
-  // Handels permission requests.
+  // Handles permission requests.
   scoped_ptr<WebViewPermissionHelper> web_view_permission_helper_;
 
   scoped_ptr<WebViewGuestDelegate> web_view_guest_delegate_;

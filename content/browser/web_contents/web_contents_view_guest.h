@@ -35,7 +35,9 @@ class WebContentsViewGuest : public WebContentsView,
 
   WebContents* web_contents();
 
-  void OnGuestInitialized(WebContentsView* parent_view);
+  void OnGuestAttached(WebContentsView* parent_view);
+
+  void OnGuestDetached(WebContentsView* old_parent_view);
 
   // Converts the guest specific coordinates in |params| to embedder specific
   // ones.

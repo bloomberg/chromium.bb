@@ -46,7 +46,6 @@ extern const char kEventLoadStop[];
 extern const char kEventMessage[];
 extern const char kEventNewWindow[];
 extern const char kEventPermissionRequest[];
-extern const char kEventPluginDestroyed[];
 extern const char kEventResponsive[];
 extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];

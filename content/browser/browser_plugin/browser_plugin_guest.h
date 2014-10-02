@@ -114,10 +114,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // Called when the embedder WebContents changes visibility.
   void EmbedderVisibilityChanged(bool visible);
 
-  // Destroys the guest WebContents and all its associated state, including
-  // this BrowserPluginGuest, and its new unattached windows.
-  void Destroy();
-
   // Creates a new guest WebContentsImpl with the provided |params| with |this|
   // as the |opener|.
   WebContentsImpl* CreateNewGuestWindow(
@@ -253,7 +249,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
                    bool last_unlocked_by_target,
                    bool privileged);
   void OnLockMouseAck(int instance_id, bool succeeded);
-  void OnPluginDestroyed(int instance_id);
   // Resizes the guest's web contents.
   void OnResizeGuest(
       int instance_id, const BrowserPluginHostMsg_ResizeGuest_Params& params);
@@ -364,6 +359,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   ui::TextInputType last_text_input_type_;
   ui::TextInputMode last_input_mode_;
   bool last_can_compose_inline_;
+
+  // The is the routing ID for a swapped out RenderView for the guest
+  // WebContents in the embedder's process.
+  int guest_proxy_routing_id_;
 
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.

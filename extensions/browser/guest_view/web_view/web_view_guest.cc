@@ -287,7 +287,7 @@ void WebViewGuest::DidAttachToEmbedder() {
 
   std::string src;
   if (attach_params()->GetString(webview::kAttributeSrc, &src) && !src.empty())
-    NavigateGuest(src);
+    NavigateGuest(src, false /* force_navigation */);
 
   if (GetOpener()) {
     // We need to do a navigation here if the target URL has changed between
@@ -299,7 +299,7 @@ void WebViewGuest::DidAttachToEmbedder() {
     if (it != GetOpener()->pending_new_windows_.end()) {
       const NewWindowInfo& new_window_info = it->second;
       if (new_window_info.changed || !web_contents()->HasOpener())
-        NavigateGuest(new_window_info.url.spec());
+        NavigateGuest(new_window_info.url.spec(), false /* force_navigation */);
     } else {
       NOTREACHED();
     }
@@ -404,10 +404,6 @@ void WebViewGuest::WillDestroy() {
   if (!attached() && GetOpener())
     GetOpener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();
-
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToEmbedder(
-      new GuestViewBase::Event(webview::kEventPluginDestroyed, args.Pass()));
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
@@ -679,6 +675,8 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
+  if (!render_frame_host->GetParent())
+    src_ = url;
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
@@ -898,7 +896,11 @@ content::ColorChooser* WebViewGuest::OpenColorChooser(
       web_contents, color, suggestions);
 }
 
-void WebViewGuest::NavigateGuest(const std::string& src) {
+void WebViewGuest::NavigateGuest(const std::string& src,
+                                 bool force_navigation) {
+  if (src.empty())
+    return;
+
   GURL url = ResolveURL(src);
 
   // Do not allow navigating a guest to schemes other than known safe schemes.
@@ -914,6 +916,8 @@ void WebViewGuest::NavigateGuest(const std::string& src) {
               net::ErrorToShortString(net::ERR_ABORTED));
     return;
   }
+  if (!force_navigation && (src_ == url))
+    return;
 
   GURL validated_url(url);
   web_contents()->GetRenderProcessHost()->FilterURL(false, &validated_url);

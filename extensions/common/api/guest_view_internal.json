@@ -67,6 +67,16 @@
         ]
       },
       {
+        "name": "destroyGuest",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
+      },
+      {
         "name": "setAutoSize",
         "type": "function",
         "parameters": [

@@ -65,7 +65,7 @@ bool WebViewInternalNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
       webview::Navigate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   std::string src = params->src;
-  guest->NavigateGuest(src);
+  guest->NavigateGuest(src, true /* force_navigation */);
   return true;
 }
 

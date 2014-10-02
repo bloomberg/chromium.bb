@@ -42,7 +42,6 @@ const char kEventLoadStop[] = "webViewInternal.onLoadStop";
 const char kEventMessage[] = "webViewInternal.onMessage";
 const char kEventNewWindow[] = "webViewInternal.onNewWindow";
 const char kEventPermissionRequest[] = "webViewInternal.onPermissionRequest";
-const char kEventPluginDestroyed[] = "webViewInternal.onPluginDestroyed";
 const char kEventResponsive[] = "webViewInternal.onResponsive";
 const char kEventSizeChanged[] = "webViewInternal.onSizeChanged";
 const char kEventUnresponsive[] = "webViewInternal.onUnresponsive";

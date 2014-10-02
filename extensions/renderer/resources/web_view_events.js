@@ -184,7 +184,6 @@ function WebViewEvents(webViewInternal, viewInstanceId) {
 // Sets up events.
 WebViewEvents.prototype.setup = function() {
   this.setupFrameNameChangedEvent();
-  this.setupPluginDestroyedEvent();
   this.setupWebRequestEvents();
   this.webViewInternal.setupExperimentalContextMenus();
 
@@ -197,12 +196,6 @@ WebViewEvents.prototype.setup = function() {
 WebViewEvents.prototype.setupFrameNameChangedEvent = function() {
   FrameNameChangedEvent.addListener(function(e) {
     this.webViewInternal.onFrameNameChanged(e.name);
-  }.bind(this), {instanceId: this.viewInstanceId});
-};
-
-WebViewEvents.prototype.setupPluginDestroyedEvent = function() {
-  PluginDestroyedEvent.addListener(function(e) {
-    this.webViewInternal.onPluginDestroyed();
   }.bind(this), {instanceId: this.viewInstanceId});
 };
 

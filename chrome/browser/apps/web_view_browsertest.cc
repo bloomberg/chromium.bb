@@ -819,33 +819,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
       << message_;
 }
 
-// Tests that a <webview> that is set to "display: none" after load and then
-// setting "display: block" re-renders the plugin properly.
-//
-// Initially after loading the <webview> and the test sets <webview> to
-// "display: none".
-// This causes the browser plugin to be destroyed, we then set the
-// style.display of the <webview> to block again and check that loadstop
-// fires properly.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneAndBack) {
-  LoadAppWithGuest("web_view/display_none_and_back");
-
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  WebContentsHiddenObserver observer(GetGuestWebContents(),
-                                     loop_runner->QuitClosure());
-
-  // Handled in platform_apps/web_view/display_none_and_back/main.js
-  SendMessageToEmbedder("hide-guest");
-  GetGuestViewManager()->WaitForGuestDeleted();
-  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
-                                                    false);
-
-  SendMessageToEmbedder("show-guest");
-  GetGuestViewManager()->WaitForGuestCreated();
-  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
-}
-
 // http://crbug.com/326332
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);

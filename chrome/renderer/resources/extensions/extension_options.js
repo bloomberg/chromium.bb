@@ -24,6 +24,9 @@ function ExtensionOptionsInternal(extensionoptionsNode) {
   privates(extensionoptionsNode).internal = this;
   this.extensionoptionsNode = extensionoptionsNode;
   this.viewInstanceId = IdGenerator.GetNextId();
+  this.guestInstanceId = 0;
+  this.elementAttached = false;
+  this.pendingGuestCreation = false;
 
   this.autosizeDeferred = false;
 
@@ -68,7 +71,14 @@ ExtensionOptionsInternal.prototype.createBrowserPluginNode = function() {
   return browserPluginNode;
 };
 
-ExtensionOptionsInternal.prototype.createGuest = function() {
+ExtensionOptionsInternal.prototype.createGuestIfNecessary = function() {
+  if (!this.elementAttached || this.pendingGuestCreation) {
+    return;
+  }
+  if (this.guestInstanceId != 0) {
+    this.attachWindow();
+    return;
+  }
   var params = {
     'extensionId': this.extensionId,
   };
@@ -76,6 +86,11 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
       'extensionoptions',
       params,
       function(guestInstanceId) {
+        this.pendingGuestCreation = false;
+        if (guestInstanceId && !this.elementAttached) {
+          GuestViewInternal.destroyGuest(guestInstanceId);
+          guestInstanceId = 0;
+        }
         if (guestInstanceId == 0) {
           // Fire a createfailed event here rather than in ExtensionOptionsGuest
           // because the guest will not be created, and cannot fire an event.
@@ -86,7 +101,9 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
           this.guestInstanceId = guestInstanceId;
           this.attachWindow();
         }
-      }.bind(this));
+      }.bind(this)
+  );
+  this.pendingGuestCreation = true;
 };
 
 ExtensionOptionsInternal.prototype.dispatchEvent =
@@ -113,7 +130,7 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
 
     // If a guest view does not exist then create one.
     if (!this.guestInstanceId) {
-      this.createGuest();
+      this.createGuestIfNecessary();
       return;
     }
     // TODO(ericzeng): Implement navigation to another guest view if we want
@@ -142,10 +159,11 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
 ExtensionOptionsInternal.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
+    this.elementAttached = true;
     this.internalInstanceId = parseInt(newValue);
     this.browserPluginNode.removeAttribute('internalinstanceid');
     if (this.extensionId)
-      this.createGuest();
+      this.createGuestIfNecessary();
 
   }
 };
@@ -293,6 +311,13 @@ ExtensionOptionsInternal.prototype.resumeDeferredAutoSize = function() {
   }
 };
 
+ExtensionOptionsInternal.prototype.reset = function() {
+  if (this.guestInstanceId) {
+    GuestViewInternal.destroyGuest(this.guestInstanceId);
+    this.guestInstanceId = undefined;
+  }
+};
+
 function registerBrowserPluginElement() {
   var proto = Object.create(HTMLObjectElement.prototype);
 
@@ -331,10 +356,20 @@ function registerExtensionOptionsElement() {
     new ExtensionOptionsInternal(this);
   };
 
+  proto.detachedCallback = function() {
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.elementAttached = false;
+    internal.reset();
+  };
+
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
     var internal = privates(this).internal;
-    if (!internal)
+    if (!internal) {
       return;
+    }
     internal.handleExtensionOptionsAttributeMutation(name, oldValue, newValue);
   };
 

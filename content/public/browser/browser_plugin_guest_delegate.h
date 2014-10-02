@@ -57,10 +57,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) {}
 
-  // Requests that the delegate destroy itself along with its associated
-  // WebContents.
-  virtual void Destroy() {}
-
   // Registers a |callback| with the delegate that the delegate would call when
   // it is about to be destroyed.
   typedef base::Callback<void()> DestructionCallback;

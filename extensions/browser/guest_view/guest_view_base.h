@@ -102,7 +102,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   virtual void GuestDestroyed() {}
 
   // This method is invoked when the guest RenderView is ready, e.g. because we
-  // recreated it after a crash.
+  // recreated it after a crash or after reattachment.
   //
   // This gives the derived class an opportunity to perform some initialization
   // work.
@@ -224,7 +224,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return opener_.get();
   }
 
-  // Sets some additional chrome/ initialization parameters.
+  // Destroy this guest.
+  void Destroy();
+
+  // Saves the attach state of the custom element hosting this GuestView.
   void SetAttachParams(const base::DictionaryValue& params);
   void SetOpener(GuestViewBase* opener);
 
@@ -235,7 +238,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                                    int exit_code) OVERRIDE;
 
   // BrowserPluginGuestDelegate implementation.
-  virtual void Destroy() OVERRIDE FINAL;
   virtual void DidAttach(int guest_proxy_routing_id) OVERRIDE FINAL;
   virtual void ElementSizeChanged(const gfx::Size& old_size,
                                   const gfx::Size& new_size) OVERRIDE FINAL;

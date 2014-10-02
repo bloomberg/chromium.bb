@@ -65,6 +65,27 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
   SendResponse(true);
 }
 
+GuestViewInternalDestroyGuestFunction::
+    GuestViewInternalDestroyGuestFunction() {
+}
+
+GuestViewInternalDestroyGuestFunction::
+    ~GuestViewInternalDestroyGuestFunction() {
+}
+
+bool GuestViewInternalDestroyGuestFunction::RunAsync() {
+  scoped_ptr<guest_view_internal::DestroyGuest::Params> params(
+      guest_view_internal::DestroyGuest::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  GuestViewBase* guest = GuestViewBase::From(
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
+  if (!guest)
+    return false;
+  guest->Destroy();
+  SendResponse(true);
+  return true;
+}
+
 GuestViewInternalSetAutoSizeFunction::
     GuestViewInternalSetAutoSizeFunction() {
 }

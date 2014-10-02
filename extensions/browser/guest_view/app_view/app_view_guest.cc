@@ -203,8 +203,12 @@ void AppViewGuest::DidAttachToEmbedder() {
   // element. This means that the host element knows how to route input
   // events to the guest, and the guest knows how to get frames to the
   // embedder.
+  if (!url_.is_valid())
+    return;
+
   web_contents()->GetController().LoadURL(
       url_, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  url_ = GURL();
 }
 
 void AppViewGuest::DidInitialize() {

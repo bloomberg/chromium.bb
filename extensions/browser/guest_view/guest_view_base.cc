@@ -70,16 +70,18 @@ class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   virtual void WebContentsDestroyed() OVERRIDE {
+    // If the embedder is destroyed then destroy the guest.
     Destroy();
   }
 
-  virtual void RenderViewHostChanged(
-      content::RenderViewHost* old_host,
-      content::RenderViewHost* new_host) OVERRIDE {
+  virtual void AboutToNavigateRenderView(
+      content::RenderViewHost* render_view_host) OVERRIDE {
+    // If the embedder navigates then destroy the guest.
     Destroy();
   }
 
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+    // If the embedder crashes, then destroy the guest.
     Destroy();
   }
 
@@ -297,24 +299,6 @@ void GuestViewBase::RenderProcessExited(content::RenderProcessHost* host,
   Destroy();
 }
 
-void GuestViewBase::Destroy() {
-  DCHECK(web_contents());
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(embedder_render_process_id());
-  if (host)
-    host->RemoveObserver(this);
-  WillDestroy();
-  if (!destruction_callback_.is_null())
-    destruction_callback_.Run();
-
-  webcontents_guestview_map.Get().erase(web_contents());
-  GuestViewManager::FromBrowserContext(browser_context_)->
-      RemoveGuest(guest_instance_id_);
-  pending_events_.clear();
-
-  delete web_contents();
-}
-
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
@@ -339,6 +323,28 @@ void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
     return;
   guest_size_ = new_size;
   GuestSizeChangedDueToAutoSize(old_size, new_size);
+}
+
+void GuestViewBase::Destroy() {
+  DCHECK(web_contents());
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(embedder_render_process_id());
+  if (host)
+    host->RemoveObserver(this);
+
+  // Give the derived class an opportunity to perform some cleanup.
+  WillDestroy();
+
+  // Give the content module an opportunity to perform some cleanup.
+  if (!destruction_callback_.is_null())
+    destruction_callback_.Run();
+
+  webcontents_guestview_map.Get().erase(web_contents());
+  GuestViewManager::FromBrowserContext(browser_context_)->
+      RemoveGuest(guest_instance_id_);
+  pending_events_.clear();
+
+  delete web_contents();
 }
 
 void GuestViewBase::SetAttachParams(const base::DictionaryValue& params) {
@@ -396,7 +402,14 @@ void GuestViewBase::RenderViewReady() {
 }
 
 void GuestViewBase::WebContentsDestroyed() {
+  // Let the derived class know that its WebContents is in the process of
+  // being destroyed. web_contents() is still valid at this point.
+  // TODO(fsamuel): This allows for reentrant code into WebContents during
+  // destruction. This could potentially lead to bugs. Perhaps we should get rid
+  // of this?
   GuestDestroyed();
+
+  // Self-destruct.
   delete this;
 }
 

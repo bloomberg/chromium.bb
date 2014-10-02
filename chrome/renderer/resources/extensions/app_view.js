@@ -11,6 +11,8 @@ var guestViewInternalNatives = requireNative('guest_view_internal');
 function AppViewInternal(appviewNode) {
   privates(appviewNode).internal = this;
   this.appviewNode = appviewNode;
+  this.elementAttached = false;
+  this.pendingGuestCreation = false;
 
   this.browserPluginNode = this.createBrowserPluginNode();
   var shadowRoot = this.appviewNode.createShadowRoot();
@@ -41,15 +43,25 @@ AppViewInternal.prototype.createBrowserPluginNode = function() {
 };
 
 AppViewInternal.prototype.connect = function(app, data, callback) {
+  if (!this.elementAttached || this.pendingGuestCreation) {
+    if (callback) {
+      callback(false);
+    }
+    return;
+  }
   var createParams = {
     'appId': app,
     'data': data || {}
   };
-  var self = this;
   GuestViewInternal.createGuest(
     'appview',
     createParams,
     function(guestInstanceId) {
+      this.pendingGuestCreation = false;
+      if (guestInstanceId && !this.elementAttached) {
+        GuestViewInternal.destroyGuest(guestInstanceId);
+        guestInstanceId = 0;
+      }
       if (!guestInstanceId) {
         this.browserPluginNode.style.visibility = 'hidden';
         var errorMsg = 'Unable to connect to app "' + app + '".';
@@ -66,18 +78,48 @@ AppViewInternal.prototype.connect = function(app, data, callback) {
       }
     }.bind(this)
   );
+  this.pendingGuestCreation = true;
 };
 
 AppViewInternal.prototype.attachWindow = function(guestInstanceId) {
   this.guestInstanceId = guestInstanceId;
+  if (!this.internalInstanceId) {
+    return;
+  }
   var params = {
-    'instanceId': this.viewInstanceId,
+    'instanceId': this.viewInstanceId
   };
   this.browserPluginNode.style.visibility = 'visible';
   return guestViewInternalNatives.AttachGuest(
-      parseInt(this.browserPluginNode.getAttribute('internalinstanceid')),
+      this.internalInstanceId,
       guestInstanceId,
       params);
+};
+
+AppViewInternal.prototype.handleBrowserPluginAttributeMutation =
+    function(name, oldValue, newValue) {
+  if (name == 'internalinstanceid' && !oldValue && !!newValue) {
+    this.browserPluginNode.removeAttribute('internalinstanceid');
+    this.internalInstanceId = parseInt(newValue);
+
+    if (!!this.guestInstanceId && this.guestInstanceId != 0) {
+      var params = {
+        'instanceId': this.viewInstanceId
+      };
+      guestViewInternalNatives.AttachGuest(
+          this.internalInstanceId,
+          this.guestInstanceId,
+          params);
+    }
+    return;
+  }
+};
+
+AppViewInternal.prototype.reset = function() {
+  if (this.guestInstanceId) {
+    GuestViewInternal.destroyGuest(this.guestInstanceId);
+    this.guestInstanceId = undefined;
+  }
 };
 
 function registerBrowserPluginElement() {
@@ -92,6 +134,14 @@ function registerBrowserPluginElement() {
   proto.attachedCallback = function() {
     // Load the plugin immediately.
     var unused = this.nonExistentAttribute;
+  };
+
+  proto.attributeChangedCallback = function(name, oldValue, newValue) {
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
   };
 
   AppViewInternal.BrowserPlugin =
@@ -111,10 +161,28 @@ function registerAppViewElement() {
     new AppViewInternal(this);
   };
 
+  proto.attachedCallback = function() {
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.elementAttached = true;
+  };
+
+  proto.detachedCallback = function() {
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.elementAttached = false;
+    internal.reset();
+  };
+
   proto.connect = function() {
     var internal = privates(this).internal;
     $Function.apply(internal.connect, internal, arguments);
   }
+
   window.AppView =
       DocumentNatives.RegisterElement('appview', {prototype: proto});
 
