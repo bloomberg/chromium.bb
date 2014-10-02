@@ -19,6 +19,7 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "url/gurl.h"
 
@@ -36,30 +37,41 @@ const uint32 kFilteredMessageClasses[] = {
   EmbeddedWorkerMsgStart,
 };
 
-// TODO(dominicc): When crbug.com/362214 is fixed, make
-// Can(R|Unr)egisterServiceWorker also check that these are secure
-// origins to defend against compromised renderers.
+bool AllOriginsMatch(const GURL& url_a, const GURL& url_b, const GURL& url_c) {
+  return url_a.GetOrigin() == url_b.GetOrigin() &&
+         url_a.GetOrigin() == url_c.GetOrigin();
+}
+
+// TODO(dominicc): When crbug.com/362214 is fixed use that to be
+// consistent with Blink's
+// SecurityOrigin::canAccessFeatureRequiringSecureOrigin.
+bool OriginCanAccessServiceWorkers(const GURL& url) {
+  return url.SchemeIsSecure() || net::IsLocalhost(url.host());
+}
+
 bool CanRegisterServiceWorker(const GURL& document_url,
                               const GURL& pattern,
                               const GURL& script_url) {
   // TODO: Respect Chrome's content settings, if we add a setting for
   // controlling whether Service Worker is allowed.
-  return document_url.GetOrigin() == pattern.GetOrigin() &&
-         document_url.GetOrigin() == script_url.GetOrigin();
+  return AllOriginsMatch(document_url, pattern, script_url) &&
+         OriginCanAccessServiceWorkers(document_url);
 }
 
 bool CanUnregisterServiceWorker(const GURL& document_url,
                                 const GURL& pattern) {
   // TODO: Respect Chrome's content settings, if we add a setting for
   // controlling whether Service Worker is allowed.
-  return document_url.GetOrigin() == pattern.GetOrigin();
+  return document_url.GetOrigin() == pattern.GetOrigin() &&
+         OriginCanAccessServiceWorkers(document_url);
 }
 
 bool CanGetRegistration(const GURL& document_url,
                         const GURL& given_document_url) {
   // TODO: Respect Chrome's content settings, if we add a setting for
   // controlling whether Service Worker is allowed.
-  return document_url.GetOrigin() == given_document_url.GetOrigin();
+  return document_url.GetOrigin() == given_document_url.GetOrigin() &&
+         OriginCanAccessServiceWorkers(document_url);
 }
 
 }  // namespace
