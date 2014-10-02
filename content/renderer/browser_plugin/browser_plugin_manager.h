@@ -8,25 +8,17 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_sender.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace blink {
 class WebFrame;
-class WebNode;
-struct WebPluginParams;
 }
 
 namespace content {
 
 class BrowserPlugin;
 class BrowserPluginDelegate;
-class BrowserPluginManagerFactory;
 class RenderViewImpl;
 
 // BrowserPluginManager manages the routing of messages to the appropriate
@@ -38,22 +30,16 @@ class CONTENT_EXPORT BrowserPluginManager
   // Returns the one BrowserPluginManager for this process.
   static BrowserPluginManager* Create(RenderViewImpl* render_view);
 
-  // Overrides factory for testing. Default (NULL) value indicates regular
-  // (non-test) environment.
-  static void set_factory_for_testing(BrowserPluginManagerFactory* factory) {
-    BrowserPluginManager::factory_ = factory;
-  }
-
   explicit BrowserPluginManager(RenderViewImpl* render_view);
 
   // Creates a new BrowserPlugin object.
   // BrowserPlugin is responsible for associating itself with the
   // BrowserPluginManager via AddBrowserPlugin. When it is destroyed, it is
   // responsible for removing its association via RemoveBrowserPlugin.
-  virtual BrowserPlugin* CreateBrowserPlugin(
+  BrowserPlugin* CreateBrowserPlugin(
       RenderViewImpl* render_view,
       blink::WebFrame* frame,
-      scoped_ptr<BrowserPluginDelegate> delegate) = 0;
+      scoped_ptr<BrowserPluginDelegate> delegate);
 
   void Attach(int browser_plugin_instance_id);
 
@@ -67,10 +53,10 @@ class CONTENT_EXPORT BrowserPluginManager
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int GetNextInstanceID();
 
-  // RenderViewObserver implementation.
-
-  // BrowserPluginManager must override the default Send behavior.
-  virtual bool Send(IPC::Message* msg) OVERRIDE = 0;
+  // RenderViewObserver override. Call on render thread.
+  virtual void DidCommitCompositorFrame() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Don't destroy the BrowserPluginManager when the RenderViewImpl goes away.
   // BrowserPluginManager's lifetime is managed by a reference count. Once
@@ -81,9 +67,6 @@ class CONTENT_EXPORT BrowserPluginManager
  protected:
   // Friend RefCounted so that the dtor can be non-public.
   friend class base::RefCounted<BrowserPluginManager>;
-
-  // Static factory instance (always NULL for non-test).
-  static BrowserPluginManagerFactory* factory_;
 
   virtual ~BrowserPluginManager();
   // This map is keyed by guest instance IDs.

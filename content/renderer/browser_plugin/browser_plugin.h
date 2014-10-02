@@ -137,8 +137,7 @@ class CONTENT_EXPORT BrowserPlugin :
  private:
   friend class base::DeleteHelper<BrowserPlugin>;
   // Only the manager is allowed to create a BrowserPlugin.
-  friend class BrowserPluginManagerImpl;
-  friend class MockBrowserPluginManager;
+  friend class BrowserPluginManager;
 
   // For unit/integration tests.
   friend class MockBrowserPlugin;
