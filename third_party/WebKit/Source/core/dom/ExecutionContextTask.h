@@ -70,80 +70,11 @@ private:
 // of using |bind| directly to state explicitly that there is no need to care
 // about thread safety when posting the task.
 // When posting tasks across threads, use |createCrossThreadTask|.
-template<typename FunctionType>
+template<typename FunctionType, typename... P>
 PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function)
+    FunctionType function, const P&... parameters)
 {
-    return CallClosureTask::create(bind(function));
-}
-
-template<typename FunctionType, typename P1>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    const P1& parameter1)
-{
-    return CallClosureTask::create(bind(function,
-        parameter1));
-}
-
-template<typename FunctionType, typename P1, typename P2>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2)
-{
-    return CallClosureTask::create(bind(function,
-        parameter1,
-        parameter2));
-}
-
-template<typename FunctionType, typename P1, typename P2, typename P3>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3)
-{
-    return CallClosureTask::create(bind(function,
-        parameter1,
-        parameter2,
-        parameter3));
-}
-
-template<typename FunctionType, typename P1, typename P2, typename P3, typename P4>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4)
-{
-    return CallClosureTask::create(bind(function,
-        parameter1,
-        parameter2,
-        parameter3,
-        parameter4));
-}
-
-template<typename FunctionType, typename P1, typename P2, typename P3, typename P4, typename P5>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5)
-{
-    return CallClosureTask::create(bind(function,
-        parameter1,
-        parameter2,
-        parameter3,
-        parameter4,
-        parameter5));
-}
-
-template<typename FunctionType, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6)
-{
-    return CallClosureTask::create(bind(function,
-        parameter1,
-        parameter2,
-        parameter3,
-        parameter4,
-        parameter5,
-        parameter6));
+    return CallClosureTask::create(bind(function, parameters...));
 }
 
 } // namespace
