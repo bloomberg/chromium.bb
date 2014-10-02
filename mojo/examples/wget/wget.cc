@@ -72,12 +72,12 @@ class WGetApp : public ApplicationDelegate {
  public:
   virtual void Initialize(ApplicationImpl* app) override {
     app->ConnectToService("mojo:mojo_network_service", &network_service_);
-    Start();
+    Start(app->args());
   }
 
  private:
-  void Start() {
-    std::string url = PromptForURL();
+  void Start(const Array<String>& args) {
+    std::string url((args.size() > 1) ? args[1].get() : PromptForURL());
     printf("Loading: %s\n", url.c_str());
 
     network_service_->CreateURLLoader(Get(&url_loader_));

@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "mojo/shell/child_process.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
@@ -23,15 +25,36 @@ namespace {
 const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
 #endif
 
+#if defined(OS_WIN)
+void SplitString(const base::string16& str, std::vector<std::string>* argv) {
+  base::SplitString(base::UTF16ToUTF8(str), ' ', argv);
+}
+#elif defined(OS_POSIX)
+void SplitString(const std::string& str, std::vector<std::string>* argv) {
+  base::SplitString(str, ' ', argv);
+}
+#endif
+
+// The value of app_url_and_args is "<mojo_app_url> [<args>...]", where args
+// is a list of "configuration" arguments separated by spaces. If one or more
+// arguments are specified they will be available when the Mojo application
+// is initialized. See ApplicationImpl::args().
+GURL GetAppURLAndSetArgs(const base::CommandLine::StringType& app_url_and_args,
+                         mojo::shell::Context* context) {
+  std::vector<std::string> argv;
+  SplitString(app_url_and_args, &argv);
+  if (argv.empty())
+    return GURL::EmptyGURL();
+  GURL app_url(argv[0]);
+  if (argv.size() > 1)
+    context->application_manager()->SetArgsForURL(argv, app_url);
+  return app_url;
+}
+
 void RunApps(mojo::shell::Context* context) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line.GetArgs();
-  for (base::CommandLine::StringVector::const_iterator it = args.begin();
-       it != args.end();
-       ++it) {
-    context->Run(GURL(*it));
-  }
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  for (const auto& arg : command_line.GetArgs())
+    context->Run(GetAppURLAndSetArgs(arg, context));
 }
 
 }  // namespace
@@ -69,6 +92,11 @@ int main(int argc, char** argv) {
       if (command_line.HasSwitch(switches::kOrigin)) {
         shell_context.mojo_url_resolver()->SetBaseURL(
             GURL(command_line.GetSwitchValueASCII(switches::kOrigin)));
+      }
+
+      for (const auto& kv : command_line.GetSwitches()) {
+        if (kv.first == switches::kArgsFor)
+          GetAppURLAndSetArgs(kv.second, &shell_context);
       }
 
       message_loop.PostTask(FROM_HERE, base::Bind(RunApps, &shell_context));
