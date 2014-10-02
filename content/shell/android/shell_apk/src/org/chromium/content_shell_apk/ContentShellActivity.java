@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
@@ -31,7 +32,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ContentShellActivity extends Activity {
 
-    public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String TAG = "ContentShellActivity";
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
@@ -46,7 +46,7 @@ public class ContentShellActivity extends Activity {
 
         // Initializing the command line must occur before loading the library.
         if (!CommandLine.isInitialized()) {
-            CommandLine.initFromFile(COMMAND_LINE_FILE);
+            ContentApplication.initCommandLine(this);
             String[] commandLineParams = getCommandLineParamsFromIntent(getIntent());
             if (commandLineParams != null) {
                 CommandLine.getInstance().appendSwitchesAndArguments(commandLineParams);

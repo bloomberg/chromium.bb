@@ -17,6 +17,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.ArrayList;
@@ -245,8 +246,7 @@ public class GCMDriver {
             return;
         }
 
-        // TODO(johnme): Call ChromeMobileApplication.initCommandLine(context) or
-        // ChromeShellApplication.initCommandLine() as appropriate.
+        ContentApplication.initCommandLine(context);
 
         try {
             BrowserStartupController.get(context).startBrowserProcessesSync(false);

@@ -8,7 +8,6 @@ import android.app.Application;
 import android.content.Context;
 
 import org.chromium.chrome.browser.sync.ChromiumSyncAdapter;
-import org.chromium.chrome.shell.ChromeShellApplication;
 
 public class ChromeShellSyncAdapter extends ChromiumSyncAdapter {
     public ChromeShellSyncAdapter(Context appContext, Application application) {
@@ -18,10 +17,5 @@ public class ChromeShellSyncAdapter extends ChromiumSyncAdapter {
     @Override
     protected boolean useAsyncStartup() {
         return true;
-    }
-
-    @Override
-    protected void initCommandLine() {
-        ChromeShellApplication.initCommandLine();
     }
 }

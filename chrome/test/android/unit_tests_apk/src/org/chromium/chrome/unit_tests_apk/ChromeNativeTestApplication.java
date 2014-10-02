@@ -42,4 +42,8 @@ public class ChromeNativeTestApplication extends ChromiumApplication {
     protected PKCS11AuthenticationManager getPKCS11AuthenticationManager() {
         return null;
     }
+
+    @Override
+    public void initCommandLine() {
+    }
 }

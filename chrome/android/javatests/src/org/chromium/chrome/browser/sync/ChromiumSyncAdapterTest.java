@@ -13,6 +13,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import com.google.protos.ipc.invalidation.Types;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.sync.notifier.SyncStatusHelper;
@@ -26,7 +27,6 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
     private TestChromiumSyncAdapter mSyncAdapter;
 
     private static class TestChromiumSyncAdapter extends ChromiumSyncAdapter {
-        private boolean mCommandlineInitialized;
         private boolean mSyncRequested;
         private boolean mSyncRequestedForAllTypes;
         private int mObjectSource;
@@ -41,11 +41,6 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
         @Override
         protected boolean useAsyncStartup() {
             return true;
-        }
-
-        @Override
-        protected void initCommandLine() {
-            mCommandlineInitialized = true;
         }
 
         @Override
@@ -79,7 +74,7 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
                 SyncStatusHelper.get(getActivity()).getContractAuthority(), null, syncResult);
         assertTrue(mSyncAdapter.mSyncRequestedForAllTypes);
         assertFalse(mSyncAdapter.mSyncRequested);
-        assertTrue(mSyncAdapter.mCommandlineInitialized);
+        assertTrue(CommandLine.isInitialized());
     }
 
     private void testRequestSyncSpecificDataType(boolean withObjectSource) {
@@ -103,7 +98,7 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
         assertEquals("objectid_value", mSyncAdapter.mObjectId);
         assertEquals(42, mSyncAdapter.mVersion);
         assertEquals("payload_value", mSyncAdapter.mPayload);
-        assertTrue(mSyncAdapter.mCommandlineInitialized);
+        assertTrue(CommandLine.isInitialized());
     }
 
     @MediumTest
@@ -127,6 +122,6 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
                 SyncStatusHelper.get(getActivity()).getContractAuthority(), null, syncResult);
         assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
         assertFalse(mSyncAdapter.mSyncRequested);
-        assertFalse(mSyncAdapter.mCommandlineInitialized);
+        assertTrue(CommandLine.isInitialized());
     }
 }

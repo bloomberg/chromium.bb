@@ -11,7 +11,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellApplication;
 
 /**
@@ -141,7 +140,7 @@ public class ContentCommandLineTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testFileInitialization() {
-        CommandLine.initFromFile(ContentShellActivity.COMMAND_LINE_FILE);
+        CommandLine.initFromFile(ContentShellApplication.COMMAND_LINE_FILE);
         loadJni();
         checkSettingThenGetting();
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.content_shell_apk;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 
@@ -14,6 +15,8 @@ import org.chromium.content.app.ContentApplication;
  * to be shared across the main activity and the child services created.
  */
 public class ContentShellApplication extends ContentApplication {
+
+    public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     /**
      * icudtl.dat provides ICU (i18n library) with all the data for its
      * operation. We use to link it statically to our binary, but not any more
@@ -35,6 +38,13 @@ public class ContentShellApplication extends ContentApplication {
     public static void initializeApplicationParameters() {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+    }
+
+    @Override
+    public void initCommandLine() {
+        if (!CommandLine.isInitialized()) {
+            CommandLine.initFromFile(COMMAND_LINE_FILE);
+        }
     }
 
 }

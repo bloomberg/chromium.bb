@@ -4,6 +4,7 @@
 
 package org.chromium.content.app;
 
+import android.content.Context;
 import android.os.Looper;
 import android.os.MessageQueue;
 
@@ -15,7 +16,7 @@ import org.chromium.content.browser.TracingControllerAndroid;
  * Basic application functionality that should be shared among all browser applications
  * based on the content layer.
  */
-public class ContentApplication extends BaseChromiumApplication {
+public abstract class ContentApplication extends BaseChromiumApplication {
     private TracingControllerAndroid mTracingController;
 
     TracingControllerAndroid getTracingController() {
@@ -64,4 +65,10 @@ public class ContentApplication extends BaseChromiumApplication {
         super.onTerminate();
     }
 
+    public abstract void initCommandLine();
+
+    /// This must only be called for contexts whose application is a subclass of ContentApplication.
+    public static void initCommandLine(Context context) {
+        ((ContentApplication) context.getApplicationContext()).initCommandLine();
+    };
 }
