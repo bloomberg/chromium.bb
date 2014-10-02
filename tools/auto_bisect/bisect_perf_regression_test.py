@@ -5,11 +5,17 @@
 import os
 import re
 import shutil
+import sys
 import unittest
+
+SRC = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir)
+sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 
 import bisect_perf_regression
 import bisect_results
+import mock
 import source_control as source_control_module
+
 
 def _GetBisectPerformanceMetricsInstance():
   """Returns an instance of the BisectPerformanceMetrics class."""
@@ -346,6 +352,157 @@ class DepotDirectoryRegistryTest(unittest.TestCase):
   def testChangedTheDirectory(self):
     self.registry.ChangeToDepotDir('mock_depot')
     self.assertEqual(self.cur_dir, '/mock/src/foo')
+
+
+# The tests below test private functions (W0212).
+# pylint: disable=W0212
+class GitTryJobTestCases(unittest.TestCase):
+  """Test case for bisect try job."""
+  def setUp(self):
+    bisect_utils_patcher = mock.patch('bisect_perf_regression.bisect_utils')
+    self.mock_bisect_utils = bisect_utils_patcher.start()
+    self.addCleanup(bisect_utils_patcher.stop)
+
+  def _SetupRunGitMock(self, git_cmds):
+    """Setup RunGit mock with expected output for given git command."""
+    def side_effect(git_cmd_args):
+      for val in git_cmds:
+        if set(val[0]) == set(git_cmd_args):
+          return val[1]
+    self.mock_bisect_utils.RunGit = mock.Mock(side_effect=side_effect)
+
+  def _AssertRunGitExceptions(self, git_cmds, func, *args):
+    """Setup RunGit mock and tests RunGitException.
+
+      Args:
+        git_cmds: List of tuples with git command and expected output.
+        func: Callback function to be executed.
+        args: List of arguments to be passed to the function.
+    """
+    self._SetupRunGitMock(git_cmds)
+    self.assertRaises(bisect_perf_regression.RunGitError,
+                      func,
+                      *args)
+
+  def testNotGitRepo(self):
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    cmds = [(['rev-parse', '--abbrev-ref', 'HEAD'], (None, 128))]
+    self._AssertRunGitExceptions(cmds,
+                                 bisect_perf_regression._PrepareBisectBranch,
+                                 parent_branch, new_branch)
+
+  def testFailedCheckoutMaster(self):
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    cmds = [
+        (['rev-parse', '--abbrev-ref', 'HEAD'], (new_branch, 0)),
+        (['checkout', '-f', parent_branch], ('Checkout Failed', 1))]
+    self._AssertRunGitExceptions(cmds,
+                                 bisect_perf_regression._PrepareBisectBranch,
+                                 parent_branch, new_branch)
+
+  def testDeleteBisectBranchIfExists(self):
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    cmds = [
+        (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
+        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '-D', new_branch], ('Failed to delete branch', 128))
+        ]
+    self._AssertRunGitExceptions(cmds,
+                                 bisect_perf_regression._PrepareBisectBranch,
+                                 parent_branch, new_branch)
+
+  def testCreatNewBranchFails(self):
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    cmds = [
+        (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
+        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '-D', new_branch], ('None', 0)),
+        (['update-index', '--refresh', '-q'], (None, 0)),
+        (['diff-index', 'HEAD'], (None, 0)),
+        (['checkout', '-b', new_branch], ('Failed to create branch', 128))
+        ]
+
+    self._AssertRunGitExceptions(cmds,
+                                 bisect_perf_regression._PrepareBisectBranch,
+                                 parent_branch, new_branch)
+
+  def testSetUpstreamToFails(self):
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    cmds = [
+        (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
+        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '-D', new_branch], ('None', 0)),
+        (['update-index', '--refresh', '-q'], (None, 0)),
+        (['diff-index', 'HEAD'], (None, 0)),
+        (['checkout', '-b', new_branch], ('None', 0)),
+        (['branch', '--set-upstream-to', parent_branch],
+         ('Setuptream fails', 1))
+        ]
+    self._AssertRunGitExceptions(cmds,
+                                 bisect_perf_regression._PrepareBisectBranch,
+                                 parent_branch, new_branch)
+  def testBuilderTryJobForException(self):
+    git_revision = 'ac4a9f31fe2610bd146857bbd55d7a260003a888'
+    bot_name = 'linux_perf_bisect_builder'
+    bisect_job_name = 'testBisectJobname'
+    patch = None
+    patch_content = '/dev/null'
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    try_cmd = [
+        (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
+        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '-D', new_branch], ('None', 0)),
+        (['update-index', '--refresh', '-q'], (None, 0)),
+        (['diff-index', 'HEAD'], (None, 0)),
+        (['checkout', '-b', new_branch], ('None', 0)),
+        (['branch', '--set-upstream-to', parent_branch],
+         ('Setuptream fails', 0)),
+        (['try',
+          '-b', bot_name,
+          '-r', git_revision,
+          '-n', bisect_job_name,
+          '--svn_repo=%s' % bisect_perf_regression.SVN_REPO_URL,
+          '--diff=%s' % patch_content
+          ], (None, 1))
+        ]
+    self._AssertRunGitExceptions(try_cmd,
+                                 bisect_perf_regression._BuilderTryjob,
+                                 git_revision, bot_name, bisect_job_name, patch)
+
+  def testBuilderTryJob(self):
+    git_revision = 'ac4a9f31fe2610bd146857bbd55d7a260003a888'
+    bot_name = 'linux_perf_bisect_builder'
+    bisect_job_name = 'testBisectJobname'
+    patch = None
+    patch_content = '/dev/null'
+    new_branch = bisect_perf_regression.BISECT_TRYJOB_BRANCH
+    parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
+    try_cmd = [
+        (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
+        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '-D', new_branch], ('None', 0)),
+        (['update-index', '--refresh', '-q'], (None, 0)),
+        (['diff-index', 'HEAD'], (None, 0)),
+        (['checkout', '-b', new_branch], ('None', 0)),
+        (['branch', '--set-upstream-to', parent_branch],
+         ('Setuptream fails', 0)),
+        (['try',
+          '-b', bot_name,
+          '-r', git_revision,
+          '-n', bisect_job_name,
+          '--svn_repo=%s' % bisect_perf_regression.SVN_REPO_URL,
+          '--diff=%s' % patch_content
+          ], (None, 0))
+        ]
+    self._SetupRunGitMock(try_cmd)
+    bisect_perf_regression._BuilderTryjob(
+        git_revision, bot_name, bisect_job_name, patch)
 
 
 if __name__ == '__main__':

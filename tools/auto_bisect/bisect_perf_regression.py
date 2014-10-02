@@ -176,10 +176,10 @@ HIGH_CONFIDENCE = 95
 # When a build requested is posted with a patch, bisect builders on try server,
 # once build is produced, it reads SHA value from this file and appends it
 # to build archive filename.
-DEPS_SHA_PATCH = """diff --git src/DEPS.sha src/DEPS.sha
+DEPS_SHA_PATCH = """diff --git DEPS.sha DEPS.sha
 new file mode 100644
 --- /dev/null
-+++ src/DEPS.sha
++++ DEPS.sha
 @@ -0,0 +1 @@
 +%(deps_sha)s
 """
@@ -249,6 +249,20 @@ RESULTS_THANKYOU = """
 O O | Visit http://www.chromium.org/developers/core-principles for Chrome's
  X  | policy on perf regressions. Contact chrome-perf-dashboard-team with any
 / \ | questions or suggestions about bisecting. THANK YOU."""
+
+# Git branch name used to run bisect try jobs.
+BISECT_TRYJOB_BRANCH = 'bisect-tryjob'
+# Git master branch name.
+BISECT_MASTER_BRANCH = 'master'
+# File to store 'git diff' content.
+BISECT_PATCH_FILE = 'deps_patch.txt'
+# SVN repo where the bisect try jobs are submitted.
+SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try-perf'
+
+class RunGitError(Exception):
+
+  def __str__(self):
+    return '%s\nError executing git command.' % self.args[0]
 
 
 def _AddAdditionalDepotInfo(depot_info):
@@ -846,6 +860,95 @@ class DepotDirectoryRegistry(object):
     """
     os.chdir(self.GetDepotDir(depot_name))
 
+def _PrepareBisectBranch(parent_branch, new_branch):
+  """Creates a new branch to submit bisect try job.
+
+  Args:
+    parent_branch: Parent branch to be used to create new branch.
+    new_branch: New branch name.
+  """
+  current_branch, returncode = bisect_utils.RunGit(
+      ['rev-parse', '--abbrev-ref', 'HEAD'])
+  if returncode:
+    raise RunGitError('Must be in a git repository to send changes to trybots.')
+
+  current_branch = current_branch.strip()
+  # Make sure current branch is master.
+  if current_branch != parent_branch:
+    output, returncode = bisect_utils.RunGit(['checkout', '-f', parent_branch])
+    if returncode:
+      raise RunGitError('Failed to checkout branch: %s.' % output)
+
+  # Delete new branch if exists.
+  output, returncode = bisect_utils.RunGit(['branch', '--list' ])
+  if new_branch in output:
+    output, returncode = bisect_utils.RunGit(['branch', '-D', new_branch])
+    if returncode:
+      raise RunGitError('Deleting branch failed, %s', output)
+
+  # Check if the tree is dirty: make sure the index is up to date and then
+  # run diff-index.
+  bisect_utils.RunGit(['update-index', '--refresh', '-q'])
+  output, returncode = bisect_utils.RunGit(['diff-index', 'HEAD'])
+  if output:
+    raise RunGitError('Cannot send a try job with a dirty tree.')
+
+  # Create/check out the telemetry-tryjob branch, and edit the configs
+  # for the tryjob there.
+  output, returncode = bisect_utils.RunGit(['checkout', '-b', new_branch])
+  if returncode:
+    raise RunGitError('Failed to checkout branch: %s.' % output)
+
+  output, returncode = bisect_utils.RunGit(
+      ['branch', '--set-upstream-to', parent_branch])
+  if returncode:
+    raise RunGitError('Error in git branch --set-upstream-to')
+
+
+def _BuilderTryjob(git_revision, bot_name, bisect_job_name, patch=None):
+  """Attempts to run a tryjob from the current directory.
+
+  Args:
+    git_revision: A Git hash revision.
+    bot_name: Name of the bisect bot to be used for try job.
+    bisect_job_name: Bisect try job name.
+    patch: A DEPS patch (used while bisecting 3rd party repositories).
+  """
+  try:
+    # Temporary branch for running tryjob.
+    _PrepareBisectBranch(BISECT_MASTER_BRANCH, BISECT_TRYJOB_BRANCH)
+    patch_content = '/dev/null'
+    # Create a temporary patch file, if it fails raise an exception.
+    if patch:
+      WriteStringToFile(patch, BISECT_PATCH_FILE)
+      patch_content = BISECT_PATCH_FILE
+
+    try_cmd = ['try',
+               '-b', bot_name,
+               '-r', git_revision,
+               '-n', bisect_job_name,
+               '--svn_repo=%s' % SVN_REPO_URL,
+               '--diff=%s' % patch_content
+              ]
+    # Execute try job to build revision.
+    output, returncode = bisect_utils.RunGit(try_cmd)
+
+    if returncode:
+      raise RunGitError('Could not execute tryjob: %s.\n Error: %s' % (
+                         'git %s' % ' '.join(try_cmd), output))
+    print ('Try job successfully submitted.\n TryJob Details: %s\n%s' % (
+           'git %s' % ' '.join(try_cmd), output))
+  finally:
+    # Delete patch file if exists
+    try:
+      os.remove(BISECT_PATCH_FILE)
+    except OSError as e:
+      if e.errno != errno.ENOENT:
+        raise
+    # Checkout master branch and delete bisect-tryjob branch.
+    bisect_utils.RunGit(['checkout', '-f', BISECT_MASTER_BRANCH])
+    bisect_utils.RunGit(['branch', '-D', BISECT_TRYJOB_BRANCH])
+
 
 class BisectPerformanceMetrics(object):
   """This class contains functionality to perform a bisection of a range of
@@ -1182,7 +1285,7 @@ class BisectPerformanceMetrics(object):
         return FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     return downloaded_archive
 
-  def DownloadCurrentBuild(self, revision, build_type='Release', patch=None):
+  def DownloadCurrentBuild(self, revision, depot, build_type='Release'):
     """Downloads the build archive for the given revision.
 
     Args:
@@ -1193,7 +1296,12 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if download succeeds, otherwise False.
     """
+    patch = None
     patch_sha = None
+    if depot != 'chromium':
+      # Create a DEPS patch with new revision for dependency repository.
+      revision, patch = self.CreateDEPSPatch(depot, revision)
+
     if patch:
       # Get the SHA of the DEPS changes patch.
       patch_sha = GetSHA1HexDigest(patch)
@@ -1290,37 +1398,31 @@ class BisectPerformanceMetrics(object):
     if not fetch_build:
       return False
 
-    bot_name, build_timeout = GetBuilderNameAndBuildTime(
-       self.opts.target_platform, self.opts.target_arch)
-    builder_host = self.opts.builder_host
-    builder_port = self.opts.builder_port
     # Create a unique ID for each build request posted to try server builders.
     # This ID is added to "Reason" property of the build.
     build_request_id = GetSHA1HexDigest(
         '%s-%s-%s' % (git_revision, patch, time.time()))
 
-    # Creates a try job description.
-    # Always use Git hash to post build request since Commit positions are
-    # not supported by builders to build.
-    job_args = {
-        'revision': 'src@%s' % git_revision,
-        'bot': bot_name,
-        'name': build_request_id,
-    }
-    # Update patch information if supplied.
-    if patch:
-      job_args['patch'] = patch
-    # Posts job to build the revision on the server.
-    if request_build.PostTryJob(builder_host, builder_port, job_args):
+    # Reverts any changes to DEPS file.
+    self.source_control.CheckoutFileAtRevision(
+      bisect_utils.FILE_DEPS, git_revision, cwd=self.src_cwd)
+
+    bot_name, build_timeout = GetBuilderNameAndBuildTime(
+       self.opts.target_platform, self.opts.target_arch)
+    target_file = None
+    try:
+      # Execute try job request to build revision with patch.
+      _BuilderTryjob(git_revision, bot_name, build_request_id, patch)
       target_file, error_msg = _WaitUntilBuildIsReady(
-          fetch_build, bot_name, builder_host, builder_port, build_request_id,
-          build_timeout)
+          fetch_build, bot_name, self.opts.builder_host,
+          self.opts.builder_port, build_request_id, build_timeout)
       if not target_file:
         print '%s [revision: %s]' % (error_msg, git_revision)
-        return None
-      return target_file
-    print 'Failed to post build request for revision: [%s]' % git_revision
-    return None
+    except RunGitError as e:
+      print ('Failed to post builder try job for revision: [%s].\n'
+             'Error: %s' % (git_revision, e))
+
+    return target_file
 
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
@@ -1417,6 +1519,7 @@ class BisectPerformanceMetrics(object):
       print 'Something went wrong while updating DEPS file. [%s]' % e
     return False
 
+
   def CreateDEPSPatch(self, depot, revision):
     """Modifies DEPS and returns diff as text.
 
@@ -1444,8 +1547,8 @@ class BisectPerformanceMetrics(object):
         if self.UpdateDeps(revision, depot, deps_file_path):
           diff_command = [
               'diff',
-              '--src-prefix=src/',
-              '--dst-prefix=src/',
+              '--src-prefix=',
+              '--dst-prefix=',
               '--no-ext-diff',
                bisect_utils.FILE_DEPS,
           ]
@@ -1474,16 +1577,7 @@ class BisectPerformanceMetrics(object):
     # Fetch build archive for the given revision from the cloud storage when
     # the storage bucket is passed.
     if self.IsDownloadable(depot) and revision:
-      deps_patch = None
-      if depot != 'chromium':
-        # Create a DEPS patch with new revision for dependency repository.
-        revision, deps_patch = self.CreateDEPSPatch(depot, revision)
-      if self.DownloadCurrentBuild(revision, patch=deps_patch):
-        if deps_patch:
-          # Reverts the changes to DEPS file.
-          self.source_control.CheckoutFileAtRevision(
-              bisect_utils.FILE_DEPS, revision, cwd=self.src_cwd)
-        build_success = True
+      build_success = self.DownloadCurrentBuild(revision, depot)
     else:
       # These codes are executed when bisect bots builds binaries locally.
       build_success = self.builder.Build(depot, self.opts)
@@ -1779,17 +1873,7 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if successful.
     """
-    if depot == 'chromium' or depot == 'android-chrome':
-      # Removes third_party/libjingle. At some point, libjingle was causing
-      # issues syncing when using the git workflow (crbug.com/266324).
-      os.chdir(self.src_cwd)
-      if not bisect_utils.RemoveThirdPartyDirectory('libjingle'):
-        return False
-      # Removes third_party/skia. At some point, skia was causing
-      # issues syncing when using the git workflow (crbug.com/377951).
-      if not bisect_utils.RemoveThirdPartyDirectory('skia'):
-        return False
-    elif depot == 'cros':
+    if depot == 'cros':
       return self.PerformCrosChrootCleanup()
     return True
 
@@ -2639,7 +2723,8 @@ class BisectPerformanceMetrics(object):
             current_data['depot'])
         if not cl_link:
           cl_link = current_id
-        commit_position = self.source_control.GetCommitPosition(current_id)
+        commit_position = self.source_control.GetCommitPosition(
+            current_id, self.depot_registry.GetDepotDir(current_data['depot']))
         commit_position = str(commit_position)
         if not commit_position:
           commit_position = ''

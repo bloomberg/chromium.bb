@@ -11,7 +11,6 @@ annotations for the Buildbot waterfall.
 import errno
 import imp
 import os
-import shutil
 import stat
 import subprocess
 import sys
@@ -82,6 +81,9 @@ REPO_PARAMS = [
     '--repo-url',
     'https://git.chromium.org/external/repo.git'
 ]
+
+# Bisect working directory.
+BISECT_DIR = 'bisect'
 
 
 def OutputAnnotationStepStart(name):
@@ -162,12 +164,12 @@ def _CreateAndChangeToSourceDirectory(working_directory):
   cwd = os.getcwd()
   os.chdir(working_directory)
   try:
-    os.mkdir('bisect')
+    os.mkdir(BISECT_DIR)
   except OSError, e:
     if e.errno != errno.EEXIST:  # EEXIST indicates that it already exists.
       os.chdir(cwd)
       return False
-  os.chdir('bisect')
+  os.chdir(BISECT_DIR)
   return True
 
 
@@ -308,28 +310,6 @@ def OnAccessError(func, path, _):
     raise
 
 
-def RemoveThirdPartyDirectory(dir_name):
-  """Removes third_party directory from the source.
-
-  At some point, some of the third_parties were causing issues to changes in
-  the way they are synced. We remove such folder in order to avoid sync errors
-  while bisecting.
-
-  Returns:
-    True on success, otherwise False.
-  """
-  path_to_dir = os.path.join(os.getcwd(), 'third_party', dir_name)
-  try:
-    if os.path.exists(path_to_dir):
-      shutil.rmtree(path_to_dir, onerror=OnAccessError)
-  except OSError, e:
-    print 'Error #%d while running shutil.rmtree(%s): %s' % (
-        e.errno, path_to_dir, str(e))
-    if e.errno != errno.ENOENT:
-      return False
-  return True
-
-
 def _CleanupPreviousGitRuns():
   """Cleans up any leftover index.lock files after running git."""
   # If a previous run of git crashed, or bot was reset, etc., then we might
@@ -350,7 +330,8 @@ def RunGClientAndSync(cwd=None):
   Returns:
     The return code of the call.
   """
-  params = ['sync', '--verbose', '--nohooks', '--reset', '--force']
+  params = ['sync', '--verbose', '--nohooks', '--reset', '--force',
+            '--delete_unversioned_trees']
   return RunGClient(params, cwd=cwd)
 
 
@@ -368,35 +349,19 @@ def SetupGitDepot(opts, custom_deps):
     otherwise.
   """
   name = 'Setting up Bisection Depot'
+  try:
+    if opts.output_buildbot_annotations:
+      OutputAnnotationStepStart(name)
 
-  if opts.output_buildbot_annotations:
-    OutputAnnotationStepStart(name)
+    if RunGClientAndCreateConfig(opts, custom_deps):
+      return False
 
-  passed = False
-
-  if not RunGClientAndCreateConfig(opts, custom_deps):
-    passed_deps_check = True
-    if os.path.isfile(os.path.join('src', FILE_DEPS_GIT)):
-      cwd = os.getcwd()
-      os.chdir('src')
-      if passed_deps_check:
-        passed_deps_check = RemoveThirdPartyDirectory('libjingle')
-      if passed_deps_check:
-        passed_deps_check = RemoveThirdPartyDirectory('skia')
-      os.chdir(cwd)
-
-    if passed_deps_check:
-      _CleanupPreviousGitRuns()
-
-      RunGClient(['revert'])
-      if not RunGClientAndSync():
-        passed = True
-
-  if opts.output_buildbot_annotations:
-    print
-    OutputAnnotationStepClosed()
-
-  return passed
+    _CleanupPreviousGitRuns()
+    RunGClient(['revert'])
+    return not RunGClientAndSync()
+  finally:
+    if opts.output_buildbot_annotations:
+      OutputAnnotationStepClosed()
 
 
 def CheckIfBisectDepotExists(opts):
@@ -408,7 +373,7 @@ def CheckIfBisectDepotExists(opts):
   Returns:
     Returns True if it exists.
   """
-  path_to_dir = os.path.join(opts.working_directory, 'bisect', 'src')
+  path_to_dir = os.path.join(opts.working_directory, BISECT_DIR, 'src')
   return os.path.exists(path_to_dir)
 
 
@@ -451,6 +416,15 @@ def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
     opts: The options parsed from the command line through parse_args().
     custom_deps: A dictionary of additional dependencies to add to .gclient.
   """
+  if CheckIfBisectDepotExists(opts):
+    path_to_dir = os.path.join(os.path.abspath(opts.working_directory),
+                               BISECT_DIR, 'src')
+    (output, _) = RunGit(['rev-parse', '--is-inside-work-tree'],
+                         cwd=path_to_dir)
+    if output.strip() == 'true':
+      # Checks out the master branch, throws an exception if git command fails.
+      CheckRunGit(['checkout', '-f', 'master'], cwd=path_to_dir)
+
   if not _CreateAndChangeToSourceDirectory(opts.working_directory):
     raise RuntimeError('Could not create bisect directory.')
 
