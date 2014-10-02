@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/service_worker/service_worker_cache.h"
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
 
 namespace content {
@@ -32,12 +34,33 @@ WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EXISTS:
       return blink::WebServiceWorkerCacheErrorExists;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_STORAGE:
-      // TODO(jkarlin): Changethis to CACHE_STORAGE_ERROR_STORAGE once that's
+      // TODO(jkarlin): Change this to CACHE_STORAGE_ERROR_STORAGE once that's
       // added.
       return blink::WebServiceWorkerCacheErrorNotFound;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_CLOSING:
       // TODO(jkarlin): Update this to CACHE_STORAGE_ERROR_CLOSING once that's
       // added.
+      return blink::WebServiceWorkerCacheErrorNotFound;
+  }
+  NOTREACHED();
+  return blink::WebServiceWorkerCacheErrorNotImplemented;
+}
+
+// TODO(jkarlin): ServiceWorkerCache and ServiceWorkerCacheStorage should share
+// an error enum type.
+WebServiceWorkerCacheError CacheErrorToWebServiceWorkerCacheError(
+    ServiceWorkerCache::ErrorType err) {
+  switch (err) {
+    case ServiceWorkerCache::ErrorTypeOK:
+      NOTREACHED();
+      return blink::WebServiceWorkerCacheErrorNotImplemented;
+    case ServiceWorkerCache::ErrorTypeExists:
+      return blink::WebServiceWorkerCacheErrorExists;
+    case ServiceWorkerCache::ErrorTypeStorage:
+      // TODO(jkarlin): Change this to CACHE_STORAGE_ERROR_STORAGE once that's
+      // added.
+      return blink::WebServiceWorkerCacheErrorNotFound;
+    case ServiceWorkerCache::ErrorTypeNotFound:
       return blink::WebServiceWorkerCacheErrorNotFound;
   }
   NOTREACHED();
@@ -155,9 +178,24 @@ void ServiceWorkerCacheListener::OnCacheMatch(
     int cache_id,
     const ServiceWorkerFetchRequest& request,
     const ServiceWorkerCacheQueryParams& match_params) {
-  // TODO(gavinp,jkarlin): Implement this method.
-  Send(ServiceWorkerMsg_CacheMatchError(
-      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+  IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
+  if (it == id_to_cache_map_.end()) {
+    Send(ServiceWorkerMsg_CacheMatchError(
+        request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerCache> cache = it->second;
+  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+      new ServiceWorkerFetchRequest(request.url,
+                                    request.method,
+                                    request.headers,
+                                    request.referrer,
+                                    request.is_reload));
+  cache->Match(scoped_request.Pass(),
+               base::Bind(&ServiceWorkerCacheListener::OnCacheMatchCallback,
+                          weak_factory_.GetWeakPtr(),
+                          request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatchAll(
@@ -175,22 +213,78 @@ void ServiceWorkerCacheListener::OnCacheKeys(
     int cache_id,
     const ServiceWorkerFetchRequest& request,
     const ServiceWorkerCacheQueryParams& match_params) {
-  // TODO(gavinp,jkarlin): Implement this method.
-  Send(ServiceWorkerMsg_CacheKeysError(
-      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+  IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
+  if (it == id_to_cache_map_.end()) {
+    Send(ServiceWorkerMsg_CacheKeysError(
+        request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerCache> cache = it->second;
+
+  cache->Keys(base::Bind(&ServiceWorkerCacheListener::OnCacheKeysCallback,
+                         weak_factory_.GetWeakPtr(),
+                         request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheBatch(
     int request_id,
     int cache_id,
     const std::vector<ServiceWorkerBatchOperation>& operations) {
-  // TODO(gavinp,jkarlin): Implement this method.
+  if (operations.size() != 1u) {
+    Send(ServiceWorkerMsg_CacheBatchError(
+        request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+    return;
+  }
+
+  IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
+  if (it == id_to_cache_map_.end()) {
+    Send(ServiceWorkerMsg_CacheBatchError(
+        request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    return;
+  }
+
+  const ServiceWorkerBatchOperation& operation = operations[0];
+
+  scoped_refptr<ServiceWorkerCache> cache = it->second;
+  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+      new ServiceWorkerFetchRequest(operation.request.url,
+                                    operation.request.method,
+                                    operation.request.headers,
+                                    operation.request.referrer,
+                                    operation.request.is_reload));
+
+  if (operation.operation_type == SERVICE_WORKER_CACHE_OPERATION_TYPE_DELETE) {
+    cache->Delete(scoped_request.Pass(),
+                  base::Bind(&ServiceWorkerCacheListener::OnCacheDeleteCallback,
+                             weak_factory_.GetWeakPtr(),
+                             request_id));
+    return;
+  }
+
+  if (operation.operation_type == SERVICE_WORKER_CACHE_OPERATION_TYPE_PUT) {
+    scoped_ptr<ServiceWorkerResponse> scoped_response(
+        new ServiceWorkerResponse(operation.response.url,
+                                  operation.response.status_code,
+                                  operation.response.status_text,
+                                  operation.response.response_type,
+                                  operation.response.headers,
+                                  operation.response.blob_uuid));
+    cache->Put(scoped_request.Pass(),
+               scoped_response.Pass(),
+               base::Bind(&ServiceWorkerCacheListener::OnCachePutCallback,
+                          weak_factory_.GetWeakPtr(),
+                          request_id));
+
+    return;
+  }
+
   Send(ServiceWorkerMsg_CacheBatchError(
       request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
 }
 
 void ServiceWorkerCacheListener::OnCacheClosed(int cache_id) {
-  // TODO(gavinp,jkarlin): Implement this method.
+  DropCacheReference(cache_id);
 }
 
 void ServiceWorkerCacheListener::Send(const IPC::Message& message) {
@@ -270,6 +364,85 @@ void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
     string16s.push_back(base::UTF8ToUTF16(strings[i]));
   }
   Send(ServiceWorkerMsg_CacheStorageKeysSuccess(request_id, string16s));
+}
+
+void ServiceWorkerCacheListener::OnCacheMatchCallback(
+    int request_id,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  if (error != ServiceWorkerCache::ErrorTypeOK) {
+    Send(ServiceWorkerMsg_CacheMatchError(
+        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  // TODO(jkarlin): Once there is a message acknowledging the blob handle from
+  // the renderer then store the blob_data_handle until the message is received.
+  // For now just drop it.
+  Send(ServiceWorkerMsg_CacheMatchSuccess(
+      request_id,
+      ServiceWorkerResponse(response->url,
+                            response->status_code,
+                            response->status_text,
+                            response->response_type,
+                            response->headers,
+                            "")));
+}
+
+void ServiceWorkerCacheListener::OnCacheKeysCallback(
+    int request_id,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerCache::Requests> requests) {
+  if (error != ServiceWorkerCache::ErrorTypeOK) {
+    Send(ServiceWorkerMsg_CacheKeysError(
+        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  ServiceWorkerCache::Requests out;
+
+  for (ServiceWorkerCache::Requests::const_iterator it = requests->begin();
+       it != requests->end();
+       ++it) {
+    ServiceWorkerFetchRequest request(
+        it->url, it->method, it->headers, it->referrer, it->is_reload);
+    out.push_back(request);
+  }
+
+  Send(ServiceWorkerMsg_CacheKeysSuccess(request_id, out));
+}
+
+void ServiceWorkerCacheListener::OnCacheDeleteCallback(
+    int request_id,
+    ServiceWorkerCache::ErrorType error) {
+  if (error != ServiceWorkerCache::ErrorTypeOK) {
+    Send(ServiceWorkerMsg_CacheBatchError(
+        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  Send(ServiceWorkerMsg_CacheBatchSuccess(
+      request_id, std::vector<ServiceWorkerResponse>()));
+}
+
+void ServiceWorkerCacheListener::OnCachePutCallback(
+    int request_id,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  if (error != ServiceWorkerCache::ErrorTypeOK) {
+    Send(ServiceWorkerMsg_CacheBatchError(
+        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  // TODO(jkarlin): Once there is a message acknowledging the blob handle from
+  // the renderer then store the blob_data_handle until the message is received.
+  // For now just drop it.
+  std::vector<ServiceWorkerResponse> responses;
+  responses.push_back(*response);
+  Send(ServiceWorkerMsg_CacheBatchSuccess(request_id, responses));
 }
 
 ServiceWorkerCacheListener::CacheID

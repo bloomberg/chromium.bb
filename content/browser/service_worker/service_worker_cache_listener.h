@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
+#include "content/browser/service_worker/service_worker_cache.h"
 #include "content/browser/service_worker/service_worker_cache_storage.h"
 
 namespace content {
@@ -63,6 +64,7 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
 
   void Send(const IPC::Message& message);
 
+  // CacheStorageManager callbacks
   void OnCacheStorageGetCallback(
       int request_id,
       const scoped_refptr<ServiceWorkerCache>& cache,
@@ -83,6 +85,22 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
       int request_id,
       const std::vector<std::string>& strings,
       ServiceWorkerCacheStorage::CacheStorageError error);
+
+  // Cache callbacks
+  void OnCacheMatchCallback(
+      int request_id,
+      ServiceWorkerCache::ErrorType error,
+      scoped_ptr<ServiceWorkerResponse> response,
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+  void OnCacheKeysCallback(int request_id,
+                           ServiceWorkerCache::ErrorType error,
+                           scoped_ptr<ServiceWorkerCache::Requests> requests);
+  void OnCacheDeleteCallback(int request_id,
+                             ServiceWorkerCache::ErrorType error);
+  void OnCachePutCallback(int request_id,
+                          ServiceWorkerCache::ErrorType error,
+                          scoped_ptr<ServiceWorkerResponse> response,
+                          scoped_ptr<storage::BlobDataHandle> blob_data_handle);
 
   // Hangs onto a scoped_refptr for the cache if it isn't already doing so.
   // Returns a unique cache_id. Call DropCacheReference when the client is done
