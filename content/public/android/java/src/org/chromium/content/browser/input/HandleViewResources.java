@@ -47,6 +47,15 @@ public class HandleViewResources {
     private static Drawable getHandleDrawable(Context context, final int[] attrs) {
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs);
         Drawable drawable = a.getDrawable(0);
+        if (drawable == null) {
+            // If themed resource lookup fails, fall back to using the Context's
+            // resources for attribute lookup.
+            try {
+                drawable = context.getResources().getDrawable(a.getResourceId(0, 0));
+            } catch (Resources.NotFoundException e) {
+                // The caller should handle the null return case appropriately.
+            }
+        }
         a.recycle();
         return drawable;
     }
@@ -62,8 +71,15 @@ public class HandleViewResources {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = false;
         options.inPreferredConfig = config;
-        final Bitmap bitmap = BitmapFactory.decodeResource(res, resId, options);
+        Bitmap bitmap = BitmapFactory.decodeResource(res, resId, options);
         if (bitmap != null) return bitmap;
+
+        // If themed resource lookup fails, fall back to using the Context's
+        // resources for attribute lookup.
+        if (res != context.getResources()) {
+            bitmap = BitmapFactory.decodeResource(context.getResources(), resId, options);
+            if (bitmap != null) return bitmap;
+        }
 
         Drawable drawable = getHandleDrawable(context, attrs);
         assert drawable != null;
