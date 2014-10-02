@@ -73,6 +73,29 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   // performs the appropriate assertions.
   bool IsHeartRateVisible() const;
 
+  // Makes this characteristic client really slow.
+  // So slow, that it is guaranteed that |requests| requests will
+  // come in while the client is doing the previous request.
+  // Setting |requests| to zero will cause all delayed actions to
+  // complete immediately.
+  void SetExtraProcessing(size_t requests);
+
+  size_t GetExtraProcessing() const;
+
+  // Sets whether the client is authorized or not.
+  // Defaults to authorized.
+  void SetAuthorized(bool authorized) { authorized_ = authorized; }
+
+  // Get the current Authorization state.
+  bool IsAuthorized() const { return authorized_; }
+
+  // Whether the client is Authenticated
+  // Defaults to authenticated.
+  void SetAuthenticated(bool authenticated) { authenticated_ = authenticated; }
+
+  // Get the current Authenticated state.
+  bool IsAuthenticated() const { return authenticated_; }
+
   // Returns the current object paths of exposed characteristics. If the
   // characteristic is not visible, returns an invalid empty path.
   dbus::ObjectPath GetHeartRateMeasurementPath() const;
@@ -110,6 +133,12 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   // IsHeartRateVisible() to check the value.
   bool heart_rate_visible_;
 
+  // If true, the client is authorized to read and write.
+  bool authorized_;
+
+  // If true, the client is authenticated.
+  bool authenticated_;
+
   // Total calories burned, used for the Heart Rate Measurement characteristic.
   uint16 calories_burned_;
 
@@ -126,6 +155,22 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   std::string heart_rate_measurement_ccc_desc_path_;
   std::string body_sensor_location_path_;
   std::string heart_rate_control_point_path_;
+
+  // Number of extra requests that need to come in simulating slowness.
+  size_t extra_requests_;
+
+  // Current countdowns for extra requests for various actions.
+  struct DelayedCallback {
+   public:
+    DelayedCallback(base::Closure callback, size_t delay);
+    ~DelayedCallback();
+
+    base::Closure callback_;
+    size_t delay_;
+  };
+
+  // Map of delayed callbacks.
+  std::map<std::string, DelayedCallback*> action_extra_requests_;
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;

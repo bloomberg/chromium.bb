@@ -21,6 +21,15 @@ const int kHeartRateMeasurementNotificationIntervalMs = 2000;
 
 }  // namespace
 
+FakeBluetoothGattCharacteristicClient::DelayedCallback::DelayedCallback(
+    base::Closure callback,
+    size_t delay)
+    : callback_(callback), delay_(delay) {
+}
+
+FakeBluetoothGattCharacteristicClient::DelayedCallback::~DelayedCallback() {
+}
+
 // static
 const char FakeBluetoothGattCharacteristicClient::
     kHeartRateMeasurementPathComponent[] = "char0000";
@@ -68,12 +77,19 @@ void FakeBluetoothGattCharacteristicClient::Properties::Set(
 
 FakeBluetoothGattCharacteristicClient::FakeBluetoothGattCharacteristicClient()
     : heart_rate_visible_(false),
+      authorized_(true),
+      authenticated_(true),
       calories_burned_(0),
+      extra_requests_(0),
       weak_ptr_factory_(this) {
 }
 
 FakeBluetoothGattCharacteristicClient::
     ~FakeBluetoothGattCharacteristicClient() {
+  for (const auto& it : action_extra_requests_) {
+    delete it.second;
+  }
+  action_extra_requests_.clear();
 }
 
 void FakeBluetoothGattCharacteristicClient::Init(dbus::Bus* bus) {
@@ -120,15 +136,25 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
     const dbus::ObjectPath& object_path,
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  if (!IsHeartRateVisible()) {
-    error_callback.Run(kUnknownCharacteristicError, "");
+  if (!authenticated_) {
+    error_callback.Run("org.bluez.Error.NotPaired", "Please login");
     return;
   }
 
-  if (object_path.value() == heart_rate_measurement_path_ ||
-      object_path.value() == heart_rate_control_point_path_) {
+  if (!authorized_) {
+    error_callback.Run("org.bluez.Error.NotAuthorized", "Authorize first");
+    return;
+  }
+
+  if (object_path.value() == heart_rate_control_point_path_) {
     error_callback.Run("org.bluez.Error.ReadNotPermitted",
                        "Reads of this value are not allowed");
+    return;
+  }
+
+  if (object_path.value() == heart_rate_measurement_path_) {
+    error_callback.Run("org.bluez.Error.NotSupported",
+                       "Action not supported on this characteristic");
     return;
   }
 
@@ -137,9 +163,35 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
     return;
   }
 
-  std::vector<uint8> value;
-  value.push_back(0x06);  // Location is "foot".
-  callback.Run(value);
+  if (action_extra_requests_.find("ReadValue") !=
+      action_extra_requests_.end()) {
+    DelayedCallback* delayed = action_extra_requests_["ReadValue"];
+    delayed->delay_--;
+    error_callback.Run("org.bluez.Error.InProgress",
+                       "Another read is currenty in progress");
+    if (delayed->delay_ == 0) {
+      delayed->callback_.Run();
+      action_extra_requests_.erase("ReadValue");
+      delete delayed;
+    }
+    return;
+  }
+  base::Closure completed_callback;
+  if (!IsHeartRateVisible()) {
+    completed_callback =
+        base::Bind(error_callback, kUnknownCharacteristicError, "");
+  } else {
+    std::vector<uint8> value;
+    value.push_back(0x06);  // Location is "foot".
+    completed_callback = base::Bind(callback, value);
+  }
+
+  if (extra_requests_ > 0) {
+    action_extra_requests_["ReadValue"] =
+        new DelayedCallback(completed_callback, extra_requests_);
+    return;
+  }
+  completed_callback.Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::WriteValue(
@@ -147,8 +199,24 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
     const std::vector<uint8>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  if (!authenticated_) {
+    error_callback.Run("org.bluez.Error.NotPaired", "Please login");
+    return;
+  }
+
+  if (!authorized_) {
+    error_callback.Run("org.bluez.Error.NotAuthorized", "Authorize first");
+    return;
+  }
+
   if (!IsHeartRateVisible()) {
     error_callback.Run(kUnknownCharacteristicError, "");
+    return;
+  }
+
+  if (object_path.value() == heart_rate_measurement_path_) {
+    error_callback.Run("org.bluez.Error.NotSupported",
+                       "Action not supported on this characteristic");
     return;
   }
 
@@ -159,21 +227,40 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   }
 
   DCHECK(heart_rate_control_point_properties_.get());
+  if (action_extra_requests_.find("WriteValue") !=
+      action_extra_requests_.end()) {
+    DelayedCallback* delayed = action_extra_requests_["WriteValue"];
+    delayed->delay_--;
+    error_callback.Run("org.bluez.Error.InProgress",
+                       "Another write is in progress");
+    if (delayed->delay_ == 0) {
+      delayed->callback_.Run();
+      action_extra_requests_.erase("WriteValue");
+      delete delayed;
+    }
+    return;
+  }
+  base::Closure completed_callback;
   if (value.size() != 1) {
-    error_callback.Run("org.bluez.Error.InvalidValueLength",
-                       "Invalid length for write");
-    return;
-  }
-  if (value[0] > 1) {
-    error_callback.Run("org.bluez.Error.Failed",
-                       "Invalid value given for write");
-    return;
-  }
-
-  if (value[0] == 1)
+    completed_callback = base::Bind(error_callback,
+                                    "org.bluez.Error.InvalidValueLength",
+                                    "Invalid length for write");
+  } else if (value[0] > 1) {
+    completed_callback = base::Bind(error_callback,
+                                    "org.bluez.Error.Failed",
+                                    "Invalid value given for write");
+  } else if (value[0] == 1) {
+    // TODO(jamuraa): make this happen when the callback happens
     calories_burned_ = 0;
+    completed_callback = callback;
+  }
 
-  callback.Run();
+  if (extra_requests_ > 0) {
+    action_extra_requests_["WriteValue"] =
+        new DelayedCallback(completed_callback, extra_requests_);
+    return;
+  }
+  completed_callback.Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::StartNotify(
@@ -330,6 +417,24 @@ void FakeBluetoothGattCharacteristicClient::HideHeartRateCharacteristics() {
   body_sensor_location_path_.clear();
   heart_rate_control_point_path_.clear();
   heart_rate_visible_ = false;
+}
+
+void FakeBluetoothGattCharacteristicClient::SetExtraProcessing(
+    size_t requests) {
+  extra_requests_ = requests;
+  if (extra_requests_ == 0) {
+    for (const auto& it : action_extra_requests_) {
+      it.second->callback_.Run();
+      delete it.second;
+    }
+    action_extra_requests_.clear();
+    return;
+  }
+  VLOG(2) << "Requests SLOW now, " << requests << " InProgress errors each.";
+}
+
+size_t FakeBluetoothGattCharacteristicClient::GetExtraProcessing() const {
+  return extra_requests_;
 }
 
 dbus::ObjectPath

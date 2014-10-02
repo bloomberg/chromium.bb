@@ -398,7 +398,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
   int success_callback_count_;
   int error_callback_count_;
   std::vector<uint8> last_read_value_;
-  enum BluetoothGattService::GattErrorCode last_service_error_;
+  BluetoothGattService::GattErrorCode last_service_error_;
 };
 
 TEST_F(BluetoothGattChromeOSTest, GattConnection) {
@@ -852,7 +852,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_FALSE(observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
-  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED,
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_NOT_SUPPORTED,
             last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
@@ -874,7 +874,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_FALSE(observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED,
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_NOT_PERMITTED,
             last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
@@ -916,7 +916,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
                  base::Unretained(this)));
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(3, error_callback_count_);
-  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH,
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_INVALID_LENGTH,
             last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
@@ -930,8 +930,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
                  base::Unretained(this)));
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(4, error_callback_count_);
-  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED,
-            last_service_error_);
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_FAILED, last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
   // Issue a read request. A successful read results in a
@@ -953,6 +952,71 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_EQ(4, error_callback_count_);
   EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count_);
   EXPECT_TRUE(ValuesEqual(characteristic->GetValue(), last_read_value_));
+
+  // Test long-running actions.
+  fake_bluetooth_gatt_characteristic_client_->SetExtraProcessing(1);
+  characteristic = service->GetCharacteristic(
+      fake_bluetooth_gatt_characteristic_client_->GetBodySensorLocationPath()
+          .value());
+  ASSERT_TRUE(characteristic);
+  EXPECT_EQ(
+      fake_bluetooth_gatt_characteristic_client_->GetBodySensorLocationPath()
+          .value(),
+      characteristic->GetIdentifier());
+  EXPECT_EQ(kBodySensorLocationUUID, characteristic->GetUUID());
+  characteristic->ReadRemoteCharacteristic(
+      base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+
+  // Callback counts shouldn't change, this one will be delayed until after
+  // tne next one.
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(4, error_callback_count_);
+  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count_);
+
+  // Next read should error because IN_PROGRESS
+  characteristic->ReadRemoteCharacteristic(
+      base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(5, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_IN_PROGRESS, last_service_error_);
+
+  // But previous call finished.
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(2, observer.gatt_characteristic_value_changed_count_);
+  EXPECT_TRUE(ValuesEqual(characteristic->GetValue(), last_read_value_));
+  fake_bluetooth_gatt_characteristic_client_->SetExtraProcessing(0);
+
+  // Test unauthorized actions.
+  fake_bluetooth_gatt_characteristic_client_->SetAuthorized(false);
+  characteristic->ReadRemoteCharacteristic(
+      base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(6, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED,
+            last_service_error_);
+  EXPECT_EQ(2, observer.gatt_characteristic_value_changed_count_);
+  fake_bluetooth_gatt_characteristic_client_->SetAuthorized(true);
+
+  // Test unauthenticated / needs login.
+  fake_bluetooth_gatt_characteristic_client_->SetAuthenticated(false);
+  characteristic->ReadRemoteCharacteristic(
+      base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(7, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_NOT_PAIRED, last_service_error_);
+  EXPECT_EQ(2, observer.gatt_characteristic_value_changed_count_);
+  fake_bluetooth_gatt_characteristic_client_->SetAuthenticated(true);
 }
 
 TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
@@ -1074,7 +1138,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
                  base::Unretained(this)));
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
-  EXPECT_EQ(BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED,
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_NOT_PERMITTED,
             last_service_error_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
