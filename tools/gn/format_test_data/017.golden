@@ -1,8 +1,7 @@
-executable(
-  "win"  # Suffix comment on arg.
+executable("win"  # Suffix comment on arg.
 
-  # And a strangely positioned line comment for some reason
-) {
+           # And a strangely positioned line comment for some reason
+           ) {
   defines = []  # Defines comment, suffix at end position.
 
   deps = [

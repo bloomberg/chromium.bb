@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parser.h"
@@ -34,6 +35,7 @@ const char kFormat_Help[] =
 namespace {
 
 const int kIndentSize = 2;
+const int kMaximumWidth = 80;
 
 class Printer {
  public:
@@ -56,6 +58,12 @@ class Printer {
   enum ExprStyle {
     kExprStyleRegular,
     kExprStyleComment,
+  };
+
+  struct Metrics {
+    Metrics() : length(-1), multiline(false) {}
+    int length;
+    bool multiline;
   };
 
   // Add to output.
@@ -81,6 +89,10 @@ class Printer {
   // Print the expression to the output buffer. Returns the type of element
   // added to the output.
   ExprStyle Expr(const ParseNode* root);
+
+  // Use a sub-Printer recursively to figure out the size that an expression
+  // would be before actually adding it to the output.
+  Metrics GetLengthOfExpr(const ParseNode* expr);
 
   // Format a list of values using the given style.
   // |end| holds any trailing comments to be printed just before the closing
@@ -206,6 +218,18 @@ void Printer::Block(const ParseNode* root) {
   }
 }
 
+Printer::Metrics Printer::GetLengthOfExpr(const ParseNode* expr) {
+  Metrics result;
+  Printer sub;
+  sub.Expr(expr);
+  std::vector<std::string> lines;
+  base::SplitStringDontTrim(sub.String(), '\n', &lines);
+  result.multiline = lines.size() > 1;
+  for (const auto& line : lines)
+    result.length = std::max(result.length, static_cast<int>(line.size()));
+  return result;
+}
+
 Printer::ExprStyle Printer::Expr(const ParseNode* root) {
   ExprStyle result = kExprStyleRegular;
   if (root->comments()) {
@@ -223,16 +247,44 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
     }
   }
 
-  if (root->AsAccessor()) {
-    Print("TODO(scottmg): AccessorNode");
+  if (const AccessorNode* accessor = root->AsAccessor()) {
+    Print(accessor->base().value());
+    if (accessor->member()) {
+      Print(".");
+      Expr(accessor->member());
+    } else {
+      CHECK(accessor->index());
+      Print("[");
+      Expr(accessor->index());
+      Print("]");
+    }
   } else if (const BinaryOpNode* binop = root->AsBinaryOp()) {
     // TODO(scottmg): Lots to do here for complex if expressions: reflowing,
     // parenthesizing, etc.
-    Expr(binop->left());
-    Print(" ");
-    Print(binop->op().value());
-    Print(" ");
-    Expr(binop->right());
+    Metrics left = GetLengthOfExpr(binop->left());
+    Metrics right = GetLengthOfExpr(binop->right());
+    int total_width = left.length +
+                      static_cast<int>(binop->op().value().size()) + 2 +
+                      right.length;
+    if (CurrentColumn() + total_width < kMaximumWidth ||
+        binop->right()->AsList()) {
+      // If it just fits normally, put it here.
+      Expr(binop->left());
+      Print(" ");
+      Print(binop->op().value());
+      Print(" ");
+      Expr(binop->right());
+    } else {
+      // Otherwise, put first argument and op, and indent next.
+      Expr(binop->left());
+      Print(" ");
+      Print(binop->op().value());
+      int old_margin = margin_;
+      margin_ += kIndentSize * 2;
+      Newline();
+      Expr(binop->right());
+      margin_ = old_margin;
+    }
   } else if (const BlockNode* block = root->AsBlock()) {
     Sequence(kSequenceStyleBracedBlock, block->statements(), block->End());
   } else if (const ConditionNode* condition = root->AsConditionNode()) {
@@ -299,6 +351,9 @@ template <class PARSENODE>
 void Printer::Sequence(SequenceStyle style,
                        const std::vector<PARSENODE*>& list,
                        const ParseNode* end) {
+  int old_margin = margin_;
+  int indent =
+      style == kSequenceStyleFunctionCall ? kIndentSize * 2 : kIndentSize;
   bool force_multiline = false;
   if (style == kSequenceStyleFunctionCall)
     Print("(");
@@ -319,9 +374,34 @@ void Printer::Sequence(SequenceStyle style,
       force_multiline = true;
   }
 
+  // Calculate the length of the items for function calls so we can decide to
+  // compress them in various nicer ways.
+  std::vector<int> natural_lengths;
+  bool fits_on_current_line = true;
+  int max_item_width = 0;
+  if (style == kSequenceStyleFunctionCall) {
+    int total_length = 0;
+    natural_lengths.reserve(list.size());
+    for (size_t i = 0; i < list.size(); ++i) {
+      Metrics sub = GetLengthOfExpr(list[i]);
+      if (sub.multiline)
+        fits_on_current_line = false;
+      natural_lengths.push_back(sub.length);
+      total_length += sub.length;
+      if (i < list.size() - 1)
+        total_length += 2;  // ", "
+    }
+    // Strictly less than kMaximumWidth so there's room for closing ).
+    // TODO(scottmg): Need to know if there's an attached block for " {".
+    fits_on_current_line =
+        fits_on_current_line && CurrentColumn() + total_length < kMaximumWidth;
+    max_item_width =
+        *std::max_element(natural_lengths.begin(), natural_lengths.end());
+  }
+
   if (list.size() == 0 && !force_multiline) {
     // No elements, and not forcing newlines, print nothing.
-  } else if (list.size() == 1 && !force_multiline) {
+  } else if (list.size() == 1 && !force_multiline && fits_on_current_line) {
     if (style != kSequenceStyleFunctionCall)
       Print(" ");
     Expr(list[0]);
@@ -329,44 +409,73 @@ void Printer::Sequence(SequenceStyle style,
     if (style != kSequenceStyleFunctionCall)
       Print(" ");
   } else {
-    margin_ += kIndentSize;
-    size_t i = 0;
-    for (const auto& x : list) {
-      Newline();
-      // If:
-      // - we're going to output some comments, and;
-      // - we haven't just started this multiline list, and;
-      // - there isn't already a blank line here;
-      // Then: insert one.
-      if (i != 0 && x->comments() && !x->comments()->before().empty() &&
-          !HaveBlankLine()) {
-        Newline();
+    // Function calls get to be single line even with multiple arguments, if
+    // they fit inside the maximum width.
+    if (style == kSequenceStyleFunctionCall && !force_multiline &&
+        fits_on_current_line) {
+      for (size_t i = 0; i < list.size(); ++i) {
+        Expr(list[i]);
+        if (i < list.size() - 1)
+          Print(", ");
       }
-      ExprStyle expr_style = Expr(x);
-      CHECK(!x->comments() || x->comments()->after().empty());
-      if (i < list.size() - 1 || style == kSequenceStyleList) {
-        if ((style == kSequenceStyleList || kSequenceStyleFunctionCall) &&
-            expr_style == kExprStyleRegular) {
-          Print(",");
-        } else {
+    } else {
+      bool should_break_to_next_line = true;
+      if (style == kSequenceStyleFunctionCall &&
+          (CurrentColumn() + max_item_width < kMaximumWidth ||
+           CurrentColumn() < margin_ + indent)) {
+        should_break_to_next_line = false;
+        margin_ = CurrentColumn();
+      } else {
+        margin_ += indent;
+      }
+      size_t i = 0;
+      for (const auto& x : list) {
+        // Function calls where all the arguments would fit at the current
+        // position should do that instead of going back to margin+4.
+        if (i > 0 || should_break_to_next_line)
+          Newline();
+        // If:
+        // - we're going to output some comments, and;
+        // - we haven't just started this multiline list, and;
+        // - there isn't already a blank line here;
+        // Then: insert one.
+        if (i != 0 && x->comments() && !x->comments()->before().empty() &&
+            !HaveBlankLine()) {
           Newline();
         }
+        ExprStyle expr_style = Expr(x);
+        CHECK(!x->comments() || x->comments()->after().empty());
+        if (i < list.size() - 1 || style == kSequenceStyleList) {
+          if ((style == kSequenceStyleList ||
+               style == kSequenceStyleFunctionCall) &&
+              expr_style == kExprStyleRegular) {
+            Print(",");
+          } else {
+            Newline();
+          }
+        }
+        ++i;
       }
-      ++i;
-    }
 
-    // Trailing comments.
-    if (end->comments()) {
-      if (!list.empty())
+      // Trailing comments.
+      if (end->comments()) {
+        if (!list.empty())
+          Newline();
+        for (const auto& c : end->comments()->before()) {
+          Newline();
+          TrimAndPrintToken(c);
+        }
+      }
+
+      if (style == kSequenceStyleFunctionCall) {
+        if (end->comments() && !end->comments()->before().empty()) {
+          Newline();
+        }
+      } else {
+        margin_ = old_margin;
         Newline();
-      for (const auto& c : end->comments()->before()) {
-        Newline();
-        TrimAndPrintToken(c);
       }
     }
-
-    margin_ -= kIndentSize;
-    Newline();
   }
 
   if (style == kSequenceStyleFunctionCall)
@@ -375,6 +484,8 @@ void Printer::Sequence(SequenceStyle style,
     Print("]");
   else if (style == kSequenceStyleBracedBlock)
     Print("}");
+
+  margin_ = old_margin;
 }
 
 }  // namespace
