@@ -1,11 +1,11 @@
 # INSTALLING NPM/BOWER
 
-The version of npm in apt-get is too old for bower. Instead
-install it from http://nodejs.org/download/.
+The version of npm in apt-get is too old for bower.
+    $ curl https://www.npmjs.org/install.sh | sudo sh 
+    $ sudo npm install -g bower
 
-Install bower with:
-
-    $ npm install -g bower
+Eventually, we'll move into the infra repo, which will have npm and bower
+checked in.
 
 # SYNCING DEPENDENCIES
 
@@ -30,10 +30,6 @@ Then load: http://localhost:8080/
 
 # TESTING
 
-The tests can be run in the browser or from the command line.
-
-In the browser: http://localhost:8080/test/run-unit-tests.html
-
 From the command line:
 
     $ cd Tools/GardeningServer
@@ -49,6 +45,11 @@ Or, you can start karma manually:
     $ ./node_modules/karma/bin/karma start
 
 You can shorten this command to 'karma start' if you run 'npm install -g karma-cli'.
+
+To run a single test or test suite, change the test code to use describe.only
+or it.only as appropriate. You can use the chromium dev tools inside the
+Chrome instance that karma starts up in order to set breakpoints and otherwise
+debug.
 
 # PUSHING
 
