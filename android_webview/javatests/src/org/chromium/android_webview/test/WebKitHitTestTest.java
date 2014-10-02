@@ -38,7 +38,7 @@ public class WebKitHitTestTest extends AwTestBase {
         mContentsClient = new TestAwContentsClient();
         mTestView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestView.getAwContents();
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
     }
 
     @Override

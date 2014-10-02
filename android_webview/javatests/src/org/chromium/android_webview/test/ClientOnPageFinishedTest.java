@@ -118,9 +118,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
          * 4. url2 onPageFinishedCalled
          */
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String redirectTargetPath = "/redirect_target.html";
             final String redirectTargetUrl = webServer.setResponse(redirectTargetPath,
                     "<html><body>hello world</body></html>", null);
@@ -141,7 +140,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             // onPageFinished needs to be called for redirectTargetUrl, but not for redirectUrl
             assertEquals(redirectTargetUrl, onPageFinishedHelper.getUrl());
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -151,10 +150,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
-
             final String testHtml = "<html><head>Header</head><body>Body</body></html>";
             final String testPath = "/test.html";
             final String syncPath = "/sync.html";
@@ -181,9 +178,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             onPageFinishedHelper.waitForCallback(synchronizationPageCallCount);
             assertEquals(syncUrl, onPageFinishedHelper.getUrl());
             assertEquals(2, onPageFinishedHelper.getCallCount());
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -194,10 +190,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
                 mContentsClient.getOnPageFinishedHelper();
         enableJavaScriptOnUiThread(mAwContents);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
-
             final String testHtml = "<html><head>Header</head><body>Body</body></html>";
             final String testPath = "/test.html";
             final String historyPath = "/history.html";
@@ -223,9 +217,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             onPageFinishedHelper.waitForCallback(synchronizationPageCallCount);
             assertEquals(syncUrl, onPageFinishedHelper.getUrl());
             assertEquals(2, onPageFinishedHelper.getCallCount());
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -248,10 +241,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
                 mContentsClient.getOnPageStartedHelper();
         enableJavaScriptOnUiThread(mAwContents);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
-
             final String testHtml = CommonResources.makeHtmlPageFrom("",
                     "<a href=\"#anchor\" id=\"link\">anchor</a>");
             final String testPath = "/test.html";
@@ -282,7 +273,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
             assertEquals(onPageStartedCallCount, onPageStartedHelper.getCallCount());
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 }

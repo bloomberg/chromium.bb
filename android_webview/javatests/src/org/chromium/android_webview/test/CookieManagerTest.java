@@ -65,9 +65,8 @@ public class CookieManagerTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testAcceptCookie() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             String path = "/cookie_test.html";
             String responseStr =
                     "<html><head><title>TEST!</title></head><body>HELLO!</body></html>";
@@ -108,7 +107,7 @@ public class CookieManagerTest extends AwTestBase {
             assertNotNull(cookie);
             validateCookies(cookie, "test2", "header-test2");
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -356,20 +355,17 @@ public class CookieManagerTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookie() throws Throwable {
-        TestWebServer webServer = null;
+        // In theory we need two servers to test this, one server ('the first party') which returns
+        // a response with a link to a second server ('the third party') at different origin. This
+        // second server attempts to set a cookie which should fail if AcceptThirdPartyCookie() is
+        // false.
+        // Strictly according to the letter of RFC6454 it should be possible to set this situation
+        // up with two TestServers on different ports (these count as having different origins) but
+        // Chrome is not strict about this and does not check the port. Instead we cheat making some
+        // of the urls come from localhost and some from 127.0.0.1 which count (both in theory and
+        // pratice) as having different origins.
+        TestWebServer webServer = TestWebServer.start();
         try {
-            // In theory we need two servers to test this, one server ('the first party')
-            // which returns a response with a link to a second server ('the third party')
-            // at different origin. This second server attempts to set a cookie which should
-            // fail if AcceptThirdPartyCookie() is false.
-            // Strictly according to the letter of RFC6454 it should be possible to set this
-            // situation up with two TestServers on different ports (these count as having
-            // different origins) but Chrome is not strict about this and does not check the
-            // port. Instead we cheat making some of the urls come from localhost and some
-            // from 127.0.0.1 which count (both in theory and pratice) as having different
-            // origins.
-            webServer = new TestWebServer(false);
-
             // Turn global allow on.
             mCookieManager.setAcceptCookie(true);
             assertTrue(mCookieManager.acceptCookie());
@@ -401,7 +397,7 @@ public class CookieManagerTest extends AwTestBase {
             assertNotNull(cookie);
             validateCookies(cookie, "test2");
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -437,10 +433,9 @@ public class CookieManagerTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyJavascriptCookie() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
             // This test again uses 127.0.0.1/localhost trick to simulate a third party.
-            webServer = new TestWebServer(false);
             ThirdPartyCookiesTestHelper thirdParty
                     = new ThirdPartyCookiesTestHelper(webServer);
 
@@ -461,16 +456,15 @@ public class CookieManagerTest extends AwTestBase {
             // ...we can set third party cookies.
             thirdParty.assertThirdPartyIFrameCookieResult("2", true);
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookiesArePerWebview() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             mCookieManager.setAcceptCookie(true);
             mCookieManager.removeAllCookie();
             assertTrue(mCookieManager.acceptCookie());
@@ -504,7 +498,7 @@ public class CookieManagerTest extends AwTestBase {
             helperOne.assertThirdPartyIFrameCookieResult("7", true);
             helperTwo.assertThirdPartyIFrameCookieResult("8", false);
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 

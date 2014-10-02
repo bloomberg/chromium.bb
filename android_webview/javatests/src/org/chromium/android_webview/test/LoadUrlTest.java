@@ -142,9 +142,8 @@ public class LoadUrlTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String imagePath = "/" + CommonResources.FAVICON_FILENAME;
             webServer.setResponseBase64(imagePath,
                     CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
@@ -166,7 +165,7 @@ public class LoadUrlTest extends AwTestBase {
             // Verify that extra headers are only passed for the main resource.
             validateNoRequestHeaders(extraHeaders, webServer.getLastRequest(imagePath));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -178,9 +177,8 @@ public class LoadUrlTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String path = "/no_overriding_of_existing_headers_test.html";
             final String url = webServer.setResponse(
                     path,
@@ -203,7 +201,7 @@ public class LoadUrlTest extends AwTestBase {
             assertTrue(header.getValue().length() > 0);
             assertFalse(extraHeaders[1].equals(header.getValue()));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -215,9 +213,8 @@ public class LoadUrlTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String path = "/reload_with_extra_headers_test.html";
             final String url = webServer.setResponse(path,
                     "<html><body>foo</body></html>",
@@ -237,7 +234,7 @@ public class LoadUrlTest extends AwTestBase {
             assertEquals(2, webServer.getRequestCount(path));
             validateRequestHeaders(extraHeaders, webServer.getLastRequest(path));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -249,9 +246,8 @@ public class LoadUrlTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String path = "/redirect_and_reload_with_extra_headers_test.html";
             final String url = webServer.setResponse(path,
                     "<html><body>foo</body></html>",
@@ -276,7 +272,7 @@ public class LoadUrlTest extends AwTestBase {
             // No extra headers. This is consistent with legacy behavior.
             validateNoRequestHeaders(extraHeaders, webServer.getLastRequest(path));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -290,9 +286,8 @@ public class LoadUrlTest extends AwTestBase {
         final AwSettings settings = getAwSettingsOnUiThread(awContents);
         settings.setJavaScriptEnabled(true);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String nextPath = "/next.html";
             final String nextUrl = webServer.setResponse(nextPath,
                     "<html><body>Next!</body></html>",
@@ -328,7 +323,7 @@ public class LoadUrlTest extends AwTestBase {
             assertEquals(2, webServer.getRequestCount(path));
             validateRequestHeaders(extraHeaders, webServer.getLastRequest(path));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 }

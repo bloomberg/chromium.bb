@@ -36,7 +36,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         mContentsClient = new TestAwContentsClient();
         mTestView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestView.getAwContents();
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
         mOrigin = mWebServer.getBaseUrl();
 
         AwSettings settings = getAwSettingsOnUiThread(mAwContents);

@@ -46,7 +46,7 @@ public class NavigationHistoryTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
     }
 
     @Override

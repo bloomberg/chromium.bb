@@ -60,17 +60,14 @@ public class GetTitleTest extends AwTestBase {
     }
 
     private PageInfo loadFromUrlAndGetTitle(String html, String filename) throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
-
             final String url = webServer.setResponse(filename, html, null);
             loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             return new PageInfo(getTitleOnUiThread(mAwContents),
                 url.replaceAll("http:\\/\\/", ""));
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 

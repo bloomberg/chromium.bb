@@ -58,7 +58,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestWebServer = new TestWebServer(false);
+        mTestWebServer = TestWebServer.start();
         mWebRTCPage = mTestWebServer.setResponse("/WebRTC", DATA,
                 CommonResources.getTextHtmlHeaders(true));
     }

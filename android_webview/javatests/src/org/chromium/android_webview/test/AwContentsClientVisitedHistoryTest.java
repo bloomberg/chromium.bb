@@ -69,9 +69,8 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         final String path = "/testUpdateVisitedHistoryCallback.html";
         final String html = "testUpdateVisitedHistoryCallback";
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String pageUrl = webServer.setResponse(path, html, null);
             final DoUpdateVisitedHistoryHelper doUpdateVisitedHistoryHelper =
                 mContentsClient.getDoUpdateVisitedHistoryHelper();
@@ -88,7 +87,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
             assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
             assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -110,9 +109,8 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         final String visitedLinks[] = {"http://foo.com", "http://bar.com", null};
         final String html = "<a src=\"http://foo.com\">foo</a><a src=\"http://bar.com\">bar</a>";
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String pageUrl = webServer.setResponse(path, html, null);
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
             visitedHistoryHelper.waitForCallback(callCount);
@@ -123,7 +121,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
 
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 

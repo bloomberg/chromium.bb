@@ -60,7 +60,7 @@ import javax.net.ssl.X509TrustManager;
  *
  * Based heavily on the CTSWebServer in Android.
  */
-public final class TestWebServer {
+public class TestWebServer {
     private static final String TAG = "TestWebServer";
 
     public static final String SHUTDOWN_PREFIX = "/shutdown";
@@ -103,7 +103,7 @@ public final class TestWebServer {
      * @param ssl True if the server should be using secure sockets.
      * @throws Exception
      */
-    public TestWebServer(boolean ssl) throws Exception {
+    private TestWebServer(boolean ssl) throws Exception {
         mSsl = ssl;
         if (mSsl) {
             mServerUri = "https:";
@@ -117,16 +117,42 @@ public final class TestWebServer {
             }
         }
 
-        setInstance(this, mSsl);
         mServerThread = new ServerThread(this, mSsl);
-        mServerThread.start();
         mServerUri += "//localhost:" + mServerThread.mSocket.getLocalPort();
+    }
+
+    public static TestWebServer start() throws Exception {
+        if (sInstance != null) {
+            throw new IllegalStateException("Tried to start multiple TestWebServers");
+        }
+
+        TestWebServer server = new TestWebServer(false);
+        server.mServerThread.start();
+        setInstance(server);
+        return server;
+    }
+
+    public static TestWebServer startSsl() throws Exception {
+        if (sSecureInstance != null) {
+            throw new IllegalStateException("Tried to start multiple SSL TestWebServers");
+        }
+
+        TestWebServer server = new TestWebServer(true);
+        server.mServerThread.start();
+        setSecureInstance(server);
+        return server;
     }
 
     /**
      * Terminate the http server.
      */
     public void shutdown() {
+        if (mSsl) {
+            setSecureInstance(null);
+        } else {
+            setInstance(null);
+        }
+
         try {
             // Avoid a deadlock between two threads where one is trying to call
             // close() and the other one is calling accept() by sending a GET
@@ -154,16 +180,17 @@ public final class TestWebServer {
         } catch (KeyManagementException e) {
             throw new IllegalStateException(e);
         }
-
-        setInstance(null, mSsl);
     }
 
-    private static void setInstance(TestWebServer instance, boolean isSsl) {
-        if (isSsl) {
-            sSecureInstance = instance;
-        } else {
-            sInstance = instance;
-        }
+    // Setting static variables from instance methods causes findbugs warnings. Calling static
+    // methods which set static variables from instance methods isn't any better, but it silences
+    // the warnings.
+    private static void setInstance(TestWebServer instance) {
+        sInstance = instance;
+    }
+
+    private static void setSecureInstance(TestWebServer instance) {
+        sSecureInstance = instance;
     }
 
     private static final int RESPONSE_STATUS_NORMAL = 0;

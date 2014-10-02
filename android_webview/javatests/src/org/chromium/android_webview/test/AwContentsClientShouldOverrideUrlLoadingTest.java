@@ -36,7 +36,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
     }
 
     @Override

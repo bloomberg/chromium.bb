@@ -159,7 +159,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         mAwContents = mTestContainerView.getAwContents();
         mShouldInterceptRequestHelper = mContentsClient.getShouldInterceptRequestHelper();
 
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
     }
 
     @Override

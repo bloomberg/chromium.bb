@@ -89,7 +89,7 @@ public class AwContentsClientFaviconTest extends AwTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         AwContents.setShouldDownloadFavicons();
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
     }
 
     private void init(TestAwContentsClientBase contentsClient) throws Exception {

@@ -64,7 +64,7 @@ public class SaveRestoreStateTest extends AwTestBase {
         super.setUp();
         mVars = createNewView();
         mUrls = new String[NUM_NAVIGATIONS];
-        mWebServer = new TestWebServer(false);
+        mWebServer = TestWebServer.start();
     }
 
     @Override

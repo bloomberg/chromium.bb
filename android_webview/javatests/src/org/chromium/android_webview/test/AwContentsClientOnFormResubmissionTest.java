@@ -67,7 +67,7 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mServer = new TestWebServer(false);
+        mServer = TestWebServer.start();
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);

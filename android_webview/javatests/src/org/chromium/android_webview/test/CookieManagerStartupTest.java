@@ -61,9 +61,8 @@ public class CookieManagerStartupTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testStartup() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             String path = "/cookie_test.html";
             String url = webServer.setResponse(path, CommonResources.ABOUT_HTML, null);
 
@@ -87,7 +86,7 @@ public class CookieManagerStartupTest extends AwTestBase {
 
             assertEquals("count=42", cookieManager.getCookie(url));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 

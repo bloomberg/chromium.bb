@@ -254,9 +254,8 @@ public class AwContentsTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String pagePath = "/clear_cache_test.html";
             List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
             // Set Cache-Control headers to cache this request. One century should be long enough.
@@ -296,7 +295,7 @@ public class AwContentsTest extends AwTestBase {
                         pageUrl);
             assertEquals(2, webServer.getRequestCount(pagePath));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -324,10 +323,8 @@ public class AwContentsTest extends AwTestBase {
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
-
             final String faviconUrl = webServer.setResponseBase64(
                     "/" + CommonResources.FAVICON_FILENAME, CommonResources.FAVICON_DATA_BASE64,
                     CommonResources.getImagePngHeaders(false));
@@ -357,7 +354,7 @@ public class AwContentsTest extends AwTestBase {
             assertTrue(awContents.getFavicon().sameAs(originalFavicon));
 
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -376,9 +373,8 @@ public class AwContentsTest extends AwTestBase {
         downloadHeaders.add(Pair.create("Content-Type", mimeType));
         downloadHeaders.add(Pair.create("Content-Length", Integer.toString(data.length())));
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String pageUrl = webServer.setResponse(
                     "/download.txt", data, downloadHeaders);
             final OnDownloadStartHelper downloadStartHelper =
@@ -392,7 +388,7 @@ public class AwContentsTest extends AwTestBase {
             assertEquals(mimeType, downloadStartHelper.getMimeType());
             assertEquals(data.length(), downloadStartHelper.getContentLength());
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -479,9 +475,8 @@ public class AwContentsTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String pagePath = "/test_can_inject_headers.html";
             final String pageUrl = webServer.setResponse(
                     pagePath, "<html><body>foo</body></html>", null);
@@ -504,7 +499,7 @@ public class AwContentsTest extends AwTestBase {
                 assertEquals(value.getValue(), matchingHeaders[0].getValue());
             }
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 

@@ -88,9 +88,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testImageLoad() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             webServer.setResponseBase64("/" + CommonResources.FAVICON_FILENAME,
                     CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
 
@@ -104,17 +103,15 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
             assertEquals("5", getTitleOnUiThread(mAwContents));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testScriptLoad() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
-
             final String scriptUrl = webServer.setResponse(SCRIPT_FILE, SCRIPT_JS,
                     CommonResources.getTextJavascriptHeaders(true));
             final String pageHtml = getScriptFileTestPageHtml(scriptUrl);
@@ -122,18 +119,16 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
             loadDataWithBaseUrlSync(pageHtml, "text/html", false, webServer.getBaseUrl(), null);
             assertEquals(SCRIPT_LOADED, getTitleOnUiThread(mAwContents));
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSameOrigin() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String frameUrl = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
             final String html = getCrossOriginAccessTestPageHtml(frameUrl);
@@ -141,18 +136,16 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
             loadDataWithBaseUrlSync(html, "text/html", false, webServer.getBaseUrl(), null);
             assertEquals(frameUrl, getTitleOnUiThread(mAwContents));
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCrossOrigin() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String frameUrl = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
             final String html = getCrossOriginAccessTestPageHtml(frameUrl);
@@ -162,9 +155,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             loadDataWithBaseUrlSync(html, "text/html", false, baseUrl, null);
 
             assertEquals("Exception", getTitleOnUiThread(mAwContents));
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -238,9 +230,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
     */
     @DisabledTest
     public void testHistoryUrlNavigation() throws Throwable {
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String historyUrl = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
 
@@ -263,9 +254,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             HistoryUtils.goBackSync(getInstrumentation(), mWebContents, onPageFinishedHelper);
             // The title of the 'about.html' specified via historyUrl.
             assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
-
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 

@@ -1728,10 +1728,9 @@ public class AwSettingsTest extends AwTestBase {
         final String customUserAgentString =
                 "testUserAgentWithTestServerUserAgent";
 
-        TestWebServer webServer = null;
         String fileName = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String httpPath = "/testUserAgentWithTestServer.html";
             final String url = webServer.setResponse(httpPath, "foo", null);
 
@@ -1748,7 +1747,7 @@ public class AwSettingsTest extends AwTestBase {
             Header header = matchingHeaders[0];
             assertEquals(customUserAgentString, header.getValue());
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -1935,9 +1934,8 @@ public class AwSettingsTest extends AwTestBase {
         settings.setJavaScriptEnabled(true);
         ImagePageGenerator generator = new ImagePageGenerator(0, false);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String httpImageUrl = generator.getPageUrl(webServer);
 
             settings.setImagesEnabled(false);
@@ -1954,7 +1952,7 @@ public class AwSettingsTest extends AwTestBase {
                 }
             });
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -1962,9 +1960,8 @@ public class AwSettingsTest extends AwTestBase {
     @Feature({"AndroidWebView", "Preferences"})
     public void testBlockNetworkImagesWithTwoViews() throws Throwable {
         ViewPair views = createViews();
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             runPerViewSettingsTest(
                     new AwSettingsImagesEnabledHelper(
                             views.getContainer0(),
@@ -1977,7 +1974,7 @@ public class AwSettingsTest extends AwTestBase {
                             webServer,
                             new ImagePageGenerator(1, true)));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -1992,11 +1989,10 @@ public class AwSettingsTest extends AwTestBase {
         awSettings.setJavaScriptEnabled(true);
         ImagePageGenerator generator = new ImagePageGenerator(0, false);
 
-        TestWebServer webServer = null;
         String fileName = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
             // Set up http image.
-            webServer = new TestWebServer(false);
             final String httpPath = "/image.png";
             final String imageUrl = webServer.setResponseBase64(
                     httpPath, generator.getImageSourceNoAdvance(),
@@ -2029,8 +2025,8 @@ public class AwSettingsTest extends AwTestBase {
             assertEquals(1, webServer.getRequestCount(httpPath));
             assertEquals("img_onload_fired", getTitleOnUiThread(awContents));
         } finally {
+            webServer.shutdown();
             if (fileName != null) TestFileUtil.deleteFile(fileName);
-            if (webServer != null) webServer.shutdown();
         }
     }
 
@@ -2062,9 +2058,8 @@ public class AwSettingsTest extends AwTestBase {
         final CallbackHelper callback = new CallbackHelper();
         awSettings.setJavaScriptEnabled(true);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String httpPath = "/audio.mp3";
             // Don't care about the response is correct or not, just want
             // to know whether Url is accessed.
@@ -2100,7 +2095,7 @@ public class AwSettingsTest extends AwTestBase {
             assertTrue(0 != webServer.getRequestCount(httpPath));
             */
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -2223,9 +2218,8 @@ public class AwSettingsTest extends AwTestBase {
         clearCacheOnUiThread(awContents, true);
 
         assertEquals(WebSettings.LOAD_DEFAULT, awSettings.getCacheMode());
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String htmlPath = "/testCacheMode.html";
             final String url = webServer.setResponse(htmlPath, "response", null);
             awSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
@@ -2254,7 +2248,7 @@ public class AwSettingsTest extends AwTestBase {
                     urlNotInCache);
             assertEquals(0, webServer.getRequestCount(htmlNotInCachePath));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -2273,9 +2267,8 @@ public class AwSettingsTest extends AwTestBase {
 
         assertEquals(WebSettings.LOAD_DEFAULT, awSettings.getCacheMode());
         awSettings.setBlockNetworkLoads(true);
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             final String htmlPath = "/testCacheModeWithBlockedNetworkLoads.html";
             final String url = webServer.setResponse(htmlPath, "response", null);
             loadUrlSyncAndExpectError(awContents,
@@ -2305,7 +2298,7 @@ public class AwSettingsTest extends AwTestBase {
                     url);
             assertEquals(0, webServer.getRequestCount(htmlPath));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -2313,16 +2306,15 @@ public class AwSettingsTest extends AwTestBase {
     @Feature({"AndroidWebView", "Preferences"})
     public void testCacheModeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             runPerViewSettingsTest(
                     new AwSettingsCacheModeTestHelper(
                             views.getContainer0(), views.getClient0(), 0, webServer),
                     new AwSettingsCacheModeTestHelper(
                             views.getContainer1(), views.getClient1(), 1, webServer));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -2389,9 +2381,8 @@ public class AwSettingsTest extends AwTestBase {
         // Note that the cache isn't actually enabled until the call to setAppCachePath.
         settings.setAppCacheEnabled(true);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             ManifestTestHelper helper = new ManifestTestHelper(
                     webServer, "testAppCache.html", "appcache.manifest");
             loadUrlSync(
@@ -2410,7 +2401,7 @@ public class AwSettingsTest extends AwTestBase {
                     helper.getHtmlUrl());
             helper.waitUntilManifestIsRequested(0);
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -2431,9 +2422,8 @@ public class AwSettingsTest extends AwTestBase {
         // AppCachePath setting is global, no need to set it for the second view.
         settings1.setAppCacheEnabled(true);
 
-        TestWebServer webServer = null;
+        TestWebServer webServer = TestWebServer.start();
         try {
-            webServer = new TestWebServer(false);
             ManifestTestHelper helper0 = new ManifestTestHelper(
                     webServer, "testAppCache_0.html", "appcache.manifest_0");
             loadUrlSync(
@@ -2468,7 +2458,7 @@ public class AwSettingsTest extends AwTestBase {
             assertEquals(
                     prevManifestRequestCount, webServer.getRequestCount(helper1.getManifestPath()));
         } finally {
-            if (webServer != null) webServer.shutdown();
+            webServer.shutdown();
         }
     }
 
@@ -2777,8 +2767,8 @@ public class AwSettingsTest extends AwTestBase {
         TestWebServer httpsServer = null;
         TestWebServer httpServer = null;
         try {
-            httpsServer = new TestWebServer(true);
-            httpServer = new TestWebServer(false);
+            httpsServer = TestWebServer.startSsl();
+            httpServer = TestWebServer.start();
 
             final String jsUrl = "/insecure.js";
             final String imageUrl = "/insecure.png";

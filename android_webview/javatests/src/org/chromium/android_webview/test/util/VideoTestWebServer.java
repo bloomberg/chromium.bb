@@ -34,7 +34,7 @@ public class VideoTestWebServer {
     private TestWebServer mTestWebServer;
 
     public VideoTestWebServer(Context context) throws Exception {
-        mTestWebServer = new TestWebServer(false);
+        mTestWebServer = TestWebServer.start();
         List<Pair<String, String>> headers = getWebmHeaders(true);
         mOnePixelOneFrameWebmURL = mTestWebServer.setResponseBase64("/" +
                 ONE_PIXEL_ONE_FRAME_WEBM_FILENAME,
