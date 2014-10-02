@@ -252,6 +252,7 @@ void MediaQueryData::addParserValue(MediaQueryTokenType type, const MediaQueryTo
         value.unit = CSSPrimitiveValue::CSS_IDENT;
         value.string = tokenValue;
         value.id = cssValueKeywordID(tokenValue);
+        value.isInt = false;
     }
     m_valueList.addValue(value);
 }
