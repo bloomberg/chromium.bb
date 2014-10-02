@@ -66,7 +66,7 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::PlatformSetTitle(const base::string16& title) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED() << ": " << title;
 }
 
 void Shell::LoadProgressChanged(WebContents* source, double progress) {
