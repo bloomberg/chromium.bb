@@ -343,8 +343,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &scroll_begin));
 
   // If no default gesture handler is currently set, GESTURE_END events
-  // should never be targeted or re-targeted to any View.
-  EXPECT_EQ(NULL, targeter->FindTargetForEvent(root_view, &end));
+  // should never be re-targeted to any View.
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(NULL, &end));
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(child, &end));
 }

@@ -261,10 +261,12 @@ void RootView::OnEventProcessingStarted(ui::Event* event) {
     return;
   }
 
-  // Do not process ui::ET_GESTURE_END events which do not correspond to the
-  // removal of the final touch point.
+  // Do not process ui::ET_GESTURE_END events if they do not correspond to the
+  // removal of the final touch point or if no gesture handler has already
+  // been set.
   if (gesture_event->type() == ui::ET_GESTURE_END &&
-      gesture_event->details().touch_points() > 1) {
+      (gesture_event->details().touch_points() > 1 ||
+       !gesture_handler_)) {
     event->SetHandled();
     return;
   }

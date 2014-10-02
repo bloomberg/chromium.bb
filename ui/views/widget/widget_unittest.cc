@@ -1992,12 +1992,10 @@ TEST_F(WidgetTest, GestureEndEvents) {
   widget->Show();
 
   // If no gesture handler is set, a ui::ET_GESTURE_END event should not set
-  // the gesture handler and the event should remain unhandled because the
-  // handle mode of |view| indicates that events should not be consumed.
+  // the gesture handler.
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
   GestureEventForTest end(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
-  EXPECT_FALSE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
   // Change the handle mode of |view| to indicate that it would like
@@ -2086,6 +2084,22 @@ TEST_F(WidgetTest, GestureEventsNotProcessed) {
   EXPECT_EQ(0, v4->GetEventCount(ui::ET_GESTURE_BEGIN));
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
   EXPECT_TRUE(begin.handled());
+  v1->ResetCounts();
+  v2->ResetCounts();
+  v3->ResetCounts();
+  v4->ResetCounts();
+
+  // ui::ET_GESTURE_END events should not be seen by any view when there is
+  // no default gesture handler set, but they should be marked as handled by
+  // OnEventProcessingStarted().
+  GestureEventForTest end(ui::ET_GESTURE_END, 5, 5);
+  widget->OnGestureEvent(&end);
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(0, v3->GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(0, v4->GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+  EXPECT_TRUE(end.handled());
   v1->ResetCounts();
   v2->ResetCounts();
   v3->ResetCounts();
@@ -2548,23 +2562,6 @@ TEST_F(WidgetTest, DisabledGestureEventTarget) {
   v3->set_handle_mode(EventCountView::CONSUME_EVENTS);
   v3->SetEnabled(false);
 
-  // No gesture handler is set in the root view, so it should remain unset
-  // after a GESTURE_END. GESTURE_END events are not dispatched unless
-  // a gesture handler is already set in the root view, so none of the
-  // views should see this event and it should not be marked as handled.
-  GestureEventForTest end(ui::ET_GESTURE_END, 5, 5);
-  widget->OnGestureEvent(&end);
-  EXPECT_EQ(0, v1->GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(0, v2->GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(0, v3->GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(0, v4->GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(NULL, GetGestureHandler(root_view));
-  EXPECT_FALSE(end.handled());
-  v1->ResetCounts();
-  v2->ResetCounts();
-  v3->ResetCounts();
-  v4->ResetCounts();
-
   // No gesture handler is set in the root view. In this case the tap event
   // should be dispatched only to |v4|, the gesture handler should be set to
   // |v3|, and the event should be marked as handled.
@@ -2597,7 +2594,7 @@ TEST_F(WidgetTest, DisabledGestureEventTarget) {
 
   // A GESTURE_END should reset the default gesture handler to NULL. It should
   // also not be dispatched to |v3| but still marked as handled.
-  end = GestureEventForTest(ui::ET_GESTURE_END, 5, 5);
+  GestureEventForTest end(ui::ET_GESTURE_END, 5, 5);
   widget->OnGestureEvent(&end);
   EXPECT_EQ(0, v1->GetEventCount(ui::ET_GESTURE_END));
   EXPECT_EQ(0, v2->GetEventCount(ui::ET_GESTURE_END));
