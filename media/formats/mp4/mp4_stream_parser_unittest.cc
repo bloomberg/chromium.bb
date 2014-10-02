@@ -25,8 +25,7 @@ using base::TimeDelta;
 namespace media {
 namespace mp4 {
 
-// TODO(xhwang): Figure out the init data type appropriately once it's spec'ed.
-static const char kMp4InitDataType[] = "video/mp4";
+static const char kCencInitDataType[] = "cenc";
 
 class MP4StreamParserTest : public testing::Test {
  public:
@@ -122,7 +121,7 @@ class MP4StreamParserTest : public testing::Test {
   void KeyNeededF(const std::string& type,
                   const std::vector<uint8>& init_data) {
     DVLOG(1) << "KeyNeededF: " << init_data.size();
-    EXPECT_EQ(kMp4InitDataType, type);
+    EXPECT_EQ(kCencInitDataType, type);
     EXPECT_FALSE(init_data.empty());
   }
 
