@@ -51,14 +51,14 @@ void DpadFromAxis(blink::WebGamepad* mapped, float dir) {
     left = dir >= .4f && dir <= 1.f;
   }
 
-  mapped->buttons[kButtonDpadUp].pressed = up;
-  mapped->buttons[kButtonDpadUp].value = up ? 1.f : 0.f;
-  mapped->buttons[kButtonDpadRight].pressed = right;
-  mapped->buttons[kButtonDpadRight].value = right ? 1.f : 0.f;
-  mapped->buttons[kButtonDpadDown].pressed = down;
-  mapped->buttons[kButtonDpadDown].value = down ? 1.f : 0.f;
-  mapped->buttons[kButtonDpadLeft].pressed = left;
-  mapped->buttons[kButtonDpadLeft].value = left ? 1.f : 0.f;
+  mapped->buttons[BUTTON_INDEX_DPAD_UP].pressed = up;
+  mapped->buttons[BUTTON_INDEX_DPAD_UP].value = up ? 1.f : 0.f;
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT].pressed = right;
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT].value = right ? 1.f : 0.f;
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN].pressed = down;
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN].value = down ? 1.f : 0.f;
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT].pressed = left;
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT].value = left ? 1.f : 0.f;
 }
 
 }  // namespace content

@@ -24,33 +24,39 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
 // general, err towards leaving it *unmapped* so that content can handle
 // appropriately.
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
+// GENERATED_JAVA_PREFIX_TO_STRIP: BUTTON_INDEX_
 enum CanonicalButtonIndex {
-  kButtonPrimary,
-  kButtonSecondary,
-  kButtonTertiary,
-  kButtonQuaternary,
-  kButtonLeftShoulder,
-  kButtonRightShoulder,
-  kButtonLeftTrigger,
-  kButtonRightTrigger,
-  kButtonBackSelect,
-  kButtonStart,
-  kButtonLeftThumbstick,
-  kButtonRightThumbstick,
-  kButtonDpadUp,
-  kButtonDpadDown,
-  kButtonDpadLeft,
-  kButtonDpadRight,
-  kButtonMeta,
-  kNumButtons
+  BUTTON_INDEX_PRIMARY,
+  BUTTON_INDEX_SECONDARY,
+  BUTTON_INDEX_TERTIARY,
+  BUTTON_INDEX_QUATERNARY,
+  BUTTON_INDEX_LEFT_SHOULDER,
+  BUTTON_INDEX_RIGHT_SHOULDER,
+  BUTTON_INDEX_LEFT_TRIGGER,
+  BUTTON_INDEX_RIGHT_TRIGGER,
+  BUTTON_INDEX_BACK_SELECT,
+  BUTTON_INDEX_START,
+  BUTTON_INDEX_LEFT_THUMBSTICK,
+  BUTTON_INDEX_RIGHT_THUMBSTICK,
+  BUTTON_INDEX_DPAD_UP,
+  BUTTON_INDEX_DPAD_DOWN,
+  BUTTON_INDEX_DPAD_LEFT,
+  BUTTON_INDEX_DPAD_RIGHT,
+  BUTTON_INDEX_META,
+  BUTTON_INDEX_COUNT
 };
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
+// GENERATED_JAVA_PREFIX_TO_STRIP: AXIS_INDEX_
 enum CanonicalAxisIndex {
-  kAxisLeftStickX,
-  kAxisLeftStickY,
-  kAxisRightStickX,
-  kAxisRightStickY,
-  kNumAxes
+  AXIS_INDEX_LEFT_STICK_X,
+  AXIS_INDEX_LEFT_STICK_Y,
+  AXIS_INDEX_RIGHT_STICK_X,
+  AXIS_INDEX_RIGHT_STICK_Y,
+  AXIS_INDEX_COUNT
 };
 
 // Matches XInput's trigger deadzone

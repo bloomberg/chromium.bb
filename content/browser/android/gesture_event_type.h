@@ -7,10 +7,31 @@
 
 namespace content {
 
+// This file contains a list of GestureEventType's usable by ContentViewCore,
+// providing a direct mapping to and from their corresponding
+// blink::WebGestureEvent types.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser
 enum GestureEventType {
-#define DEFINE_GESTURE_EVENT_TYPE(name, value) name = value,
-#include "content/browser/android/gesture_event_type_list.h"
-#undef DEFINE_GESTURE_EVENT_TYPE
+  GESTURE_EVENT_TYPE_SHOW_PRESS,
+  GESTURE_EVENT_TYPE_DOUBLE_TAP,
+  GESTURE_EVENT_TYPE_SINGLE_TAP_UP,
+  GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED,
+  GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED,
+  GESTURE_EVENT_TYPE_LONG_PRESS,
+  GESTURE_EVENT_TYPE_SCROLL_START,
+  GESTURE_EVENT_TYPE_SCROLL_BY,
+  GESTURE_EVENT_TYPE_SCROLL_END,
+  GESTURE_EVENT_TYPE_FLING_START,
+  GESTURE_EVENT_TYPE_FLING_CANCEL,
+  GESTURE_EVENT_TYPE_FLING_END,
+  GESTURE_EVENT_TYPE_PINCH_BEGIN,
+  GESTURE_EVENT_TYPE_PINCH_BY,
+  GESTURE_EVENT_TYPE_PINCH_END,
+  GESTURE_EVENT_TYPE_TAP_CANCEL,
+  GESTURE_EVENT_TYPE_LONG_TAP,
+  GESTURE_EVENT_TYPE_TAP_DOWN,
 };
 
 } // namespace content

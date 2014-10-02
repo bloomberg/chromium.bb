@@ -14,9 +14,12 @@
 namespace content {
 
 // Check content::TopControlsState and cc::TopControlsState are kept in sync.
-COMPILE_ASSERT(int(SHOWN) == int(cc::SHOWN), mismatching_enums);
-COMPILE_ASSERT(int(HIDDEN) == int(cc::HIDDEN), mismatching_enums);
-COMPILE_ASSERT(int(BOTH) == int(cc::BOTH), mismatching_enums);
+COMPILE_ASSERT(int(TOP_CONTROLS_STATE_SHOWN) == int(cc::SHOWN),
+               mismatching_enums);
+COMPILE_ASSERT(int(TOP_CONTROLS_STATE_HIDDEN) == int(cc::HIDDEN),
+               mismatching_enums);
+COMPILE_ASSERT(int(TOP_CONTROLS_STATE_BOTH) == int(cc::BOTH),
+               mismatching_enums);
 
 cc::TopControlsState ContentToCcTopControlsState(
     TopControlsState state) {

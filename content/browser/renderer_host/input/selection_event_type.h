@@ -7,10 +7,21 @@
 
 namespace content {
 
+// This file contains a list of events relating to selection and insertion, used
+// for notifying Java when the renderer selection has changed.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
 enum SelectionEventType {
-#define DEFINE_SELECTION_EVENT_TYPE(name, value) name = value,
-#include "content/browser/renderer_host/input/selection_event_type_list.h"
-#undef DEFINE_SELECTION_EVENT_TYPE
+  SELECTION_SHOWN,
+  SELECTION_CLEARED,
+  SELECTION_DRAG_STARTED,
+  SELECTION_DRAG_STOPPED,
+  INSERTION_SHOWN,
+  INSERTION_MOVED,
+  INSERTION_TAPPED,
+  INSERTION_CLEARED,
+  INSERTION_DRAG_STARTED,
 };
 
 }  // namespace content

@@ -7,11 +7,30 @@
 
 namespace content {
 
+// This file consolidates all the return codes for the browser and renderer
+// process. The return code is the value that:
+// a) is returned by main() or winmain(), or
+// b) specified in the call for ExitProcess() or TerminateProcess(), or
+// c) the exception value that causes a process to terminate.
+//
+// It is advisable to not use negative numbers because the Windows API returns
+// it as an unsigned long and the exception values have high numbers. For
+// example EXCEPTION_ACCESS_VIOLATION value is 0xC0000005.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.common
 enum ResultCode {
+  // Process terminated normally.
+  RESULT_CODE_NORMAL_EXIT,
 
-#define RESULT_CODE(label, value) RESULT_CODE_ ## label = value,
-#include "content/public/common/result_codes_list.h"
-#undef RESULT_CODE
+  // Process was killed by user or system.
+  RESULT_CODE_KILLED,
+
+  // Process hung.
+  RESULT_CODE_HUNG,
+
+  // A bad message caused the process termination.
+  RESULT_CODE_KILLED_BAD_MESSAGE,
 
   // Last return code (keep this last).
   RESULT_CODE_LAST_CODE

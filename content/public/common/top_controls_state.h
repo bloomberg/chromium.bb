@@ -7,10 +7,12 @@
 
 namespace content {
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.common
 enum TopControlsState {
-#define DEFINE_TOP_CONTROLS_STATE(name, value) name = value,
-#include "content/public/common/top_controls_state_list.h"
-#undef DEFINE_TOP_CONTROLS_STATE
+  TOP_CONTROLS_STATE_SHOWN = 1,
+  TOP_CONTROLS_STATE_HIDDEN = 2,
+  TOP_CONTROLS_STATE_BOTH = 3,
 };
 
 } // namespace content
