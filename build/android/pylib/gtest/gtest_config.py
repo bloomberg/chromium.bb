@@ -31,6 +31,7 @@ STABLE_TEST_SUITES = [
     'sandbox_linux_unittests',
     'sql_unittests',
     'sync_unit_tests',
+    'ui_base_unittests',
     'ui_unittests',
     'unit_tests',
     'webkit_unit_tests',
