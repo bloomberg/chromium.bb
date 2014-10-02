@@ -130,14 +130,6 @@ component("libssl") {
     ]
   }
 
-  if (is_clang) {
-    cflags += [
-      # See http://crbug.com/138571#c8. In short, sslsecur.c picks up the
-      # system's cert.h because cert.h isn't in chromium's repo.
-      "-Wno-incompatible-pointer-types",
-    ]
-  }
-
   if (is_debug) {
     defines += [ "DEBUG" ]
   }

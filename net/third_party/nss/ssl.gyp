@@ -99,10 +99,6 @@
         }],
         [ 'clang == 1', {
           'cflags': [
-            # See http://crbug.com/138571#c8. In short, sslsecur.c picks up the
-            # system's cert.h because cert.h isn't in chromium's repo.
-            '-Wno-incompatible-pointer-types',
-
             # There is a broken header guard in /usr/include/nss/secmod.h:
             # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
             '-Wno-header-guard',
