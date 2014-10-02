@@ -9,6 +9,8 @@
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
+#include "third_party/WebKit/public/platform/WebFederatedCredential.h"
+#include "third_party/WebKit/public/platform/WebLocalCredential.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace password_manager {
@@ -78,9 +80,21 @@ void CredentialManagerClient::OnSendCredential(int request_id,
                                                const CredentialInfo& info) {
   RequestCallbacks* callbacks = request_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
-  // TODO(mkwst): Split into local/federated credentials.
-  blink::WebCredential credential(info.id, info.name, info.avatar);
-  callbacks->onSuccess(&credential);
+  scoped_ptr<blink::WebCredential> credential;
+  switch (info.type) {
+  case CREDENTIAL_TYPE_FEDERATED:
+    credential.reset(new blink::WebFederatedCredential(
+        info.id, info.name, info.avatar, info.federation));
+    break;
+  case CREDENTIAL_TYPE_LOCAL:
+    credential.reset(new blink::WebLocalCredential(info.id, info.name,
+                                                   info.avatar, info.password));
+    break;
+  case CREDENTIAL_TYPE_UNKNOWN:
+    NOTREACHED();
+    break;
+  }
+  callbacks->onSuccess(credential.get());
   request_callbacks_.Remove(request_id);
 }
 

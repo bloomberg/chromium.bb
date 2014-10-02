@@ -208,6 +208,7 @@ TEST_F(CredentialManagerClientTest, SendRequestCredential) {
                                request_id));
 
   CredentialInfo info;
+  info.type = CREDENTIAL_TYPE_LOCAL;
   client_->OnSendCredential(request_id, info);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
