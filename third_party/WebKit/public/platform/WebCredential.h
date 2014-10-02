@@ -17,7 +17,7 @@ class PlatformCredential;
 class WebCredential {
 public:
     BLINK_PLATFORM_EXPORT WebCredential(const WebString& id, const WebString& name, const WebURL& avatarURL);
-    ~WebCredential() { reset(); }
+    virtual ~WebCredential() { reset(); }
 
     BLINK_PLATFORM_EXPORT void assign(const WebCredential&);
     BLINK_PLATFORM_EXPORT void reset();
@@ -25,6 +25,9 @@ public:
     BLINK_PLATFORM_EXPORT WebString id() const;
     BLINK_PLATFORM_EXPORT WebString name() const;
     BLINK_PLATFORM_EXPORT WebURL avatarURL() const;
+
+    BLINK_PLATFORM_EXPORT virtual bool isLocalCredential() const { return false; }
+    BLINK_PLATFORM_EXPORT virtual bool isFederatedCredential() const { return false; }
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebCredential(PlatformCredential*);
