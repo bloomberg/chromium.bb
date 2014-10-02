@@ -612,12 +612,14 @@ static bool SniffXML(const char* content,
     if (!pos)
       return false;
 
-    if (base::strncasecmp(pos, "<?xml", sizeof("<?xml") - 1) == 0) {
+    if ((pos + sizeof("<?xml") - 1 <= end) &&
+        (base::strncasecmp(pos, "<?xml", sizeof("<?xml") - 1) == 0)) {
       // Skip XML declarations.
       ++pos;
       continue;
-    } else if (base::strncasecmp(pos, "<!DOCTYPE",
-                                 sizeof("<!DOCTYPE") - 1) == 0) {
+    } else if ((pos + sizeof("<!DOCTYPE") - 1 <= end) &&
+               (base::strncasecmp(pos, "<!DOCTYPE", sizeof("<!DOCTYPE") - 1) ==
+                0)) {
       // Skip DOCTYPE declarations.
       ++pos;
       continue;
