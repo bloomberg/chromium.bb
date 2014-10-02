@@ -122,7 +122,8 @@ void AudioDirectiveHandler::ProcessNextTransmit() {
 
   scoped_ptr<AudioDirective> audible_transmit(
       transmits_list_audible_.GetActiveDirective());
-  if (audible_transmit && !player_audible_->IsPlaying()) {
+  if (audible_transmit && !player_audible_->IsPlaying() &&
+      samples_cache_audible_.HasKey(current_token_audible_)) {
     DVLOG(3) << "Playing audible for op_id: " << audible_transmit->op_id;
     player_audible_->Play(
         samples_cache_audible_.GetValue(current_token_audible_));
@@ -140,7 +141,8 @@ void AudioDirectiveHandler::ProcessNextTransmit() {
 
   scoped_ptr<AudioDirective> inaudible_transmit(
       transmits_list_inaudible_.GetActiveDirective());
-  if (inaudible_transmit && !player_inaudible_->IsPlaying()) {
+  if (inaudible_transmit && !player_inaudible_->IsPlaying() &&
+      samples_cache_inaudible_.HasKey(current_token_inaudible_)) {
     DVLOG(3) << "Playing inaudible for op_id: " << inaudible_transmit->op_id;
     player_inaudible_->Play(
         samples_cache_inaudible_.GetValue(current_token_inaudible_));
