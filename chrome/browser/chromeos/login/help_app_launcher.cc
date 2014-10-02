@@ -70,8 +70,7 @@ void HelpAppLauncher::ShowHelpTopicDialog(Profile* profile,
       NULL,
       parent_window_,
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
-      topic_url,
-      LoginWebDialog::STYLE_BUBBLE);
+      topic_url);
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   dialog->SetDialogSize(l10n_util::GetLocalizedContentsWidthInPixels(
                             IDS_HELP_APP_DIALOG_WIDTH_PIXELS),

@@ -61,8 +61,7 @@ ProxySettingsDialog::ProxySettingsDialog(
                      delegate,
                      window,
                      base::string16(),
-                     GetURLForProxySettings(network.path()),
-                     LoginWebDialog::STYLE_BUBBLE) {
+                     GetURLForProxySettings(network.path())) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ++instance_count_;
 

@@ -42,8 +42,7 @@ CertificateManagerDialog::CertificateManagerDialog(
                      delegate,
                      window,
                      base::string16(),
-                     GURL(chrome::kChromeUICertificateManagerDialogURL),
-                     LoginWebDialog::STYLE_BUBBLE) {
+                     GURL(chrome::kChromeUICertificateManagerDialogURL)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));

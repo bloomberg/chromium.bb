@@ -37,8 +37,7 @@ class CreditsWebDialog : public chromeos::LoginWebDialog {
                    const GURL& url)
       : chromeos::LoginWebDialog(profile, NULL, parent_window,
                                  l10n_util::GetStringUTF16(title_id),
-                                 url,
-                                 chromeos::LoginWebDialog::STYLE_BUBBLE) {
+                                 url) {
   }
 
   virtual void OnLoadingStateChanged(content::WebContents* source) OVERRIDE {

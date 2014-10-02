@@ -46,8 +46,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
                  Delegate* delegate,
                  gfx::NativeWindow parent_window,
                  const base::string16& title,
-                 const GURL& url,
-                 Style style);
+                 const GURL& url);
   virtual ~LoginWebDialog();
 
   void Show();
@@ -98,7 +97,6 @@ class LoginWebDialog : public ui::WebDialogDelegate,
 
   base::string16 title_;
   GURL url_;
-  Style style_;
   content::NotificationRegistrar notification_registrar_;
   bool is_open_;
 
