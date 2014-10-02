@@ -21,9 +21,19 @@ class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
   virtual ~NetworkServiceImpl();
 
   // NetworkService methods:
-  virtual void CreateURLLoader(InterfaceRequest<URLLoader> loader) OVERRIDE;
-  virtual void GetCookieStore(InterfaceRequest<CookieStore> store) OVERRIDE;
-  virtual void CreateWebSocket(InterfaceRequest<WebSocket> socket) OVERRIDE;
+  virtual void CreateURLLoader(InterfaceRequest<URLLoader> loader) override;
+  virtual void GetCookieStore(InterfaceRequest<CookieStore> store) override;
+  virtual void CreateWebSocket(InterfaceRequest<WebSocket> socket) override;
+  virtual void CreateTCPBoundSocket(
+      NetAddressPtr local_address,
+      InterfaceRequest<TCPBoundSocket> bound_socket,
+      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+  virtual void CreateTCPClientSocket(
+      NetAddressPtr remote_address,
+      ScopedDataPipeConsumerHandle send_stream,
+      ScopedDataPipeProducerHandle receive_stream,
+      InterfaceRequest<TCPClientSocket> client_socket,
+      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
 
  private:
   NetworkContext* context_;

@@ -33,4 +33,22 @@ void NetworkServiceImpl::CreateWebSocket(InterfaceRequest<WebSocket> socket) {
   BindToRequest(new WebSocketImpl(context_), &socket);
 }
 
+void NetworkServiceImpl::CreateTCPBoundSocket(
+    NetAddressPtr local_address,
+    InterfaceRequest<TCPBoundSocket> bound_socket,
+    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+  // TODO(brettw) implement this.
+  callback.Run(NetworkErrorPtr(), NetAddressPtr());
+}
+
+void NetworkServiceImpl::CreateTCPClientSocket(
+    NetAddressPtr remote_address,
+    ScopedDataPipeConsumerHandle send_stream,
+    ScopedDataPipeProducerHandle receive_stream,
+    InterfaceRequest<TCPClientSocket> client_socket,
+    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+  // TODO(brettw) implement this.
+  callback.Run(NetworkErrorPtr(), NetAddressPtr());
+}
+
 }  // namespace mojo

@@ -1,0 +1,16 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+// Represents a TCP socket connected to a report system.
+//
+// Reading and writing over the connection are done via the data pipe supplied
+// by the caller when creating the socket.
+interface TCPClientSocket {
+  // TODO(brettw) here we put options and whatnot for controlling the
+  // connection.
+};
+
+}
