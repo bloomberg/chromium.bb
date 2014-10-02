@@ -391,8 +391,7 @@ void ExtensionService::Init() {
   DCHECK_EQ(registry_->enabled_extensions().size(), 0u);
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kInstallFromWebstore) ||
-      cmd_line->HasSwitch(switches::kLimitedInstallFromWebstore)) {
+  if (cmd_line->HasSwitch(switches::kInstallEphemeralAppFromWebstore)) {
     // The sole purpose of this launch is to install a new extension from CWS
     // and immediately terminate: loading already installed extensions is
     // unnecessary and may interfere with the inline install dialog (e.g. if an

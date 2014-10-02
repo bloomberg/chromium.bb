@@ -290,55 +290,14 @@ class CommandLineWebstoreInstall
   int browser_open_count_;
 };
 
-IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
+IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, CannotInstallNonEphemeral) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
-      switches::kInstallFromWebstore, kTestExtensionId);
+      switches::kInstallEphemeralAppFromWebstore, kTestExtensionId);
   ExtensionInstallPrompt::g_auto_confirm_for_tests =
       ExtensionInstallPrompt::ACCEPT;
   extensions::StartupHelper helper;
-  EXPECT_TRUE(helper.InstallFromWebstore(*command_line, browser()->profile()));
-  EXPECT_TRUE(saw_install());
-  EXPECT_EQ(0, browser_open_count());
-}
-
-IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Cancel) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(
-      switches::kInstallFromWebstore, kTestExtensionId);
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
-  extensions::StartupHelper helper;
-  EXPECT_FALSE(helper.InstallFromWebstore(*command_line, browser()->profile()));
+  EXPECT_FALSE(helper.InstallEphemeralApp(*command_line, browser()->profile()));
   EXPECT_FALSE(saw_install());
-  EXPECT_EQ(0, browser_open_count());
-}
-
-IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, LimitedAccept) {
-  extensions::StartupHelper helper;
-
-  // Small test of "WebStoreIdFromLimitedInstallCmdLine" which made more
-  // sense together with the rest of the test for "LimitedInstallFromWebstore".
-  base::CommandLine command_line_test1(base::CommandLine::NO_PROGRAM);
-  command_line_test1.AppendSwitchASCII(switches::kLimitedInstallFromWebstore,
-      "1");
-  EXPECT_EQ("nckgahadagoaajjgafhacjanaoiihapd",
-      helper.WebStoreIdFromLimitedInstallCmdLine(command_line_test1));
-
-  base::CommandLine command_line_test2(base::CommandLine::NO_PROGRAM);
-  command_line_test1.AppendSwitchASCII(switches::kLimitedInstallFromWebstore,
-      "2");
-  EXPECT_EQ(kTestExtensionId,
-      helper.WebStoreIdFromLimitedInstallCmdLine(command_line_test1));
-
-  // Now, on to the real test for LimitedInstallFromWebstore.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(
-      switches::kLimitedInstallFromWebstore, "2");
-  helper.LimitedInstallFromWebstore(*command_line, browser()->profile(),
-      base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
-
-  EXPECT_TRUE(saw_install());
   EXPECT_EQ(0, browser_open_count());
 }

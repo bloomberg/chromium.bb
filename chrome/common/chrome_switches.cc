@@ -745,7 +745,9 @@ const char kInstallChromeApp[]              = "install-chrome-app";
 
 // Causes Chrome to attempt to get metadata from the webstore for the
 // app/extension ID given, and then prompt the user to download and install it.
-const char kInstallFromWebstore[]           = "install-from-webstore";
+// This is allowed *only* for ephemeral apps. All other ids will be ignored.
+const char kInstallEphemeralAppFromWebstore[] =
+    "install-ephemeral-app-from-webstore";
 
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
@@ -769,10 +771,6 @@ const char kKioskMode[]                     = "kiosk";
 // Print automatically in kiosk mode. |kKioskMode| must be set as well.
 // See http://crbug.com/31395.
 const char kKioskModePrinting[]             = "kiosk-printing";
-
-// Causes Chrome to attempt to get metadata from the webstore for the
-// given item, and then prompt the user to download and install it.
-const char kLimitedInstallFromWebstore[]    = "limited-install-from-webstore";
 
 // Comma-separated list of directories with component extensions to load.
 const char kLoadComponentExtension[]        = "load-component-extension";

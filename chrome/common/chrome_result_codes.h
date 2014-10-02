@@ -75,8 +75,8 @@ enum ResultCode {
   // A dummy value we should not use. See crbug.com/152285.
   RESULT_CODE_NOTUSED_1,
 
-  // Failed to install an item from the webstore when the kInstallFromWebstore
-  // command line flag was present.
+  // Failed to install an item from the webstore when the
+  // kInstallEphemeralAppFromWebstore command line flag was present.
   RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2,
 
   // A dummy value we should not use. See crbug.com/152285.

@@ -501,9 +501,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     net::SetExplicitlyAllowedPorts(allowed_ports);
   }
 
-  if (command_line.HasSwitch(switches::kInstallFromWebstore)) {
+  if (command_line.HasSwitch(switches::kInstallEphemeralAppFromWebstore)) {
     extensions::StartupHelper helper;
-    helper.InstallFromWebstore(command_line, last_used_profile);
+    helper.InstallEphemeralApp(command_line, last_used_profile);
     // Nothing more needs to be done, so return false to stop launching and
     // quit.
     return false;
@@ -525,12 +525,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       message = std::string("ValidateCrx Failure: ") + error;
     printf("%s\n", message.c_str());
     return false;
-  }
-
-  if (command_line.HasSwitch(switches::kLimitedInstallFromWebstore)) {
-    extensions::StartupHelper helper;
-    helper.LimitedInstallFromWebstore(command_line, last_used_profile,
-                                      base::Bind(&base::DoNothing));
   }
 
 #if defined(OS_CHROMEOS)

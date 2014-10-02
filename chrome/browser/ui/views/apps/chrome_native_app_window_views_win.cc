@@ -189,8 +189,8 @@ void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
                    icon_resources::kInstallPackagedAppIndex);
     ShellIntegration::AppendProfileArgs(
         app_window()->browser_context()->GetPath(), link->GetCommandLine());
-    link->GetCommandLine()->AppendSwitchASCII(switches::kInstallFromWebstore,
-                                              extension->id());
+    link->GetCommandLine()->AppendSwitchASCII(
+        switches::kInstallEphemeralAppFromWebstore, extension->id());
 
     ShellLinkItemList items;
     items.push_back(link);
