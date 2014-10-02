@@ -322,6 +322,16 @@ void WebURLRequest::setFetchRequestMode(WebURLRequest::FetchRequestMode mode)
     return m_private->m_resourceRequest->setFetchRequestMode(mode);
 }
 
+WebURLRequest::FetchCredentialsMode WebURLRequest::fetchCredentialsMode() const
+{
+    return m_private->m_resourceRequest->fetchCredentialsMode();
+}
+
+void WebURLRequest::setFetchCredentialsMode(WebURLRequest::FetchCredentialsMode mode)
+{
+    return m_private->m_resourceRequest->setFetchCredentialsMode(mode);
+}
+
 WebURLRequest::ExtraData* WebURLRequest::extraData() const
 {
     RefPtr<ResourceRequest::ExtraData> data = m_private->m_resourceRequest->extraData();

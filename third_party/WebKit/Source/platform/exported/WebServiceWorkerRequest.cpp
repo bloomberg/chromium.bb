@@ -8,6 +8,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -15,15 +16,15 @@ class WebServiceWorkerRequestPrivate : public RefCounted<WebServiceWorkerRequest
 public:
     WebServiceWorkerRequestPrivate()
         : m_mode(WebURLRequest::FetchRequestModeNoCORS)
-        , m_isReload(false)
-    {
-    }
+        , m_credentialsMode(WebURLRequest::FetchCredentialsModeOmit)
+        , m_isReload(false) { }
     WebURL m_url;
     WebString m_method;
     HTTPHeaderMap m_headers;
     RefPtr<BlobDataHandle> blobDataHandle;
     Referrer m_referrer;
     WebURLRequest::FetchRequestMode m_mode;
+    WebURLRequest::FetchCredentialsMode m_credentialsMode;
     bool m_isReload;
 };
 
@@ -127,6 +128,16 @@ void WebServiceWorkerRequest::setMode(WebURLRequest::FetchRequestMode mode)
 WebURLRequest::FetchRequestMode WebServiceWorkerRequest::mode() const
 {
     return m_private->m_mode;
+}
+
+void WebServiceWorkerRequest::setCredentialsMode(WebURLRequest::FetchCredentialsMode credentialsMode)
+{
+    m_private->m_credentialsMode = credentialsMode;
+}
+
+WebURLRequest::FetchCredentialsMode WebServiceWorkerRequest::credentialsMode() const
+{
+    return m_private->m_credentialsMode;
 }
 
 void WebServiceWorkerRequest::setIsReload(bool isReload)

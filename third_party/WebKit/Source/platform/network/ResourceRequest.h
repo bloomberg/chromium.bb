@@ -191,14 +191,11 @@ public:
     blink::WebURLRequest::FrameType frameType() const { return m_frameType; }
     void setFrameType(blink::WebURLRequest::FrameType frameType) { m_frameType = frameType; }
 
-    blink::WebURLRequest::FetchRequestMode fetchRequestMode() const
-    {
-        return m_fetchRequestMode;
-    }
-    void setFetchRequestMode(blink::WebURLRequest::FetchRequestMode mode)
-    {
-        m_fetchRequestMode = mode;
-    }
+    blink::WebURLRequest::FetchRequestMode fetchRequestMode() const { return m_fetchRequestMode; }
+    void setFetchRequestMode(blink::WebURLRequest::FetchRequestMode mode) { m_fetchRequestMode = mode; }
+
+    blink::WebURLRequest::FetchCredentialsMode fetchCredentialsMode() const { return m_fetchCredentialsMode; }
+    void setFetchCredentialsMode(blink::WebURLRequest::FetchCredentialsMode mode) { m_fetchCredentialsMode = mode; }
 
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
@@ -236,6 +233,7 @@ private:
     blink::WebURLRequest::RequestContext m_requestContext;
     blink::WebURLRequest::FrameType m_frameType;
     blink::WebURLRequest::FetchRequestMode m_fetchRequestMode;
+    blink::WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     ReferrerPolicy m_referrerPolicy;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
@@ -274,6 +272,7 @@ public:
     blink::WebURLRequest::RequestContext m_requestContext;
     blink::WebURLRequest::FrameType m_frameType;
     blink::WebURLRequest::FetchRequestMode m_fetchRequestMode;
+    blink::WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     ReferrerPolicy m_referrerPolicy;
 };
 

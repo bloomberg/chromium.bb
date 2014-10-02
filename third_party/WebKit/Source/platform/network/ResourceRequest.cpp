@@ -57,6 +57,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setRequestContext(data->m_requestContext);
     request->setFrameType(data->m_frameType);
     request->setFetchRequestMode(data->m_fetchRequestMode);
+    request->setFetchCredentialsMode(data->m_fetchCredentialsMode);
     request->m_referrerPolicy = data->m_referrerPolicy;
     return request.release();
 }
@@ -86,6 +87,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_requestContext = m_requestContext;
     data->m_frameType = m_frameType;
     data->m_fetchRequestMode = m_fetchRequestMode;
+    data->m_fetchCredentialsMode = m_fetchCredentialsMode;
     data->m_referrerPolicy = m_referrerPolicy;
     return data.release();
 }
@@ -408,6 +410,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_requestContext = blink::WebURLRequest::RequestContextUnspecified;
     m_frameType = blink::WebURLRequest::FrameTypeNone;
     m_fetchRequestMode = blink::WebURLRequest::FetchRequestModeNoCORS;
+    m_fetchCredentialsMode = blink::WebURLRequest::FetchCredentialsModeOmit;
     m_referrerPolicy = ReferrerPolicyDefault;
 }
 

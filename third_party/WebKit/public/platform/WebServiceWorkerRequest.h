@@ -64,6 +64,9 @@ public:
     void setMode(WebURLRequest::FetchRequestMode);
     WebURLRequest::FetchRequestMode mode() const;
 
+    void setCredentialsMode(WebURLRequest::FetchCredentialsMode);
+    WebURLRequest::FetchCredentialsMode credentialsMode() const;
+
     void setIsReload(bool);
     bool isReload() const;
 

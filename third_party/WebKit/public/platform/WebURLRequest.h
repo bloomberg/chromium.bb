@@ -117,6 +117,12 @@ public:
         FetchRequestModeCORSWithForcedPreflight
     };
 
+    enum FetchCredentialsMode {
+        FetchCredentialsModeOmit,
+        FetchCredentialsModeSameOrigin,
+        FetchCredentialsModeInclude
+    };
+
     class ExtraData {
     public:
         virtual ~ExtraData() { }
@@ -225,6 +231,10 @@ public:
     // The request mode which will be passed to the ServiceWorker.
     BLINK_PLATFORM_EXPORT FetchRequestMode fetchRequestMode() const;
     BLINK_PLATFORM_EXPORT void setFetchRequestMode(FetchRequestMode);
+
+    // The credentials mode which will be passed to the ServiceWorker.
+    BLINK_PLATFORM_EXPORT FetchCredentialsMode fetchCredentialsMode() const;
+    BLINK_PLATFORM_EXPORT void setFetchCredentialsMode(FetchCredentialsMode);
 
     // Extra data associated with the underlying resource request. Resource
     // requests can be copied. If non-null, each copy of a resource requests

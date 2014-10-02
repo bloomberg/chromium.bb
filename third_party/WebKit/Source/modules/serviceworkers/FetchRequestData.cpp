@@ -52,9 +52,16 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
         break;
     case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
         request->setMode(FetchRequestData::CORSWithForcedPreflight);
+    }
+    switch (webRequest.credentialsMode()) {
+    case WebURLRequest::FetchCredentialsModeOmit:
+        request->setCredentials(FetchRequestData::OmitCredentials);
         break;
-    default:
-        ASSERT_NOT_REACHED();
+    case WebURLRequest::FetchCredentialsModeSameOrigin:
+        request->setCredentials(FetchRequestData::SameOriginCredentials);
+        break;
+    case WebURLRequest::FetchCredentialsModeInclude:
+        request->setCredentials(FetchRequestData::IncludeCredentials);
         break;
     }
     return request;

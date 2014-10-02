@@ -34,6 +34,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     original.setDownloadToFile(false);
     original.setSkipServiceWorker(false);
     original.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
+    original.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
     original.setRequestorID(30);
     original.setRequestorProcessID(40);
     original.setAppCacheHostID(50);
@@ -56,6 +57,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_FALSE(original.downloadToFile());
     EXPECT_FALSE(original.skipServiceWorker());
     EXPECT_EQ(WebURLRequest::FetchRequestModeCORS, original.fetchRequestMode());
+    EXPECT_EQ(WebURLRequest::FetchCredentialsModeSameOrigin, original.fetchCredentialsMode());
     EXPECT_EQ(30, original.requestorID());
     EXPECT_EQ(40, original.requestorProcessID());
     EXPECT_EQ(50, original.appCacheHostID());
@@ -81,6 +83,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_FALSE(copy1->downloadToFile());
     EXPECT_FALSE(copy1->skipServiceWorker());
     EXPECT_EQ(WebURLRequest::FetchRequestModeCORS, copy1->fetchRequestMode());
+    EXPECT_EQ(WebURLRequest::FetchCredentialsModeSameOrigin, copy1->fetchCredentialsMode());
     EXPECT_EQ(30, copy1->requestorID());
     EXPECT_EQ(40, copy1->requestorProcessID());
     EXPECT_EQ(50, copy1->appCacheHostID());
@@ -95,6 +98,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     copy1->setDownloadToFile(true);
     copy1->setSkipServiceWorker(true);
     copy1->setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
+    copy1->setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
 
     OwnPtr<CrossThreadResourceRequestData> data2(copy1->copyData());
     OwnPtr<ResourceRequest> copy2(ResourceRequest::adopt(data2.release()));
@@ -104,6 +108,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_TRUE(copy2->downloadToFile());
     EXPECT_TRUE(copy2->skipServiceWorker());
     EXPECT_EQ(WebURLRequest::FetchRequestModeNoCORS, copy1->fetchRequestMode());
+    EXPECT_EQ(WebURLRequest::FetchCredentialsModeInclude, copy1->fetchCredentialsMode());
 }
 
 } // namespace blink
