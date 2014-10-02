@@ -218,6 +218,32 @@ TEST(GraphicsContextTest, trackOpaqueClipTest)
     context.restore();
 }
 
+TEST(GraphicsContextTest, trackDisplayListRecording)
+{
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(100, 100);
+    SkCanvas canvas(bitmap);
+
+    GraphicsContext context(&canvas);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
+
+    Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+
+    context.fillRect(FloatRect(0, 0, 50, 50), opaque, CompositeSourceOver);
+    EXPECT_EQ_RECT(IntRect(0, 0, 50, 50), context.opaqueRegion().asRect());
+    FloatRect bounds(0, 0, 100, 100);
+    context.beginRecording(bounds);
+    context.fillRect(FloatRect(0, 0, 100, 100), opaque, CompositeSourceOver);
+    RefPtr<DisplayList> displayList = context.endRecording();
+
+    // Make sure the opaque region was unaffected by the rect drawn during DisplayList recording.
+    EXPECT_EQ_RECT(IntRect(0, 0, 50, 50), context.opaqueRegion().asRect());
+
+    // Make sure the opaque region *is* affected (reset) by drawing the DisplayList itself.
+    context.drawDisplayList(displayList.get());
+    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
+}
+
 TEST(GraphicsContextTest, trackImageMask)
 {
     SkBitmap bitmap;
