@@ -283,11 +283,13 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
                    << "].";
     }
   } else {
-    // TODO(rch): Consider the case where multiple requests are started
-    // before the first completes. In this case, only one of the jobs
-    // would reach this code, whereas all of them should should have.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING,
-                                    alternate_protocol_experiment_);
+    if (alternate_probability >= alternate_protocol_probability_threshold_) {
+      // TODO(rch): Consider the case where multiple requests are started
+      // before the first completes. In this case, only one of the jobs
+      // would reach this code, whereas all of them should should have.
+      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING,
+                                      alternate_protocol_experiment_);
+    }
   }
 
   alternate_protocol_map_.Put(server, alternate);
