@@ -62,6 +62,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Definition");
     case blink::WebAXRoleDescriptionListDetail:
       return result.append("DescriptionListDetail");
+    case blink::WebAXRoleDescriptionList:
+      return result.append("DescriptionList");
     case blink::WebAXRoleDescriptionListTerm:
       return result.append("DescriptionListTerm");
     case blink::WebAXRoleDialog:

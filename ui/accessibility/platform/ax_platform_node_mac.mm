@@ -41,6 +41,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_CONTENT_INFO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DEFINITION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DESCRIPTION_LIST_DETAIL, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_DESCRIPTION_LIST, NSAccessibilityListRole},
       {ui::AX_ROLE_DESCRIPTION_LIST_TERM, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DIALOG, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DETAILS, NSAccessibilityGroupRole},

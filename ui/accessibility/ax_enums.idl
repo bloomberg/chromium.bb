@@ -82,6 +82,7 @@
     content_info,
     definition,
     description_list_detail,
+    description_list,
     description_list_term,
     desktop,
     details,

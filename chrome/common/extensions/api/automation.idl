@@ -76,6 +76,7 @@
     contentInfo,
     definition,
     descriptionListDetail,
+    descriptionList,
     descriptionListTerm,
     desktop,
     dialog,
