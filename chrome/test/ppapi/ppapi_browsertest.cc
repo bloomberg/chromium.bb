@@ -1308,6 +1308,12 @@ TEST_PPAPI_OUT_OF_PROCESS(PDF)
 // TEST_PPAPI_OUT_OF_PROCESS(PlatformVerificationPrivate)
 // #endif
 
+#if defined(OS_MACOSX)
+// http://crbug.com/419863
+#define MAYBE_FlashDRM DISABLED_FlashDRM
+#else
+#define MAYBE_FlashDRM FlashDRM
+#endif
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
   RunTest(
 #if (defined(OS_WIN) && defined(ENABLE_RLZ)) || defined(OS_CHROMEOS)
