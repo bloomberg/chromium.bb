@@ -175,5 +175,58 @@
       "interactive_ui_tests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
+  },
+  "Linux Chromium OS ASan LSan Tests (1)": {
+    "gtest_tests": [
+      "ash_unittests",
+      "aura_unittests",
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "chromeos_unittests",
+      "compositor_unittests",
+      "content_browsertests",
+      "crypto_unittests",
+      "events_unittests",
+      "gcm_unit_tests",
+      "gpu_unittests",
+      "jingle_unittests",
+      "media_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "url_unittests",
+      "views_unittests",
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Linux Chromium OS ASan LSan Tests (2)": {
+    "gtest_tests": [
+      "interactive_ui_tests",
+      "net_unittests",
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Linux Chromium OS ASan LSan Tests (3)": {
+    "gtest_tests": [
+      "accessibility_unittests",
+      "app_list_unittests",
+      "athena_unittests",
+      "cast_unittests",
+      "components_unittests",
+      "content_unittests",
+      "device_unittests",
+      "display_unittests",
+      "gfx_unittests",
+      "google_apis_unittests",
+      "ipc_tests",
+      "message_center_unittests",
+      "nacl_loader_unittests",
+      "sandbox_linux_unittests",
+      "sql_unittests",
+      "sync_unittests",
+      "ui_unittests",
+      "unit_tests",
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
   }
 }
