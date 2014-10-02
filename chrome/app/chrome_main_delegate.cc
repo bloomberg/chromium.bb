@@ -49,6 +49,7 @@
 #include "chrome/app/close_handle_hook_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/terminate_on_heap_corruption_experiment_win.h"
+#include "chrome/common/v8_breakpad_support_win.h"
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
@@ -401,6 +402,10 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
   Profiling::ProcessStarted();
+
+#if defined(OS_WIN)
+  v8_breakpad_support::SetUp();
+#endif
 
 #if defined(OS_POSIX)
   if (HandleVersionSwitches(command_line)) {

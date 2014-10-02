@@ -21,6 +21,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -44,6 +45,19 @@
 
 #pragma intrinsic(_AddressOfReturnAddress)
 #pragma intrinsic(_ReturnAddress)
+
+#ifdef _WIN64
+// See http://msdn.microsoft.com/en-us/library/ddssxxy8.aspx
+typedef struct _UNWIND_INFO {
+  unsigned char Version : 3;
+  unsigned char Flags : 5;
+  unsigned char SizeOfProlog;
+  unsigned char CountOfCodes;
+  unsigned char FrameRegister : 4;
+  unsigned char FrameOffset : 4;
+  ULONG ExceptionHandler;
+} UNWIND_INFO, *PUNWIND_INFO;
+#endif
 
 namespace breakpad {
 
@@ -610,5 +624,74 @@ extern "C" void __declspec(dllexport) __cdecl
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(kPipeNameVar);
 }
+
+#ifdef _WIN64
+int CrashForExceptionInNonABICompliantCodeRange(
+    PEXCEPTION_RECORD ExceptionRecord,
+    ULONG64 EstablisherFrame,
+    PCONTEXT ContextRecord,
+    PDISPATCHER_CONTEXT DispatcherContext) {
+  EXCEPTION_POINTERS info = { ExceptionRecord, ContextRecord };
+  return CrashForException(&info);
+}
+
+struct ExceptionHandlerRecord {
+  RUNTIME_FUNCTION runtime_function;
+  UNWIND_INFO unwind_info;
+  unsigned char thunk[12];
+};
+
+extern "C" void __declspec(dllexport) __cdecl
+RegisterNonABICompliantCodeRange(void* start, size_t size_in_bytes) {
+  ExceptionHandlerRecord* record =
+      reinterpret_cast<ExceptionHandlerRecord*>(start);
+
+  // We assume that the first page of the code range is executable and
+  // committed and reserved for breakpad. What could possibly go wrong?
+
+  // All addresses are 32bit relative offsets to start.
+  record->runtime_function.BeginAddress = 0;
+  record->runtime_function.EndAddress =
+      base::checked_cast<DWORD>(size_in_bytes);
+  record->runtime_function.UnwindData =
+      offsetof(ExceptionHandlerRecord, unwind_info);
+
+  // Create unwind info that only specifies an exception handler.
+  record->unwind_info.Version = 1;
+  record->unwind_info.Flags = UNW_FLAG_EHANDLER;
+  record->unwind_info.SizeOfProlog = 0;
+  record->unwind_info.CountOfCodes = 0;
+  record->unwind_info.FrameRegister = 0;
+  record->unwind_info.FrameOffset = 0;
+  record->unwind_info.ExceptionHandler =
+      offsetof(ExceptionHandlerRecord, thunk);
+
+  // Hardcoded thunk.
+  // mov imm64, rax
+  record->thunk[0] = 0x48;
+  record->thunk[1] = 0xb8;
+  void* handler = &CrashForExceptionInNonABICompliantCodeRange;
+  memcpy(&record->thunk[2], &handler, 8);
+
+  // jmp rax
+  record->thunk[10] = 0xff;
+  record->thunk[11] = 0xe0;
+
+  // Protect reserved page against modifications.
+  DWORD old_protect;
+  CHECK(VirtualProtect(
+      start, sizeof(ExceptionHandlerRecord), PAGE_EXECUTE_READ, &old_protect));
+  CHECK(RtlAddFunctionTable(
+      &record->runtime_function, 1, reinterpret_cast<DWORD64>(start)));
+}
+
+extern "C" void __declspec(dllexport) __cdecl
+UnregisterNonABICompliantCodeRange(void* start) {
+  ExceptionHandlerRecord* record =
+      reinterpret_cast<ExceptionHandlerRecord*>(start);
+
+  CHECK(RtlDeleteFunctionTable(&record->runtime_function));
+}
+#endif
 
 }  // namespace breakpad

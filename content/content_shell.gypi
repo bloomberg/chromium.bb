@@ -165,6 +165,8 @@
         'shell/common/shell_test_configuration.h',
         'shell/common/test_runner/test_preferences.cc',
         'shell/common/test_runner/test_preferences.h',
+        'shell/common/v8_breakpad_support_win.cc',
+        'shell/common/v8_breakpad_support_win.h',
         'shell/common/webkit_test_helpers.cc',
         'shell/common/webkit_test_helpers.h',
         'shell/geolocation/shell_access_token_store.cc',

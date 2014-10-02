@@ -42,11 +42,33 @@ IsolateHolder::IsolateHolder() {
                                        base::SysInfo::NumberOfProcessors());
   isolate_ = v8::Isolate::New(params);
   isolate_data_.reset(new PerIsolateData(isolate_, g_array_buffer_allocator));
+#if defined(OS_WIN)
+  {
+    void* code_range;
+    size_t size;
+    isolate_->GetCodeRange(&code_range, &size);
+    Debug::CodeRangeCreatedCallback callback =
+        DebugImpl::GetCodeRangeCreatedCallback();
+    if (code_range && size && callback)
+      callback(code_range, size);
+  }
+#endif
 }
 
 IsolateHolder::~IsolateHolder() {
   if (task_observer_.get())
     base::MessageLoop::current()->RemoveTaskObserver(task_observer_.get());
+#if defined(OS_WIN)
+  {
+    void* code_range;
+    size_t size;
+    isolate_->GetCodeRange(&code_range, &size);
+    Debug::CodeRangeDeletedCallback callback =
+        DebugImpl::GetCodeRangeDeletedCallback();
+    if (code_range && callback)
+      callback(code_range);
+  }
+#endif
   isolate_data_.reset();
   isolate_->Dispose();
 }

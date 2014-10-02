@@ -136,6 +136,8 @@
       'common/tts_utterance_request.h',
       'common/url_constants.cc',
       'common/url_constants.h',
+      'common/v8_breakpad_support_win.cc',
+      'common/v8_breakpad_support_win.h',
       'common/variations/experiment_labels.cc',
       'common/variations/experiment_labels.h',
       'common/variations/uniformity_field_trials.cc',
