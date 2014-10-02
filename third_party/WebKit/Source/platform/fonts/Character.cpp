@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/fonts/Character.h"
 
-#include "platform/fonts/FontPlatformFeatures.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -288,7 +287,6 @@ unsigned Character::expansionOpportunityCount(const LChar* characters, size_t le
 
 unsigned Character::expansionOpportunityCount(const UChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)
 {
-    static bool expandAroundIdeographs = FontPlatformFeatures::canExpandAroundIdeographsInComplexText();
     unsigned count = 0;
     if (direction == LTR) {
         for (size_t i = 0; i < length; ++i) {
@@ -301,13 +299,6 @@ unsigned Character::expansionOpportunityCount(const UChar* characters, size_t le
             if (U16_IS_LEAD(character) && i + 1 < length && U16_IS_TRAIL(characters[i + 1])) {
                 character = U16_GET_SUPPLEMENTARY(character, characters[i + 1]);
                 i++;
-            }
-            if (expandAroundIdeographs && isCJKIdeographOrSymbol(character)) {
-                if (!isAfterExpansion)
-                    count++;
-                count++;
-                isAfterExpansion = true;
-                continue;
             }
             isAfterExpansion = false;
         }
@@ -322,13 +313,6 @@ unsigned Character::expansionOpportunityCount(const UChar* characters, size_t le
             if (U16_IS_TRAIL(character) && i > 1 && U16_IS_LEAD(characters[i - 2])) {
                 character = U16_GET_SUPPLEMENTARY(characters[i - 2], character);
                 i--;
-            }
-            if (expandAroundIdeographs && isCJKIdeographOrSymbol(character)) {
-                if (!isAfterExpansion)
-                    count++;
-                count++;
-                isAfterExpansion = true;
-                continue;
             }
             isAfterExpansion = false;
         }

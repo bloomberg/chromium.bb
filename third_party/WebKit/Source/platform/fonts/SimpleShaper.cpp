@@ -25,7 +25,6 @@
 
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
-#include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/Latin1TextIterator.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -114,9 +113,8 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData,
     if (width)
         width += m_font->fontDescription().letterSpacing();
 
-    static bool expandAroundIdeographs = FontPlatformFeatures::canExpandAroundIdeographsInComplexText();
     bool treatAsSpace = Character::treatAsSpace(charData.character);
-    if (treatAsSpace || (expandAroundIdeographs && Character::isCJKIdeographOrSymbol(charData.character))) {
+    if (treatAsSpace) {
         // Distribute the run's total expansion evenly over all expansion opportunities in the run.
         if (m_expansion) {
             if (!treatAsSpace && !m_isAfterExpansion) {

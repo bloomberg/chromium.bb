@@ -32,7 +32,6 @@
 #include "platform/fonts/Font.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
 #include "platform/fonts/GlyphBuffer.h"
@@ -47,11 +46,6 @@
 #include <algorithm>
 
 namespace blink {
-
-bool FontPlatformFeatures::canExpandAroundIdeographsInComplexText()
-{
-    return false;
-}
 
 static SkPaint textFillPaint(GraphicsContext* gc, const SimpleFontData* font)
 {

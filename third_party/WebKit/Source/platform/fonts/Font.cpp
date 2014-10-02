@@ -29,7 +29,6 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontFallbackList.h"
-#include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/SimpleFontData.h"

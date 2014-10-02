@@ -365,7 +365,6 @@
       'fonts/FontFeatureSettings.h',
       'fonts/FontPlatformData.cpp',
       'fonts/FontPlatformData.h',
-      'fonts/FontPlatformFeatures.h',
       'fonts/FontRenderStyle.h',
       'fonts/GenericFontFamilySettings.cpp',
       'fonts/GenericFontFamilySettings.h',
