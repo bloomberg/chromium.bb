@@ -515,9 +515,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   ASSERT_TRUE(RunMediaGalleriesTest("no_galleries_copy_to")) << message_;
 }
 
-// Test is flaky. crbug.com/416128
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       DISABLED_MediaGalleriesRead) {
+                       MediaGalleriesRead) {
   RemoveAllGalleries();
   MakeSingleFakeGallery(NULL);
   base::ListValue custom_args;
