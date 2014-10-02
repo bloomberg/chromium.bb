@@ -8,11 +8,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility functions for common Android UI tasks.
@@ -20,6 +23,9 @@ import android.view.inputmethod.InputMethodManager;
  */
 public class UiUtils {
     private static final String TAG = "UiUtils";
+
+    private static final int KEYBOARD_RETRY_ATTEMPTS = 10;
+    private static final long KEYBOARD_RETRY_DELAY_MS = 100;
 
     /**
      * Guards this class from being instantiated.
@@ -59,12 +65,29 @@ public class UiUtils {
      * Shows the software keyboard if necessary.
      * @param view The currently focused {@link View}, which would receive soft keyboard input.
      */
-    public static void showKeyboard(View view) {
-        InputMethodManager imm =
-                (InputMethodManager) view.getContext().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
-        // Only shows soft keyboard if there isn't an open physical keyboard.
-        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+    public static void showKeyboard(final View view) {
+        final Handler handler = new Handler();
+        final AtomicInteger attempt = new AtomicInteger();
+        Runnable openRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // Not passing InputMethodManager.SHOW_IMPLICIT as it does not trigger the
+                // keyboard in landscape mode.
+                InputMethodManager imm =
+                        (InputMethodManager) view.getContext().getSystemService(
+                                Context.INPUT_METHOD_SERVICE);
+                try {
+                    imm.showSoftInput(view, 0);
+                } catch (IllegalArgumentException e) {
+                    if (attempt.incrementAndGet() <= KEYBOARD_RETRY_ATTEMPTS) {
+                        handler.postDelayed(this, KEYBOARD_RETRY_DELAY_MS);
+                    } else {
+                        Log.e(TAG, "Unable to open keyboard.  Giving up.", e);
+                    }
+                }
+            }
+        };
+        openRunnable.run();
     }
 
     /**
