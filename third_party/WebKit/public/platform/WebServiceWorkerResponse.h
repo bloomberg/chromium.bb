@@ -7,6 +7,7 @@
 
 #include "WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebServiceWorkerResponseType.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
@@ -49,6 +50,9 @@ public:
 
     void setStatusText(const WebString&);
     WebString statusText() const;
+
+    void setResponseType(WebServiceWorkerResponseType);
+    WebServiceWorkerResponseType responseType() const;
 
     void setHeader(const WebString& key, const WebString& value);
 

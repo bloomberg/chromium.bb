@@ -29,19 +29,30 @@ FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorker
     response->setURL(webResponse.url());
     response->setStatus(webResponse.status());
     response->setStatusMessage(webResponse.statusText());
-    return response;
-}
 
-Headers* createHeadersFromWebResponse(const WebServiceWorkerResponse& webResponse)
-{
-    Headers* headers = Headers::create();
-    TrackExceptionState exceptionState;
     for (HTTPHeaderMap::const_iterator i = webResponse.headers().begin(), end = webResponse.headers().end(); i != end; ++i) {
-        headers->append(i->key, i->value, exceptionState);
-        if (exceptionState.hadException())
-            return 0;
+        response->headerList()->append(i->key, i->value);
     }
-    return headers;
+
+    // Filter the response according to |webResponse|'s ResponseType.
+    switch (webResponse.responseType()) {
+    case WebServiceWorkerResponseTypeBasic:
+        response = response->createBasicFilteredResponse();
+        break;
+    case WebServiceWorkerResponseTypeCORS:
+        response = response->createCORSFilteredResponse();
+        break;
+    case WebServiceWorkerResponseTypeOpaque:
+        response = response->createOpaqueFilteredResponse();
+        break;
+    case WebServiceWorkerResponseTypeDefault:
+        break;
+    case WebServiceWorkerResponseTypeError:
+        ASSERT(response->type() == FetchResponseData::ErrorType);
+        break;
+    }
+
+    return response;
 }
 
 }
@@ -149,7 +160,9 @@ Response* Response::create(ExecutionContext* context, FetchResponseData* respons
 
 Response* Response::create(ExecutionContext* context, const WebServiceWorkerResponse& webResponse)
 {
-    Response* r = new Response(context, webResponse);
+    // FIXME: Handle response body data.
+    FetchResponseData* responseData = createFetchResponseDataFromWebResponse(webResponse);
+    Response* r = new Response(context, responseData);
     r->suspendIfNeeded();
     return r;
 }
@@ -243,14 +256,6 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
     m_headers->setGuard(Headers::ResponseGuard);
 }
 
-// FIXME: Handle response body data.
-Response::Response(ExecutionContext* context, const WebServiceWorkerResponse& webResponse)
-    : Body(context)
-    , m_response(createFetchResponseDataFromWebResponse(webResponse))
-    , m_headers(createHeadersFromWebResponse(webResponse))
-{
-    m_headers->setGuard(Headers::ResponseGuard);
-}
 
 PassRefPtr<BlobDataHandle> Response::blobDataHandle()
 {

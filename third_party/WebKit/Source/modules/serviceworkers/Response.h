@@ -54,7 +54,6 @@ private:
     explicit Response(const Response&);
     explicit Response(ExecutionContext*);
     Response(ExecutionContext*, FetchResponseData*);
-    Response(ExecutionContext*, const WebServiceWorkerResponse&);
 
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
 

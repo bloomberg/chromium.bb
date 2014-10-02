@@ -14,10 +14,15 @@ namespace blink {
 
 class WebServiceWorkerResponsePrivate : public RefCounted<WebServiceWorkerResponsePrivate> {
 public:
-    WebServiceWorkerResponsePrivate() : status(0) { }
+    WebServiceWorkerResponsePrivate()
+        : status(0)
+        , responseType(WebServiceWorkerResponseTypeOpaque)
+    {
+    }
     WebURL url;
     unsigned short status;
     WebString statusText;
+    WebServiceWorkerResponseType responseType;
     HTTPHeaderMap headers;
     RefPtr<BlobDataHandle> blobDataHandle;
 };
@@ -65,6 +70,16 @@ void WebServiceWorkerResponse::setStatusText(const WebString& statusText)
 WebString WebServiceWorkerResponse::statusText() const
 {
     return m_private->statusText;
+}
+
+void WebServiceWorkerResponse::setResponseType(WebServiceWorkerResponseType responseType)
+{
+    m_private->responseType = responseType;
+}
+
+WebServiceWorkerResponseType WebServiceWorkerResponse::responseType() const
+{
+    return m_private->responseType;
 }
 
 void WebServiceWorkerResponse::setHeader(const WebString& key, const WebString& value)

@@ -424,6 +424,7 @@ TEST_F(ServiceWorkerCacheTest, MatchResponseTest)
 
     WebServiceWorkerResponse webResponse;
     webResponse.setURL(KURL(ParsedURLString, responseUrl));
+    webResponse.setResponseType(WebServiceWorkerResponseTypeDefault);
 
     Cache* cache = Cache::create(new MatchTestCache(webResponse));
     CacheQueryOptions* options = CacheQueryOptions::create();
@@ -511,7 +512,9 @@ TEST_F(ServiceWorkerCacheTest, MatchAllAndBatchResponseTest)
 
     WebVector<WebServiceWorkerResponse> webResponses(size_t(2));
     webResponses[0].setURL(KURL(ParsedURLString, url1));
+    webResponses[0].setResponseType(WebServiceWorkerResponseTypeDefault);
     webResponses[1].setURL(KURL(ParsedURLString, url2));
+    webResponses[1].setResponseType(WebServiceWorkerResponseTypeDefault);
 
     Cache* cache = Cache::create(new MatchAllAndBatchTestCache(webResponses));
 

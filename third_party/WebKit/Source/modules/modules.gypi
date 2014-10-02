@@ -1033,6 +1033,7 @@
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',
       'serviceworkers/CacheTest.cpp',
+      'serviceworkers/FetchResponseDataTest.cpp',
       'serviceworkers/RequestTest.cpp',
       'serviceworkers/ResponseTest.cpp',
       'serviceworkers/ServiceWorkerContainerTest.cpp',

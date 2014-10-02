@@ -11,6 +11,33 @@
 
 namespace blink {
 
+namespace {
+
+WebServiceWorkerResponseType fetchTypeToWebType(FetchResponseData::Type fetchType)
+{
+    WebServiceWorkerResponseType webType = WebServiceWorkerResponseTypeDefault;
+    switch (fetchType) {
+    case FetchResponseData::BasicType:
+        webType = WebServiceWorkerResponseTypeBasic;
+        break;
+    case FetchResponseData::CORSType:
+        webType = WebServiceWorkerResponseTypeCORS;
+        break;
+    case FetchResponseData::DefaultType:
+        webType = WebServiceWorkerResponseTypeDefault;
+        break;
+    case FetchResponseData::ErrorType:
+        webType = WebServiceWorkerResponseTypeError;
+        break;
+    case FetchResponseData::OpaqueType:
+        webType = WebServiceWorkerResponseTypeOpaque;
+        break;
+    }
+    return webType;
+}
+
+} // namespace
+
 FetchResponseData* FetchResponseData::create()
 {
     // "Unless stated otherwise, a response's url is null, status is 200, status
@@ -84,11 +111,14 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
 {
     if (m_internalResponse) {
         m_internalResponse->populateWebServiceWorkerResponse(response);
+        response.setResponseType(fetchTypeToWebType(m_type));
         return;
     }
+
     response.setURL(url());
     response.setStatus(status());
     response.setStatusText(statusMessage());
+    response.setResponseType(fetchTypeToWebType(m_type));
     for (size_t i = 0; i < headerList()->size(); ++i) {
         const FetchHeaderList::Header* header = headerList()->list()[i].get();
         response.appendHeader(header->first, header->second);
