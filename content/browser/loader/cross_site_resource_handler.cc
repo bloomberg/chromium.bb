@@ -97,6 +97,11 @@ bool CheckNavigationPolicyOnUI(GURL url, int process_id, int render_frame_id) {
   if (!rfh)
     return false;
 
+  // A transfer is not needed if the current SiteInstance doesn't yet have a
+  // site.  This is the case for tests that use NavigateToURL.
+  if (!rfh->GetSiteInstance()->HasSite())
+    return false;
+
   // TODO(nasko): This check is very simplistic and is used temporarily only
   // for --site-per-process. It should be updated to match the check performed
   // by RenderFrameHostManager::UpdateStateForNavigate.
