@@ -76,27 +76,6 @@ SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float font
         m_customFontData->initializeFontData(this, fontSize);
 }
 
-// Estimates of avgCharWidth and maxCharWidth for platforms that don't support accessing these values from the font.
-void SimpleFontData::initCharWidths()
-{
-    GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
-
-    // Treat the width of a '0' as the avgCharWidth.
-    if (m_avgCharWidth <= 0.f && glyphPageZero) {
-        static const UChar32 digitZeroChar = '0';
-        Glyph digitZeroGlyph = glyphPageZero->glyphForCharacter(digitZeroChar);
-        if (digitZeroGlyph)
-            m_avgCharWidth = widthForGlyph(digitZeroGlyph);
-    }
-
-    // If we can't retrieve the width of a '0', fall back to the x height.
-    if (m_avgCharWidth <= 0.f)
-        m_avgCharWidth = m_fontMetrics.xHeight();
-
-    if (m_maxCharWidth <= 0.f)
-        m_maxCharWidth = std::max(m_avgCharWidth, m_fontMetrics.floatAscent());
-}
-
 void SimpleFontData::platformGlyphInit()
 {
     GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
