@@ -82,11 +82,9 @@ void FakeControllerPairingController::ApplyConfig(const std::string& config) {
       base::SplitStringIntoKeyValuePairs(dict["discovery"], '-', '~', &events))
       << "Wrong 'discovery' format.";
   DiscoveryScenario scenario;
-  for (base::StringPairs::const_iterator event = events.begin();
-       event != events.end();
-       ++event) {
-    std::string type = event->first;
-    std::string device_id = event->second;
+  for (const auto& event : events) {
+    const std::string& type = event.first;
+    const std::string& device_id = event.second;
     CHECK(type == "F" || type == "L" || type == "N")
         << "Wrong discovery event type.";
     CHECK(!device_id.empty() || type == "N") << "Empty device ID.";

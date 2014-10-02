@@ -137,11 +137,8 @@ void BluetoothControllerPairingController::OnStartDiscoverySession(
   discovery_session_ = discovery_session.Pass();
   ChangeStage(STAGE_DEVICES_DISCOVERY);
 
-  device::BluetoothAdapter::DeviceList device_list = adapter_->GetDevices();
-  for (device::BluetoothAdapter::DeviceList::iterator ix = device_list.begin();
-       ix != device_list.end(); ++ix) {
-    DeviceFound(*ix);
-  }
+  for (const auto& device : adapter_->GetDevices())
+    DeviceFound(device);
 }
 
 void BluetoothControllerPairingController::OnConnect() {
