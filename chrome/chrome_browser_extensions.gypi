@@ -457,7 +457,6 @@
       'browser/extensions/api/tab_capture/tab_capture_api.h',
       'browser/extensions/api/tab_capture/tab_capture_registry.cc',
       'browser/extensions/api/tab_capture/tab_capture_registry.h',
-      'browser/extensions/api/tabs/tabs_api.cc',
       'browser/extensions/api/tabs/tabs_api.h',
       'browser/extensions/api/tabs/tabs_constants.cc',
       'browser/extensions/api/tabs/tabs_constants.h',
@@ -649,7 +648,6 @@
       'browser/extensions/extension_system_factory.h',
       'browser/extensions/extension_system_impl.cc',
       'browser/extensions/extension_system_impl.h',
-      'browser/extensions/extension_tab_util.cc',
       'browser/extensions/extension_tab_util.h',
       'browser/extensions/extension_toolbar_model.cc',
       'browser/extensions/extension_toolbar_model.h',
@@ -868,6 +866,14 @@
       'browser/extensions/api/storage/policy_value_store.cc',
       'browser/extensions/api/storage/policy_value_store.h',
     ],
+    'chrome_browser_extensions_non_athena_sources': [
+      'browser/extensions/api/tabs/tabs_api.cc',
+      'browser/extensions/extension_tab_util.cc',
+    ],
+    'chrome_browser_extensions_athena_sources': [
+      'browser/extensions/api/tabs/tabs_api_athena.cc',
+      'browser/extensions/extension_tab_util_athena.cc',
+    ],
   },
   # ----------------------------------------------------------------------------
   # Note on GN build: everything below here is duplicated in
@@ -978,8 +984,9 @@
         }],
         ['use_athena==1', {
           'defines': ['USE_ATHENA=1'],
-          'sources': ['browser/extensions/api/tabs/tabs_api_athena.cc' ],
-          'sources!': ['browser/extensions/api/tabs/tabs_api.cc' ],
+          'sources': ['<@(chrome_browser_extensions_athena_sources)'],
+        }, {
+          'sources': ['<@(chrome_browser_extensions_non_athena_sources)'],
         }],
         ['OS=="linux"', {
           'conditions': [
