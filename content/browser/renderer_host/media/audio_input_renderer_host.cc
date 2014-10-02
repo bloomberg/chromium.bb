@@ -414,6 +414,13 @@ void AudioInputRendererHost::DoCreateStream(
     oss << ", AGC=" << config.automatic_gain_control;
   }
 
+#if defined(OS_CHROMEOS)
+  if (config.params.channel_layout() ==
+          media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
+    entry->has_keyboard_mic_ = true;
+  }
+#endif
+
   MediaStreamManager::SendMessageToNativeLog(oss.str());
   DVLOG(1) << oss.str();
 
