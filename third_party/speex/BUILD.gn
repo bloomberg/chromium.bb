@@ -72,7 +72,7 @@ source_set("speex") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  direct_dependent_configs = [ ":speex_config" ]
+  public_configs = [ ":speex_config" ]
 
   include_dirs = [
     "libspeex",
