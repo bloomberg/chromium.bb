@@ -1674,34 +1674,34 @@ compile_only_pre_cq = pre_cq.derive(
 
 # The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
 # it is important to delay the launch of some builds in order to conserve RAM.
-# We build rambi and daisy in parallel first. When daisy finishes BuildPackages,
-# the remaining boards start BuildPackages. Because Rambi runs VMTest and this
-# takes a long time, the remaining boards still finish well before Rambi
-# finishes.
+# We build rambi and daisy_spring and duck in parallel first. When duck finishes
+# BuildPackages, the remaining boards start BuildPackages. Because Rambi runs
+# VMTest and this takes a long time, the remaining boards still finish well
+# before Rambi finishes.
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 _config.add_group(constants.PRE_CQ_BUILDER_NAME,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
 
-  # daisy w/kernel 3.8.
+  # daisy_spring w/kernel 3.8.
   pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
                     boards=['daisy_spring']),
 
-  # samus w/kernel 3.14. We set build_packages_in_background=False here, so
-  # that subsequent boards (lumpy, parrot, duck) don't get launched until
+  # brillo config. We set build_packages_in_background=False here, so
+  # that subsequent boards (samus, lumpy, parrot) don't get launched until
   # after samus finishes BuildPackages.
-  compile_only_pre_cq.add_config('samus-pre-cq', boards=['samus'],
-                                 build_packages_in_background=False),
+  pre_cq.add_config('duck-pre-cq', brillo, boards=['duck'],
+                    build_packages_in_background=False),
+
+  # samus w/kernel 3.14.
+  compile_only_pre_cq.add_config('samus-pre-cq', boards=['samus']),
 
   # lumpy w/kernel 3.8.
   compile_only_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
 
   # amd64 w/kernel 3.4.
   compile_only_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
-
-  # brillo config.
-  pre_cq.add_config('duck-pre-cq', brillo, boards=['duck']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',
