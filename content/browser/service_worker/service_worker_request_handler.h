@@ -51,6 +51,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       int provider_id,
       bool skip_service_worker,
       FetchRequestMode request_mode,
+      FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
       scoped_refptr<ResourceRequestBody> body);
 

@@ -39,6 +39,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       FetchRequestMode request_mode,
+      FetchCredentialsMode credentials_mode,
       scoped_refptr<ResourceRequestBody> body);
 
   // Sets the response type.
@@ -161,6 +162,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   scoped_ptr<net::URLRequest> blob_request_;
   FetchRequestMode request_mode_;
+  FetchCredentialsMode credentials_mode_;
   bool fall_back_required_;
   // ResourceRequestBody has a collection of BlobDataHandles attached to it
   // using the userdata mechanism. So we have to keep it not to free the blobs.

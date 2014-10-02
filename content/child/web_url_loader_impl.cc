@@ -219,6 +219,17 @@ FetchRequestMode GetFetchRequestMode(const WebURLRequest& request) {
   return static_cast<FetchRequestMode>(request.fetchRequestMode());
 }
 
+COMPILE_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_OMIT,
+                              WebURLRequest::FetchCredentialsModeOmit);
+COMPILE_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
+                              WebURLRequest::FetchCredentialsModeSameOrigin);
+COMPILE_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_INCLUDE,
+                              WebURLRequest::FetchCredentialsModeInclude);
+
+FetchCredentialsMode GetFetchCredentialsMode(const WebURLRequest& request) {
+  return static_cast<FetchCredentialsMode>(request.fetchCredentialsMode());
+}
+
 }  // namespace
 
 // WebURLLoaderImpl::Context --------------------------------------------------
@@ -397,6 +408,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // TODO(brettw) this should take parameter encoding into account when
   // creating the GURLs.
 
+  // TODO(horo): Check credentials flag is unset when credentials mode is omit.
+  //             Check credentials flag is set when credentials mode is include.
+
   RequestInfo request_info;
   request_info.method = method;
   request_info.url = url;
@@ -418,6 +432,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.has_user_gesture = request.hasUserGesture();
   request_info.skip_service_worker = request.skipServiceWorker();
   request_info.fetch_request_mode = GetFetchRequestMode(request);
+  request_info.fetch_credentials_mode = GetFetchCredentialsMode(request);
   request_info.extra_data = request.extraData();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer_policy = request.referrerPolicy();

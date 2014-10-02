@@ -31,6 +31,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       FetchRequestMode request_mode,
+      FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
       scoped_refptr<ResourceRequestBody> body);
   virtual ~ServiceWorkerControlleeRequestHandler();
@@ -68,6 +69,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   bool is_main_resource_load_;
   scoped_refptr<ServiceWorkerURLRequestJob> job_;
   FetchRequestMode request_mode_;
+  FetchCredentialsMode credentials_mode_;
   scoped_refptr<ResourceRequestBody> body_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 

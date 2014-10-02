@@ -95,6 +95,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the request doesn't require special handling.
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       FetchRequestMode request_mode,
+      FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<ResourceRequestBody> body);

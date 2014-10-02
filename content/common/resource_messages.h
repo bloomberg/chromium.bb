@@ -88,6 +88,9 @@ IPC_ENUM_TRAITS_MAX_VALUE( \
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRequestMode,
                           content::FETCH_REQUEST_MODE_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::FetchCredentialsMode,
+                          content::FETCH_CREDENTIALS_MODE_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
 IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(request_start)
@@ -198,6 +201,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // The request mode passed to the ServiceWorker.
   IPC_STRUCT_MEMBER(content::FetchRequestMode, fetch_request_mode)
+
+  // The credentials mode passed to the ServiceWorker.
+  IPC_STRUCT_MEMBER(content::FetchCredentialsMode, fetch_credentials_mode)
 
   // Optional resource request body (may be null).
   IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,

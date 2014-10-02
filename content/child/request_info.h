@@ -82,6 +82,9 @@ struct CONTENT_EXPORT RequestInfo {
   // The request mode passed to the ServiceWorker.
   FetchRequestMode fetch_request_mode;
 
+  // The credentials mode passed to the ServiceWorker.
+  FetchCredentialsMode fetch_credentials_mode;
+
   // TODO(mmenke): Investigate if enable_load_timing is safe to remove.
   // True if load timing data should be collected for the request.
   bool enable_load_timing;

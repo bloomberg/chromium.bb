@@ -42,6 +42,13 @@ enum FetchRequestMode {
   FETCH_REQUEST_MODE_LAST = FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT
 };
 
+enum FetchCredentialsMode {
+  FETCH_CREDENTIALS_MODE_OMIT,
+  FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
+  FETCH_CREDENTIALS_MODE_INCLUDE,
+  FETCH_CREDENTIALS_MODE_LAST = FETCH_CREDENTIALS_MODE_INCLUDE
+};
+
 // Indicates how the service worker handled a fetch event.
 enum ServiceWorkerFetchEventResult {
   // Browser should fallback to native fetch.
@@ -77,6 +84,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   std::string blob_uuid;
   uint64 blob_size;
   GURL referrer;
+  FetchCredentialsMode credentials_mode;
   bool is_reload;
 };
 

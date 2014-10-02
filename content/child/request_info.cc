@@ -19,6 +19,7 @@ RequestInfo::RequestInfo()
       has_user_gesture(false),
       skip_service_worker(false),
       fetch_request_mode(FETCH_REQUEST_MODE_NO_CORS),
+      fetch_credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
       enable_load_timing(false),
       extra_data(NULL) {
 }

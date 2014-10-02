@@ -47,6 +47,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     FetchRequestMode request_mode,
+    FetchCredentialsMode credentials_mode,
     scoped_refptr<ResourceRequestBody> body)
     : net::URLRequestJob(request, network_delegate),
       provider_host_(provider_host),
@@ -54,6 +55,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       is_started_(false),
       blob_storage_context_(blob_storage_context),
       request_mode_(request_mode),
+      credentials_mode_(credentials_mode),
       fall_back_required_(false),
       body_(body),
       weak_factory_(this) {
@@ -295,6 +297,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->blob_uuid = blob_uuid;
   request->blob_size = blob_size;
   request->referrer = GURL(request_->referrer());
+  request->credentials_mode = credentials_mode_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {
     request->is_reload = ui::PageTransitionCoreTypeIs(

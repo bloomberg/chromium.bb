@@ -61,6 +61,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     int provider_id,
     bool skip_service_worker,
     FetchRequestMode request_mode,
+    FetchCredentialsMode credentials_mode,
     ResourceType resource_type,
     scoped_refptr<ResourceRequestBody> body) {
   if (!request->url().SchemeIsHTTPOrHTTPS() ||
@@ -86,6 +87,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
 
   scoped_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(request_mode,
+                                          credentials_mode,
                                           resource_type,
                                           blob_storage_context->AsWeakPtr(),
                                           body));

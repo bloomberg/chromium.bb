@@ -24,6 +24,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     FetchRequestMode request_mode,
+    FetchCredentialsMode credentials_mode,
     ResourceType resource_type,
     scoped_refptr<ResourceRequestBody> body)
     : ServiceWorkerRequestHandler(context,
@@ -33,6 +34,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       is_main_resource_load_(
           ServiceWorkerUtils::IsMainResourceType(resource_type)),
       request_mode_(request_mode),
+      credentials_mode_(credentials_mode),
       body_(body),
       weak_factory_(this) {
 }
@@ -83,6 +85,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
                                         provider_host_,
                                         blob_storage_context_,
                                         request_mode_,
+                                        credentials_mode_,
                                         body_);
   if (is_main_resource_load_)
     PrepareForMainResource(request->url());

@@ -7,7 +7,10 @@
 namespace content {
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
-    : mode(FETCH_REQUEST_MODE_NO_CORS), blob_size(0), is_reload(false) {
+    : mode(FETCH_REQUEST_MODE_NO_CORS),
+      blob_size(0),
+      credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
+      is_reload(false) {
 }
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
@@ -22,6 +25,7 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
       headers(headers),
       blob_size(0),
       referrer(referrer),
+      credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
       is_reload(is_reload) {
 }
 
