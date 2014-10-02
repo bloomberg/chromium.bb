@@ -855,9 +855,9 @@ def GetMetadataURLsSince(target, start_date):
 
     # See if we have gone far enough back by checking datetime of oldest URL
     # in the current batch.
-    if urls[-1].creation_time < start_date:
+    if urls[-1].creation_time.date() < start_date:
       # We want a subset of these URLs, then we are done.
-      ret.extend([x.url for x in urls if x.creation_time >= start_date])
+      ret.extend([x.url for x in urls if x.creation_time.date() >= start_date])
       break
 
     else:
