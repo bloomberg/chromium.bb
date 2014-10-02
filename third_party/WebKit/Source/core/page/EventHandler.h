@@ -342,7 +342,6 @@ private:
     Timer<EventHandler> m_cursorUpdateTimer;
 
     bool m_mouseDownMayStartAutoscroll;
-    bool m_mouseDownWasInSubframe;
 
     Timer<EventHandler> m_fakeMouseMoveEventTimer;
 
