@@ -59,6 +59,7 @@
       'webapp/base.js',
       'webapp/error.js',
       'webapp/event_handlers.js',
+      'webapp/platform.js',
       'webapp/plugin_settings.js',
       # TODO(garykac) Split out UI client stuff from remoting.js.
       'webapp/remoting.js',
