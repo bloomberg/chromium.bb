@@ -45,7 +45,8 @@ CIDB_DEBUG_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
 CIDB_KNOWN_WATERFALLS = ('chromeos',
                          'chromiumos',
                          'chromiumos.tryserver',
-                         'chromeos_release')
+                         'chromeos_release',
+                         'chromeos.branch')
 
 # TODO: Eliminate these or merge with manifest_version.py:STATUS_PASSED
 # crbug.com/318930
