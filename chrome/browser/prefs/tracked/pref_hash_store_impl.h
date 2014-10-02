@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_HASH_STORE_IMPL_H_
-#define CHROME_BROWSER_PREFS_PREF_HASH_STORE_IMPL_H_
+#ifndef CHROME_BROWSER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_
+#define CHROME_BROWSER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_hash_calculator.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
+#include "chrome/browser/prefs/tracked/pref_hash_calculator.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store.h"
 
 class HashStoreContents;
 class PrefHashStoreTransaction;
@@ -64,4 +64,4 @@ class PrefHashStoreImpl : public PrefHashStore {
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_HASH_STORE_IMPL_H_
+#endif  // CHROME_BROWSER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_

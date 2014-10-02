@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
 #include "chrome/browser/prefs/tracked/tracked_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
 

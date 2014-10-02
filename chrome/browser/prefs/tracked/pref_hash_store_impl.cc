@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_impl.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/hash_store_contents.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 
 class PrefHashStoreImpl::PrefHashStoreTransactionImpl
     : public PrefHashStoreTransaction {

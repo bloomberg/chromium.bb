@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
 
 class PersistentPrefStore;
 class PrefHashStore;

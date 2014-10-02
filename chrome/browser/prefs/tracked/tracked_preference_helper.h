@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/prefs/pref_hash_filter.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 
 // A TrackedPreferenceHelper is a helper class for TrackedPreference which
 // handles decision making and reporting for TrackedPreference's

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
 
 #include <map>
 #include <set>
@@ -22,10 +22,10 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/mock_validation_delegate.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/hash_store_contents.h"
+#include "chrome/browser/prefs/tracked/mock_validation_delegate.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

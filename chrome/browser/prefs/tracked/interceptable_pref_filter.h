@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_INTERCEPTABLE_PREF_FILTER_H_
-#define CHROME_BROWSER_PREFS_INTERCEPTABLE_PREF_FILTER_H_
+#ifndef CHROME_BROWSER_PREFS_TRACKED_INTERCEPTABLE_PREF_FILTER_H_
+#define CHROME_BROWSER_PREFS_TRACKED_INTERCEPTABLE_PREF_FILTER_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -61,4 +61,4 @@ class InterceptablePrefFilter
   FilterOnLoadInterceptor filter_on_load_interceptor_;
 };
 
-#endif  // CHROME_BROWSER_PREFS_INTERCEPTABLE_PREF_FILTER_H_
+#endif  // CHROME_BROWSER_PREFS_TRACKED_INTERCEPTABLE_PREF_FILTER_H_

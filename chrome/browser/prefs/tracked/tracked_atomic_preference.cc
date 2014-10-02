@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/tracked/tracked_atomic_preference.h"
 
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 
 TrackedAtomicPreference::TrackedAtomicPreference(

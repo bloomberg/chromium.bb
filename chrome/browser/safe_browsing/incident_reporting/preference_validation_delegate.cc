@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/json/json_writer.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 

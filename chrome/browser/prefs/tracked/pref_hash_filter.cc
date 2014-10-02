@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
 
 #include <algorithm>
 
@@ -13,9 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/dictionary_hash_store_contents.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_atomic_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_split_preference.h"
 #include "chrome/common/pref_names.h"

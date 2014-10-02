@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_impl.h"
 
 #include <string>
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/dictionary_hash_store_contents.h"
 #include "chrome/browser/prefs/tracked/hash_store_contents.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_impl.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrefHashStoreImplTest : public testing::Test {

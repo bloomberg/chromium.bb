@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_HASH_FILTER_H_
-#define CHROME_BROWSER_PREFS_PREF_HASH_FILTER_H_
+#ifndef CHROME_BROWSER_PREFS_TRACKED_PREF_HASH_FILTER_H_
+#define CHROME_BROWSER_PREFS_TRACKED_PREF_HASH_FILTER_H_
 
 #include <map>
 #include <set>
@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/interceptable_pref_filter.h"
+#include "chrome/browser/prefs/tracked/interceptable_pref_filter.h"
 #include "chrome/browser/prefs/tracked/tracked_preference.h"
 
 class PrefHashStore;
@@ -135,4 +135,4 @@ class PrefHashFilter : public InterceptablePrefFilter {
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_HASH_FILTER_H_
+#endif  // CHROME_BROWSER_PREFS_TRACKED_PREF_HASH_FILTER_H_

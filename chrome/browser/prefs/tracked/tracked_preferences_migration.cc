@@ -10,11 +10,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/interceptable_pref_filter.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/dictionary_hash_store_contents.h"
 #include "chrome/browser/prefs/tracked/hash_store_contents.h"
+#include "chrome/browser/prefs/tracked/interceptable_pref_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 
 namespace {
 

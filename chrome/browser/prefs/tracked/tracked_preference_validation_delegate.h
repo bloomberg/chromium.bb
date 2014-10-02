@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
 
 namespace base {

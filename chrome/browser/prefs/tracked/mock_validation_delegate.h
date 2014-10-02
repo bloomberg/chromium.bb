@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_MOCK_VALIDATION_DELEGATE_H_
-#define CHROME_BROWSER_PREFS_MOCK_VALIDATION_DELEGATE_H_
+#ifndef CHROME_BROWSER_PREFS_TRACKED_MOCK_VALIDATION_DELEGATE_H_
+#define CHROME_BROWSER_PREFS_TRACKED_MOCK_VALIDATION_DELEGATE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/prefs/pref_hash_filter.h"
-#include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 
@@ -72,4 +72,4 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockValidationDelegate);
 };
 
-#endif  // CHROME_BROWSER_PREFS_MOCK_VALIDATION_DELEGATE_H_
+#endif  // CHROME_BROWSER_PREFS_TRACKED_MOCK_VALIDATION_DELEGATE_H_

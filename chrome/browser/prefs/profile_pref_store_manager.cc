@@ -13,7 +13,7 @@
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/tracked/pref_service_hash_store_contents.h"
 #include "chrome/browser/prefs/tracked/segregated_pref_store.h"
 #include "chrome/browser/prefs/tracked/tracked_preferences_migration.h"

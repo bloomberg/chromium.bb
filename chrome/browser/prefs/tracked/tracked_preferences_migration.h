@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
+#include "chrome/browser/prefs/tracked/pref_hash_store.h"
 
 class HashStoreContents;
 class InterceptablePrefFilter;
