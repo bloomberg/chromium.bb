@@ -59,9 +59,13 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
 // incognito profiles.
 bool IsRegularOrGuestSession(Browser* browser);
 
+// If the lock-enabled information for this profile is not up to date, starts
+// an update for the Gaia profile info.
+void UpdateIsProfileLockEnabledIfNeeded(Profile* profile);
+
 // If the --google-profile-info flag is turned on, starts an update for a new
-// version of the Gaia profile picture.
-void UpdateGaiaProfilePhotoIfNeeded(Profile* profile);
+// version of the Gaia profile picture and other profile info.
+void UpdateGaiaProfileInfoIfNeeded(Profile* profile);
 
 // Returns the sign-in error controller for the given profile.  Some profiles,
 // like guest profiles, may not have a controller so this function may return

@@ -1193,7 +1193,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         }
       }
       currentProfileView = [self createCurrentProfileView:item];
-      displayLock = switches::IsNewProfileManagement() && item.signed_in;
+      displayLock = item.signed_in &&
+          profiles::IsLockAvailable(browser_->profile());
     } else {
       [otherProfiles addObject:[self createOtherProfileView:i]];
     }

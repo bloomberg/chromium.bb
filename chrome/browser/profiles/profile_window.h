@@ -77,6 +77,9 @@ void CloseGuestProfileWindows();
 // Closes all the browser windows for |profile| and opens the user manager.
 void LockProfile(Profile* profile);
 
+// Returns whether lock is available to this profile.
+bool IsLockAvailable(Profile* profile);
+
 // Creates or reuses the guest profile needed by the user manager. Based on
 // the value of |tutorial_mode|, the user manager can show a specific
 // tutorial, or no tutorial at all. If a tutorial is not shown, then

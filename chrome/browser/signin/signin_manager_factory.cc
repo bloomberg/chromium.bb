@@ -63,6 +63,10 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
 void SigninManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
+      prefs::kGoogleServicesHostedDomain,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
       prefs::kGoogleServicesLastUsername,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

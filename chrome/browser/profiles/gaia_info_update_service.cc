@@ -5,11 +5,13 @@
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
@@ -135,6 +137,11 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
   } else if (picture_status == ProfileDownloader::PICTURE_DEFAULT) {
     cache.SetGAIAPictureOfProfileAtIndex(profile_index, NULL);
   }
+
+  const base::string16 hosted_domain = downloader->GetProfileHostedDomain();
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesHostedDomain,
+      (hosted_domain.empty() ? Profile::kNoHostedDomainFound :
+                               base::UTF16ToUTF8(hosted_domain)));
 }
 
 void GAIAInfoUpdateService::OnProfileDownloadFailure(

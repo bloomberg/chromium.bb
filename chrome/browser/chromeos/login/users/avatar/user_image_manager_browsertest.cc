@@ -236,8 +236,8 @@ class UserImageManagerTest : public LoginManagerTest,
                           std::string(),
                           base::Time::Now() + base::TimeDelta::FromDays(1));
 
-    net::TestURLFetcher* fetcher =
-        url_fetcher_factory->GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = url_fetcher_factory->GetFetcherByID(
+        gaia::GaiaOAuthClient::kUrlFetcherId);
     ASSERT_TRUE(fetcher);
     fetcher->SetResponseString(
         "{ \"picture\": \"http://localhost/avatar.jpg\" }");

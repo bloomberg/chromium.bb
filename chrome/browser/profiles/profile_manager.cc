@@ -797,6 +797,12 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_id);
   }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+  // If the lock enabled algorithm changed, update this profile's lock status.
+  if (switches::IsNewProfileManagement())
+    profiles::UpdateIsProfileLockEnabledIfNeeded(profile);
+#endif
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,

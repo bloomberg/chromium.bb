@@ -530,7 +530,7 @@ void ManageProfileHandler::RemoveProfileShortcut(const base::ListValue* args) {
 }
 
 void ManageProfileHandler::RefreshGaiaPicture(const base::ListValue* args) {
-  profiles::UpdateGaiaProfilePhotoIfNeeded(Profile::FromWebUI(web_ui()));
+  profiles::UpdateGaiaProfileInfoIfNeeded(Profile::FromWebUI(web_ui()));
 }
 
 }  // namespace options

@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_unittest.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -42,6 +43,7 @@ class ProfileDownloaderMock : public ProfileDownloader {
   MOCK_CONST_METHOD0(GetProfilePictureStatus,
                      ProfileDownloader::PictureStatus());
   MOCK_CONST_METHOD0(GetProfilePictureURL, std::string());
+  MOCK_CONST_METHOD0(GetProfileHostedDomain, base::string16());
 };
 
 class GAIAInfoUpdateServiceMock : public GAIAInfoUpdateService {
@@ -103,7 +105,8 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
       const base::string16& full_name,
       const base::string16& given_name,
       const gfx::Image& image,
-      const std::string& url) {
+      const std::string& url,
+      const base::string16& hosted_domain) {
     EXPECT_CALL(*downloader(), GetProfileFullName()).
         WillOnce(Return(full_name));
     EXPECT_CALL(*downloader(), GetProfileGivenName()).
@@ -113,6 +116,8 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
     EXPECT_CALL(*downloader(), GetProfilePictureStatus()).
         WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
     EXPECT_CALL(*downloader(), GetProfilePictureURL()).WillOnce(Return(url));
+    EXPECT_CALL(*downloader(), GetProfileHostedDomain()).
+        WillOnce(Return(hosted_domain));
 
     service()->OnProfileDownloadSuccess(downloader());
   }
@@ -121,7 +126,7 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
                      const base::string16& given_name) {
     gfx::Image image = gfx::test::CreateImage(256,256);
     std::string url("foo.com");
-    ProfileDownloadSuccess(full_name, given_name, image, url);
+    ProfileDownloadSuccess(full_name, given_name, image, url, base::string16());
 
     // Make sure the right profile was updated correctly.
     size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
@@ -156,12 +161,15 @@ void GAIAInfoUpdateServiceTest::TearDown() {
 TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   // No URL should be cached yet.
   EXPECT_EQ(std::string(), service()->GetCachedPictureURL());
+  EXPECT_EQ(std::string(), profile()->GetPrefs()->
+      GetString(prefs::kGoogleServicesHostedDomain));
 
   base::string16 name = base::ASCIIToUTF16("Pat Smith");
   base::string16 given_name = base::ASCIIToUTF16("Pat");
   gfx::Image image = gfx::test::CreateImage(256, 256);
   std::string url("foo.com");
-  ProfileDownloadSuccess(name, given_name, image, url);
+  base::string16 hosted_domain(base::ASCIIToUTF16(""));
+  ProfileDownloadSuccess(name, given_name, image, url, hosted_domain);
 
   // On success the GAIA info should be updated.
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
@@ -170,6 +178,8 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   EXPECT_TRUE(gfx::test::IsEqual(
       image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
+  EXPECT_EQ(Profile::kNoHostedDomainFound, profile()->GetPrefs()->
+      GetString(prefs::kGoogleServicesHostedDomain));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
@@ -191,6 +201,23 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(index));
   EXPECT_EQ(std::string(), service()->GetCachedPictureURL());
+  EXPECT_EQ(std::string(),
+      profile()->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain));
+}
+
+TEST_F(GAIAInfoUpdateServiceTest, ProfileLockEnabledForWhitelist) {
+  // No URL should be cached yet.
+  EXPECT_EQ(std::string(), service()->GetCachedPictureURL());
+
+  base::string16 name = base::ASCIIToUTF16("Pat Smith");
+  base::string16 given_name = base::ASCIIToUTF16("Pat");
+  gfx::Image image = gfx::test::CreateImage(256, 256);
+  std::string url("foo.com");
+  base::string16 hosted_domain(base::ASCIIToUTF16("google.com"));
+  ProfileDownloadSuccess(name, given_name, image, url, hosted_domain);
+
+  EXPECT_EQ("google.com", profile()->GetPrefs()->
+      GetString(prefs::kGoogleServicesHostedDomain));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, HandlesProfileReordering) {

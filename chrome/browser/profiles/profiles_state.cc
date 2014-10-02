@@ -140,14 +140,30 @@ bool IsRegularOrGuestSession(Browser* browser) {
   return profile->IsGuestSession() || !profile->IsOffTheRecord();
 }
 
-void UpdateGaiaProfilePhotoIfNeeded(Profile* profile) {
+void UpdateIsProfileLockEnabledIfNeeded(Profile* profile) {
+  DCHECK(switches::IsNewProfileManagement());
+
+  if (!profile->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain).
+      empty())
+    return;
+
+  UpdateGaiaProfileInfoIfNeeded(profile);
+}
+
+void UpdateGaiaProfileInfoIfNeeded(Profile* profile) {
   // If the --google-profile-info flag isn't used, then the
-  // GAIAInfoUpdateService isn't initialized, and we can't download the picture.
+  // GAIAInfoUpdateService isn't initialized, and we can't download the profile
+  // info.
   if (!switches::IsGoogleProfileInfo())
     return;
 
   DCHECK(profile);
-  GAIAInfoUpdateServiceFactory::GetInstance()->GetForProfile(profile)->Update();
+
+  GAIAInfoUpdateService* service =
+      GAIAInfoUpdateServiceFactory::GetInstance()->GetForProfile(profile);
+  // The service may be null, for example during unit tests.
+  if (service)
+    service->Update();
 }
 
 SigninErrorController* GetSigninErrorController(Profile* profile) {

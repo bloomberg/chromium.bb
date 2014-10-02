@@ -308,6 +308,15 @@ void LockProfile(Profile* profile) {
   }
 }
 
+bool IsLockAvailable(Profile* profile) {
+  DCHECK(profile);
+  const std::string& hosted_domain = profile->GetPrefs()->
+      GetString(prefs::kGoogleServicesHostedDomain);
+  return switches::IsNewProfileManagement() &&
+         (hosted_domain == Profile::kNoHostedDomainFound ||
+         hosted_domain == "google.com");
+}
+
 void CreateGuestProfileForUserManager(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,

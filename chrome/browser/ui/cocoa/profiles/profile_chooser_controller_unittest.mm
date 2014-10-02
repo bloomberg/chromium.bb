@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -381,20 +382,14 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   // There should be three buttons and two separators in the option
   // buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  ASSERT_EQ(5U, [buttonSubviews count]);
-
-  // There should be a lock button.
-  NSButton* lockButton =
-      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
-  EXPECT_EQ(@selector(lockProfile:), [lockButton action]);
-  EXPECT_EQ(controller(), [lockButton target]);
+  ASSERT_EQ(3U, [buttonSubviews count]);
 
   // There should be a separator.
   EXPECT_TRUE([[buttonSubviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
 
   // There should be an incognito button.
   NSButton* incognitoButton =
-      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:2]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(goIncognito:), [incognitoButton action]);
   EXPECT_EQ(controller(), [incognitoButton target]);
 
@@ -403,7 +398,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 
   // There should be a user switcher button.
   NSButton* userSwitcherButton =
-      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:4]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:2]);
   EXPECT_EQ(@selector(showUserManager:), [userSwitcherButton action]);
   EXPECT_EQ(controller(), [userSwitcherButton target]);
 
@@ -463,4 +458,58 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
       [linksSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(hideAccountManagement:), [link action]);
   EXPECT_EQ(controller(), [link target]);
+}
+
+TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
+  switches::EnableNewProfileManagementForTesting(
+      CommandLine::ForCurrentProcess());
+  // Sign in the first profile.
+  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
+  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  // The preference, not the email, determines whether the profile can lock.
+  browser()->profile()->GetPrefs()->SetString(
+      prefs::kGoogleServicesHostedDomain, "chromium.org");
+
+  StartProfileChooserController();
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  ASSERT_EQ(2U, [subviews count]);
+  subviews = [[subviews objectAtIndex:0] subviews];
+
+  // There will be two buttons and one separators in the option buttons view.
+  NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
+  ASSERT_EQ(3U, [buttonSubviews count]);
+
+  // The last button should not be the lock button.
+  NSButton* lastButton =
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+  ASSERT_TRUE(lastButton);
+  EXPECT_NE(@selector(lockProfile:), [lastButton action]);
+}
+
+TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
+  switches::EnableNewProfileManagementForTesting(
+      CommandLine::ForCurrentProcess());
+  // Sign in the first profile.
+  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
+  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  // The preference, not the email, determines whether the profile can lock.
+  browser()->profile()->GetPrefs()->SetString(
+      prefs::kGoogleServicesHostedDomain, "google.com");
+
+  StartProfileChooserController();
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  ASSERT_EQ(2U, [subviews count]);
+  subviews = [[subviews objectAtIndex:0] subviews];
+
+  // There will be three buttons and two separators in the option buttons view.
+  NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
+  ASSERT_EQ(5U, [buttonSubviews count]);
+
+  // There should be a lock button.
+  NSButton* lockButton =
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+  ASSERT_TRUE(lockButton);
+  EXPECT_EQ(@selector(lockProfile:), [lockButton action]);
+  EXPECT_EQ(controller(), [lockButton target]);
+  EXPECT_TRUE([lockButton isEnabled]);
 }
