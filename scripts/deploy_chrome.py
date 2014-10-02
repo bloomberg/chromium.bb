@@ -374,11 +374,11 @@ def _CreateParser():
   parser.add_option('-v', '--verbose', action='store_true', default=False,
                     help='Show more debug output.')
   parser.add_option('--mount-dir', type='path', default=None,
-                    help='Deploy Chrome in target directory and bind it'
-                         'to directory specified by this flag.')
+                    help='Deploy Chrome in target directory and bind it '
+                         'to the directory specified by this flag.')
   parser.add_option('--mount', action='store_true', default=False,
-                    help='Deploy Chrome to default target directory and bind it'
-                         'to default mount directory.')
+                    help='Deploy Chrome to default target directory and bind '
+                         'it to the default mount directory.')
 
   group = optparse.OptionGroup(parser, 'Advanced Options')
   group.add_option('-l', '--local-pkg-path', type='path',
