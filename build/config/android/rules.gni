@@ -301,7 +301,7 @@ template("java_cpp_enum") {
   assert(defined(invoker.outputs))
 
   action("${target_name}__generate_enum") {
-    sources = rebase_path(invoker.sources, root_build_dir)
+    sources = invoker.sources
     script = "//build/android/gyp/java_cpp_enum.py"
     gen_dir = "${target_gen_dir}/${target_name}/enums"
     outputs = get_path_info(
@@ -313,7 +313,7 @@ template("java_cpp_enum") {
     foreach(output, rebase_path(outputs, root_build_dir)) {
       args += ["--assert_file", output]
     }
-    args += sources
+    args += rebase_path(invoker.sources, root_build_dir)
   }
 
   generate_enum_outputs = get_target_outputs(":${target_name}__generate_enum")

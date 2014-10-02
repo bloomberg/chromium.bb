@@ -45,10 +45,10 @@ class GamepadMappings {
         float b = rawButtons[KeyEvent.KEYCODE_BUTTON_B];
         float x = rawButtons[KeyEvent.KEYCODE_BUTTON_X];
         float y = rawButtons[KeyEvent.KEYCODE_BUTTON_Y];
-        mappedButtons[CanonicalButtonIndex.BUTTON_PRIMARY] = a;
-        mappedButtons[CanonicalButtonIndex.BUTTON_SECONDARY] = b;
-        mappedButtons[CanonicalButtonIndex.BUTTON_TERTIARY] = x;
-        mappedButtons[CanonicalButtonIndex.BUTTON_QUATERNARY] = y;
+        mappedButtons[CanonicalButtonIndex.PRIMARY] = a;
+        mappedButtons[CanonicalButtonIndex.SECONDARY] = b;
+        mappedButtons[CanonicalButtonIndex.TERTIARY] = x;
+        mappedButtons[CanonicalButtonIndex.QUATERNARY] = y;
     }
 
     private static void mapCommonStartSelectMetaButtons(
@@ -56,23 +56,23 @@ class GamepadMappings {
         float start = rawButtons[KeyEvent.KEYCODE_BUTTON_START];
         float select = rawButtons[KeyEvent.KEYCODE_BUTTON_SELECT];
         float mode = rawButtons[KeyEvent.KEYCODE_BUTTON_MODE];
-        mappedButtons[CanonicalButtonIndex.BUTTON_START] = start;
-        mappedButtons[CanonicalButtonIndex.BUTTON_BACK_SELECT] = select;
-        mappedButtons[CanonicalButtonIndex.BUTTON_META] = mode;
+        mappedButtons[CanonicalButtonIndex.START] = start;
+        mappedButtons[CanonicalButtonIndex.BACK_SELECT] = select;
+        mappedButtons[CanonicalButtonIndex.META] = mode;
     }
 
     private static void mapCommonThumbstickButtons(float[] mappedButtons, float[] rawButtons) {
         float thumbL = rawButtons[KeyEvent.KEYCODE_BUTTON_THUMBL];
         float thumbR = rawButtons[KeyEvent.KEYCODE_BUTTON_THUMBR];
-        mappedButtons[CanonicalButtonIndex.BUTTON_LEFT_THUMBSTICK] = thumbL;
-        mappedButtons[CanonicalButtonIndex.BUTTON_RIGHT_THUMBSTICK] = thumbR;
+        mappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK] = thumbL;
+        mappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK] = thumbR;
     }
 
     private static void mapCommonTriggerButtons(float[] mappedButtons, float[] rawButtons) {
         float l1 = rawButtons[KeyEvent.KEYCODE_BUTTON_L1];
         float r1 = rawButtons[KeyEvent.KEYCODE_BUTTON_R1];
-        mappedButtons[CanonicalButtonIndex.BUTTON_LEFT_TRIGGER] = l1;
-        mappedButtons[CanonicalButtonIndex.BUTTON_RIGHT_TRIGGER] = r1;
+        mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = l1;
+        mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] = r1;
     }
 
     private static void mapCommonDpadButtons(float[] mappedButtons, float[] rawButtons) {
@@ -80,32 +80,32 @@ class GamepadMappings {
         float dpadUp = rawButtons[KeyEvent.KEYCODE_DPAD_UP];
         float dpadLeft = rawButtons[KeyEvent.KEYCODE_DPAD_LEFT];
         float dpadRight = rawButtons[KeyEvent.KEYCODE_DPAD_RIGHT];
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_DOWN] = dpadDown;
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_UP] = dpadUp;
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_LEFT] = dpadLeft;
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_RIGHT] = dpadRight;
+        mappedButtons[CanonicalButtonIndex.DPAD_DOWN] = dpadDown;
+        mappedButtons[CanonicalButtonIndex.DPAD_UP] = dpadUp;
+        mappedButtons[CanonicalButtonIndex.DPAD_LEFT] = dpadLeft;
+        mappedButtons[CanonicalButtonIndex.DPAD_RIGHT] = dpadRight;
     }
 
     private static void mapXYAxes(float[] mappedAxes, float[] rawAxes) {
-        mappedAxes[CanonicalAxisIndex.AXIS_LEFT_STICK_X] = rawAxes[MotionEvent.AXIS_X];
-        mappedAxes[CanonicalAxisIndex.AXIS_LEFT_STICK_Y] = rawAxes[MotionEvent.AXIS_Y];
+        mappedAxes[CanonicalAxisIndex.LEFT_STICK_X] = rawAxes[MotionEvent.AXIS_X];
+        mappedAxes[CanonicalAxisIndex.LEFT_STICK_Y] = rawAxes[MotionEvent.AXIS_Y];
     }
 
     private static void mapRXAndRYAxesToRightStick(float[] mappedAxes, float[] rawAxes) {
-        mappedAxes[CanonicalAxisIndex.AXIS_RIGHT_STICK_X] = rawAxes[MotionEvent.AXIS_RX];
-        mappedAxes[CanonicalAxisIndex.AXIS_RIGHT_STICK_Y] = rawAxes[MotionEvent.AXIS_RY];
+        mappedAxes[CanonicalAxisIndex.RIGHT_STICK_X] = rawAxes[MotionEvent.AXIS_RX];
+        mappedAxes[CanonicalAxisIndex.RIGHT_STICK_Y] = rawAxes[MotionEvent.AXIS_RY];
     }
 
     private static void mapZAndRZAxesToRightStick(float[] mappedAxes, float[] rawAxes) {
-        mappedAxes[CanonicalAxisIndex.AXIS_RIGHT_STICK_X] = rawAxes[MotionEvent.AXIS_Z];
-        mappedAxes[CanonicalAxisIndex.AXIS_RIGHT_STICK_Y] = rawAxes[MotionEvent.AXIS_RZ];
+        mappedAxes[CanonicalAxisIndex.RIGHT_STICK_X] = rawAxes[MotionEvent.AXIS_Z];
+        mappedAxes[CanonicalAxisIndex.RIGHT_STICK_Y] = rawAxes[MotionEvent.AXIS_RZ];
     }
 
     private static void mapTriggerAxexToShoulderButtons(float[] mappedButtons, float[] rawAxes) {
         float lTrigger = rawAxes[MotionEvent.AXIS_LTRIGGER];
         float rTrigger = rawAxes[MotionEvent.AXIS_RTRIGGER];
-        mappedButtons[CanonicalButtonIndex.BUTTON_LEFT_SHOULDER] = lTrigger;
-        mappedButtons[CanonicalButtonIndex.BUTTON_RIGHT_SHOULDER] = rTrigger;
+        mappedButtons[CanonicalButtonIndex.LEFT_SHOULDER] = lTrigger;
+        mappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER] = rTrigger;
     }
 
     private static float negativeAxisValueAsButton(float input) {
@@ -119,10 +119,10 @@ class GamepadMappings {
     private static void mapHatAxisToDpadButtons(float[] mappedButtons, float[] rawAxes) {
         float hatX = rawAxes[MotionEvent.AXIS_HAT_X];
         float hatY = rawAxes[MotionEvent.AXIS_HAT_Y];
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_LEFT] = negativeAxisValueAsButton(hatX);
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_RIGHT] = positiveAxisValueAsButton(hatX);
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_UP] = negativeAxisValueAsButton(hatY);
-        mappedButtons[CanonicalButtonIndex.BUTTON_DPAD_DOWN] = positiveAxisValueAsButton(hatY);
+        mappedButtons[CanonicalButtonIndex.DPAD_LEFT] = negativeAxisValueAsButton(hatX);
+        mappedButtons[CanonicalButtonIndex.DPAD_RIGHT] = positiveAxisValueAsButton(hatX);
+        mappedButtons[CanonicalButtonIndex.DPAD_UP] = negativeAxisValueAsButton(hatY);
+        mappedButtons[CanonicalButtonIndex.DPAD_DOWN] = positiveAxisValueAsButton(hatY);
     }
 
     /**
@@ -159,10 +159,10 @@ class GamepadMappings {
         float b = rawButtons[KeyEvent.KEYCODE_BUTTON_B];
         float x = rawButtons[KeyEvent.KEYCODE_BUTTON_X];
         float y = rawButtons[KeyEvent.KEYCODE_BUTTON_Y];
-        mappedButtons[CanonicalButtonIndex.BUTTON_PRIMARY] = x;
-        mappedButtons[CanonicalButtonIndex.BUTTON_SECONDARY] = y;
-        mappedButtons[CanonicalButtonIndex.BUTTON_TERTIARY] = a;
-        mappedButtons[CanonicalButtonIndex.BUTTON_QUATERNARY] = b;
+        mappedButtons[CanonicalButtonIndex.PRIMARY] = x;
+        mappedButtons[CanonicalButtonIndex.SECONDARY] = y;
+        mappedButtons[CanonicalButtonIndex.TERTIARY] = a;
+        mappedButtons[CanonicalButtonIndex.QUATERNARY] = b;
 
         mapCommonTriggerButtons(mappedButtons, rawButtons);
         mapCommonThumbstickButtons(mappedButtons, rawButtons);

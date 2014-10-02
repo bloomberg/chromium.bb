@@ -30,9 +30,9 @@ class GamepadDevice {
     // All axis values must be linearly normalized to the range [-1.0 .. 1.0].
     // As appropriate, -1.0 should correspond to "up" or "left", and 1.0
     // should correspond to "down" or "right".
-    private final float[] mAxisValues = new float[CanonicalAxisIndex.NUM_CANONICAL_AXES];
+    private final float[] mAxisValues = new float[CanonicalAxisIndex.COUNT];
 
-    private final float[] mButtonsValues = new float[CanonicalButtonIndex.NUM_CANONICAL_BUTTONS];;
+    private final float[] mButtonsValues = new float[CanonicalButtonIndex.COUNT];;
 
     // When the user agent recognizes the attached inputDevice, it is recommended
     // that it be remapped to a canonical ordering when possible. Devices that are
