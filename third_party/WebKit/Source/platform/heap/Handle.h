@@ -79,13 +79,13 @@ struct IsGarbageCollectedType {
     typedef typename WTF::RemoveConst<T>::Type NonConstType;
     typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;
     typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;
-    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;
-    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;
+    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapHashSet> HeapHashSetSubclass;
+    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;
     typedef WTF::IsSubclassOfTemplateTypenameSizeTypename<NonConstType, HeapListHashSet> HeapListHashSetSubclass;
-    typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;
+    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapHashMap> HeapHashMapSubclass;
     typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;
     typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;
-    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;
+    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;
     typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass;
 
     template<typename U, size_t inlineCapacity> static TrueType listHashSetNodeIsHeapAllocated(WTF::ListHashSetNode<U, HeapListHashSetAllocator<U, inlineCapacity> >*);

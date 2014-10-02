@@ -158,13 +158,13 @@ namespace WTF {
         static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
     };
 
-    template <typename T, template<class V> class U> class IsSubclassOfTemplate {
+    template <typename T, template<typename... V> class U> class IsSubclassOfTemplate {
         typedef char YesType;
         struct NoType {
             char padding[8];
         };
 
-        template<typename W> static YesType subclassCheck(U<W>*);
+        template<typename... W> static YesType subclassCheck(U<W...>*);
         static NoType subclassCheck(...);
         static T* t;
     public:
@@ -191,32 +191,6 @@ namespace WTF {
         };
 
         template<typename Y, size_t Z, typename A> static YesType subclassCheck(U<Y, Z, A>*);
-        static NoType subclassCheck(...);
-        static T* t;
-    public:
-        static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
-    };
-
-    template <typename T, template<class A, class B, class C> class U> class IsSubclassOfTemplate3 {
-        typedef char YesType;
-        struct NoType {
-            char padding[8];
-        };
-
-        template<typename D, typename E, typename F> static YesType subclassCheck(U<D, E, F>*);
-        static NoType subclassCheck(...);
-        static T* t;
-    public:
-        static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
-    };
-
-    template <typename T, template<class A, class B, class C, class D, class E> class U> class IsSubclassOfTemplate5 {
-        typedef char YesType;
-        struct NoType {
-            char padding[8];
-        };
-
-        template<typename F, typename G, typename H, typename I, typename J> static YesType subclassCheck(U<F, G, H, I, J>*);
         static NoType subclassCheck(...);
         static T* t;
     public:
