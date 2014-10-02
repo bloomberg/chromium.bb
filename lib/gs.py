@@ -434,13 +434,16 @@ class GSContext(object):
       filename: If given, the filename to place the content at; if not given,
         it's discerned from basename(local_path).
       **kwargs: See Copy() for documentation.
+
+    Returns:
+      The generation of the remote file.
     """
     filename = filename if filename is not None else local_path
     # Basename it even if an explicit filename was given; we don't want
     # people using filename as a multi-directory path fragment.
     return self.Copy(local_path,
-                      '%s/%s' % (remote_dir, os.path.basename(filename)),
-                      **kwargs)
+                     '%s/%s' % (remote_dir, os.path.basename(filename)),
+                     **kwargs)
 
   @staticmethod
   def GetTrackerFilenames(dest_path):
@@ -646,12 +649,14 @@ class GSContext(object):
       auto_compress: Automatically compress with gzip when uploading.
 
     Returns:
-      Return the CommandResult from the run.
+      The generation of the remote file.
 
     Raises:
       RunCommandError if the command failed despite retries.
     """
-    cmd = ['cp']
+    # -v causes gs://bucket/path#generation to be listed in output.
+    cmd = ['cp', '-v']
+
     # Certain versions of gsutil (at least 4.3) assume the source of a copy is
     # a directory if the -r option is used. If it's really a file, gsutil will
     # look like it's uploading it but not actually do anything. We'll work
@@ -691,8 +696,19 @@ class GSContext(object):
         # Don't retry on local copies.
         kwargs.setdefault('retries', 0)
 
+      kwargs['capture_output'] = True
       try:
-        return self.DoCommand(cmd, **kwargs)
+        result = self.DoCommand(cmd, **kwargs)
+        if self.dry_run:
+          return None
+
+        # Now we parse the output for the current generation number.  Example:
+        #   Created: gs://chromeos-throw-away-bucket/foo#1360630664537000.1
+        m = re.search(r'Created: .*#(\d+)([.](\d+))?$', result.error)
+        if m:
+          return int(m.group(1))
+        else:
+          return None
       except GSNoSuchKey as e:
         # If the source was a local file, the error is a quirk of gsutil 4.5
         # and should be ignored. If the source was remote, there might

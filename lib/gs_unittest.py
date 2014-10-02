@@ -433,7 +433,12 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
 
     with gs.TemporaryURL('chromite.cp') as tempuri:
       # Upload the file.
-      ctx.Copy(local_src_file, tempuri)
+      gen = ctx.Copy(local_src_file, tempuri)
+
+      # Verify the generation is sane.  All we can assume is that it's a valid
+      # whole number greater than 0.
+      self.assertNotEqual(gen, None)
+      self.assertGreater(gen, 0)
 
       # Verify the size is what we expect.
       self.assertEqual(ctx.GetSize(tempuri), os.path.getsize(local_src_file))
@@ -459,7 +464,12 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
 
     with gs.TemporaryURL('chromite.cp') as tempuri:
       # Upload & compress the file.
-      ctx.Copy(local_src_file, tempuri, auto_compress=True)
+      gen = ctx.Copy(local_src_file, tempuri, auto_compress=True)
+
+      # Verify the generation is sane.  All we can assume is that it's a valid
+      # whole number greater than 0.
+      self.assertNotEqual(gen, None)
+      self.assertGreater(gen, 0)
 
       # Verify the size is smaller (because it's compressed).
       self.assertLess(ctx.GetSize(tempuri), os.path.getsize(local_src_file))
@@ -468,6 +478,36 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
       ctx.Copy(tempuri, local_dst_file)
       new_content = osutils.ReadFile(local_dst_file)
       self.assertEqual(content, new_content)
+
+  @cros_test_lib.NetworkTest()
+  def testVersion(self):
+    """Test version (generation) behavior."""
+    ctx = gs.GSContext()
+
+    local_src_file = os.path.join(self.tempdir, 'src.txt')
+
+    with gs.TemporaryURL('chromite.cp') as tempuri:
+      # Upload the file.
+      osutils.WriteFile(local_src_file, 'gen0')
+      gen = ctx.Copy(local_src_file, tempuri, version=0)
+
+      # Verify the generation is sane.  All we can assume is that it's a valid
+      # whole number greater than 0.
+      self.assertNotEqual(gen, None)
+      self.assertGreater(gen, 0)
+
+      # The file should exist, so this will die due to wrong generation.
+      osutils.WriteFile(local_src_file, 'gen-bad')
+      self.assertRaises(gs.GSContextPreconditionFailed, ctx.Copy,
+                        local_src_file, tempuri, version=0)
+
+      # Sanity check the content is unchanged.
+      self.assertEquals(ctx.Cat(tempuri), 'gen0')
+
+      # Upload the file, but with the right generation.
+      osutils.WriteFile(local_src_file, 'gen-new')
+      gen = ctx.Copy(local_src_file, tempuri, version=gen)
+      self.assertEquals(ctx.Cat(tempuri), 'gen-new')
 
 
 class CopyIntoTest(CopyTest):
@@ -617,10 +657,12 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     if sleep is None:
       sleep = ctx.DEFAULT_SLEEP_TIME
 
-    with mock.patch.object(retry_util, 'GenericRetry', autospec=True):
+    result = cros_build_lib.CommandResult(error='')
+    with mock.patch.object(retry_util, 'GenericRetry', autospec=True,
+                           return_value=result):
       ctx.Copy('/blah', 'gs://foon', version=version, recursive=recursive)
       cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags + list(headers)
-      cmd += ['cp']
+      cmd += ['cp', '-v']
       if recursive:
         cmd += ['-r', '-e']
       cmd += ['--', '/blah', 'gs://foon']
@@ -630,6 +672,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
           cros_build_lib.RunCommand,
           cmd, sleep=sleep,
           redirect_stderr=True,
+          capture_output=True,
           extra_env={'BOTO_CONFIG': mock.ANY})
 
   def testDoCommandDefault(self):
