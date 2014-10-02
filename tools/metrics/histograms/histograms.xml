@@ -33069,7 +33069,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yefim@chromium.org</owner>
   <summary>
     Percentage of clips with Google related urls (points to internal Google
-    resources). Logs every time user goes to chrome://boomarks.
+    resources). Logs every time user goes to chrome://bookmarks.
   </summary>
 </histogram>
 
@@ -33077,7 +33077,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yefim@chromium.org</owner>
   <summary>
     Percentage of clips with Google related urls within first 20 (points to
-    internal Google resources). Logs every time user goes to chrome://boomarks.
+    internal Google resources). Logs every time user goes to chrome://bookmarks.
   </summary>
 </histogram>
 
@@ -33085,7 +33085,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yefim@chromium.org</owner>
   <summary>
     Percentage of clips with images. Logs every time user goes to
-    chrome://boomarks.
+    chrome://bookmarks.
   </summary>
 </histogram>
 
@@ -33093,7 +33093,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yefim@chromium.org</owner>
   <summary>
     Percentage of clips with images within first 20. Logs every time user goes
-    to chrome://boomarks.
+    to chrome://bookmarks.
   </summary>
 </histogram>
 
@@ -33101,7 +33101,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yefim@chromium.org</owner>
   <summary>
     Percentage of clips without images or snippets. Logs every time user goes to
-    chrome://boomarks.
+    chrome://bookmarks.
   </summary>
 </histogram>
 
@@ -33109,7 +33109,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yefim@chromium.org</owner>
   <summary>
     Percentage of clips without images or snippets within first 20. Logs every
-    time user goes to chrome://boomarks.
+    time user goes to chrome://bookmarks.
   </summary>
 </histogram>
 
