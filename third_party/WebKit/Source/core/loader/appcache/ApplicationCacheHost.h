@@ -112,7 +112,7 @@ namespace blink {
 
         void willStartLoadingMainResource(ResourceRequest&);
         void didReceiveResponseForMainResource(const ResourceResponse&);
-        void mainResourceDataReceived(const char* data, int length);
+        void mainResourceDataReceived(const char* data, unsigned length);
         void finishedLoadingMainResource();
         void failedLoadingMainResource();
 

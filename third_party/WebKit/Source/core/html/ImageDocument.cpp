@@ -43,6 +43,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "wtf/text/StringBuilder.h"
+#include <limits>
 
 using std::min;
 
@@ -128,8 +129,10 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
     if (!frame->loader().client()->allowImage(!settings || settings->imagesEnabled(), document()->url()))
         return;
 
-    if (document()->cachedImage())
+    if (document()->cachedImage()) {
+        RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
         document()->cachedImage()->appendData(data, length);
+    }
     // Make sure the image renderer gets created because we need the renderer
     // to read the aspect ratio. See crbug.com/320244
     document()->updateRenderTreeIfNeeded();

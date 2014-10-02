@@ -72,7 +72,7 @@ namespace blink {
         unsigned long identifier() const { return m_identifier; }
 
         virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&) OVERRIDE;
-        virtual void didReceiveData(const char* data, int dataLength) OVERRIDE;
+        virtual void didReceiveData(const char* data, unsigned dataLength) OVERRIDE;
         virtual void didFinishLoading(unsigned long identifier, double) OVERRIDE;
         virtual void didFail(const ResourceError&) OVERRIDE;
         virtual void didFailRedirectCheck() OVERRIDE;

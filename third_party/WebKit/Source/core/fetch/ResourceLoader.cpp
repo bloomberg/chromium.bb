@@ -434,6 +434,7 @@ void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int 
     m_host->didReceiveData(m_resource, data, length, encodedDataLength);
     if (m_state == Terminated)
         return;
+    RELEASE_ASSERT(length >= 0);
     m_resource->appendData(data, length);
 }
 

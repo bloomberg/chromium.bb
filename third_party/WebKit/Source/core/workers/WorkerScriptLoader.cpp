@@ -122,7 +122,7 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
         m_client->didReceiveResponse(identifier, response);
 }
 
-void WorkerScriptLoader::didReceiveData(const char* data, int len)
+void WorkerScriptLoader::didReceiveData(const char* data, unsigned len)
 {
     if (m_failed)
         return;
@@ -136,9 +136,6 @@ void WorkerScriptLoader::didReceiveData(const char* data, int len)
 
     if (!len)
         return;
-
-    if (len == -1)
-        len = strlen(data);
 
     m_script.append(m_decoder->decode(data, len));
 }

@@ -69,7 +69,7 @@ public:
             m_client->didReceiveResponse(identifier, response);
     }
 
-    void didReceiveData(const char* data, int dataLength)
+    void didReceiveData(const char* data, unsigned dataLength)
     {
         if (m_client)
             m_client->didReceiveData(data, dataLength);

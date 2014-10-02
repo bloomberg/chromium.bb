@@ -95,7 +95,7 @@ public:
 
     // Called as the main resource is retrieved.
     virtual void didReceiveResponseForMainResource(const WebURLResponse&) { }
-    virtual void didReceiveDataForMainResource(const char* data, int len) { }
+    virtual void didReceiveDataForMainResource(const char* data, unsigned len) { }
     virtual void didFinishLoadingMainResource(bool success) { }
 
     // Called on behalf of the scriptable interface.

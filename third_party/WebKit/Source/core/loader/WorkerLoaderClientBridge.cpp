@@ -37,6 +37,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include <limits>
 
 namespace blink {
 
@@ -75,10 +76,11 @@ void WorkerLoaderClientBridge::didReceiveResponse(unsigned long identifier, cons
 static void workerGlobalScopeDidReceiveData(ExecutionContext* context, PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper, PassOwnPtr<Vector<char> > vectorData)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    RELEASE_ASSERT(vectorData->size() <= std::numeric_limits<unsigned>::max());
     workerClientWrapper->didReceiveData(vectorData->data(), vectorData->size());
 }
 
-void WorkerLoaderClientBridge::didReceiveData(const char* data, int dataLength)
+void WorkerLoaderClientBridge::didReceiveData(const char* data, unsigned dataLength)
 {
     OwnPtr<Vector<char> > vector = adoptPtr(new Vector<char>(dataLength)); // needs to be an OwnPtr for usage with createCrossThreadTask.
     memcpy(vector->data(), data, dataLength);

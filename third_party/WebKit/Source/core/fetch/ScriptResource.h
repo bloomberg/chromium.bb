@@ -50,7 +50,7 @@ public:
     virtual ~ScriptResource();
 
     virtual void didAddClient(ResourceClient*) OVERRIDE;
-    virtual void appendData(const char*, int) OVERRIDE;
+    virtual void appendData(const char*, unsigned) OVERRIDE;
 
     const String& script();
 

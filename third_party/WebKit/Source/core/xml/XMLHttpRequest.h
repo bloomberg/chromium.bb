@@ -160,7 +160,7 @@ private:
 
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
     virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(const char* data, int dataLength) OVERRIDE;
+    virtual void didReceiveData(const char* data, unsigned dataLength) OVERRIDE;
     // When responseType is set to "blob", didDownloadData() is called instead
     // of didReceiveData().
     virtual void didDownloadData(int dataLength) OVERRIDE;
@@ -191,7 +191,7 @@ private:
     PassOwnPtr<TextResourceDecoder> createDecoder() const;
 
     void initResponseDocument();
-    void parseDocumentChunk(const char* data, int dataLength);
+    void parseDocumentChunk(const char* data, unsigned dataLength);
 
     bool areMethodAndURLValidForSend();
 
@@ -201,7 +201,7 @@ private:
     const AtomicString& getRequestHeader(const AtomicString& name) const;
     void setRequestHeaderInternal(const AtomicString& name, const AtomicString& value);
 
-    void trackProgress(int dataLength);
+    void trackProgress(long long dataLength);
     // Changes m_state and dispatches a readyStateChange event if new m_state
     // value is different from last one.
     void changeState(State newState);

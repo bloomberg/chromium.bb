@@ -90,7 +90,7 @@ public:
 
     virtual void allClientsRemoved() OVERRIDE;
 
-    virtual void appendData(const char*, int) OVERRIDE;
+    virtual void appendData(const char*, unsigned) OVERRIDE;
     virtual void error(Resource::Status) OVERRIDE;
     virtual void responseReceived(const ResourceResponse&) OVERRIDE;
     virtual void finishOnePart() OVERRIDE;

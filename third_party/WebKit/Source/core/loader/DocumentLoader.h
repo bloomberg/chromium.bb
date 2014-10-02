@@ -160,7 +160,7 @@ namespace blink {
         virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE FINAL;
         virtual void updateRequest(Resource*, const ResourceRequest&) OVERRIDE FINAL;
         virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE FINAL;
-        virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE FINAL;
+        virtual void dataReceived(Resource*, const char* data, unsigned length) OVERRIDE FINAL;
         virtual void notifyFinished(Resource*) OVERRIDE FINAL;
 
         bool maybeLoadEmpty();

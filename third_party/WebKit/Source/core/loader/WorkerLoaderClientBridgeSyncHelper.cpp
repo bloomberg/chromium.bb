@@ -79,7 +79,7 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveResponse(unsigned long identi
     m_clientTasks.append(bind(&didReceiveResponseAdapter, &m_client, identifier, response.copyData()));
 }
 
-void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, int dataLength)
+void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, unsigned dataLength)
 {
     ASSERT(isMainThread());
     Vector<char>* buffer = new Vector<char>(dataLength);

@@ -45,7 +45,7 @@ public:
     static PassRefPtr<SharedBuffer> create(const char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
     static PassRefPtr<SharedBuffer> create(const unsigned char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
 
-    static PassRefPtr<SharedBuffer> createPurgeable(const char* c, int i) { return adoptRef(new SharedBuffer(c, i, PurgeableVector::Purgeable)); }
+    static PassRefPtr<SharedBuffer> createPurgeable(const char* c, unsigned size) { return adoptRef(new SharedBuffer(c, size, PurgeableVector::Purgeable)); }
 
     static PassRefPtr<SharedBuffer> adoptVector(Vector<char>&);
 
@@ -105,8 +105,8 @@ private:
     SharedBuffer();
     explicit SharedBuffer(size_t);
     SharedBuffer(const char*, int);
-    SharedBuffer(const char*, int, PurgeableVector::PurgeableOption);
     SharedBuffer(const unsigned char*, int);
+    SharedBuffer(const char*, unsigned, PurgeableVector::PurgeableOption);
 
     // See SharedBuffer::data().
     void mergeSegmentsIntoBuffer() const;

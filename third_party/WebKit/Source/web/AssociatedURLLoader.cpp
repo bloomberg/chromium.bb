@@ -50,6 +50,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
+#include <limits.h>
 
 namespace blink {
 
@@ -127,7 +128,7 @@ public:
 
     virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
     virtual void didDownloadData(int /*dataLength*/) OVERRIDE;
-    virtual void didReceiveData(const char*, int /*dataLength*/) OVERRIDE;
+    virtual void didReceiveData(const char*, unsigned /*dataLength*/) OVERRIDE;
     virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) OVERRIDE;
     virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
@@ -223,10 +224,12 @@ void AssociatedURLLoader::ClientAdapter::didDownloadData(int dataLength)
     m_client->didDownloadData(m_loader, dataLength, -1);
 }
 
-void AssociatedURLLoader::ClientAdapter::didReceiveData(const char* data, int dataLength)
+void AssociatedURLLoader::ClientAdapter::didReceiveData(const char* data, unsigned dataLength)
 {
     if (!m_client)
         return;
+
+    RELEASE_ASSERT(dataLength <= static_cast<unsigned>(std::numeric_limits<int>::max()));
 
     m_client->didReceiveData(m_loader, data, dataLength, -1);
 }

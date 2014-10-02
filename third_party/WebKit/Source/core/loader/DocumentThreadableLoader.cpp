@@ -396,13 +396,13 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     m_client->didReceiveResponse(identifier, response);
 }
 
-void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, int dataLength)
+void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, unsigned dataLength)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
     handleReceivedData(data, dataLength);
 }
 
-void DocumentThreadableLoader::handleReceivedData(const char* data, int dataLength)
+void DocumentThreadableLoader::handleReceivedData(const char* data, unsigned dataLength)
 {
     ASSERT(m_client);
     // Preflight data should be invisible to clients.

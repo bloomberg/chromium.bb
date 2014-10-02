@@ -94,7 +94,7 @@ private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
     virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(const char*, int) OVERRIDE;
+    virtual void didReceiveData(const char*, unsigned) OVERRIDE;
     virtual void didFinishLoading(unsigned long, double) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void didFailAccessControlCheck(const ResourceError&) OVERRIDE;

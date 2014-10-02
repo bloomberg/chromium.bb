@@ -217,7 +217,7 @@ void WorkerThreadableLoader::MainThreadBridge::didReceiveResponse(unsigned long 
     m_clientBridge->didReceiveResponse(identifier, response);
 }
 
-void WorkerThreadableLoader::MainThreadBridge::didReceiveData(const char* data, int dataLength)
+void WorkerThreadableLoader::MainThreadBridge::didReceiveData(const char* data, unsigned dataLength)
 {
     m_clientBridge->didReceiveData(data, dataLength);
 }

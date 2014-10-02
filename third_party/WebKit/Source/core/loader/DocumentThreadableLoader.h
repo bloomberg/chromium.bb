@@ -74,7 +74,7 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         // RawResourceClient implementation
         virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
         virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
-        virtual void dataReceived(Resource*, const char* data, int dataLength) OVERRIDE;
+        virtual void dataReceived(Resource*, const char* data, unsigned dataLength) OVERRIDE;
         virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE;
         virtual void notifyFinished(Resource*) OVERRIDE;
         virtual void dataDownloaded(Resource*, int) OVERRIDE;
@@ -87,7 +87,7 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         // Methods containing code to handle resource fetch results which is
         // common to both sync and async mode.
         void handleResponse(unsigned long identifier, const ResourceResponse&);
-        void handleReceivedData(const char* data, int dataLength);
+        void handleReceivedData(const char* data, unsigned dataLength);
         void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 
         void didTimeout(Timer<DocumentThreadableLoader>*);

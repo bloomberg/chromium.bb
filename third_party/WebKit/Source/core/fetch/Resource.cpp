@@ -213,7 +213,7 @@ void Resource::checkNotify()
         c->notifyFinished(this);
 }
 
-void Resource::appendData(const char* data, int length)
+void Resource::appendData(const char* data, unsigned length)
 {
     TRACE_EVENT0("blink", "Resource::appendData");
     ASSERT(!m_resourceToRevalidate);

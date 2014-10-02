@@ -44,7 +44,7 @@ public:
 
 private:
     virtual void didAddClient(ResourceClient*) OVERRIDE;
-    virtual void appendData(const char*, int) OVERRIDE;
+    virtual void appendData(const char*, unsigned) OVERRIDE;
 
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const OVERRIDE { return true; }
 
@@ -76,7 +76,7 @@ public:
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&) { }
-    virtual void dataReceived(Resource*, const char* /* data */, int /* length */) { }
+    virtual void dataReceived(Resource*, const char* /* data */, unsigned /* length */) { }
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
     virtual void updateRequest(Resource*, const ResourceRequest&) { }
     virtual void dataDownloaded(Resource*, int) { }

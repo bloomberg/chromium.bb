@@ -103,7 +103,7 @@ private:
 
     // RawResourceClient
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
-    virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
+    virtual void dataReceived(Resource*, const char* data, unsigned length) OVERRIDE;
     virtual void notifyFinished(Resource*) OVERRIDE;
 
     // DocumentParserClient

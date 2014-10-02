@@ -227,10 +227,9 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
         m_client->didStartLoading();
 }
 
-void FileReaderLoader::didReceiveData(const char* data, int dataLength)
+void FileReaderLoader::didReceiveData(const char* data, unsigned dataLength)
 {
     ASSERT(data);
-    ASSERT(dataLength > 0);
 
     // Bail out if we already encountered an error.
     if (m_errorCode)
@@ -244,7 +243,7 @@ void FileReaderLoader::didReceiveData(const char* data, int dataLength)
         return;
     }
 
-    unsigned bytesAppended = m_rawData->append(data, static_cast<unsigned>(dataLength));
+    unsigned bytesAppended = m_rawData->append(data, dataLength);
     if (!bytesAppended) {
         m_rawData.clear();
         m_bytesLoaded = 0;

@@ -103,7 +103,7 @@ public:
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
-    virtual void appendData(const char*, int);
+    virtual void appendData(const char*, unsigned);
     virtual void error(Resource::Status);
 
     void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }

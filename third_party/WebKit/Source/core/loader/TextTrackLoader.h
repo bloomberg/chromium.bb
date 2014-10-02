@@ -70,7 +70,7 @@ public:
 
 private:
     // RawResourceClient
-    virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
+    virtual void dataReceived(Resource*, const char* data, unsigned length) OVERRIDE;
     virtual void notifyFinished(Resource*) OVERRIDE;
 
     // VTTParserClient

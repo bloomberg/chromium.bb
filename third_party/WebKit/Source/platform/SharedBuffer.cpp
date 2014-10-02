@@ -172,14 +172,10 @@ SharedBuffer::SharedBuffer(const char* data, int size)
 #endif
 }
 
-SharedBuffer::SharedBuffer(const char* data, int size, PurgeableVector::PurgeableOption purgeable)
+SharedBuffer::SharedBuffer(const char* data, unsigned size, PurgeableVector::PurgeableOption purgeable)
     : m_size(0)
     , m_buffer(purgeable)
 {
-    // FIXME: Use unsigned consistently, and check for invalid casts when calling into SharedBuffer from other code.
-    if (size < 0)
-        CRASH();
-
     append(data, size);
 
 #ifdef SHARED_BUFFER_STATS

@@ -262,7 +262,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
     }
 }
 
-void EventSource::didReceiveData(const char* data, int length)
+void EventSource::didReceiveData(const char* data, unsigned length)
 {
     ASSERT(m_state == OPEN);
     ASSERT(m_requestInFlight);

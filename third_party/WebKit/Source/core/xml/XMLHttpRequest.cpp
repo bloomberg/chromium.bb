@@ -442,7 +442,7 @@ XMLHttpRequestUpload* XMLHttpRequest::upload()
     return m_upload.get();
 }
 
-void XMLHttpRequest::trackProgress(int length)
+void XMLHttpRequest::trackProgress(long long length)
 {
     m_receivedLength += length;
 
@@ -1392,7 +1392,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
         m_finalResponseCharset = response.textEncodingName();
 }
 
-void XMLHttpRequest::parseDocumentChunk(const char* data, int len)
+void XMLHttpRequest::parseDocumentChunk(const char* data, unsigned len)
 {
     if (!m_responseDocumentParser) {
         ASSERT(!m_responseDocument);
@@ -1436,7 +1436,7 @@ PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
     return TextResourceDecoder::create("text/plain", "UTF-8");
 }
 
-void XMLHttpRequest::didReceiveData(const char* data, int len)
+void XMLHttpRequest::didReceiveData(const char* data, unsigned len)
 {
     ASSERT(!m_downloadingToFile);
 
@@ -1453,9 +1453,6 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
 
     if (!len)
         return;
-
-    if (len == -1)
-        len = strlen(data);
 
     if (m_responseTypeCode == ResponseTypeDocument && responseIsHTML()) {
         parseDocumentChunk(data, len);

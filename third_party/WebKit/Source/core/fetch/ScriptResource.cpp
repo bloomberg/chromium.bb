@@ -55,7 +55,7 @@ void ScriptResource::didAddClient(ResourceClient* client)
     Resource::didAddClient(client);
 }
 
-void ScriptResource::appendData(const char* data, int length)
+void ScriptResource::appendData(const char* data, unsigned length)
 {
     Resource::appendData(data, length);
     ResourceClientWalker<ScriptResourceClient> walker(m_clients);

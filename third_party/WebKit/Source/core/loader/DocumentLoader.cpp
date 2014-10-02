@@ -537,7 +537,7 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
     m_writer->addData(bytes, length);
 }
 
-void DocumentLoader::dataReceived(Resource* resource, const char* data, int length)
+void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned length)
 {
     ASSERT(data);
     ASSERT(length);
