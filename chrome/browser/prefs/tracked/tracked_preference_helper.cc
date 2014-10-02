@@ -26,6 +26,7 @@ TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
     case PrefHashStoreTransaction::CLEARED:
       // Unfortunate case, but there is nothing we can do.
       return DONT_RESET;
+    case PrefHashStoreTransaction::TRUSTED_NULL_VALUE:  // Falls through.
     case PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE:
       // It is okay to seed the hash in this case.
       return DONT_RESET;
@@ -67,6 +68,10 @@ void TrackedPreferenceHelper::ReportValidationResult(
       return;
     case PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceTrustedInitialized",
+                                reporting_id_, reporting_ids_count_);
+      return;
+    case PrefHashStoreTransaction::TRUSTED_NULL_VALUE:
+      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceNullInitialized",
                                 reporting_id_, reporting_ids_count_);
       return;
   }

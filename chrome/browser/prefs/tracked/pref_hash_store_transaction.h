@@ -32,9 +32,10 @@ class PrefHashStoreTransaction {
     // No stored hash exists for the preference value, but the current set of
     // hashes stored is trusted and thus this value can safely be seeded. This
     // happens when all hashes are already properly seeded and a newly
-    // tracked value needs to be seeded). NULL values are inherently trusted as
-    // well.
+    // tracked value needs to be seeded).
     TRUSTED_UNKNOWN_VALUE,
+    // NULL values are inherently trusted.
+    TRUSTED_NULL_VALUE,
   };
 
   // Finalizes any remaining work after the transaction has been performed.

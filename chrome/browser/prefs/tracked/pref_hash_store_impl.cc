@@ -133,8 +133,12 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
   if (last_hash.empty()) {
     // In the absence of a hash for this pref, always trust a NULL value, but
     // only trust an existing value if the initial hashes dictionary is trusted.
-    return (!initial_value || super_mac_valid_) ? TRUSTED_UNKNOWN_VALUE
-                                                : UNTRUSTED_UNKNOWN_VALUE;
+    if (!initial_value)
+      return TRUSTED_NULL_VALUE;
+    else if (super_mac_valid_)
+      return TRUSTED_UNKNOWN_VALUE;
+    else
+      return UNTRUSTED_UNKNOWN_VALUE;
   }
 
   PrefHashCalculator::ValidationResult validation_result =
@@ -171,10 +175,9 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
   std::map<std::string, std::string> split_macs;
   const bool has_hashes = GetSplitMacs(path, &split_macs);
 
-  // Treat NULL and empty the same; otherwise we would need to store a hash
-  // for the entire dictionary (or some other special beacon) to
-  // differentiate these two cases which are really the same for
-  // dictionaries.
+  // Treat NULL and empty the same; otherwise we would need to store a hash for
+  // the entire dictionary (or some other special beacon) to differentiate these
+  // two cases which are really the same for dictionaries.
   if (!initial_split_value || initial_split_value->empty())
     return has_hashes ? CLEARED : UNCHANGED;
 

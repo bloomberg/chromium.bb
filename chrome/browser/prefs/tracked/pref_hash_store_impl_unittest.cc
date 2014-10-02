@@ -38,7 +38,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     // Only NULL should be trusted in the absence of a hash.
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("path1", &string_1));
-    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
+    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_NULL_VALUE,
               transaction->CheckValue("path1", NULL));
 
     transaction->StoreHash("path1", &string_1);
@@ -75,7 +75,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
               transaction->CheckValue("new_path", &string_1));
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_2));
-    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
+    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_NULL_VALUE,
               transaction->CheckValue("new_path", NULL));
   }
 
@@ -92,7 +92,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
               transaction->CheckValue("new_path", &string_1));
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_2));
-    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
+    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_NULL_VALUE,
               transaction->CheckValue("new_path", NULL));
   }
 }
@@ -139,7 +139,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
 
     // The effects of the clear should be immediately visible.
     ASSERT_FALSE(transaction->HasHash("path1"));
-    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
+    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_NULL_VALUE,
               transaction->CheckValue("path1", NULL));
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("path1", &string_1));
@@ -187,7 +187,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
     // After clearing the hash, non-null values are UNTRUSTED_UNKNOWN.
     transaction->ClearHash("path1");
 
-    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
+    EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_NULL_VALUE,
               transaction->CheckValue("path1", NULL));
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("path1", &string_1));

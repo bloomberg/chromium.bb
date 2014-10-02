@@ -254,11 +254,11 @@ class PrefHashBrowserTestBase
 
     if (IsPRETest()) {
       num_tracked_prefs_ = GetTrackedPrefHistogramCount(
-          "Settings.TrackedPreferenceTrustedInitialized", ALLOW_ANY);
+          "Settings.TrackedPreferenceNullInitialized", ALLOW_ANY);
       EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM,
                 num_tracked_prefs_ > 0);
 
-      // Split tracked prefs are reported as Unchanged not as TrustedInitialized
+      // Split tracked prefs are reported as Unchanged not as NullInitialized
       // when an empty dictionary is encountered on first run (this should only
       // hit for pref #5 in the current design).
       int num_split_tracked_prefs = GetTrackedPrefHistogramCount(
@@ -398,6 +398,9 @@ class PrefHashBrowserTestUnchangedDefault : public PrefHashBrowserTestBase {
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
         0,
         GetTrackedPrefHistogramCount(
@@ -481,6 +484,9 @@ class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
         0,
         GetTrackedPrefHistogramCount(
@@ -527,15 +533,15 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
   }
 
   virtual void VerifyReactionToPrefAttack() OVERRIDE {
-    // Preferences that are NULL by default will be TrustedInitialized.
+    // Preferences that are NULL by default will be NullInitialized.
     int num_null_values = GetTrackedPrefHistogramCount(
-        "Settings.TrackedPreferenceTrustedInitialized", ALLOW_ANY);
+        "Settings.TrackedPreferenceNullInitialized", ALLOW_ANY);
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM,
               num_null_values > 0);
     if (num_null_values > 0) {
       // This test requires that at least 3 prefs be non-null (extensions, DSE,
       // and 1 atomic pref explictly set for this test above).
-      EXPECT_LT(num_null_values, num_tracked_prefs() - 3);
+      EXPECT_GE(num_tracked_prefs() - num_null_values, 3);
     }
 
     // Expect all non-null prefs to be reported as Initialized (with
@@ -681,6 +687,9 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
         0,
         GetTrackedPrefHistogramCount(
@@ -768,6 +777,9 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
         0,
         GetTrackedPrefHistogramCount(
@@ -831,6 +843,9 @@ class PrefHashBrowserTestUntrustedAdditionToPrefs
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
         0,
         GetTrackedPrefHistogramCount(
@@ -898,6 +913,9 @@ class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
     EXPECT_EQ(0,
               GetTrackedPrefHistogramCount(
                   "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceNullInitialized", ALLOW_NONE));
     EXPECT_EQ(
         0,
         GetTrackedPrefHistogramCount(

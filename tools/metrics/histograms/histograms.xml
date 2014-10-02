@@ -29813,6 +29813,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Settings.TrackedPreferenceNullInitialized"
+    enum="TrackedPreference">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The id of a tracked preference which was initialized despite the absence of
+    a MAC as its value was NULL.
+  </summary>
+</histogram>
+
 <histogram name="Settings.TrackedPreferenceReset" enum="TrackedPreference">
   <owner>gab@chromium.org</owner>
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
@@ -29872,8 +29881,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference which was initialized despite the absence of
-    a MAC as either (1) the current MACs are trusted, infering that this is a
-    newly tracked pref, or (2) its value is NULL.
+    a MAC as the current MACs are trusted, infering that this is a newly tracked
+    pref.
   </summary>
 </histogram>
 

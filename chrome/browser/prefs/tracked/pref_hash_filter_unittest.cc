@@ -626,14 +626,14 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_value_split.second);
 }
 
-TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
+TEST_P(PrefHashFilterTest, UnknownNullValue) {
   ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref, NULL));
   ASSERT_FALSE(pref_store_contents_->Get(kSplitPref, NULL));
   // NULL values are always trusted by the PrefHashStore.
   mock_pref_hash_store_->SetCheckResult(
-      kAtomicPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
+      kAtomicPref, PrefHashStoreTransaction::TRUSTED_NULL_VALUE);
   mock_pref_hash_store_->SetCheckResult(
-      kSplitPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
+      kSplitPref, PrefHashStoreTransaction::TRUSTED_NULL_VALUE);
   DoFilterOnLoad(false);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -657,7 +657,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
             mock_validation_delegate_.recorded_validations_count());
   ASSERT_EQ(2u,
             mock_validation_delegate_.CountValidationsOfState(
-                PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE));
+                PrefHashStoreTransaction::TRUSTED_NULL_VALUE));
   ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
             mock_validation_delegate_.CountValidationsOfState(
                 PrefHashStoreTransaction::UNCHANGED));
