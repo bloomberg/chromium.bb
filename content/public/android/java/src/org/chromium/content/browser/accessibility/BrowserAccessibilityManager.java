@@ -53,6 +53,7 @@ public class BrowserAccessibilityManager {
     private final ViewGroup mView;
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
+    private boolean mNotifyFrameInfoInitializedCalled;
 
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
@@ -260,6 +261,11 @@ public class BrowserAccessibilityManager {
      * web coordinates to screen coordinates.
      */
     public void notifyFrameInfoInitialized() {
+        if (mNotifyFrameInfoInitializedCalled)
+            return;
+
+        mNotifyFrameInfoInitializedCalled = true;
+
         // Invalidate the container view, since the chrome accessibility tree is now
         // ready and listed as the child of the container view.
         mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
@@ -380,6 +386,14 @@ public class BrowserAccessibilityManager {
         return result;
     }
 
+    /**
+     * Returns whether or not the frame info is initialized, meaning we can safely
+     * convert web coordinates to screen coordinates. When this is first initialized,
+     * notifyFrameInfoInitialized is called - but we shouldn't check whether or not
+     * that method was called as a way to determine if frame info is valid because
+     * notifyFrameInfoInitialized might not be called at all if mRenderCoordinates
+     * gets initialized first.
+     */
     private boolean isFrameInfoInitialized() {
         return mRenderCoordinates.getContentWidthCss() != 0.0 ||
                mRenderCoordinates.getContentHeightCss() != 0.0;
