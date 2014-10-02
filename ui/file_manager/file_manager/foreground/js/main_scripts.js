@@ -74,46 +74,46 @@
 //<include src="../../common/js/util.js">
 //<include src="../../common/js/progress_center_common.js">
 //
-//<include src="combobutton.js">
-//<include src="commandbutton.js">
+//<include src="ui/combobutton.js">
+//<include src="ui/commandbutton.js">
 //<include src="ui/file_manager_dialog_base.js">
 //
 //<include src="app_installer.js">
 //<include src="cws_container_client.js">
 //<include src="directory_contents.js">
 //<include src="directory_model.js">
-//<include src="directory_tree.js">
-//<include src="drag_selector.js">
-//<include src="drive_banners.js" >
-//<include src="error_dialog.js">
-//<include src="file_grid.js">
 //<include src="file_manager.js">
+//<include src="file_manager_commands.js">
 //<include src="file_selection.js">
-//<include src="file_table.js">
 //<include src="file_tasks.js">
 //<include src="file_transfer_controller.js">
 //<include src="file_type.js">
 //<include src="file_watcher.js">
 //<include src="folder_shortcuts_data_model.js">
+//<include src="metadata/metadata_cache.js">
 //<include src="navigation_list_model.js">
 //<include src="progress_center_item_group.js">
-//<include src="scrollbar.js">
 //<include src="share_client.js">
-//<include src="share_dialog.js">
-//<include src="suggest_apps_dialog.js">
 //<include src="thumbnail_loader.js">
-//<include src="tree.css.js">
 //<include src="ui/breadcrumbs_controller.js">
 //<include src="ui/conflict_dialog.js">
+//<include src="ui/default_action_dialog.js">
+//<include src="ui/directory_tree.js">
+//<include src="ui/drag_selector.js">
+//<include src="ui/drive_banners.js" >
+//<include src="ui/error_dialog.js">
+//<include src="ui/file_grid.js">
 //<include src="ui/file_manager_ui.js">
+//<include src="ui/file_table.js">
 //<include src="ui/multi_profile_share_dialog.js">
 //<include src="ui/preview_panel.js">
 //<include src="ui/progress_center_panel.js">
+//<include src="ui/scrollbar.js">
 //<include src="ui/search_box.js">
+//<include src="ui/share_dialog.js">
+//<include src="ui/suggest_apps_dialog.js">
+//<include src="ui/tree.css.js">
 //<include src="volume_manager_wrapper.js">
-//<include src="metadata/metadata_cache.js">
-//<include src="default_action_dialog.js">
-//<include src="file_manager_commands.js">
 
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.
