@@ -427,6 +427,7 @@ public:
     virtual float maxValueForRange() const { return 0.0f; }
     virtual float minValueForRange() const { return 0.0f; }
     virtual String stringValue() const { return String(); }
+    virtual const AtomicString& textInputType() const { return nullAtom; }
 
     // ARIA attributes.
     virtual AXObject* activeDescendant() const { return 0; }

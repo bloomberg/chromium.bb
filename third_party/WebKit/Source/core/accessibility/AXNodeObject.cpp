@@ -1061,6 +1061,19 @@ String AXNodeObject::stringValue() const
     return String();
 }
 
+
+const AtomicString& AXNodeObject::textInputType() const
+{
+    Node* node = this->node();
+    if (!isHTMLInputElement(node))
+        return nullAtom;
+
+    HTMLInputElement& input = toHTMLInputElement(*node);
+    if (input.isTextField())
+        return input.type();
+    return nullAtom;
+}
+
 String AXNodeObject::ariaDescribedByAttribute() const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element> > elements;

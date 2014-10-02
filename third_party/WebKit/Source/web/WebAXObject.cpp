@@ -915,6 +915,14 @@ bool WebAXObject::lineBreaks(WebVector<int>& result) const
     return true;
 }
 
+WebString WebAXObject::textInputType() const
+{
+    if (isDetached())
+        return WebString();
+
+    return WebString(m_private->textInputType());
+}
+
 unsigned WebAXObject::columnCount() const
 {
     if (isDetached())

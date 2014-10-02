@@ -158,6 +158,7 @@ public:
     BLINK_EXPORT WebString computedStyleDisplay() const;
     BLINK_EXPORT bool accessibilityIsIgnored() const;
     BLINK_EXPORT bool lineBreaks(WebVector<int>&) const;
+    BLINK_EXPORT WebString textInputType() const;
 
     // Actions
     BLINK_EXPORT WebString actionVerb() const; // The verb corresponding to performDefaultAction.

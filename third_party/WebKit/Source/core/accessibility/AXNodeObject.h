@@ -154,6 +154,7 @@ protected:
     virtual float maxValueForRange() const OVERRIDE;
     virtual float minValueForRange() const OVERRIDE;
     virtual String stringValue() const OVERRIDE;
+    virtual const AtomicString& textInputType() const OVERRIDE;
 
     // ARIA attributes.
     virtual String ariaDescribedByAttribute() const OVERRIDE FINAL;
