@@ -1352,6 +1352,8 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Sl
 
 crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.html [ Pass Slow ]
 
+crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
+
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
