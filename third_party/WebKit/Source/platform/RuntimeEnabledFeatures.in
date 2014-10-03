@@ -23,20 +23,17 @@ AuthorShadowDOMForAnyElement
 BackgroundSync status=experimental
 BatteryStatus status=stable
 Beacon status=stable
-
-// This feature is deprecated and we are evangalizing affected sites.
-// See https://crbug.com/346236 for current status.
-PrefixedVideoFullscreen status=stable
-
 // Enable bleeding-edge code to make Blink draw content faster.
 // The changes enabled behind this flag are very likely to break lots of content.
 // ** DO NOT use this flag unless you know what you are doing. **
 BleedingEdgeFastPaths
-ThemeColor status=stable
-
 ClientHintsDpr status=experimental
+CompositedSelectionUpdate
 ContextMenu status=experimental
+CredentialManager status=test
 Crypto status=stable
+CSS3Text status=experimental
+CSS3TextDecorations status=experimental
 CSSAnimationUnprefixed status=experimental
 CSSAttributeCaseSensitivity status=experimental
 CSSCompositing status=experimental
@@ -45,15 +42,11 @@ CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
 CSSTouchActionDelay status=test
 CSSViewport status=experimental
-CSS3Text status=experimental
-CSS3TextDecorations status=experimental
-CompositedSelectionUpdate
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DecodeToYUV status=experimental
 DeviceLight status=experimental
 DisplayList2dCanvas
-SVGFontsOnNonGDIPlatforms
 EncodingAPI status=stable
 EncryptedMedia status=test
 EncryptedMediaAnyVersion status=stable
@@ -69,14 +62,17 @@ FullscreenUnprefixed status=test
 Gamepad status=stable
 Geofencing status=test
 GeometryInterfaces status=test
-IMEAPI status=experimental
+// Temporary setting to allow easy rollback of change to hover media feature.
+HoverMediaQueryKeywords status=stable
 ImageDataConstructor status=experimental
 ImageRenderingPixelated status=experimental
+IMEAPI status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
 LangAttributeAwareFormControlUI
+// Lax Mixed Content checking for WebSockets, XHR, etc. is deprecated and slated for removal. crbug.com/389089
+LaxMixedContentChecking status=deprecated
 LayerSquashing status=stable
-PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
 MediaCapture
@@ -93,23 +89,30 @@ Notifications status=stable
 OrientationEvent
 // Only enabled on Android, and for certain layout tests on Linux.
 OverlayFullscreenVideo
+OverlayScrollbars
 PagePopup status=stable
 PathOpsSVGClipping status=stable
 PeerConnection depends_on=MediaStream, status=stable
+Picture status=stable
+PictureSizes status=stable
 PreciseMemoryInfo
+PrefixedEncryptedMedia status=stable
+// This feature is deprecated and we are evangalizing affected sites.
+// See https://crbug.com/346236 for current status.
+PrefixedVideoFullscreen status=stable
 Presentation status=test
+PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
 PushMessaging status=experimental
 QuotaPromise status=experimental
-OverlayScrollbars
 RegionBasedColumns status=experimental
-
 RequestAutocomplete status=test
 ScreenOrientation status=stable
 ScriptedSpeech status=stable
-
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
+// window.showModalDialog is deprecated and slated for removal. crbug.com/345831
+ShowModalDialog status=deprecated
 ServiceWorker status=experimental
 // FIXME: When ServiceWorker is status=stable add a webexposed test to
 // verify that addEventListener('fetch', ... is *not* fired when
@@ -117,31 +120,19 @@ ServiceWorker status=experimental
 ServiceWorkerOnFetch status=experimental
 SessionStorage status=stable
 SharedWorker status=stable
-PictureSizes status=stable
-Picture status=stable
-
-// window.showModalDialog is deprecated and slated for removal. crbug.com/345831
-ShowModalDialog status=deprecated
-
-// Lax Mixed Content checking for WebSockets, XHR, etc. is deprecated and slated for removal. crbug.com/389089
-LaxMixedContentChecking status=deprecated
-
 Stream status=experimental
 SubpixelFontScaling status=stable
 SubresourceIntegrity status=test
-
+SVGFontsOnNonGDIPlatforms
+TextBlob
+ThemeColor status=stable
+ThreadedParserDataReceiver status=experimental
 // Many websites disable mouse support when touch APIs are available.  We'd
 // like to enable this always but can't until more websites fix this bug.
 // Chromium sets this conditionally (eg. based on the presence of a
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
-
-// Temporary setting to allow easy rollback of change to hover media feature.
-HoverMediaQueryKeywords status=stable
-
-TextBlob
 TouchIconLoading
-ThreadedParserDataReceiver status=experimental
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
 WebAnimationsPlaybackControl status=stable
@@ -152,7 +143,3 @@ WebMIDI status=test
 WebVTTRegions depends_on=Media, status=experimental
 WOFF2 status=stable
 XSLT status=stable
-
-PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
-
-CredentialManager status=test
