@@ -95,7 +95,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/ThreadFunctionInvocation.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/WTFThreadData.h"

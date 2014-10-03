@@ -110,7 +110,6 @@
             'StringExtras.h',
             'StringHasher.h',
             'TemporaryChange.h',
-            'ThreadFunctionInvocation.h',
             'ThreadRestrictionVerifier.h',
             'ThreadSafeRefCounted.h',
             'ThreadSpecific.h',
