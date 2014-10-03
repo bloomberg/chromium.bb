@@ -118,9 +118,7 @@ void Plugin::SignalStartSelLdrDone(int32_t pp_error,
 
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                             bool uses_nonsfi_mode,
-                            bool enable_dyncode_syscalls,
-                            bool enable_exception_handling,
-                            bool enable_crash_throttling,
+                            PP_NaClAppProcessType process_type,
                             const pp::CompletionCallback& init_done_cb) {
   CHECK(pp::Module::Get()->core()->IsMainThread());
   // Before forking a new sel_ldr process, ensure that we do not leak
@@ -134,11 +132,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
 
   SelLdrStartParams params(manifest_base_url_str,
                            file_info,
-                           true /* uses_irt */,
-                           true /* uses_ppapi */,
-                           enable_dyncode_syscalls,
-                           enable_exception_handling,
-                           enable_crash_throttling);
+                           process_type);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime = new ServiceRuntime(
       this, pp_instance(), true, uses_nonsfi_mode, init_done_cb);
@@ -203,11 +197,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const std::string& helper_url,
   // done to save on address space and swap space.
   SelLdrStartParams params(helper_url,
                            file_info,
-                           false /* uses_irt */,
-                           false /* uses_ppapi */,
-                           false /* enable_dyncode_syscalls */,
-                           false /* enable_exception_handling */,
-                           true /* enable_crash_throttling */);
+                           PP_PNACL_TRANSLATOR_PROCESS_TYPE);
 
   // Helper NaCl modules always use the PNaCl manifest, as there is no
   // corresponding NMF.
@@ -324,9 +314,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   LoadNaClModule(
       nexe_file_info_,
       uses_nonsfi_mode_,
-      true, /* enable_dyncode_syscalls */
-      true, /* enable_exception_handling */
-      false, /* enable_crash_throttling */
+      PP_NATIVE_NACL_PROCESS_TYPE,
       callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation));
 }
 
@@ -363,9 +351,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   LoadNaClModule(
       info,
       false, /* uses_nonsfi_mode */
-      false, /* enable_dyncode_syscalls */
-      false, /* enable_exception_handling */
-      true, /* enable_crash_throttling */
+      PP_PNACL_PROCESS_TYPE,
       callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
 }
 

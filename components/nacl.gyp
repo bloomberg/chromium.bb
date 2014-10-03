@@ -415,6 +415,8 @@
                 'nacl/common/nacl_renderer_messages.cc',
                 'nacl/common/nacl_types.cc',
                 'nacl/common/nacl_types.h',
+                'nacl/common/nacl_types_param_traits.cc',
+                'nacl/common/nacl_types_param_traits.h',
               ],
               'include_dirs': [
                 '..',
@@ -503,6 +505,8 @@
         'nacl/common/nacl_sandbox_type_mac.h',
         'nacl/common/nacl_types.cc',
         'nacl/common/nacl_types.h',
+        'nacl/common/nacl_types_param_traits.cc',
+        'nacl/common/nacl_types_param_traits.h',
         'nacl/common/pnacl_types.cc',
         'nacl/common/pnacl_types.h',
       ],

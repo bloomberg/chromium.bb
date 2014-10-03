@@ -241,12 +241,9 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  ppapi::PpapiPermissions permissions,
                                  int render_view_id,
                                  uint32 permission_bits,
-                                 bool uses_irt,
                                  bool uses_nonsfi_mode,
-                                 bool enable_dyncode_syscalls,
-                                 bool enable_exception_handling,
-                                 bool enable_crash_throttling,
                                  bool off_the_record,
+                                 NaClAppProcessType process_type,
                                  const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
       nexe_file_(nexe_file.Pass()),
@@ -259,13 +256,11 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
 #if defined(OS_WIN)
       debug_exception_handler_requested_(false),
 #endif
-      uses_irt_(uses_irt),
       uses_nonsfi_mode_(uses_nonsfi_mode),
       enable_debug_stub_(false),
-      enable_dyncode_syscalls_(enable_dyncode_syscalls),
-      enable_exception_handling_(enable_exception_handling),
-      enable_crash_throttling_(enable_crash_throttling),
+      enable_crash_throttling_(false),
       off_the_record_(off_the_record),
+      process_type_(process_type),
       profile_directory_(profile_directory),
       render_view_id_(render_view_id),
       weak_factory_(this) {
@@ -280,6 +275,8 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
 
   enable_debug_stub_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClDebug);
+  DCHECK(process_type_ != kUnknownNaClProcessType);
+  enable_crash_throttling_ = process_type_ != kNativeNaClProcessType;
 }
 
 NaClProcessHost::~NaClProcessHost() {
@@ -810,6 +807,7 @@ bool NaClProcessHost::StartNaClExecution() {
 
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
+  params.process_type = process_type_;
   if (uses_nonsfi_mode_) {
     // Currently, non-SFI mode is supported only on Linux.
 #if defined(OS_LINUX)
@@ -821,11 +819,8 @@ bool NaClProcessHost::StartNaClExecution() {
     params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
     params.validation_cache_key = nacl_browser->GetValidationCacheKey();
     params.version = NaClBrowser::GetDelegate()->GetVersionString();
-    params.enable_exception_handling = enable_exception_handling_;
     params.enable_debug_stub = enable_debug_stub_ &&
         NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
-    params.uses_irt = uses_irt_;
-    params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
 
     // TODO(teravest): Resolve the file tokens right now instead of making the
     // loader send IPC to resolve them later.
@@ -840,7 +835,9 @@ bool NaClProcessHost::StartNaClExecution() {
       return false;
     }
 
-    if (params.uses_irt) {
+    // Currently, everything uses the IRT except for the PNaCl Translators.
+    bool uses_irt = process_type_ != kPNaClTranslatorProcessType;
+    if (uses_irt) {
       const base::File& irt_file = nacl_browser->IrtFile();
       CHECK(irt_file.IsValid());
       // Send over the IRT file handle.  We don't close our own copy!
@@ -1144,7 +1141,8 @@ void NaClProcessHost::OnAttachDebugExceptionHandler(const std::string& info,
 
 bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
                                                   IPC::Message* reply_msg) {
-  if (!enable_exception_handling_ && !enable_debug_stub_) {
+  bool enable_exception_handling = process_type_ == kNativeNaClProcessType;
+  if (!enable_exception_handling && !enable_debug_stub_) {
     DLOG(ERROR) <<
         "Debug exception handler requested by NaCl process when not enabled";
     return false;

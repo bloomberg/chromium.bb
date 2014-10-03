@@ -85,9 +85,7 @@ class Plugin : public pp::Instance {
   // mechanism(s) take over.
   void LoadNaClModule(PP_NaClFileInfo file_info,
                       bool uses_nonsfi_mode,
-                      bool enable_dyncode_syscalls,
-                      bool enable_exception_handling,
-                      bool enable_crash_throttling,
+                      PP_NaClAppProcessType process_type,
                       const pp::CompletionCallback& init_done_cb);
 
   // Finish hooking interfaces up, after low-level initialization is

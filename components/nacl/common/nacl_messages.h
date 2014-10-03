@@ -7,6 +7,7 @@
 // Multiply-included message file, no traditional include guard.
 #include "base/process/process.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/common/nacl_types_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -22,11 +23,9 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_enabled)
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_key)
   IPC_STRUCT_TRAITS_MEMBER(version)
-  IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
   IPC_STRUCT_TRAITS_MEMBER(enable_debug_stub)
   IPC_STRUCT_TRAITS_MEMBER(enable_ipc_proxy)
-  IPC_STRUCT_TRAITS_MEMBER(uses_irt)
-  IPC_STRUCT_TRAITS_MEMBER(enable_dyncode_syscalls)
+  IPC_STRUCT_TRAITS_MEMBER(process_type)
   IPC_STRUCT_TRAITS_MEMBER(crash_info_shmem_handle)
 IPC_STRUCT_TRAITS_END()
 

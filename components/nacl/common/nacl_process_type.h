@@ -7,8 +7,8 @@
 
 #include "content/public/common/process_type.h"
 
-// Defines the process types that are custom to NaCl.
-enum NaClProcessType {
+// Defines the trusted process types that are custom to NaCl.
+enum NaClTrustedProcessType {
   // Start at +1 because we removed an unused value and didn't want to change
   // the IDs as they're used in UMA (see the comment for ProcessType).
   PROCESS_TYPE_NACL_LOADER = content::PROCESS_TYPE_CONTENT_END + 1,

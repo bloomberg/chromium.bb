@@ -12,11 +12,9 @@ NaClStartParams::NaClStartParams()
       nexe_token_lo(0),
       nexe_token_hi(0),
       validation_cache_enabled(false),
-      enable_exception_handling(false),
       enable_debug_stub(false),
       enable_ipc_proxy(false),
-      uses_irt(false),
-      enable_dyncode_syscalls(false),
+      process_type(kUnknownNaClProcessType),
       crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
 }
 
@@ -29,10 +27,7 @@ NaClLaunchParams::NaClLaunchParams()
       nexe_token_hi(0),
       render_view_id(0),
       permission_bits(0),
-      uses_irt(false),
-      enable_dyncode_syscalls(false),
-      enable_exception_handling(false),
-      enable_crash_throttling(false) {
+      process_type(kUnknownNaClProcessType) {
 }
 
 NaClLaunchParams::NaClLaunchParams(
@@ -42,22 +37,16 @@ NaClLaunchParams::NaClLaunchParams(
     uint64_t nexe_token_hi,
     int render_view_id,
     uint32 permission_bits,
-    bool uses_irt,
     bool uses_nonsfi_mode,
-    bool enable_dyncode_syscalls,
-    bool enable_exception_handling,
-    bool enable_crash_throttling)
+    NaClAppProcessType process_type)
     : manifest_url(manifest_url),
       nexe_file(nexe_file),
       nexe_token_lo(nexe_token_lo),
       nexe_token_hi(nexe_token_hi),
       render_view_id(render_view_id),
       permission_bits(permission_bits),
-      uses_irt(uses_irt),
       uses_nonsfi_mode(uses_nonsfi_mode),
-      enable_dyncode_syscalls(enable_dyncode_syscalls),
-      enable_exception_handling(enable_exception_handling),
-      enable_crash_throttling(enable_crash_throttling) {
+      process_type(process_type) {
 }
 
 NaClLaunchParams::~NaClLaunchParams() {

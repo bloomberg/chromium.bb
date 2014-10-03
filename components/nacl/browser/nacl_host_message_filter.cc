@@ -121,7 +121,7 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   // If we're running llc or ld for the PNaCl translator, we don't need to look
   // up permissions, and we don't have the right browser state to look up some
   // of the whitelisting parameters anyway.
-  if (!launch_params.uses_irt) {
+  if (launch_params.process_type == kPNaClTranslatorProcessType) {
     uint32 perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
     LaunchNaClContinuation(
         launch_params,
@@ -183,12 +183,9 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
       permissions,
       launch_params.render_view_id,
       launch_params.permission_bits,
-      launch_params.uses_irt,
       launch_params.uses_nonsfi_mode,
-      launch_params.enable_dyncode_syscalls,
-      launch_params.enable_exception_handling,
-      launch_params.enable_crash_throttling,
       off_the_record_,
+      launch_params.process_type,
       profile_directory_);
   GURL manifest_url(launch_params.manifest_url);
   base::FilePath manifest_path;

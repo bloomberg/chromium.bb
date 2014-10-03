@@ -10,6 +10,7 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/common/nacl_types_param_traits.h"
 #include "components/nacl/common/pnacl_types.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
@@ -26,11 +27,8 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
   IPC_STRUCT_TRAITS_MEMBER(nexe_token_hi)
   IPC_STRUCT_TRAITS_MEMBER(render_view_id)
   IPC_STRUCT_TRAITS_MEMBER(permission_bits)
-  IPC_STRUCT_TRAITS_MEMBER(uses_irt)
   IPC_STRUCT_TRAITS_MEMBER(uses_nonsfi_mode)
-  IPC_STRUCT_TRAITS_MEMBER(enable_dyncode_syscalls)
-  IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
-  IPC_STRUCT_TRAITS_MEMBER(enable_crash_throttling)
+  IPC_STRUCT_TRAITS_MEMBER(process_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchResult)

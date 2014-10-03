@@ -133,6 +133,17 @@ enum PP_NaClReadyState {
   PP_NACL_READY_STATE_DONE = 4
 };
 
+/** Types of untrusted NaCl processes. Mirrors NaClAppProcessType from
+ *  components/nacl/common/nacl_types.h.
+ */
+enum PP_NaClAppProcessType {
+  PP_UNKNOWN_NACL_PROCESS_TYPE,
+  PP_NATIVE_NACL_PROCESS_TYPE,
+  PP_PNACL_PROCESS_TYPE,
+  PP_PNACL_TRANSLATOR_PROCESS_TYPE,
+  PP_NUM_NACL_PROCESS_TYPES
+};
+
 struct PP_PNaClOptions {
   PP_Bool translate;
   PP_Bool is_debug;
@@ -158,36 +169,20 @@ interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
    * and writes a NaClHandle to imc_handle. Returns PP_EXTERNAL_PLUGIN_FAILED on
    * failure. The |enable_ppapi_dev| parameter controls whether GetInterface
-   * returns 'Dev' interfaces to the NaCl plugin.  The |uses_ppapi| flag
-   * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
-   * This implies that LaunchSelLdr is run from the main thread.  If a nexe
-   * does not need PPAPI, then it can run off the main thread.
+   * returns 'Dev' interfaces to the NaCl plugin.
    * The |nexe_file_info| is currently used only in non-SFI mode. It is the
    * file handle for the main nexe file, which should be initially loaded.
    * LaunchSelLdr takes the ownership of the file handle.
-   * The |uses_irt| flag indicates whether the IRT should be loaded in this
-   * NaCl process.  This is true for ABI stable nexes.
    * The |uses_nonsfi_mode| flag indicates whether or not nonsfi-mode should
    * be used with the binary pointed by the url.
-   * The |enable_dyncode_syscalls| flag indicates whether or not the nexe
-   * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
-   * The |enable_exception_handling| flag indicates whether or not the nexe
-   * will be able to use hardware exception handling.
-   * The |enable_crash_throttling| flag indicates whether or not crashes of
-   * the nexe contribute to crash throttling statisics and whether nexe starts
-   * are throttled by crash throttling.
    */
   void LaunchSelLdr([in] PP_Instance instance,
                     [in] PP_Bool main_service_runtime,
                     [in] str_t alleged_url,
                     [in] PP_NaClFileInfo nexe_file_info,
-                    [in] PP_Bool uses_irt,
-                    [in] PP_Bool uses_ppapi,
                     [in] PP_Bool uses_nonsfi_mode,
                     [in] PP_Bool enable_ppapi_dev,
-                    [in] PP_Bool enable_dyncode_syscalls,
-                    [in] PP_Bool enable_exception_handling,
-                    [in] PP_Bool enable_crash_throttling,
+                    [in] PP_NaClAppProcessType process_type,
                     [out] mem_t imc_handle,
                     [in] PP_CompletionCallback callback);
 
