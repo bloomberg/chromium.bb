@@ -10,8 +10,6 @@
   'target_defaults': {
     'defines': [
       'SQLITE_CORE',
-      'SQLITE_ENABLE_BROKEN_FTS2',
-      'SQLITE_ENABLE_FTS2',
       'SQLITE_ENABLE_FTS3',
       'SQLITE_ENABLE_ICU',
       'SQLITE_ENABLE_MEMORY_MANAGEMENT',
@@ -81,17 +79,6 @@
           'sources': [
             'amalgamation/sqlite3.h',
             'amalgamation/sqlite3.c',
-            # fts2.c currently has a lot of conflicts when added to
-            # the amalgamation.  It is probably not worth fixing that.
-            'src/ext/fts2/fts2.c',
-            'src/ext/fts2/fts2.h',
-            'src/ext/fts2/fts2_hash.c',
-            'src/ext/fts2/fts2_hash.h',
-            'src/ext/fts2/fts2_icu.c',
-            'src/ext/fts2/fts2_porter.c',
-            'src/ext/fts2/fts2_tokenizer.c',
-            'src/ext/fts2/fts2_tokenizer.h',
-            'src/ext/fts2/fts2_tokenizer1.c',
           ],
 
           # TODO(shess): Previously fts1 and rtree files were
@@ -103,8 +90,6 @@
 
           'include_dirs': [
             'amalgamation',
-            # Needed for fts2 to build.
-            'src/src',
           ],
           'dependencies': [
             '../icu/icu.gyp:icui18n',
@@ -166,6 +151,28 @@
               'aosp_build_settings': {
                 'LOCAL_FDO_SUPPORT': 'true',
               },
+            }],
+            ['sqlite_enable_fts2', {
+              'defines': [
+                'SQLITE_ENABLE_BROKEN_FTS2',
+                'SQLITE_ENABLE_FTS2',
+              ],
+              'sources': [
+                # fts2.c currently has a lot of conflicts when added to
+                # the amalgamation.  It is probably not worth fixing that.
+                'src/ext/fts2/fts2.c',
+                'src/ext/fts2/fts2.h',
+                'src/ext/fts2/fts2_hash.c',
+                'src/ext/fts2/fts2_hash.h',
+                'src/ext/fts2/fts2_icu.c',
+                'src/ext/fts2/fts2_porter.c',
+                'src/ext/fts2/fts2_tokenizer.c',
+                'src/ext/fts2/fts2_tokenizer.h',
+                'src/ext/fts2/fts2_tokenizer1.c',
+              ],
+              'include_dirs': [
+                'src/src',
+              ],
             }],
           ],
         }],
