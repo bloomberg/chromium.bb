@@ -40,7 +40,7 @@ class Element;
 class HTMLElement;
 class HTMLSelectElement;
 
-class AXListBoxOption FINAL : public AXRenderObject {
+class AXListBoxOption final : public AXRenderObject {
 
 private:
     AXListBoxOption(RenderObject*);
@@ -48,19 +48,19 @@ public:
     static PassRefPtr<AXListBoxOption> create(RenderObject*);
     virtual ~AXListBoxOption();
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return ListBoxOptionRole; }
-    virtual bool isSelected() const OVERRIDE;
-    virtual bool isEnabled() const OVERRIDE;
-    virtual bool isSelectedOptionActive() const OVERRIDE;
-    virtual void setSelected(bool) OVERRIDE;
-    virtual bool canSetSelectedAttribute() const OVERRIDE;
-    virtual String stringValue() const OVERRIDE;
-    virtual String title() const OVERRIDE { return String(); }
+    virtual AccessibilityRole roleValue() const override { return ListBoxOptionRole; }
+    virtual bool isSelected() const override;
+    virtual bool isEnabled() const override;
+    virtual bool isSelectedOptionActive() const override;
+    virtual void setSelected(bool) override;
+    virtual bool canSetSelectedAttribute() const override;
+    virtual String stringValue() const override;
+    virtual String title() const override { return String(); }
 
 private:
-    virtual bool isListBoxOption() const OVERRIDE { return true; }
-    virtual bool canHaveChildren() const OVERRIDE { return false; }
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual bool isListBoxOption() const override { return true; }
+    virtual bool canHaveChildren() const override { return false; }
+    virtual bool computeAccessibilityIsIgnored() const override;
 
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;

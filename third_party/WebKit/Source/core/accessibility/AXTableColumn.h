@@ -36,7 +36,7 @@ namespace blink {
 
 class RenderTableSection;
 
-class AXTableColumn FINAL : public AXMockObject {
+class AXTableColumn final : public AXMockObject {
 
 private:
     AXTableColumn();
@@ -46,23 +46,23 @@ public:
 
     AXObject* headerObject();
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return ColumnRole; }
+    virtual AccessibilityRole roleValue() const override { return ColumnRole; }
 
     void setColumnIndex(int columnIndex) { m_columnIndex = columnIndex; }
     int columnIndex() const { return m_columnIndex; }
 
-    virtual void addChildren() OVERRIDE;
-    virtual void setParent(AXObject*) OVERRIDE;
+    virtual void addChildren() override;
+    virtual void setParent(AXObject*) override;
 
-    virtual LayoutRect elementRect() const OVERRIDE;
+    virtual LayoutRect elementRect() const override;
 
 private:
     unsigned m_columnIndex;
     LayoutRect m_columnRect;
 
-    virtual bool isTableCol() const OVERRIDE { return true; }
+    virtual bool isTableCol() const override { return true; }
     AXObject* headerObjectForSection(RenderTableSection*, bool thTagRequired);
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual bool computeAccessibilityIsIgnored() const override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());

@@ -41,7 +41,7 @@ public:
     static PassRefPtr<AXTableCell> create(RenderObject*);
     virtual ~AXTableCell();
 
-    virtual bool isTableCell() const OVERRIDE FINAL;
+    virtual bool isTableCell() const override final;
 
     // fills in the start location and row span of cell
     virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange);
@@ -51,13 +51,13 @@ public:
 protected:
     virtual AXObject* parentTable() const;
     int m_rowIndex;
-    virtual AccessibilityRole determineAccessibilityRole() OVERRIDE FINAL;
+    virtual AccessibilityRole determineAccessibilityRole() override final;
 
 private:
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
-    virtual AXObject* titleUIElement() const OVERRIDE FINAL;
-    virtual bool exposesTitleUIElement() const OVERRIDE FINAL { return true; }
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE FINAL;
+    virtual AXObject* titleUIElement() const override final;
+    virtual bool exposesTitleUIElement() const override final { return true; }
+    virtual bool computeAccessibilityIsIgnored() const override final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, isTableCell());

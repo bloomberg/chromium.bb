@@ -47,35 +47,35 @@ protected:
 
 private:
     HTMLInputElement* element() const;
-    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const OVERRIDE FINAL;
+    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const override final;
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return SliderRole; }
-    virtual bool isSlider() const OVERRIDE FINAL { return true; }
-    virtual bool isControl() const OVERRIDE FINAL { return true; }
+    virtual AccessibilityRole roleValue() const override { return SliderRole; }
+    virtual bool isSlider() const override final { return true; }
+    virtual bool isControl() const override final { return true; }
 
-    virtual void addChildren() OVERRIDE FINAL;
+    virtual void addChildren() override final;
 
-    virtual bool canSetValueAttribute() const OVERRIDE FINAL { return true; }
+    virtual bool canSetValueAttribute() const override final { return true; }
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
-    virtual void setValue(const String&) OVERRIDE FINAL;
-    virtual AccessibilityOrientation orientation() const OVERRIDE FINAL;
+    virtual void setValue(const String&) override final;
+    virtual AccessibilityOrientation orientation() const override final;
 };
 
-class AXSliderThumb FINAL : public AXMockObject {
+class AXSliderThumb final : public AXMockObject {
 
 public:
     static PassRefPtr<AXSliderThumb> create();
     virtual ~AXSliderThumb() { }
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return SliderThumbRole; }
+    virtual AccessibilityRole roleValue() const override { return SliderThumbRole; }
 
-    virtual LayoutRect elementRect() const OVERRIDE;
+    virtual LayoutRect elementRect() const override;
 
 private:
     AXSliderThumb();
 
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual bool computeAccessibilityIsIgnored() const override;
 };
 
 

@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class AXListBox FINAL : public AXRenderObject {
+class AXListBox final : public AXRenderObject {
 
 private:
     explicit AXListBox(RenderObject*);
@@ -41,7 +41,7 @@ public:
     static PassRefPtr<AXListBox> create(RenderObject*);
     virtual ~AXListBox();
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return ListBoxRole; }
+    virtual AccessibilityRole roleValue() const override { return ListBoxRole; }
 };
 
 } // namespace blink

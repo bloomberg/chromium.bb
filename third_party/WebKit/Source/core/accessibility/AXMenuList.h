@@ -35,24 +35,24 @@ class AXMenuListPopup;
 class HTMLOptionElement;
 class RenderMenuList;
 
-class AXMenuList FINAL : public AXRenderObject {
+class AXMenuList final : public AXRenderObject {
 public:
     static PassRefPtr<AXMenuList> create(RenderMenuList* renderer);
 
-    virtual bool isCollapsed() const OVERRIDE;
-    virtual bool press() const OVERRIDE;
+    virtual bool isCollapsed() const override;
+    virtual bool press() const override;
 
     void didUpdateActiveOption(int optionIndex);
 
 private:
     explicit AXMenuList(RenderMenuList*);
 
-    virtual bool isMenuList() const OVERRIDE { return true; }
-    virtual AccessibilityRole roleValue() const OVERRIDE { return PopUpButtonRole; }
-    virtual bool canSetFocusAttribute() const OVERRIDE;
+    virtual bool isMenuList() const override { return true; }
+    virtual AccessibilityRole roleValue() const override { return PopUpButtonRole; }
+    virtual bool canSetFocusAttribute() const override;
 
-    virtual void addChildren() OVERRIDE;
-    virtual void childrenChanged() OVERRIDE;
+    virtual void addChildren() override;
+    virtual void childrenChanged() override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, isMenuList());

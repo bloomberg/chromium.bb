@@ -33,7 +33,7 @@ namespace blink {
 class AXMenuListPopup;
 class HTMLElement;
 
-class AXMenuListOption FINAL : public AXMockObject {
+class AXMenuListOption final : public AXMockObject {
 public:
     static PassRefPtr<AXMenuListOption> create() { return adoptRef(new AXMenuListOption); }
 
@@ -42,21 +42,21 @@ public:
 private:
     AXMenuListOption();
 
-    virtual bool isMenuListOption() const OVERRIDE { return true; }
+    virtual bool isMenuListOption() const override { return true; }
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return MenuListOptionRole; }
-    virtual bool canHaveChildren() const OVERRIDE { return false; }
+    virtual AccessibilityRole roleValue() const override { return MenuListOptionRole; }
+    virtual bool canHaveChildren() const override { return false; }
 
-    virtual Element* actionElement() const OVERRIDE;
-    virtual bool isEnabled() const OVERRIDE;
-    virtual bool isVisible() const OVERRIDE;
-    virtual bool isOffScreen() const OVERRIDE;
-    virtual bool isSelected() const OVERRIDE;
-    virtual void setSelected(bool) OVERRIDE;
-    virtual bool canSetSelectedAttribute() const OVERRIDE;
-    virtual LayoutRect elementRect() const OVERRIDE;
-    virtual String stringValue() const OVERRIDE;
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual Element* actionElement() const override;
+    virtual bool isEnabled() const override;
+    virtual bool isVisible() const override;
+    virtual bool isOffScreen() const override;
+    virtual bool isSelected() const override;
+    virtual void setSelected(bool) override;
+    virtual bool canSetSelectedAttribute() const override;
+    virtual LayoutRect elementRect() const override;
+    virtual String stringValue() const override;
+    virtual bool computeAccessibilityIsIgnored() const override;
 
     RefPtrWillBePersistent<HTMLElement> m_element;
 };

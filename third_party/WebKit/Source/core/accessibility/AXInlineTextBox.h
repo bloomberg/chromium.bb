@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class AXInlineTextBox FINAL : public AXObject {
+class AXInlineTextBox final : public AXObject {
 
 private:
     AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>);
@@ -43,24 +43,24 @@ public:
     static PassRefPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>);
     virtual ~AXInlineTextBox();
 
-    virtual void init() OVERRIDE;
-    virtual void detach() OVERRIDE;
+    virtual void init() override;
+    virtual void detach() override;
 
     void setInlineTextBox(AbstractInlineTextBox* inlineTextBox) { m_inlineTextBox = inlineTextBox; }
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return InlineTextBoxRole; }
-    virtual String stringValue() const OVERRIDE;
-    virtual void textCharacterOffsets(Vector<int>&) const OVERRIDE;
-    virtual void wordBoundaries(Vector<PlainTextRange>& words) const OVERRIDE;
-    virtual LayoutRect elementRect() const OVERRIDE;
-    virtual AXObject* parentObject() const OVERRIDE;
-    virtual AccessibilityTextDirection textDirection() const OVERRIDE;
+    virtual AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
+    virtual String stringValue() const override;
+    virtual void textCharacterOffsets(Vector<int>&) const override;
+    virtual void wordBoundaries(Vector<PlainTextRange>& words) const override;
+    virtual LayoutRect elementRect() const override;
+    virtual AXObject* parentObject() const override;
+    virtual AccessibilityTextDirection textDirection() const override;
 
 private:
     RefPtr<AbstractInlineTextBox> m_inlineTextBox;
     AXObjectCache* m_axObjectCache;
 
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual bool computeAccessibilityIsIgnored() const override;
 };
 
 } // namespace blink

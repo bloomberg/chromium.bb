@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class AXARIAGridRow FINAL : public AXTableRow {
+class AXARIAGridRow final : public AXTableRow {
 
 private:
     explicit AXARIAGridRow(RenderObject*);
@@ -41,10 +41,10 @@ public:
     static PassRefPtr<AXARIAGridRow> create(RenderObject*);
     virtual ~AXARIAGridRow();
 
-    virtual AXObject* headerObject() OVERRIDE;
+    virtual AXObject* headerObject() override;
 
 private:
-    virtual bool isARIATreeGridRow() const OVERRIDE;
+    virtual bool isARIATreeGridRow() const override;
 };
 
 } // namespace blink

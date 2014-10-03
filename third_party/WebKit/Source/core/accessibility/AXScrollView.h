@@ -34,44 +34,44 @@ class AXScrollbar;
 class Scrollbar;
 class ScrollView;
 
-class AXScrollView FINAL : public AXObject {
+class AXScrollView final : public AXObject {
 public:
     static PassRefPtr<AXScrollView> create(ScrollView*);
-    virtual AccessibilityRole roleValue() const OVERRIDE { return ScrollAreaRole; }
+    virtual AccessibilityRole roleValue() const override { return ScrollAreaRole; }
     ScrollView* scrollView() const { return m_scrollView; }
 
     virtual ~AXScrollView();
-    virtual void detach() OVERRIDE;
+    virtual void detach() override;
 
 protected:
-    virtual ScrollableArea* getScrollableAreaIfScrollable() const OVERRIDE;
-    virtual void scrollTo(const IntPoint&) const OVERRIDE;
+    virtual ScrollableArea* getScrollableAreaIfScrollable() const override;
+    virtual void scrollTo(const IntPoint&) const override;
 
 private:
     explicit AXScrollView(ScrollView*);
 
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
-    virtual bool isAXScrollView() const OVERRIDE { return true; }
-    virtual bool isEnabled() const OVERRIDE { return true; }
+    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool isAXScrollView() const override { return true; }
+    virtual bool isEnabled() const override { return true; }
 
-    virtual bool isAttachment() const OVERRIDE;
-    virtual Widget* widgetForAttachmentView() const OVERRIDE;
+    virtual bool isAttachment() const override;
+    virtual Widget* widgetForAttachmentView() const override;
 
-    virtual AXObject* scrollBar(AccessibilityOrientation) OVERRIDE;
-    virtual void addChildren() OVERRIDE;
-    virtual void clearChildren() OVERRIDE;
-    virtual AXObject* accessibilityHitTest(const IntPoint&) const OVERRIDE;
-    virtual void updateChildrenIfNecessary() OVERRIDE;
-    virtual void setNeedsToUpdateChildren() OVERRIDE { m_childrenDirty = true; }
+    virtual AXObject* scrollBar(AccessibilityOrientation) override;
+    virtual void addChildren() override;
+    virtual void clearChildren() override;
+    virtual AXObject* accessibilityHitTest(const IntPoint&) const override;
+    virtual void updateChildrenIfNecessary() override;
+    virtual void setNeedsToUpdateChildren() override { m_childrenDirty = true; }
     void updateScrollbars();
 
-    virtual FrameView* documentFrameView() const OVERRIDE;
-    virtual LayoutRect elementRect() const OVERRIDE;
-    virtual AXObject* parentObject() const OVERRIDE;
-    virtual AXObject* parentObjectIfExists() const OVERRIDE;
+    virtual FrameView* documentFrameView() const override;
+    virtual LayoutRect elementRect() const override;
+    virtual AXObject* parentObject() const override;
+    virtual AXObject* parentObjectIfExists() const override;
 
     AXObject* webAreaObject() const;
-    virtual AXObject* firstChild() const OVERRIDE { return webAreaObject(); }
+    virtual AXObject* firstChild() const override { return webAreaObject(); }
     AXScrollbar* addChildScrollbar(Scrollbar*);
     void removeChildScrollbar(AXObject*);
 

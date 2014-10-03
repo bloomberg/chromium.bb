@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class AXImageMapLink FINAL : public AXMockObject {
+class AXImageMapLink final : public AXMockObject {
 
 private:
     AXImageMapLink();
@@ -49,29 +49,29 @@ public:
     void setHTMLMapElement(HTMLMapElement* element) { m_mapElement = element; }
     HTMLMapElement* mapElement() const { return m_mapElement.get(); }
 
-    virtual Node* node() const OVERRIDE { return m_areaElement.get(); }
+    virtual Node* node() const override { return m_areaElement.get(); }
 
-    virtual AccessibilityRole roleValue() const OVERRIDE;
-    virtual bool isEnabled() const OVERRIDE { return true; }
+    virtual AccessibilityRole roleValue() const override;
+    virtual bool isEnabled() const override { return true; }
 
-    virtual Element* anchorElement() const OVERRIDE;
-    virtual Element* actionElement() const OVERRIDE;
-    virtual KURL url() const OVERRIDE;
-    virtual bool isLink() const OVERRIDE { return true; }
-    virtual bool isLinked() const OVERRIDE { return true; }
-    virtual String title() const OVERRIDE;
-    virtual String accessibilityDescription() const OVERRIDE;
-    virtual AXObject* parentObject() const OVERRIDE;
+    virtual Element* anchorElement() const override;
+    virtual Element* actionElement() const override;
+    virtual KURL url() const override;
+    virtual bool isLink() const override { return true; }
+    virtual bool isLinked() const override { return true; }
+    virtual String title() const override;
+    virtual String accessibilityDescription() const override;
+    virtual AXObject* parentObject() const override;
 
-    virtual LayoutRect elementRect() const OVERRIDE;
+    virtual LayoutRect elementRect() const override;
 
 private:
     RefPtrWillBePersistent<HTMLAreaElement> m_areaElement;
     RefPtrWillBePersistent<HTMLMapElement> m_mapElement;
 
-    virtual void detachFromParent() OVERRIDE;
+    virtual void detachFromParent() override;
 
-    virtual bool isImageMapLink() const OVERRIDE { return true; }
+    virtual bool isImageMapLink() const override { return true; }
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, isImageMapLink());

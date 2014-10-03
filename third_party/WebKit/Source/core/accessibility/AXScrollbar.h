@@ -35,7 +35,7 @@ namespace blink {
 
 class Scrollbar;
 
-class AXScrollbar FINAL : public AXMockObject {
+class AXScrollbar final : public AXMockObject {
 public:
     static PassRefPtr<AXScrollbar> create(Scrollbar*);
 
@@ -44,22 +44,22 @@ public:
 private:
     explicit AXScrollbar(Scrollbar*);
 
-    virtual void detachFromParent() OVERRIDE;
+    virtual void detachFromParent() override;
 
-    virtual bool canSetValueAttribute() const OVERRIDE { return true; }
+    virtual bool canSetValueAttribute() const override { return true; }
 
-    virtual bool isAXScrollbar() const OVERRIDE { return true; }
-    virtual LayoutRect elementRect() const OVERRIDE;
+    virtual bool isAXScrollbar() const override { return true; }
+    virtual LayoutRect elementRect() const override;
 
-    virtual AccessibilityRole roleValue() const OVERRIDE { return ScrollBarRole; }
-    virtual AccessibilityOrientation orientation() const OVERRIDE;
-    virtual Document* document() const OVERRIDE;
+    virtual AccessibilityRole roleValue() const override { return ScrollBarRole; }
+    virtual AccessibilityOrientation orientation() const override;
+    virtual Document* document() const override;
 
-    virtual bool isEnabled() const OVERRIDE;
+    virtual bool isEnabled() const override;
 
     // Assumes float [0..1]
-    virtual void setValue(float) OVERRIDE;
-    virtual float valueForRange() const OVERRIDE;
+    virtual void setValue(float) override;
+    virtual float valueForRange() const override;
 
     RefPtr<Scrollbar> m_scrollbar;
 };
