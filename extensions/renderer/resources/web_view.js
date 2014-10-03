@@ -688,7 +688,7 @@ WebViewInternal.prototype.createGuest = function() {
       function(guestInstanceId) {
         this.pendingGuestCreation = false;
         if (!this.elementAttached) {
-          GuestViewInternal.destroyGuest(this.guestInstanceId);
+          GuestViewInternal.destroyGuest(guestInstanceId);
           return;
         }
         this.attachWindow(guestInstanceId, false);
