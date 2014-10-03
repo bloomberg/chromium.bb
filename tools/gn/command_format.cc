@@ -20,6 +20,7 @@ namespace commands {
 
 const char kSwitchDumpTree[] = "dump-tree";
 const char kSwitchInPlace[] = "in-place";
+const char kSwitchStdin[] = "stdin";
 
 const char kFormat[] = "format";
 const char kFormat_HelpShort[] =
@@ -40,10 +41,15 @@ const char kFormat_Help[] =
     "      Instead writing the formatted file to stdout, replace the input\n"
     "      with the formatted output.\n"
     "\n"
+    "  --stdin\n"
+    "      Read input from stdin (and write to stdout). Not compatible with\n"
+    "      --in-place of course.\n"
+    "\n"
     "Examples\n"
     "  gn format //some/BUILD.gn\n"
     "  gn format some\\BUILD.gn\n"
-    "  gn format /abspath/some/BUILD.gn\n";
+    "  gn format /abspath/some/BUILD.gn\n"
+    "  gn format --stdin\n";
 
 namespace {
 
@@ -408,8 +414,10 @@ void Printer::Sequence(SequenceStyle style,
     // TODO(scottmg): Need to know if there's an attached block for " {".
     fits_on_current_line =
         fits_on_current_line && CurrentColumn() + total_length < kMaximumWidth;
-    max_item_width =
-        *std::max_element(natural_lengths.begin(), natural_lengths.end());
+    if (natural_lengths.size() > 0) {
+      max_item_width =
+          *std::max_element(natural_lengths.begin(), natural_lengths.end());
+    }
   }
 
   if (list.size() == 0 && !force_multiline) {
@@ -501,6 +509,38 @@ void Printer::Sequence(SequenceStyle style,
   margin_ = old_margin;
 }
 
+void DoFormat(const ParseNode* root, bool dump_tree, std::string* output) {
+  if (dump_tree) {
+    std::ostringstream os;
+    root->Print(os, 0);
+    printf("----------------------\n");
+    printf("-- PARSE TREE --------\n");
+    printf("----------------------\n");
+    printf("%s", os.str().c_str());
+    printf("----------------------\n");
+  }
+  Printer pr;
+  pr.Block(root);
+  *output = pr.String();
+}
+
+std::string ReadStdin() {
+  static const int kBufferSize = 256;
+  char buffer[kBufferSize];
+  std::string result;
+  while (true) {
+    char* input = NULL;
+    input = fgets(buffer, kBufferSize, stdin);
+    if (input == NULL && feof(stdin))
+      return result;
+    int length = static_cast<int>(strlen(buffer));
+    if (length == 0)
+      return result;
+    else
+      result += std::string(buffer, length);
+  }
+}
+
 }  // namespace
 
 bool FormatFileToString(Setup* setup,
@@ -515,34 +555,63 @@ bool FormatFileToString(Setup* setup,
     err.PrintToStdout();
     return false;
   }
-  if (dump_tree) {
-    std::ostringstream os;
-    parse_node->Print(os, 0);
-    printf("----------------------\n");
-    printf("-- PARSE TREE --------\n");
-    printf("----------------------\n");
-    printf("%s", os.str().c_str());
-    printf("----------------------\n");
+  DoFormat(parse_node, dump_tree, output);
+  return true;
+}
+
+bool FormatStringToString(const std::string& input,
+                          bool dump_tree,
+                          std::string* output) {
+  SourceFile source_file;
+  InputFile file(source_file);
+  file.SetContents(input);
+  Err err;
+  // Tokenize.
+  std::vector<Token> tokens = Tokenizer::Tokenize(&file, &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
   }
-  Printer pr;
-  pr.Block(parse_node);
-  *output = pr.String();
+
+  // Parse.
+  scoped_ptr<ParseNode> parse_node = Parser::Parse(tokens, &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  DoFormat(parse_node.get(), dump_tree, output);
   return true;
 }
 
 int RunFormat(const std::vector<std::string>& args) {
+  bool dump_tree =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchDumpTree);
+
+  bool from_stdin =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchStdin);
+
+  if (from_stdin) {
+    if (args.size() != 0) {
+      Err(Location(), "Expecting no arguments when reading from stdin.\n")
+          .PrintToStdout();
+      return 1;
+    }
+    std::string input = ReadStdin();
+    std::string output;
+    if (!FormatStringToString(input, dump_tree, &output))
+      return 1;
+    printf("%s", output.c_str());
+    return 0;
+  }
+
   // TODO(scottmg): Eventually, this should be a list/spec of files, and they
-  // should all be done in parallel and in-place. For now, we don't want to
-  // overwrite good data with mistakenly reformatted stuff, so we just simply
-  // print the formatted output to stdout.
+  // should all be done in parallel.
   if (args.size() != 1) {
     Err(Location(), "Expecting exactly one argument, see `gn help format`.\n")
         .PrintToStdout();
     return 1;
   }
-
-  bool dump_tree =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchDumpTree);
 
   Setup setup;
   SourceDir source_dir =
