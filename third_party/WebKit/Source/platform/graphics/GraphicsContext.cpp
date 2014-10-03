@@ -1811,7 +1811,8 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createRasterBuffer(const IntSize& size,
     IntSize scaledSize(static_cast<int>(ceil(size.width() * transform.xScale())), static_cast<int>(ceil(size.height() * transform.yScale())));
 
     OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(scaledSize, opacityMode));
-    ASSERT(surface->isValid());
+    if (!surface->isValid())
+        return nullptr;
     OwnPtr<ImageBuffer> buffer = adoptPtr(new ImageBuffer(surface.release()));
 
     buffer->context()->scale(static_cast<float>(scaledSize.width()) / size.width(),
