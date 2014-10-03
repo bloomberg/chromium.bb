@@ -78,8 +78,9 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   const GURL kUrl3("http://www.gmail.com/");
   const int64 kFirstNavRequestID = 1;
 
-  EnableBrowserSideNavigation();
   contents()->NavigateAndCommit(kUrl1);
+
+  EnableBrowserSideNavigation();
 
   // Add a subframe.
   TestRenderFrameHost* subframe_rfh = static_cast<TestRenderFrameHost*>(
@@ -88,8 +89,8 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
 
   FrameTreeNode* subframe_node = subframe_rfh->frame_tree_node();
   SendRequestNavigation(subframe_rfh->frame_tree_node(), kUrl2);
-  // Simulate a BeginNavigation IPC on the subframe.
-  subframe_rfh->SendBeginNavigationWithURL(kUrl2);
+  // There is no previous renderer in the subframe, so BeginNavigation is
+  // handled already.
   NavigationRequest* subframe_request =
       GetNavigationRequestForFrameTreeNode(subframe_node);
   ASSERT_TRUE(subframe_request);
@@ -98,7 +99,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   EXPECT_EQ(kUrl1, subframe_request->info_for_test()->first_party_for_cookies);
   EXPECT_FALSE(subframe_request->info_for_test()->is_main_frame);
   EXPECT_TRUE(subframe_request->info_for_test()->parent_is_main_frame);
-  EXPECT_EQ(kFirstNavRequestID + 1, subframe_request->navigation_request_id());
+  EXPECT_EQ(kFirstNavRequestID, subframe_request->navigation_request_id());
 
   FrameTreeNode* main_frame_node =
       contents()->GetMainFrame()->frame_tree_node();
@@ -112,7 +113,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   EXPECT_EQ(kUrl3, main_request->info_for_test()->first_party_for_cookies);
   EXPECT_TRUE(main_request->info_for_test()->is_main_frame);
   EXPECT_FALSE(main_request->info_for_test()->parent_is_main_frame);
-  EXPECT_EQ(kFirstNavRequestID + 2, main_request->navigation_request_id());
+  EXPECT_EQ(kFirstNavRequestID + 1, main_request->navigation_request_id());
 }
 
 // PlzNavigate: Test that RequestNavigation creates a NavigationRequest and that
@@ -151,11 +152,12 @@ TEST_F(NavigatorTest,
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
-  EnableBrowserSideNavigation();
   contents()->NavigateAndCommit(kUrl1);
   RenderFrameHostImpl* rfh = main_test_rfh();
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh->rfh_state());
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  EnableBrowserSideNavigation();
 
   // Navigate to a different site.
   SendRequestNavigation(node, kUrl2);
@@ -167,9 +169,12 @@ TEST_F(NavigatorTest,
   commit_info.navigation_url = kUrl2;
   commit_info.navigation_request_id = main_request->navigation_request_id();
   node->navigator()->CommitNavigation(node, commit_info);
-  EXPECT_NE(main_test_rfh(), rfh);
-  EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
-  EXPECT_TRUE(main_test_rfh()->render_view_host()->IsRenderViewLive());
+  RenderFrameHostImpl* pending_rfh =
+      node->render_manager()->pending_frame_host();
+  ASSERT_TRUE(pending_rfh);
+  EXPECT_NE(pending_rfh, rfh);
+  EXPECT_TRUE(pending_rfh->IsRenderFrameLive());
+  EXPECT_TRUE(pending_rfh->render_view_host()->IsRenderViewLive());
 }
 
 // PlzNavigate: Test that a navigation commit is ignored if another request has
