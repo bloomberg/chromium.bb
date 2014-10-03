@@ -172,9 +172,6 @@ GL_APICALL void         GL_APIENTRY glBindVertexArrayOES (GLidBindVertexArray ar
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
-GL_APICALL void         GL_APIENTRY glGenSharedIdsCHROMIUM (GLuint namespace_id, GLuint id_offset, GLsizeiNotNegative n, GLuint* ids);
-GL_APICALL void         GL_APIENTRY glDeleteSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
-GL_APICALL void         GL_APIENTRY glRegisterSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
 GL_APICALL GLboolean    GL_APIENTRY glEnableFeatureCHROMIUM (const char* feature);
 GL_APICALL void*        GL_APIENTRY glMapBufferCHROMIUM (GLuint target, GLenum access);
 GL_APICALL GLboolean    GL_APIENTRY glUnmapBufferCHROMIUM (GLuint target);

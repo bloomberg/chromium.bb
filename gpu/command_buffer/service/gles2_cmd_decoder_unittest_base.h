@@ -97,10 +97,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return reinterpret_cast<T>(ptr);
   }
 
-  IdAllocatorInterface* GetIdAllocator(GLuint namespace_id) {
-    return group_->GetIdAllocator(namespace_id);
-  }
-
   Buffer* GetBuffer(GLuint service_id) {
     return group_->buffer_manager()->GetBuffer(service_id);
   }

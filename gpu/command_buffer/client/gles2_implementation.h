@@ -599,7 +599,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // IdAllocators for objects that can't be shared among contexts.
   // For now, used only for Queries. TODO(hj.r.chung) Should be added for
   // Framebuffer and Vertex array objects.
-  IdAllocatorInterface* GetIdAllocator(int id_namespace) const;
+  IdAllocator* GetIdAllocator(int id_namespace) const;
 
   void FinishHelper();
 
@@ -770,7 +770,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_ptr<QueryTracker> query_tracker_;
   typedef std::map<GLuint, QueryTracker::Query*> QueryMap;
   QueryMap current_queries_;
-  scoped_ptr<IdAllocatorInterface> query_id_allocator_;
+  scoped_ptr<IdAllocator> query_id_allocator_;
 
   scoped_ptr<BufferTracker> buffer_tracker_;
 

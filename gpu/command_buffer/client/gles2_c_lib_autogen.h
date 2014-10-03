@@ -712,22 +712,6 @@ GLuint GLES2GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
   return gles2::GetGLContext()->GetMaxValueInBufferCHROMIUM(
       buffer_id, count, type, offset);
 }
-void GLES2GenSharedIdsCHROMIUM(GLuint namespace_id,
-                               GLuint id_offset,
-                               GLsizei n,
-                               GLuint* ids) {
-  gles2::GetGLContext()->GenSharedIdsCHROMIUM(namespace_id, id_offset, n, ids);
-}
-void GLES2DeleteSharedIdsCHROMIUM(GLuint namespace_id,
-                                  GLsizei n,
-                                  const GLuint* ids) {
-  gles2::GetGLContext()->DeleteSharedIdsCHROMIUM(namespace_id, n, ids);
-}
-void GLES2RegisterSharedIdsCHROMIUM(GLuint namespace_id,
-                                    GLsizei n,
-                                    const GLuint* ids) {
-  gles2::GetGLContext()->RegisterSharedIdsCHROMIUM(namespace_id, n, ids);
-}
 GLboolean GLES2EnableFeatureCHROMIUM(const char* feature) {
   return gles2::GetGLContext()->EnableFeatureCHROMIUM(feature);
 }
@@ -1652,18 +1636,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetMaxValueInBufferCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glGetMaxValueInBufferCHROMIUM),
-    },
-    {
-     "glGenSharedIdsCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGenSharedIdsCHROMIUM),
-    },
-    {
-     "glDeleteSharedIdsCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteSharedIdsCHROMIUM),
-    },
-    {
-     "glRegisterSharedIdsCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glRegisterSharedIdsCHROMIUM),
     },
     {
      "glEnableFeatureCHROMIUM",

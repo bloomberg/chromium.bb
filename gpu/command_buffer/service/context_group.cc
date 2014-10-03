@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -60,15 +59,6 @@ ContextGroup::ContextGroup(
     transfer_buffer_manager_.reset(manager);
     manager->Initialize();
   }
-
-  id_namespaces_[id_namespaces::kBuffers].reset(new IdAllocator);
-  id_namespaces_[id_namespaces::kFramebuffers].reset(new IdAllocator);
-  id_namespaces_[id_namespaces::kProgramsAndShaders].reset(
-      new NonReusedIdAllocator);
-  id_namespaces_[id_namespaces::kRenderbuffers].reset(new IdAllocator);
-  id_namespaces_[id_namespaces::kTextures].reset(new IdAllocator);
-  id_namespaces_[id_namespaces::kQueries].reset(new IdAllocator);
-  id_namespaces_[id_namespaces::kVertexArrays].reset(new IdAllocator);
 }
 
 static void GetIntegerv(GLenum pname, uint32* var) {
@@ -326,13 +316,6 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   }
 
   memory_tracker_ = NULL;
-}
-
-IdAllocatorInterface* ContextGroup::GetIdAllocator(unsigned namespace_id) {
-  if (namespace_id >= arraysize(id_namespaces_))
-    return NULL;
-
-  return id_namespaces_[namespace_id].get();
 }
 
 uint32 ContextGroup::GetMemRepresented() const {

@@ -1842,7 +1842,7 @@ void GLES2Implementation::GenQueriesEXT(GLsizei n, GLuint* queries) {
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  IdAllocatorInterface* id_allocator = GetIdAllocator(id_namespaces::kQueries);
+  IdAllocator* id_allocator = GetIdAllocator(id_namespaces::kQueries);
   for (GLsizei ii = 0; ii < n; ++ii)
     queries[ii] = id_allocator->AllocateID();
   GenQueriesEXTHelper(n, queries);

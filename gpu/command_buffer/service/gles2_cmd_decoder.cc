@@ -1270,10 +1270,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
-  // Helper for DeleteSharedIdsCHROMIUM commands.
-  void DoDeleteSharedIdsCHROMIUM(
-      GLuint namespace_id, GLsizei n, const GLuint* ids);
-
   // Wrapper for glDetachShader
   void DoDetachShader(GLuint client_program_id, GLint client_shader_id);
 
@@ -1323,10 +1319,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
-
-  // Helper for GenSharedIdsCHROMIUM commands.
-  void DoGenSharedIdsCHROMIUM(
-      GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 
   // Helper for DoGetBooleanv, Floatv, and Intergerv to adjust pname
   // to account for different pname values defined in different extension
@@ -1386,10 +1378,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
-
-  // Helper for RegisterSharedIdsCHROMIUM.
-  void DoRegisterSharedIdsCHROMIUM(
-      GLuint namespace_id, GLsizei n, const GLuint* ids);
 
   // Wrapper for glRenderbufferStorage.
   void DoRenderbufferStorage(
@@ -3954,9 +3942,6 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
       glGenBuffersARB(1, &service_id);
       CreateBuffer(client_id, service_id);
       buffer = GetBuffer(client_id);
-      IdAllocatorInterface* id_allocator =
-          group_->GetIdAllocator(id_namespaces::kBuffers);
-      id_allocator->MarkAsUsed(client_id);
     }
   }
   LogClientServiceForInfo(buffer, client_id, "glBindBuffer");
@@ -4158,9 +4143,6 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
       glGenFramebuffersEXT(1, &service_id);
       CreateFramebuffer(client_id, service_id);
       framebuffer = GetFramebuffer(client_id);
-      IdAllocatorInterface* id_allocator =
-          group_->GetIdAllocator(id_namespaces::kFramebuffers);
-      id_allocator->MarkAsUsed(client_id);
     } else {
       service_id = framebuffer->service_id();
     }
@@ -4206,9 +4188,6 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
       glGenRenderbuffersEXT(1, &service_id);
       CreateRenderbuffer(client_id, service_id);
       renderbuffer = GetRenderbuffer(client_id);
-      IdAllocatorInterface* id_allocator =
-          group_->GetIdAllocator(id_namespaces::kRenderbuffers);
-      id_allocator->MarkAsUsed(client_id);
     } else {
       service_id = renderbuffer->service_id();
     }
@@ -4238,9 +4217,6 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       DCHECK_NE(0u, service_id);
       CreateTexture(client_id, service_id);
       texture_ref = GetTexture(client_id);
-      IdAllocatorInterface* id_allocator =
-          group_->GetIdAllocator(id_namespaces::kTextures);
-      id_allocator->MarkAsUsed(client_id);
     }
   } else {
     texture_ref = texture_manager()->GetDefaultTextureInfo(target);
@@ -4995,118 +4971,6 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(uint32 immediate_data_size,
           GL_INVALID_VALUE, "glDeleteProgram", "unknown program");
     }
   }
-  return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoDeleteSharedIdsCHROMIUM(
-    GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  IdAllocatorInterface* id_allocator = group_->GetIdAllocator(namespace_id);
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    id_allocator->FreeID(ids[ii]);
-  }
-}
-
-error::Error GLES2DecoderImpl::HandleDeleteSharedIdsCHROMIUM(
-    uint32 immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::DeleteSharedIdsCHROMIUM& c =
-      *static_cast<const gles2::cmds::DeleteSharedIdsCHROMIUM*>(cmd_data);
-  GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
-  GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
-    return error::kOutOfBounds;
-  }
-  const GLuint* ids = GetSharedMemoryAs<const GLuint*>(
-      c.ids_shm_id, c.ids_shm_offset, data_size);
-  if (n < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "DeleteSharedIdsCHROMIUM", "n < 0");
-    return error::kNoError;
-  }
-  if (ids == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoDeleteSharedIdsCHROMIUM(namespace_id, n, ids);
-  return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoGenSharedIdsCHROMIUM(
-    GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
-  IdAllocatorInterface* id_allocator = group_->GetIdAllocator(namespace_id);
-  if (id_offset == 0) {
-    for (GLsizei ii = 0; ii < n; ++ii) {
-      ids[ii] = id_allocator->AllocateID();
-    }
-  } else {
-    for (GLsizei ii = 0; ii < n; ++ii) {
-      ids[ii] = id_allocator->AllocateIDAtOrAbove(id_offset);
-      id_offset = ids[ii] + 1;
-    }
-  }
-}
-
-error::Error GLES2DecoderImpl::HandleGenSharedIdsCHROMIUM(
-    uint32 immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::GenSharedIdsCHROMIUM& c =
-      *static_cast<const gles2::cmds::GenSharedIdsCHROMIUM*>(cmd_data);
-  GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
-  GLuint id_offset = static_cast<GLuint>(c.id_offset);
-  GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
-    return error::kOutOfBounds;
-  }
-  GLuint* ids = GetSharedMemoryAs<GLuint*>(
-      c.ids_shm_id, c.ids_shm_offset, data_size);
-  if (n < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "GenSharedIdsCHROMIUM", "n < 0");
-    return error::kNoError;
-  }
-  if (ids == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoGenSharedIdsCHROMIUM(namespace_id, id_offset, n, ids);
-  return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoRegisterSharedIdsCHROMIUM(
-    GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  IdAllocatorInterface* id_allocator = group_->GetIdAllocator(namespace_id);
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (!id_allocator->MarkAsUsed(ids[ii])) {
-      for (GLsizei jj = 0; jj < ii; ++jj) {
-        id_allocator->FreeID(ids[jj]);
-      }
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE, "RegisterSharedIdsCHROMIUM",
-          "attempt to register id that already exists");
-      return;
-    }
-  }
-}
-
-error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
-    uint32 immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::RegisterSharedIdsCHROMIUM& c =
-      *static_cast<const gles2::cmds::RegisterSharedIdsCHROMIUM*>(cmd_data);
-  GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
-  GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
-    return error::kOutOfBounds;
-  }
-  GLuint* ids = GetSharedMemoryAs<GLuint*>(
-      c.ids_shm_id, c.ids_shm_offset, data_size);
-  if (n < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "RegisterSharedIdsCHROMIUM", "n < 0");
-    return error::kNoError;
-  }
-  if (ids == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoRegisterSharedIdsCHROMIUM(namespace_id, n, ids);
   return error::kNoError;
 }
 
@@ -10721,10 +10585,6 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
         "glCreateAndConsumeTextureCHROMIUM", "invalid target");
     return;
   }
-
-  IdAllocatorInterface* id_allocator =
-      group_->GetIdAllocator(id_namespaces::kTextures);
-  id_allocator->MarkAsUsed(client_id);
 
   texture_ref = texture_manager()->Consume(client_id, texture);
 }

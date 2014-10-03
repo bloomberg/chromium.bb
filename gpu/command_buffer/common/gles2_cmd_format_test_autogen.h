@@ -2664,61 +2664,6 @@ TEST_F(GLES2FormatTest, GetMaxValueInBufferCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, GenSharedIdsCHROMIUM) {
-  cmds::GenSharedIdsCHROMIUM& cmd = *GetBufferAs<cmds::GenSharedIdsCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd,
-                           static_cast<GLuint>(11),
-                           static_cast<GLuint>(12),
-                           static_cast<GLsizei>(13),
-                           static_cast<uint32_t>(14),
-                           static_cast<uint32_t>(15));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::GenSharedIdsCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.id_offset);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.n);
-  EXPECT_EQ(static_cast<uint32_t>(14), cmd.ids_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(15), cmd.ids_shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, DeleteSharedIdsCHROMIUM) {
-  cmds::DeleteSharedIdsCHROMIUM& cmd =
-      *GetBufferAs<cmds::DeleteSharedIdsCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd,
-                           static_cast<GLuint>(11),
-                           static_cast<GLsizei>(12),
-                           static_cast<uint32_t>(13),
-                           static_cast<uint32_t>(14));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteSharedIdsCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.n);
-  EXPECT_EQ(static_cast<uint32_t>(13), cmd.ids_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(14), cmd.ids_shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, RegisterSharedIdsCHROMIUM) {
-  cmds::RegisterSharedIdsCHROMIUM& cmd =
-      *GetBufferAs<cmds::RegisterSharedIdsCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd,
-                           static_cast<GLuint>(11),
-                           static_cast<GLsizei>(12),
-                           static_cast<uint32_t>(13),
-                           static_cast<uint32_t>(14));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::RegisterSharedIdsCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.n);
-  EXPECT_EQ(static_cast<uint32_t>(13), cmd.ids_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(14), cmd.ids_shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, EnableFeatureCHROMIUM) {
   cmds::EnableFeatureCHROMIUM& cmd =
       *GetBufferAs<cmds::EnableFeatureCHROMIUM>();

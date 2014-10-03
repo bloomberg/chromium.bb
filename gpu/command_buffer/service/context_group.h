@@ -21,7 +21,6 @@
 
 namespace gpu {
 
-class IdAllocatorInterface;
 class TransferBufferManagerInterface;
 
 namespace gles2 {
@@ -151,8 +150,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return transfer_buffer_manager_.get();
   }
 
-  IdAllocatorInterface* GetIdAllocator(unsigned namespace_id);
-
   uint32 GetMemRepresented() const;
 
   // Loses all the context associated with this group.
@@ -207,9 +204,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_ptr<ProgramManager> program_manager_;
 
   scoped_ptr<ShaderManager> shader_manager_;
-
-  linked_ptr<IdAllocatorInterface>
-      id_namespaces_[id_namespaces::kNumIdNamespaces];
 
   scoped_refptr<FeatureInfo> feature_info_;
 

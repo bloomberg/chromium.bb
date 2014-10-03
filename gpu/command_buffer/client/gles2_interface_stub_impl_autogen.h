@@ -652,19 +652,6 @@ GLuint GLES2InterfaceStub::GetMaxValueInBufferCHROMIUM(GLuint /* buffer_id */,
                                                        GLuint /* offset */) {
   return 0;
 }
-void GLES2InterfaceStub::GenSharedIdsCHROMIUM(GLuint /* namespace_id */,
-                                              GLuint /* id_offset */,
-                                              GLsizei /* n */,
-                                              GLuint* /* ids */) {
-}
-void GLES2InterfaceStub::DeleteSharedIdsCHROMIUM(GLuint /* namespace_id */,
-                                                 GLsizei /* n */,
-                                                 const GLuint* /* ids */) {
-}
-void GLES2InterfaceStub::RegisterSharedIdsCHROMIUM(GLuint /* namespace_id */,
-                                                   GLsizei /* n */,
-                                                   const GLuint* /* ids */) {
-}
 GLboolean GLES2InterfaceStub::EnableFeatureCHROMIUM(const char* /* feature */) {
   return 0;
 }

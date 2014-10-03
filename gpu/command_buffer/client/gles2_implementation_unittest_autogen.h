@@ -1742,9 +1742,6 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
-// TODO: Implement unit test for GenSharedIdsCHROMIUM
-// TODO: Implement unit test for DeleteSharedIdsCHROMIUM
-// TODO: Implement unit test for RegisterSharedIdsCHROMIUM
 // TODO: Implement unit test for EnableFeatureCHROMIUM
 
 TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {

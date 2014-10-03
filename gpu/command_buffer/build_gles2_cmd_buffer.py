@@ -1614,15 +1614,6 @@ _FUNCTION_INFO = {
     'resource_types': 'Renderbuffers',
   },
   'DeleteShader': {'type': 'Delete', 'decoder_func': 'DoDeleteShader'},
-  'DeleteSharedIdsCHROMIUM': {
-    'type': 'Custom',
-    'decoder_func': 'DoDeleteSharedIdsCHROMIUM',
-    'impl_func': False,
-    'expectation': False,
-    'data_transfer_methods': ['shm'],
-    'extension': True,
-    'chromium': True,
-  },
   'DeleteTextures': {
     'type': 'DELn',
     'resource_type': 'Texture',
@@ -1730,15 +1721,6 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGenTextures',
     'resource_type': 'Texture',
     'resource_types': 'Textures',
-  },
-  'GenSharedIdsCHROMIUM': {
-    'type': 'Custom',
-    'decoder_func': 'DoGenSharedIdsCHROMIUM',
-    'impl_func': False,
-    'expectation': False,
-    'data_transfer_methods': ['shm'],
-    'extension': True,
-    'chromium': True,
   },
   'GetActiveAttrib': {
     'type': 'Custom',
@@ -2096,15 +2078,6 @@ _FUNCTION_INFO = {
         'GLboolean async',
     'result': ['uint32_t'],
     'defer_reads': True,
-  },
-  'RegisterSharedIdsCHROMIUM': {
-    'type': 'Custom',
-    'decoder_func': 'DoRegisterSharedIdsCHROMIUM',
-    'impl_func': False,
-    'expectation': False,
-    'data_transfer_methods': ['shm'],
-    'extension': True,
-    'chromium': True,
   },
   'ReleaseShaderCompiler': {
     'decoder_func': 'DoReleaseShaderCompiler',
@@ -4195,7 +4168,8 @@ class GENnHandler(TypeHandler):
     not_shared = func.GetInfo('not_shared')
     if not_shared:
       alloc_code = (
-"""  IdAllocatorInterface* id_allocator = GetIdAllocator(id_namespaces::k%s);
+
+"""  IdAllocator* id_allocator = GetIdAllocator(id_namespaces::k%s);
   for (GLsizei ii = 0; ii < n; ++ii)
     %s[ii] = id_allocator->AllocateID();""" %
   (func.GetInfo('resource_types'), func.GetOriginalArgs()[1].name))

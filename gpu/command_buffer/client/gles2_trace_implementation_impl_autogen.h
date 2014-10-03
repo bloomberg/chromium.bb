@@ -1140,28 +1140,6 @@ GLuint GLES2TraceImplementation::GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
   return gl_->GetMaxValueInBufferCHROMIUM(buffer_id, count, type, offset);
 }
 
-void GLES2TraceImplementation::GenSharedIdsCHROMIUM(GLuint namespace_id,
-                                                    GLuint id_offset,
-                                                    GLsizei n,
-                                                    GLuint* ids) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GenSharedIdsCHROMIUM");
-  gl_->GenSharedIdsCHROMIUM(namespace_id, id_offset, n, ids);
-}
-
-void GLES2TraceImplementation::DeleteSharedIdsCHROMIUM(GLuint namespace_id,
-                                                       GLsizei n,
-                                                       const GLuint* ids) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DeleteSharedIdsCHROMIUM");
-  gl_->DeleteSharedIdsCHROMIUM(namespace_id, n, ids);
-}
-
-void GLES2TraceImplementation::RegisterSharedIdsCHROMIUM(GLuint namespace_id,
-                                                         GLsizei n,
-                                                         const GLuint* ids) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::RegisterSharedIdsCHROMIUM");
-  gl_->RegisterSharedIdsCHROMIUM(namespace_id, n, ids);
-}
-
 GLboolean GLES2TraceImplementation::EnableFeatureCHROMIUM(const char* feature) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::EnableFeatureCHROMIUM");
   return gl_->EnableFeatureCHROMIUM(feature);

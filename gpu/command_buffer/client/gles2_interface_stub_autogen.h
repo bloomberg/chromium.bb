@@ -399,16 +399,6 @@ virtual GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                            GLsizei count,
                                            GLenum type,
                                            GLuint offset) OVERRIDE;
-virtual void GenSharedIdsCHROMIUM(GLuint namespace_id,
-                                  GLuint id_offset,
-                                  GLsizei n,
-                                  GLuint* ids) OVERRIDE;
-virtual void DeleteSharedIdsCHROMIUM(GLuint namespace_id,
-                                     GLsizei n,
-                                     const GLuint* ids) OVERRIDE;
-virtual void RegisterSharedIdsCHROMIUM(GLuint namespace_id,
-                                       GLsizei n,
-                                       const GLuint* ids) OVERRIDE;
 virtual GLboolean EnableFeatureCHROMIUM(const char* feature) OVERRIDE;
 virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
 virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;
