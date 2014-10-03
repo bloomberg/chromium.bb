@@ -418,6 +418,9 @@ VideoPlayer.prototype.unloadVideo = function(opt_keepSession) {
   this.loadQueue_.run(function(callback) {
     chrome.power.releaseKeepAwake();
 
+    // Detaches the media from the control.
+    this.controls.detachMedia();
+
     if (this.videoElement_) {
       // If the element has dispose method, call it (CastVideoElement has it).
       if (this.videoElement_.dispose)
