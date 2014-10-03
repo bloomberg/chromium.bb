@@ -169,7 +169,8 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
 }
 
 void Ld(State* state, const struct sock_filter& insn, const char** err) {
-  if (BPF_SIZE(insn.code) != BPF_W || BPF_MODE(insn.code) != BPF_ABS) {
+  if (BPF_SIZE(insn.code) != BPF_W || BPF_MODE(insn.code) != BPF_ABS ||
+      insn.jt != 0 || insn.jf != 0) {
     *err = "Invalid BPF_LD instruction";
     return;
   }
