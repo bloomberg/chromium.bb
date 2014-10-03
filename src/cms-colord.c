@@ -83,16 +83,16 @@ colord_idle_cancel_for_output(struct cms_colord *cms, struct weston_output *o)
 	g_mutex_unlock(&cms->pending_mutex);
 }
 
-static int
+static bool
 edid_value_valid(const char *str)
 {
 	if (str == NULL)
-		return 0;
+		return false;
 	if (str[0] == '\0')
-		return 0;
+		return false;
 	if (strcmp(str, "unknown") == 0)
-		return 0;
-	return 1;
+		return false;
+	return true;
 }
 
 static gchar *

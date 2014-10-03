@@ -1732,7 +1732,7 @@ static const struct wl_keyboard_interface keyboard_interface = {
 	keyboard_release
 };
 
-static int
+static bool
 should_send_modifiers_to_client(struct weston_seat *seat,
 				struct wl_client *client)
 {
@@ -1740,15 +1740,15 @@ should_send_modifiers_to_client(struct weston_seat *seat,
 	    seat->keyboard->focus &&
 	    seat->keyboard->focus->resource &&
 	    wl_resource_get_client(seat->keyboard->focus->resource) == client)
-		return 1;
+		return true;
 
 	if (seat->pointer &&
 	    seat->pointer->focus &&
 	    seat->pointer->focus->surface->resource &&
 	    wl_resource_get_client(seat->pointer->focus->surface->resource) == client)
-		return 1;
+		return true;
 
-	return 0;
+	return false;
 }
 
 static void

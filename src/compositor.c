@@ -1370,22 +1370,22 @@ weston_view_set_transform_parent(struct weston_view *view,
 	weston_view_geometry_dirty(view);
 }
 
-WL_EXPORT int
+WL_EXPORT bool
 weston_view_is_mapped(struct weston_view *view)
 {
 	if (view->output)
-		return 1;
+		return true;
 	else
-		return 0;
+		return false;
 }
 
-WL_EXPORT int
+WL_EXPORT bool
 weston_surface_is_mapped(struct weston_surface *surface)
 {
 	if (surface->output)
-		return 1;
+		return true;
 	else
-		return 0;
+		return false;
 }
 
 static void
@@ -2626,20 +2626,20 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	sub->has_cached_data = 1;
 }
 
-static int
+static bool
 weston_subsurface_is_synchronized(struct weston_subsurface *sub)
 {
 	while (sub) {
 		if (sub->synchronized)
-			return 1;
+			return true;
 
 		if (!sub->parent)
-			return 0;
+			return false;
 
 		sub = weston_surface_to_subsurface(sub->parent);
 	}
 
-	return 0;
+	return true;
 }
 
 static void

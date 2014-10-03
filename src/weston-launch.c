@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -133,7 +134,7 @@ read_groups(void)
 	return groups;
 }
 
-static int
+static bool
 weston_launch_allowed(struct weston_launch *wl)
 {
 	struct group *gr;
@@ -145,7 +146,7 @@ weston_launch_allowed(struct weston_launch *wl)
 #endif
 
 	if (getuid() == 0)
-		return 1;
+		return true;
 
 	gr = getgrnam("weston-launch");
 	if (gr) {
@@ -154,7 +155,7 @@ weston_launch_allowed(struct weston_launch *wl)
 			for (i = 0; groups[i]; ++i) {
 				if (groups[i] == gr->gr_gid) {
 					free(groups);
-					return 1;
+					return true;
 				}
 			}
 			free(groups);
@@ -168,13 +169,13 @@ weston_launch_allowed(struct weston_launch *wl)
 		    sd_session_get_seat(session, &seat) == 0) {
 			free(seat);
 			free(session);
-			return 1;
+			return true;
 		}
 		free(session);
 	}
 #endif
 	
-	return 0;
+	return false;
 }
 
 static int
