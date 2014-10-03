@@ -277,16 +277,20 @@ int32_t FileDownloaderToPepperError(FileDownloader::Status status) {
 
 NaClAppProcessType PP_ToNaClAppProcessType(
     PP_NaClAppProcessType pp_process_type) {
-  static_assert(PP_UNKNOWN_NACL_PROCESS_TYPE == kUnknownNaClProcessType,
+#define STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ(pp, nonpp)        \
+  static_assert(static_cast<int>(pp) == static_cast<int>(nonpp), \
                 "PP_NaClAppProcessType differs from NaClAppProcessType");
-  static_assert(PP_NATIVE_NACL_PROCESS_TYPE == kNativeNaClProcessType,
-                "PP_NaClAppProcessType differs from NaClAppProcessType");
-  static_assert(PP_PNACL_PROCESS_TYPE == kPNaClProcessType,
-                "PP_NaClAppProcessType differs from NaClAppProcessType");
-  static_assert(PP_PNACL_TRANSLATOR_PROCESS_TYPE == kPNaClTranslatorProcessType,
-                "PP_NaClAppProcessType differs from NaClAppProcessType");
-  static_assert(PP_NUM_NACL_PROCESS_TYPES == kNumNaClProcessTypes,
-                "PP_NaClAppProcessType differs from NaClAppProcessType");
+  STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ(PP_UNKNOWN_NACL_PROCESS_TYPE,
+                                         kUnknownNaClProcessType);
+  STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ(PP_NATIVE_NACL_PROCESS_TYPE,
+                                         kNativeNaClProcessType);
+  STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ(PP_PNACL_PROCESS_TYPE,
+                                         kPNaClProcessType);
+  STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ(PP_PNACL_TRANSLATOR_PROCESS_TYPE,
+                                         kPNaClTranslatorProcessType);
+  STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ(PP_NUM_NACL_PROCESS_TYPES,
+                                         kNumNaClProcessTypes);
+#undef STATICALLY_CHECK_NACLAPPPROCESSTYPE_EQ
   DCHECK(pp_process_type > PP_UNKNOWN_NACL_PROCESS_TYPE &&
          pp_process_type < PP_NUM_NACL_PROCESS_TYPES);
   return static_cast<NaClAppProcessType>(pp_process_type);
