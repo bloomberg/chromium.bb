@@ -1322,6 +1322,7 @@ crbug.com/399507 virtual/implsidepainting/inspector/tracing/update-layer-tree.ht
 crbug.com/407915 inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
+crbug.com/407915 virtual/implsidepainting/inspector/timeline/timeline-frames.html [ Failure Pass ]
 
 crbug.com/409580 inspector/device-emulation/device-emulation-320-2x.html [ Crash Pass ]
 crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Timeout ]
@@ -1463,4 +1464,3 @@ crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing/timeline-script-tag-
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-recalculate-styles.html [ Pass Failure Timeout ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-receive-response-event.html [ Pass Failure Timeout ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-script-tag-1.html [ Pass Failure Timeout ]
-
