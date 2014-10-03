@@ -70,6 +70,7 @@
     ],
     "accepts_tls_channel_id": true
   },
+  "incognito": "split",
   "background": {
     "persistent": false,
     "scripts": [

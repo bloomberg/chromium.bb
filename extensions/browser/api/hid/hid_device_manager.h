@@ -55,6 +55,8 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
 
   void UpdateDevices();
 
+  static const bool kServiceRedirectedInIncognito = true;
+
   int next_resource_id_;
 
   typedef std::map<int, device::HidDeviceId> ResourceIdToDeviceIdMap;
