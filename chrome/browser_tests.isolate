@@ -91,6 +91,13 @@
         ],
       },
     }],
+    ['OS=="linux" and target_arch=="ia32"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_nonsfi.nmf',
+        ],
+      },
+    }],
     ['OS=="win" or (OS=="linux" and target_arch=="x64")', {
       'variables': {
         'files': [
