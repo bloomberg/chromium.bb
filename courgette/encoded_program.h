@@ -41,7 +41,7 @@ class EncodedProgram {
   // NOTE: If any of these methods ever fail, the EncodedProgram instance
   // has failed and should be discarded.
   CheckBool AddOrigin(RVA rva) WARN_UNUSED_RESULT;
-  CheckBool AddCopy(uint32 count, const void* bytes) WARN_UNUSED_RESULT;
+  CheckBool AddCopy(size_t count, const void* bytes) WARN_UNUSED_RESULT;
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddRel32ARM(uint16 op, int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
@@ -87,6 +87,7 @@ class EncodedProgram {
   };
 
   typedef NoThrowBuffer<RVA> RvaVector;
+  typedef NoThrowBuffer<size_t> SizeTVector;
   typedef NoThrowBuffer<uint32> UInt32Vector;
   typedef NoThrowBuffer<uint8> UInt8Vector;
   typedef NoThrowBuffer<OP> OPVector;
@@ -109,7 +110,7 @@ class EncodedProgram {
   RvaVector abs32_rva_;
   OPVector ops_;
   RvaVector origins_;
-  UInt32Vector copy_counts_;
+  SizeTVector copy_counts_;
   UInt8Vector copy_bytes_;
   UInt32Vector rel32_ix_;
   UInt32Vector abs32_ix_;

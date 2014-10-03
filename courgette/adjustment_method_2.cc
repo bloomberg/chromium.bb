@@ -364,7 +364,7 @@ LabelInfo::~LabelInfo() {
 // position of one of the occurrences in the Trace.
 class Shingle {
  public:
-  static const size_t kWidth = 5;
+  static const uint8 kWidth = 5;
 
   struct InterningLess {
     bool operator()(const Shingle& a, const Shingle& b) const;
@@ -430,7 +430,7 @@ class Shingle {
 std::string ToString(const Shingle* instance) {
   std::string s;
   const char* sep = "<";
-  for (size_t i = 0; i < Shingle::kWidth; ++i) {
+  for (uint8 i = 0; i < Shingle::kWidth; ++i) {
     // base::StringAppendF(&s, "%s%x ", sep, instance.at(i)->label_->rva_);
     s += sep;
     s += ToString(instance->at(i));
@@ -446,7 +446,7 @@ std::string ToString(const Shingle* instance) {
 bool Shingle::InterningLess::operator()(
     const Shingle& a,
     const Shingle& b) const {
-  for (size_t i = 0;  i < kWidth;  ++i) {
+  for (uint8 i = 0; i < kWidth; ++i) {
     LabelInfo* info_a = a.at(i);
     LabelInfo* info_b = b.at(i);
     if (info_a->label_->rva_ < info_b->label_->rva_)
@@ -526,7 +526,7 @@ std::string ToString(const ShinglePattern::Index* index) {
   } else {
     base::StringAppendF(&s, "<%d: ", index->variables_);
     const char* sep = "";
-    for (size_t i = 0;  i < Shingle::kWidth;  ++i) {
+    for (uint8 i = 0; i < Shingle::kWidth; ++i) {
       s += sep;
       sep = ", ";
       uint32 kind = index->kinds_[i];
@@ -622,7 +622,7 @@ struct ShinglePatternIndexLess {
     if (a.hash_ < b.hash_) return true;
     if (a.hash_ > b.hash_) return false;
 
-    for (size_t i = 0;  i < Shingle::kWidth;  ++i) {
+    for (uint8 i = 0; i < Shingle::kWidth; ++i) {
       if (a.kinds_[i] < b.kinds_[i]) return true;
       if (a.kinds_[i] > b.kinds_[i]) return false;
       if ((a.kinds_[i] & ShinglePattern::kVariable) == 0) {
@@ -647,11 +647,11 @@ ShinglePattern::Index::Index(const Shingle* instance) {
   unique_variables_ = 0;
   first_variable_index_ = 255;
 
-  for (uint32 i = 0; i < Shingle::kWidth; ++i) {
+  for (uint8 i = 0; i < Shingle::kWidth; ++i) {
     LabelInfo* info = instance->at(i);
-    uint32 kind = 0;
+    uint8 kind = 0;
     int code = -1;
-    size_t j = 0;
+    uint8 j = 0;
     for ( ; j < i; ++j) {
       if (info == instance->at(j)) {  // Duplicate LabelInfo
         kind = kinds_[j];
@@ -889,7 +889,7 @@ class AssignmentProblem {
 
 
   void AddShingles(size_t begin, size_t end) {
-    for (size_t i = begin;  i + Shingle::kWidth - 1 < end;  ++i) {
+    for (size_t i = begin; i + Shingle::kWidth - 1 < end; ++i) {
       instances_[i] = Shingle::Find(trace_, i, &shingle_instances_);
     }
   }
@@ -942,7 +942,7 @@ class AssignmentProblem {
 
   // For the positions in |info|, find the shingles that overlap that position.
   void AddAffectedPositions(LabelInfo* info, ShingleSet* affected_shingles) {
-    const size_t kWidth = Shingle::kWidth;
+    const uint8 kWidth = Shingle::kWidth;
     for (size_t i = 0;  i < info->positions_.size();  ++i) {
       size_t position = info->positions_[i];
       // Find bounds to the subrange of |trace_| we are in.
@@ -950,9 +950,8 @@ class AssignmentProblem {
       size_t end = position < model_end_ ? model_end_ : trace_.size();
 
       // Clip [position-kWidth+1, position+1)
-      size_t low = position > start + kWidth - 1
-          ? position - kWidth + 1
-          : start;
+      size_t low =
+          position > start + kWidth - 1 ? position - kWidth + 1 : start;
       size_t high = position + kWidth < end ? position + 1 : end - kWidth + 1;
 
       for (size_t shingle_position = low;
@@ -1060,7 +1059,7 @@ class AssignmentProblem {
         // int score = p1;  // ? weigh all equally??
         int score = std::min(p1, m1);
 
-        for (size_t i = 0;  i < Shingle::kWidth;  ++i) {
+        for (uint8 i = 0; i < Shingle::kWidth; ++i) {
           LabelInfo* program_info = program_instance->at(i);
           LabelInfo* model_info = model_instance->at(i);
           if ((model_info->assignment_ == NULL) !=

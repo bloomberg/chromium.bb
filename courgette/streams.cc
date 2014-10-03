@@ -115,10 +115,10 @@ const uint8* Varint::Parse32WithLimit(const uint8* source,
 // have the high bit set to indicate more digits.
 inline uint8* Varint::Encode32(uint8* destination, uint32 value) {
   while (value >= 128) {
-    *(destination++) = value | 128;
+    *(destination++) = static_cast<uint8>(value) | 128;
     value = value >> 7;
   }
-  *(destination++) = value;
+  *(destination++) = static_cast<uint8>(value);
   return destination;
 }
 

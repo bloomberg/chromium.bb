@@ -46,8 +46,6 @@ CheckBool WriteVector(const V& items, SinkStream* buffer) {
   size_t count = items.size();
   bool ok = buffer->WriteSizeVarint32(count);
   for (size_t i = 0; ok && i < count;  ++i) {
-    COMPILE_ASSERT(sizeof(items[0]) <= sizeof(uint32),  // NOLINT
-                   T_must_fit_in_uint32);
     ok = buffer->WriteSizeVarint32(items[i]);
   }
   return ok;
@@ -196,7 +194,7 @@ CheckBool EncodedProgram::AddOrigin(RVA origin) {
   return ops_.push_back(ORIGIN) && origins_.push_back(origin);
 }
 
-CheckBool EncodedProgram::AddCopy(uint32 count, const void* bytes) {
+CheckBool EncodedProgram::AddCopy(size_t count, const void* bytes) {
   const uint8* source = static_cast<const uint8*>(bytes);
 
   bool ok = true;
@@ -214,7 +212,7 @@ CheckBool EncodedProgram::AddCopy(uint32 count, const void* bytes) {
     }
     if (ok && ops_.back() == COPY) {
       copy_counts_.back() += count;
-      for (uint32 i = 0; ok && i < count; ++i) {
+      for (size_t i = 0; ok && i < count; ++i) {
         ok = copy_bytes_.push_back(source[i]);
       }
       return ok;
@@ -226,7 +224,7 @@ CheckBool EncodedProgram::AddCopy(uint32 count, const void* bytes) {
       ok = ops_.push_back(COPY1) && copy_bytes_.push_back(source[0]);
     } else {
       ok = ops_.push_back(COPY) && copy_counts_.push_back(count);
-      for (uint32 i = 0; ok && i < count; ++i) {
+      for (size_t i = 0; ok && i < count; ++i) {
         ok = copy_bytes_.push_back(source[i]);
       }
     }
@@ -427,7 +425,7 @@ CheckBool EncodedProgram::EvaluateRel32ARM(OP op,
                                             &decompressed_op)) {
         return false;
       }
-      uint16 op16 = decompressed_op;
+      uint16 op16 = static_cast<uint16>(decompressed_op);
       if (!output->Write(&op16, 2))
         return false;
       current_rva += 2;
@@ -447,7 +445,7 @@ CheckBool EncodedProgram::EvaluateRel32ARM(OP op,
                                             &decompressed_op)) {
         return false;
       }
-      uint16 op16 = decompressed_op;
+      uint16 op16 = static_cast<uint16>(decompressed_op);
       if (!output->Write(&op16, 2))
         return false;
       current_rva += 2;
@@ -556,11 +554,11 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
       }
 
       case COPY: {
-        uint32 count;
+        size_t count;
         if (!VectorAt(copy_counts_, ix_copy_counts, &count))
           return false;
         ++ix_copy_counts;
-        for (uint32 i = 0;  i < count;  ++i) {
+        for (size_t i = 0;  i < count;  ++i) {
           uint8 b;
           if (!VectorAt(copy_bytes_, ix_copy_bytes, &b))
             return false;
@@ -568,7 +566,7 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
           if (!output->Write(&b, 1))
             return false;
         }
-        current_rva += count;
+        current_rva += static_cast<RVA>(count);
         break;
       }
 

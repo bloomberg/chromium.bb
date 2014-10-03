@@ -87,7 +87,7 @@ class AssemblyProgram {
   CheckBool EmitByteInstruction(uint8 byte) WARN_UNUSED_RESULT;
 
   // Generates multiple bytes of data or machine instructions.
-  CheckBool EmitBytesInstruction(const uint8* value, uint32 len)
+  CheckBool EmitBytesInstruction(const uint8* value, size_t len)
       WARN_UNUSED_RESULT;
 
   // Generates 4-byte relative reference to address of 'label'.
@@ -128,9 +128,6 @@ class AssemblyProgram {
 
   // Trim underused labels
   CheckBool TrimLabels();
-
-  void PrintLabelCounts(RVAToLabel* labels);
-  void CountRel32ARM();
 
  private:
   ExecutableType kind_;

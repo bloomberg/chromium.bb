@@ -90,16 +90,16 @@ class ByteInstruction : public Instruction {
 // Emits a single byte.
 class BytesInstruction : public Instruction {
  public:
-  BytesInstruction(const uint8* values, uint32 len)
+  BytesInstruction(const uint8* values, size_t len)
       : Instruction(DEFBYTES, 0),
         values_(values),
         len_(len) {}
   const uint8* byte_values() const { return values_; }
-  uint32 len() const { return len_; }
+  size_t len() const { return len_; }
 
  private:
   const uint8* values_;
-  uint32 len_;
+  size_t len_;
 };
 
 // A ABS32 to REL32 instruction emits a reference to a label's address.
@@ -179,7 +179,7 @@ CheckBool AssemblyProgram::EmitByteInstruction(uint8 byte) {
 }
 
 CheckBool AssemblyProgram::EmitBytesInstruction(const uint8* values,
-                                                uint32 len) {
+                                                size_t len) {
   return Emit(new(std::nothrow) BytesInstruction(values, len));
 }
 
@@ -421,7 +421,7 @@ EncodedProgram* AssemblyProgram::Encode() const {
       case DEFBYTES: {
         const uint8* byte_values =
           static_cast<BytesInstruction*>(instruction)->byte_values();
-        uint32 len = static_cast<BytesInstruction*>(instruction)->len();
+        size_t len = static_cast<BytesInstruction*>(instruction)->len();
 
         if (!encoded->AddCopy(len, byte_values))
           return NULL;
@@ -545,19 +545,6 @@ CheckBool AssemblyProgram::TrimLabels() {
   }
 
   return true;
-}
-
-void AssemblyProgram::PrintLabelCounts(RVAToLabel* labels) {
-  for (RVAToLabel::const_iterator p = labels->begin(); p != labels->end();
-       ++p) {
-    Label* current = p->second;
-    if (current->index_ != Label::kNoIndex)
-      printf("%d\n", current->count_);
-  }
-}
-
-void AssemblyProgram::CountRel32ARM() {
-  PrintLabelCounts(&rel32_labels_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

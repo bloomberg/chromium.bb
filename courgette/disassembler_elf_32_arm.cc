@@ -38,7 +38,7 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type, uint32 arm_op, RVA rva,
       fflush(stdout);
 
       (*addr) = temp;
-      (*c_op) = (arm_op >> 8) | 0x1000;
+      (*c_op) = static_cast<uint16>(arm_op >> 8) | 0x1000;
       break;
     }
     case ARM_OFF11: {
@@ -50,7 +50,7 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type, uint32 arm_op, RVA rva,
       temp += 4;  // Offset from _next_ PC.
 
       (*addr) = temp;
-      (*c_op) = (arm_op >> 11) | 0x2000;
+      (*c_op) = static_cast<uint16>(arm_op >> 11) | 0x2000;
       break;
     }
     case ARM_OFF24: {
@@ -101,7 +101,7 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type, uint32 arm_op, RVA rva,
       temp2 |= (arm_op & (1 << 15)) >> 13;
       temp2 |= (arm_op & 0xF8000000) >> 24;
       temp2 |= (prefetch & 0x0000000F) << 8;
-      (*c_op) = temp2;
+      (*c_op) = static_cast<uint16>(temp2);
       break;
     }
     case ARM_OFF21: {
@@ -122,7 +122,7 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type, uint32 arm_op, RVA rva,
 
       uint32 temp2 = 0x5000;
       temp2 |= (arm_op & 0x03C00000) >> 22;  // just save the cond
-      (*c_op) = temp2;
+      (*c_op) = static_cast<uint16>(temp2);
       break;
     }
     default:

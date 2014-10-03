@@ -573,7 +573,9 @@ CheckBool DisassemblerWin32X64::ParseFileRegion(
 
     if (abs32_pos != abs32_locations_.end() && *abs32_pos == current_rva) {
       uint32 target_address = Read32LittleEndian(p);
-      RVA target_rva = target_address - image_base();
+      // TODO(wfh): image_base() can be larger than 32 bits, so this math can
+      // underflow.  Figure out the right solution here.
+      RVA target_rva = target_address - static_cast<uint32>(image_base());
       // TODO(sra): target could be Label+offset.  It is not clear how to guess
       // which it might be.  We assume offset==0.
       if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))

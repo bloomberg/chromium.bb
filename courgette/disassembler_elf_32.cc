@@ -405,16 +405,12 @@ CheckBool DisassemblerElf32::ParseSimpleRegion(
     size_t start_file_offset,
     size_t end_file_offset,
     AssemblyProgram* program) {
-
-  const uint8* start = OffsetToPointer(start_file_offset);
-  const uint8* end = OffsetToPointer(end_file_offset);
-
   // Callers don't guarantee start < end
-  if (start >= end) return true;
+  if (start_file_offset >= end_file_offset) return true;
 
-  const ptrdiff_t len = end - start;  // Works because vars are byte pointers
+  const size_t len = end_file_offset - start_file_offset;
 
-  if (!program->EmitBytesInstruction(start, len))
+  if (!program->EmitBytesInstruction(OffsetToPointer(start_file_offset), len))
     return false;
 
   return true;
