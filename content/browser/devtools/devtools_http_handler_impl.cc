@@ -382,8 +382,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
         true /* handle on UI thread */);
     browser_target->RegisterDomainHandler(
         devtools::Tethering::kName,
-        new TetheringHandler(delegate_.get()),
-        false /* handle on this thread */);
+        new TetheringHandler(delegate_.get(), thread_->message_loop_proxy()),
+        true /* handle on UI thread */);
     browser_target->RegisterDomainHandler(
         devtools::SystemInfo::kName,
         new DevToolsSystemInfoHandler(),
