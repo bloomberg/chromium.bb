@@ -28,3 +28,7 @@ UISourceCode: http://fake.url/4
 Highlighter type: text/css
 UISourceCode content: <stylesheet resource content>
 
+Running: testRemoveStyleSheetFromModel
+Added uiSourceCode: foo.css
+Removed uiSourceCode: foo.css
+

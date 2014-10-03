@@ -63,10 +63,14 @@ InspectorTest._defaultWorkspaceEventHandler = function(event)
     throw new Error("Unexpected Workspace event: " + event.type + ": " + uiSourceCode.uri() + ".");
 }
 
+InspectorTest.uiSourceCodeURL = function(uiSourceCode)
+{
+    return uiSourceCode.originURL().replace(/.*LayoutTests/, "LayoutTests");
+}
+
 InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
 {
-    var url = uiSourceCode.originURL().replace(/.*LayoutTests/, "LayoutTests");
-    InspectorTest.addResult("UISourceCode: " + url);
+    InspectorTest.addResult("UISourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
     if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
         InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts));
     uiSourceCode.requestContent(didRequestContent);
