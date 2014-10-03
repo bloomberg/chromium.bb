@@ -872,6 +872,7 @@
       'browser/ui/app_list/app_list_test_util.cc',
       'browser/ui/app_list/app_list_test_util.h',
       'browser/ui/app_list/extension_app_model_builder_unittest.cc',
+      'browser/ui/app_list/model_pref_updater_unittest.cc',
       'browser/ui/app_list/profile_loader_unittest.cc',
       'browser/ui/app_list/test/fake_profile.cc',
       'browser/ui/app_list/test/fake_profile.h',

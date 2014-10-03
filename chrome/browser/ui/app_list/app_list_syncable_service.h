@@ -36,6 +36,7 @@ namespace app_list {
 class AppListFolderItem;
 class AppListItem;
 class AppListModel;
+class ModelPrefUpdater;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
@@ -197,6 +198,7 @@ class AppListSyncableService : public syncer::SyncableService,
   content::NotificationRegistrar registrar_;
   scoped_ptr<AppListModel> model_;
   scoped_ptr<ModelObserver> model_observer_;
+  scoped_ptr<ModelPrefUpdater> model_pref_updater_;
   scoped_ptr<ExtensionAppModelBuilder> apps_builder_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;
