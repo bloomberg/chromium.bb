@@ -1081,9 +1081,9 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // frame?
     OnStop();
 
-    // Transfer settings such as initial drawing parameters to the remote frame
-    // that will replace this frame.
-    if (!is_main_frame)
+    // Transfer settings such as initial drawing parameters to the remote frame,
+    // if one is created, that will replace this frame.
+    if (!is_main_frame && proxy)
       proxy->web_frame()->initializeFromFrame(frame_);
 
     // Replace the page with a blank dummy URL. The unload handler will not be
