@@ -397,10 +397,8 @@ void IndexedDBTransaction::Timeout() {
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {
-  for (std::set<IndexedDBCursor*>::iterator i = open_cursors_.begin();
-       i != open_cursors_.end();
-       ++i)
-    (*i)->Close();
+  for (auto* cursor : open_cursors_)
+    cursor->Close();
   open_cursors_.clear();
 }
 

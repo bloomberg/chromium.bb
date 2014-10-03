@@ -143,10 +143,8 @@ void IndexedDBFactoryImpl::ContextDestroyed() {
   // context (which nominally owns this factory) is destroyed during thread
   // termination the timers must be stopped so that this factory and the
   // stores can be disposed of.
-  for (IndexedDBBackingStoreMap::iterator it = backing_store_map_.begin();
-       it != backing_store_map_.end();
-       ++it)
-    it->second->close_timer()->Stop();
+  for (const auto& it : backing_store_map_)
+    it.second->close_timer()->Stop();
   backing_store_map_.clear();
   backing_stores_with_active_blobs_.clear();
   context_ = NULL;

@@ -26,8 +26,8 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   void VersionChangeIgnored();
 
-  IndexedDBDatabase* database() { return database_.get(); }
-  IndexedDBDatabaseCallbacks* callbacks() { return callbacks_.get(); }
+  IndexedDBDatabase* database() const { return database_.get(); }
+  IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
 
  private:
   // NULL in some unit tests, and after the connection is closed.

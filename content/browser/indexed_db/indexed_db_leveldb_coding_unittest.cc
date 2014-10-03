@@ -726,15 +726,13 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeBlobJournal) {
     journals.push_back(journal);
   }
 
-  std::vector<BlobJournalType>::const_iterator journal_iter;
-  for (journal_iter = journals.begin(); journal_iter != journals.end();
-       ++journal_iter) {
+  for (const auto& journal_iter : journals) {
     std::string encoding;
-    EncodeBlobJournal(*journal_iter, &encoding);
+    EncodeBlobJournal(journal_iter, &encoding);
     StringPiece slice(encoding);
     BlobJournalType journal_out;
     EXPECT_TRUE(DecodeBlobJournal(&slice, &journal_out));
-    EXPECT_EQ(*journal_iter, journal_out);
+    EXPECT_EQ(journal_iter, journal_out);
   }
 
   journals.clear();
@@ -751,10 +749,9 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeBlobJournal) {
     journals.push_back(journal);
   }
 
-  for (journal_iter = journals.begin(); journal_iter != journals.end();
-       ++journal_iter) {
+  for (const auto& journal_iter : journals) {
     std::string encoding;
-    EncodeBlobJournal(*journal_iter, &encoding);
+    EncodeBlobJournal(journal_iter, &encoding);
     StringPiece slice(encoding);
     BlobJournalType journal_out;
     EXPECT_FALSE(DecodeBlobJournal(&slice, &journal_out));

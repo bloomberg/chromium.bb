@@ -49,11 +49,9 @@ void GetOriginsForHostOnIndexedDBThread(IndexedDBContextImpl* context,
                                         std::set<GURL>* origins_to_return) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> all_origins = context->GetAllOrigins();
-  for (std::vector<GURL>::const_iterator iter = all_origins.begin();
-       iter != all_origins.end();
-       ++iter) {
-    if (host == net::GetHostOrSpecFromURL(*iter))
-      origins_to_return->insert(*iter);
+  for (const auto& origin_url : all_origins) {
+    if (host == net::GetHostOrSpecFromURL(origin_url))
+      origins_to_return->insert(origin_url);
   }
 }
 

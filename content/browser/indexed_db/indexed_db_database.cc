@@ -1592,12 +1592,10 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss());
     // Front end ensures the event is not fired at connections that have
     // close_pending set.
-    for (ConnectionSet::const_iterator it = connections_.begin();
-         it != connections_.end();
-         ++it) {
-      if (*it != connection.get()) {
-        (*it)->callbacks()->OnVersionChange(metadata_.int_version,
-                                            requested_version);
+    for (const auto* iter : connections_) {
+      if (iter != connection.get()) {
+        iter->callbacks()->OnVersionChange(metadata_.int_version,
+                                           requested_version);
       }
     }
     // OnBlocked will be fired at the request when one of the other
@@ -1637,12 +1635,10 @@ void IndexedDBDatabase::DeleteDatabase(
     scoped_refptr<IndexedDBCallbacks> callbacks) {
 
   if (IsDeleteDatabaseBlocked()) {
-    for (ConnectionSet::const_iterator it = connections_.begin();
-         it != connections_.end();
-         ++it) {
+    for (const auto* connection : connections_) {
       // Front end ensures the event is not fired at connections that have
       // close_pending set.
-      (*it)->callbacks()->OnVersionChange(
+      connection->callbacks()->OnVersionChange(
           metadata_.int_version, IndexedDBDatabaseMetadata::NO_INT_VERSION);
     }
     // OnBlocked will be fired at the request when one of the other
@@ -1699,11 +1695,8 @@ void IndexedDBDatabase::VersionChangeIgnored() {
     pending_run_version_change_transaction_call_->callbacks()->OnBlocked(
         metadata_.int_version);
 
-  for (PendingDeleteCallList::iterator it = pending_delete_calls_.begin();
-       it != pending_delete_calls_.end();
-       ++it) {
-    (*it)->callbacks()->OnBlocked(metadata_.int_version);
-  }
+  for (const auto& pending_delete_call : pending_delete_calls_)
+    pending_delete_call->callbacks()->OnBlocked(metadata_.int_version);
 }
 
 
@@ -1719,12 +1712,9 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   // complete, but can occur on process termination or forced close.
   {
     TransactionMap transactions(transactions_);
-    for (TransactionMap::const_iterator it = transactions.begin(),
-                                        end = transactions.end();
-         it != end;
-         ++it) {
-      if (it->second->connection() == connection->callbacks())
-        it->second->Abort(
+    for (const auto& it : transactions) {
+      if (it.second->connection() == connection->callbacks())
+        it.second->Abort(
             IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Connection is closing."));
     }

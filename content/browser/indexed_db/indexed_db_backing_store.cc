@@ -653,16 +653,14 @@ static leveldb::Status MergeDatabaseIntoLiveBlobJournal(
 static std::string EncodeBlobData(
     const std::vector<IndexedDBBlobInfo*>& blob_info) {
   std::string ret;
-  std::vector<IndexedDBBlobInfo*>::const_iterator iter;
-  for (iter = blob_info.begin(); iter != blob_info.end(); ++iter) {
-    const IndexedDBBlobInfo& info = **iter;
-    EncodeBool(info.is_file(), &ret);
-    EncodeVarInt(info.key(), &ret);
-    EncodeStringWithLength(info.type(), &ret);
-    if (info.is_file())
-      EncodeStringWithLength(info.file_name(), &ret);
+  for (const auto* info : blob_info) {
+    EncodeBool(info->is_file(), &ret);
+    EncodeVarInt(info->key(), &ret);
+    EncodeStringWithLength(info->type(), &ret);
+    if (info->is_file())
+      EncodeStringWithLength(info->file_name(), &ret);
     else
-      EncodeVarInt(info.size(), &ret);
+      EncodeVarInt(info->size(), &ret);
   }
   return ret;
 }
@@ -724,12 +722,8 @@ IndexedDBBackingStore::~IndexedDBBackingStore() {
   if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
-    std::set<int>::const_iterator iter;
-    for (iter = child_process_ids_granted_.begin();
-         iter != child_process_ids_granted_.end();
-         ++iter) {
-      policy->RevokeAllPermissionsForFile(*iter, blob_path_);
-    }
+    for (const auto& pid : child_process_ids_granted_)
+      policy->RevokeAllPermissionsForFile(pid, blob_path_);
   }
   STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
                                        incognito_blob_map_.end());
@@ -2630,11 +2624,9 @@ leveldb::Status IndexedDBBackingStore::CleanUpBlobJournal(
     return s;
   if (!journal.size())
     return leveldb::Status::OK();
-  BlobJournalType::iterator journal_iter;
-  for (journal_iter = journal.begin(); journal_iter != journal.end();
-       ++journal_iter) {
-    int64 database_id = journal_iter->first;
-    int64 blob_key = journal_iter->second;
+  for (const auto& entry : journal) {
+    int64 database_id = entry.first;
+    int64 blob_key = entry.second;
     DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
     if (blob_key == DatabaseMetaDataKey::kAllBlobsKey) {
       if (!RemoveBlobDirectory(database_id))
@@ -2689,24 +2681,22 @@ leveldb::Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
       INTERNAL_READ_ERROR(GET_BLOB_INFO_FOR_RECORD);
       return InternalInconsistencyStatus();
     }
-    std::vector<IndexedDBBlobInfo>::iterator iter;
-    for (iter = value->blob_info.begin(); iter != value->blob_info.end();
-         ++iter) {
-      iter->set_file_path(
-          backing_store_->GetBlobFileName(database_id, iter->key()));
-      iter->set_mark_used_callback(
+    for (auto& entry : value->blob_info) {
+      entry.set_file_path(
+          backing_store_->GetBlobFileName(database_id, entry.key()));
+      entry.set_mark_used_callback(
           backing_store_->active_blob_registry()->GetAddBlobRefCallback(
-              database_id, iter->key()));
-      iter->set_release_callback(
+              database_id, entry.key()));
+      entry.set_release_callback(
           backing_store_->active_blob_registry()->GetFinalReleaseCallback(
-              database_id, iter->key()));
-      if (iter->is_file()) {
+              database_id, entry.key()));
+      if (entry.is_file()) {
         base::File::Info info;
-        if (base::GetFileInfo(iter->file_path(), &info)) {
+        if (base::GetFileInfo(entry.file_path(), &info)) {
           // This should always work, but it isn't fatal if it doesn't; it just
           // means a potential slow synchronous call from the renderer later.
-          iter->set_last_modified(info.last_modified);
-          iter->set_size(info.size);
+          entry.set_last_modified(info.last_modified);
+          entry.set_size(info.size);
         }
       }
     }
@@ -3898,11 +3888,8 @@ void IndexedDBBackingStore::Transaction::Begin() {
 
   // If incognito, this snapshots blobs just as the above transaction_
   // constructor snapshots the leveldb.
-  BlobChangeMap::const_iterator iter;
-  for (iter = backing_store_->incognito_blob_map_.begin();
-       iter != backing_store_->incognito_blob_map_.end();
-       ++iter)
-    incognito_blob_map_[iter->first] = iter->second->Clone().release();
+  for (const auto& iter : backing_store_->incognito_blob_map_)
+    incognito_blob_map_[iter.first] = iter.second->Clone().release();
 }
 
 static GURL getURLFromUUID(const string& uuid) {
@@ -3915,21 +3902,17 @@ leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
   if (backing_store_->is_incognito())
     return leveldb::Status::OK();
 
-  BlobChangeMap::iterator iter = blob_change_map_.begin();
   new_blob_entries->clear();
   new_files_to_write->clear();
-  if (iter != blob_change_map_.end()) {
+  if (!blob_change_map_.empty()) {
     // Create LevelDBTransaction for the name generator seed and add-journal.
     scoped_refptr<LevelDBTransaction> pre_transaction =
         IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
             backing_store_->db_.get());
     BlobJournalType journal;
-    for (; iter != blob_change_map_.end(); ++iter) {
-      std::vector<IndexedDBBlobInfo>::iterator info_iter;
+    for (auto& iter : blob_change_map_) {
       std::vector<IndexedDBBlobInfo*> new_blob_keys;
-      for (info_iter = iter->second->mutable_blob_info().begin();
-           info_iter != iter->second->mutable_blob_info().end();
-           ++info_iter) {
+      for (auto& entry : iter.second->mutable_blob_info()) {
         int64 next_blob_key = -1;
         bool result = GetBlobKeyGeneratorCurrentNumber(
             pre_transaction.get(), database_id_, &next_blob_key);
@@ -3938,27 +3921,27 @@ leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
         BlobJournalEntryType journal_entry =
             std::make_pair(database_id_, next_blob_key);
         journal.push_back(journal_entry);
-        if (info_iter->is_file()) {
+        if (entry.is_file()) {
           new_files_to_write->push_back(
-              WriteDescriptor(info_iter->file_path(),
+              WriteDescriptor(entry.file_path(),
                               next_blob_key,
-                              info_iter->size(),
-                              info_iter->last_modified()));
+                              entry.size(),
+                              entry.last_modified()));
         } else {
           new_files_to_write->push_back(
-              WriteDescriptor(getURLFromUUID(info_iter->uuid()),
+              WriteDescriptor(getURLFromUUID(entry.uuid()),
                               next_blob_key,
-                              info_iter->size()));
+                              entry.size()));
         }
-        info_iter->set_key(next_blob_key);
-        new_blob_keys.push_back(&*info_iter);
+        entry.set_key(next_blob_key);
+        new_blob_keys.push_back(&entry);
         result = UpdateBlobKeyGeneratorCurrentNumber(
             pre_transaction.get(), database_id_, next_blob_key + 1);
         if (!result)
           return InternalInconsistencyStatus();
       }
       BlobEntryKey blob_entry_key;
-      StringPiece key_piece(iter->second->key());
+      StringPiece key_piece(iter.second->key());
       if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
         NOTREACHED();
         return InternalInconsistencyStatus();
@@ -3978,41 +3961,35 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
   if (backing_store_->is_incognito())
     return true;
 
-  BlobChangeMap::const_iterator iter = blob_change_map_.begin();
   // Look up all old files to remove as part of the transaction, store their
   // names in blobs_to_remove_, and remove their old blob data entries.
-  if (iter != blob_change_map_.end()) {
-    for (; iter != blob_change_map_.end(); ++iter) {
-      BlobEntryKey blob_entry_key;
-      StringPiece key_piece(iter->second->key());
-      if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
-        NOTREACHED();
-        INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+  for (const auto& iter : blob_change_map_) {
+    BlobEntryKey blob_entry_key;
+    StringPiece key_piece(iter.second->key());
+    if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
+      NOTREACHED();
+      INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+      transaction_ = NULL;
+      return false;
+    }
+    if (database_id_ < 0)
+      database_id_ = blob_entry_key.database_id();
+    else
+      DCHECK_EQ(database_id_, blob_entry_key.database_id());
+    std::string blob_entry_key_bytes = blob_entry_key.Encode();
+    bool found;
+    std::string blob_entry_value_bytes;
+    leveldb::Status s = transaction_->Get(
+        blob_entry_key_bytes, &blob_entry_value_bytes, &found);
+    if (s.ok() && found) {
+      std::vector<IndexedDBBlobInfo> blob_info;
+      if (!DecodeBlobData(blob_entry_value_bytes, &blob_info)) {
+        INTERNAL_READ_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
         transaction_ = NULL;
         return false;
       }
-      if (database_id_ < 0)
-        database_id_ = blob_entry_key.database_id();
-      else
-        DCHECK_EQ(database_id_, blob_entry_key.database_id());
-      std::string blob_entry_key_bytes = blob_entry_key.Encode();
-      bool found;
-      std::string blob_entry_value_bytes;
-      leveldb::Status s = transaction_->Get(
-          blob_entry_key_bytes, &blob_entry_value_bytes, &found);
-      if (s.ok() && found) {
-        std::vector<IndexedDBBlobInfo> blob_info;
-        if (!DecodeBlobData(blob_entry_value_bytes, &blob_info)) {
-          INTERNAL_READ_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
-          transaction_ = NULL;
-          return false;
-        }
-        std::vector<IndexedDBBlobInfo>::iterator blob_info_iter;
-        for (blob_info_iter = blob_info.begin();
-             blob_info_iter != blob_info.end();
-             ++blob_info_iter)
-          blobs_to_remove_.push_back(
-              std::make_pair(database_id_, blob_info_iter->key()));
+      for (const auto& blob : blob_info) {
+        blobs_to_remove_.push_back(std::make_pair(database_id_, blob.key()));
         transaction_->Remove(blob_entry_key_bytes);
       }
     }
@@ -4023,14 +4000,12 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
 leveldb::Status IndexedDBBackingStore::Transaction::SortBlobsToRemove() {
   IndexedDBActiveBlobRegistry* registry =
       backing_store_->active_blob_registry();
-  BlobJournalType::iterator iter;
   BlobJournalType primary_journal, live_blob_journal;
-  for (iter = blobs_to_remove_.begin(); iter != blobs_to_remove_.end();
-       ++iter) {
-    if (registry->MarkDeletedCheckIfUsed(iter->first, iter->second))
-      live_blob_journal.push_back(*iter);
+  for (const auto& iter : blobs_to_remove_) {
+    if (registry->MarkDeletedCheckIfUsed(iter.first, iter.second))
+      live_blob_journal.push_back(iter);
     else
-      primary_journal.push_back(*iter);
+      primary_journal.push_back(iter);
   }
   UpdatePrimaryJournalWithBlobList(transaction_.get(), primary_journal);
   leveldb::Status s =
@@ -4105,17 +4080,15 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
 
   if (s.ok() && backing_store_->is_incognito() && !blob_change_map_.empty()) {
     BlobChangeMap& target_map = backing_store_->incognito_blob_map_;
-    BlobChangeMap::iterator iter;
-    for (iter = blob_change_map_.begin(); iter != blob_change_map_.end();
-         ++iter) {
-      BlobChangeMap::iterator target_record = target_map.find(iter->first);
+    for (auto& iter : blob_change_map_) {
+      BlobChangeMap::iterator target_record = target_map.find(iter.first);
       if (target_record != target_map.end()) {
         delete target_record->second;
         target_map.erase(target_record);
       }
-      if (iter->second) {
-        target_map[iter->first] = iter->second;
-        iter->second = NULL;
+      if (iter.second) {
+        target_map[iter.first] = iter.second;
+        iter.second = NULL;
       }
     }
   }
@@ -4156,17 +4129,14 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
     scoped_refptr<BlobWriteCallback> callback) {
   DCHECK_GT(new_files_to_write->size(), 0UL);
   DCHECK_GT(database_id_, 0);
-  BlobEntryKeyValuePairVec::iterator blob_entry_iter;
-  for (blob_entry_iter = new_blob_entries->begin();
-       blob_entry_iter != new_blob_entries->end();
-       ++blob_entry_iter) {
+  for (auto& blob_entry_iter : *new_blob_entries) {
     // Add the new blob-table entry for each blob to the main transaction, or
     // remove any entry that may exist if there's no new one.
-    if (!blob_entry_iter->second.size())
-      transaction_->Remove(blob_entry_iter->first.Encode());
+    if (!blob_entry_iter.second.size())
+      transaction_->Remove(blob_entry_iter.first.Encode());
     else
-      transaction_->Put(blob_entry_iter->first.Encode(),
-                        &blob_entry_iter->second);
+      transaction_->Put(blob_entry_iter.first.Encode(),
+                        &blob_entry_iter.second);
   }
   // Creating the writer will start it going asynchronously.
   chained_blob_writer_ =
@@ -4217,9 +4187,8 @@ IndexedDBBackingStore::BlobChangeRecord::Clone() const {
       new BlobChangeRecord(key_, object_store_id_));
   record->blob_info_ = blob_info_;
 
-  ScopedVector<storage::BlobDataHandle>::const_iterator iter;
-  for (iter = handles_.begin(); iter != handles_.end(); ++iter)
-    record->handles_.push_back(new storage::BlobDataHandle(**iter));
+  for (const auto* handle : handles_)
+    record->handles_.push_back(new storage::BlobDataHandle(*handle));
   return record.Pass();
 }
 

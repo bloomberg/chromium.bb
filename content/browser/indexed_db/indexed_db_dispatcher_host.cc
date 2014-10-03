@@ -240,12 +240,9 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
   metadata.int_version = web_metadata.int_version;
   metadata.max_object_store_id = web_metadata.max_object_store_id;
 
-  for (content::IndexedDBDatabaseMetadata::ObjectStoreMap::const_iterator iter =
-           web_metadata.object_stores.begin();
-       iter != web_metadata.object_stores.end();
-       ++iter) {
+  for (const auto& iter : web_metadata.object_stores) {
     const content::IndexedDBObjectStoreMetadata& web_store_metadata =
-        iter->second;
+        iter.second;
     ::IndexedDBObjectStoreMetadata idb_store_metadata;
     idb_store_metadata.id = web_store_metadata.id;
     idb_store_metadata.name = web_store_metadata.name;
@@ -253,12 +250,9 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
     idb_store_metadata.autoIncrement = web_store_metadata.auto_increment;
     idb_store_metadata.max_index_id = web_store_metadata.max_index_id;
 
-    for (content::IndexedDBObjectStoreMetadata::IndexMap::const_iterator
-             index_iter = web_store_metadata.indexes.begin();
-         index_iter != web_store_metadata.indexes.end();
-         ++index_iter) {
+    for (const auto& index_iter : web_store_metadata.indexes) {
       const content::IndexedDBIndexMetadata& web_index_metadata =
-          index_iter->second;
+          index_iter.second;
       ::IndexedDBIndexMetadata idb_index_metadata;
       idb_index_metadata.id = web_index_metadata.id;
       idb_index_metadata.name = web_index_metadata.name;
@@ -349,9 +343,8 @@ void IndexedDBDispatcherHost::OnPutHelper(
 void IndexedDBDispatcherHost::OnAckReceivedBlobs(
     const std::vector<std::string>& uuids) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  std::vector<std::string>::const_iterator iter;
-  for (iter = uuids.begin(); iter != uuids.end(); ++iter)
-    DropBlobDataHandle(*iter);
+  for (const auto& uuid : uuids)
+    DropBlobDataHandle(uuid);
 }
 
 void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,
@@ -449,13 +442,11 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
   }
   DCHECK(transaction_database_map_.empty());
 
-  for (WebIDBObjectIDToURLMap::iterator iter = database_url_map_.begin();
-       iter != database_url_map_.end();
-       iter++) {
-    IndexedDBConnection* connection = map_.Lookup(iter->first);
+  for (const auto& iter : database_url_map_) {
+    IndexedDBConnection* connection = map_.Lookup(iter.first);
     if (connection && connection->IsConnected()) {
       connection->Close();
-      parent_->Context()->ConnectionClosed(iter->second, connection);
+      parent_->Context()->ConnectionClosed(iter.second, connection);
     }
   }
 }

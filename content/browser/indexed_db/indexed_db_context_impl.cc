@@ -130,25 +130,15 @@ IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
 
 std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  std::vector<GURL> origins;
   std::set<GURL>* origins_set = GetOriginSet();
-  for (std::set<GURL>::const_iterator iter = origins_set->begin();
-       iter != origins_set->end();
-       ++iter) {
-    origins.push_back(*iter);
-  }
-  return origins;
+  return std::vector<GURL>(origins_set->begin(), origins_set->end());
 }
 
 std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> origins = GetAllOrigins();
   std::vector<IndexedDBInfo> result;
-  for (std::vector<GURL>::const_iterator iter = origins.begin();
-       iter != origins.end();
-       ++iter) {
-    const GURL& origin_url = *iter;
-
+  for (const auto& origin_url : origins) {
     base::FilePath idb_directory = GetFilePath(origin_url);
     size_t connection_count = GetConnectionCount(origin_url);
     result.push_back(IndexedDBInfo(origin_url,
@@ -171,11 +161,7 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
   std::sort(origins.begin(), origins.end(), HostNameComparator);
 
   scoped_ptr<base::ListValue> list(new base::ListValue());
-  for (std::vector<GURL>::const_iterator iter = origins.begin();
-       iter != origins.end();
-       ++iter) {
-    const GURL& origin_url = *iter;
-
+  for (const auto& origin_url : origins) {
     scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue());
     info->SetString("url", origin_url.spec());
     info->SetString("size", ui::FormatBytes(GetOriginDiskUsage(origin_url)));
@@ -214,11 +200,7 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
         scoped_ptr<base::ListValue> transaction_list(new base::ListValue());
         std::vector<const IndexedDBTransaction*> transactions =
             db->transaction_coordinator().GetTransactions();
-        for (std::vector<const IndexedDBTransaction*>::iterator trans_it =
-                 transactions.begin();
-             trans_it != transactions.end();
-             ++trans_it) {
-          const IndexedDBTransaction* transaction = *trans_it;
+        for (const auto* transaction : transactions) {
           scoped_ptr<base::DictionaryValue> transaction_info(
               new base::DictionaryValue());
 
@@ -264,12 +246,9 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
               "tasks_completed", transaction->diagnostics().tasks_completed);
 
           scoped_ptr<base::ListValue> scope(new base::ListValue());
-          for (std::set<int64>::const_iterator scope_it =
-                   transaction->scope().begin();
-               scope_it != transaction->scope().end();
-               ++scope_it) {
+          for (const auto& id : transaction->scope()) {
             IndexedDBDatabaseMetadata::ObjectStoreMap::const_iterator it =
-                db->metadata().object_stores.find(*scope_it);
+                db->metadata().object_stores.find(id);
             if (it != db->metadata().object_stores.end())
               scope->AppendString(it->second.name);
           }
@@ -555,14 +534,9 @@ void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
 
 std::set<GURL>* IndexedDBContextImpl::GetOriginSet() {
   if (!origin_set_) {
-    origin_set_.reset(new std::set<GURL>);
     std::vector<GURL> origins;
     GetAllOriginsAndPaths(data_path_, &origins, NULL);
-    for (std::vector<GURL>::const_iterator iter = origins.begin();
-         iter != origins.end();
-         ++iter) {
-      origin_set_->insert(*iter);
-    }
+    origin_set_.reset(new std::set<GURL>(origins.begin(), origins.end()));
   }
   return origin_set_.get();
 }

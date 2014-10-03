@@ -67,16 +67,10 @@ std::vector<const IndexedDBTransaction*>
 IndexedDBTransactionCoordinator::GetTransactions() const {
   std::vector<const IndexedDBTransaction*> result;
 
-  for (TransactionSet::const_iterator it = started_transactions_.begin();
-       it != started_transactions_.end();
-       ++it) {
-    result.push_back(it->get());
-  }
-  for (TransactionSet::const_iterator it = queued_transactions_.begin();
-       it != queued_transactions_.end();
-       ++it) {
-    result.push_back(it->get());
-  }
+  for (const auto& transaction : started_transactions_)
+    result.push_back(transaction.get());
+  for (const auto& transaction : queued_transactions_)
+    result.push_back(transaction.get());
 
   return result;
 }
@@ -94,10 +88,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   // data. ("Version change" transactions are exclusive, but handled by the
   // connection sequencing in IndexedDBDatabase.)
   std::set<int64> locked_scope;
-  for (TransactionSet::const_iterator it = started_transactions_.begin();
-       it != started_transactions_.end();
-       ++it) {
-    IndexedDBTransaction* transaction = it->get();
+  for (const auto& transaction : started_transactions_) {
     if (transaction->mode() == blink::WebIDBTransactionModeReadWrite) {
       // Started read/write transactions have exclusive access to the object
       // stores within their scopes.

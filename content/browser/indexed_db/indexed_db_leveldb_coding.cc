@@ -380,10 +380,9 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
 }
 
 void EncodeBlobJournal(const BlobJournalType& journal, std::string* into) {
-  BlobJournalType::const_iterator iter;
-  for (iter = journal.begin(); iter != journal.end(); ++iter) {
-    EncodeVarInt(iter->first, into);
-    EncodeVarInt(iter->second, into);
+  for (const auto& iter : journal) {
+    EncodeVarInt(iter.first, into);
+    EncodeVarInt(iter.second, into);
   }
 }
 
