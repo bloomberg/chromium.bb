@@ -169,6 +169,7 @@
       'browser/chromeos/login/test_login_utils.cc',
       'browser/chromeos/login/test_login_utils.h',
       'browser/chromeos/login/ui/captive_portal_window_browsertest.cc',
+      'browser/chromeos/login/ui/login_web_dialog_browsertest.cc',
       'browser/chromeos/login/ui/simple_web_view_dialog_browsertest.cc',
       'browser/chromeos/login/ui/user_adding_screen_browsertest.cc',
       'browser/chromeos/login/users/avatar/user_image_manager_browsertest.cc',

@@ -114,8 +114,7 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
-  caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame(),
-      ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame());
   caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 

@@ -98,9 +98,10 @@ class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
   virtual ~MaxSizeWidgetDelegate() {}
 
  private:
-  virtual bool CanResize() const override { return true; }
-  virtual bool CanMaximize() const override { return false; }
-  virtual void DeleteDelegate() override { delete this; }
+  virtual bool CanResize() const OVERRIDE { return true; }
+  virtual bool CanMaximize() const OVERRIDE { return false; }
+  virtual bool CanMinimize() const OVERRIDE { return true; }
+  virtual void DeleteDelegate() OVERRIDE { delete this; }
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     return new MaxSizeNCFV;

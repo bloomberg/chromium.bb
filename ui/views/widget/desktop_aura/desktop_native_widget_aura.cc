@@ -936,6 +936,8 @@ bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   content_window_->SetProperty(aura::client::kCanMaximizeKey,
                                GetWidget()->widget_delegate()->CanMaximize());
+  content_window_->SetProperty(aura::client::kCanMinimizeKey,
+                               GetWidget()->widget_delegate()->CanMinimize());
   content_window_->SetProperty(aura::client::kCanResizeKey,
                                GetWidget()->widget_delegate()->CanResize());
   desktop_window_tree_host_->SizeConstraintsChanged();
