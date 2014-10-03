@@ -51,7 +51,7 @@ def GetAuthCode():
                     'scope=%s' % WEBSTORE_API_SCOPE,
                     'client_id=%(client_id)s' % PROJECT_ARGS,
                     'redirect_uri=%(redirect_uri)s' % PROJECT_ARGS])
-  auth_url = ' https://%s%s?%s' % (OAUTH_DOMAIN, OAUTH_AUTH_COMMAND, query)
+  auth_url = 'https://%s%s?%s' % (OAUTH_DOMAIN, OAUTH_AUTH_COMMAND, query)
   print 'Navigating to %s' % auth_url
   webbrowser.open(auth_url)
   httpd.handle_request()
