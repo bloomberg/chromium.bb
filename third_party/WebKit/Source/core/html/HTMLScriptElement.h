@@ -50,6 +50,7 @@ private:
     HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
     virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
