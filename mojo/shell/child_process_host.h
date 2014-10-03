@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#include "mojo/embedder/platform_channel_pair.h"
-#include "mojo/embedder/scoped_platform_handle.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/shell/child_process.h"  // For |ChildProcess::Type|.
 
 namespace mojo {

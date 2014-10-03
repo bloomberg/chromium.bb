@@ -14,7 +14,7 @@
 #include "mojo/apps/js/mojo_runner_delegate.h"
 #include "mojo/apps/js/test/js_to_cpp.mojom.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/common/test/test_utils.h"
+#include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

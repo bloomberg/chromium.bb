@@ -239,7 +239,7 @@ TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
 
-  // This matches a value in mojo/system/constants.h
+  // This matches a value in mojo/edk/system/constants.h
   const int kMaxMessageNumBytes = 4 * 1024 * 1024;
   std::string overly_large_data(kMaxMessageNumBytes, '*');
   // This messages are queued as pending.

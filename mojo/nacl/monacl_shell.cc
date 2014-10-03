@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-#include "mojo/embedder/embedder.h"
-#include "mojo/embedder/simple_platform_support.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/nacl/monacl_sel_main.h"
 
 

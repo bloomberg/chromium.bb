@@ -63,12 +63,12 @@ test("mojo_core_window_manager_unittests") {
   deps = [
     "//base/test:test_support",
     "//mojo/application_manager",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
     "//mojo/shell:test_support",
-    "//mojo/system",
     "//testing/gtest",
     "//ui/gl",
   ]
