@@ -34,7 +34,7 @@ class WebRequestEventRouterDelegate {
   // Looks up the tab and window ID for a given request.
   // Called on the IO thread.
   virtual void ExtractExtraRequestDetails(
-      net::URLRequest* request, base::DictionaryValue* out) = 0;
+      net::URLRequest* request, base::DictionaryValue* out);
 
   // Called to check extra parameters (e.g., tab_id, windown_id) when filtering
   // event listeners.
@@ -48,7 +48,7 @@ class WebRequestEventRouterDelegate {
       const std::string& extension_id,
       const GURL& url,
       const std::string& api_call,
-       scoped_ptr<base::DictionaryValue> details) = 0;
+       scoped_ptr<base::DictionaryValue> details) {};
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestEventRouterDelegate);
 };

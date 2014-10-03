@@ -5,6 +5,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 
 #include "base/logging.h"
+#include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 
@@ -57,7 +58,7 @@ WebViewPermissionHelperDelegate* ExtensionsAPIClient::
 
 WebRequestEventRouterDelegate*
 ExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
-  return NULL;
+  return new WebRequestEventRouterDelegate();
 }
 
 scoped_refptr<ContentRulesRegistry>

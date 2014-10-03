@@ -17,6 +17,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.cc"
+#include "extensions/common/switches.h"
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
@@ -109,7 +110,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
-  browser_context_.reset(new ShellBrowserContext);
+  browser_context_.reset(new ShellBrowserContext(net_log_.get()));
 
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
 

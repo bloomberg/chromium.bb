@@ -113,9 +113,8 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           CreateExtensionProtocolHandler(false /* is_incognito */,
                                          extension_info_map));
-  // Let content::ShellBrowserContext handle the rest of the setup.
   return browser_main_parts_->browser_context()->CreateRequestContext(
-      protocol_handlers, request_interceptors.Pass());
+      protocol_handlers, request_interceptors.Pass(), extension_info_map);
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
