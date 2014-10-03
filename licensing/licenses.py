@@ -179,14 +179,6 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
     for fullnamewithrev, homepages, license_names in EXTRA_PACKAGES:
       licensing.AddExtraPkg(fullnamewithrev, homepages, license_names)
 
-  if licensing.incomplete_packages:
-    raise AssertionError("""
-Some packages are missing due to errors, please look at errors generated
-during this run.
-List of packages with errors:
-%s
-  """ % '\n'.join(licensing.incomplete_packages))
-
   return licensing
 
 
@@ -205,9 +197,7 @@ def main(args):
                       "dependencies.")
   parser.add_argument("-g", "--generate-licenses", action="store_true",
                       dest="gen_licenses",
-                      help="Generate licensing bits for each package before "
-                      "making license file\n(default is to use build time "
-                      "license bits)")
+                      help="Generate license information, if missing.")
   parser.add_argument("-o", "--output", type="path",
                       help="which html file to create with output")
   opts = parser.parse_args(args)

@@ -306,10 +306,6 @@ class PackageInfo(object):
     # one to skip in licensing.
     self.skip = False
 
-    # If we failed to get licensing for this package, mark it as such so that
-    # it can be flagged when the full license file is being generated.
-    self.licensing_failed = False
-
     # Intellegently populate initial skip information.
     self.LookForSkip()
 
@@ -587,8 +583,7 @@ being scraped currently).""",
     """Populate the license related fields.
 
     Fields populated:
-      license_names, license_text_scanned, homepages,
-      skip, licensing_failed
+      license_names, license_text_scanned, homepages, skip
 
     Some packages have static license mappings applied to them that get
     retrieved from the ebuild.
@@ -644,14 +639,14 @@ being scraped currently).""",
       if (license_name == 'BSD' and
           self.fullnamerev.startswith('chromeos-base/')):
         license_name = 'BSD-Google'
-        logging.error(
+        logging.warning(
             'Fixed BSD->BSD-Google for %s because it\'s in chromeos-base. '
             'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       # TODO: temp workaround for http;//crbug.com/348749 , remove when the bug
       # is fixed.
       if license_name == 'Proprietary':
         license_name = 'Google-TOS'
-        logging.error(
+        logging.warning(
             'Fixed Proprietary -> Google-TOS for %s. '
             'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       new_license_names.append(license_name)
@@ -780,12 +775,6 @@ class Licensing(object):
     # ready for us, but in case they're not, they can be generated.
     self.gen_licenses = gen_licenses
 
-    # This keeps track of whether we have an incomplete license file due to
-    # package errors during parsing.
-    # Any non empty list at the end shows the list of packages that caused
-    # errors.
-    self.incomplete_packages = []
-
     self.package_text = {}
     self.entry_template = None
 
@@ -827,40 +816,30 @@ class Licensing(object):
     """
     for package_name in self.packages:
       pkg = self.packages[package_name]
+
       if pkg.skip:
-        if self.gen_licenses:
-          logging.info('Package %s is in skip list', package_name)
+        logging.debug('Package %s is in skip list', package_name)
         continue
 
       # Other skipped packages get dumped with incomplete info and the skip flag
-      if not os.path.exists(pkg.license_dump_path) and not self.gen_licenses:
-        logging.warning('>>> License for %s is missing, creating now <<<',
+      if not os.path.exists(pkg.license_dump_path):
+        if not self.gen_licenses:
+          raise PackageLicenseError('License for %s is missing' % package_name)
+
+        logging.error('>>> License for %s is missing, creating now <<<',
                         package_name)
-      if not os.path.exists(pkg.license_dump_path) or self.gen_licenses:
-        try:
-          build_info_path = os.path.join(
-              cros_build_lib.GetSysroot(pkg.board),
-              PER_PKG_LICENSE_DIR, pkg.fullnamerev)
-          pkg.GetLicenses(build_info_path, None)
-        except PackageLicenseError:
-          pkg.licensing_failed = True
+        build_info_path = os.path.join(
+            cros_build_lib.GetSysroot(pkg.board),
+            PER_PKG_LICENSE_DIR, pkg.fullnamerev)
+        pkg.GetLicenses(build_info_path, None)
 
         # We dump packages where licensing failed too.
         pkg.SaveLicenseDump(pkg.license_dump_path)
 
-    for package_name in self.packages:
-      pkg = self.packages[package_name]
-      if pkg.skip:
-        logging.info('Package %s is in skip list', pkg.fullnamerev)
-        continue
-
-      # TODO(dgarrett): Only load if the in-memory version is incomplete.
-      self._LoadLicenseDump(pkg)
-      logging.debug('loaded dump for %s', pkg.fullnamerev)
-
-      if pkg.licensing_failed:
-        logging.info('Package %s failed licensing', pkg.fullnamerev)
-        self.incomplete_packages += [pkg.fullnamerev]
+      # Load the pre-cached version, if the in-memory version is incomplete.
+      if not pkg.license_names:
+        logging.debug('loading dump for %s', pkg.fullnamerev)
+        self._LoadLicenseDump(pkg)
 
   def AddExtraPkg(self, fullnamerev, homepages, license_names):
     """Allow adding pre-created virtual packages.
@@ -998,7 +977,7 @@ after fixing the license.""" %
 
     # Keep track of which licenses are used by which packages.
     for pkg in self.packages.values():
-      if pkg.skip or pkg.licensing_failed:
+      if pkg.skip:
         continue
       for sln in pkg.license_names:
         self.licenses.setdefault(sln, []).append(pkg.fullnamerev)
@@ -1024,9 +1003,6 @@ after fixing the license.""" %
                       key=lambda x: (x.name.lower(), x.version, x.revision)):
       if pkg.skip:
         logging.debug('Skipping package %s', pkg.fullnamerev)
-        continue
-      if pkg.licensing_failed:
-        logging.debug('Package %s failed licensing, skipping', pkg.fullnamerev)
         continue
       self._GeneratePackageLicenseText(pkg)
       sorted_license_txt += [self.package_text[pkg]]
