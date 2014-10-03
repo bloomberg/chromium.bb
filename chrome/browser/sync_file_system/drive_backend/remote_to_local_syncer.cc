@@ -600,7 +600,7 @@ void RemoteToLocalSyncer::DidPrepareForDeletion(
 
   DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
   if (local_changes_->empty()) {
-    file_type_ = SYNC_FILE_TYPE_UNKNOWN;
+    file_type_ = local_metadata_->file_type;
     sync_action_ = SYNC_ACTION_DELETED;
     DeleteLocalFile(token.Pass());
     return;

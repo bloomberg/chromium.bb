@@ -454,7 +454,18 @@ void LocalToRemoteSyncer::DeleteRemoteFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
 
-  file_type_ = SYNC_FILE_TYPE_UNKNOWN;
+  switch (remote_file_tracker_->synced_details().file_kind()) {
+    case FILE_KIND_UNSUPPORTED:
+      NOTREACHED();
+      file_type_ = SYNC_FILE_TYPE_UNKNOWN;
+      break;
+    case FILE_KIND_FILE:
+      file_type_ = SYNC_FILE_TYPE_FILE;
+      break;
+    case FILE_KIND_FOLDER:
+      file_type_ = SYNC_FILE_TYPE_DIRECTORY;
+      break;
+  }
   sync_action_ = SYNC_ACTION_DELETED;
   drive_service()->DeleteResource(
       remote_file_tracker_->file_id(),
