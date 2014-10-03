@@ -109,8 +109,8 @@ class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
   bool in_mouse_drag() const { return in_mouse_drag_; }
 
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   ShelfLayoutManager* shelf_;
@@ -166,7 +166,7 @@ class ShelfLayoutManager::UpdateShelfObserver
     shelf_ = NULL;
   }
 
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     if (shelf_)
       shelf_->UpdateShelfBackground(BACKGROUND_CHANGE_ANIMATE);
     delete this;

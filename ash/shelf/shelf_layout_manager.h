@@ -165,23 +165,23 @@ class ASH_EXPORT ShelfLayoutManager
   void SetAnimationDurationOverride(int duration_override_in_ms);
 
   // Overridden from SnapLayoutManager:
-  virtual void OnWindowResized() OVERRIDE;
+  virtual void OnWindowResized() override;
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE;
+                              const gfx::Rect& requested_bounds) override;
 
   // Overridden from ash::ShellObserver:
-  virtual void OnLockStateChanged(bool locked) OVERRIDE;
+  virtual void OnLockStateChanged(bool locked) override;
 
   // Overriden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   // Overridden from ash::LockStateObserver:
-  virtual void OnLockStateEvent(LockStateObserver::EventType event) OVERRIDE;
+  virtual void OnLockStateEvent(LockStateObserver::EventType event) override;
 
   // Overridden from ash::SessionStateObserver:
   virtual void SessionStateChanged(
-      SessionStateDelegate::SessionState state) OVERRIDE;
+      SessionStateDelegate::SessionState state) override;
 
   // TODO(harrym|oshima): These templates will be moved to
   // new Shelf class.
@@ -317,12 +317,12 @@ class ASH_EXPORT ShelfLayoutManager
   int GetWorkAreaSize(const State& state, int size) const;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Overridden from DockedWindowLayoutManagerObserver:
   virtual void OnDockBoundsChanging(
       const gfx::Rect& dock_bounds,
-      DockedWindowLayoutManagerObserver::Reason reason) OVERRIDE;
+      DockedWindowLayoutManagerObserver::Reason reason) override;
 
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being

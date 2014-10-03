@@ -67,7 +67,7 @@ class VpnDefaultView : public TrayItemMore,
   }
 
   // ui::network_icon::AnimationObserver
-  virtual void NetworkIconChanged() OVERRIDE {
+  virtual void NetworkIconChanged() override {
     Update();
   }
 

@@ -37,19 +37,19 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
 
   // ui::DisplayConfigurator::StateController overrides:
   virtual ui::MultipleDisplayState GetStateForDisplayIds(
-      const std::vector<int64>& outputs) const OVERRIDE;
+      const std::vector<int64>& outputs) const override;
   virtual bool GetResolutionForDisplayId(int64 display_id,
-                                         gfx::Size* size) const OVERRIDE;
+                                         gfx::Size* size) const override;
 
   // Overriden from ui::DisplayConfigurator::Observer:
   virtual void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) OVERRIDE;
+      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 
   // Overriden from ui::InputDeviceEventObserver:
-  virtual void OnInputDeviceConfigurationChanged() OVERRIDE;
+  virtual void OnInputDeviceConfigurationChanged() override;
 
   // Overriden from ShellObserver:
-  virtual void OnAppTerminating() OVERRIDE;
+  virtual void OnAppTerminating() override;
 
   // Exposed for testing.
   ASH_EXPORT static float FindDeviceScaleFactor(float dpi);

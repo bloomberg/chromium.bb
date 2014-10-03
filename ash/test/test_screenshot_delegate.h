@@ -19,10 +19,10 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
   virtual ~TestScreenshotDelegate();
 
   // Overridden from ScreenshotDelegate:
-  virtual void HandleTakeScreenshotForAllRootWindows() OVERRIDE;
+  virtual void HandleTakeScreenshotForAllRootWindows() override;
   virtual void HandleTakePartialScreenshot(
-      aura::Window* window, const gfx::Rect& rect) OVERRIDE;
-  virtual bool CanTakeScreenshot() OVERRIDE;
+      aura::Window* window, const gfx::Rect& rect) override;
+  virtual bool CanTakeScreenshot() override;
 
   int handle_take_screenshot_count() const {
     return handle_take_screenshot_count_;

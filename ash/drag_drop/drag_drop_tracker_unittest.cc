@@ -17,7 +17,7 @@ namespace test {
 
 class DragDropTrackerTest : public test::AshTestBase {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
   }
 

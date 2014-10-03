@@ -71,7 +71,7 @@ class WindowPropertyObserver : public aura::WindowObserver {
  private:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE {
+                                       intptr_t old) override {
     properties_changed_.push_back(key);
   }
 

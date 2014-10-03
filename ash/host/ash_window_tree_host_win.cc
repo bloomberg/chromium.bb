@@ -32,7 +32,7 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
 
  private:
   // AshWindowTreeHost:
-  virtual void ToggleFullScreen() OVERRIDE {
+  virtual void ToggleFullScreen() override {
     gfx::Rect target_rect;
     if (!fullscreen_) {
       fullscreen_ = true;
@@ -66,19 +66,19 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
                  target_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
   }
-  virtual bool ConfineCursorToRootWindow() OVERRIDE { return false; }
-  virtual void UnConfineCursor() OVERRIDE { NOTIMPLEMENTED(); }
+  virtual bool ConfineCursorToRootWindow() override { return false; }
+  virtual void UnConfineCursor() override { NOTIMPLEMENTED(); }
   virtual void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) {
     transformer_helper_.SetRootWindowTransformer(transformer.Pass());
   }
-  virtual gfx::Insets GetHostInsets() const OVERRIDE {
+  virtual gfx::Insets GetHostInsets() const override {
     return transformer_helper_.GetHostInsets();
   }
-  virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE { return this; }
+  virtual aura::WindowTreeHost* AsWindowTreeHost() override { return this; }
 
   // WindowTreeHostWin:
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
+  virtual void SetBounds(const gfx::Rect& bounds) override {
     if (fullscreen_) {
       saved_window_rect_.right = saved_window_rect_.left + bounds.width();
       saved_window_rect_.bottom = saved_window_rect_.top + bounds.height();
@@ -86,16 +86,16 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
     }
     WindowTreeHostWin::SetBounds(bounds);
   }
-  virtual void SetRootTransform(const gfx::Transform& transform) OVERRIDE {
+  virtual void SetRootTransform(const gfx::Transform& transform) override {
     transformer_helper_.SetTransform(transform);
   }
   gfx::Transform GetRootTransform() const {
     return transformer_helper_.GetTransform();
   }
-  virtual gfx::Transform GetInverseRootTransform() const OVERRIDE {
+  virtual gfx::Transform GetInverseRootTransform() const override {
     return transformer_helper_.GetInverseTransform();
   }
-  virtual void UpdateRootWindowSize(const gfx::Size& host_size) OVERRIDE {
+  virtual void UpdateRootWindowSize(const gfx::Size& host_size) override {
     transformer_helper_.UpdateWindowSize(host_size);
   }
 

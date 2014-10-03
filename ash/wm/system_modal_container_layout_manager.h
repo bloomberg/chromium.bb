@@ -42,20 +42,20 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   bool has_modal_background() const { return modal_background_ != NULL; }
 
   // Overridden from SnapToPixelLayoutManager:
-  virtual void OnWindowResized() OVERRIDE;
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWindowResized() override;
+  virtual void OnWindowAddedToLayout(aura::Window* child) override;
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override;
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE;
+                              const gfx::Rect& requested_bounds) override;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+                                       intptr_t old) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Can a given |window| receive and handle input events?
   bool CanWindowReceiveEvents(aura::Window* window);

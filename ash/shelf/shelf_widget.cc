@@ -67,21 +67,21 @@ class DimmerView : public views::View,
   void ForceUndimming(bool force);
 
   // views::WidgetDelegate overrides:
-  virtual views::Widget* GetWidget() OVERRIDE {
+  virtual views::Widget* GetWidget() override {
     return View::GetWidget();
   }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
+  virtual const views::Widget* GetWidget() const override {
     return View::GetWidget();
   }
 
   // ash::BackgroundAnimatorDelegate overrides:
-  virtual void UpdateBackground(int alpha) OVERRIDE {
+  virtual void UpdateBackground(int alpha) override {
     alpha_ = alpha;
     SchedulePaint();
   }
 
   // views::View overrides:
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // A function to test the current alpha used.
   int get_dimming_alpha_for_test() { return alpha_; }
@@ -94,8 +94,8 @@ class DimmerView : public views::View,
     virtual ~DimmerEventFilter();
 
     // Overridden from ui::EventHandler:
-    virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-    virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+    virtual void OnMouseEvent(ui::MouseEvent* event) override;
+    virtual void OnTouchEvent(ui::TouchEvent* event) override;
 
    private:
     // The owning class.
@@ -274,12 +274,12 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
   }
 
   // ash::ShelfLayoutManagerObserver:
-  virtual void WillDeleteShelf() OVERRIDE {
+  virtual void WillDeleteShelf() override {
     shelf_ = NULL;
   }
 
   virtual void WillChangeVisibilityState(
-      ash::ShelfVisibilityState new_state) OVERRIDE {
+      ash::ShelfVisibilityState new_state) override {
     gfx::Insets mouse_insets;
     gfx::Insets touch_insets;
     if (new_state == ash::SHELF_VISIBLE) {
@@ -334,21 +334,21 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void SetParentLayer(ui::Layer* layer);
 
   // views::View overrides:
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // views::WidgetDelegateView overrides:
-  virtual views::Widget* GetWidget() OVERRIDE {
+  virtual views::Widget* GetWidget() override {
     return View::GetWidget();
   }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
+  virtual const views::Widget* GetWidget() const override {
     return View::GetWidget();
   }
 
-  virtual bool CanActivate() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
+  virtual bool CanActivate() const override;
+  virtual void Layout() override;
+  virtual void ReorderChildLayers(ui::Layer* parent_layer) override;
   // This will be called when the parent local bounds change.
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // aura::WindowObserver overrides:
   // This will be called when the shelf itself changes its absolute position.
@@ -357,10 +357,10 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // that this gets also triggered when the shelf only moves.
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   // BackgroundAnimatorDelegate overrides:
-  virtual void UpdateBackground(int alpha) OVERRIDE;
+  virtual void UpdateBackground(int alpha) override;
 
   // Force the shelf to be presented in an undimmed state.
   void ForceUndimming(bool force);

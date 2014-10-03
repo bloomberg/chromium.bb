@@ -53,7 +53,7 @@ class ScreenTrayItemTest : public ash::test::AshTestBase {
 
   int stop_callback_hit_count() const { return stop_callback_hit_count_; }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     TrayItemView::DisableAnimationsForTest();
   }
@@ -83,7 +83,7 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
   ScreenCaptureTest() {}
   virtual ~ScreenCaptureTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ScreenTrayItemTest::SetUp();
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
@@ -100,7 +100,7 @@ class ScreenShareTest : public ScreenTrayItemTest {
   ScreenShareTest() {}
   virtual ~ScreenShareTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ScreenTrayItemTest::SetUp();
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.

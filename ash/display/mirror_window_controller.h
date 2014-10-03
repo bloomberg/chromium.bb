@@ -50,7 +50,7 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   void Close();
 
   // aura::WindowTreeHostObserver overrides:
-  virtual void OnHostResized(const aura::WindowTreeHost* host) OVERRIDE;
+  virtual void OnHostResized(const aura::WindowTreeHost* host) override;
 
   // Return the root window used to mirror the content. NULL if the
   // display is not mirrored by the compositor path.

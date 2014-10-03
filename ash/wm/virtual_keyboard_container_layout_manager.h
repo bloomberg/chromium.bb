@@ -20,7 +20,7 @@ class VirtualKeyboardContainerLayoutManager : public SnapToPixelLayoutManager {
   virtual ~VirtualKeyboardContainerLayoutManager();
 
   // Overridden from SnapToPixelLayoutManager:
-  virtual void OnWindowResized() OVERRIDE;
+  virtual void OnWindowResized() override;
 
  private:
   aura::Window* parent_container_;

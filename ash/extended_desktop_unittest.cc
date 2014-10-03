@@ -48,10 +48,10 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
   virtual ~ModalWidgetDelegate() {}
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_SYSTEM;
   }
 
@@ -69,7 +69,7 @@ class MoveWindowByClickEventHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_RELEASED) {
       aura::Window::Windows root_windows = Shell::GetAllRootWindows();
       DCHECK_LT(1u, root_windows.size());
@@ -98,7 +98,7 @@ class EventLocationRecordingEventHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) {
       location_ = event->location();
@@ -127,7 +127,7 @@ class EventLocationHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED)
       press_location_ = event->location();
     else if (event->type() == ui::ET_MOUSE_RELEASED)

@@ -22,7 +22,7 @@ class ASH_EXPORT StackingController : public aura::client::WindowTreeClient {
   // Overridden from aura::client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
-                                         const gfx::Rect& bounds) OVERRIDE;
+                                         const gfx::Rect& bounds) override;
 
  private:
   // Returns corresponding system modal container for a modal window.

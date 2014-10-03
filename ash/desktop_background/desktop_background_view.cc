@@ -49,7 +49,7 @@ class LayerControlView : public views::View {
   }
 
   // Overrides views::View.
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
         GetWidget()->GetNativeView());
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
@@ -83,7 +83,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
         Shell::GetInstance()->window_selector_controller();
@@ -93,7 +93,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
     }
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
         Shell::GetInstance()->window_selector_controller();

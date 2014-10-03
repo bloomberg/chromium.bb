@@ -19,13 +19,13 @@ class AppListShelfItemDelegate : public ShelfItemDelegate {
   virtual ~AppListShelfItemDelegate();
 
   // ShelfItemDelegate:
-  virtual bool ItemSelected(const ui::Event& event) OVERRIDE;
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) OVERRIDE;
-  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual bool ShouldShowTooltip() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual bool ItemSelected(const ui::Event& event) override;
+  virtual base::string16 GetTitle() override;
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
+  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  virtual bool IsDraggable() override;
+  virtual bool ShouldShowTooltip() override;
+  virtual void Close() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListShelfItemDelegate);

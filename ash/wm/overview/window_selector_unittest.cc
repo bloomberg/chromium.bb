@@ -56,7 +56,7 @@ namespace {
 class NonActivatableActivationDelegate
     : public aura::client::ActivationDelegate {
  public:
-  virtual bool ShouldActivate() const OVERRIDE {
+  virtual bool ShouldActivate() const override {
     return false;
   }
 };
@@ -75,7 +75,7 @@ class WindowSelectorTest : public test::AshTestBase {
   WindowSelectorTest() {}
   virtual ~WindowSelectorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 

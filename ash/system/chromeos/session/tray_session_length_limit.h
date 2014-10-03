@@ -35,12 +35,12 @@ public:
   virtual ~TraySessionLengthLimit();
 
   // SystemTrayItem:
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual void DestroyDefaultView() override;
 
   // SessionLengthLimitObserver:
-  virtual void OnSessionStartTimeChanged() OVERRIDE;
-  virtual void OnSessionLengthLimitChanged() OVERRIDE;
+  virtual void OnSessionStartTimeChanged() override;
+  virtual void OnSessionLengthLimitChanged() override;
 
  private:
   friend class test::TraySessionLengthLimitTest;

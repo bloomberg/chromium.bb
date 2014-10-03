@@ -42,15 +42,15 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   void ClearSessionLengthLimit();
 
   // Overridden from SystemTrayDelegate:
-  virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
-  virtual bool IsUserSupervised() const OVERRIDE;
-  virtual bool ShouldShowDisplayNotification() OVERRIDE;
+  virtual user::LoginStatus GetUserLoginStatus() const override;
+  virtual bool IsUserSupervised() const override;
+  virtual bool ShouldShowDisplayNotification() override;
   virtual bool GetSessionStartTime(
-      base::TimeTicks* session_start_time) OVERRIDE;
+      base::TimeTicks* session_start_time) override;
   virtual bool GetSessionLengthLimit(
-      base::TimeDelta* session_length_limit) OVERRIDE;
-  virtual void ShutDown() OVERRIDE;
-  virtual void SignOut() OVERRIDE;
+      base::TimeDelta* session_length_limit) override;
+  virtual void ShutDown() override;
+  virtual void SignOut() override;
 
  private:
   bool should_show_display_notification_;

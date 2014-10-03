@@ -59,7 +59,7 @@ class DragImageView : public views::ImageView {
 
  private:
   // Overridden from views::ImageView.
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   scoped_ptr<views::Widget> widget_;
   gfx::Size widget_size_;

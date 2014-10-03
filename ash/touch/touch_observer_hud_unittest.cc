@@ -26,7 +26,7 @@ class TouchHudTestBase : public test::AshTestBase {
   TouchHudTestBase() {}
   virtual ~TouchHudTestBase() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
 
     // Initialize display infos. They should be initialized after Ash
@@ -214,7 +214,7 @@ class TouchHudDebugTest : public TouchHudTestBase {
   TouchHudDebugTest() {}
   virtual ~TouchHudDebugTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Add ash-touch-hud flag to enable debug touch HUD. This flag should be set
     // before Ash environment is set up, i.e., before TouchHudTestBase::SetUp().
     CommandLine::ForCurrentProcess()->AppendSwitch(

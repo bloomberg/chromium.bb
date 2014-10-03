@@ -100,11 +100,11 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver overrides:
   virtual void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                          wm::WindowStateType type) OVERRIDE;
+                                          wm::WindowStateType type) override;
 
  private:
   ToplevelWindowEventHandler* handler_;

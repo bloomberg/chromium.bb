@@ -38,11 +38,11 @@ class TrayItemMore : public ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) override;
 
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void Layout() override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   SystemTrayItem* owner_;
   // True if |more_| should be shown.

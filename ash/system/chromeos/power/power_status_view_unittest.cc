@@ -22,12 +22,12 @@ class PowerStatusViewTest : public test::AshTestBase {
   virtual ~PowerStatusViewTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     view_.reset(new PowerStatusView(GetViewType(), false));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     view_.reset();
     test::AshTestBase::TearDown();
   }
@@ -53,7 +53,7 @@ class PowerStatusDefaultViewTest : public PowerStatusViewTest {
   virtual ~PowerStatusDefaultViewTest() {}
 
  protected:
-  virtual PowerStatusView::ViewType GetViewType() OVERRIDE {
+  virtual PowerStatusView::ViewType GetViewType() override {
     return PowerStatusView::VIEW_DEFAULT;
   }
 
@@ -79,7 +79,7 @@ class PowerStatusNotificationViewTest : public PowerStatusViewTest {
   virtual ~PowerStatusNotificationViewTest() {}
 
  protected:
-  virtual PowerStatusView::ViewType GetViewType() OVERRIDE {
+  virtual PowerStatusView::ViewType GetViewType() override {
     return PowerStatusView::VIEW_NOTIFICATION;
   }
 

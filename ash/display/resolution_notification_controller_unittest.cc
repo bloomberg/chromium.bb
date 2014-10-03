@@ -54,7 +54,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
   virtual ~ResolutionNotificationControllerTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ash::test::AshTestBase::SetUp();
     ResolutionNotificationController::SuppressTimerForTest();
   }

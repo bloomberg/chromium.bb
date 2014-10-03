@@ -24,10 +24,10 @@ class ScrollSeparator : public views::View {
 
  private:
   // Overriden from views::View.
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(gfx::Rect(0, height() / 2, width(), 1), kBorderLightColor);
   }
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(1, kTrayPopupScrollSeparatorHeight);
   }
 
@@ -43,18 +43,18 @@ class ScrollBorder : public views::Border {
 
  private:
   // Overridden from views::Border.
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) override {
     if (!visible_)
       return;
     canvas->FillRect(gfx::Rect(0, view.height() - 1, view.width(), 1),
                      kBorderLightColor);
   }
 
-  virtual gfx::Insets GetInsets() const OVERRIDE {
+  virtual gfx::Insets GetInsets() const override {
     return gfx::Insets(0, 0, 1, 0);
   }
 
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     return gfx::Size(0, 1);
   }
 

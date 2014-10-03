@@ -21,7 +21,7 @@ class TestObserver : public PowerStatus::Observer {
   int power_changed_count() const { return power_changed_count_; }
 
   // PowerStatus::Observer overrides:
-  virtual void OnPowerStatusChanged() OVERRIDE { ++power_changed_count_; }
+  virtual void OnPowerStatusChanged() override { ++power_changed_count_; }
 
  private:
   int power_changed_count_;
@@ -36,7 +36,7 @@ class PowerStatusTest : public testing::Test {
   PowerStatusTest() : power_status_(NULL) {}
   virtual ~PowerStatusTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     PowerStatus::Initialize();
     power_status_ = PowerStatus::Get();
@@ -44,7 +44,7 @@ class PowerStatusTest : public testing::Test {
     power_status_->AddObserver(test_observer_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     power_status_->RemoveObserver(test_observer_.get());
     test_observer_.reset();
     PowerStatus::Shutdown();

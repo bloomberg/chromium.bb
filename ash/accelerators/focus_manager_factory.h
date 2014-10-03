@@ -23,16 +23,16 @@ class AshFocusManagerFactory : public views::FocusManagerFactory {
   // views::FocusManagerFactory overrides:
   virtual views::FocusManager* CreateFocusManager(
       views::Widget* widget,
-      bool desktop_widget) OVERRIDE;
+      bool desktop_widget) override;
 
  private:
   class Delegate : public views::FocusManagerDelegate {
    public:
     // views::FocusManagerDelegate overrides:
     virtual bool ProcessAccelerator(
-        const ui::Accelerator& accelerator) OVERRIDE;
+        const ui::Accelerator& accelerator) override;
     virtual ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
-        const ui::Accelerator& accelerator) const OVERRIDE;
+        const ui::Accelerator& accelerator) const override;
   };
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusManagerFactory);

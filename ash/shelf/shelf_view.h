@@ -112,9 +112,9 @@ class ASH_EXPORT ShelfView : public views::View,
   gfx::Rect GetVisibleItemsBoundsInScreen();
 
   // Overridden from FocusTraversable:
-  virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
-  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
-  virtual View* GetFocusTraversableParentView() OVERRIDE;
+  virtual views::FocusSearch* GetFocusSearch() override;
+  virtual FocusTraversable* GetFocusTraversableParent() override;
+  virtual View* GetFocusTraversableParentView() override;
 
   // Overridden from app_list::ApplicationDragAndDropHost:
   virtual void CreateDragIconProxy(
@@ -122,15 +122,15 @@ class ASH_EXPORT ShelfView : public views::View,
       const gfx::ImageSkia& icon,
       views::View* replaced_view,
       const gfx::Vector2d& cursor_offset_from_center,
-      float scale_factor) OVERRIDE;
+      float scale_factor) override;
   virtual void UpdateDragIconProxy(
-      const gfx::Point& location_in_screen_coordinates) OVERRIDE;
-  virtual void DestroyDragIconProxy() OVERRIDE;
+      const gfx::Point& location_in_screen_coordinates) override;
+  virtual void DestroyDragIconProxy() override;
   virtual bool StartDrag(
       const std::string& app_id,
-      const gfx::Point& location_in_screen_coordinates) OVERRIDE;
-  virtual bool Drag(const gfx::Point& location_in_screen_coordinates) OVERRIDE;
-  virtual void EndDrag(bool cancel) OVERRIDE;
+      const gfx::Point& location_in_screen_coordinates) override;
+  virtual bool Drag(const gfx::Point& location_in_screen_coordinates) override;
+  virtual void EndDrag(bool cancel) override;
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -245,40 +245,40 @@ class ASH_EXPORT ShelfView : public views::View,
   void UpdateOverflowRange(ShelfView* overflow_view) const;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  virtual FocusTraversable* GetPaneFocusTraversable() override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from ShelfModelObserver:
-  virtual void ShelfItemAdded(int model_index) OVERRIDE;
-  virtual void ShelfItemRemoved(int model_index, ShelfID id) OVERRIDE;
+  virtual void ShelfItemAdded(int model_index) override;
+  virtual void ShelfItemRemoved(int model_index, ShelfID id) override;
   virtual void ShelfItemChanged(int model_index,
-                                const ShelfItem& old_item) OVERRIDE;
-  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void ShelfStatusChanged() OVERRIDE;
+                                const ShelfItem& old_item) override;
+  virtual void ShelfItemMoved(int start_index, int target_index) override;
+  virtual void ShelfStatusChanged() override;
 
   // Overridden from ShelfButtonHost:
   virtual void PointerPressedOnButton(views::View* view,
                                       Pointer pointer,
-                                      const ui::LocatedEvent& event) OVERRIDE;
+                                      const ui::LocatedEvent& event) override;
   virtual void PointerDraggedOnButton(views::View* view,
                                       Pointer pointer,
-                                      const ui::LocatedEvent& event) OVERRIDE;
+                                      const ui::LocatedEvent& event) override;
   virtual void PointerReleasedOnButton(views::View* view,
                                        Pointer pointer,
-                                       bool canceled) OVERRIDE;
-  virtual void MouseMovedOverButton(views::View* view) OVERRIDE;
-  virtual void MouseEnteredButton(views::View* view) OVERRIDE;
-  virtual void MouseExitedButton(views::View* view) OVERRIDE;
-  virtual base::string16 GetAccessibleName(const views::View* view) OVERRIDE;
+                                       bool canceled) override;
+  virtual void MouseMovedOverButton(views::View* view) override;
+  virtual void MouseEnteredButton(views::View* view) override;
+  virtual void MouseExitedButton(views::View* view) override;
+  virtual base::string16 GetAccessibleName(const views::View* view) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Show the list of all running items for this |item|. It will return true
   // when the menu was shown and false if there were no possible items to
@@ -292,7 +292,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
@@ -306,8 +306,8 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from views::BoundsAnimatorObserver:
   virtual void OnBoundsAnimatorProgressed(
-      views::BoundsAnimator* animator) OVERRIDE;
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
+      views::BoundsAnimator* animator) override;
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
   // Returns false if the click which closed the previous menu is the click
   // which triggered this event.

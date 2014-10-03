@@ -71,47 +71,47 @@ class ScreenForShutdown : public gfx::Screen {
   }
 
   // gfx::Screen overrides:
-  virtual bool IsDIPEnabled() OVERRIDE {
+  virtual bool IsDIPEnabled() override {
     return true;
   }
-  virtual gfx::Point GetCursorScreenPoint() OVERRIDE {
+  virtual gfx::Point GetCursorScreenPoint() override {
     return gfx::Point();
   }
-  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowUnderCursor() override {
     return NULL;
   }
   virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) OVERRIDE {
+      const gfx::Point& point) override {
     return NULL;
   }
-  virtual int GetNumDisplays() const OVERRIDE {
+  virtual int GetNumDisplays() const override {
     return display_list_.size();
   }
-  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+  virtual std::vector<gfx::Display> GetAllDisplays() const override {
     return display_list_;
   }
   virtual gfx::Display GetDisplayNearestWindow(gfx::NativeView view)
-      const OVERRIDE {
+      const override {
     return primary_display_;
   }
   virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE {
+      const gfx::Point& point) const override {
     return FindDisplayNearestPoint(display_list_, point);
   }
   virtual gfx::Display GetDisplayMatching(const gfx::Rect& match_rect)
-      const OVERRIDE {
+      const override {
     const gfx::Display* matching =
         FindDisplayMatching(display_list_, match_rect);
     // Fallback to the primary display if there is no matching display.
     return matching ? *matching : GetPrimaryDisplay();
   }
-  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+  virtual gfx::Display GetPrimaryDisplay() const override {
     return primary_display_;
   }
-  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
+  virtual void AddObserver(gfx::DisplayObserver* observer) override {
     NOTREACHED() << "Observer should not be added during shutdown";
   }
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {
   }
 
  private:

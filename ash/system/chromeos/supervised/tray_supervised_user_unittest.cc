@@ -45,8 +45,8 @@ class TraySupervisedUserInitialTest : public TraySupervisedUserTest {
   TraySupervisedUserInitialTest() {}
   virtual ~TraySupervisedUserInitialTest() {}
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUserInitialTest);

@@ -24,7 +24,7 @@ class WindowCycleEventFilter : public ui::EventHandler {
   virtual ~WindowCycleEventFilter();
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);

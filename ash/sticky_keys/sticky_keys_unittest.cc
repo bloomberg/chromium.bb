@@ -34,7 +34,7 @@ class StickyKeysTest : public test::AshTestBase {
       : target_(NULL),
         root_window_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
 
     // |target_| owned by root window of shell. It is still safe to delete
@@ -45,7 +45,7 @@ class StickyKeysTest : public test::AshTestBase {
     ui::SetUpTouchPadForTest(kTouchPadDeviceId);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test::AshTestBase::TearDown();
   }
 

@@ -31,16 +31,16 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual ~TestWidgetDelegate() {}
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
-  virtual bool CanResize() const OVERRIDE {
+  virtual bool CanResize() const override {
     return true;
   }
-  virtual bool CanMaximize() const OVERRIDE {
+  virtual bool CanMaximize() const override {
     return true;
   }
-  virtual bool CanMinimize() const OVERRIDE {
+  virtual bool CanMinimize() const override {
     return true;
   }
 
@@ -50,7 +50,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
  private:
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     caption_button_container_->Layout();
 
     // Right align the caption button container.
@@ -60,7 +60,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
+      const ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       caption_button_container_ = new FrameCaptionButtonContainerView(
           GetWidget(), FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
@@ -125,7 +125,7 @@ class FrameSizeButtonTest : public AshTestBase {
   }
 
   // AshTestBase overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
 
     TestWidgetDelegate* delegate = new TestWidgetDelegate();
@@ -408,14 +408,14 @@ class FrameSizeButtonTestRTL : public FrameSizeButtonTest {
   FrameSizeButtonTestRTL() {}
   virtual ~FrameSizeButtonTestRTL() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     original_locale_ = l10n_util::GetApplicationLocale(std::string());
     base::i18n::SetICUDefaultLocale("he");
 
     FrameSizeButtonTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     FrameSizeButtonTest::TearDown();
     base::i18n::SetICUDefaultLocale(original_locale_);
   }

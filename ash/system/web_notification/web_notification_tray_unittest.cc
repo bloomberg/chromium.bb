@@ -72,7 +72,7 @@ class TestItem : public SystemTrayItem {
  public:
   TestItem() : SystemTrayItem(GetSystemTray()) {}
 
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
     views::View* default_view = new views::View;
     default_view->SetLayoutManager(new views::FillLayout);
     default_view->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
@@ -80,7 +80,7 @@ class TestItem : public SystemTrayItem {
   }
 
   virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE {
+      user::LoginStatus status) override {
     return new views::View;
   }
 
@@ -95,13 +95,13 @@ class WebNotificationTrayTest : public test::AshTestBase {
   WebNotificationTrayTest() {}
   virtual ~WebNotificationTrayTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     test::AshTestBase::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     GetMessageCenter()->RemoveAllNotifications(false);
     test::AshTestBase::TearDown();
   }

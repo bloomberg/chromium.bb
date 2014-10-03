@@ -17,7 +17,7 @@ class NestedAcceleratorDelegate : public wm::NestedAcceleratorDelegate {
 
   // wm::AcceleratorDispatcher::Delegate
   virtual Result ProcessAccelerator(
-      const ui::Accelerator& accelerator) OVERRIDE;
+      const ui::Accelerator& accelerator) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDelegate);

@@ -53,7 +53,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   MaximizeModeControllerTest() {}
   virtual ~MaximizeModeControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     Shell::GetInstance()->accelerometer_controller()->RemoveObserver(
         maximize_mode_controller());
@@ -64,7 +64,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
         SetFirstDisplayAsInternalDisplay();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Shell::GetInstance()->accelerometer_controller()->AddObserver(
         maximize_mode_controller());
     test::AshTestBase::TearDown();

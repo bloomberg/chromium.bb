@@ -28,12 +28,12 @@ class ASH_EXPORT PowerStatusView : public views::View,
   virtual ~PowerStatusView();
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void Layout() override;
 
   // Overridden from PowerStatus::Observer.
-  virtual void OnPowerStatusChanged() OVERRIDE;
+  virtual void OnPowerStatusChanged() override;
 
  private:
   friend class PowerStatusDefaultViewTest;
@@ -45,7 +45,7 @@ class ASH_EXPORT PowerStatusView : public views::View,
   void UpdateTextForNotificationView();
 
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
 
   // Layout default view UI items on the right side of system tray pop up item
   // if true; otherwise, layout the UI items on the left side.

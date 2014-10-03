@@ -90,7 +90,7 @@ class CapsLockDefaultView : public ActionableView {
 
  private:
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     views::View::Layout();
 
     // Align the shortcut text with the right end
@@ -103,13 +103,13 @@ class CapsLockDefaultView : public ActionableView {
                                    text_size.height()));
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) override {
     state->role = ui::AX_ROLE_BUTTON;
     state->name = text_label_->text();
   }
 
   // Overridden from ActionableView:
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) override {
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
     if (keyboard) {

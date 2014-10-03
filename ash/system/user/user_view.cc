@@ -96,7 +96,7 @@ class LogoutButton : public TrayPopupLabelButton {
 
  private:
   virtual void Paint(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) OVERRIDE {
+                     const views::CullSet& cull_set) override {
     // Just skip paint if this button used as a placeholder.
     if (!placeholder_)
       TrayPopupLabelButton::Paint(canvas, cull_set);
@@ -114,7 +114,7 @@ class UserViewMouseWatcherHost : public views::MouseWatcherHost {
 
   // Implementation of MouseWatcherHost.
   virtual bool Contains(const gfx::Point& screen_point,
-                        views::MouseWatcherHost::MouseEventType type) OVERRIDE {
+                        views::MouseWatcherHost::MouseEventType type) override {
     return screen_area_.Contains(screen_point);
   }
 
@@ -137,7 +137,7 @@ class AddUserView : public views::View {
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Create the additional client content for this item.
   void AddContent();

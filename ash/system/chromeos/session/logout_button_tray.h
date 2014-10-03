@@ -31,19 +31,19 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
   virtual ~LogoutButtonTray();
 
   // TrayBackgroundView:
-  virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
-  virtual base::string16 GetAccessibleNameForTray() OVERRIDE;
+  virtual void SetShelfAlignment(ShelfAlignment alignment) override;
+  virtual base::string16 GetAccessibleNameForTray() override;
   virtual void HideBubbleWithView(
-      const views::TrayBubbleView* bubble_view) OVERRIDE;
-  virtual bool ClickedOutsideBubble() OVERRIDE;
+      const views::TrayBubbleView* bubble_view) override;
+  virtual bool ClickedOutsideBubble() override;
 
   // LogoutButtonObserver:
-  virtual void OnShowLogoutButtonInTrayChanged(bool show) OVERRIDE;
-  virtual void OnLogoutDialogDurationChanged(base::TimeDelta duration) OVERRIDE;
+  virtual void OnShowLogoutButtonInTrayChanged(bool show) override;
+  virtual void OnLogoutDialogDurationChanged(base::TimeDelta duration) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 

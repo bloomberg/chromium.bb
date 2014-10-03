@@ -59,41 +59,41 @@ class ASH_EXPORT WorkspaceLayoutManager
       scoped_ptr<WorkspaceLayoutManagerDelegate> delegate);
 
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() OVERRIDE {}
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWindowResized() override {}
+  virtual void OnWindowAddedToLayout(aura::Window* child) override;
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) OVERRIDE;
+                                              bool visibile) override;
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE;
+                              const gfx::Rect& requested_bounds) override;
 
   // ash::ShellObserver overrides:
-  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+  virtual void OnDisplayWorkAreaInsetsChanged() override;
 
   // Overriden from WindowObserver:
   virtual void OnWindowHierarchyChanged(
-      const WindowObserver::HierarchyChangeParams& params) OVERRIDE;
+      const WindowObserver::HierarchyChangeParams& params) override;
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE;
-  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+                                       intptr_t old) override;
+  virtual void OnWindowStackingChanged(aura::Window* window) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   // keyboard::KeyboardControllerObserver overrides:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // WindowStateObserver overrides:
   virtual void OnPostWindowStateTypeChange(
       wm::WindowState* window_state,
-      wm::WindowStateType old_type) OVERRIDE;
+      wm::WindowStateType old_type) override;
 
  private:
   typedef std::set<aura::Window*> WindowSet;

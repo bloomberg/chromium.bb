@@ -267,8 +267,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void DisableTouchHudProjection();
 
   // Overridden from ShellObserver.
-  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
-  virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
+  virtual void OnLoginStateChanged(user::LoginStatus status) override;
+  virtual void OnTouchHudProjectionToggled(bool enabled) override;
 
   scoped_ptr<AshWindowTreeHost> ash_host_;
   RootWindowLayoutManager* root_window_layout_;

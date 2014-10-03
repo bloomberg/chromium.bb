@@ -21,7 +21,7 @@ class SystemTrayThrobber : public views::SmoothedThrobber {
 
   // Overriden from views::View.
   virtual bool GetTooltipText(
-        const gfx::Point& p, base::string16* tooltip) const OVERRIDE;
+        const gfx::Point& p, base::string16* tooltip) const override;
 
  private:
   // The current tooltip text.
@@ -41,10 +41,10 @@ class ThrobberView : public views::View {
   void SetTooltipText(const base::string16& tooltip_text);
 
   // Overriden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
   virtual bool GetTooltipText(
-      const gfx::Point& p, base::string16* tooltip) const OVERRIDE;
+      const gfx::Point& p, base::string16* tooltip) const override;
 
  private:
   // Schedules animation for starting/stopping throbber.

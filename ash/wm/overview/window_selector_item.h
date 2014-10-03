@@ -89,10 +89,10 @@ class WindowSelectorItem : public views::ButtonListener,
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // aura::WindowObserver:
-  virtual void OnWindowTitleChanged(aura::Window* window) OVERRIDE;
+  virtual void OnWindowTitleChanged(aura::Window* window) override;
 
  protected:
   // Sets the bounds of this selector's items to |target_bounds| in

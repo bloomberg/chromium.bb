@@ -58,12 +58,12 @@ class BluetoothPairingNotificationDelegate
   virtual ~BluetoothPairingNotificationDelegate();
 
   // message_center::NotificationDelegate overrides.
-  virtual void Display() OVERRIDE;
-  virtual void Error() OVERRIDE;
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual bool HasClickedListener() OVERRIDE;
-  virtual void Click() OVERRIDE;
-  virtual void ButtonClick(int button_index) OVERRIDE;
+  virtual void Display() override;
+  virtual void Error() override;
+  virtual void Close(bool by_user) override;
+  virtual bool HasClickedListener() override;
+  virtual void Click() override;
+  virtual void ButtonClick(int button_index) override;
 
  private:
   // Buttons that appear in notifications.

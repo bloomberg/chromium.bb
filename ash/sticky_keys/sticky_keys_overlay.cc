@@ -108,7 +108,7 @@ class StickyKeysOverlayView : public views::WidgetDelegateView {
   virtual ~StickyKeysOverlayView();
 
   // views::WidgetDelegateView overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   void SetKeyState(ui::EventFlags modifier, StickyKeyState state);
 

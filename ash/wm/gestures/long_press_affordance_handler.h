@@ -52,11 +52,11 @@ class LongPressAffordanceHandler : public gfx::LinearAnimation,
   void SetTapDownTarget(aura::Window* target);
 
   // Overridden from gfx::LinearAnimation.
-  virtual void AnimateToState(double state) OVERRIDE;
-  virtual void AnimationStopped() OVERRIDE;
+  virtual void AnimateToState(double state) override;
+  virtual void AnimationStopped() override;
 
   // Overridden from aura::WindowObserver.
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   scoped_ptr<LongPressAffordanceView> view_;
   gfx::Point tap_down_location_;

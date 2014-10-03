@@ -27,7 +27,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual ~TestWidgetDelegate() {}
 
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      views::Widget* widget) override {
     custom_frame_view_ = new CustomFrameViewAsh(widget);
     return custom_frame_view_;
   }
@@ -49,26 +49,26 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
   virtual ~TestWidgetConstraintsDelegate() {}
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     return minimum_size_;
   }
 
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const override {
     return maximum_size_;
   }
 
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     // Set this instance as the contents view so that the maximum and minimum
     // size constraints will be used.
     return this;
   }
 
   // views::WidgetDelegate:
-  virtual bool CanMaximize() const OVERRIDE {
+  virtual bool CanMaximize() const override {
     return true;
   }
 
-  virtual bool CanMinimize() const OVERRIDE {
+  virtual bool CanMinimize() const override {
     return true;
   }
 

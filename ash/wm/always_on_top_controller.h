@@ -32,12 +32,12 @@ class AlwaysOnTopController : public aura::WindowObserver {
 
  private:
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* child) OVERRIDE;
-  virtual void OnWillRemoveWindow(aura::Window* child) OVERRIDE;
+  virtual void OnWindowAdded(aura::Window* child) override;
+  virtual void OnWillRemoveWindow(aura::Window* child) override;
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+                                       intptr_t old) override;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
   aura::Window* always_on_top_container_;
 

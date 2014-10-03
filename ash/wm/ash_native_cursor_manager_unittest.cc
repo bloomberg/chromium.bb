@@ -44,7 +44,7 @@ class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
     return p;
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     mouse_event_location_ = event->location();
     event->SetHandled();
   }

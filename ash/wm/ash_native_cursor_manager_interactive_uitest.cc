@@ -30,7 +30,7 @@ class AshNativeCursorManagerTest : public test::AshTestBase {
   AshNativeCursorManagerTest() {}
   virtual ~AshNativeCursorManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
 
     ui::RegisterPathProvider();

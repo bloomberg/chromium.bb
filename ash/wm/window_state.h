@@ -300,7 +300,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE;
+                                       intptr_t old) override;
 
  private:
   friend class DefaultState;

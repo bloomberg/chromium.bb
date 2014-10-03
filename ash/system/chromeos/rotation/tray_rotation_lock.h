@@ -28,18 +28,18 @@ class ASH_EXPORT TrayRotationLock : public TrayImageItem,
   virtual ~TrayRotationLock();
 
   // MaximizeModeController::Observer:
-  virtual void OnRotationLockChanged(bool rotation_locked) OVERRIDE;
+  virtual void OnRotationLockChanged(bool rotation_locked) override;
 
   // SystemTrayItem:
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
  protected:
   // TrayImageItem:
-  virtual bool GetInitialVisibility() OVERRIDE;
+  virtual bool GetInitialVisibility() override;
 
  private:
   friend class TrayRotationLockTest;

@@ -57,11 +57,11 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
 
   // gfx::LayerAnimationObserver overrides:
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
+      ui::LayerAnimationSequence* sequence) override;
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
+      ui::LayerAnimationSequence* sequence) override;
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
+      ui::LayerAnimationSequence* sequence) override;
 
   bool is_visible_;
   scoped_ptr<views::Widget> overlay_widget_;

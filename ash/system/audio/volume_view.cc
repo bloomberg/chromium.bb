@@ -72,7 +72,7 @@ class VolumeButton : public views::ToggleImageButton {
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     gfx::Size size = views::ToggleImageButton::GetPreferredSize();
     size.set_height(kTrayPopupItemHeight);
     return size;
@@ -118,12 +118,12 @@ class BarSeparator : public views::View {
   virtual ~BarSeparator() {}
 
   // Overriden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(kBarSeparatorWidth, kBarSeparatorHeight);
   }
 
  private:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(gfx::Rect(width() / 2, 0, 1, height()),
                      kButtonStrokeColor);
   }

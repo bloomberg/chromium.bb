@@ -32,7 +32,7 @@ class ModeIndicatorFrameView : public views::BubbleFrameView {
 
  private:
   // views::BubbleFrameView overrides:
-  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) OVERRIDE {
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
     return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
         rect.CenterPoint()).bounds();
   }

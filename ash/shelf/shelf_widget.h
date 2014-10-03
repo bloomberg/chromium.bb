@@ -82,7 +82,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetActivationChanged(
-      views::Widget* widget, bool active) OVERRIDE;
+      views::Widget* widget, bool active) override;
 
   // A function to test the current alpha used by the dimming bar. If there is
   // no dimmer active, the function will return -1.
@@ -96,7 +96,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void DisableDimmingAnimationsForTest();
 
   // ShelfLayoutManagerObserver overrides:
-  virtual void WillDeleteShelf() OVERRIDE;
+  virtual void WillDeleteShelf() override;
 
  private:
   class DelegateView;

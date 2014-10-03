@@ -28,11 +28,11 @@ class DraggableView : public views::View {
   virtual ~DraggableView() {}
 
   // views::View overrides:
-  virtual int GetDragOperations(const gfx::Point& press_pt) OVERRIDE {
+  virtual int GetDragOperations(const gfx::Point& press_pt) override {
     return ui::DragDropTypes::DRAG_MOVE;
   }
   virtual void WriteDragData(const gfx::Point& press_pt,
-                             OSExchangeData* data)OVERRIDE {
+                             OSExchangeData* data)override {
     data->SetString(base::UTF8ToUTF16("test"));
   }
 
@@ -48,20 +48,20 @@ class TargetView : public views::View {
   // views::View overrides:
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE {
+      std::set<OSExchangeData::CustomFormat>* custom_formats) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }
-  virtual bool AreDropTypesRequired() OVERRIDE {
+  virtual bool AreDropTypesRequired() override {
     return false;
   }
-  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE {
+  virtual bool CanDrop(const OSExchangeData& data) override {
     return true;
   }
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE {
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override {
     return ui::DragDropTypes::DRAG_MOVE;
   }
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override {
     dropped_ = true;
     return ui::DragDropTypes::DRAG_MOVE;
   }
@@ -126,7 +126,7 @@ class DragDropTest : public test::AshTestBase {
   DragDropTest() {}
   virtual ~DragDropTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
 
     ui::RegisterPathProvider();

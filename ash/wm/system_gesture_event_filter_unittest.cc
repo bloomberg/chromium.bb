@@ -50,10 +50,10 @@ class ResizableWidgetDelegate : public views::WidgetDelegateView {
   virtual ~ResizableWidgetDelegate() {}
 
  private:
-  virtual bool CanResize() const OVERRIDE { return true; }
-  virtual bool CanMaximize() const OVERRIDE { return true; }
-  virtual bool CanMinimize() const OVERRIDE { return true; }
-  virtual void DeleteDelegate() OVERRIDE { delete this; }
+  virtual bool CanResize() const override { return true; }
+  virtual bool CanMaximize() const override { return true; }
+  virtual bool CanMinimize() const override { return true; }
+  virtual void DeleteDelegate() override { delete this; }
 
   DISALLOW_COPY_AND_ASSIGN(ResizableWidgetDelegate);
 };
@@ -63,15 +63,15 @@ class MaxSizeNCFV : public views::NonClientFrameView {
  public:
   MaxSizeNCFV() {}
  private:
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const override {
     return gfx::Size(200, 200);
   }
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE {
+  virtual gfx::Rect GetBoundsForClientView() const override {
     return gfx::Rect();
   };
 
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE {
+      const gfx::Rect& client_bounds) const override {
     return gfx::Rect();
   };
 
@@ -79,15 +79,15 @@ class MaxSizeNCFV : public views::NonClientFrameView {
   // the parent NonClientView because that makes it more difficult to calculate
   // hittests for regions that are partially obscured by the ClientView, e.g.
   // HTSYSMENU.
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE {
+  virtual int NonClientHitTest(const gfx::Point& point) override {
     return HTNOWHERE;
   }
   virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) OVERRIDE {}
-  virtual void ResetWindowControls() OVERRIDE {}
-  virtual void UpdateWindowIcon() OVERRIDE {}
-  virtual void UpdateWindowTitle() OVERRIDE {}
-  virtual void SizeConstraintsChanged() OVERRIDE {}
+                             gfx::Path* window_mask) override {}
+  virtual void ResetWindowControls() override {}
+  virtual void UpdateWindowIcon() override {}
+  virtual void UpdateWindowTitle() override {}
+  virtual void SizeConstraintsChanged() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MaxSizeNCFV);
 };
@@ -98,11 +98,11 @@ class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
   virtual ~MaxSizeWidgetDelegate() {}
 
  private:
-  virtual bool CanResize() const OVERRIDE { return true; }
-  virtual bool CanMaximize() const OVERRIDE { return false; }
-  virtual void DeleteDelegate() OVERRIDE { delete this; }
+  virtual bool CanResize() const override { return true; }
+  virtual bool CanMaximize() const override { return false; }
+  virtual void DeleteDelegate() override { delete this; }
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      views::Widget* widget) override {
     return new MaxSizeNCFV;
   }
 
@@ -137,7 +137,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
   }
 
   // Overridden from AshTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // TODO(jonross): TwoFingerDragDelayed() and ThreeFingerGestureStopsDrag()
     // both use hardcoded touch points, assuming that they target empty header
     // space. Window control order now reflects configuration files and can

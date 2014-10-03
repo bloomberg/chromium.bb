@@ -50,8 +50,8 @@ class ASH_EXPORT TrayDetailsView : public views::View {
 
  protected:
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:
   SystemTrayItem* owner_;

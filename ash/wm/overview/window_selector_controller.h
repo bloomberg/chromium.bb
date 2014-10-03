@@ -45,7 +45,7 @@ class ASH_EXPORT WindowSelectorController
   bool IsSelecting();
 
   // WindowSelectorDelegate:
-  virtual void OnSelectionEnded() OVERRIDE;
+  virtual void OnSelectionEnded() override;
 
  private:
   friend class WindowSelectorTest;

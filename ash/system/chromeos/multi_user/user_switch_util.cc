@@ -37,17 +37,17 @@ class DesktopCastingWarningView : public views::DialogDelegateView {
   static void ShowDialog(const base::Callback<void()> on_accept);
 
   // views::DialogDelegate overrides.
-  virtual bool Accept() OVERRIDE;
+  virtual bool Accept() override;
   virtual base::string16 GetDialogButtonLabel(
-        ui::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE;
+        ui::DialogButton button) const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  virtual int GetDefaultDialogButton() const override;
 
   // views::WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
  private:
   void InitDialog();

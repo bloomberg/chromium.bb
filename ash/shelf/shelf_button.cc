@@ -89,7 +89,7 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
   }
 
   // gfx::AnimationDelegate
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) override {
     if (animation != &animation_)
       return;
     if (!animation_.is_animating())
@@ -126,7 +126,7 @@ class ShelfButton::BarView : public views::ImageView,
   }
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     if (show_attention_) {
       int alpha = ShelfButtonAnimation::GetInstance()->GetAlpha();
       canvas->SaveLayerAlpha(alpha);
@@ -138,7 +138,7 @@ class ShelfButton::BarView : public views::ImageView,
   }
 
   // ShelfButtonAnimation::Observer
-  virtual void AnimationProgressed() OVERRIDE {
+  virtual void AnimationProgressed() override {
     UpdateBounds();
     SchedulePaint();
   }

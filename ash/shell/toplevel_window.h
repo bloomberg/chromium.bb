@@ -30,21 +30,21 @@ class ToplevelWindow : public views::WidgetDelegateView {
   virtual ~ToplevelWindow();
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // Overridden from views::WidgetDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
   virtual void SaveWindowPlacement(
       const gfx::Rect& bounds,
-      ui::WindowShowState show_state) OVERRIDE;
+      ui::WindowShowState show_state) override;
   virtual bool GetSavedWindowPlacement(
       const views::Widget* widget,
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE;
-  virtual View* GetContentsView() OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual bool CanMinimize() const OVERRIDE;
+      ui::WindowShowState* show_state) const override;
+  virtual View* GetContentsView() override;
+  virtual bool CanResize() const override;
+  virtual bool CanMaximize() const override;
+  virtual bool CanMinimize() const override;
 
   const CreateParams params_;
 

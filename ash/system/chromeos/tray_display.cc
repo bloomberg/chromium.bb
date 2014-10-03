@@ -170,7 +170,7 @@ class DisplayView : public ActionableView {
 
   // Overridden from views::View.
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE {
+                              base::string16* tooltip) const override {
     base::string16 tray_message = GetTrayDisplayMessage(NULL);
     base::string16 display_message = GetAllDisplayInfo();
     if (tray_message.empty() && display_message.empty())
@@ -269,12 +269,12 @@ class DisplayView : public ActionableView {
   }
 
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) override {
     OpenSettings();
     return true;
   }
 
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
     int label_max_width = bounds().width() - kTrayPopupPaddingHorizontal * 2 -
         kTrayPopupPaddingBetweenItems - image_->GetPreferredSize().width();
     label_->SizeToFit(label_max_width);

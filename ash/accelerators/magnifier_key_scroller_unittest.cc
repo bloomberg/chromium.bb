@@ -20,7 +20,7 @@ class KeyEventDelegate : public aura::test::TestWindowDelegate {
   virtual ~KeyEventDelegate() {}
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     key_event.reset(new ui::KeyEvent(
         event->type(), event->key_code(), event->flags()));
   }

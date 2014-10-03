@@ -28,18 +28,18 @@ class WindowSelectorPanels : public WindowSelectorItem {
   void AddWindow(aura::Window* window);
 
   // WindowSelectorItem:
-  virtual aura::Window* GetRootWindow() OVERRIDE;
-  virtual bool HasSelectableWindow(const aura::Window* window) OVERRIDE;
-  virtual bool Contains(const aura::Window* target) OVERRIDE;
-  virtual void RestoreWindowOnExit(aura::Window* window) OVERRIDE;
-  virtual aura::Window* SelectionWindow() OVERRIDE;
-  virtual void RemoveWindow(const aura::Window* window) OVERRIDE;
-  virtual bool empty() const OVERRIDE;
-  virtual void PrepareForOverview() OVERRIDE;
+  virtual aura::Window* GetRootWindow() override;
+  virtual bool HasSelectableWindow(const aura::Window* window) override;
+  virtual bool Contains(const aura::Window* target) override;
+  virtual void RestoreWindowOnExit(aura::Window* window) override;
+  virtual aura::Window* SelectionWindow() override;
+  virtual void RemoveWindow(const aura::Window* window) override;
+  virtual bool empty() const override;
+  virtual void PrepareForOverview() override;
   virtual void SetItemBounds(aura::Window* root_window,
                              const gfx::Rect& target_bounds,
-                             bool animate) OVERRIDE;
-  virtual void SetOpacity(float opacity) OVERRIDE;
+                             bool animate) override;
+  virtual void SetOpacity(float opacity) override;
 
  private:
   typedef ScopedVector<ScopedTransformOverviewWindow> WindowList;

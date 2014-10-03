@@ -45,26 +45,26 @@ class UserView : public views::View,
   virtual ~UserView();
 
   // Overridden from MouseWatcherListener:
-  virtual void MouseMovedOutOfHost() OVERRIDE;
+  virtual void MouseMovedOutOfHost() override;
 
   TrayUser::TestState GetStateForTest() const;
   gfx::Rect GetBoundsInScreenOfUserButtonForTest();
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void Layout() override;
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
+                                 View* focused_now) override;
   virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
+                                View* focused_now) override;
 
   void AddLogoutButton(user::LoginStatus login);
   void AddUserCard(user::LoginStatus login);

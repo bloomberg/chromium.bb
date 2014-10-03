@@ -30,14 +30,14 @@ class WidgetsWindow : public views::WidgetDelegateView {
   virtual ~WidgetsWindow();
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
+  virtual views::View* GetContentsView() override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool CanResize() const override;
 
  private:
   views::LabelButton* button_;

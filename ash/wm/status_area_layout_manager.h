@@ -22,9 +22,9 @@ class StatusAreaLayoutManager : public SnapToPixelLayoutManager {
   virtual ~StatusAreaLayoutManager();
 
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() OVERRIDE;
+  virtual void OnWindowResized() override;
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE;
+                              const gfx::Rect& requested_bounds) override;
 
  private:
   // Updates layout of the status area. Effectively calls ShelfLayoutManager

@@ -32,7 +32,7 @@ class CandidateViewTest : public views::ViewsTestBase,
   CandidateViewTest() : widget_(NULL), last_pressed_(NULL) {}
   virtual ~CandidateViewTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     views::Widget::InitParams init_params(CreateParams(
@@ -61,7 +61,7 @@ class CandidateViewTest : public views::ViewsTestBase,
         native_window->GetRootWindow(), native_window));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     widget_->Close();
 
     views::ViewsTestBase::TearDown();
@@ -101,7 +101,7 @@ class CandidateViewTest : public views::ViewsTestBase,
 
  private:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     last_pressed_ = sender;
   }
 

@@ -27,12 +27,12 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
   ShelfWindowWatcherTest() : model_(NULL) {}
   virtual ~ShelfWindowWatcherTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     model_ = test::ShellTestApi(Shell::GetInstance()).shelf_model();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     model_ = NULL;
     test::AshTestBase::TearDown();
   }

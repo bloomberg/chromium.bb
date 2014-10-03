@@ -284,33 +284,33 @@ class CrossFadeObserver : public ui::CompositorObserver,
   }
 
   // ui::CompositorObserver overrides:
-  virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {
+  virtual void OnCompositingDidCommit(ui::Compositor* compositor) override {
   }
   virtual void OnCompositingStarted(ui::Compositor* compositor,
-                                    base::TimeTicks start_time) OVERRIDE {
+                                    base::TimeTicks start_time) override {
   }
-  virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE {
+  virtual void OnCompositingEnded(ui::Compositor* compositor) override {
   }
-  virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE {
+  virtual void OnCompositingAborted(ui::Compositor* compositor) override {
     // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
     layer_owner_->root()->GetAnimator()->StopAnimating();
   }
   virtual void OnCompositingLockStateChanged(
-      ui::Compositor* compositor) OVERRIDE {
+      ui::Compositor* compositor) override {
   }
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
     layer_owner_->root()->GetAnimator()->StopAnimating();
   }
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) OVERRIDE {
+                                              aura::Window* new_root) override {
     layer_owner_->root()->GetAnimator()->StopAnimating();
   }
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     delete this;
   }
 

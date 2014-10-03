@@ -31,13 +31,13 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
   void Update(base::TimeTicks logout_time);
 
   // views::DialogDelegateView:
-  virtual bool Accept() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual bool Accept() override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
   virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const
-      OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
+      override;
+  virtual void OnClosed() override;
+  virtual void DeleteDelegate() override;
 
  private:
   void UpdateLabel();

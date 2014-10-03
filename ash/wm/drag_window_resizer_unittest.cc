@@ -38,7 +38,7 @@ class DragWindowResizerTest : public test::AshTestBase {
   DragWindowResizerTest() {}
   virtual ~DragWindowResizerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("800x%d", kRootHeight));
 
@@ -87,7 +87,7 @@ class DragWindowResizerTest : public test::AshTestBase {
     ParentWindowInPrimaryRootWindow(panel_window_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     window_.reset();
     always_on_top_window_.reset();
     system_modal_window_.reset();

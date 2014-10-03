@@ -144,8 +144,8 @@ class ImmersiveFullscreenController::BubbleManager
 
   // aura::WindowObserver overrides:
   virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+                                         bool visible) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   ImmersiveFullscreenController* controller_;
 

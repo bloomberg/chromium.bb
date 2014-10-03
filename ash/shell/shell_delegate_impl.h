@@ -34,36 +34,36 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     browser_context_ = browser_context;
   }
 
-  virtual bool IsFirstRunAfterBoot() const OVERRIDE;
-  virtual bool IsIncognitoAllowed() const OVERRIDE;
-  virtual bool IsMultiProfilesEnabled() const OVERRIDE;
-  virtual bool IsRunningInForcedAppMode() const OVERRIDE;
-  virtual bool IsMultiAccountEnabled() const OVERRIDE;
-  virtual void PreInit() OVERRIDE;
-  virtual void PreShutdown() OVERRIDE;
-  virtual void Exit() OVERRIDE;
+  virtual bool IsFirstRunAfterBoot() const override;
+  virtual bool IsIncognitoAllowed() const override;
+  virtual bool IsMultiProfilesEnabled() const override;
+  virtual bool IsRunningInForcedAppMode() const override;
+  virtual bool IsMultiAccountEnabled() const override;
+  virtual void PreInit() override;
+  virtual void PreShutdown() override;
+  virtual void Exit() override;
   virtual keyboard::KeyboardControllerProxy*
-      CreateKeyboardControllerProxy() OVERRIDE;
-  virtual void VirtualKeyboardActivated(bool activated) OVERRIDE;
+      CreateKeyboardControllerProxy() override;
+  virtual void VirtualKeyboardActivated(bool activated) override;
   virtual void AddVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) OVERRIDE;
+      VirtualKeyboardStateObserver* observer) override;
   virtual void RemoveVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) OVERRIDE;
-  virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
-  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() OVERRIDE;
-  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
-  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
-  virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
-  virtual ash::SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
-  virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
-  virtual ash::NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
-  virtual ash::MediaDelegate* CreateMediaDelegate() OVERRIDE;
+      VirtualKeyboardStateObserver* observer) override;
+  virtual content::BrowserContext* GetActiveBrowserContext() override;
+  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
+  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
+  virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
+  virtual ash::SessionStateDelegate* CreateSessionStateDelegate() override;
+  virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
+  virtual ash::NewWindowDelegate* CreateNewWindowDelegate() override;
+  virtual ash::MediaDelegate* CreateMediaDelegate() override;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window,
       ash::ShelfItemDelegate* item_delegate,
-      ash::ShelfItem* item) OVERRIDE;
-  virtual GPUSupport* CreateGPUSupport() OVERRIDE;
-  virtual base::string16 GetProductName() const OVERRIDE;
+      ash::ShelfItem* item) override;
+  virtual GPUSupport* CreateGPUSupport() override;
+  virtual base::string16 GetProductName() const override;
 
  private:
   // Used to update Launcher. Owned by main.

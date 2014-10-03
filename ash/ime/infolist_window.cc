@@ -44,8 +44,8 @@ class InfolistBorder : public views::BubbleBorder {
 
   // views::BubbleBorder implementation.
   virtual gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
-                              const gfx::Size& contents_size) const OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
+                              const gfx::Size& contents_size) const override;
+  virtual gfx::Insets GetInsets() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InfolistBorder);
@@ -94,7 +94,7 @@ class InfolistEntryView : public views::View {
 
  private:
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   void UpdateBackground();
 

@@ -40,7 +40,7 @@ class TrayBarButtonWithTitle::TrayBarButton : public views::View {
   virtual ~TrayBarButton() {}
 
   // Overriden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     painter_->Paint(canvas, size());
   }
 

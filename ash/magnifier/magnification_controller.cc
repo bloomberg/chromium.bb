@@ -69,31 +69,31 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   virtual ~MagnificationControllerImpl();
 
   // MagnificationController overrides:
-  virtual void SetEnabled(bool enabled) OVERRIDE;
-  virtual bool IsEnabled() const OVERRIDE;
-  virtual void SetScale(float scale, bool animate) OVERRIDE;
-  virtual float GetScale() const OVERRIDE { return scale_; }
-  virtual void MoveWindow(int x, int y, bool animate) OVERRIDE;
-  virtual void MoveWindow(const gfx::Point& point, bool animate) OVERRIDE;
-  virtual gfx::Point GetWindowPosition() const OVERRIDE {
+  virtual void SetEnabled(bool enabled) override;
+  virtual bool IsEnabled() const override;
+  virtual void SetScale(float scale, bool animate) override;
+  virtual float GetScale() const override { return scale_; }
+  virtual void MoveWindow(int x, int y, bool animate) override;
+  virtual void MoveWindow(const gfx::Point& point, bool animate) override;
+  virtual gfx::Point GetWindowPosition() const override {
     return gfx::ToFlooredPoint(origin_);
   }
-  virtual void SetScrollDirection(ScrollDirection direction) OVERRIDE;
+  virtual void SetScrollDirection(ScrollDirection direction) override;
 
   // For test
-  virtual gfx::Point GetPointOfInterestForTesting() OVERRIDE {
+  virtual gfx::Point GetPointOfInterestForTesting() override {
     return point_of_interest_;
   }
 
  private:
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* root_window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* root_window) override;
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   // Redraws the magnification window with the given origin position and the
   // given scale. Returns true if the window is changed; otherwise, false.
@@ -140,9 +140,9 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   void ValidateScale(float* scale);
 
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Target root window. This must not be NULL.
   aura::Window* root_window_;

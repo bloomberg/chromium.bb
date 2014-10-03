@@ -40,20 +40,20 @@ class TestShelfModelObserver : public ShelfModelObserver {
   }
 
   // ShelfModelObserver overrides:
-  virtual void ShelfItemAdded(int index) OVERRIDE {
+  virtual void ShelfItemAdded(int index) override {
     added_count_++;
   }
-  virtual void ShelfItemRemoved(int index, ShelfID id) OVERRIDE {
+  virtual void ShelfItemRemoved(int index, ShelfID id) override {
     removed_count_++;
   }
   virtual void ShelfItemChanged(int index,
-                                const ShelfItem& old_item) OVERRIDE {
+                                const ShelfItem& old_item) override {
     changed_count_++;
   }
-  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE {
+  virtual void ShelfItemMoved(int start_index, int target_index) override {
     moved_count_++;
   }
-  virtual void ShelfStatusChanged() OVERRIDE {
+  virtual void ShelfStatusChanged() override {
   }
 
  private:

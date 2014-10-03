@@ -24,13 +24,13 @@ class ASH_EXPORT PowerEventObserver
   virtual ~PowerEventObserver();
 
   // chromeos::PowerManagerClient::Observer overrides:
-  virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE;
-  virtual void SuspendImminent() OVERRIDE;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void BrightnessChanged(int level, bool user_initiated) override;
+  virtual void SuspendImminent() override;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // chromeos::SessionManagerClient::Observer overrides.
-  virtual void ScreenIsLocked() OVERRIDE;
-  virtual void ScreenIsUnlocked() OVERRIDE;
+  virtual void ScreenIsLocked() override;
+  virtual void ScreenIsUnlocked() override;
 
   // Is the screen currently locked?
   bool screen_locked_;

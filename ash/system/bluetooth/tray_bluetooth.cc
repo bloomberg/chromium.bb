@@ -357,7 +357,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   }
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) OVERRIDE {
+  virtual void OnViewClicked(views::View* sender) override {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
@@ -387,7 +387,7 @@ class BluetoothDetailedView : public TrayDetailsView,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == toggle_bluetooth_)

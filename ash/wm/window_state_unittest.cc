@@ -25,22 +25,22 @@ class AlwaysMaximizeTestState : public WindowState::State {
 
   // WindowState::State overrides:
   virtual void OnWMEvent(WindowState* window_state,
-                         const WMEvent* event) OVERRIDE {
+                         const WMEvent* event) override {
     // We don't do anything here.
   }
-  virtual WindowStateType GetType() const OVERRIDE {
+  virtual WindowStateType GetType() const override {
     return state_type_;
   }
   virtual void AttachState(
       WindowState* window_state,
-      WindowState::State* previous_state) OVERRIDE {
+      WindowState::State* previous_state) override {
     // We always maximize.
     if (state_type_ != WINDOW_STATE_TYPE_MAXIMIZED) {
       window_state->Maximize();
       state_type_ = WINDOW_STATE_TYPE_MAXIMIZED;
     }
   }
-  virtual void DetachState(WindowState* window_state) OVERRIDE {}
+  virtual void DetachState(WindowState* window_state) override {}
 
  private:
   WindowStateType state_type_;

@@ -73,13 +73,13 @@ class ModalWindow : public views::WidgetDelegateView,
   }
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), color_);
   }
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(200, 200);
   }
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     gfx::Size open_ps = open_button_->GetPreferredSize();
     gfx::Rect local_bounds = GetLocalBounds();
     open_button_->SetBounds(
@@ -88,22 +88,22 @@ class ModalWindow : public views::WidgetDelegateView,
   }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
-  virtual bool CanResize() const OVERRIDE {
+  virtual bool CanResize() const override {
     return true;
   }
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Modal Window");
   }
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return modal_type_;
   }
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     DCHECK(sender == open_button_);
     OpenModalWindow(GetWidget()->GetNativeView(), modal_type_);
   }
@@ -145,24 +145,24 @@ class NonModalTransient : public views::WidgetDelegateView {
   }
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), color_);
   }
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(250, 250);
   }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
-  virtual bool CanResize() const OVERRIDE {
+  virtual bool CanResize() const override {
     return true;
   }
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Non-Modal Transient");
   }
-  virtual void DeleteDelegate() OVERRIDE {
+  virtual void DeleteDelegate() override {
     if (GetWidget() == non_modal_transient_)
       non_modal_transient_ = NULL;
 

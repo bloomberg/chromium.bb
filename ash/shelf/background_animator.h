@@ -48,7 +48,7 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
   int alpha() const { return alpha_; }
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   BackgroundAnimatorDelegate* delegate_;

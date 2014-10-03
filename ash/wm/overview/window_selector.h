@@ -77,27 +77,27 @@ class ASH_EXPORT WindowSelector
   void OnGridEmpty(WindowGrid* grid);
 
   // gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
   // aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowAdded(aura::Window* new_window) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
   virtual void OnAttemptToReactivateWindow(
       aura::Window* request_active,
-      aura::Window* actual_active) OVERRIDE;
+      aura::Window* actual_active) override;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
 
  private:
   friend class WindowSelectorTest;

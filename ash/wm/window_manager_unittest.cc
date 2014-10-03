@@ -39,7 +39,7 @@ class TestingCursorClientObserver : public aura::client::CursorClientObserver {
   bool did_visibility_change() const { return did_visibility_change_; }
 
   // Overridden from aura::client::CursorClientObserver:
-  virtual void OnCursorVisibilityChanged(bool is_visible) OVERRIDE {
+  virtual void OnCursorVisibilityChanged(bool is_visible) override {
     cursor_visibility_ = is_visible;
     did_visibility_change_ = true;
   }
@@ -75,7 +75,7 @@ class CustomEventHandler : public ui::test::TestEventHandler {
   }
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     ui::test::TestEventHandler::OnKeyEvent(event);
     if (key_result_ & ui::ER_HANDLED)
       event->SetHandled();
@@ -83,7 +83,7 @@ class CustomEventHandler : public ui::test::TestEventHandler {
       event->StopPropagation();
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     ui::test::TestEventHandler::OnMouseEvent(event);
     if (mouse_result_ & ui::ER_HANDLED)
       event->SetHandled();
@@ -109,7 +109,7 @@ class NonFocusableDelegate : public aura::test::TestWindowDelegate {
   NonFocusableDelegate() {}
 
  private:
-  virtual bool CanFocus() OVERRIDE {
+  virtual bool CanFocus() override {
     return false;
   }
 
@@ -126,7 +126,7 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
 
  private:
   // Overridden from TestWindowDelegate:
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+  virtual int GetNonClientComponent(const gfx::Point& point) const override {
     return hittest_code_;
   }
 

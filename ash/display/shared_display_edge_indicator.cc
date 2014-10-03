@@ -35,7 +35,7 @@ class IndicatorView : public views::View {
   }
 
   // views::Views overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(gfx::Rect(bounds().size()), color_);
   }
 

@@ -31,15 +31,15 @@ class ASH_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
   void ShowAndFadeOut();
 
   // views::BubbleDelegateView override:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
  protected:
   // views::BubbleDelegateView override:
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   // views::WidgetDelegateView overrides:
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
+      views::Widget* widget) override;
 
  private:
   gfx::Rect cursor_bounds_;

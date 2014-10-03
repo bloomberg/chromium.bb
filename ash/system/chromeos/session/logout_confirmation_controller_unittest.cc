@@ -29,14 +29,14 @@ class MockTimeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
   MockTimeSingleThreadTaskRunner();
 
   // base::SingleThreadTaskRunner:
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+  virtual bool RunsTasksOnCurrentThread() const override;
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE;
+                               base::TimeDelta delay) override;
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) override;
 
   const base::TimeTicks& GetCurrentTime() const;
 
@@ -70,7 +70,7 @@ class MockClock : public base::TickClock {
   virtual ~MockClock();
 
   // base::TickClock:
-  virtual base::TimeTicks NowTicks() OVERRIDE;
+  virtual base::TimeTicks NowTicks() override;
 
  private:
   scoped_refptr<MockTimeSingleThreadTaskRunner> task_runner_;

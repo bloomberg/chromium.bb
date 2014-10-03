@@ -647,7 +647,7 @@ class DontCrashOnChangeAndActivateDelegate
 
   // WindowDelegate overrides:
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {
+                               const gfx::Rect& new_bounds) override {
     if (window_) {
       wm::ActivateWindow(window_);
       window_ = NULL;
@@ -1330,7 +1330,7 @@ class DragMaximizedNonTrackedWindowObserver
   // Counts number of times a window is reparented. Ignores reparenting into and
   // from a docked container which is expected when a tab is dragged.
   virtual void OnWindowHierarchyChanged(
-      const HierarchyChangeParams& params) OVERRIDE {
+      const HierarchyChangeParams& params) override {
     if (params.target != window_ ||
         (params.old_parent->id() == kShellWindowId_DefaultContainer &&
          params.new_parent->id() == kShellWindowId_DockedContainer) ||

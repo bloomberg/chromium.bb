@@ -43,7 +43,7 @@ class ScopedShowWindow : public aura::WindowObserver {
   aura::Window* window() { return window_; }
 
   // aura::WindowObserver:
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWillRemoveWindow(aura::Window* window) override;
 
  private:
   // The window being shown.

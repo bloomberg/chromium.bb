@@ -23,11 +23,11 @@ class ASH_EXPORT BrightnessControllerChromeos
 
   // Overridden from ash::BrightnessControlDelegate:
   virtual bool HandleBrightnessDown(
-      const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual void SetBrightnessPercent(double percent, bool gradual) OVERRIDE;
+      const ui::Accelerator& accelerator) override;
+  virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) override;
+  virtual void SetBrightnessPercent(double percent, bool gradual) override;
   virtual void GetBrightnessPercent(
-      const base::Callback<void(double)>& callback) OVERRIDE;
+      const base::Callback<void(double)>& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrightnessControllerChromeos);

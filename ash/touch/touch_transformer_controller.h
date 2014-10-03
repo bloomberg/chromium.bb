@@ -24,8 +24,8 @@ class ASH_EXPORT TouchTransformerController
   void UpdateTouchTransformer() const;
 
   // DisplayController::Observer:
-  virtual void OnDisplaysInitialized() OVERRIDE;
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+  virtual void OnDisplaysInitialized() override;
+  virtual void OnDisplayConfigurationChanged() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,

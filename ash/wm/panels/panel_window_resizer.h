@@ -30,9 +30,9 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
                                     wm::WindowState* window_state);
 
   // WindowResizer:
-  virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
-  virtual void CompleteDrag() OVERRIDE;
-  virtual void RevertDrag() OVERRIDE;
+  virtual void Drag(const gfx::Point& location, int event_flags) override;
+  virtual void CompleteDrag() override;
+  virtual void RevertDrag() override;
 
  private:
   // Creates PanelWindowResizer that adds the ability to attach / detach panel

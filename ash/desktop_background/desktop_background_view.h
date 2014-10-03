@@ -22,13 +22,13 @@ class DesktopBackgroundView : public views::View,
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
   scoped_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);

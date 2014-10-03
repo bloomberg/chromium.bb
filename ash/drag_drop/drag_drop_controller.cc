@@ -81,42 +81,42 @@ class DragDropTrackerDelegate : public aura::WindowDelegate {
   virtual ~DragDropTrackerDelegate() {}
 
   // Overridden from WindowDelegate:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     return gfx::Size();
   }
 
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const override {
     return gfx::Size();
   }
 
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {}
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+                               const gfx::Rect& new_bounds) override {}
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+  virtual int GetNonClientComponent(const gfx::Point& point) const override {
     return HTCAPTION;
   }
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
-      const gfx::Point& location) OVERRIDE {
+      const gfx::Point& location) override {
     return true;
   }
-  virtual bool CanFocus() OVERRIDE { return true; }
-  virtual void OnCaptureLost() OVERRIDE {
+  virtual bool CanFocus() override { return true; }
+  virtual void OnCaptureLost() override {
     if (drag_drop_controller_->IsDragDropInProgress())
       drag_drop_controller_->DragCancel();
   }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
   }
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {}
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {}
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
-  virtual bool HasHitTestMask() const OVERRIDE {
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  virtual void OnWindowDestroying(aura::Window* window) override {}
+  virtual void OnWindowDestroyed(aura::Window* window) override {}
+  virtual void OnWindowTargetVisibilityChanged(bool visible) override {}
+  virtual bool HasHitTestMask() const override {
     return true;
   }
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+  virtual void GetHitTestMask(gfx::Path* mask) const override {
     DCHECK(mask->isEmpty());
   }
 

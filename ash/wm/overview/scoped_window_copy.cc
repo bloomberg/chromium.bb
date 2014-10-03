@@ -91,11 +91,11 @@ class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
 
   // ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
+      ui::LayerAnimationSequence* sequence) override;
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
+      ui::LayerAnimationSequence* sequence) override;
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
+      ui::LayerAnimationSequence* sequence) override;
 
  private:
   virtual ~CleanupWidgetAfterAnimationObserver();

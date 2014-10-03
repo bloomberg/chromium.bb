@@ -17,7 +17,7 @@ class EmptyBackground : public views::Background {
   virtual ~EmptyBackground() {}
 
  private:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
   }
 
   DISALLOW_COPY_AND_ASSIGN(EmptyBackground);

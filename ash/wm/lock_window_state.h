@@ -22,11 +22,11 @@ class LockWindowState : public wm::WindowState::State {
 
   // WindowState::State overrides:
   virtual void OnWMEvent(wm::WindowState* window_state,
-                         const wm::WMEvent* event) OVERRIDE;
-  virtual wm::WindowStateType GetType() const OVERRIDE;
+                         const wm::WMEvent* event) override;
+  virtual wm::WindowStateType GetType() const override;
   virtual void AttachState(wm::WindowState* window_state,
-                           wm::WindowState::State* previous_state) OVERRIDE;
-  virtual void DetachState(wm::WindowState* window_state) OVERRIDE;
+                           wm::WindowState::State* previous_state) override;
+  virtual void DetachState(wm::WindowState* window_state) override;
 
   // Creates new LockWindowState instance and attaches it to |window|.
   static wm::WindowState* SetLockWindowState(aura::Window* window);

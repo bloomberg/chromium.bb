@@ -72,7 +72,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void SchedulePaint();
 
   // Overridden from views::Widget:
-  virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
+  virtual void OnNativeWidgetActivationChanged(bool active) override;
 
  private:
   void AddSystemTray();

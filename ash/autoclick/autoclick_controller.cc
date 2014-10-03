@@ -49,17 +49,17 @@ class AutoclickControllerImpl : public AutoclickController,
 
  private:
   // AutoclickController overrides:
-  virtual void SetEnabled(bool enabled) OVERRIDE;
-  virtual bool IsEnabled() const OVERRIDE;
-  virtual void SetAutoclickDelay(int delay_ms) OVERRIDE;
-  virtual int GetAutoclickDelay() const OVERRIDE;
+  virtual void SetEnabled(bool enabled) override;
+  virtual bool IsEnabled() const override;
+  virtual void SetAutoclickDelay(int delay_ms) override;
+  virtual int GetAutoclickDelay() const override;
 
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
 
   void InitClickTimer();
 

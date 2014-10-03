@@ -74,7 +74,7 @@ class CustomFrameViewAshWindowStateDelegate
   }
  private:
   // Overridden from ash::wm::WindowStateDelegate:
-  virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) OVERRIDE {
+  virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     bool enter_fullscreen = !window_state->IsFullscreen();
     if (enter_fullscreen) {
       window_state->window()->SetProperty(aura::client::kShowStateKey,
@@ -90,7 +90,7 @@ class CustomFrameViewAshWindowStateDelegate
     return true;
   }
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
     window_state_->window()->RemoveObserver(this);
     window_state_ = NULL;
@@ -98,7 +98,7 @@ class CustomFrameViewAshWindowStateDelegate
   // Overridden from ash::wm::WindowStateObserver:
   virtual void OnPostWindowStateTypeChange(
       ash::wm::WindowState* window_state,
-      ash::wm::WindowStateType old_type) OVERRIDE {
+      ash::wm::WindowStateType old_type) override {
     if (!window_state->IsFullscreen() &&
         !window_state->IsMinimized() &&
         immersive_fullscreen_controller_.get() &&
@@ -154,13 +154,13 @@ class CustomFrameViewAsh::HeaderView
   void SizeConstraintsChanged();
 
   // views::View:
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
@@ -172,11 +172,11 @@ class CustomFrameViewAsh::HeaderView
 
  private:
   // ImmersiveFullscreenController::Delegate:
-  virtual void OnImmersiveRevealStarted() OVERRIDE;
-  virtual void OnImmersiveRevealEnded() OVERRIDE;
-  virtual void OnImmersiveFullscreenExited() OVERRIDE;
-  virtual void SetVisibleFraction(double visible_fraction) OVERRIDE;
-  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const OVERRIDE;
+  virtual void OnImmersiveRevealStarted() override;
+  virtual void OnImmersiveRevealEnded() override;
+  virtual void OnImmersiveFullscreenExited() override;
+  virtual void SetVisibleFraction(double visible_fraction) override;
+  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
 
   // The widget that the caption buttons act on.
   views::Widget* frame_;
@@ -373,12 +373,12 @@ class CustomFrameViewAsh::OverlayView : public views::View,
   virtual ~OverlayView();
 
   // views::View:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
  private:
   // views::ViewTargeterDelegate:
   virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const OVERRIDE;
+                                 const gfx::Rect& rect) const override;
 
   HeaderView* header_view_;
 

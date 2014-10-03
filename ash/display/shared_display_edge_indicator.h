@@ -37,7 +37,7 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public gfx::AnimationDelegate {
   void Hide();
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   // Used to show the displays' shared edge where a window can be moved across.

@@ -47,11 +47,11 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   void HideSharedEdgeIndicator();
 
   // DisplayController::Observer:
-  virtual void OnDisplaysInitialized() OVERRIDE;
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+  virtual void OnDisplaysInitialized() override;
+  virtual void OnDisplayConfigurationChanged() override;
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   friend class DragWindowResizerTest;

@@ -43,7 +43,7 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   void SetClockForTesting(scoped_ptr<base::TickClock> clock);
 
   // ShellObserver:
-  virtual void OnLockStateChanged(bool locked) OVERRIDE;
+  virtual void OnLockStateChanged(bool locked) override;
 
   // Called by the |dialog_| when the user confirms logout.
   void OnLogoutConfirmed();

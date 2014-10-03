@@ -40,9 +40,9 @@ class ASH_EXPORT NetworkStateNotifier :
 
   // NetworkStateHandlerObserver
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
   virtual void NetworkPropertiesUpdated(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
 
   // Show a connection error notification. If |error_name| matches an error
   // defined in NetworkConnectionHandler for connect, configure, or activation

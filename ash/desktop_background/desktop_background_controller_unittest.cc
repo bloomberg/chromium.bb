@@ -73,7 +73,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   }
   virtual ~DesktopBackgroundControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.

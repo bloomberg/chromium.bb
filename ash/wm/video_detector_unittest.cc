@@ -40,7 +40,7 @@ class TestVideoDetectorObserver : public VideoDetectorObserver {
   }
 
   // VideoDetectorObserver implementation.
-  virtual void OnVideoDetected(bool is_fullscreen) OVERRIDE {
+  virtual void OnVideoDetected(bool is_fullscreen) override {
     num_invocations_++;
     if (is_fullscreen)
       num_fullscreens_++;
@@ -66,7 +66,7 @@ class VideoDetectorTest : public AshTestBase {
   VideoDetectorTest() {}
   virtual ~VideoDetectorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     observer_.reset(new TestVideoDetectorObserver);
     detector_ = Shell::GetInstance()->video_detector();
@@ -76,7 +76,7 @@ class VideoDetectorTest : public AshTestBase {
     detector_->set_now_for_test(now_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     detector_->RemoveObserver(observer_.get());
     AshTestBase::TearDown();
   }

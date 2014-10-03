@@ -39,10 +39,10 @@ class ASH_EXPORT MagnifierKeyScroller : public KeyHoldDetector::Delegate {
 
  private:
   // KeyHoldDetector overrides:
-  virtual bool ShouldProcessEvent(const ui::KeyEvent* event) const OVERRIDE;
-  virtual bool IsStartEvent(const ui::KeyEvent* event) const OVERRIDE;
-  virtual void OnKeyHold(const ui::KeyEvent* event) OVERRIDE;
-  virtual void OnKeyUnhold(const ui::KeyEvent* event) OVERRIDE;
+  virtual bool ShouldProcessEvent(const ui::KeyEvent* event) const override;
+  virtual bool IsStartEvent(const ui::KeyEvent* event) const override;
+  virtual void OnKeyHold(const ui::KeyEvent* event) override;
+  virtual void OnKeyUnhold(const ui::KeyEvent* event) override;
 
   MagnifierKeyScroller();
   virtual ~MagnifierKeyScroller();

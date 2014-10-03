@@ -33,23 +33,23 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
   // Overridden from views::AccessiblePaneView.
-  virtual View* GetDefaultFocusableChild() OVERRIDE;
+  virtual View* GetDefaultFocusableChild() override;
 
   // Overridden from views::View:
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual views::Widget* GetWidget() override;
+  virtual const views::Widget* GetWidget() const override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::WidgetDelegate overrides:
-  virtual bool CanActivate() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
+  virtual bool CanActivate() const override;
+  virtual void DeleteDelegate() override;
 
  protected:
   // Overridden from views::View:
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
+  virtual void ChildVisibilityChanged(views::View* child) override;
 
  private:
   void UpdateWidgetSize();

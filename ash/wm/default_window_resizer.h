@@ -29,9 +29,9 @@ class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
   }
 
   // WindowResizer:
-  virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
-  virtual void CompleteDrag() OVERRIDE;
-  virtual void RevertDrag() OVERRIDE;
+  virtual void Drag(const gfx::Point& location, int event_flags) override;
+  virtual void CompleteDrag() override;
+  virtual void RevertDrag() override;
 
  private:
   explicit DefaultWindowResizer(wm::WindowState* window_state);

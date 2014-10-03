@@ -23,8 +23,8 @@ class TestAPIAnimationObserver : public views::BoundsAnimatorObserver {
 
   // views::BoundsAnimatorObserver overrides:
   virtual void OnBoundsAnimatorProgressed(
-      views::BoundsAnimator* animator) OVERRIDE {}
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE {
+      views::BoundsAnimator* animator) override {}
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override {
     base::MessageLoop::current()->Quit();
   }
 

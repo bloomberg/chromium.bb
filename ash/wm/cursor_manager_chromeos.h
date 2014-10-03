@@ -33,7 +33,7 @@ class ASH_EXPORT CursorManager : public ::wm::CursorManager {
 
   // aura::client::CursorClient:
   virtual bool ShouldHideCursorOnKeyEvent(
-      const ui::KeyEvent& event) const OVERRIDE;
+      const ui::KeyEvent& event) const override;
  private:
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };

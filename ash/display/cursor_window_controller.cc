@@ -29,34 +29,34 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   virtual ~CursorWindowDelegate() {}
 
   // aura::WindowDelegate overrides:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE { return size_; }
-  virtual gfx::Size GetMaximumSize() const OVERRIDE { return size_; }
+  virtual gfx::Size GetMinimumSize() const override { return size_; }
+  virtual gfx::Size GetMaximumSize() const override { return size_; }
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {}
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+                               const gfx::Rect& new_bounds) override {}
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
   virtual int GetNonClientComponent(
-      const gfx::Point& point) const OVERRIDE {
+      const gfx::Point& point) const override {
     return HTNOWHERE;
   }
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
-      const gfx::Point& location) OVERRIDE {
+      const gfx::Point& location) override {
     return false;
   }
-  virtual bool CanFocus() OVERRIDE { return false; }
-  virtual void OnCaptureLost() OVERRIDE {}
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual bool CanFocus() override { return false; }
+  virtual void OnCaptureLost() override {}
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->DrawImageInt(cursor_image_, 0, 0);
   }
   virtual void OnDeviceScaleFactorChanged(
-      float device_scale_factor) OVERRIDE {}
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {}
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {}
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
-  virtual bool HasHitTestMask() const OVERRIDE { return false; }
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
+      float device_scale_factor) override {}
+  virtual void OnWindowDestroying(aura::Window* window) override {}
+  virtual void OnWindowDestroyed(aura::Window* window) override {}
+  virtual void OnWindowTargetVisibilityChanged(bool visible) override {}
+  virtual bool HasHitTestMask() const override { return false; }
+  virtual void GetHitTestMask(gfx::Path* mask) const override {}
 
   // Sets cursor compositing mode on/off.
   void SetCursorCompositingEnabled(bool enabled) {

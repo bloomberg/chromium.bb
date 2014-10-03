@@ -39,12 +39,12 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
   ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);
 
   // ShelfModelObserver overrides:
-  virtual void ShelfItemAdded(int model_index) OVERRIDE;
-  virtual void ShelfItemRemoved(int index, ShelfID id) OVERRIDE;
-  virtual void ShelfItemMoved(int start_index, int targetindex) OVERRIDE;
+  virtual void ShelfItemAdded(int model_index) override;
+  virtual void ShelfItemRemoved(int index, ShelfID id) override;
+  virtual void ShelfItemMoved(int start_index, int targetindex) override;
   virtual void ShelfItemChanged(int index,
-                                const ShelfItem& old_item) OVERRIDE;
-  virtual void ShelfStatusChanged() OVERRIDE;
+                                const ShelfItem& old_item) override;
+  virtual void ShelfStatusChanged() override;
 
  private:
   friend class test::ShelfItemDelegateManagerTestAPI;

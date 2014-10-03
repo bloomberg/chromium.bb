@@ -23,7 +23,7 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
 
   virtual ~ScreensaverViewTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     RunAllPendingInMessageLoop();
   }

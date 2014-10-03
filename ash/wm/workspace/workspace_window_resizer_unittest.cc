@@ -51,11 +51,11 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
  private:
   // Overridden from aura::Test::TestWindowDelegate:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     return min_size_;
   }
 
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const override {
     return max_size_;
   }
 
@@ -72,7 +72,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   WorkspaceWindowResizerTest() : workspace_resizer_(NULL) {}
   virtual ~WorkspaceWindowResizerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("800x%d", kRootHeight));
     // Ignore the touch slop region.
@@ -112,7 +112,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     window4_->set_id(4);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     window_.reset();
     window2_.reset();
     window3_.reset();

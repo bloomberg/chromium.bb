@@ -40,12 +40,12 @@ class ASH_EXPORT CandidateView : public views::CustomButton {
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
 
   // Overridden from views::CustomButton:
-  virtual void StateChanged() OVERRIDE;
+  virtual void StateChanged() override;
 
   // Overridden from View:
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // The orientation of the candidate view.
   ui::CandidateWindow::Orientation orientation_;

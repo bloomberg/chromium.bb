@@ -61,20 +61,20 @@ class HoverHighlightView : public ActionableView {
 
  protected:
   // Overridden from views::View.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   // Overridden from ActionableView:
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) override;
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnEnabledChanged() OVERRIDE;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void OnEnabledChanged() override;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
 
   ViewClickListener* listener_;
   views::Label* text_label_;

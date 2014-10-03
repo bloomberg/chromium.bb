@@ -53,27 +53,27 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   views::Widget* widget() { return widget_; }
 
   // Overriden from ui::EventHandler.
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Overridden from views::WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // Overridden from gfx::DisplayObserver.
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
 #if defined(OS_CHROMEOS)
   // Overriden from ui::DisplayConfigurator::Observer.
   virtual void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) OVERRIDE;
+      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 #endif  // defined(OS_CHROMEOS)
 
   // Overriden form DisplayController::Observer.
-  virtual void OnDisplaysInitialized() OVERRIDE;
-  virtual void OnDisplayConfigurationChanging() OVERRIDE;
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+  virtual void OnDisplaysInitialized() override;
+  virtual void OnDisplayConfigurationChanging() override;
+  virtual void OnDisplayConfigurationChanged() override;
 
  private:
   friend class TouchHudTestBase;

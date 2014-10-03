@@ -308,7 +308,7 @@ class TouchHudCanvas : public views::View {
   }
 
   // Overridden from views::View.
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     for (int i = 0; i < kMaxPaths; ++i) {
       if (paths_[i].countPoints() == 0)
         continue;

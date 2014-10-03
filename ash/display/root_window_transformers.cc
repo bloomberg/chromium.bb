@@ -142,14 +142,14 @@ class AshRootWindowTransformer : public RootWindowTransformer {
   }
 
   // aura::RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const OVERRIDE {
+  virtual gfx::Transform GetTransform() const override {
     return transform_;
   }
-  virtual gfx::Transform GetInverseTransform() const OVERRIDE {
+  virtual gfx::Transform GetInverseTransform() const override {
     return invert_transform_;
   }
   virtual gfx::Rect GetRootWindowBounds(
-      const gfx::Size& host_size) const OVERRIDE {
+      const gfx::Size& host_size) const override {
     gfx::Rect bounds(host_size);
     bounds.Inset(host_insets_);
     bounds = ui::ConvertRectToDIP(root_window_->layer(), bounds);
@@ -168,7 +168,7 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
   }
 
-  virtual gfx::Insets GetHostInsets() const OVERRIDE {
+  virtual gfx::Insets GetHostInsets() const override {
     return host_insets_;
   }
 
@@ -238,19 +238,19 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
   }
 
   // aura::RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const OVERRIDE {
+  virtual gfx::Transform GetTransform() const override {
     return transform_;
   }
-  virtual gfx::Transform GetInverseTransform() const OVERRIDE {
+  virtual gfx::Transform GetInverseTransform() const override {
     gfx::Transform invert;
     CHECK(transform_.GetInverse(&invert));
     return invert;
   }
   virtual gfx::Rect GetRootWindowBounds(
-      const gfx::Size& host_size) const OVERRIDE {
+      const gfx::Size& host_size) const override {
     return root_bounds_;
   }
-  virtual gfx::Insets GetHostInsets() const OVERRIDE {
+  virtual gfx::Insets GetHostInsets() const override {
     return insets_;
   }
 

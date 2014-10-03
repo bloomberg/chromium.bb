@@ -600,18 +600,18 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void InitRootWindow(aura::Window* root_window);
 
   // ash::SystemModalContainerEventFilterDelegate overrides:
-  virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
+  virtual bool CanWindowReceiveEvents(aura::Window* window) override;
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
-  virtual EventTarget* GetParentTarget() OVERRIDE;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
-  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  virtual ui::EventTargeter* GetEventTargeter() override;
+  virtual void OnEvent(ui::Event* event) override;
 
   // Overridden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   static Shell* instance_;
 

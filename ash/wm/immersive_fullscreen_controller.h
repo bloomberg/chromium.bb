@@ -126,34 +126,34 @@ class ASH_EXPORT ImmersiveFullscreenController
   void SetupForTest();
 
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::FocusChangeObserver overrides:
   virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) OVERRIDE;
+                                 views::View* focused_now) override;
   virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) OVERRIDE;
+                                views::View* focused_now) override;
 
   // views::WidgetObserver overrides:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
   virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
+                                         bool active) override;
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
   // ::wm::TransientWindowObserver overrides:
   virtual void OnTransientChildAdded(aura::Window* window,
-                                     aura::Window* transient) OVERRIDE;
+                                     aura::Window* transient) override;
   virtual void OnTransientChildRemoved(aura::Window* window,
-                                       aura::Window* transient) OVERRIDE;
+                                       aura::Window* transient) override;
 
   // ash::ImmersiveRevealedLock::Delegate overrides:
-  virtual void LockRevealedState(AnimateReveal animate_reveal) OVERRIDE;
-  virtual void UnlockRevealedState() OVERRIDE;
+  virtual void LockRevealedState(AnimateReveal animate_reveal) override;
+  virtual void UnlockRevealedState() override;
 
  private:
   friend class ImmersiveFullscreenControllerTest;

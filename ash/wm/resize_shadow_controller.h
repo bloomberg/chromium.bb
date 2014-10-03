@@ -39,8 +39,8 @@ class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
   virtual void OnWindowBoundsChanged(
       aura::Window* window,
       const gfx::Rect& old_bounds,
-      const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+      const gfx::Rect& new_bounds) override;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   typedef std::map<aura::Window*, linked_ptr<ResizeShadow> > WindowShadowMap;

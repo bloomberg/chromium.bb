@@ -55,12 +55,12 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   bool IsActive();
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
 
   // ShellObserver overrides:
-  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
-  virtual void OnAppTerminating() OVERRIDE;
-  virtual void OnLockStateChanged(bool locked) OVERRIDE;
+  virtual void OnLoginStateChanged(user::LoginStatus status) override;
+  virtual void OnAppTerminating() override;
+  virtual void OnLockStateChanged(bool locked) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PartialScreenshotViewTest, DontStartOverOverlay);

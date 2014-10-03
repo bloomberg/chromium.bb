@@ -22,7 +22,7 @@ class MockObserver : public InputMethodMenuManager::Observer {
 
   // Called when the list of menu items is changed.
   virtual void InputMethodMenuItemChanged(
-      InputMethodMenuManager* manager) OVERRIDE {
+      InputMethodMenuManager* manager) override {
     input_method_menu_item_changed_count_++;
   }
   int input_method_menu_item_changed_count_;
@@ -33,12 +33,12 @@ class InputMethodMenuManagerStatefulTest : public testing::Test{
   InputMethodMenuManagerStatefulTest()
       : observer_(new MockObserver()) {}
   virtual ~InputMethodMenuManagerStatefulTest() {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     menu_manager_ = InputMethodMenuManager::GetInstance();
     menu_manager_->AddObserver(observer_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     menu_manager_->RemoveObserver(observer_.get());
   }
 

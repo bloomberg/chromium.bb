@@ -35,7 +35,7 @@ class SystemBackgroundController : public aura::WindowObserver {
   // aura::WindowObserver overrides:
   virtual void OnWindowBoundsChanged(aura::Window* root,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
  private:
   class HostContentLayerDelegate;

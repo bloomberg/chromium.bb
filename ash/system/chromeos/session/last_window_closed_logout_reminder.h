@@ -18,7 +18,7 @@ class LastWindowClosedLogoutReminder : public LastWindowClosedObserver {
   LastWindowClosedLogoutReminder();
   virtual ~LastWindowClosedLogoutReminder();
 
-  virtual void OnLastWindowClosed() OVERRIDE;
+  virtual void OnLastWindowClosed() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LastWindowClosedLogoutReminder);

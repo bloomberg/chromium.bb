@@ -66,17 +66,17 @@ class TestSessionStateAnimator : public SessionStateAnimator {
   // ash::SessionStateAnimator:
   virtual void StartAnimation(int container_mask,
                               AnimationType type,
-                              AnimationSpeed speed) OVERRIDE;
+                              AnimationSpeed speed) override;
   virtual void StartAnimationWithCallback(
       int container_mask,
       AnimationType type,
       AnimationSpeed speed,
-      base::Closure callback) OVERRIDE;
+      base::Closure callback) override;
   virtual AnimationSequence* BeginAnimationSequence(
-      base::Closure callback) OVERRIDE;
-  virtual bool IsBackgroundHidden() const OVERRIDE;
-  virtual void ShowBackground() OVERRIDE;
-  virtual void HideBackground() OVERRIDE;
+      base::Closure callback) override;
+  virtual bool IsBackgroundHidden() const override;
+  virtual void ShowBackground() override;
+  virtual void HideBackground() override;
 
  private:
   class AnimationSequence;

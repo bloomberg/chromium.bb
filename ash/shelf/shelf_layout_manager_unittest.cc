@@ -107,7 +107,7 @@ class ShelfAnimationWaiter : views::WidgetObserver {
 
   // views::WidgetObserver override.
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     if (done_waiting_)
       return;
 
@@ -242,7 +242,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
 
  private:
   virtual void OnAutoHideStateChanged(
-      ShelfAutoHideState new_state) OVERRIDE {
+      ShelfAutoHideState new_state) override {
     changed_auto_hide_state_ = true;
   }
 
@@ -261,7 +261,7 @@ class TestItem : public SystemTrayItem {
         detailed_view_(NULL),
         notification_view_(NULL) {}
 
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateTrayView(user::LoginStatus status) override {
     tray_view_ = new views::View;
     // Add a label so it has non-zero width.
     tray_view_->SetLayoutManager(new views::FillLayout);
@@ -269,14 +269,14 @@ class TestItem : public SystemTrayItem {
     return tray_view_;
   }
 
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetLayoutManager(new views::FillLayout);
     default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view_;
   }
 
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
     detailed_view_ = new views::View;
     detailed_view_->SetLayoutManager(new views::FillLayout);
     detailed_view_->AddChildView(
@@ -285,29 +285,29 @@ class TestItem : public SystemTrayItem {
   }
 
   virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE {
+      user::LoginStatus status) override {
     notification_view_ = new views::View;
     return notification_view_;
   }
 
-  virtual void DestroyTrayView() OVERRIDE {
+  virtual void DestroyTrayView() override {
     tray_view_ = NULL;
   }
 
-  virtual void DestroyDefaultView() OVERRIDE {
+  virtual void DestroyDefaultView() override {
     default_view_ = NULL;
   }
 
-  virtual void DestroyDetailedView() OVERRIDE {
+  virtual void DestroyDetailedView() override {
     detailed_view_ = NULL;
   }
 
-  virtual void DestroyNotificationView() OVERRIDE {
+  virtual void DestroyNotificationView() override {
     notification_view_ = NULL;
   }
 
   virtual void UpdateAfterLoginStatusChange(
-      user::LoginStatus status) OVERRIDE {}
+      user::LoginStatus status) override {}
 
   views::View* tray_view() const { return tray_view_; }
   views::View* default_view() const { return default_view_; }
@@ -365,7 +365,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
   }
 
   // Overridden from AshTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableTrayDragging);
     test::AshTestBase::SetUp();

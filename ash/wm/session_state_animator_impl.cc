@@ -301,21 +301,21 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  private:
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq)
-      OVERRIDE {
+      override {
     // Drop foreground once animation is over.
     callback_.Run();
     delete this;
   }
 
   virtual void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq)
-      OVERRIDE {
+      override {
     // Drop foreground once animation is over.
     callback_.Run();
     delete this;
   }
 
   virtual void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq)
-      OVERRIDE {}
+      override {}
 
   base::Closure callback_;
 
@@ -421,7 +421,7 @@ class SessionStateAnimatorImpl::AnimationSequence
   virtual void StartAnimation(
       int container_mask,
       SessionStateAnimator::AnimationType type,
-      SessionStateAnimator::AnimationSpeed speed) OVERRIDE {
+      SessionStateAnimator::AnimationSpeed speed) override {
     animator_->StartAnimationInSequence(container_mask, type, speed, this);
   }
 
@@ -430,24 +430,24 @@ class SessionStateAnimatorImpl::AnimationSequence
 
   // ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     sequences_completed_++;
     if (sequences_completed_ == sequences_attached_)
       OnAnimationCompleted();
   }
 
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     sequences_completed_++;
     if (sequences_completed_ == sequences_attached_)
       OnAnimationAborted();
   }
 
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
+      ui::LayerAnimationSequence* sequence) override {}
 
   virtual void OnAttachedToSequence(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     LayerAnimationObserver::OnAttachedToSequence(sequence);
     sequences_attached_++;
   }

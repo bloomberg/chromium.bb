@@ -33,7 +33,7 @@ class ASH_EXPORT DateDefaultView : public views::View,
  private:
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   TrayPopupHeaderButton* help_;
   TrayPopupHeaderButton* shutdown_;

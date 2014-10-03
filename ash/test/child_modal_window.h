@@ -37,22 +37,22 @@ class ChildModalParent : public views::WidgetDelegateView,
   views::Widget* CreateChild();
 
   // Overridden from views::WidgetDelegate:
-  virtual View* GetContentsView() OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
+  virtual View* GetContentsView() override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool CanResize() const override;
+  virtual void DeleteDelegate() override;
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
   // Overridden from ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // The button to toggle showing and hiding the child window. The child window
   // does not block input to this button.

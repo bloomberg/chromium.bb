@@ -38,20 +38,20 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsScheduled() OVERRIDE {
+  virtual void OnImplicitAnimationsScheduled() override {
     if (is_initial_animation_) {
       root_window_controller_->
           HandleInitialDesktopBackgroundAnimationStarted();
     }
   }
 
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     root_window_controller_->OnWallpaperAnimationFinished(desktop_widget_);
     delete this;
   }
 
   // Overridden from views::WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) override {
     delete this;
   }
 

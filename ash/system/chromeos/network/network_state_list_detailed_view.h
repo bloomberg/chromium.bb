@@ -49,20 +49,20 @@ class NetworkStateListDetailedView
   virtual ~NetworkStateListDetailedView();
 
   // Overridden from NetworkDetailedView:
-  virtual void Init() OVERRIDE;
-  virtual DetailedViewType GetViewType() const OVERRIDE;
-  virtual void ManagerChanged() OVERRIDE;
-  virtual void NetworkListChanged() OVERRIDE;
+  virtual void Init() override;
+  virtual DetailedViewType GetViewType() const override;
+  virtual void ManagerChanged() override;
+  virtual void NetworkListChanged() override;
   virtual void NetworkServiceChanged(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
 
  protected:
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) override;
 
  private:
   class InfoBubble;
@@ -101,13 +101,13 @@ class NetworkStateListDetailedView
 
   // ui::NetworkListDelegate:
   virtual views::View* CreateViewForNetwork(
-      const ui::NetworkInfo& info) OVERRIDE;
-  virtual bool IsViewHovered(views::View* view) OVERRIDE;
-  virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const OVERRIDE;
+      const ui::NetworkInfo& info) override;
+  virtual bool IsViewHovered(views::View* view) override;
+  virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const override;
   virtual void UpdateViewForNetwork(views::View* view,
-                                    const ui::NetworkInfo& info) OVERRIDE;
-  virtual views::Label* CreateInfoLabel() OVERRIDE;
-  virtual void RelayoutScrollList() OVERRIDE;
+                                    const ui::NetworkInfo& info) override;
+  virtual views::Label* CreateInfoLabel() override;
+  virtual void RelayoutScrollList() override;
 
   // Type of list (all networks or vpn)
   ListType list_type_;

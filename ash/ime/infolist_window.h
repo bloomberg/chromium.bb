@@ -42,7 +42,7 @@ class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
 
  private:
   // views::WidgetDelegate implementation.
-  virtual void WindowClosing() OVERRIDE;
+  virtual void WindowClosing() override;
 
   // The list of visible entries. Owned by views hierarchy.
   std::vector<InfolistEntryView*> entry_views_;

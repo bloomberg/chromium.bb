@@ -20,7 +20,7 @@ class ASH_EXPORT ProjectingObserver : public ui::DisplayConfigurator::Observer {
 
   // DisplayConfigurator::Observer implementation:
   virtual void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) OVERRIDE;
+      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 
  private:
   // Sends the current projecting state to power manager.

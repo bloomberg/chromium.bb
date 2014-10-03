@@ -40,7 +40,7 @@ class PartialScreenshotViewTest : public test::AshTestBase,
 
  private:
   // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) override {
     if (view_ && view_->GetWidget() == widget)
       view_ = NULL;
     widget->RemoveObserver(this);

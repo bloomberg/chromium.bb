@@ -121,7 +121,7 @@ class RoundedContainerView : public views::View {
 
   virtual ~RoundedContainerView() {}
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     views::View::OnPaint(canvas);
 
     SkScalar radius = SkIntToScalar(corner_radius_);

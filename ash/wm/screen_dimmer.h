@@ -47,7 +47,7 @@ class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
   // aura::WindowObserver overrides:
   virtual void OnWindowBoundsChanged(aura::Window* root_window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
  private:
   friend class TestApi;

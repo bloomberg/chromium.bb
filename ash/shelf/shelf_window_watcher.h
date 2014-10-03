@@ -47,7 +47,7 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
    private:
     // aura::WindowObserver overrides:
-    virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+    virtual void OnWindowDestroying(aura::Window* window) override;
 
     // Owned by Shell.
     ShelfWindowWatcher* window_watcher_;
@@ -65,8 +65,8 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
    private:
     // aura::WindowObserver overrides:
     virtual void OnWindowParentChanged(aura::Window* window,
-                                       aura::Window* parent) OVERRIDE;
-    virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+                                       aura::Window* parent) override;
+    virtual void OnWindowDestroyed(aura::Window* window) override;
 
     // Owned by Shell.
     ShelfWindowWatcher* window_watcher_;
@@ -104,21 +104,21 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowAdded(aura::Window* window) OVERRIDE;
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowAdded(aura::Window* window) override;
+  virtual void OnWillRemoveWindow(aura::Window* window) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE;
+                                       intptr_t old) override;
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
   // Owned by Shell.
   ShelfModel* model_;

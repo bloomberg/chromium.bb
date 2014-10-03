@@ -53,8 +53,8 @@ class TrayRotationLockTest : public test::AshTestBase {
   void TearDownViews();
 
   // test::AshTestBase:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  private:
   scoped_ptr<TrayRotationLock> tray_;

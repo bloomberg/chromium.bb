@@ -39,7 +39,7 @@ class PartialScreenshotView::OverlayDelegate
   }
 
   // Overridden from OverlayEventFilter::Delegate:
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     // Make sure the mouse_warp_mode allows warping. It can be stopped by a
     // partial screenshot view.
     MouseCursorEventFilter* mouse_cursor_filter =
@@ -50,18 +50,18 @@ class PartialScreenshotView::OverlayDelegate
       widgets_[i]->Close();
   }
 
-  virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) override {
     return event->key_code() == ui::VKEY_ESCAPE;
   }
 
-  virtual aura::Window* GetWindow() OVERRIDE {
+  virtual aura::Window* GetWindow() override {
     // Just returns NULL because this class does not handle key events in
     // OverlayEventFilter, except for cancel keys.
     return NULL;
   }
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) override {
     widget->RemoveObserver(this);
     widgets_.erase(std::remove(widgets_.begin(), widgets_.end(), widget));
     if (widgets_.empty())

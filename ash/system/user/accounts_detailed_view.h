@@ -35,14 +35,14 @@ class AccountsDetailedView : public TrayDetailsView,
 
  private:
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) override;
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from ash::tray::UserAccountsDelegate::Observer.
-  virtual void AccountListChanged() OVERRIDE;
+  virtual void AccountListChanged() override;
 
   void AddHeader(user::LoginStatus login_status);
   void AddAccountList();

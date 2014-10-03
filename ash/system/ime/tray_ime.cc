@@ -53,7 +53,7 @@ class SelectableHoverHighlightView : public HoverHighlightView {
 
  protected:
   // Overridden from views::View.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) override {
     HoverHighlightView::GetAccessibleState(state);
     state->role = ui::AX_ROLE_CHECK_BOX;
     if (selected_)
@@ -168,7 +168,7 @@ class IMEDetailedView : public TrayDetailsView,
   }
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) OVERRIDE {
+  virtual void OnViewClicked(views::View* sender) override {
     SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
       TransitionToDefaultView();

@@ -62,7 +62,7 @@ class NetworkTrayView : public TrayItemView,
     ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
-  virtual const char* GetClassName() const OVERRIDE {
+  virtual const char* GetClassName() const override {
     return "NetworkTrayView";
   }
 
@@ -101,13 +101,13 @@ class NetworkTrayView : public TrayItemView,
   }
 
   // views::View override.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) override {
     state->name = connection_status_string_;
     state->role = ui::AX_ROLE_BUTTON;
   }
 
   // ui::network_icon::AnimationObserver
-  virtual void NetworkIconChanged() OVERRIDE {
+  virtual void NetworkIconChanged() override {
     UpdateNetworkStateHandlerIcon();
   }
 
@@ -170,7 +170,7 @@ class NetworkDefaultView : public TrayItemMore,
   }
 
   // ui::network_icon::AnimationObserver
-  virtual void NetworkIconChanged() OVERRIDE {
+  virtual void NetworkIconChanged() override {
     Update();
   }
 
@@ -204,27 +204,27 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
 
   // Overridden from NetworkDetailedView:
 
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
   }
 
-  virtual NetworkDetailedView::DetailedViewType GetViewType() const OVERRIDE {
+  virtual NetworkDetailedView::DetailedViewType GetViewType() const override {
     return NetworkDetailedView::WIFI_VIEW;
   }
 
-  virtual void ManagerChanged() OVERRIDE {
+  virtual void ManagerChanged() override {
     Update();
   }
 
-  virtual void NetworkListChanged() OVERRIDE {
+  virtual void NetworkListChanged() override {
     Update();
   }
 
   virtual void NetworkServiceChanged(
-      const chromeos::NetworkState* network) OVERRIDE {
+      const chromeos::NetworkState* network) override {
   }
 
  private:
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     // Center both views vertically.
     views::View::Layout();
     image_view_->SetY(

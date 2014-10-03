@@ -35,13 +35,13 @@ class LockView : public views::WidgetDelegateView,
   virtual ~LockView() {}
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(500, 400);
   }
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), SK_ColorYELLOW);
     base::string16 text = base::ASCIIToUTF16("LOCKED!");
     int string_width = gfx::GetStringWidth(text, font_list_);
@@ -50,7 +50,7 @@ class LockView : public views::WidgetDelegateView,
                                      (height() - font_list_.GetHeight()) / 2,
                                      string_width, font_list_.GetHeight()));
   }
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     gfx::Rect bounds = GetLocalBounds();
     gfx::Size ps = unlock_button_->GetPreferredSize();
     bounds.set_y(bounds.bottom() - ps.height() - 5);
@@ -59,19 +59,19 @@ class LockView : public views::WidgetDelegateView,
     unlock_button_->SetBoundsRect(bounds);
   }
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
+      const ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       unlock_button_->RequestFocus();
   }
 
   // Overridden from views::WidgetDelegateView:
-  virtual void WindowClosing() OVERRIDE {
+  virtual void WindowClosing() override {
     Shell::GetInstance()->session_state_delegate()->UnlockScreen();
   }
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     DCHECK(sender == unlock_button_);
     GetWidget()->Close();
   }

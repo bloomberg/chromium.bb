@@ -43,7 +43,7 @@ class TestDetailsView : public TrayDetailsView, public ViewClickListener {
   }
 
   // Overridden from ViewClickListener:
-  virtual void OnViewClicked(views::View* sender) OVERRIDE {}
+  virtual void OnViewClicked(views::View* sender) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDetailsView);
@@ -55,26 +55,26 @@ class TestItem : public SystemTrayItem {
   TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
   // Overridden from SystemTrayItem:
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateTrayView(user::LoginStatus status) override {
     tray_view_ = new views::View;
     return tray_view_;
   }
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetFocusable(true);
     return default_view_;
   }
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
     detailed_view_ = new TestDetailsView(this);
     return detailed_view_;
   }
-  virtual void DestroyTrayView() OVERRIDE {
+  virtual void DestroyTrayView() override {
     tray_view_ = NULL;
   }
-  virtual void DestroyDefaultView() OVERRIDE {
+  virtual void DestroyDefaultView() override {
     default_view_ = NULL;
   }
-  virtual void DestroyDetailedView() OVERRIDE {
+  virtual void DestroyDetailedView() override {
     detailed_view_ = NULL;
   }
 

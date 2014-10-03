@@ -42,21 +42,21 @@ class MockImmersiveFullscreenControllerDelegate
   virtual ~MockImmersiveFullscreenControllerDelegate() {}
 
   // ImmersiveFullscreenController::Delegate overrides:
-  virtual void OnImmersiveRevealStarted() OVERRIDE {
+  virtual void OnImmersiveRevealStarted() override {
     enabled_ = true;
     visible_fraction_ = 0;
   }
-  virtual void OnImmersiveRevealEnded() OVERRIDE {
+  virtual void OnImmersiveRevealEnded() override {
     visible_fraction_ = 0;
   }
-  virtual void OnImmersiveFullscreenExited() OVERRIDE {
+  virtual void OnImmersiveFullscreenExited() override {
     enabled_ = false;
     visible_fraction_ = 1;
   }
-  virtual void SetVisibleFraction(double visible_fraction) OVERRIDE {
+  virtual void SetVisibleFraction(double visible_fraction) override {
     visible_fraction_ = visible_fraction;
   }
-  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const OVERRIDE {
+  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override {
     std::vector<gfx::Rect> bounds_in_screen;
     bounds_in_screen.push_back(top_container_view_->GetBoundsInScreen());
     return bounds_in_screen;
@@ -84,7 +84,7 @@ class ConsumeEventHandler : public ui::test::TestEventHandler {
   virtual ~ConsumeEventHandler() {}
 
  private:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     ui::test::TestEventHandler::OnEvent(event);
     if (event->cancelable())
       event->SetHandled();
@@ -142,7 +142,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
   }
 
   // ash::test::AshTestBase overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ash::test::AshTestBase::SetUp();
 
     widget_ = new views::Widget();

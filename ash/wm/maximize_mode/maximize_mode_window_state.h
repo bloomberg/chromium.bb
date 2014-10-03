@@ -37,12 +37,12 @@ class MaximizeModeWindowState : public wm::WindowState::State {
 
   // WindowState::State overrides:
   virtual void OnWMEvent(wm::WindowState* window_state,
-                         const wm::WMEvent* event) OVERRIDE;
+                         const wm::WMEvent* event) override;
 
-  virtual wm::WindowStateType GetType() const OVERRIDE;
+  virtual wm::WindowStateType GetType() const override;
   virtual void AttachState(wm::WindowState* window_state,
-                           wm::WindowState::State* previous_state) OVERRIDE;
-  virtual void DetachState(wm::WindowState* window_state) OVERRIDE;
+                           wm::WindowState::State* previous_state) override;
+  virtual void DetachState(wm::WindowState* window_state) override;
 
  private:
   // Updates the window to |new_state_type| and resulting bounds:

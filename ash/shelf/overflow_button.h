@@ -25,7 +25,7 @@ class OverflowButton : public views::CustomButton {
   void PaintBackground(gfx::Canvas* canvas, int alpha);
 
   // views::View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // Left and right images are rotations of bottom_image and are
   // owned by the overflow button.

@@ -47,11 +47,11 @@ class ScreenStatusView : public views::View,
   virtual ~ScreenStatusView();
 
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   void CreateItems();
   void Update();
@@ -73,11 +73,11 @@ class ScreenNotificationDelegate : public message_center::NotificationDelegate {
   explicit ScreenNotificationDelegate(ScreenTrayItem* screen_tray);
 
   // message_center::NotificationDelegate overrides:
-  virtual void Display() OVERRIDE;
-  virtual void Error() OVERRIDE;
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual void Click() OVERRIDE;
-  virtual void ButtonClick(int button_index) OVERRIDE;
+  virtual void Display() override;
+  virtual void Error() override;
+  virtual void Close(bool by_user) override;
+  virtual void Click() override;
+  virtual void ButtonClick(int button_index) override;
 
  protected:
   virtual ~ScreenNotificationDelegate();
@@ -123,12 +123,12 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   virtual std::string GetNotificationId() = 0;
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE = 0;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE = 0;
-  virtual void DestroyTrayView() OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
+  virtual views::View* CreateTrayView(user::LoginStatus status) override = 0;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override = 0;
+  virtual void DestroyTrayView() override;
+  virtual void DestroyDefaultView() override;
   virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) OVERRIDE;
+      ShelfAlignment alignment) override;
 
  private:
   tray::ScreenTrayView* tray_view_;

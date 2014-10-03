@@ -31,18 +31,18 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
 
   // ActionableView:
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
   // TrayBackgroundView:
-  virtual bool ClickedOutsideBubble() OVERRIDE;
-  virtual base::string16 GetAccessibleNameForTray() OVERRIDE;
+  virtual bool ClickedOutsideBubble() override;
+  virtual base::string16 GetAccessibleNameForTray() override;
   virtual void HideBubbleWithView(
-      const views::TrayBubbleView* bubble_view) OVERRIDE;
-  virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
+      const views::TrayBubbleView* bubble_view) override;
+  virtual void SetShelfAlignment(ShelfAlignment alignment) override;
 
  private:
   friend class OverviewButtonTrayTest;

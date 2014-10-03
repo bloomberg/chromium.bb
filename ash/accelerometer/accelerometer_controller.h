@@ -47,7 +47,7 @@ class ASH_EXPORT AccelerometerController
   // override a method.
   // chromeos::AccelerometerReader::Delegate:
   virtual void HandleAccelerometerUpdate(
-      const ui::AccelerometerUpdate& update) OVERRIDE;
+      const ui::AccelerometerUpdate& update) override;
 #endif
 
  private:

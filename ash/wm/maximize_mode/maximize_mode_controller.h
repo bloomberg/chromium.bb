@@ -110,22 +110,22 @@ class ASH_EXPORT MaximizeModeController
 
   // AccelerometerObserver:
   virtual void OnAccelerometerUpdated(
-      const ui::AccelerometerUpdate& update) OVERRIDE;
+      const ui::AccelerometerUpdate& update) override;
 
   // ShellObserver:
-  virtual void OnAppTerminating() OVERRIDE;
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnAppTerminating() override;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
   // DisplayController::Observer:
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+  virtual void OnDisplayConfigurationChanged() override;
 
 #if defined(OS_CHROMEOS)
   // PowerManagerClient::Observer:
   virtual void LidEventReceived(bool open,
-                                const base::TimeTicks& time) OVERRIDE;
-  virtual void SuspendImminent() OVERRIDE;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+                                const base::TimeTicks& time) override;
+  virtual void SuspendImminent() override;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 #endif  // OS_CHROMEOS
 
  private:

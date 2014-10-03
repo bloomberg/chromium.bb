@@ -31,8 +31,8 @@ class TrayBarButtonWithTitle : public views::CustomButton {
   class TrayBarButton;
 
   // Overridden from views::CustomButton:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
   TrayBarButton* image_;
   views::Label* title_;

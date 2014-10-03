@@ -15,7 +15,7 @@ class TouchscreenUtilTest : public testing::Test {
   TouchscreenUtilTest() {}
   virtual ~TouchscreenUtilTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Internal display will always match to internal touchscreen. If internal
     // touchscreen can't be detected, it is then associated to a touch screen
     // with matching size.
@@ -54,7 +54,7 @@ class TouchscreenUtilTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     displays_.clear();
   }
 

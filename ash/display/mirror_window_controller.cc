@@ -62,16 +62,16 @@ class NoneCaptureClient : public aura::client::CaptureClient {
 
  private:
   // Does a capture on the |window|.
-  virtual void SetCapture(aura::Window* window) OVERRIDE {}
+  virtual void SetCapture(aura::Window* window) override {}
 
   // Releases a capture from the |window|.
-  virtual void ReleaseCapture(aura::Window* window) OVERRIDE {}
+  virtual void ReleaseCapture(aura::Window* window) override {}
 
   // Returns the current capture window.
-  virtual aura::Window* GetCaptureWindow() OVERRIDE {
+  virtual aura::Window* GetCaptureWindow() override {
     return NULL;
   }
-  virtual aura::Window* GetGlobalCaptureWindow() OVERRIDE {
+  virtual aura::Window* GetGlobalCaptureWindow() override {
     return NULL;
   }
 

@@ -37,18 +37,18 @@ class ASH_EXPORT WorkspaceBackdropDelegate
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   // WorkspaceLayoutManagerDelegate overrides:
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWindowAddedToLayout(aura::Window* child) override;
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE;
-  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
+                                              bool visible) override;
+  virtual void OnWindowStackingChanged(aura::Window* window) override;
   virtual void OnPostWindowStateTypeChange(
       wm::WindowState* window_state,
-      wm::WindowStateType old_type) OVERRIDE;
-  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+      wm::WindowStateType old_type) override;
+  virtual void OnDisplayWorkAreaInsetsChanged() override;
 
  private:
   // Restack the backdrop relatively to the other windows in the container.

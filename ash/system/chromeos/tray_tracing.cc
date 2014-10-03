@@ -47,7 +47,7 @@ class DefaultTracingView : public ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) override {
     Shell::GetInstance()->system_tray_delegate()->ShowChromeSlow();
     return true;
   }

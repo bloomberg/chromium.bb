@@ -72,12 +72,12 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
   }
 
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     host_->AnchorUpdated();
   }
 
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     host_->AnchorUpdated();
   }
 
@@ -163,7 +163,7 @@ class TrayBackground : public views::Background {
   }
 
   // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
     int orientation = kImageHorizontal;
     ShelfWidget* shelf_widget = GetShelfWidget();
     if (shelf_widget &&

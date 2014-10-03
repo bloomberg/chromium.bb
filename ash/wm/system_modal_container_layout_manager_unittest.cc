@@ -73,15 +73,15 @@ class TestWindow : public views::WidgetDelegateView {
   }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(50, 50);
   }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
   }
 
@@ -113,7 +113,7 @@ class EventTestWindow : public TestWindow {
   }
 
   // Overridden from views::View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
     mouse_presses_++;
     return false;
   }
@@ -133,7 +133,7 @@ class TransientWindowObserver : public aura::WindowObserver {
   bool destroyed() const { return destroyed_; }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(aura::Window* window) override {
     destroyed_ = true;
   }
 
@@ -147,7 +147,7 @@ class TransientWindowObserver : public aura::WindowObserver {
 
 class SystemModalContainerLayoutManagerTest : public AshTestBase {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Allow a virtual keyboard (and initialize it per default).
     CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
@@ -156,7 +156,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard::KeyboardController::GetInstance());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
         keyboard::KeyboardController::GetInstance());
     AshTestBase::TearDown();

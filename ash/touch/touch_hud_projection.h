@@ -19,7 +19,7 @@ class TouchHudProjection : public TouchObserverHUD {
   explicit TouchHudProjection(aura::Window* initial_root);
 
   // Overriden from TouchObserverHUD.
-  virtual void Clear() OVERRIDE;
+  virtual void Clear() override;
 
  private:
   friend class TouchHudProjectionTest;
@@ -27,11 +27,11 @@ class TouchHudProjection : public TouchObserverHUD {
   virtual ~TouchHudProjection();
 
   // Overriden from TouchObserverHUD.
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
   virtual void SetHudForRootWindowController(
-      RootWindowController* controller) OVERRIDE;
+      RootWindowController* controller) override;
   virtual void UnsetHudForRootWindowController(
-      RootWindowController* controller) OVERRIDE;
+      RootWindowController* controller) override;
 
   std::map<int, TouchPointView*> points_;
 

@@ -20,7 +20,7 @@ class ShelfBezelEventFilter : public ui::EventHandler {
   virtual ~ShelfBezelEventFilter();
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   bool IsShelfOnBezel(const gfx::Rect& screen,

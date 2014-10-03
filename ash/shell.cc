@@ -160,7 +160,7 @@ class AshVisibilityController : public ::wm::VisibilityController {
   // Overridden from ::wm::VisibilityController:
   virtual bool CallAnimateOnChildWindowVisibilityChanged(
       aura::Window* window,
-      bool visible) OVERRIDE {
+      bool visible) override {
     return AnimateOnChildWindowVisibilityChanged(window, visible);
   }
 

@@ -76,7 +76,7 @@ class SettingsDefaultView : public ActionableView,
   }
 
   // Overridden from ash::ActionableView.
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) override {
     bool userAddingRunning = ash::Shell::GetInstance()
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
@@ -90,7 +90,7 @@ class SettingsDefaultView : public ActionableView,
   }
 
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     views::View::Layout();
 
     if (label_ && power_status_view_) {
@@ -105,13 +105,13 @@ class SettingsDefaultView : public ActionableView,
   }
 
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+  virtual void ChildPreferredSizeChanged(views::View* child) override {
     views::View::ChildPreferredSizeChanged(child);
     Layout();
   }
 
   // Overridden from PowerStatus::Observer.
-  virtual void OnPowerStatusChanged() OVERRIDE {
+  virtual void OnPowerStatusChanged() override {
     if (!PowerStatus::Get()->IsBatteryPresent())
       return;
 

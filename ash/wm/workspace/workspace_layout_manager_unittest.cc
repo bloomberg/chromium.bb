@@ -51,7 +51,7 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
   virtual bool GetSavedWindowPlacement(
       const views::Widget* widget,
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE {
+      ui::WindowShowState* show_state) const override {
     *bounds = initial_bounds_;
     *show_state = ui::SHOW_STATE_MAXIMIZED;
     return true;
@@ -75,7 +75,7 @@ class TestShellObserver : public ShellObserver {
   }
 
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::Window* root_window) OVERRIDE {
+                                        aura::Window* root_window) override {
     call_count_++;
     is_fullscreen_ = is_fullscreen;
   }
@@ -315,7 +315,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE {
+                                       intptr_t old) override {
     if (!window_)
       return;
 
@@ -579,7 +579,7 @@ class FocusDelegate : public aura::test::TestWindowDelegate {
   void set_window(aura::Window* window) { window_ = window; }
 
   // aura::test::TestWindowDelegate overrides:
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
+  virtual void OnWindowTargetVisibilityChanged(bool visible) override {
     if (window_) {
       if (visible)
         window_->Focus();
@@ -790,7 +790,7 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
   WorkspaceLayoutManagerBackdropTest() {}
   virtual ~WorkspaceLayoutManagerBackdropTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
     default_container_ = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -978,7 +978,7 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
   WorkspaceLayoutManagerKeyboardTest() {}
   virtual ~WorkspaceLayoutManagerKeyboardTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
@@ -1050,7 +1050,7 @@ class FakeTextInputClient : public ui::DummyTextInputClient {
   explicit FakeTextInputClient(gfx::NativeWindow window) : window_(window) {}
   virtual ~FakeTextInputClient() {}
 
-  virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {
+  virtual gfx::NativeWindow GetAttachedWindow() const override {
     return window_;
   }
 

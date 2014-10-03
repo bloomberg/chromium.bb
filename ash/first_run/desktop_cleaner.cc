@@ -57,12 +57,12 @@ class ContainerHider : public aura::WindowObserver,
 
  private:
   // Overriden from ui::ImplicitAnimationObserver.
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     container_->Hide();
   }
 
   // Overriden from aura::WindowObserver.
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     DCHECK(window == container_);
     container_ = NULL;
   }
@@ -86,7 +86,7 @@ class NotificationBlocker : public message_center::NotificationBlocker {
  private:
   // Overriden from message_center::NotificationBlocker.
   virtual bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const OVERRIDE {
+      const message_center::NotifierId& notifier_id) const override {
     return false;
   }
 

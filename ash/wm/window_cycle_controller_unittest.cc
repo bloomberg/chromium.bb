@@ -40,7 +40,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
   WindowCycleControllerTest() {}
   virtual ~WindowCycleControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 

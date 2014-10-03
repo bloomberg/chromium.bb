@@ -20,11 +20,11 @@ class DefaultState : public WindowState::State {
 
   // WindowState::State overrides:
   virtual void OnWMEvent(WindowState* window_state,
-                         const WMEvent* event) OVERRIDE;
-  virtual WindowStateType GetType() const OVERRIDE;
+                         const WMEvent* event) override;
+  virtual WindowStateType GetType() const override;
   virtual void AttachState(WindowState* window_state,
-                           WindowState::State* previous_state) OVERRIDE;
-  virtual void DetachState(WindowState* window_state) OVERRIDE;
+                           WindowState::State* previous_state) override;
+  virtual void DetachState(WindowState* window_state) override;
 
  private:
   // Process state dependent events, such as TOGGLE_MAXIMIZED,

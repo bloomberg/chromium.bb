@@ -50,10 +50,10 @@ class ASH_EXPORT MultiWindowResizeController :
   void Hide();
 
   // MouseWatcherListenre overrides:
-  virtual void MouseMovedOutOfHost() OVERRIDE;
+  virtual void MouseMovedOutOfHost() override;
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
  private:
   friend class MultiWindowResizeControllerTest;

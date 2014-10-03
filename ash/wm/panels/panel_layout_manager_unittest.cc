@@ -48,7 +48,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   PanelLayoutManagerTest() {}
   virtual ~PanelLayoutManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 
@@ -278,7 +278,7 @@ class PanelLayoutManagerTextDirectionTest
   PanelLayoutManagerTextDirectionTest() : is_rtl_(GetParam()) {}
   virtual ~PanelLayoutManagerTextDirectionTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     original_locale = l10n_util::GetApplicationLocale(std::string());
     if (is_rtl_)
       base::i18n::SetICUDefaultLocale("he");
@@ -286,7 +286,7 @@ class PanelLayoutManagerTextDirectionTest
     ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (is_rtl_)
       base::i18n::SetICUDefaultLocale(original_locale);
     PanelLayoutManagerTest::TearDown();

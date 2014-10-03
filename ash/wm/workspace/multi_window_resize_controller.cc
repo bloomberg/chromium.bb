@@ -71,32 +71,32 @@ class MultiWindowResizeController::ResizeView : public views::View {
   }
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(image_->width(), image_->height());
   }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     canvas->DrawImageInt(*image_, 0, 0);
   }
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->StartResize(location);
     return true;
   }
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->Resize(location, event.flags());
     return true;
   }
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override {
     controller_->CompleteResize();
   }
-  virtual void OnMouseCaptureLost() OVERRIDE {
+  virtual void OnMouseCaptureLost() override {
     controller_->CancelResize();
   }
   virtual gfx::NativeCursor GetCursor(
-      const ui::MouseEvent& event) OVERRIDE {
+      const ui::MouseEvent& event) override {
     int component = (direction_ == LEFT_RIGHT) ? HTRIGHT : HTBOTTOM;
     return ::wm::CompoundEventFilter::CursorForWindowComponent(
         component);
@@ -119,7 +119,7 @@ class MultiWindowResizeController::ResizeMouseWatcherHost :
 
   // MouseWatcherHost overrides:
   virtual bool Contains(const gfx::Point& point_in_screen,
-                        MouseEventType type) OVERRIDE {
+                        MouseEventType type) override {
     return host_->IsOverWindows(point_in_screen);
   }
 

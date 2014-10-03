@@ -39,11 +39,11 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   void InitTransform(ui::Layer* layer);
 
   // Implementation of ui::LayerAnimationDelegate
-  virtual void OnStart(ui::LayerAnimationDelegate* delegate) OVERRIDE;
+  virtual void OnStart(ui::LayerAnimationDelegate* delegate) override;
   virtual bool OnProgress(double t,
-                          ui::LayerAnimationDelegate* delegate) OVERRIDE;
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE;
-  virtual void OnAbort(ui::LayerAnimationDelegate* delegate) OVERRIDE;
+                          ui::LayerAnimationDelegate* delegate) override;
+  virtual void OnGetTarget(TargetValue* target) const override;
+  virtual void OnAbort(ui::LayerAnimationDelegate* delegate) override;
 
   scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
 

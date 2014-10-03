@@ -92,38 +92,38 @@ class AppListController : public ui::EventHandler,
   void UpdateBounds();
 
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // aura::client::FocusChangeObserver overrides:
   virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) OVERRIDE;
+                               aura::Window* lost_focus) override;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowBoundsChanged(aura::Window* root,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
   // views::WidgetObserver overrides:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // KeyboardControllerObserver overrides:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // ShellObserver overrides:
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ShelfIconObserver overrides:
-  virtual void OnShelfIconPositionsChanged() OVERRIDE;
+  virtual void OnShelfIconPositionsChanged() override;
 
   // app_list::PaginationModelObserver overrides:
-  virtual void TotalPagesChanged() OVERRIDE;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
-  virtual void TransitionStarted() OVERRIDE;
-  virtual void TransitionChanged() OVERRIDE;
+  virtual void TotalPagesChanged() override;
+  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
+  virtual void TransitionStarted() override;
+  virtual void TransitionChanged() override;
 
   // Whether we should show or hide app list widget.
   bool is_visible_;

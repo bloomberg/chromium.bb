@@ -23,7 +23,7 @@ class DisplayErrorObserverTest : public test::AshTestBase {
   virtual ~DisplayErrorObserverTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     observer_.reset(new DisplayErrorObserver());
   }

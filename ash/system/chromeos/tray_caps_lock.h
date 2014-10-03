@@ -25,14 +25,14 @@ class TrayCapsLock : public TrayImageItem,
 
  private:
   // Overriden from chromeos::input_method::ImeKeyboard::Observer:
-  virtual void OnCapsLockChanged(bool enabled) OVERRIDE;
+  virtual void OnCapsLockChanged(bool enabled) override;
 
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() OVERRIDE;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
+  virtual bool GetInitialVisibility() override;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
+  virtual void DestroyDefaultView() override;
+  virtual void DestroyDetailedView() override;
 
   CapsLockDefaultView* default_;
   views::View* detailed_;

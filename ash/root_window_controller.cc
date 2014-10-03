@@ -216,47 +216,47 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
   virtual ~EmptyWindowDelegate() {}
 
   // aura::WindowDelegate overrides:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     return gfx::Size();
   }
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const override {
     return gfx::Size();
   }
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {
+                               const gfx::Rect& new_bounds) override {
   }
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
   virtual int GetNonClientComponent(
-      const gfx::Point& point) const OVERRIDE {
+      const gfx::Point& point) const override {
     return HTNOWHERE;
   }
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
-      const gfx::Point& location) OVERRIDE {
+      const gfx::Point& location) override {
     return false;
   }
-  virtual bool CanFocus() OVERRIDE {
+  virtual bool CanFocus() override {
     return false;
   }
-  virtual void OnCaptureLost() OVERRIDE {
+  virtual void OnCaptureLost() override {
   }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
   }
   virtual void OnDeviceScaleFactorChanged(
-      float device_scale_factor) OVERRIDE {
+      float device_scale_factor) override {
   }
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {}
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {}
+  virtual void OnWindowDestroyed(aura::Window* window) override {
     delete this;
   }
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
+  virtual void OnWindowTargetVisibilityChanged(bool visible) override {
   }
-  virtual bool HasHitTestMask() const OVERRIDE {
+  virtual bool HasHitTestMask() const override {
     return false;
   }
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
+  virtual void GetHitTestMask(gfx::Path* mask) const override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);

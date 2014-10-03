@@ -24,11 +24,11 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   int remove_count() const { return remove_count_; }
 
   // message_center::FakeMessageCenter overrides:
-  virtual void AddNotification(scoped_ptr<Notification> notification) OVERRIDE {
+  virtual void AddNotification(scoped_ptr<Notification> notification) override {
     add_count_++;
   }
   virtual void RemoveNotification(const std::string& id, bool by_user)
-      OVERRIDE {
+      override {
     remove_count_++;
   }
 
@@ -52,13 +52,13 @@ class TrayPowerTest : public test::AshTestBase {
   TrayPower* tray_power() { return tray_power_.get(); }
 
   // test::AshTestBase::SetUp() overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     message_center_.reset(new MockMessageCenter());
     tray_power_.reset(new TrayPower(NULL, message_center_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     tray_power_.reset();
     message_center_.reset();
     test::AshTestBase::TearDown();

@@ -21,10 +21,10 @@ class AshTestViewsDelegate : public views::TestViewsDelegate {
   // Overriden from TestViewsDelegate.
   virtual content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE;
+      content::SiteInstance* site_instance) override;
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
+      views::internal::NativeWidgetDelegate* delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestViewsDelegate);

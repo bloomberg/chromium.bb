@@ -79,7 +79,7 @@ class WallpaperResizerTest : public testing::Test,
     message_loop_.Run();
   }
 
-  virtual void OnWallpaperResized() OVERRIDE {
+  virtual void OnWallpaperResized() override {
     message_loop_.Quit();
   }
 

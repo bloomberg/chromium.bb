@@ -17,30 +17,30 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   DefaultAccessibilityDelegate();
   virtual ~DefaultAccessibilityDelegate();
 
-  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
-  virtual void ToggleHighContrast() OVERRIDE;
-  virtual bool IsHighContrastEnabled() const OVERRIDE;
-  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE;
-  virtual void SetMagnifierType(MagnifierType type) OVERRIDE;
-  virtual bool IsMagnifierEnabled() const OVERRIDE;
-  virtual MagnifierType GetMagnifierType() const OVERRIDE;
-  virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE;
-  virtual bool IsLargeCursorEnabled() const OVERRIDE;
-  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
-  virtual bool IsAutoclickEnabled() const OVERRIDE;
-  virtual void SetVirtualKeyboardEnabled(bool enabled) OVERRIDE;
-  virtual bool IsVirtualKeyboardEnabled() const OVERRIDE;
-  virtual bool ShouldShowAccessibilityMenu() const OVERRIDE;
-  virtual bool IsBrailleDisplayConnected() const OVERRIDE;
-  virtual void SilenceSpokenFeedback() const OVERRIDE;
+  virtual bool IsSpokenFeedbackEnabled() const override;
+  virtual void ToggleHighContrast() override;
+  virtual bool IsHighContrastEnabled() const override;
+  virtual void SetMagnifierEnabled(bool enabled) override;
+  virtual void SetMagnifierType(MagnifierType type) override;
+  virtual bool IsMagnifierEnabled() const override;
+  virtual MagnifierType GetMagnifierType() const override;
+  virtual void SetLargeCursorEnabled(bool enabled) override;
+  virtual bool IsLargeCursorEnabled() const override;
+  virtual void SetAutoclickEnabled(bool enabled) override;
+  virtual bool IsAutoclickEnabled() const override;
+  virtual void SetVirtualKeyboardEnabled(bool enabled) override;
+  virtual bool IsVirtualKeyboardEnabled() const override;
+  virtual bool ShouldShowAccessibilityMenu() const override;
+  virtual bool IsBrailleDisplayConnected() const override;
+  virtual void SilenceSpokenFeedback() const override;
   virtual void ToggleSpokenFeedback(
-      AccessibilityNotificationVisibility notify) OVERRIDE;
-  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
-  virtual double GetSavedScreenMagnifierScale() OVERRIDE;
-  virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) OVERRIDE;
-  virtual AccessibilityAlert GetLastAccessibilityAlert() OVERRIDE;
-  virtual void PlayEarcon(int sound_key) OVERRIDE;
-  virtual base::TimeDelta PlayShutdownSound() const OVERRIDE;
+      AccessibilityNotificationVisibility notify) override;
+  virtual void SaveScreenMagnifierScale(double scale) override;
+  virtual double GetSavedScreenMagnifierScale() override;
+  virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) override;
+  virtual AccessibilityAlert GetLastAccessibilityAlert() override;
+  virtual void PlayEarcon(int sound_key) override;
+  virtual base::TimeDelta PlayShutdownSound() const override;
 
  private:
   bool spoken_feedback_enabled_;

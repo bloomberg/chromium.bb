@@ -18,10 +18,10 @@ class ASH_WITH_CONTENT_EXPORT GPUSupportImpl : public GPUSupport {
 
  private:
   // Overridden from GPUSupport:
-  virtual bool IsPanelFittingDisabled() const OVERRIDE;
-  virtual void DisableGpuWatchdog() OVERRIDE;
+  virtual bool IsPanelFittingDisabled() const override;
+  virtual void DisableGpuWatchdog() override;
   virtual void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
+      const GetGpuProcessHandlesCallback& callback) const override;
 
   DISALLOW_COPY_AND_ASSIGN(GPUSupportImpl);
 };

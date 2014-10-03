@@ -21,8 +21,8 @@ class WorkspaceEventHandler : public ui::EventHandler {
   virtual ~WorkspaceEventHandler();
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   friend class WorkspaceEventHandlerTestHelper;

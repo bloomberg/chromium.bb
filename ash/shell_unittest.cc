@@ -95,16 +95,16 @@ class ModalWindow : public views::WidgetDelegateView {
   virtual ~ModalWindow() {}
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
-  virtual bool CanResize() const OVERRIDE {
+  virtual bool CanResize() const override {
     return true;
   }
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Modal Window");
   }
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_SYSTEM;
   }
 
@@ -117,21 +117,21 @@ class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
   SimpleMenuDelegate() {}
   virtual ~SimpleMenuDelegate() {}
 
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdChecked(int command_id) const override {
     return false;
   }
 
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int command_id) const override {
     return true;
   }
 
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
+      ui::Accelerator* accelerator) override {
     return false;
   }
 
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) override {
   }
 
  private:
@@ -279,7 +279,7 @@ class TestModalDialogDelegate : public views::DialogDelegateView {
   TestModalDialogDelegate() {}
 
   // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_SYSTEM;
   }
 };

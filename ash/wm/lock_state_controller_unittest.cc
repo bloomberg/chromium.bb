@@ -50,7 +50,7 @@ class LockStateControllerTest : public AshTestBase {
   }
   virtual ~LockStateControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
 
     scoped_ptr<LockStateControllerDelegate> lock_state_controller_delegate(

@@ -56,13 +56,13 @@ class TrayNotificationView : public views::SlideOutView,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::View.
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Overridden from ui::EventHandler.
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
   // Called when the close button is pressed. Does nothing by default.
@@ -71,7 +71,7 @@ class TrayNotificationView : public views::SlideOutView,
   virtual void OnClickAction();
 
   // Overridden from views::SlideOutView.
-  virtual void OnSlideOut() OVERRIDE;
+  virtual void OnSlideOut() override;
 
   SystemTrayItem* owner() { return owner_; }
 

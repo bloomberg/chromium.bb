@@ -25,7 +25,7 @@ class MouseEventCapturer : public ui::EventHandler {
     events_.clear();
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (!(event->flags() & ui::EF_LEFT_MOUSE_BUTTON))
       return;
     // Filter out extraneous mouse events like mouse entered, exited,
@@ -64,7 +64,7 @@ class AutoclickTest : public test::AshTestBase {
   AutoclickTest() {}
   virtual ~AutoclickTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     Shell::GetInstance()->AddPreTargetHandler(&mouse_event_capturer_);
     GetAutoclickController()->SetAutoclickDelay(0);
@@ -73,7 +73,7 @@ class AutoclickTest : public test::AshTestBase {
     GetEventGenerator().MoveMouseTo(100, 100);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Shell::GetInstance()->RemovePreTargetHandler(&mouse_event_capturer_);
     test::AshTestBase::TearDown();
   }

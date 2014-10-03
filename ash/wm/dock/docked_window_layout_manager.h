@@ -135,42 +135,42 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnShelfBoundsChanged();
 
   // SnapLayoutManager:
-  virtual void OnWindowResized() OVERRIDE;
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWindowResized() override;
+  virtual void OnWindowAddedToLayout(aura::Window* child) override;
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) OVERRIDE;
+                                              bool visibile) override;
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE;
+                              const gfx::Rect& requested_bounds) override;
 
   // ash::ShellObserver:
-  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+  virtual void OnDisplayWorkAreaInsetsChanged() override;
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::Window* root_window) OVERRIDE;
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
+                                        aura::Window* root_window) override;
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ShelfLayoutManagerObserver:
   virtual void OnBackgroundUpdated(
       ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) OVERRIDE;
+      BackgroundAnimatorChangeType change_type) override;
 
   // wm::WindowStateObserver:
   virtual void OnPreWindowStateTypeChange(
       wm::WindowState* window_state,
-      wm::WindowStateType old_type) OVERRIDE;
+      wm::WindowStateType old_type) override;
 
   // aura::WindowObserver:
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
   virtual void OnWindowVisibilityChanging(aura::Window* window,
-                                          bool visible) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+                                          bool visible) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
  private:
   class ShelfWindowObserver;
@@ -247,7 +247,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // keyboard::KeyboardControllerObserver:
   virtual void OnKeyboardBoundsChanging(
-      const gfx::Rect& keyboard_bounds) OVERRIDE;
+      const gfx::Rect& keyboard_bounds) override;
 
   // Parent window associated with this layout manager.
   aura::Window* dock_container_;

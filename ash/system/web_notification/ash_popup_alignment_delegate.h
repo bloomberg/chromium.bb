@@ -47,12 +47,12 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void SetSystemTrayHeight(int height);
 
   // Overridden from message_center::PopupAlignmentDelegate:
-  virtual int GetToastOriginX(const gfx::Rect& toast_bounds) const OVERRIDE;
-  virtual int GetBaseLine() const OVERRIDE;
-  virtual int GetWorkAreaBottom() const OVERRIDE;
-  virtual bool IsTopDown() const OVERRIDE;
-  virtual bool IsFromLeft() const OVERRIDE;
-  virtual void RecomputeAlignment(const gfx::Display& display) OVERRIDE;
+  virtual int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
+  virtual int GetBaseLine() const override;
+  virtual int GetWorkAreaBottom() const override;
+  virtual bool IsTopDown() const override;
+  virtual bool IsFromLeft() const override;
+  virtual void RecomputeAlignment(const gfx::Display& display) override;
 
  private:
   friend class AshPopupAlignmentDelegateTest;
@@ -67,16 +67,16 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void UpdateShelf();
 
   // Overridden from ShellObserver:
-  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+  virtual void OnDisplayWorkAreaInsetsChanged() override;
 
   // Overridden from ShelfLayoutManagerObserver:
-  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) OVERRIDE;
+  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
   // Overridden from gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
   int64_t display_id_;
   gfx::Screen* screen_;

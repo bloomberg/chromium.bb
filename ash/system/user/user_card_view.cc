@@ -80,7 +80,7 @@ class MediaIndicator : public views::View, public MediaCaptureObserver {
   }
 
   // MediaCaptureObserver:
-  virtual void OnMediaCaptureChanged() OVERRIDE {
+  virtual void OnMediaCaptureChanged() override {
     Shell* shell = Shell::GetInstance();
     content::BrowserContext* context =
         shell->session_state_delegate()->GetBrowserContextByIndex(index_);
@@ -130,12 +130,12 @@ class PublicAccountUserDetails : public views::View,
 
  private:
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // Overridden from views::LinkListener.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // Calculate a preferred size that ensures the label text and the following
   // link do not wrap over more than three lines in total for aesthetic reasons

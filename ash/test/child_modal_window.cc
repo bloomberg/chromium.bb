@@ -62,14 +62,14 @@ class ChildModalWindow : public views::WidgetDelegateView {
 
  private:
   // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Overridden from WidgetDelegate:
-  virtual View* GetContentsView() OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual View* GetContentsView() override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool CanResize() const override;
+  virtual ui::ModalType GetModalType() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ChildModalWindow);
 };

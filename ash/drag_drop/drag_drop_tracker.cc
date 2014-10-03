@@ -26,7 +26,7 @@ class CaptureWindowActivationDelegate
   virtual ~CaptureWindowActivationDelegate() {}
 
   // aura::client::ActivationDelegate overrides:
-  virtual bool ShouldActivate() const OVERRIDE {
+  virtual bool ShouldActivate() const override {
     return false;
   }
 

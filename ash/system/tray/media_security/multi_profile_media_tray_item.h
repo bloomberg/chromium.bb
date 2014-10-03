@@ -21,8 +21,8 @@ class ASH_EXPORT MultiProfileMediaTrayItem : public SystemTrayItem {
   virtual ~MultiProfileMediaTrayItem();
 
   // SystemTrayItem:
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyTrayView() OVERRIDE;
+  virtual views::View* CreateTrayView(user::LoginStatus status) override;
+  virtual void DestroyTrayView() override;
 
  private:
   tray::MultiProfileMediaTrayView* tray_view_;

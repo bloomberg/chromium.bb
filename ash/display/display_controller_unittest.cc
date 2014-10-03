@@ -90,16 +90,16 @@ class TestObserver : public DisplayController::Observer,
   }
 
   // Overridden from DisplayController::Observer
-  virtual void OnDisplayConfigurationChanging() OVERRIDE {
+  virtual void OnDisplayConfigurationChanging() override {
     ++changing_count_;
   }
-  virtual void OnDisplayConfigurationChanged() OVERRIDE {
+  virtual void OnDisplayConfigurationChanged() override {
     ++changed_count_;
   }
 
   // Overrideen from gfx::DisplayObserver
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE {
+                                       uint32_t metrics) override {
     changed_display_id_ = display.id();
     if (metrics & DISPLAY_METRIC_BOUNDS)
       ++bounds_changed_count_;
@@ -108,25 +108,25 @@ class TestObserver : public DisplayController::Observer,
     if (metrics & DISPLAY_METRIC_WORK_AREA)
       ++workarea_changed_count_;
   }
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override {
   }
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE {
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override {
   }
 
   // Overridden from aura::client::FocusChangeObserver
   virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) OVERRIDE {
+                               aura::Window* lost_focus) override {
     focus_changed_count_++;
   }
 
   // Overridden from aura::client::ActivationChangeObserver
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE {
+                                 aura::Window* lost_active) override {
     activation_changed_count_++;
   }
   virtual void OnAttemptToReactivateWindow(
       aura::Window* request_active,
-      aura::Window* actual_active) OVERRIDE {
+      aura::Window* actual_active) override {
   }
 
   int CountAndReset() {
@@ -206,7 +206,7 @@ class DisplayControllerShutdownTest : public test::AshTestBase {
   DisplayControllerShutdownTest() {}
   virtual ~DisplayControllerShutdownTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test::AshTestBase::TearDown();
     if (!SupportsMultipleDisplays())
       return;
@@ -228,12 +228,12 @@ class StartupHelper : public test::TestShellDelegate,
   virtual ~StartupHelper() {}
 
   // ash::ShellSelegate:
-  virtual void PreInit() OVERRIDE {
+  virtual void PreInit() override {
     Shell::GetInstance()->display_controller()->AddObserver(this);
   }
 
   // ash::DisplayController::Observer:
-  virtual void OnDisplaysInitialized() OVERRIDE {
+  virtual void OnDisplaysInitialized() override {
     DCHECK(!displays_initialized_);
     displays_initialized_ = true;
   }
@@ -254,11 +254,11 @@ class DisplayControllerStartupTest : public test::AshTestBase {
   virtual ~DisplayControllerStartupTest() {}
 
   // ash::test::AshTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ash_test_helper()->set_test_shell_delegate(startup_helper_);
     test::AshTestBase::SetUp();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Shell::GetInstance()->display_controller()->RemoveObserver(startup_helper_);
     test::AshTestBase::TearDown();
   }
@@ -282,7 +282,7 @@ class TestEventHandler : public ui::EventHandler {
                        scroll_y_offset_ordinal_(0.0) {}
   virtual ~TestEventHandler() {}
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->flags() & ui::EF_IS_SYNTHESIZED &&
         event->type() != ui::ET_MOUSE_EXITED &&
         event->type() != ui::ET_MOUSE_ENTERED) {
@@ -294,7 +294,7 @@ class TestEventHandler : public ui::EventHandler {
     event->StopPropagation();
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Only record when the target is the background which covers
     // entire root window.
@@ -305,7 +305,7 @@ class TestEventHandler : public ui::EventHandler {
     event->StopPropagation();
   }
 
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Only record when the target is the background which covers
     // entire root window.

@@ -20,18 +20,18 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
   KeyboardControllerProxyStub();
   virtual ~KeyboardControllerProxyStub();
 
-  virtual bool HasKeyboardWindow() const OVERRIDE;
-  virtual aura::Window* GetKeyboardWindow() OVERRIDE;
+  virtual bool HasKeyboardWindow() const override;
+  virtual aura::Window* GetKeyboardWindow() override;
 
  private:
   // Overridden from keyboard::KeyboardControllerProxy:
-  virtual content::BrowserContext* GetBrowserContext() OVERRIDE;
-  virtual ui::InputMethod* GetInputMethod() OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() override;
+  virtual ui::InputMethod* GetInputMethod() override;
   virtual void RequestAudioInput(content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
-  virtual void LoadSystemKeyboard() OVERRIDE;
-  virtual void ReloadKeyboardIfNeeded() OVERRIDE;
+      const content::MediaResponseCallback& callback) override;
+  virtual void LoadSystemKeyboard() override;
+  virtual void ReloadKeyboardIfNeeded() override;
 
   aura::test::TestWindowDelegate delegate_;
   scoped_ptr<aura::Window> keyboard_;

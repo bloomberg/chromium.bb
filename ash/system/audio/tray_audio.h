@@ -42,28 +42,28 @@ class TrayAudio : public TrayImageItem,
 
  private:
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() OVERRIDE;
+  virtual bool GetInitialVisibility() override;
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
-  virtual bool ShouldHideArrow() const OVERRIDE;
-  virtual bool ShouldShowShelf() const OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
+  virtual void DestroyDefaultView() override;
+  virtual void DestroyDetailedView() override;
+  virtual bool ShouldHideArrow() const override;
+  virtual bool ShouldShowShelf() const override;
 
   // Overridden from AudioObserver.
-  virtual void OnOutputVolumeChanged() OVERRIDE;
-  virtual void OnOutputMuteChanged() OVERRIDE;
-  virtual void OnAudioNodesChanged() OVERRIDE;
-  virtual void OnActiveOutputNodeChanged() OVERRIDE;
-  virtual void OnActiveInputNodeChanged() OVERRIDE;
+  virtual void OnOutputVolumeChanged() override;
+  virtual void OnOutputMuteChanged() override;
+  virtual void OnAudioNodesChanged() override;
+  virtual void OnActiveOutputNodeChanged() override;
+  virtual void OnActiveInputNodeChanged() override;
 
   // Overridden from gfx::DisplayObserver.
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t changed_metrics) OVERRIDE;
+                                       uint32_t changed_metrics) override;
 
   void ChangeInternalSpeakerChannelMode();
 

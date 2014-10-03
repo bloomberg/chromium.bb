@@ -29,11 +29,11 @@ class RotationLockDefaultView : public TrayItemMore,
   virtual ~RotationLockDefaultView();
 
   // ActionableView:
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
  private:
   void UpdateImage();

@@ -101,13 +101,13 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   void UpdateSizeButtonVisibility();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual const char* GetClassName() const override;
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   friend class FrameCaptionButtonContainerViewTest;
@@ -140,19 +140,19 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // FrameSizeButtonDelegate:
-  virtual bool IsMinimizeButtonVisible() const OVERRIDE;
-  virtual void SetButtonsToNormal(Animate animate) OVERRIDE;
+  virtual bool IsMinimizeButtonVisible() const override;
+  virtual void SetButtonsToNormal(Animate animate) override;
   virtual void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
                               CaptionButtonIcon close_button_icon,
-                              Animate animate) OVERRIDE;
+                              Animate animate) override;
   virtual const FrameCaptionButton* GetButtonClosestTo(
-      const gfx::Point& position_in_screen) const OVERRIDE;
+      const gfx::Point& position_in_screen) const override;
   virtual void SetHoveredAndPressedButtons(
       const FrameCaptionButton* to_hover,
-      const FrameCaptionButton* to_press) OVERRIDE;
+      const FrameCaptionButton* to_press) override;
 
   // The widget that the buttons act on.
   views::Widget* frame_;

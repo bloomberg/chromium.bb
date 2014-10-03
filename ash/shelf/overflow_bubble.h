@@ -47,11 +47,11 @@ class OverflowBubble : public ui::EventHandler,
   void ProcessPressedEvent(ui::LocatedEvent* event);
 
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   OverflowBubbleView* bubble_;  // Owned by views hierarchy.
   views::View* anchor_;  // Owned by ShelfView.

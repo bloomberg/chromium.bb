@@ -66,28 +66,28 @@ class TrayPopupItemContainer : public views::View {
 
  private:
   // Overridden from views::View.
-  virtual void ChildVisibilityChanged(View* child) OVERRIDE {
+  virtual void ChildVisibilityChanged(View* child) override {
     if (visible() == child->visible())
       return;
     SetVisible(child->visible());
     PreferredSizeChanged();
   }
 
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE {
+  virtual void ChildPreferredSizeChanged(View* child) override {
     PreferredSizeChanged();
   }
 
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override {
     hover_ = true;
     SchedulePaint();
   }
 
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseExited(const ui::MouseEvent& event) override {
     hover_ = false;
     SchedulePaint();
   }
 
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaintBackground(gfx::Canvas* canvas) override {
     if (child_count() == 0)
       return;
 
@@ -115,7 +115,7 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
   virtual ~AnimationObserverDeleteLayer() {
   }
 
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
   }
 

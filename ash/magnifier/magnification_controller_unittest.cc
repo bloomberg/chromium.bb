@@ -29,7 +29,7 @@ class MagnificationControllerTest: public test::AshTestBase {
   MagnificationControllerTest() {}
   virtual ~MagnificationControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("%dx%d", kRootWidth, kRootHeight));
 
@@ -44,7 +44,7 @@ class MagnificationControllerTest: public test::AshTestBase {
 #endif
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     AshTestBase::TearDown();
   }
 

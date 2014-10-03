@@ -25,8 +25,8 @@ class ScopedDisableInternalMouseAndKeyboardX11
   virtual ~ScopedDisableInternalMouseAndKeyboardX11();
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) override;
  private:
   int touchpad_device_id_;
   int keyboard_device_id_;

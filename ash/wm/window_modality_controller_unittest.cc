@@ -327,7 +327,7 @@ class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
 
  private:
   // Overridden from aura::test::TestWindowDelegate.
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     received_touch_ = true;
     last_event_type_ = event->type();
     aura::test::TestWindowDelegate::OnTouchEvent(event);

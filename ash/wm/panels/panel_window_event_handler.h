@@ -17,8 +17,8 @@ class PanelWindowEventHandler : public ui::EventHandler {
   virtual ~PanelWindowEventHandler();
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PanelWindowEventHandler);

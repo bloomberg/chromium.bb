@@ -55,12 +55,12 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 
   // Overridden from views::TestViewsDelegate:
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      views::Widget* widget) override {
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
   }
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
+      views::internal::NativeWidgetDelegate* delegate) override {
     if (params->opacity == views::Widget::InitParams::INFER_OPACITY)
       params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 

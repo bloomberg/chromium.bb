@@ -30,17 +30,17 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual ~TestWidgetDelegate() {}
 
   // views::WidgetDelegateView overrides:
-  virtual bool CanResize() const OVERRIDE {
+  virtual bool CanResize() const override {
     return true;
   }
-  virtual bool CanMaximize() const OVERRIDE {
+  virtual bool CanMaximize() const override {
     return true;
   }
-  virtual bool CanMinimize() const OVERRIDE {
+  virtual bool CanMinimize() const override {
     return true;
   }
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      views::Widget* widget) override {
     return new ash::CustomFrameViewAsh(widget);
   }
 
@@ -58,7 +58,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
   virtual ~ResizeShadowAndCursorTest() {}
 
   // AshTestBase override:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
 
     views::Widget* widget(views::Widget::CreateWindowWithContextAndBounds(

@@ -41,14 +41,14 @@ class BoundsSetter : public aura::LayoutManager {
   virtual ~BoundsSetter() {}
 
   // aura::LayoutManager overrides:
-  virtual void OnWindowResized() OVERRIDE {}
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnWindowResized() override {}
+  virtual void OnWindowAddedToLayout(aura::Window* child) override {}
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {}
   virtual void OnChildWindowVisibilityChanged(
-      aura::Window* child, bool visible) OVERRIDE {}
+      aura::Window* child, bool visible) override {}
   virtual void SetChildBounds(
-      aura::Window* child, const gfx::Rect& requested_bounds) OVERRIDE {}
+      aura::Window* child, const gfx::Rect& requested_bounds) override {}
 
   void SetBounds(aura::Window* window, const gfx::Rect& bounds) {
     SetChildBoundsDirect(window, bounds);

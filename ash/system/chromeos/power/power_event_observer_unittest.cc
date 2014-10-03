@@ -18,12 +18,12 @@ class PowerEventObserverTest : public test::AshTestBase {
   virtual ~PowerEventObserverTest() {}
 
   // test::AshTestBase::SetUp() overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
     observer_.reset(new PowerEventObserver());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     observer_.reset();
     test::AshTestBase::TearDown();
   }

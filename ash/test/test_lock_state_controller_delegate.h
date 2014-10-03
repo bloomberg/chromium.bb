@@ -21,8 +21,8 @@ class TestLockStateControllerDelegate : public LockStateControllerDelegate {
   int num_shutdown_requests() const { return num_shutdown_requests_; }
 
   // LockStateControllerDelegate implementation.
-  virtual void RequestLockScreen() OVERRIDE;
-  virtual void RequestShutdown() OVERRIDE;
+  virtual void RequestLockScreen() override;
+  virtual void RequestShutdown() override;
 
  private:
   int num_lock_requests_;

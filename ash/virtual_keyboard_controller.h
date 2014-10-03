@@ -17,8 +17,8 @@ class ASH_EXPORT VirtualKeyboardController : public ShellObserver {
   virtual ~VirtualKeyboardController();
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);

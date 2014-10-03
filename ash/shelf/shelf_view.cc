@@ -141,20 +141,20 @@ class ShelfMenuModelAdapter : public views::MenuModelAdapter {
   explicit ShelfMenuModelAdapter(ShelfMenuModel* menu_model);
 
   // views::MenuModelAdapter:
-  virtual const gfx::FontList* GetLabelFontList(int command_id) const OVERRIDE;
-  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual const gfx::FontList* GetLabelFontList(int command_id) const override;
+  virtual bool IsCommandEnabled(int id) const override;
   virtual void GetHorizontalIconMargins(int id,
                                         int icon_size,
                                         int* left_margin,
-                                        int* right_margin) const OVERRIDE;
+                                        int* right_margin) const override;
   virtual bool GetForegroundColor(int command_id,
                                   bool is_hovered,
-                                  SkColor* override_color) const OVERRIDE;
+                                  SkColor* override_color) const override;
   virtual bool GetBackgroundColor(int command_id,
                                   bool is_hovered,
-                                  SkColor* override_color) const OVERRIDE;
-  virtual int GetMaxWidthForMenu(views::MenuItemView* menu) OVERRIDE;
-  virtual bool ShouldReserveSpaceForSubmenuIndicator() const OVERRIDE;
+                                  SkColor* override_color) const override;
+  virtual int GetMaxWidthForMenu(views::MenuItemView* menu) override;
+  virtual bool ShouldReserveSpaceForSubmenuIndicator() const override;
 
  private:
   ShelfMenuModel* menu_model_;
@@ -234,7 +234,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       Direction direction,
       bool check_starting_view,
       views::FocusTraversable** focus_traversable,
-      View** focus_traversable_view) OVERRIDE {
+      View** focus_traversable_view) override {
     int index = view_model_->GetIndexOfView(starting_view);
     if (index == -1)
       return view_model_->view_at(0);
@@ -265,15 +265,15 @@ class FadeInAnimationDelegate : public gfx::AnimationDelegate {
   virtual ~FadeInAnimationDelegate() {}
 
   // AnimationDelegate overrides:
-  virtual void AnimationProgressed(const Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const Animation* animation) override {
     view_->layer()->SetOpacity(animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
   }
-  virtual void AnimationEnded(const Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const Animation* animation) override {
     view_->layer()->SetOpacity(1.0f);
     view_->layer()->ScheduleDraw();
   }
-  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const Animation* animation) override {
     view_->layer()->SetOpacity(1.0f);
     view_->layer()->ScheduleDraw();
   }
@@ -321,14 +321,14 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
   virtual ~FadeOutAnimationDelegate() {}
 
   // AnimationDelegate overrides:
-  virtual void AnimationProgressed(const Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const Animation* animation) override {
     view_->layer()->SetOpacity(1 - animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
   }
-  virtual void AnimationEnded(const Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const Animation* animation) override {
     shelf_view_->OnFadeOutAnimationEnded();
   }
-  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const Animation* animation) override {
   }
 
  private:
@@ -350,10 +350,10 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
   virtual ~StartFadeAnimationDelegate() {}
 
   // AnimationDelegate overrides:
-  virtual void AnimationEnded(const Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const Animation* animation) override {
     shelf_view_->FadeIn(view_);
   }
-  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const Animation* animation) override {
     view_->layer()->SetOpacity(1.0f);
   }
 

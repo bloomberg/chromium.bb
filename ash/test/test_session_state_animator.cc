@@ -63,7 +63,7 @@ class TestSessionStateAnimator::AnimationSequence
   // ash::SessionStateAnimator::AnimationSequence:
   virtual void StartAnimation(int container_mask,
                               AnimationType type,
-                              AnimationSpeed speed) OVERRIDE {
+                              AnimationSpeed speed) override {
     animator_->StartAnimationInSequence(container_mask, type, speed, this);
   }
 

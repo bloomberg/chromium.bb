@@ -29,14 +29,14 @@ class TrayEnterprise : public SystemTrayItem,
   void UpdateEnterpriseMessage();
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual void DestroyDefaultView() override;
 
   // Overridden from EnterpriseDomainObserver.
-  virtual void OnEnterpriseDomainChanged() OVERRIDE;
+  virtual void OnEnterpriseDomainChanged() override;
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) override;
 
  private:
   LabelTrayView* tray_view_;

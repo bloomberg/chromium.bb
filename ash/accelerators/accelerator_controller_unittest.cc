@@ -63,8 +63,8 @@ class TestTarget : public ui::AcceleratorTarget {
   }
 
   // Overridden from ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual bool CanHandleAccelerators() const override;
 
  private:
   int accelerator_pressed_count_;
@@ -91,19 +91,19 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   virtual ~DummyBrightnessControlDelegate() {}
 
   virtual bool HandleBrightnessDown(
-      const ui::Accelerator& accelerator) OVERRIDE {
+      const ui::Accelerator& accelerator) override {
     ++handle_brightness_down_count_;
     last_accelerator_ = accelerator;
     return consume_;
   }
-  virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) override {
     ++handle_brightness_up_count_;
     last_accelerator_ = accelerator;
     return consume_;
   }
-  virtual void SetBrightnessPercent(double percent, bool gradual) OVERRIDE {}
+  virtual void SetBrightnessPercent(double percent, bool gradual) override {}
   virtual void GetBrightnessPercent(
-      const base::Callback<void(double)>& callback) OVERRIDE {
+      const base::Callback<void(double)>& callback) override {
     callback.Run(100.0);
   }
 
@@ -136,15 +136,15 @@ class DummyImeControlDelegate : public ImeControlDelegate {
   }
   virtual ~DummyImeControlDelegate() {}
 
-  virtual void HandleNextIme() OVERRIDE {
+  virtual void HandleNextIme() override {
     ++handle_next_ime_count_;
   }
-  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) override {
     ++handle_previous_ime_count_;
     last_accelerator_ = accelerator;
     return consume_;
   }
-  virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) override {
     ++handle_switch_ime_count_;
     last_accelerator_ = accelerator;
     return consume_;
@@ -163,7 +163,7 @@ class DummyImeControlDelegate : public ImeControlDelegate {
     return last_accelerator_;
   }
   virtual ui::Accelerator RemapAccelerator(
-      const ui::Accelerator& accelerator) OVERRIDE {
+      const ui::Accelerator& accelerator) override {
     return ui::Accelerator(accelerator);
   }
 
@@ -188,14 +188,14 @@ class DummyKeyboardBrightnessControlDelegate
   virtual ~DummyKeyboardBrightnessControlDelegate() {}
 
   virtual bool HandleKeyboardBrightnessDown(
-      const ui::Accelerator& accelerator) OVERRIDE {
+      const ui::Accelerator& accelerator) override {
     ++handle_keyboard_brightness_down_count_;
     last_accelerator_ = accelerator;
     return consume_;
   }
 
   virtual bool HandleKeyboardBrightnessUp(
-      const ui::Accelerator& accelerator) OVERRIDE {
+      const ui::Accelerator& accelerator) override {
     ++handle_keyboard_brightness_up_count_;
     last_accelerator_ = accelerator;
     return consume_;
@@ -1101,7 +1101,7 @@ class PreferredReservedAcceleratorsTest : public test::AshTestBase {
   virtual ~PreferredReservedAcceleratorsTest() {}
 
   // test::AshTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     Shell::GetInstance()->lock_state_controller()->
         set_animator_for_test(new test::TestSessionStateAnimator);

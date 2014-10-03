@@ -21,12 +21,12 @@ class ASH_EXPORT TrayAudioChromeOs : public TrayAudio {
 
  protected:
   // Overridden from TrayAudio
-  virtual void Update() OVERRIDE;
+  virtual void Update() override;
 
  private:
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
+  virtual void DestroyDetailedView() override;
 
   tray::AudioDetailedView* audio_detail_view_;
 

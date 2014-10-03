@@ -20,7 +20,7 @@ class KeyboardUMAEventFilter : public ui::EventHandler {
   virtual ~KeyboardUMAEventFilter();
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
   // The timestamp of the last character keystroke.

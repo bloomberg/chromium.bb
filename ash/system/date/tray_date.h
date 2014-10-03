@@ -49,21 +49,21 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
 
  private:
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyTrayView() OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateTrayView(user::LoginStatus status) override;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
+  virtual void DestroyTrayView() override;
+  virtual void DestroyDefaultView() override;
+  virtual void DestroyDetailedView() override;
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
   virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) OVERRIDE;
+      ShelfAlignment alignment) override;
 
   // Overridden from ClockObserver.
-  virtual void OnDateFormatChanged() OVERRIDE;
-  virtual void OnSystemClockTimeUpdated() OVERRIDE;
-  virtual void OnSystemClockCanSetTimeChanged(bool can_set_time) OVERRIDE;
-  virtual void Refresh() OVERRIDE;
+  virtual void OnDateFormatChanged() override;
+  virtual void OnSystemClockTimeUpdated() override;
+  virtual void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
+  virtual void Refresh() override;
 
   void SetupLabelForTimeTray(views::Label* label);
 

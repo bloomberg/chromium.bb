@@ -35,14 +35,14 @@ class TrayTracing : public TrayImageItem,
   void SetTrayIconVisible(bool visible);
 
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() OVERRIDE;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
+  virtual bool GetInitialVisibility() override;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
+  virtual void DestroyDefaultView() override;
+  virtual void DestroyDetailedView() override;
 
   // Overridden from TracingObserver.
-  virtual void OnTracingModeChanged(bool value) OVERRIDE;
+  virtual void OnTracingModeChanged(bool value) override;
 
   views::View* default_;
 

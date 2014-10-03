@@ -36,7 +36,7 @@ class PaintMessageHandler
   virtual ~PaintMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void DidPaint(const base::ListValue* args);

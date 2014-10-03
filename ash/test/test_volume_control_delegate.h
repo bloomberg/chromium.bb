@@ -35,9 +35,9 @@ class TestVolumeControlDelegate : public ash::VolumeControlDelegate {
   }
 
   // ash::VolumeControlDelegate:
-  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) override;
+  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) override;
+  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) override;
 
  private:
   // Keeps track of the return value that should be used for the methods

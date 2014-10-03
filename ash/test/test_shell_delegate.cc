@@ -42,14 +42,14 @@ class NewWindowDelegateImpl : public NewWindowDelegate {
 
  private:
   // NewWindowDelegate:
-  virtual void NewTab() OVERRIDE {}
-  virtual void NewWindow(bool incognito) OVERRIDE {}
-  virtual void OpenFileManager() OVERRIDE {}
-  virtual void OpenCrosh() OVERRIDE {}
-  virtual void RestoreTab() OVERRIDE {}
-  virtual void ShowKeyboardOverlay() OVERRIDE {}
-  virtual void ShowTaskManager() OVERRIDE {}
-  virtual void OpenFeedbackPage() OVERRIDE {}
+  virtual void NewTab() override {}
+  virtual void NewWindow(bool incognito) override {}
+  virtual void OpenFileManager() override {}
+  virtual void OpenCrosh() override {}
+  virtual void RestoreTab() override {}
+  virtual void ShowKeyboardOverlay() override {}
+  virtual void ShowTaskManager() override {}
+  virtual void OpenFeedbackPage() override {}
 
   DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
 };
@@ -63,11 +63,11 @@ class MediaDelegateImpl : public MediaDelegate {
 
  private:
   // MediaDelegate:
-  virtual void HandleMediaNextTrack() OVERRIDE {}
-  virtual void HandleMediaPlayPause() OVERRIDE {}
-  virtual void HandleMediaPrevTrack() OVERRIDE {}
+  virtual void HandleMediaNextTrack() override {}
+  virtual void HandleMediaPlayPause() override {}
+  virtual void HandleMediaPrevTrack() override {}
   virtual MediaCaptureState GetMediaCaptureState(
-      content::BrowserContext* context) OVERRIDE {
+      content::BrowserContext* context) override {
     return state_;
   }
 

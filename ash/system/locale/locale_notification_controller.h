@@ -24,7 +24,7 @@ class LocaleNotificationController : public LocaleObserver {
   virtual void OnLocaleChanged(LocaleObserver::Delegate* delegate,
                                const std::string& cur_locale,
                                const std::string& from_locale,
-                               const std::string& to_locale) OVERRIDE;
+                               const std::string& to_locale) override;
 
   LocaleObserver::Delegate* delegate_;
   std::string cur_locale_;

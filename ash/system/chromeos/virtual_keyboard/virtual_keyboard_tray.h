@@ -26,20 +26,20 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   virtual ~VirtualKeyboardTray();
 
   // TrayBackgroundView:
-  virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
-  virtual base::string16 GetAccessibleNameForTray() OVERRIDE;
+  virtual void SetShelfAlignment(ShelfAlignment alignment) override;
+  virtual base::string16 GetAccessibleNameForTray() override;
   virtual void HideBubbleWithView(
-      const views::TrayBubbleView* bubble_view) OVERRIDE;
-  virtual bool ClickedOutsideBubble() OVERRIDE;
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+      const views::TrayBubbleView* bubble_view) override;
+  virtual bool ClickedOutsideBubble() override;
+  virtual bool PerformAction(const ui::Event& event) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // AccessibilityObserver:
   virtual void OnAccessibilityModeChanged(
-      AccessibilityNotificationVisibility notify) OVERRIDE;
+      AccessibilityNotificationVisibility notify) override;
 
  private:
   views::ImageButton* button_;  // Not owned.

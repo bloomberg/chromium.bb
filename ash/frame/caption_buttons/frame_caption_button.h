@@ -50,9 +50,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   void SetAlpha(int alpha);
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   void set_paint_as_active(bool paint_as_active) {
     paint_as_active_ = paint_as_active;
@@ -64,7 +64,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
  protected:
   // views::CustomButton override:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Returns the icon image to paint based on |paint_as_active_|.

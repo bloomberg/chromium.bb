@@ -54,7 +54,7 @@ class ShelfTest : public ash::test::AshTestBase {
     test_.reset(new ash::test::ShelfViewTestAPI(shelf_view_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test::AshTestBase::TearDown();
   }
 

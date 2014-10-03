@@ -63,10 +63,10 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
 
   // Overrides to views::CustomButton:
   virtual void ShowContextMenu(const gfx::Point& p,
-                               ui::MenuSourceType source_type) OVERRIDE;
+                               ui::MenuSourceType source_type) override;
 
   // View override - needed by unit test.
-  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseCaptureLost() override;
 
  protected:
   ShelfButton(views::ButtonListener* listener,
@@ -93,22 +93,22 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   };
 
   // View overrides:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual void Layout() override;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::EventHandler overrides:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Sets the icon image with a shadow.
   void SetShadowedImage(const gfx::ImageSkia& bitmap);

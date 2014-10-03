@@ -36,27 +36,27 @@ class TrayNetwork : public SystemTrayItem,
   tray::NetworkDetailedView* detailed() { return detailed_; }
 
   // SystemTrayItem
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyTrayView() OVERRIDE;
-  virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateTrayView(user::LoginStatus status) override;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
+  virtual void DestroyTrayView() override;
+  virtual void DestroyDefaultView() override;
+  virtual void DestroyDetailedView() override;
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
   virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) OVERRIDE;
+      ShelfAlignment alignment) override;
 
   // NetworkObserver
-  virtual void RequestToggleWifi() OVERRIDE;
+  virtual void RequestToggleWifi() override;
 
   // NetworkPortalDetectorObserver
   virtual void OnCaptivePortalDetected(
-      const std::string& service_path) OVERRIDE;
+      const std::string& service_path) override;
 
   // TrayNetworkStateObserver::Delegate
-  virtual void NetworkStateChanged(bool list_changed) OVERRIDE;
+  virtual void NetworkStateChanged(bool list_changed) override;
   virtual void NetworkServiceChanged(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
 
  private:
   tray::NetworkTrayView* tray_;

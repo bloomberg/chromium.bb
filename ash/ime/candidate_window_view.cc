@@ -42,7 +42,7 @@ class CandidateWindowBorder : public views::BubbleBorder {
  private:
   // Overridden from views::BubbleBorder:
   virtual gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
-                              const gfx::Size& content_size) const OVERRIDE {
+                              const gfx::Size& content_size) const override {
     gfx::Rect bounds(content_size);
     bounds.set_origin(gfx::Point(
         anchor_rect.x() - offset_,
@@ -62,7 +62,7 @@ class CandidateWindowBorder : public views::BubbleBorder {
     return bounds;
   }
 
-  virtual gfx::Insets GetInsets() const OVERRIDE {
+  virtual gfx::Insets GetInsets() const override {
     return gfx::Insets();
   }
 
@@ -130,7 +130,7 @@ class InformationTextArea : public views::View {
   }
 
  protected:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     gfx::Size size = views::View::GetPreferredSize();
     size.SetToMax(gfx::Size(min_width_, 0));
     return size;

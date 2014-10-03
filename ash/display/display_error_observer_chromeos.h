@@ -22,7 +22,7 @@ class ASH_EXPORT DisplayErrorObserver
 
   // ui::DisplayConfigurator::Observer overrides:
   virtual void OnDisplayModeChangeFailed(
-      ui::MultipleDisplayState failed_new_state) OVERRIDE;
+      ui::MultipleDisplayState failed_new_state) override;
 
  private:
   friend class DisplayErrorObserverTest;

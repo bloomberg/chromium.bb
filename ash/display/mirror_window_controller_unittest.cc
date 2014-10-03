@@ -33,14 +33,14 @@ class MirrorOnBootTest : public test::AshTestBase {
   MirrorOnBootTest() {}
   virtual ~MirrorOnBootTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableSoftwareMirroring);
     test::AshTestBase::SetUp();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test::AshTestBase::TearDown();
   }
 

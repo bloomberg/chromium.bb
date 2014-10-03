@@ -20,7 +20,7 @@ class ASH_EXPORT AcceleratorDelegate
   // wm::AcceleratorDelegate:
   virtual bool ProcessAccelerator(const ui::KeyEvent& event,
                                   const ui::Accelerator& accelerator,
-                                  KeyType key_type) OVERRIDE;
+                                  KeyType key_type) override;
 
  private:
   // Returns true if the window should be allowed a chance to handle

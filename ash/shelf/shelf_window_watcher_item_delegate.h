@@ -25,13 +25,13 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
 
  private:
   // ShelfItemDelegate overrides:
-  virtual bool ItemSelected(const ui::Event& event) OVERRIDE;
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) OVERRIDE;
-  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual bool ShouldShowTooltip() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual bool ItemSelected(const ui::Event& event) override;
+  virtual base::string16 GetTitle() override;
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
+  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  virtual bool IsDraggable() override;
+  virtual bool ShouldShowTooltip() override;
+  virtual void Close() override;
 
   // Stores a Window associated with this item. Not owned.
   aura::Window* window_;

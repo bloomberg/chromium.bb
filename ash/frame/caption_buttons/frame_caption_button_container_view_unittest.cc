@@ -24,11 +24,11 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   virtual ~TestWidgetDelegate() {
   }
 
-  virtual bool CanMaximize() const OVERRIDE {
+  virtual bool CanMaximize() const override {
     return can_maximize_;
   }
 
-  virtual bool CanMinimize() const OVERRIDE {
+  virtual bool CanMinimize() const override {
     return can_maximize_;
   }
 

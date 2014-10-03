@@ -37,27 +37,27 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   };
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual bool CanMinimize() const OVERRIDE;
+  virtual views::View* GetContentsView() override;
+  virtual bool CanResize() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool CanMaximize() const override;
+  virtual bool CanMinimize() const override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int id, int event_flags) OVERRIDE;
+  virtual void ExecuteCommand(int id, int event_flags) override;
 
   // Override from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   views::LabelButton* create_button_;
   views::LabelButton* create_persistant_button_;

@@ -21,13 +21,13 @@ class DefaultVolumnControlDelegate : public VolumeControlDelegate {
   DefaultVolumnControlDelegate() {}
   virtual ~DefaultVolumnControlDelegate() {}
 
-  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) override {
     return true;
   }
-  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) override {
     return true;
   }
-  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) override {
     return true;
   }
 

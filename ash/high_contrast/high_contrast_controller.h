@@ -24,7 +24,7 @@ class ASH_EXPORT HighContrastController : public ShellObserver {
   void SetEnabled(bool enabled);
 
   // ShellObserver:
-  virtual void OnRootWindowAdded(aura::Window* root_window) OVERRIDE;
+  virtual void OnRootWindowAdded(aura::Window* root_window) override;
 
  private:
   // Update high contrast mode on the passed display.

@@ -76,7 +76,7 @@ class TrayDisplayTest : public ash::test::AshTestBase {
   TrayDisplayTest();
   virtual ~TrayDisplayTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   SystemTray* tray() { return tray_; }

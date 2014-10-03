@@ -48,7 +48,7 @@ class TestItem : public SystemTrayItem {
  public:
   TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateTrayView(user::LoginStatus status) override {
     tray_view_ = new views::View;
     // Add a label so it has non-zero width.
     tray_view_->SetLayoutManager(new views::FillLayout);
@@ -56,14 +56,14 @@ class TestItem : public SystemTrayItem {
     return tray_view_;
   }
 
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetLayoutManager(new views::FillLayout);
     default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view_;
   }
 
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
     detailed_view_ = new views::View;
     detailed_view_->SetLayoutManager(new views::FillLayout);
     detailed_view_->AddChildView(
@@ -72,29 +72,29 @@ class TestItem : public SystemTrayItem {
   }
 
   virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE {
+      user::LoginStatus status) override {
     notification_view_ = new views::View;
     return notification_view_;
   }
 
-  virtual void DestroyTrayView() OVERRIDE {
+  virtual void DestroyTrayView() override {
     tray_view_ = NULL;
   }
 
-  virtual void DestroyDefaultView() OVERRIDE {
+  virtual void DestroyDefaultView() override {
     default_view_ = NULL;
   }
 
-  virtual void DestroyDetailedView() OVERRIDE {
+  virtual void DestroyDetailedView() override {
     detailed_view_ = NULL;
   }
 
-  virtual void DestroyNotificationView() OVERRIDE {
+  virtual void DestroyNotificationView() override {
     notification_view_ = NULL;
   }
 
   virtual void UpdateAfterLoginStatusChange(
-      user::LoginStatus status) OVERRIDE {
+      user::LoginStatus status) override {
   }
 
   views::View* tray_view() const { return tray_view_; }
@@ -115,29 +115,29 @@ class TestNoViewItem : public SystemTrayItem {
  public:
   TestNoViewItem() : SystemTrayItem(GetSystemTray()) {}
 
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateTrayView(user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
+  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
     return NULL;
   }
 
   virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE {
+      user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual void DestroyTrayView() OVERRIDE {}
-  virtual void DestroyDefaultView() OVERRIDE {}
-  virtual void DestroyDetailedView() OVERRIDE {}
-  virtual void DestroyNotificationView() OVERRIDE {}
+  virtual void DestroyTrayView() override {}
+  virtual void DestroyDefaultView() override {}
+  virtual void DestroyDetailedView() override {}
+  virtual void DestroyNotificationView() override {}
   virtual void UpdateAfterLoginStatusChange(
-      user::LoginStatus status) OVERRIDE {
+      user::LoginStatus status) override {
   }
 };
 
@@ -146,8 +146,8 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
   ModalWidgetDelegate() {}
   virtual ~ModalWidgetDelegate() {}
 
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual views::View* GetContentsView() override { return this; }
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_SYSTEM;
   }
 

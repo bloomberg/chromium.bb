@@ -30,7 +30,7 @@ class TrayGestureHandler : public views::WidgetObserver {
   void CompleteGestureDrag(const ui::GestureEvent& event);
 
  private:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // The widget for the tray-bubble.
   views::Widget* widget_;

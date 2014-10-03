@@ -32,36 +32,36 @@ class TestShellDelegate : public ShellDelegate {
   }
 
   // Overridden from ShellDelegate:
-  virtual bool IsFirstRunAfterBoot() const OVERRIDE;
-  virtual bool IsIncognitoAllowed() const OVERRIDE;
-  virtual bool IsMultiProfilesEnabled() const OVERRIDE;
-  virtual bool IsRunningInForcedAppMode() const OVERRIDE;
-  virtual bool IsMultiAccountEnabled() const OVERRIDE;
-  virtual void PreInit() OVERRIDE;
-  virtual void PreShutdown() OVERRIDE;
-  virtual void Exit() OVERRIDE;
+  virtual bool IsFirstRunAfterBoot() const override;
+  virtual bool IsIncognitoAllowed() const override;
+  virtual bool IsMultiProfilesEnabled() const override;
+  virtual bool IsRunningInForcedAppMode() const override;
+  virtual bool IsMultiAccountEnabled() const override;
+  virtual void PreInit() override;
+  virtual void PreShutdown() override;
+  virtual void Exit() override;
   virtual keyboard::KeyboardControllerProxy*
-      CreateKeyboardControllerProxy() OVERRIDE;
-  virtual void VirtualKeyboardActivated(bool activated) OVERRIDE;
+      CreateKeyboardControllerProxy() override;
+  virtual void VirtualKeyboardActivated(bool activated) override;
   virtual void AddVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) OVERRIDE;
+      VirtualKeyboardStateObserver* observer) override;
   virtual void RemoveVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) OVERRIDE;
-  virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
-  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() OVERRIDE;
-  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
-  virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
-  virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
-  virtual SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
-  virtual AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
-  virtual NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
-  virtual MediaDelegate* CreateMediaDelegate() OVERRIDE;
+      VirtualKeyboardStateObserver* observer) override;
+  virtual content::BrowserContext* GetActiveBrowserContext() override;
+  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
+  virtual SystemTrayDelegate* CreateSystemTrayDelegate() override;
+  virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
+  virtual SessionStateDelegate* CreateSessionStateDelegate() override;
+  virtual AccessibilityDelegate* CreateAccessibilityDelegate() override;
+  virtual NewWindowDelegate* CreateNewWindowDelegate() override;
+  virtual MediaDelegate* CreateMediaDelegate() override;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root,
       ash::ShelfItemDelegate* item_delegate,
-      ash::ShelfItem* item) OVERRIDE;
-  virtual GPUSupport* CreateGPUSupport() OVERRIDE;
-  virtual base::string16 GetProductName() const OVERRIDE;
+      ash::ShelfItem* item) override;
+  virtual GPUSupport* CreateGPUSupport() override;
+  virtual base::string16 GetProductName() const override;
 
   int num_exit_requests() const { return num_exit_requests_; }
 

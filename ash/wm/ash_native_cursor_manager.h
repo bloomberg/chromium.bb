@@ -47,19 +47,19 @@ class ASH_EXPORT AshNativeCursorManager
   // Overridden from ::wm::NativeCursorManager:
   virtual void SetDisplay(
       const gfx::Display& display,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      ::wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetCursor(
       gfx::NativeCursor cursor,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      ::wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetVisibility(
       bool visible,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      ::wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      ::wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetMouseEventsEnabled(
       bool enabled,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      ::wm::NativeCursorManagerDelegate* delegate) override;
 
   // The cursor location where the cursor was disabled.
   gfx::Point disabled_cursor_location_;

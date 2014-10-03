@@ -38,21 +38,21 @@ class MockUserInfo : public user_manager::UserInfo {
     user_image_ = user_image;
   }
 
-  virtual base::string16 GetDisplayName() const OVERRIDE {
+  virtual base::string16 GetDisplayName() const override {
     return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
   }
 
-  virtual base::string16 GetGivenName() const OVERRIDE {
+  virtual base::string16 GetGivenName() const override {
     return base::UTF8ToUTF16("Über Über Über Über");
   }
 
-  virtual std::string GetEmail() const OVERRIDE { return email_; }
+  virtual std::string GetEmail() const override { return email_; }
 
-  virtual std::string GetUserID() const OVERRIDE {
+  virtual std::string GetUserID() const override {
     return GetUserIDFromEmail(GetEmail());
   }
 
-  virtual const gfx::ImageSkia& GetImage() const OVERRIDE {
+  virtual const gfx::ImageSkia& GetImage() const override {
     return user_image_;
   }
 

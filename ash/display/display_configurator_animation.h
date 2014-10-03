@@ -44,9 +44,9 @@ class ASH_EXPORT DisplayConfiguratorAnimation
  protected:
   // ui::DisplayConfigurator::Observer overrides:
   virtual void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) OVERRIDE;
+      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
   virtual void OnDisplayModeChangeFailed(
-      ui::MultipleDisplayState failed_new_state) OVERRIDE;
+      ui::MultipleDisplayState failed_new_state) override;
 
  private:
   // Clears all hiding layers.  Note that in case that this method is called

@@ -84,7 +84,7 @@ class UpdateView : public ash::ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) override {
     ash::Shell::GetInstance()->
         system_tray_delegate()->RequestRestartForUpdate();
     return true;
@@ -131,7 +131,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 
   // Overridden from ui::LayerAnimationObserver.
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     // TODO(oshima): Find out if the updator will be shown on non
     // primary display.
     if (Shell::GetPrimaryRootWindowController()->shelf()->IsVisible())
@@ -141,10 +141,10 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   }
 
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
+      ui::LayerAnimationSequence* sequence) override {}
 
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
+      ui::LayerAnimationSequence* sequence) override {}
 
   SystemTrayItem* owner_;
   base::OneShotTimer<UpdateNagger> timer_;

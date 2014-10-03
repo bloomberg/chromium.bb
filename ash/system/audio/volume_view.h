@@ -50,20 +50,20 @@ class VolumeView : public ActionableView,
   void HandleVolumeDown(float percent);
 
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::SliderListener.
   virtual void SliderValueChanged(views::Slider* sender,
                                   float value,
                                   float old_value,
-                                  views::SliderChangeReason reason) OVERRIDE;
+                                  views::SliderChangeReason reason) override;
 
   // Overriden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) override;
 
   SystemTrayItem* owner_;
   system::TrayAudioDelegate* audio_delegate_;

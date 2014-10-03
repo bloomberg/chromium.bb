@@ -36,19 +36,19 @@ class LoginTestWidgetDelegate : public views::WidgetDelegate {
   virtual ~LoginTestWidgetDelegate() {}
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE {
+  virtual void DeleteDelegate() override {
     delete this;
   }
-  virtual views::Widget* GetWidget() OVERRIDE {
+  virtual views::Widget* GetWidget() override {
     return widget_;
   }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
+  virtual const views::Widget* GetWidget() const override {
     return widget_;
   }
-  virtual bool CanActivate() const OVERRIDE {
+  virtual bool CanActivate() const override {
     return true;
   }
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
     return true;
   }
 
@@ -62,7 +62,7 @@ class LoginTestWidgetDelegate : public views::WidgetDelegate {
 
 class LockLayoutManagerTest : public AshTestBase {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Allow a virtual keyboard (and initialize it per default).
     CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
@@ -71,7 +71,7 @@ class LockLayoutManagerTest : public AshTestBase {
         keyboard::KeyboardController::GetInstance());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
         keyboard::KeyboardController::GetInstance());
     AshTestBase::TearDown();
