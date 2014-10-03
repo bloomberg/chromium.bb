@@ -807,10 +807,10 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             return element.isRequiredFormControl();
         case CSSSelector::PseudoValid:
             element.document().setContainsValidityStyleRules();
-            return element.willValidate() && element.isValidFormControlElement();
+            return element.willValidate() && element.isValidElement();
         case CSSSelector::PseudoInvalid:
             element.document().setContainsValidityStyleRules();
-            return element.willValidate() && !element.isValidFormControlElement();
+            return element.willValidate() && !element.isValidElement();
         case CSSSelector::PseudoChecked:
             {
                 if (isHTMLInputElement(element)) {

@@ -109,6 +109,16 @@ void HTMLFormElement::trace(Visitor* visitor)
     HTMLElement::trace(visitor);
 }
 
+bool HTMLFormElement::willValidate() const
+{
+    return true;
+}
+
+bool HTMLFormElement::isValidElement()
+{
+    return checkValidity();
+}
+
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!m_wasDemoted)
@@ -714,6 +724,14 @@ HTMLFormControlElement* HTMLFormElement::defaultButton() const
     }
 
     return 0;
+}
+
+void HTMLFormElement::setNeedsValidityCheck()
+{
+    // For now unconditionally order style recalculation, which triggers
+    // validity recalculation. In the near future, implement validity cache and
+    // recalculate style only if it changed.
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
 }
 
 bool HTMLFormElement::checkValidity()

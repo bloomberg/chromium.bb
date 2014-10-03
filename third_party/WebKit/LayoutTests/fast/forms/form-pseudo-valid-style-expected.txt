@@ -1,0 +1,32 @@
+Check if :valid/:invalid CSS pseudo selectors are lively applied for forms
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Removing and adding required text inputs and modifying ther value by a DOM tree mutation:
+PASS backgroundOf(form1) is invalidColor
+PASS backgroundOf(sub1) is subInvalidColor
+PASS form1.removeChild(input1); backgroundOf(form1) is validColor
+PASS backgroundOf(sub1) is subValidColor
+PASS form1.appendChild(input1); backgroundOf(form1) is invalidColor
+PASS backgroundOf(sub1) is subInvalidColor
+PASS input1.setAttribute("value", "a"); backgroundOf(form1) is validColor
+PASS backgroundOf(sub1) is subValidColor
+PASS input2.setAttribute("value", ""); backgroundOf(form1) is invalidColor
+PASS backgroundOf(sub1) is subInvalidColor
+
+Adding a required text input that is not a direct child of the form:
+PASS backgroundOf(form1) is validColor
+PASS div1.appendChild(input1); backgroundOf(form1) is invalidColor
+
+Render multiple forms and move an invalid input from one to another:
+PASS backgroundOf($("form1")) is invalidColor
+PASS backgroundOf($("form2")) is validColor
+PASS backgroundOf($("form3")) is validColor
+PASS backgroundOf($("form1")) is validColor
+PASS backgroundOf($("form3")) is invalidColor
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
