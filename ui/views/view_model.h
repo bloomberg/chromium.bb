@@ -15,20 +15,16 @@
 namespace views {
 
 class View;
+class ViewModelUtils;
 
-// ViewModel is used to track an 'interesting' set of a views. Often times
-// during animations views are removed after a delay, which makes for tricky
-// coordinate conversion as you have to account for the possibility of the
-// indices from the model not lining up with those you expect. This class lets
-// you define the 'interesting' views and operate on those views.
-class VIEWS_EXPORT ViewModel {
+// Internal implementation of the templated ViewModelT class. Provides
+// non-templated "unsafe" methods for ViewModelT to wrap around. Any methods
+// that allow insertion of or access to a View* should be protected, and have a
+// public method in the ViewModelT subclass that provides type-safe access to
+// the correct View subclass.
+class VIEWS_EXPORT ViewModelBase {
  public:
-  ViewModel();
-  ~ViewModel();
-
-  // Adds |view| to this model. This does not add |view| to a view hierarchy,
-  // only to this model.
-  void Add(View* view, int index);
+  ~ViewModelBase();
 
   // Removes the view at the specified index. This does not actually remove the
   // view from the view hierarchy.
@@ -50,12 +46,6 @@ class VIEWS_EXPORT ViewModel {
   // Removes and deletes all the views.
   void Clear();
 
-  // Returns the view at the specified index.
-  View* view_at(int index) const {
-    check_index(index);
-    return entries_[index].view;
-  }
-
   void set_ideal_bounds(int index, const gfx::Rect& bounds) {
     check_index(index);
     entries_[index].ideal_bounds = bounds;
@@ -70,7 +60,25 @@ class VIEWS_EXPORT ViewModel {
   // model.
   int GetIndexOfView(const View* view) const;
 
+ protected:
+  ViewModelBase();
+
+  // Returns the view at the specified index. Note: Most users should use
+  // view_at() in the subclass, to get a view of the correct type. (Do not call
+  // ViewAtBase then static_cast to the desired type.)
+  View* ViewAtBase(int index) const {
+    check_index(index);
+    return entries_[index].view;
+  }
+
+  // Adds |view| to this model. This does not add |view| to a view hierarchy,
+  // only to this model.
+  void AddUnsafe(View* view, int index);
+
  private:
+  // For access to ViewAtBase().
+  friend class ViewModelUtils;
+
   struct Entry {
     Entry() : view(NULL) {}
 
@@ -90,8 +98,34 @@ class VIEWS_EXPORT ViewModel {
 
   Entries entries_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewModel);
+  DISALLOW_COPY_AND_ASSIGN(ViewModelBase);
 };
+
+// ViewModelT is used to track an 'interesting' set of a views. Often times
+// during animations views are removed after a delay, which makes for tricky
+// coordinate conversion as you have to account for the possibility of the
+// indices from the model not lining up with those you expect. This class lets
+// you define the 'interesting' views and operate on those views.
+template <class T>
+class ViewModelT : public ViewModelBase {
+ public:
+  ViewModelT<T>() {}
+
+  // Adds |view| to this model. This does not add |view| to a view hierarchy,
+  // only to this model.
+  void Add(T* view, int index) { AddUnsafe(view, index); }
+
+  // Returns the view at the specified index.
+  T* view_at(int index) const { return static_cast<T*>(ViewAtBase(index)); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewModelT<T>);
+};
+
+// ViewModel is a collection of views with no specfic type. If all views have
+// the same type, the use of ViewModelT is preferred so that the views can be
+// retrieved without potentially unsafe downcasts.
+typedef ViewModelT<View> ViewModel;
 
 }  // namespace views
 

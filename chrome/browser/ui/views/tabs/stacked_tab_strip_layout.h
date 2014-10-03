@@ -11,9 +11,7 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view_model.h"
 
-namespace views {
-class ViewModel;
-}
+class Tab;
 
 // StackedTabStripLayout is used by TabStrip in touch
 // mode. StackedTabStripLayout is responsible for managing the bounds of the
@@ -36,7 +34,7 @@ class StackedTabStripLayout {
                         int padding,
                         int stacked_padding,
                         int max_stacked_count,
-                        views::ViewModel* view_model);
+                        views::ViewModelBase* view_model);
   ~StackedTabStripLayout();
 
   // Sets the x-coordinate the normal tabs start at as well as the mini-tab
@@ -217,7 +215,9 @@ class StackedTabStripLayout {
   const int max_stacked_count_;
 
   // Where bounds are placed. This is owned by TabStrip.
-  views::ViewModel* view_model_;
+  // (Note: This is a ViewModelBase, not a ViewModelT<Tab>, because the tests do
+  // not populate the model with Tab views.)
+  views::ViewModelBase* view_model_;
 
   // x-coordinate normal tabs start at.
   int x_;

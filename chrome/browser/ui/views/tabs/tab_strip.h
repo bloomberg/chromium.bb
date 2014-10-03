@@ -149,9 +149,7 @@ class TabStrip : public views::View,
   }
 
   // Returns the Tab at |index|.
-  Tab* tab_at(int index) const {
-    return static_cast<Tab*>(tabs_.view_at(index));
-  }
+  Tab* tab_at(int index) const { return tabs_.view_at(index); }
 
   // Returns the index of the specified tab in the model coordinate system, or
   // -1 if tab is closing or not valid.
@@ -596,7 +594,7 @@ class TabStrip : public views::View,
   // |tabs_closing_map_|. When the animation completes the tab is removed from
   // |tabs_closing_map_|. The painting code ensures both sets of tabs are
   // painted, and the event handling code ensures only tabs in |tabs_| are used.
-  views::ViewModel tabs_;
+  views::ViewModelT<Tab> tabs_;
   TabsClosingMap tabs_closing_map_;
 
   scoped_ptr<TabStripController> controller_;

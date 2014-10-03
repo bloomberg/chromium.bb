@@ -196,7 +196,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnFolderItemRemoved();
 
   // Return the view model for test purposes.
-  const views::ViewModel* view_model_for_test() const { return &view_model_; }
+  const views::ViewModelT<AppListItemView>* view_model_for_test() const {
+    return &view_model_;
+  }
 
   // For test: Return if the drag and drop handler was set.
   bool has_drag_and_drop_host_for_test() { return NULL != drag_and_drop_host_; }
@@ -258,10 +260,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Updates the number of pulsing block views based on AppListModel status and
   // number of apps.
   void UpdatePulsingBlockViews();
-
-  // Returns the pulsing block view of the item at |index| in the pulsing block
-  // model.
-  PulsingBlockView* GetPulsingBlockViewAt(int index) const;
 
   AppListItemView* CreateViewForItemAtIndex(size_t index);
 
@@ -482,11 +480,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int cols_;
   int rows_per_page_;
 
-  // List of AppListItemViews. There is a view per item in |model_|.
-  views::ViewModel view_model_;
+  // List of app item views. There is a view per item in |model_|.
+  views::ViewModelT<AppListItemView> view_model_;
 
-  // List of PulsingBlockViews.
-  views::ViewModel pulsing_blocks_model_;
+  // List of pulsing block views.
+  views::ViewModelT<PulsingBlockView> pulsing_blocks_model_;
 
   AppListItemView* selected_view_;
 

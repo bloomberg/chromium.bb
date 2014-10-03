@@ -98,7 +98,8 @@ class AppListMainViewTest : public views::ViewsTestBase {
   // |point| is in |grid_view|'s coordinates.
   AppListItemView* GetItemViewAtPointInGrid(AppsGridView* grid_view,
                                             const gfx::Point& point) {
-    const views::ViewModel* view_model = grid_view->view_model_for_test();
+    const views::ViewModelT<AppListItemView>* view_model =
+        grid_view->view_model_for_test();
     for (int i = 0; i < view_model->view_size(); ++i) {
       views::View* view = view_model->view_at(i);
       if (view->bounds().Contains(point)) {
@@ -161,11 +162,11 @@ class AppListMainViewTest : public views::ViewsTestBase {
 
   AppsGridView* FolderGridView() { return FolderView()->items_grid_view(); }
 
-  const views::ViewModel* RootViewModel() {
+  const views::ViewModelT<AppListItemView>* RootViewModel() {
     return RootGridView()->view_model_for_test();
   }
 
-  const views::ViewModel* FolderViewModel() {
+  const views::ViewModelT<AppListItemView>* FolderViewModel() {
     return FolderGridView()->view_model_for_test();
   }
 
@@ -270,8 +271,9 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
 
   // Folder icon view should be gone and there is only one item view.
   EXPECT_EQ(1, RootViewModel()->view_size());
-  EXPECT_EQ(AppListItemView::kViewClassName,
-            RootViewModel()->view_at(0)->GetClassName());
+  EXPECT_EQ(
+      AppListItemView::kViewClassName,
+      static_cast<views::View*>(RootViewModel()->view_at(0))->GetClassName());
 
   // The item view should be in slot 1 instead of slot 2 where it is dropped.
   AppsGridViewTestApi root_grid_view_test_api(RootGridView());

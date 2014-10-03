@@ -762,7 +762,7 @@ void AppsGridView::StopPageFlipTimer() {
 }
 
 AppListItemView* AppsGridView::GetItemViewAt(int index) const {
-  return static_cast<AppListItemView*>(view_model_.view_at(index));
+  return view_model_.view_at(index);
 }
 
 void AppsGridView::SetTopItemViewsVisible(bool visible) {
@@ -1057,7 +1057,7 @@ void AppsGridView::UpdatePulsingBlockViews() {
     return;
 
   while (pulsing_blocks_model_.view_size() > desired) {
-    PulsingBlockView* view = GetPulsingBlockViewAt(0);
+    PulsingBlockView* view = pulsing_blocks_model_.view_at(0);
     pulsing_blocks_model_.Remove(0);
     delete view;
   }
@@ -1067,10 +1067,6 @@ void AppsGridView::UpdatePulsingBlockViews() {
     pulsing_blocks_model_.Add(view, 0);
     AddChildView(view);
   }
-}
-
-PulsingBlockView* AppsGridView::GetPulsingBlockViewAt(int index) const {
-  return static_cast<PulsingBlockView*>(pulsing_blocks_model_.view_at(index));
 }
 
 AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {

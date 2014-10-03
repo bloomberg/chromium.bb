@@ -18,6 +18,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/view_model.h"
 
 namespace ui {
 class MenuModel;
@@ -26,7 +27,6 @@ class MenuModel;
 namespace views {
 class BoundsAnimator;
 class MenuRunner;
-class ViewModel;
 }
 
 namespace ash {

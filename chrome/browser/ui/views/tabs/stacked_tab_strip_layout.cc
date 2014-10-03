@@ -13,7 +13,7 @@ StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
                                              int padding,
                                              int stacked_padding,
                                              int max_stacked_count,
-                                             views::ViewModel* view_model)
+                                             views::ViewModelBase* view_model)
     : size_(size),
       padding_(padding),
       stacked_padding_(stacked_padding),

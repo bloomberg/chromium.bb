@@ -11,7 +11,7 @@
 namespace views {
 
 class View;
-class ViewModel;
+class ViewModelBase;
 
 class VIEWS_EXPORT ViewModelUtils {
  public:
@@ -21,13 +21,13 @@ class VIEWS_EXPORT ViewModelUtils {
   };
 
   // Sets the bounds of each view to its ideal bounds.
-  static void SetViewBoundsToIdealBounds(const ViewModel& model);
+  static void SetViewBoundsToIdealBounds(const ViewModelBase& model);
 
   // Returns true if the Views in |model| are at their ideal bounds.
-  static bool IsAtIdealBounds(const ViewModel& model);
+  static bool IsAtIdealBounds(const ViewModelBase& model);
 
   // Returns the index to move |view| to based on a coordinate of |x| and |y|.
-  static int DetermineMoveIndex(const ViewModel& model,
+  static int DetermineMoveIndex(const ViewModelBase& model,
                                 View* view,
                                 Alignment alignment,
                                 int x,

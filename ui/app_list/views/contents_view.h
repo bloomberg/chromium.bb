@@ -14,13 +14,10 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/view.h"
+#include "ui/views/view_model.h"
 
 namespace gfx {
 class Rect;
-}
-
-namespace views {
-class ViewModel;
 }
 
 namespace app_list {

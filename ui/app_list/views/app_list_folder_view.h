@@ -15,10 +15,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-
-namespace views {
-class ViewModel;
-}
+#include "ui/views/view_model.h"
 
 namespace app_list {
 

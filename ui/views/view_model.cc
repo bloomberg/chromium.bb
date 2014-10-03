@@ -9,22 +9,11 @@
 
 namespace views {
 
-ViewModel::ViewModel() {
-}
-
-ViewModel::~ViewModel() {
+ViewModelBase::~ViewModelBase() {
   // view are owned by their parent, no need to delete them.
 }
 
-void ViewModel::Add(View* view, int index) {
-  DCHECK_LE(index, static_cast<int>(entries_.size()));
-  DCHECK_GE(index, 0);
-  Entry entry;
-  entry.view = view;
-  entries_.insert(entries_.begin() + index, entry);
-}
-
-void ViewModel::Remove(int index) {
+void ViewModelBase::Remove(int index) {
   if (index == -1)
     return;
 
@@ -32,7 +21,7 @@ void ViewModel::Remove(int index) {
   entries_.erase(entries_.begin() + index);
 }
 
-void ViewModel::Move(int index, int target_index) {
+void ViewModelBase::Move(int index, int target_index) {
   DCHECK_LT(index, static_cast<int>(entries_.size()));
   DCHECK_GE(index, 0);
   DCHECK_LT(target_index, static_cast<int>(entries_.size()));
@@ -45,7 +34,7 @@ void ViewModel::Move(int index, int target_index) {
   entries_.insert(entries_.begin() + target_index, entry);
 }
 
-void ViewModel::MoveViewOnly(int index, int target_index) {
+void ViewModelBase::MoveViewOnly(int index, int target_index) {
   if (index == target_index)
     return;
   if (target_index < index) {
@@ -61,19 +50,30 @@ void ViewModel::MoveViewOnly(int index, int target_index) {
   }
 }
 
-void ViewModel::Clear() {
+void ViewModelBase::Clear() {
   Entries entries;
   entries.swap(entries_);
   for (size_t i = 0; i < entries.size(); ++i)
     delete entries[i].view;
 }
 
-int ViewModel::GetIndexOfView(const View* view) const {
+int ViewModelBase::GetIndexOfView(const View* view) const {
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i].view == view)
       return static_cast<int>(i);
   }
   return -1;
+}
+
+ViewModelBase::ViewModelBase() {
+}
+
+void ViewModelBase::AddUnsafe(View* view, int index) {
+  DCHECK_LE(index, static_cast<int>(entries_.size()));
+  DCHECK_GE(index, 0);
+  Entry entry;
+  entry.view = view;
+  entries_.insert(entries_.begin() + index, entry);
 }
 
 }  // namespace views

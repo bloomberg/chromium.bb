@@ -23,15 +23,15 @@ int primary_axis_coordinate(ViewModelUtils::Alignment alignment,
 }  // namespace
 
 // static
-void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModel& model) {
+void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModelBase& model) {
   for (int i = 0; i < model.view_size(); ++i)
-    model.view_at(i)->SetBoundsRect(model.ideal_bounds(i));
+    model.ViewAtBase(i)->SetBoundsRect(model.ideal_bounds(i));
 }
 
 // static
-bool ViewModelUtils::IsAtIdealBounds(const ViewModel& model) {
+bool ViewModelUtils::IsAtIdealBounds(const ViewModelBase& model) {
   for (int i = 0; i < model.view_size(); ++i) {
-    View* view = model.view_at(i);
+    View* view = model.ViewAtBase(i);
     if (view->bounds() != model.ideal_bounds(i))
       return false;
   }
@@ -39,7 +39,7 @@ bool ViewModelUtils::IsAtIdealBounds(const ViewModel& model) {
 }
 
 // static
-int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
+int ViewModelUtils::DetermineMoveIndex(const ViewModelBase& model,
                                        View* view,
                                        Alignment alignment,
                                        int x,
