@@ -541,6 +541,8 @@ class PDFiumEngine : public PDFEngine,
   int last_character_index_to_search_;  // -1 if search until end of page.
   // Which result the user has currently selected.
   int current_find_index_;
+  // Where to resume searching.
+  int resume_find_index_;
 
   // Permissions bitfield.
   unsigned long permissions_;

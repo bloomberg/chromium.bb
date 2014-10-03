@@ -567,6 +567,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       last_page_to_search_(-1),
       last_character_index_to_search_(-1),
       current_find_index_(-1),
+      resume_find_index_(-1),
       permissions_(0),
       fpdf_availability_(NULL),
       next_timer_id_(0),
@@ -1683,6 +1684,12 @@ void PDFiumEngine::StartFind(const char* text, bool case_sensitive) {
   if (end_of_search) {
     // Send the final notification.
     client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
+
+    // When searching is complete, resume finding at a particular index.
+    if (resume_find_index_ != -1) {
+      current_find_index_ = resume_find_index_;
+      resume_find_index_ = -1;
+    }
   } else {
     pp::CompletionCallback callback =
         find_factory_.NewCallback(&PDFiumEngine::ContinueFind);
@@ -1778,7 +1785,7 @@ void PDFiumEngine::AddFindResult(const PDFiumRange& result) {
   find_results_.insert(find_results_.begin() + i, result);
   UpdateTickMarks();
 
-  if (current_find_index_ == -1) {
+  if (current_find_index_ == -1 && resume_find_index_ == -1) {
     // Select the first match.
     SelectFindResult(true);
   } else if (static_cast<int>(i) <= current_find_index_) {
@@ -1886,21 +1893,36 @@ void PDFiumEngine::ZoomUpdated(double new_zoom_level) {
 
 void PDFiumEngine::RotateClockwise() {
   current_rotation_ = (current_rotation_ + 1) % 4;
+
+  // Store the current find index so that we can resume finding at that
+  // particular index after we have recomputed the find results.
+  std::string current_find_text = current_find_text_;
+  resume_find_index_ = current_find_index_;
+
   InvalidateAllPages();
+
+  if (!current_find_text.empty())
+    StartFind(current_find_text.c_str(), false);
 }
 
 void PDFiumEngine::RotateCounterclockwise() {
   current_rotation_ = (current_rotation_ - 1) % 4;
+
+  // Store the current find index so that we can resume finding at that
+  // particular index after we have recomputed the find results.
+  std::string current_find_text = current_find_text_;
+  resume_find_index_ = current_find_index_;
+
   InvalidateAllPages();
+
+  if (!current_find_text.empty())
+    StartFind(current_find_text.c_str(), false);
 }
 
 void PDFiumEngine::InvalidateAllPages() {
-  selection_.clear();
-  find_results_.clear();
-
   CancelPaints();
+  StopFind();
   LoadPageInfo(true);
-  UpdateTickMarks();
   client_->Invalidate(pp::Rect(plugin_size_));
 }
 
