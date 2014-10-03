@@ -95,11 +95,16 @@ void FetchManifestDoneCallback(
 
 void FetchManifest(blink::WebView* view, const GURL& url,
                    const FetchManifestCallback& callback) {
-  scoped_ptr<ManifestFetcher> fetcher(new ManifestFetcher(url));
+  ManifestFetcher* fetcher = new ManifestFetcher(url);
+  scoped_ptr<ManifestFetcher> autodeleter(fetcher);
 
+  // Start is called on fetcher which is also bound to the callback.
+  // A raw pointer is used instead of a scoped_ptr as base::Passes passes
+  // ownership and thus nulls the scoped_ptr. On MSVS this happens before
+  // the call to Start, resulting in a crash.
   fetcher->Start(view->mainFrame(),
     base::Bind(&FetchManifestDoneCallback,
-               base::Passed(&fetcher),
+               base::Passed(&autodeleter),
                callback));
 }
 
