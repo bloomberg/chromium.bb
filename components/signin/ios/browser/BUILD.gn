@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "oauth2_token_service_observer_bridge.h",
+    "oauth2_token_service_observer_bridge.mm",
     "profile_oauth2_token_service_ios.h",
     "profile_oauth2_token_service_ios.mm",
   ]

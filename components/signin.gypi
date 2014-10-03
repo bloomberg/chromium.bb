@@ -133,6 +133,8 @@
           ],
           'sources': [
             # Note: file list duplicated in GN build.
+            'signin/ios/browser/oauth2_token_service_observer_bridge.h',
+            'signin/ios/browser/oauth2_token_service_observer_bridge.mm',
             'signin/ios/browser/profile_oauth2_token_service_ios.h',
             'signin/ios/browser/profile_oauth2_token_service_ios.mm',
           ],
