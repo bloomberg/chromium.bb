@@ -6,15 +6,17 @@
 
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/screen.h"
 
-using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
@@ -59,15 +61,31 @@ bool CaptureWebContentsFunction::RunAsync() {
       image_quality_ = *image_details->quality;
   }
 
-  RenderViewHost* render_view_host = contents->GetRenderViewHost();
-  RenderWidgetHostView* view = render_view_host->GetView();
-  if (!view) {
+  // TODO(miu): Account for fullscreen render widget?  http://crbug.com/419878
+  RenderWidgetHostView* const view = contents->GetRenderWidgetHostView();
+  RenderWidgetHost* const host = view ? view->GetRenderWidgetHost() : nullptr;
+  if (!view || !host) {
     OnCaptureFailure(FAILURE_REASON_VIEW_INVISIBLE);
     return false;
   }
-  render_view_host->CopyFromBackingStore(
-      gfx::Rect(),
-      view->GetViewBounds().size(),
+
+  // By default, the requested bitmap size is the view size in screen
+  // coordinates.  However, if there's more pixel detail available on the
+  // current system, increase the requested bitmap size to capture it all.
+  const gfx::Size view_size = view->GetViewBounds().size();
+  gfx::Size bitmap_size = view_size;
+  const gfx::NativeView native_view = view->GetNativeView();
+  gfx::Screen* const screen = gfx::Screen::GetScreenFor(native_view);
+  if (screen->IsDIPEnabled()) {
+    const float scale =
+        screen->GetDisplayNearestWindow(native_view).device_scale_factor();
+    if (scale > 1.0f)
+      bitmap_size = gfx::ToCeiledSize(gfx::ScaleSize(view_size, scale));
+  }
+
+  host->CopyFromBackingStore(
+      gfx::Rect(view_size),
+      bitmap_size,
       base::Bind(&CaptureWebContentsFunction::CopyFromBackingStoreComplete,
                  this),
       kN32_SkColorType);
