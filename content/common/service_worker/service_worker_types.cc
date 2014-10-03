@@ -8,6 +8,8 @@ namespace content {
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
     : mode(FETCH_REQUEST_MODE_NO_CORS),
+      request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
+      frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
       blob_size(0),
       credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
       is_reload(false) {
@@ -20,6 +22,8 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const GURL& referrer,
     bool is_reload)
     : mode(FETCH_REQUEST_MODE_NO_CORS),
+      request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
+      frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
       url(url),
       method(method),
       headers(headers),

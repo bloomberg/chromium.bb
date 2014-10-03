@@ -149,6 +149,8 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     ResourceType resource_type,
+    RequestContextType request_context_type,
+    RequestContextFrameType frame_type,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<ResourceRequestBody> body) {
   if (IsHostToRunningServiceWorker()) {
@@ -165,6 +167,8 @@ ServiceWorkerProviderHost::CreateRequestHandler(
                                                   request_mode,
                                                   credentials_mode,
                                                   resource_type,
+                                                  request_context_type,
+                                                  frame_type,
                                                   body));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();

@@ -1242,6 +1242,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
       request_data.fetch_request_mode,
       request_data.fetch_credentials_mode,
       request_data.resource_type,
+      request_data.fetch_request_context_type,
+      request_data.fetch_frame_type,
       request_data.request_body);
 
   // Have the appcache associate its extra info with the request.

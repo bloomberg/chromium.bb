@@ -90,6 +90,8 @@
       'public/common/referrer.h',
       'public/common/renderer_preferences.cc',
       'public/common/renderer_preferences.h',
+      'public/common/request_context_frame_type.h',
+      'public/common/request_context_type.h',
       'public/common/resource_devtools_info.cc',
       'public/common/resource_devtools_info.h',
       'public/common/resource_response.h',

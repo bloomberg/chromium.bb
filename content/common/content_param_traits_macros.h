@@ -9,6 +9,8 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 
 #include "content/common/content_export.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
@@ -21,6 +23,10 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
                           content::RESOURCE_TYPE_LAST_TYPE - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextType,
+                          content::REQUEST_CONTEXT_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextFrameType,
+                          content::REQUEST_CONTEXT_FRAME_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
                           blink::WebContentSecurityPolicyTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,

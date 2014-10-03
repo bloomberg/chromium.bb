@@ -11,6 +11,8 @@ RequestInfo::RequestInfo()
       load_flags(0),
       requestor_pid(0),
       request_type(RESOURCE_TYPE_MAIN_FRAME),
+      fetch_request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
+      fetch_frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
       priority(net::LOW),
       request_context(0),
       appcache_host_id(0),

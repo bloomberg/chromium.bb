@@ -12,6 +12,9 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/resource_request_body.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -83,16 +86,19 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
         kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_, NULL);
     request->set_method(method);
-    ServiceWorkerRequestHandler::InitializeHandler(request.get(),
-                                                   context_wrapper(),
-                                                   &blob_storage_context_,
-                                                   kMockRenderProcessId,
-                                                   kMockProviderId,
-                                                   skip_service_worker,
-                                                   FETCH_REQUEST_MODE_NO_CORS,
-                                                   FETCH_CREDENTIALS_MODE_OMIT,
-                                                   resource_type,
-                                                   NULL);
+    ServiceWorkerRequestHandler::InitializeHandler(
+        request.get(),
+        context_wrapper(),
+        &blob_storage_context_,
+        kMockRenderProcessId,
+        kMockProviderId,
+        skip_service_worker,
+        FETCH_REQUEST_MODE_NO_CORS,
+        FETCH_CREDENTIALS_MODE_OMIT,
+        resource_type,
+        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+        NULL);
     return ServiceWorkerRequestHandler::GetHandler(request.get()) != NULL;
   }
 

@@ -129,6 +129,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.skip_service_worker = request_info.skip_service_worker;
   request_.fetch_request_mode = request_info.fetch_request_mode;
   request_.fetch_credentials_mode = request_info.fetch_credentials_mode;
+  request_.fetch_request_context_type = request_info.fetch_request_context_type;
+  request_.fetch_frame_type = request_info.fetch_frame_type;
   request_.enable_load_timing = request_info.enable_load_timing;
 
   const RequestExtraData kEmptyData;

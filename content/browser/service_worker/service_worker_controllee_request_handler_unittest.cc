@@ -16,6 +16,9 @@
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/resource_request_body.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,6 +106,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
           FETCH_REQUEST_MODE_NO_CORS,
           FETCH_CREDENTIALS_MODE_OMIT,
           RESOURCE_TYPE_MAIN_FRAME,
+          REQUEST_CONTEXT_TYPE_HYPERLINK,
+          REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);
@@ -155,6 +160,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
           FETCH_REQUEST_MODE_NO_CORS,
           FETCH_CREDENTIALS_MODE_OMIT,
           RESOURCE_TYPE_MAIN_FRAME,
+          REQUEST_CONTEXT_TYPE_HYPERLINK,
+          REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);

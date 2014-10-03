@@ -12,6 +12,8 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -53,6 +55,8 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
+      RequestContextType request_context_type,
+      RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
 
   // Returns the handler attached to |request|. This may return NULL

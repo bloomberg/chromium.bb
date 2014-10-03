@@ -13,6 +13,9 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -40,6 +43,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
+      RequestContextType request_context_type,
+      RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
 
   // Sets the response type.
@@ -163,6 +168,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   scoped_ptr<net::URLRequest> blob_request_;
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
+  RequestContextType request_context_type_;
+  RequestContextFrameType frame_type_;
   bool fall_back_required_;
   // ResourceRequestBody has a collection of BlobDataHandles attached to it
   // using the userdata mechanism. So we have to keep it not to free the blobs.

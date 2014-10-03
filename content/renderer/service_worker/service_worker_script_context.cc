@@ -45,6 +45,17 @@ blink::WebURLRequest::FetchCredentialsMode GetBlinkFetchCredentialsMode(
       credentials_mode);
 }
 
+blink::WebURLRequest::RequestContext GetBlinkRequestContext(
+    RequestContextType request_context_type) {
+  return static_cast<blink::WebURLRequest::RequestContext>(
+      request_context_type);
+}
+
+blink::WebURLRequest::FrameType GetBlinkFrameType(
+    RequestContextFrameType frame_type) {
+  return static_cast<blink::WebURLRequest::FrameType>(frame_type);
+}
+
 }  // namespace
 
 ServiceWorkerScriptContext::ServiceWorkerScriptContext(
@@ -191,6 +202,9 @@ void ServiceWorkerScriptContext::OnFetchEvent(
   webRequest.setMode(GetBlinkFetchRequestMode(request.mode));
   webRequest.setCredentialsMode(
       GetBlinkFetchCredentialsMode(request.credentials_mode));
+  webRequest.setRequestContext(
+      GetBlinkRequestContext(request.request_context_type));
+  webRequest.setFrameType(GetBlinkFrameType(request.frame_type));
   webRequest.setIsReload(request.is_reload);
   fetch_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchFetchEvent(request_id, webRequest);

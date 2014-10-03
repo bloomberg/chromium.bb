@@ -20,6 +20,9 @@
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/blob_handle.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
@@ -64,6 +67,8 @@ class MockHttpProtocolHandler
                                        blob_storage_context_,
                                        FETCH_REQUEST_MODE_NO_CORS,
                                        FETCH_CREDENTIALS_MODE_OMIT,
+                                       REQUEST_CONTEXT_TYPE_HYPERLINK,
+                                       REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
                                        scoped_refptr<ResourceRequestBody>());
     job->ForwardToServiceWorker();
     return job;

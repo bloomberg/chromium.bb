@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "content/common/content_export.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 #include "url/gurl.h"
@@ -79,6 +81,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ~ServiceWorkerFetchRequest();
 
   FetchRequestMode mode;
+  RequestContextType request_context_type;
+  RequestContextFrameType frame_type;
   GURL url;
   std::string method;
   ServiceWorkerHeaderMap headers;

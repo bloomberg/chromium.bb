@@ -11,6 +11,8 @@
 
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -56,6 +58,8 @@ struct CONTENT_EXPORT RequestInfo {
   // Indicates if the current request is the main frame load, a sub-frame
   // load, or a sub objects load.
   ResourceType request_type;
+  RequestContextType fetch_request_context_type;
+  RequestContextFrameType fetch_frame_type;
 
   // Indicates the priority of this request, as determined by WebKit.
   net::RequestPriority priority;

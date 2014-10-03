@@ -205,6 +205,12 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // The credentials mode passed to the ServiceWorker.
   IPC_STRUCT_MEMBER(content::FetchCredentialsMode, fetch_credentials_mode)
 
+  // The request context passed to the ServiceWorker.
+  IPC_STRUCT_MEMBER(content::RequestContextType, fetch_request_context_type)
+
+  // The frame type passed to the ServiceWorker.
+  IPC_STRUCT_MEMBER(content::RequestContextFrameType, fetch_frame_type)
+
   // Optional resource request body (may be null).
   IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,
                     request_body)

@@ -13,6 +13,8 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 
 namespace IPC {
@@ -97,6 +99,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
+      RequestContextType request_context_type,
+      RequestContextFrameType frame_type,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<ResourceRequestBody> body);
 

@@ -230,6 +230,93 @@ FetchCredentialsMode GetFetchCredentialsMode(const WebURLRequest& request) {
   return static_cast<FetchCredentialsMode>(request.fetchCredentialsMode());
 }
 
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
+                              WebURLRequest::FrameTypeAuxiliary);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NESTED,
+                              WebURLRequest::FrameTypeNested);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NONE,
+                              WebURLRequest::FrameTypeNone);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+                              WebURLRequest::FrameTypeTopLevel);
+
+RequestContextFrameType GetRequestContextFrameType(
+    const WebURLRequest& request) {
+  return static_cast<RequestContextFrameType>(request.frameType());
+}
+
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+                              WebURLRequest::RequestContextUnspecified);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_AUDIO,
+                              WebURLRequest::RequestContextAudio);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_BEACON,
+                              WebURLRequest::RequestContextBeacon);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_CSP_REPORT,
+                              WebURLRequest::RequestContextCSPReport);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_DOWNLOAD,
+                              WebURLRequest::RequestContextDownload);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_EMBED,
+                              WebURLRequest::RequestContextEmbed);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_EVENT_SOURCE,
+                              WebURLRequest::RequestContextEventSource);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FAVICON,
+                              WebURLRequest::RequestContextFavicon);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FETCH,
+                              WebURLRequest::RequestContextFetch);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FONT,
+                              WebURLRequest::RequestContextFont);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FORM,
+                              WebURLRequest::RequestContextForm);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FRAME,
+                              WebURLRequest::RequestContextFrame);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_HYPERLINK,
+                              WebURLRequest::RequestContextHyperlink);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IFRAME,
+                              WebURLRequest::RequestContextIframe);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMAGE,
+                              WebURLRequest::RequestContextImage);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMAGE_SET,
+                              WebURLRequest::RequestContextImageSet);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMPORT,
+                              WebURLRequest::RequestContextImport);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_INTERNAL,
+                              WebURLRequest::RequestContextInternal);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_LOCATION,
+                              WebURLRequest::RequestContextLocation);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_MANIFEST,
+                              WebURLRequest::RequestContextManifest);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_OBJECT,
+                              WebURLRequest::RequestContextObject);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PING,
+                              WebURLRequest::RequestContextPing);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PLUGIN,
+                              WebURLRequest::RequestContextPlugin);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PREFETCH,
+                              WebURLRequest::RequestContextPrefetch);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SCRIPT,
+                              WebURLRequest::RequestContextScript);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+                              WebURLRequest::RequestContextServiceWorker);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SHARED_WORKER,
+                              WebURLRequest::RequestContextSharedWorker);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SUBRESOURCE,
+                              WebURLRequest::RequestContextSubresource);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_STYLE,
+                              WebURLRequest::RequestContextStyle);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_TRACK,
+                              WebURLRequest::RequestContextTrack);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_VIDEO,
+                              WebURLRequest::RequestContextVideo);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_WORKER,
+                              WebURLRequest::RequestContextWorker);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_XML_HTTP_REQUEST,
+                              WebURLRequest::RequestContextXMLHttpRequest);
+COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_XSLT,
+                              WebURLRequest::RequestContextXSLT);
+
+RequestContextType GetRequestContextType(const WebURLRequest& request) {
+  return static_cast<RequestContextType>(request.requestContext());
+}
+
 }  // namespace
 
 // WebURLLoaderImpl::Context --------------------------------------------------
@@ -433,6 +520,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.skip_service_worker = request.skipServiceWorker();
   request_info.fetch_request_mode = GetFetchRequestMode(request);
   request_info.fetch_credentials_mode = GetFetchCredentialsMode(request);
+  request_info.fetch_request_context_type = GetRequestContextType(request);
+  request_info.fetch_frame_type = GetRequestContextFrameType(request);
   request_info.extra_data = request.extraData();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer_policy = request.referrerPolicy();

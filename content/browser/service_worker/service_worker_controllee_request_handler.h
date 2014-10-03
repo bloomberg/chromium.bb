@@ -8,6 +8,9 @@
 #include "base/gtest_prod_util.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 
 namespace net {
 class NetworkDelegate;
@@ -33,6 +36,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
+      RequestContextType request_context_type,
+      RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
   virtual ~ServiceWorkerControlleeRequestHandler();
 
@@ -70,6 +75,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   scoped_refptr<ServiceWorkerURLRequestJob> job_;
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
+  RequestContextType request_context_type_;
+  RequestContextFrameType frame_type_;
   scoped_refptr<ResourceRequestBody> body_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
