@@ -83,6 +83,8 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"pavshookwow.dll",             // Panda Antivirus.
   L"pctavhook.dll",               // PC Tools Antivirus.
   L"pctgmhk.dll",                 // PC Tools Spyware Doctor.
+  L"picrmi32.dll",                // PicRec.
+  L"picrmi64.dll",                // PicRec.
   L"prntrack.dll",                // Pharos Systems.
   L"protector.dll",               // Unknown (suspected malware).
   L"radhslib.dll",                // Radiant Naomi Internet Filter.
