@@ -9,7 +9,7 @@
  * @enum {string}
  * @const
  */
-var ProgressCenterEvent = Object.freeze({
+var ProgressCenterEvent = {
   /**
    * Background page notifies item update to application windows.
    */
@@ -19,26 +19,28 @@ var ProgressCenterEvent = Object.freeze({
    * Background page notifies all the items are cleared.
    */
   RESET: 'reset'
-});
+};
+Object.freeze(ProgressCenterEvent);
 
 /**
  * State of progress items.
  * @enum {string}
  * @const
  */
-var ProgressItemState = Object.freeze({
+var ProgressItemState = {
   PROGRESSING: 'progressing',
   COMPLETED: 'completed',
   ERROR: 'error',
   CANCELED: 'canceled'
-});
+};
+Object.freeze(ProgressItemState);
 
 /**
  * Type of progress items.
  * @enum {string}
  * @const
  */
-var ProgressItemType = Object.freeze({
+var ProgressItemType = {
   // The item is file copy operation.
   COPY: 'copy',
   // The item is file move operation.
@@ -52,7 +54,8 @@ var ProgressItemType = Object.freeze({
   // The item is general file transfer operation.
   // This is used for the mixed operation of summarized item.
   TRANSFER: 'transfer'
-});
+};
+Object.freeze(ProgressItemType);
 
 /**
  * Item of the progress center.

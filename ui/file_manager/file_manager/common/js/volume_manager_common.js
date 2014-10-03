@@ -15,7 +15,7 @@ var VolumeManagerCommon = {};
  * @enum {string}
  * @const
  */
-VolumeManagerCommon.RootType = Object.freeze({
+VolumeManagerCommon.RootType = {
   // Root for a downloads directory.
   DOWNLOADS: 'downloads',
 
@@ -49,14 +49,15 @@ VolumeManagerCommon.RootType = Object.freeze({
 
   // Fake root for recent files on the drive.
   DRIVE_RECENT: 'drive_recent'
-});
+};
+Object.freeze(VolumeManagerCommon.RootType);
 
 /**
  * Error type of VolumeManager.
  * @enum {string}
  * @const
  */
-VolumeManagerCommon.VolumeError = Object.freeze({
+VolumeManagerCommon.VolumeError = {
   /* Internal errors */
   TIMEOUT: 'timeout',
 
@@ -79,7 +80,8 @@ VolumeManagerCommon.VolumeError = Object.freeze({
   INVALID_ARCHIVE: 'error_invalid_archive',
   AUTHENTICATION: 'error_authentication',
   PATH_UNMOUNTED: 'error_path_unmounted'
-});
+};
+Object.freeze(VolumeManagerCommon.VolumeError);
 
 /**
  * List of connection types of drive.
@@ -90,11 +92,12 @@ VolumeManagerCommon.VolumeError = Object.freeze({
  * @enum {string}
  * @const
  */
-VolumeManagerCommon.DriveConnectionType = Object.freeze({
+VolumeManagerCommon.DriveConnectionType = {
   OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
   METERED: 'metered',  // Connection is metered. Should limit traffic.
   ONLINE: 'online'     // Connection is online.
-});
+};
+Object.freeze(VolumeManagerCommon.DriveConnectionType);
 
 /**
  * List of reasons of DriveConnectionType.
@@ -105,18 +108,19 @@ VolumeManagerCommon.DriveConnectionType = Object.freeze({
  * @enum {string}
  * @const
  */
-VolumeManagerCommon.DriveConnectionReason = Object.freeze({
+VolumeManagerCommon.DriveConnectionReason = {
   NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
   NO_NETWORK: 'no_network',  // Network connection is unavailable.
   NO_SERVICE: 'no_service'   // Drive service is unavailable.
-});
+};
+Object.freeze(VolumeManagerCommon.DriveConnectionReason);
 
 /**
  * The type of each volume.
  * @enum {string}
  * @const
  */
-VolumeManagerCommon.VolumeType = Object.freeze({
+VolumeManagerCommon.VolumeType = {
   DRIVE: 'drive',
   DOWNLOADS: 'downloads',
   REMOVABLE: 'removable',
@@ -124,4 +128,5 @@ VolumeManagerCommon.VolumeType = Object.freeze({
   CLOUD_DEVICE: 'cloud_device',
   MTP: 'mtp',
   PROVIDED: 'provided'
-});
+};
+Object.freeze(VolumeManagerCommon.VolumeType);

@@ -34,14 +34,15 @@ ShareDialog.FAILURE_TIMEOUT = 10000;
  * @enum {string}
  * @const
  */
-ShareDialog.Result = Object.freeze({
+ShareDialog.Result = {
   // The dialog is closed normally. This includes user cancel.
   SUCCESS: 'success',
   // The dialog is closed by network error.
   NETWORK_ERROR: 'networkError',
   // The dialog is not opened because it is already showing.
   ALREADY_SHOWING: 'alreadyShowing'
-});
+};
+Object.freeze(ShareDialog.Result);
 
 /**
  * Wraps a Web View element and adds authorization headers to it.

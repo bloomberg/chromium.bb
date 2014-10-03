@@ -88,14 +88,15 @@ function ProgressCenterItemGroup(name, quiet) {
  * @enum {string}
  * @const
  */
-ProgressCenterItemGroup.State = Object.freeze({
+ProgressCenterItemGroup.State = {
   // Group has no items.
   EMPTY: 'empty',
   // Group has at least 1 progressing item.
   ACTIVE: 'active',
   // Group has no progressing items but still shows error items.
   INACTIVE: 'inactive'
-});
+};
+Object.freeze(ProgressCenterItemGroup.State);
 
 /**
  * Makes the summarized item for the groups.

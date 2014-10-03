@@ -279,12 +279,13 @@ DriveMetadataSearchContentScanner.prototype.__proto__ =
  * The search types on the Drive File System.
  * @enum {string}
  */
-DriveMetadataSearchContentScanner.SearchType = Object.freeze({
+DriveMetadataSearchContentScanner.SearchType = {
   SEARCH_ALL: 'ALL',
   SEARCH_SHARED_WITH_ME: 'SHARED_WITH_ME',
   SEARCH_RECENT_FILES: 'EXCLUDE_DIRECTORIES',
   SEARCH_OFFLINE: 'OFFLINE'
-});
+};
+Object.freeze(DriveMetadataSearchContentScanner.SearchType);
 
 /**
  * Starts to metadata-search on Drive File System.

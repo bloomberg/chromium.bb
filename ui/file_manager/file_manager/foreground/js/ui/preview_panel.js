@@ -102,10 +102,11 @@ var PreviewPanel = function(element,
  * @enum {string}
  * @const
  */
-PreviewPanel.Event = Object.freeze({
+PreviewPanel.Event = {
   // Event to be triggered at the end of visibility change.
   VISIBILITY_CHANGE: 'visibilityChange'
-});
+};
+Object.freeze(PreviewPanel.Event);
 
 /**
  * Visibility type of the preview panel.

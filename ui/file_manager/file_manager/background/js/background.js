@@ -8,11 +8,12 @@
  * Type of a Files.app's instance launch.
  * @enum {number}
  */
-var LaunchType = Object.freeze({
+var LaunchType = {
   ALWAYS_CREATE: 0,
   FOCUS_ANY_OR_CREATE: 1,
   FOCUS_SAME_OR_CREATE: 2
-});
+};
+Object.freeze(LaunchType);
 
 /**
  * Root class of the background page.

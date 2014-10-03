@@ -279,7 +279,7 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
  * @enum {string}
  * @const
  */
-DeviceHandler.MountStatus = Object.freeze({
+DeviceHandler.MountStatus = {
   // There is no mount results on the device.
   NO_RESULT: 'noResult',
   // There is no error on the device.
@@ -290,7 +290,8 @@ DeviceHandler.MountStatus = Object.freeze({
   CHILD_ERROR: 'childError',
   // There is multiple child results and at least one is failure.
   MULTIPART_ERROR: 'multipartError'
-});
+};
+Object.freeze(DeviceHandler.MountStatus);
 
 /**
  * Handles mount completed events to show notifications for removable devices.

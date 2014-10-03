@@ -83,7 +83,7 @@ util.getFileErrorString = function(name) {
  * @enum {string}
  * @const
  */
-util.FileError = Object.freeze({
+util.FileError = {
   ABORT_ERR: 'AbortError',
   INVALID_MODIFICATION_ERR: 'InvalidModificationError',
   INVALID_STATE_ERR: 'InvalidStateError',
@@ -94,7 +94,8 @@ util.FileError = Object.freeze({
   QUOTA_EXCEEDED_ERR: 'QuotaExceededError',
   TYPE_MISMATCH_ERR: 'TypeMismatchError',
   ENCODING_ERR: 'EncodingError',
-});
+};
+Object.freeze(util.FileError);
 
 /**
  * @param {string} str String to escape.
@@ -858,32 +859,35 @@ util.toggleFullScreen = function(appWindow, enabled) {
  * @enum {string}
  * @const
  */
-util.FileOperationType = Object.freeze({
+util.FileOperationType = {
   COPY: 'COPY',
   MOVE: 'MOVE',
   ZIP: 'ZIP',
-});
+};
+Object.freeze(util.FileOperationType);
 
 /**
  * The type of a file operation error.
  * @enum {number}
  * @const
  */
-util.FileOperationErrorType = Object.freeze({
+util.FileOperationErrorType = {
   UNEXPECTED_SOURCE_FILE: 0,
   TARGET_EXISTS: 1,
   FILESYSTEM_ERROR: 2,
-});
+};
+Object.freeze(util.FileOperationErrorType);
 
 /**
  * The kind of an entry changed event.
  * @enum {number}
  * @const
  */
-util.EntryChangedKind = Object.freeze({
+util.EntryChangedKind = {
   CREATED: 0,
   DELETED: 1,
-});
+};
+Object.freeze(util.EntryChangedKind);
 
 /**
  * Obtains whether an entry is fake or not.

@@ -76,11 +76,12 @@ function ConflictDialog(parentNode) {
  * @enum {string}
  * @const
  */
-ConflictDialog.Result = Object.freeze({
+ConflictDialog.Result = {
   KEEP_BOTH: 'keepBoth',
   CANCEL: 'cancel',
   REPLACE: 'replace'
-});
+};
+Object.freeze(ConflictDialog.Result);
 
 ConflictDialog.prototype = {
   __proto__: FileManagerDialogBase.prototype
