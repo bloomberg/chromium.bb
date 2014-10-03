@@ -236,6 +236,7 @@
     live_status,
     role,
     shortcut,
+    text_input_type,
     url,
     value
   };

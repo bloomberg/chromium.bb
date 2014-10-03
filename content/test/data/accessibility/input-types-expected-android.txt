@@ -1,4 +1,3 @@
-#<skip --chromium dependancy>
 android.webkit.WebView focusable focused scrollable
     android.view.View
         android.view.View
@@ -12,17 +11,6 @@ android.webkit.WebView focusable focused scrollable
             android.view.View clickable name='Color:'
             android.view.View focusable
         android.view.View
-            android.view.View clickable name='Date:'
-            android.view.View focusable input_type=20
-                android.view.View
-        android.view.View
-            android.view.View clickable name='Datetime:'
-            android.widget.EditText editable_text focusable input_type=4
-        android.view.View
-            android.view.View clickable name='Datetime-local:'
-            android.view.View focusable input_type=4
-                android.view.View
-        android.view.View
             android.view.View clickable name='Email:'
             android.widget.EditText editable_text focusable input_type=209
         android.view.View
@@ -31,10 +19,6 @@ android.webkit.WebView focusable focused scrollable
         android.view.View
             android.view.View clickable name='Image:'
             android.widget.Button focusable
-        android.view.View
-            android.view.View clickable name='Month:'
-            android.view.View focusable input_type=20
-                android.view.View
         android.view.View
             android.view.View clickable name='Number:'
             android.widget.EditText editable_text focusable input_type=2
@@ -61,14 +45,5 @@ android.webkit.WebView focusable focused scrollable
             android.view.View clickable name='Text:'
             android.widget.EditText editable_text focusable input_type=1
         android.view.View
-            android.view.View clickable name='Time:'
-            android.view.View focusable input_type=36
-                android.view.View
-        android.view.View
             android.view.View clickable name='Url:'
             android.widget.EditText editable_text focusable input_type=17
-        android.view.View
-            android.view.View clickable name='Week:'
-            android.view.View focusable input_type=4
-                android.view.View
-

@@ -276,6 +276,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_SHORTCUT:
         result += " shortcut=" + value;
         break;
+     case AX_ATTR_TEXT_INPUT_TYPE:
+        result += " text_input_type=" + value;
+        break;
       case AX_ATTR_URL:
         result += " url=" + value;
         break;

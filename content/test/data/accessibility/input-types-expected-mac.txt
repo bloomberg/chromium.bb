@@ -1,1 +1,49 @@
-#<skip - need to generate expectation>
+AXWebArea
+    AXGroup
+        AXGroup
+            AXStaticText AXValue='Default: '
+            AXTextField
+        AXGroup
+            AXStaticText AXValue='Button: '
+            AXButton
+        AXCheckBox AXTitle='Checkbox: ' AXValue='0'
+        AXGroup
+            AXStaticText AXValue='Color: '
+            AXColorWell AXValue='rgb 0.00000 0.00000 0.00000 1'
+        AXGroup
+            AXStaticText AXValue='Email: '
+            AXTextField
+        AXGroup
+            AXStaticText AXValue='File: '
+            AXButton AXTitle='Choose File'
+        AXGroup
+            AXStaticText AXValue='Image: '
+            AXButton
+        AXGroup
+            AXStaticText AXValue='Number: '
+            AXTextField
+        AXGroup
+            AXStaticText AXValue='Password: '
+            AXTextField
+        AXRadioButton AXTitle='Radio: ' AXValue='0'
+        AXGroup
+            AXStaticText AXValue='Range: '
+            AXSlider AXValue='50'
+        AXGroup
+            AXStaticText AXValue='Reset: '
+            AXButton AXTitle='Reset'
+        AXGroup
+            AXStaticText AXValue='Search: '
+            AXTextField
+        AXGroup
+            AXStaticText AXValue='Submit: '
+            AXButton AXTitle='Submit'
+        AXGroup
+            AXStaticText AXValue='Tel: '
+            AXTextField
+        AXGroup
+            AXStaticText AXValue='Text: '
+            AXTextField
+        AXGroup
+            AXStaticText AXValue='Url: '
+            AXTextField

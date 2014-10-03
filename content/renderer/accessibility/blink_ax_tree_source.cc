@@ -354,6 +354,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           line_breaks.push_back(src_line_breaks[i]);
         dst->AddIntListAttribute(ui::AX_ATTR_LINE_BREAKS, line_breaks);
       }
+
+      if (dst->role == ui::AX_ROLE_TEXT_FIELD &&
+          src.textInputType().length()) {
+        dst->AddStringAttribute(ui::AX_ATTR_TEXT_INPUT_TYPE,
+                                UTF16ToUTF8(src.textInputType()));
+      }
     }
 
     // ARIA role.
