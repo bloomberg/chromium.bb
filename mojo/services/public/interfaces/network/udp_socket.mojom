@@ -60,15 +60,15 @@ interface UDPSocket {
 
   // Sends data to the specified destination. The socket must be bound.
   // The method doesn't report the result of the operation.
-  SendToAndForget(NetAddress addr, uint8[] data);
+  SendToAndForget(NetAddress addr, array<uint8> data);
 
   // Sends data to the specified destination. The socket must be bound.
-  SendTo(NetAddress addr, uint8[] data) => (NetworkError result);
+  SendTo(NetAddress addr, array<uint8> data) => (NetworkError result);
 };
 
 interface UDPSocketClient {
   // |addr| and |data| are non-NULL on success.
-  OnReceived(NetworkError result, NetAddress? addr, uint8[]? data);
+  OnReceived(NetworkError result, NetAddress? addr, array<uint8>? data);
 };
 
 }

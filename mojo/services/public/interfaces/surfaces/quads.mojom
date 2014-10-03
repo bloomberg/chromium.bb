@@ -61,7 +61,7 @@ struct TextureQuadState {
   PointF uv_top_left;
   PointF uv_bottom_right;
   Color background_color;
-  float[4] vertex_opacity;
+  array<float, 4> vertex_opacity;
   bool flipped;
 };
 
@@ -203,8 +203,8 @@ struct Pass {
   Rect damage_rect;
   Transform transform_to_root_target;
   bool has_transparent_background;
-  Quad[] quads;
-  SharedQuadState[] shared_quad_states;
+  array<Quad> quads;
+  array<SharedQuadState> shared_quad_states;
 };
 
 }

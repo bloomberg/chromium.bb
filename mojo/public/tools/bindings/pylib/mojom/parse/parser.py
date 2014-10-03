@@ -263,17 +263,17 @@ class Parser(object):
       p[0] = "handle<" + p[3] + ">"
 
   def p_array(self, p):
-    """array : typename LBRACKET RBRACKET"""
-    p[0] = p[1] + "[]"
+    """array : ARRAY LANGLE typename RANGLE"""
+    p[0] = p[3] + "[]"
 
   def p_fixed_array(self, p):
-    """fixed_array : typename LBRACKET INT_CONST_DEC RBRACKET"""
-    value = int(p[3])
+    """fixed_array : ARRAY LANGLE typename COMMA INT_CONST_DEC RANGLE"""
+    value = int(p[5])
     if value == 0 or value > _MAX_ARRAY_SIZE:
       raise ParseError(self.filename, "Fixed array size %d invalid" % value,
-                       lineno=p.lineno(3),
-                       snippet=self._GetSnippet(p.lineno(3)))
-    p[0] = p[1] + "[" + p[3] + "]"
+                       lineno=p.lineno(5),
+                       snippet=self._GetSnippet(p.lineno(5)))
+    p[0] = p[3] + "[" + p[5] + "]"
 
   def p_interfacerequest(self, p):
     """interfacerequest : identifier AMP"""

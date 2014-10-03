@@ -82,7 +82,7 @@ struct DeviceControlSignals {
 };
 
 interface SerialService {
-  GetDevices() => (DeviceInfo[] devices);
+  GetDevices() => (array<DeviceInfo> devices);
 
   // Creates a |Connection| to |path| with options specified by |options|,
   // returning it via |connection|. Sending and receiving data over this

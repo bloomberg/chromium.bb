@@ -68,15 +68,15 @@ public class SerializationTest extends TestCase {
     @SmallTest
     public void testStructArray() {
         Struct4 struct = new Struct4();
-        assertNull(struct.array);
+        assertNull(struct.data);
         assertThrowsSerializationException(struct);
 
         // Create the (1-element) array but have the element null.
-        struct.array = new Struct1[1];
+        struct.data = new Struct1[1];
         assertThrowsSerializationException(struct);
 
         // Create the array element, struct should serialize now.
-        struct.array[0] = new Struct1();
+        struct.data[0] = new Struct1();
         struct.serialize(null);
     }
 

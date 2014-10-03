@@ -29,12 +29,12 @@ struct AutocompleteMatchMojo {
   bool starred;
   int32 duplicates;
   bool from_previous;
-  AutocompleteAdditionalInfo[] additional_info;
+  array<AutocompleteAdditionalInfo> additional_info;
 };
 
 struct AutocompleteResultsForProviderMojo {
   string provider_name;
-  AutocompleteMatchMojo[] results;
+  array<AutocompleteMatchMojo> results;
 };
 
 struct OmniboxResultMojo {
@@ -43,8 +43,8 @@ struct OmniboxResultMojo {
   int32 time_since_omnibox_started_ms;
   string host;
   bool is_typed_host;
-  AutocompleteMatchMojo[] combined_results;
-  AutocompleteResultsForProviderMojo[] results_by_provider;
+  array<AutocompleteMatchMojo> combined_results;
+  array<AutocompleteResultsForProviderMojo> results_by_provider;
 };
 
 [Client=OmniboxPage]

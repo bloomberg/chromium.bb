@@ -15,13 +15,13 @@ enum NetAddressFamily {
 // |addr|, 127 should be at index 0.
 struct NetAddressIPv4 {
   uint16 port;
-  uint8[4] addr;
+  array<uint8, 4> addr;
 };
 
 // All members are expressed in network byte order.
 struct NetAddressIPv6 {
   uint16 port;
-  uint8[16] addr;
+  array<uint8, 16> addr;
 };
 
 struct NetAddress {

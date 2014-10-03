@@ -99,25 +99,25 @@ TEST_F(SerializationWarningTest, StructInStruct) {
 
 TEST_F(SerializationWarningTest, ArrayOfStructsInStruct) {
   Struct4Ptr test_struct(Struct4::New());
-  EXPECT_TRUE(!test_struct->array);
+  EXPECT_TRUE(!test_struct->data);
 
   TestWarning(test_struct.Pass(),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct4::New();
-  test_struct->array.resize(1);
+  test_struct->data.resize(1);
 
   TestWarning(test_struct.Pass(),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct4::New();
-  test_struct->array.resize(0);
+  test_struct->data.resize(0);
 
   TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
 
   test_struct = Struct4::New();
-  test_struct->array.resize(1);
-  test_struct->array[0] = Struct1::New();
+  test_struct->data.resize(1);
+  test_struct->data[0] = Struct1::New();
 
   TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
 }

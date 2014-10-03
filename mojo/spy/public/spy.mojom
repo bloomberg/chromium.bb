@@ -30,7 +30,7 @@ enum ConnectionOptions {
 struct Message {
   uint32 id;
   uint32 time;
-  uint8[]? data;
+  array<uint8>? data;
 };
 
 [Client=SpyClient]

@@ -42,14 +42,14 @@ struct Foo {
   bool b@3;
   bool c@4;
   Bar? bar@5;
-  Bar[]? extra_bars@7;
-  uint8[]? data@6;
+  array<Bar>? extra_bars@7;
+  array<uint8>? data@6;
   handle<message_pipe>? source@9;
-  handle<data_pipe_consumer>[]? input_streams@10;
-  handle<data_pipe_producer>[]? output_streams@11;
-  bool[][]? array_of_array_of_bools@12;
-  string[][][]? multi_array_of_strings@13;
-  bool[]? array_of_bools@14;
+  array<handle<data_pipe_consumer>>? input_streams@10;
+  array<handle<data_pipe_producer>>? output_streams@11;
+  array<array<bool>>? array_of_array_of_bools@12;
+  array<array<array<string>>>? multi_array_of_strings@13;
+  array<bool>? array_of_bools@14;
 };
 
 struct DefaultsTest {
@@ -74,7 +74,7 @@ struct DefaultsTest {
 
   // TODO(vtl): Add tests for default vs null when those are implemented (for
   // structs, arrays, and strings).
-  uint8[] a18@18;
+  array<uint8> a18@18;
   string a19@19;
 
   Bar.Type a20@20 = BOTH;

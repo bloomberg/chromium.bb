@@ -104,7 +104,7 @@ interface ViewManagerService {
   // the first result in the return value, unless |view_id| is invalid, in which
   // case an empty vector is returned. The views are visited using a depth first
   // search (pre-order).
-  GetViewTree(uint32 view_id) => (ViewData[] views);
+  GetViewTree(uint32 view_id) => (array<ViewData> views);
 
   // Shows the surface in the specified view.
   SetViewSurfaceId(uint32 view_id, SurfaceId surface_id) => (bool success);
@@ -170,7 +170,7 @@ interface ViewManagerClient {
   OnViewHierarchyChanged(uint32 view,
                          uint32 new_parent,
                          uint32 old_parent,
-                         ViewData[] views);
+                         array<ViewData> views);
 
   // Invoked when the order of views within a parent changes.
   OnViewReordered(uint32 view_id,

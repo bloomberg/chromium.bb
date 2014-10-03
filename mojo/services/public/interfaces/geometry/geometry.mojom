@@ -35,7 +35,7 @@ struct RectF {
 
 struct Transform {
   // Row major order.
-  float[16]? matrix;
+  array<float, 16>? matrix;
 };
 
 }

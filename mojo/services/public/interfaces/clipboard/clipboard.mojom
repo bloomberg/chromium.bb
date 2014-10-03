@@ -8,7 +8,7 @@ module mojo {
 // proper maps in mojom.
 struct MimeTypePair {
   string mime_type;
-  uint8[] data;
+  array<uint8> data;
 };
 
 interface Clipboard {
@@ -33,7 +33,7 @@ interface Clipboard {
   // Returns the available mime types. (Note: the chrome interface has a
   // |contains_filenames| parameter here, but it appears to always be set
   // to false.)
-  GetAvailableMimeTypes(Type clipboard_types) => (string[] types);
+  GetAvailableMimeTypes(Type clipboard_types) => (array<string> types);
 
   // Returns the data associated with a Mime type, returning NULL if that data
   // doesn't exist. Note: because of the inherit raciness of clipboard access,
@@ -41,12 +41,12 @@ interface Clipboard {
   // GetAvailableFormatMimeTypes(). We don't want to provide one API to return
   // the entire clipboard state because the combined size of the clipboard can
   // be megabytes, especially when image data is involved.
-  ReadMimeType(Type clipboard_type, string mime_type) => (uint8[]? data);
+  ReadMimeType(Type clipboard_type, string mime_type) => (array<uint8>? data);
 
   // Writes a set of mime types to the clipboard. This will increment the
   // sequence number. In the case of an empty or NULL list, this will just
   // clear the clipboard.
-  WriteClipboardData(Type clipboard_type, MimeTypePair[]? data);
+  WriteClipboardData(Type clipboard_type, array<MimeTypePair>? data);
 };
 
 }  // module mojo

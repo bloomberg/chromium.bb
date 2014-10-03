@@ -614,9 +614,9 @@ class ParserTest(unittest.TestCase):
 
     source = """\
         struct MyStruct {
-          int32[] normal_array;
-          int32[1] fixed_size_array_one_entry;
-          int32[10] fixed_size_array_ten_entries;
+          array<int32> normal_array;
+          array<int32, 1> fixed_size_array_one_entry;
+          array<int32, 10> fixed_size_array_ten_entries;
         };
         """
     expected = ast.Mojom(
@@ -636,7 +636,7 @@ class ParserTest(unittest.TestCase):
   def testValidNestedArray(self):
     """Tests parsing a nested array."""
 
-    source = "struct MyStruct { int32[][] nested_array; };"
+    source = "struct MyStruct { array<array<int32>> nested_array; };"
     expected = ast.Mojom(
         None,
         ast.ImportList(),
@@ -652,35 +652,35 @@ class ParserTest(unittest.TestCase):
 
     source1 = """\
         struct MyStruct {
-          int32[0] zero_size_array;
+          array<int32, 0> zero_size_array;
         };
         """
     with self.assertRaisesRegexp(
         parser.ParseError,
         r"^my_file\.mojom:2: Error: Fixed array size 0 invalid\n"
-            r" *int32\[0\] zero_size_array;$"):
+            r" *array<int32, 0> zero_size_array;$"):
       parser.Parse(source1, "my_file.mojom")
 
     source2 = """\
         struct MyStruct {
-          int32[999999999999] too_big_array;
+          array<int32, 999999999999> too_big_array;
         };
         """
     with self.assertRaisesRegexp(
         parser.ParseError,
         r"^my_file\.mojom:2: Error: Fixed array size 999999999999 invalid\n"
-            r" *int32\[999999999999\] too_big_array;$"):
+            r" *array<int32, 999999999999> too_big_array;$"):
       parser.Parse(source2, "my_file.mojom")
 
     source3 = """\
         struct MyStruct {
-          int32[abcdefg] not_a_number;
+          array<int32, abcdefg> not_a_number;
         };
         """
     with self.assertRaisesRegexp(
         parser.ParseError,
         r"^my_file\.mojom:2: Error: Unexpected 'abcdefg':\n"
-        r" *int32\[abcdefg\] not_a_number;"):
+        r" *array<int32, abcdefg> not_a_number;"):
       parser.Parse(source3, "my_file.mojom")
 
   def testValidMethod(self):
@@ -980,11 +980,11 @@ class ParserTest(unittest.TestCase):
           int32? a;  // This is actually invalid, but handled at a different
                      // level.
           string? b;
-          int32[] ? c;
-          string ? [] ? d;
-          int32[]?[]? e;
-          int32[1]? f;
-          string?[1]? g;
+          array<int32> ? c;
+          array<string ? > ? d;
+          array<array<int32>?>? e;
+          array<int32, 1>? f;
+          array<string?, 1>? g;
           some_struct? h;
           handle? i;
           handle<data_pipe_consumer>? j;

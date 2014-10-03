@@ -9,7 +9,7 @@ module mojo.test {
 
 struct NamedRegion {
   string? name;
-  Rect[]? rects;
+  array<Rect>? rects;
 };
 
 struct RectPair {
@@ -49,10 +49,10 @@ struct NoDefaultFieldValues {
   handle? f20;
   handle<shared_buffer> f21;
   handle<shared_buffer>? f22;
-  string[] f23;
-  string?[] f24;
-  string[]? f25;
-  string?[]? f26;
+  array<string> f23;
+  array<string?> f24;
+  array<string>? f25;
+  array<string?>? f26;
   EmptyStruct f27;
   EmptyStruct? f28;
 };

@@ -18,11 +18,11 @@ struct Struct3 {
 };
 
 struct Struct4 {
-  Struct1[] array;
+  array<Struct1> data;
 };
 
 struct Struct5 {
-  Struct1[2] pair;
+  array<Struct1, 2> pair;
 };
 
 struct Struct6 {

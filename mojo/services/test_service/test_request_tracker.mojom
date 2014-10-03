@@ -22,7 +22,7 @@ struct ServiceReport {
 // A simple interface to obtain a "report" from all services that have
 // opted to connect themselves to for request tracking.
 interface TestTrackedRequestService {
-  GetReport() => (ServiceReport?[]? report);
+  GetReport() => (array<ServiceReport?>? report);
 };
 
 // TestRequestTracker records ServiceStats for an individual service

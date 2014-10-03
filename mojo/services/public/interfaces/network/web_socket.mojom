@@ -19,7 +19,7 @@ interface WebSocket {
   // to send over the WebSocket should be written to the producer end of the
   // |send_stream|.
   Connect(string url,
-          string[] protocols,
+          array<string> protocols,
           string origin,
           handle<data_pipe_consumer> send_stream,
           WebSocketClient client);

@@ -20,7 +20,7 @@ enum ResourceFormat {
 };
 
 struct Mailbox {
-  int8[64] name;
+  array<int8, 64> name;
 };
 
 struct MailboxHolder {
@@ -47,12 +47,12 @@ struct ReturnedResource {
 };
 
 struct Frame {
-  TransferableResource[] resources;
-  Pass[] passes;
+  array<TransferableResource> resources;
+  array<Pass> passes;
 };
 
 interface SurfaceClient {
-  ReturnResources(ReturnedResource[] resources);
+  ReturnResources(array<ReturnedResource> resources);
 };
 
 [Client=SurfaceClient]

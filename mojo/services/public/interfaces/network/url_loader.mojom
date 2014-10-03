@@ -14,11 +14,11 @@ struct URLRequest {
   string? method = "GET";
 
   // Additional HTTP request headers.
-  string?[]? headers;
+  array<string?>? headers;
 
   // The payload for the request body, represented as a concatenation of data
   // streams. For HTTP requests, the method must be set to "POST" or "PUT".
-  handle<data_pipe_consumer>?[]? body;
+  array<handle<data_pipe_consumer>?>? body;
 
   // The number of bytes to be read from |body|. A Content-Length header of
   // this value will be sent. Set to -1 if length is unknown, which will cause
@@ -59,7 +59,7 @@ struct URLResponse {
   string? status_line;
 
   // The HTTP response headers.
-  string?[]? headers;
+  array<string?>? headers;
 
   // The MIME type of the response body.
   string? mime_type;

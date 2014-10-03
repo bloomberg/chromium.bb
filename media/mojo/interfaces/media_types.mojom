@@ -91,7 +91,7 @@ struct AudioDecoderConfig {
   SampleFormat sample_format;
   ChannelLayout channel_layout;
   int32 samples_per_second;
-  uint8[]? extra_data;
+  array<uint8>? extra_data;
   int64 seek_preroll_usec;
   int32 codec_delay;
 };
@@ -107,7 +107,7 @@ struct MediaDecoderBuffer {
 
   // This is backed by an std::vector and results in a few copies.
   // Into the vector, onto and off the MessagePipe, back into a vector.
-  uint8[] side_data;
+  array<uint8> side_data;
   uint32 side_data_size;
 
   // These fields indicate the amount of data to discard after decoding.
