@@ -835,7 +835,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
 
     // TODO(sad): some keycodes are still missing.
   }
-  DLOG(WARNING) << "Unknown keysym: " << base::StringPrintf("0x%x", keysym);
+  DVLOG(1) << "Unknown keysym: " << base::StringPrintf("0x%x", keysym);
   return VKEY_UNKNOWN;
 }
 
