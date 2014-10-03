@@ -926,9 +926,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   // enabled.
   if (!command_line.HasSwitch(switches::kEnableDeferredImageDecoding) &&
       !is_impl_side_painting_enabled_)
-    SkGraphics::SetImageCacheByteLimit(0u);
+    SkGraphics::SetResourceCacheTotalByteLimit(0u);
 
-  SkGraphics::SetImageCacheSingleAllocationByteLimit(
+  SkGraphics::SetResourceCacheSingleAllocationByteLimit(
       kImageCacheSingleAllocationByteLimit);
 
   if (command_line.HasSwitch(switches::kMemoryMetrics)) {
