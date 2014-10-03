@@ -56,7 +56,6 @@ FakeMediaSource::FakeMediaSource(
       clock_(clock),
       audio_frame_count_(0),
       video_frame_count_(0),
-      weak_factory_(this),
       av_format_context_(NULL),
       audio_stream_index_(-1),
       playback_rate_(1.0),
@@ -64,7 +63,8 @@ FakeMediaSource::FakeMediaSource(
       video_frame_rate_numerator_(video_config.max_frame_rate),
       video_frame_rate_denominator_(1),
       video_first_pts_(0),
-      video_first_pts_set_(false) {
+      video_first_pts_set_(false),
+      weak_factory_(this) {
   audio_bus_factory_.reset(new TestAudioBusFactory(kAudioChannels,
                                                    kAudioSamplingFrequency,
                                                    kSoundFrequency,

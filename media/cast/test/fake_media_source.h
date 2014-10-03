@@ -112,9 +112,6 @@ class FakeMediaSource {
   int video_frame_count_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<FakeMediaSource> weak_factory_;
-
   base::MemoryMappedFile file_data_;
   scoped_ptr<InMemoryUrlProtocol> protocol_;
   scoped_ptr<FFmpegGlue> glue_;
@@ -142,6 +139,9 @@ class FakeMediaSource {
   bool video_first_pts_set_;
 
   std::queue<AudioBus*> audio_bus_queue_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<FakeMediaSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMediaSource);
 };
