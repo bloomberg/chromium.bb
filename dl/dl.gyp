@@ -11,13 +11,35 @@
     # Override this value to build with small float FFT tables
     'big_float_fft%' : 1,
   },
+  'target_defaults': {
+    'include_dirs': [
+      '../',
+    ],
+    'conditions' : [
+      ['target_arch=="arm"', {
+        'conditions' : [
+          ['arm_neon==1', {
+            # Enable build-time NEON selection.
+            'defines': ['DL_ARM_NEON',],
+            'direct_dependent_settings': {
+              'defines': ['DL_ARM_NEON',],
+            },
+          }],
+          ['arm_neon==0 and OS=="android"', {
+            # Enable run-time NEON selection.
+            'defines': ['DL_ARM_NEON_OPTIONAL',],
+            'direct_dependent_settings': {
+              'defines': ['DL_ARM_NEON_OPTIONAL',],
+            },
+          }],
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'openmax_dl',
       'type': 'static_library',
-      'include_dirs': [
-        '../',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '../',
@@ -29,7 +51,7 @@
         'sp/src/armSP_FFT_F32TwiddleTable.c',
       ],
       'conditions' : [
-        ['big_float_fft == 1', {
+        ['big_float_fft==1', {
           'defines': [
             'BIG_FFT_TABLE',
           ],
@@ -50,76 +72,80 @@
           ],
         }],
         ['target_arch=="arm"', {
-          'cflags!': [
-            '-mfpu=vfpv3-d16',
-          ],
-          'cflags': [
-            # We enable Neon instructions even with arm_neon==0, to support
-            # runtime detection.
-            '-mfpu=neon',
-          ],
-          'dependencies': [
-            'openmax_dl_armv7',
-          ],
-          'sources': [
-            # Common files that are used by both the NEON and non-NEON code.
-            'api/armCOMM_s.h',
-            'sp/src/arm/omxSP_FFTGetBufSize_C_SC16.c',
-            'sp/src/arm/omxSP_FFTGetBufSize_R_S16.c',
-            'sp/src/arm/omxSP_FFTGetBufSize_R_S16S32.c',
-            'sp/src/arm/omxSP_FFTInit_C_SC16.c',
-            'sp/src/arm/omxSP_FFTInit_C_SC32.c',
-            'sp/src/arm/omxSP_FFTInit_R_S16.c',
-            'sp/src/arm/omxSP_FFTInit_R_S16S32.c',
-            'sp/src/arm/omxSP_FFTInit_R_S32.c',
+          'conditions': [
+            ['arm_neon==0 or OS=="android"', {
+              'dependencies': [
+                'openmax_dl_armv7',
+              ],
+            }],
+            ['arm_neon==1 or OS=="android"', {
+              'cflags!': [
+                '-mfpu=vfpv3-d16',
+              ],
+              'cflags': [
+                '-mfpu=neon',
+              ],
+              'sources': [
+                # Common files that are used by both the NEON and non-NEON code.
+                'api/armCOMM_s.h',
+                'sp/src/arm/omxSP_FFTGetBufSize_C_SC16.c',
+                'sp/src/arm/omxSP_FFTGetBufSize_R_S16.c',
+                'sp/src/arm/omxSP_FFTGetBufSize_R_S16S32.c',
+                'sp/src/arm/omxSP_FFTInit_C_SC16.c',
+                'sp/src/arm/omxSP_FFTInit_C_SC32.c',
+                'sp/src/arm/omxSP_FFTInit_R_S16.c',
+                'sp/src/arm/omxSP_FFTInit_R_S16S32.c',
+                'sp/src/arm/omxSP_FFTInit_R_S32.c',
 
-            # Complex 32-bit fixed-point FFT.
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_ls_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix4_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix4_ls_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix4_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix8_fs_unsafe_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CToC_SC32_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTFwd_CToC_SC32_Sfs_s.S',
-            # Real 32-bit fixed-point FFT
-            'sp/src/arm/neon/armSP_FFTInv_CCSToR_S32_preTwiddleRadix2_unsafe_s.S',
-            'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S32_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32_Sfs_s.S',
-            # Complex 16-bit fixed-point FFT
-            'sp/src/arm/neon/armSP_FFTInv_CCSToR_S16_preTwiddleRadix2_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_ls_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_ps_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix4_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix4_ls_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix4_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix8_fs_unsafe_s.S',
-            'sp/src/arm/neon/omxSP_FFTFwd_CToC_SC16_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CToC_SC16_Sfs_s.S',
-            # Real 16-bit fixed-point FFT
-            'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CCSToR_S16_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16S32_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32S16_Sfs_s.S',
-            # Complex floating-point FFT
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_ls_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix4_fs_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix4_ls_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix4_unsafe_s.S',
-            'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix8_fs_unsafe_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CToC_FC32_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTFwd_CToC_FC32_Sfs_s.S',
-            # Real floating-point FFT
-            'sp/src/arm/neon/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S',
-            'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_F32_Sfs_s.S',
-            'sp/src/arm/neon/omxSP_FFTInv_CCSToR_F32_Sfs_s.S',
+                # Complex 32-bit fixed-point FFT.
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_ls_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix4_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix4_ls_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix2_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix4_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix8_fs_unsafe_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CToC_SC32_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTFwd_CToC_SC32_Sfs_s.S',
+                # Real 32-bit fixed-point FFT
+                'sp/src/arm/neon/armSP_FFTInv_CCSToR_S32_preTwiddleRadix2_unsafe_s.S',
+                'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S32_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32_Sfs_s.S',
+                # Complex 16-bit fixed-point FFT
+                'sp/src/arm/neon/armSP_FFTInv_CCSToR_S16_preTwiddleRadix2_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_ls_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_ps_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix4_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix4_ls_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix4_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix8_fs_unsafe_s.S',
+                'sp/src/arm/neon/omxSP_FFTFwd_CToC_SC16_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CToC_SC16_Sfs_s.S',
+                # Real 16-bit fixed-point FFT
+                'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CCSToR_S16_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16S32_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32S16_Sfs_s.S',
+                # Complex floating-point FFT
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_ls_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix4_fs_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix4_ls_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix4_unsafe_s.S',
+                'sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix8_fs_unsafe_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CToC_FC32_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTFwd_CToC_FC32_Sfs_s.S',
+                # Real floating-point FFT
+                'sp/src/arm/neon/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S',
+                'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_F32_Sfs_s.S',
+                'sp/src/arm/neon/omxSP_FFTInv_CCSToR_F32_Sfs_s.S',
+              ],
+            }],
           ],
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {
@@ -210,24 +236,10 @@
           # standalone. Applications must link with openmax_dl.
           'target_name': 'openmax_dl_armv7',
           'type': 'static_library',
-          'includes': [
-            '../../../build/android/cpufeatures.gypi',
-          ],
-          'include_dirs': [
-            '../',
-          ],
           'cflags!': [
             '-mfpu=neon',
           ],
-          'link_settings' : {
-            'libraries': [
-              # To get the __android_log_print routine
-              '-llog',
-            ],
-          },
           'sources': [
-            # Detection routine
-            'sp/src/arm/detect.c',
             # Complex floating-point FFT
             'sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
             'sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
@@ -240,6 +252,24 @@
             'sp/src/arm/armv7/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S',
             'sp/src/arm/armv7/omxSP_FFTFwd_RToCCS_F32_Sfs_s.S',
             'sp/src/arm/armv7/omxSP_FFTInv_CCSToR_F32_Sfs_s.S',
+          ],
+          'conditions': [
+            ['OS=="android"', {
+              # We only do run-time NEON detection on Android.
+              'includes': [
+                '../../../build/android/cpufeatures.gypi',
+              ],
+              'link_settings' : {
+                'libraries': [
+                  # To get the __android_log_print routine
+                  '-llog',
+                ],
+              },
+              'sources': [
+                # Detection routine
+                'sp/src/arm/detect.c',
+              ],
+            }],
           ],
         },
       ],

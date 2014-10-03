@@ -151,6 +151,11 @@
       'dependencies!' : [
         'test_utilities'
       ],
+      'link_settings': {
+        'libraries': [
+          '-lm',
+        ],
+      },
       'sources' : [
         'aligned_ptr.c',
         'compare.c',
@@ -166,9 +171,6 @@
       'sources': [
         'test_float_rfft.c',
         'support/float_rfft_thresholds.h',
-      ],
-      'libraries': [
-        '-lm',
       ],
       'conditions': [
         ['target_arch == "arm" or target_arch == "arm64"', {
@@ -195,9 +197,6 @@
       'sources': [
         'test_fft_time.c',
       ],
-      'libraries': [
-        '-lm',
-      ],
       'conditions': [
         ['target_arch == "ia32" or target_arch == "x64" or target_arch == "arm64" or target_arch == "mipsel"', {
           'defines': [
@@ -213,32 +212,44 @@
       'type': 'none',
       'conditions' : [
         ['target_arch == "arm"', {
-          # Supported test programs for ARM
-          'dependencies': [
-            'test_fft16',
-            'test_fft32',
-            'test_float_fft',
-            'test_float_rfft',
-            'test_rfft16_s32',
-            'test_rfft16_s16',
-            'test_rfft32',
-            # Non-Neon tests
-            'test_fft_time_armv7',
-            'test_float_fft_armv7',
-            'test_float_rfft_armv7',
-            # Tests with detection
-            'test_float_rfft_detect',
+          'conditions' : [
+            ['arm_neon==1 or OS=="android"', {
+              # NEON tests.
+              'dependencies': [
+                'test_fft16',
+                'test_fft32',
+                'test_float_fft',
+                'test_float_rfft',
+                'test_rfft16_s32',
+                'test_rfft16_s16',
+                'test_rfft32',
+              ],
+            }],
+            ['arm_neon==0 or OS=="android"', {
+              # Non-NEON tests.
+              'dependencies': [
+                'test_fft_time_armv7',
+                'test_float_fft_armv7',
+                'test_float_rfft_armv7',
+              ],
+            }],
+            ['OS=="android"', {
+              # Tests with detection.
+              'dependencies': [
+                'test_float_rfft_detect',
+              ],
+            }],
           ],
         }],
         ['target_arch == "arm64"', {
-          # Supported test programs for ARM64
+          # Supported test programs for ARM64.
           'dependencies': [
             'test_float_fft',
            ],
         }],
       ],
       'dependencies' : [
-        # All architectures must support at least the float rfft test
+        # All architectures must support at least the float rfft test.
         'test_float_rfft',
         'test_fft_time',
       ],

@@ -2306,30 +2306,6 @@ OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs(
     const OMXFFTSpec_R_F32* pFFTSpec
 );
 
-#ifdef __arm__
-/*
- * Non-NEON version of omxSP_FFTFwd_RToCCS_F32_Sfs
- */
-OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs_vfp(
-    const OMX_F32* pSrc,
-    OMX_F32* pDst,
-    const OMXFFTSpec_R_F32* pFFTSpec
-);
-
-/*
- * Just like omxSP_FFTFwd_RToCCS_F32_Sfs, but automatically detects
- * whether NEON is available or not and chooses the appropriate
- * routine.
- */
-extern OMXResult (*omxSP_FFTFwd_RToCCS_F32)(
-    const OMX_F32* pSrc,
-    OMX_F32* pDst,
-    const OMXFFTSpec_R_F32* pFFTSpec
-);
-#else
-#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_RToCCS_F32_Sfs
-#endif
-
 /**
  * Function:  omxSP_FFTInv_CCSToR_S32S16_Sfs   (2.2.4.4.4)
  *
@@ -2559,7 +2535,7 @@ OMXResult omxSP_FFTInv_CToC_FC32_Sfs_vfp (
  * Return Value:
  *
  *    OMX_Sts_NoErr - no error
-
+ *
  *    OMX_Sts_BadArgErr - bad arguments if one or more of the
  *      following is true:
  *    -    pSrc, pDst, or pFFTSpec is NULL
@@ -2573,28 +2549,55 @@ OMXResult omxSP_FFTInv_CCSToR_F32_Sfs(
     const OMXFFTSpec_R_F32* pFFTSpec
 );
 
-#ifdef __arm__
 /*
- * Non-NEON version of omxSP_FFTInv_CCSToR_F32_Sfs
+ * This block sets things up appropriately for run-time or build-time selection
+ * of NEON implementations.
  */
-OMXResult omxSP_FFTInv_CCSToR_F32_Sfs_vfp(
+#if defined(__arm__)
+/*
+ * Generic versions. Just like their *_Sfs counterparts, but automatically
+ * detect whether NEON is available or not and choose the appropriate routine.
+ */
+#if defined(DL_ARM_NEON_OPTIONAL)
+extern OMXResult (*omxSP_FFTFwd_RToCCS_F32)(
+    const OMX_F32* pSrc,
+    OMX_F32* pDst,
+    const OMXFFTSpec_R_F32* pFFTSpec
+);
+extern OMXResult (*omxSP_FFTInv_CCSToR_F32)(
+    const OMX_F32* pSrc,
+    OMX_F32* pDst,
+    const OMXFFTSpec_R_F32* pFFTSpec);
+#elif defined(DL_ARM_NEON)
+/* Build-time NEON selection. */
+#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_RToCCS_F32_Sfs
+#define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_Sfs
+#else
+/* Build-time non-NEON selection. */
+#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_CCSToR_F32_vfp
+#define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_vfp
+#endif  /* defined(DL_ARM_NEON_OPTIONAL) */
+
+#if defined(DL_ARM_NEON_OPTIONAL) || !defined(DL_ARM_NEON)
+/* Non-NEON versions. */
+OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs_vfp(
     const OMX_F32* pSrc,
     OMX_F32* pDst,
     const OMXFFTSpec_R_F32* pFFTSpec
 );
 
-/*
- * Just like omxSP_FFTInv_CCSToR_F32_Sfs, but automatically detects
- * whether NEON is available or not and chooses the appropriate
- * routine.
- */
-extern OMXResult (*omxSP_FFTInv_CCSToR_F32)(
+OMXResult omxSP_FFTInv_CCSToR_F32_Sfs_vfp(
     const OMX_F32* pSrc,
     OMX_F32* pDst,
-    const OMXFFTSpec_R_F32* pFFTSpec);
+    const OMXFFTSpec_R_F32* pFFTSpec
+);
+#endif  /* defined(DL_ARM_NEON_OPTIONAL) || !defined(DL_ARM_NEON) */
+
 #else
+/* Build-time non-ARM selection. */
+#define omxSP_FFTInv_RToCCS_F32 omxSP_FFTInv_RToCCS_F32_Sfs
 #define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_Sfs
-#endif
+#endif  /* defined(__arm__) */
 
 #ifdef __cplusplus
 }
