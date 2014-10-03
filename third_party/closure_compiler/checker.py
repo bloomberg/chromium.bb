@@ -211,14 +211,14 @@ class Checker(object):
     self._debug("Summary: %s" % errors.pop())
 
     output = self._format_errors(map(self._fix_up_error, errors))
-    if runner_cmd.returncode:
+    if errors:
       self._error("Error in: %s%s" % (source_file, "\n" + output if output else ""))
     elif output:
       self._debug("Output: %s" % output)
 
     self._clean_up()
 
-    return runner_cmd.returncode, output
+    return bool(errors), output
 
 
 if __name__ == "__main__":
