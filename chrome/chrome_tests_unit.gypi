@@ -559,7 +559,6 @@
       'browser/notifications/notification_conversion_helper_unittest.cc',
       'browser/omaha_query_params/chrome_omaha_query_params_delegate_unittest.cc',
       'browser/password_manager/chrome_password_manager_client_unittest.cc',
-      'browser/password_manager/native_backend_gnome_x_unittest.cc',
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',
       'browser/password_manager/password_manager_internals_service_unittest.cc',
       'browser/password_manager/password_manager_metrics_util_unittest.cc',
@@ -2277,7 +2276,6 @@
             'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
             'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
             'browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc',
-            'browser/password_manager/native_backend_gnome_x_unittest.cc',
             'browser/password_manager/native_backend_kwallet_x_unittest.cc',
             'browser/policy/cloud/user_policy_signin_service_unittest.cc',
             'browser/profiles/profile_list_desktop_unittest.cc',
@@ -2329,12 +2327,12 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
-        ['use_gnome_keyring == 0', {
-          # Disable the GNOME Keyring tests if we are not using it.
-          'sources!': [
+        # Only add this test for 64 bit builds because otherwise we need the 32
+        # bit library on 64 bit systems when running this test.
+        ['use_gnome_keyring == 1 and target_arch=="x64"', {
+          'sources': [
             'browser/password_manager/native_backend_gnome_x_unittest.cc',
           ],
-        }, {
           # We use a few library functions directly, so link directly.
           'dependencies': [
             '../build/linux/system.gyp:gnome_keyring_direct',
