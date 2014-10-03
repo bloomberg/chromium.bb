@@ -77,6 +77,8 @@ void SurfacesImpl::CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
   if (!display_) {
     display_.reset(new cc::Display(this, manager_, NULL));
     client_->SetDisplay(display_.get());
+    display_->Initialize(make_scoped_ptr(new cc::OutputSurface(
+        new ContextProviderMojo(command_buffer_handle_.Pass()))));
   }
   factory_.Create(cc_id, size.To<gfx::Size>());
   display_->Resize(cc_id, size.To<gfx::Size>());
@@ -90,11 +92,6 @@ void SurfacesImpl::ReturnResources(const cc::ReturnedResourceArray& resources) {
   client()->ReturnResources(ret.Pass());
 }
 
-scoped_ptr<cc::OutputSurface> SurfacesImpl::CreateOutputSurface() {
-  return make_scoped_ptr(new cc::OutputSurface(
-      new ContextProviderMojo(command_buffer_handle_.Pass())));
-}
-
 void SurfacesImpl::DisplayDamaged() {
 }
 
@@ -106,6 +103,12 @@ void SurfacesImpl::DidSwapBuffersComplete() {
 
 void SurfacesImpl::CommitVSyncParameters(base::TimeTicks timebase,
                                          base::TimeDelta interval) {
+}
+
+void SurfacesImpl::OutputSurfaceLost() {
+}
+
+void SurfacesImpl::SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) {
 }
 
 }  // namespace mojo

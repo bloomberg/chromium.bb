@@ -16,6 +16,7 @@ class SurfaceManager;
 }
 
 namespace content {
+class OnscreenDisplayClient;
 
 // This class is maps a compositor OutputSurface to the surface system's Display
 // concept, allowing a compositor client to submit frames for a native root
@@ -30,13 +31,16 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
       const scoped_refptr<cc::ContextProvider>& context_provider);
   virtual ~SurfaceDisplayOutputSurface();
 
-  void set_display(cc::Display* display) { display_ = display; }
+  void set_display_client(OnscreenDisplayClient* display_client) {
+    display_client_ = display_client;
+  }
   cc::SurfaceFactory* factory() { return &factory_; }
   void ReceivedVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);
 
   // cc::OutputSurface implementation.
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
 
   // cc::SurfaceFactoryClient implementation.
   virtual void ReturnResources(
@@ -45,7 +49,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
  private:
   void SwapBuffersComplete();
 
-  cc::Display* display_;
+  OnscreenDisplayClient* display_client_;
   cc::SurfaceManager* surface_manager_;
   cc::SurfaceFactory factory_;
   gfx::Size display_size_;

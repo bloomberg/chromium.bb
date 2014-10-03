@@ -50,12 +50,13 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
       const cc::ReturnedResourceArray& resources) OVERRIDE;
 
   // DisplayClient implementation.
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DisplayDamaged() OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE;
   virtual void DidSwapBuffersComplete() OVERRIDE;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) OVERRIDE;
+  virtual void OutputSurfaceLost() OVERRIDE;
+  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) OVERRIDE;
 
   cc::SurfaceFactory* factory() { return &factory_; }
 

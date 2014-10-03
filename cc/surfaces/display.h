@@ -44,6 +44,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
           SharedBitmapManager* bitmap_manager);
   virtual ~Display();
 
+  bool Initialize(scoped_ptr<OutputSurface> output_surface);
   void Resize(SurfaceId id, const gfx::Size& new_size);
   bool Draw();
 
@@ -60,7 +61,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   virtual void DidSwapBuffers() OVERRIDE;
   virtual void DidSwapBuffersComplete() OVERRIDE;
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {}
-  virtual void DidLoseOutputSurface() OVERRIDE {}
+  virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
@@ -68,7 +69,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
       bool resourceless_software_draw) OVERRIDE {}
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE {}
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
   virtual void SetTreeActivationCallback(
       const base::Closure& callback) OVERRIDE {}
 
@@ -79,7 +80,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   virtual void OnSurfaceDamaged(SurfaceId surface) OVERRIDE;
 
  private:
-  void InitializeOutputSurface();
+  void InitializeRenderer();
 
   DisplayClient* client_;
   SurfaceManager* manager_;

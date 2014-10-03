@@ -9,6 +9,7 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/onscreen_display_client.h"
 
 namespace content {
 
@@ -18,7 +19,7 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider)
     : cc::OutputSurface(context_provider,
                         scoped_ptr<cc::SoftwareOutputDevice>()),
-      display_(NULL),
+      display_client_(NULL),
       surface_manager_(surface_manager),
       factory_(surface_manager, this),
       allocator_(surface_id_namespace) {
@@ -49,7 +50,7 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     surface_id_ = allocator_.GenerateId();
     factory_.Create(surface_id_, frame_size);
     display_size_ = frame_size;
-    display_->Resize(surface_id_, frame_size);
+    display_client_->display()->Resize(surface_id_, frame_size);
   }
 
   scoped_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame());
@@ -61,6 +62,17 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
                  base::Unretained(this)));
 
   client_->DidSwapBuffers();
+}
+
+bool SurfaceDisplayOutputSurface::BindToClient(
+    cc::OutputSurfaceClient* client) {
+  DCHECK(client);
+  DCHECK(display_client_);
+  client_ = client;
+  display_client_->Initialize();
+  // Avoid initializing GL context here, as this should be sharing the
+  // Display's context.
+  return true;
 }
 
 void SurfaceDisplayOutputSurface::ReturnResources(

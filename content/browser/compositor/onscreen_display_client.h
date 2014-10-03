@@ -30,18 +30,20 @@ class OnscreenDisplayClient : cc::DisplayClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~OnscreenDisplayClient();
 
+  bool Initialize();
   cc::Display* display() { return display_.get(); }
   void set_surface_output_surface(SurfaceDisplayOutputSurface* surface) {
     surface_display_output_surface_ = surface;
   }
 
   // cc::DisplayClient implementation.
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DisplayDamaged() OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE;
   virtual void DidSwapBuffersComplete() OVERRIDE;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) OVERRIDE;
+  virtual void OutputSurfaceLost() OVERRIDE;
+  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) OVERRIDE;
 
  private:
   void ScheduleDraw();

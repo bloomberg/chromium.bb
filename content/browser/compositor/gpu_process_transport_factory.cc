@@ -200,18 +200,11 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     scoped_ptr<OnscreenDisplayClient> display_client(new OnscreenDisplayClient(
         display_surface.Pass(), manager, compositor->task_runner()));
 
-    scoped_refptr<cc::ContextProvider> offscreen_context_provider;
-    if (context_provider.get()) {
-      offscreen_context_provider = ContextProviderCommandBuffer::Create(
-          GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
-          "Offscreen-Compositor");
-    }
     scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
-        new SurfaceDisplayOutputSurface(manager,
-          next_surface_id_namespace_++,
-          offscreen_context_provider));
+        new SurfaceDisplayOutputSurface(
+            manager, next_surface_id_namespace_++, context_provider));
     display_client->set_surface_output_surface(output_surface.get());
-    output_surface->set_display(display_client->display());
+    output_surface->set_display_client(display_client.get());
     data->display_client = display_client.Pass();
     return output_surface.PassAs<cc::OutputSurface>();
   }

@@ -133,6 +133,9 @@ class CC_EXPORT OutputSurface {
     return overlay_candidate_validator_.get();
   }
 
+  void DidLoseOutputSurface();
+  void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
+
  protected:
   OutputSurfaceClient* client_;
 
@@ -156,7 +159,6 @@ class CC_EXPORT OutputSurface {
 
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void ReclaimResources(const CompositorFrameAck* ack);
-  void DidLoseOutputSurface();
   void SetExternalStencilTest(bool enabled);
   void SetExternalDrawConstraints(
       const gfx::Transform& transform,
@@ -169,7 +171,6 @@ class CC_EXPORT OutputSurface {
  private:
   void SetUpContext3d();
   void ResetContext3d();
-  void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   bool external_stencil_test_enabled_;
 

@@ -30,9 +30,8 @@ OnscreenDisplayClient::OnscreenDisplayClient(
 OnscreenDisplayClient::~OnscreenDisplayClient() {
 }
 
-scoped_ptr<cc::OutputSurface> OnscreenDisplayClient::CreateOutputSurface() {
-  DCHECK(output_surface_.get());
-  return output_surface_.Pass();
+bool OnscreenDisplayClient::Initialize() {
+  return display_->Initialize(output_surface_.Pass());
 }
 
 void OnscreenDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
@@ -60,6 +59,10 @@ void OnscreenDisplayClient::ScheduleDraw() {
       base::Bind(&OnscreenDisplayClient::Draw, weak_ptr_factory_.GetWeakPtr()));
 }
 
+void OnscreenDisplayClient::OutputSurfaceLost() {
+  surface_display_output_surface_->DidLoseOutputSurface();
+}
+
 void OnscreenDisplayClient::Draw() {
   TRACE_EVENT0("content", "OnscreenDisplayClient::Draw");
   scheduled_draw_ = false;
@@ -76,6 +79,11 @@ void OnscreenDisplayClient::DidSwapBuffersComplete() {
     deferred_draw_ = false;
     ScheduleDraw();
   }
+}
+
+void OnscreenDisplayClient::SetMemoryPolicy(
+    const cc::ManagedMemoryPolicy& policy) {
+  surface_display_output_surface_->SetMemoryPolicy(policy);
 }
 
 }  // namespace content
