@@ -5,6 +5,7 @@
 package org.chromium.base;
 
 import android.animation.ValueAnimator;
+import android.annotation.TargetApi;
 import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -14,6 +15,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
@@ -365,5 +367,17 @@ public class ApiCompatibilityUtils {
         } else {
             return builder.getNotification();
         }
+    }
+
+    /**
+     * @see android.provider.Settings.Global#DEVICE_PROVISIONED
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static boolean isDeviceProvisioned(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return true;
+        if (context == null) return true;
+        if (context.getContentResolver() == null) return true;
+        return Settings.Global.getInt(
+                context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0) != 0;
     }
 }
