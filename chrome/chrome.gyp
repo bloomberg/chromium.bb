@@ -584,6 +584,7 @@
             'app_banner_metrics_ids_java',
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
+            'profile_account_management_metrics_java',
             'profile_sync_service_model_type_selection_java',
             'resource_id_java',
             'toolbar_model_security_levels_java',

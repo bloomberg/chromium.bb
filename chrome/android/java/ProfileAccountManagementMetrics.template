@@ -1,0 +1,13 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.profiles;
+
+/**
+ * Constants for the Android account management screen histogram.
+ */
+public class ProfileAccountManagementMetrics {
+#define PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU(label, value) public static final int label = value;
+#include "chrome/browser/profiles/profile_metrics_list.h"
+}

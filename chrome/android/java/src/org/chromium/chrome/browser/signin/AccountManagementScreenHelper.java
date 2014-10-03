@@ -11,6 +11,7 @@ import android.provider.Settings;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 
 /**
  * Stub entry points and implementation interface for the account management screen.
@@ -18,31 +19,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 public class AccountManagementScreenHelper {
     private static AccountManagementScreenManager sManager;
 
-    /*
-     * TODO(aruslan): http://crbug.com/379987 Move to a generator.
-     * Enum for tracking user interactions with the account management menu
-     * on Android.
-     * This must match enum ProfileAndroidAccountManagementMenu in profile_metrics.h.
-     */
-    // User arrived at the Account management screen.
-    public static final int ACCOUNT_MANAGEMENT_MENU_VIEW = 0;
-    // User arrived at the Account management screen, and clicked Add account.
-    public static final int ACCOUNT_MANAGEMENT_MENU_ADD_ACCOUNT = 1;
-    // User arrived at the Account management screen, and clicked Go incognito.
-    public static final int ACCOUNT_MANAGEMENT_MENU_GO_INCOGNITO = 2;
-    // User arrived at the Account management screen, and clicked on primary.
-    public static final int ACCOUNT_MANAGEMENT_MENU_CLICK_PRIMARY_ACCOUNT = 3;
-    // User arrived at the Account management screen, and clicked on secondary.
-    public static final int ACCOUNT_MANAGEMENT_MENU_CLICK_SECONDARY_ACCOUNT = 4;
-    // User arrived at the Account management screen, toggled Chrome signout.
-    public static final int ACCOUNT_MANAGEMENT_MENU_TOGGLE_SIGNOUT = 5;
-    // User toggled Chrome signout, and clicked Signout.
-    public static final int ACCOUNT_MANAGEMENT_MENU_SIGNOUT_SIGNOUT = 6;
-    // User toggled Chrome signout, and clicked Cancel.
-    public static final int ACCOUNT_MANAGEMENT_MENU_SIGNOUT_CANCEL = 7;
-    // User arrived at the android Account management screen directly from some
-    // Gaia requests.
-    public static final int ACCOUNT_MANAGEMENT_ADD_ACCOUNT = 8;
     /*
      * TODO(guohui): add all Gaia service types.
      * Enum for the Gaia service types, must match GAIAServiceType in
@@ -94,7 +70,7 @@ public class AccountManagementScreenHelper {
      */
     private static void openAndroidAccountCreationScreen(
             Context applicationContext) {
-        logEvent(ACCOUNT_MANAGEMENT_ADD_ACCOUNT, GAIA_SERVICE_TYPE_SIGNUP);
+        logEvent(ProfileAccountManagementMetrics.DIRECT_ADD_ACCOUNT, GAIA_SERVICE_TYPE_SIGNUP);
 
         Intent createAccountIntent = new Intent(Settings.ACTION_ADD_ACCOUNT);
         createAccountIntent.putExtra(
@@ -108,7 +84,7 @@ public class AccountManagementScreenHelper {
 
     /**
      * Log a UMA event for a given metric and a signin type.
-     * @param metric A PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU metric.
+     * @param metric One of ProfileAccountManagementMetrics constants.
      * @param gaiaServiceType A signin::GAIAServiceType.
      */
     public static void logEvent(int metric, int gaiaServiceType) {

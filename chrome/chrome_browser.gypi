@@ -1013,6 +1013,7 @@
       'browser/profiles/profile_manager.h',
       'browser/profiles/profile_metrics.cc',
       'browser/profiles/profile_metrics.h',
+      'browser/profiles/profile_metrics_list.h',
       'browser/profiles/profile_shortcut_manager_win.cc',
       'browser/profiles/profile_shortcut_manager_win.h',
       'browser/profiles/profile_window.cc',
@@ -3527,6 +3528,18 @@
           'variables': {
             'package_name': 'org/chromium/chrome/browser',
             'template_deps': ['browser/android/resource_id.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'profile_account_management_metrics_java',
+          'type': 'none',
+          'sources': [
+            'android/java/ProfileAccountManagementMetrics.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/chrome/browser/profiles',
+            'template_deps': ['browser/profiles/profile_metrics_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

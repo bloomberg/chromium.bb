@@ -122,27 +122,15 @@ class ProfileMetrics {
   };
 
 #if defined(OS_ANDROID)
-  // TODO(aruslan): http://crbug.com/379987 Move to a generator.
   // Enum for tracking user interactions with the account management menu
   // on Android.
-  // This should match its counterpart in AccountManagementScreenHelper.java.
   enum ProfileAndroidAccountManagementMenu {
-    // User arrived at the Account management screen.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_VIEW = 0,
-    // User arrived at the Account management screen, and clicked Add account.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_ADD_ACCOUNT,
-    // User arrived at the Account management screen, and clicked Go incognito.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_GO_INCOGNITO,
-    // User arrived at the Account management screen, and clicked on primary.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_CLICK_PRIMARY_ACCOUNT,
-    // User arrived at the Account management screen, and clicked on secondary.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_CLICK_SECONDARY_ACCOUNT,
-    // User arrived at the Account management screen, toggled Chrome signout.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_TOGGLE_SIGNOUT,
-    // User toggled Chrome signout, and clicked Signout.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_SIGNOUT_SIGNOUT,
-    // User toggled Chrome signout, and clicked Cancel.
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_SIGNOUT_CANCEL,
+
+#define PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU(label, value) \
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_##label = value,
+#include "profile_metrics_list.h"
+#undef PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU
+
     NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS,
   };
 #endif  // defined(OS_ANDROID)
