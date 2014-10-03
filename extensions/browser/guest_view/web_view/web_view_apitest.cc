@@ -114,10 +114,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewLoad) {
   RunTest("testDisplayNoneWebviewLoad", "web_view/apitest");
 }
 
-// TODO(lfg): Re-enable this test once the fix for webview leaking
-// RenderProcessHost has landed. See http://crbug.com/419020 .
-IN_PROC_BROWSER_TEST_F(WebViewAPITest,
-                       DISABLED_TestDisplayNoneWebviewRemoveChild) {
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewRemoveChild) {
   RunTest("testDisplayNoneWebviewRemoveChild", "web_view/apitest");
 }
 
@@ -235,10 +232,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveSrcAttribute) {
   RunTest("testRemoveSrcAttribute", "web_view/apitest");
 }
 
-// TODO(lfg): Re-enable this test once the fix for webview leaking
-// RenderProcessHost has landed. See http://crbug.com/419020 .
-IN_PROC_BROWSER_TEST_F(WebViewAPITest,
-                       DISABLED_TestRemoveWebviewAfterNavigation) {
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewAfterNavigation) {
   RunTest("testRemoveWebviewAfterNavigation", "web_view/apitest");
 }
 
