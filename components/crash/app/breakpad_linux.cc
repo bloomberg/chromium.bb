@@ -1610,6 +1610,7 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
     if (minidump_fd < 0) {
       NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
     } else {
+      InitCrashKeys();
       EnableNonBrowserCrashDumping(process_type, minidump_fd);
     }
   }
