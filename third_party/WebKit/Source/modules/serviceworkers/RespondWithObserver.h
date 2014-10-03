@@ -23,7 +23,7 @@ class ScriptValue;
 // notifies the client.
 class RespondWithObserver FINAL : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
 public:
-    static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode);
+    static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
 
     virtual void contextDestroyed() OVERRIDE;
 
@@ -41,10 +41,11 @@ public:
 private:
     class ThenFunction;
 
-    RespondWithObserver(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode);
+    RespondWithObserver(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
 
     int m_eventID;
     WebURLRequest::FetchRequestMode m_requestMode;
+    WebURLRequest::FrameType m_frameType;
 
     enum State { Initial, Pending, Done };
     State m_state;

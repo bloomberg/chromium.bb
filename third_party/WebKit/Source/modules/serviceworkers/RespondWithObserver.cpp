@@ -63,9 +63,9 @@ private:
     ResolveType m_resolveType;
 };
 
-RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode)
+RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
 {
-    return new RespondWithObserver(context, eventID, requestMode);
+    return new RespondWithObserver(context, eventID, requestMode, frameType);
 }
 
 void RespondWithObserver::contextDestroyed()
@@ -122,16 +122,22 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         responseWasRejected();
         return;
     }
+    // Treat the opaque response as a network error for frame loading.
+    if (responseType == FetchResponseData::OpaqueType && m_frameType != WebURLRequest::FrameTypeNone) {
+        responseWasRejected();
+        return;
+    }
     WebServiceWorkerResponse webResponse;
     response->populateWebServiceWorkerResponse(webResponse);
     ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
     m_state = Done;
 }
 
-RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode)
+RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
     : ContextLifecycleObserver(context)
     , m_eventID(eventID)
     , m_requestMode(requestMode)
+    , m_frameType(frameType)
     , m_state(Initial)
 {
 }
