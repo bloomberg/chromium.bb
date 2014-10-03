@@ -566,7 +566,7 @@
                 'description': 'building >(out_newlib32_nonsfi)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) > (_sources))',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib32_nonsfi)',
                   '^(source_list_newlib32_nonsfi)',
@@ -617,7 +617,7 @@
                 'description': 'building >(out_newlib32_nonsfi)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) > (_sources))',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib32_nonsfi)',
                   '^(source_list_newlib32_nonsfi)',
