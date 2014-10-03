@@ -246,9 +246,9 @@ https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots
 """
 
 RESULTS_THANKYOU = """
-O O | Visit http://www.chromium.org/developers/core-principles for Chrome's
- X  | policy on perf regressions. Contact chrome-perf-dashboard-team with any
-/ \ | questions or suggestions about bisecting. THANK YOU."""
+| O O | Visit http://www.chromium.org/developers/core-principles for Chrome's
+|  X  | policy on perf regressions. Contact chrome-perf-dashboard-team with any
+| / \ | questions or suggestions about bisecting. THANK YOU."""
 
 # Git branch name used to run bisect try jobs.
 BISECT_TRYJOB_BRANCH = 'bisect-tryjob'
