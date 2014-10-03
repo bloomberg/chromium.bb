@@ -49,7 +49,7 @@ inline bool operator==(const DoubleSize& a, const DoubleSize& b)
 
 inline IntSize flooredIntSize(const DoubleSize& p)
 {
-    return IntSize(clampToInteger(floor(p.width())), clampToInteger(floor(p.height())));
+    return IntSize(clampTo<int>(floor(p.width())), clampTo<int>(floor(p.height())));
 }
 
 inline FloatSize toFloatSize(const DoubleSize& p)

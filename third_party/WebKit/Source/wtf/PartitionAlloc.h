@@ -265,7 +265,7 @@ struct WTF_EXPORT PartitionRootBase {
     PartitionSuperPageExtentEntry* currentExtent;
     PartitionSuperPageExtentEntry* firstExtent;
     PartitionPage* globalEmptyPageRing[kMaxFreeableSpans];
-    size_t globalEmptyPageRingIndex;
+    int16_t globalEmptyPageRingIndex;
     uintptr_t invertedSelf;
 
     static int gInitializedLock;

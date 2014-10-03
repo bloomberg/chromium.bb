@@ -26,12 +26,13 @@
 #ifndef WTF_MathExtras_h
 #define WTF_MathExtras_h
 
+#include "wtf/Assertions.h"
 #include "wtf/CPU.h"
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
 #if COMPILER(MSVC)
-#include "wtf/Assertions.h"
 #include <stdint.h>
 #endif
 
@@ -222,54 +223,122 @@ inline float grad2rad(float g) { return g * piFloat / 200.0f; }
 inline float turn2grad(float t) { return t * 400; }
 inline float grad2turn(float g) { return g / 400; }
 
-// std::numeric_limits<T>::min() returns the smallest positive value for floating point types
 template<typename T> inline T defaultMinimumForClamp() { return std::numeric_limits<T>::min(); }
+// For floating-point types, std::numeric_limits<T>::min() returns the smallest
+// positive value rather than the largest negative one, so avoid that.
 template<> inline float defaultMinimumForClamp() { return -std::numeric_limits<float>::max(); }
 template<> inline double defaultMinimumForClamp() { return -std::numeric_limits<double>::max(); }
 template<typename T> inline T defaultMaximumForClamp() { return std::numeric_limits<T>::max(); }
 
-template<typename T> inline T clampTo(double value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())
-{
-    if (value >= static_cast<double>(max))
-        return max;
-    if (value <= static_cast<double>(min))
-        return min;
-    return static_cast<T>(value);
-}
-template<> inline long long int clampTo(double, long long int, long long int); // clampTo does not support long long ints.
+// We need to use classes to wrap the clampTo() helper functions in order to
+// allow for partial specialization. The first such class handles all cases of
+// clamping to non-integral limit types; for integral limits it calls through to
+// the second class, which uses partial specializations to detect and handle
+// values and limits of type unsigned long long int separately from other types.
+// We use two classes instead of one because the compiler treats all matching
+// partial specializations as equally valid, even if one is "more specialized"
+// than another, so doing both functions above simultaneously via partial
+// specialization matching on one class is difficult. And we use partial
+// specializations to match rather than doing everything with runtime
+// comparisons since the runtime route would require all codepaths to be
+// compilable (even if never executed) for all cases, which isn't always
+// possible (e.g. a user-defined type convertible to a double but not to a long
+// long int can't be handled by doing everything at runtime).
+template<bool IsTInteger, typename T, typename U> class ClampToHandleNonIntegralLimits;
+template<typename T, typename U> class ClampToHandleIntegralLimits;
 
-inline int clampToInteger(double value)
-{
-    return clampTo<int>(value);
-}
+// When clamping anything to non-integer limits, cast everything to double.
+// Note that this assumes that user-defined types used as limits can be
+// converted to double. For types where this isn't valid, specialize
+// std::numeric_limits<T> to define is_integer to true (and, if you're a good
+// citizen, fill in all the other members as well). (Yes, such a specialization
+// is allowed by the C++ standard, despite numeric_limits being in std::.)
+template<typename T, typename U> class ClampToHandleNonIntegralLimits<false, T, U> {
+public:
+    static inline T clampTo(U value, T min, T max)
+    {
+        return static_cast<T>(std::max(static_cast<double>(min), std::min(static_cast<double>(value), static_cast<double>(max))));
+    }
+};
 
-inline unsigned clampToUnsigned(double value)
-{
-    return clampTo<unsigned>(value);
-}
+template<typename T, typename U> class ClampToHandleNonIntegralLimits<true, T, U> {
+public:
+    static inline T clampTo(U value, T min, T max)
+    {
+        return ClampToHandleIntegralLimits<T, U>::clampTo(value, min, max);
+    }
+};
 
-inline float clampToFloat(double value)
-{
-    return clampTo<float>(value);
-}
+// The unspecialized version can handle everything except unsigned long long int
+// value or limit types. Those cases must be handled separately because there is
+// no larger signed type to convert to without risk of truncation.
+template<typename T, typename U> class ClampToHandleIntegralLimits {
+public:
+    static inline T clampTo(U value, T min, T max)
+    {
+        // When clamping a non-integer to integer limits, we need to explicitly
+        // check whether the value is outside the representable range, as in
+        // that case the result of casting to long long int below is undefined.
+        if (!std::numeric_limits<U>::is_integer) {
+            if (static_cast<double>(value) >= static_cast<double>(std::numeric_limits<long long int>::max()))
+                return max;
+            if (static_cast<double>(value) <= static_cast<double>(std::numeric_limits<long long int>::min()))
+                return min;
+        }
 
-inline int clampToPositiveInteger(double value)
-{
-    return clampTo<int>(value, 0);
-}
+        // Now that we've excluded non-integer limits and out-of-range values,
+        // we can safely cast everything to long long int, which will handle all
+        // smaller types correctly as well.
+        return static_cast<T>(std::max(static_cast<long long int>(min), std::min(static_cast<long long int>(value), static_cast<long long int>(max))));
+    }
+};
 
-inline int clampToInteger(float value)
-{
-    return clampTo<int>(value);
-}
+template<typename U> class ClampToHandleIntegralLimits<unsigned long long int, U> {
+public:
+    static inline unsigned long long int clampTo(U value, unsigned long long int min, unsigned long long int max)
+    {
+        // As in the unspecialized version, clamping a non-integer to integer
+        // limits needs to check for values outside the representable range.
+        if (!std::numeric_limits<U>::is_integer && static_cast<double>(value) >= static_cast<double>(std::numeric_limits<unsigned long long int>::max()))
+            return max;
 
-inline int clampToInteger(unsigned x)
-{
-    const unsigned intMax = static_cast<unsigned>(std::numeric_limits<int>::max());
+        // Otherwise, we can safely cast |value| to unsigned long long int, as
+        // long as it's positive.
+        if (value <= 0 || static_cast<unsigned long long int>(value) <= min)
+            return min;
+        return std::min(static_cast<unsigned long long int>(value), max);
+    }
+};
 
-    if (x >= intMax)
-        return std::numeric_limits<int>::max();
-    return static_cast<int>(x);
+template<typename T> class ClampToHandleIntegralLimits<T, unsigned long long int> {
+public:
+    static inline T clampTo(unsigned long long int value, T min, T max)
+    {
+        // We can safely cast |min| and |max| to unsigned long long int, as long
+        // as they're positive.
+        if (min > 0 && value <= static_cast<unsigned long long int>(min))
+            return min;
+        if (max <= 0 || value >= static_cast<unsigned long long int>(max))
+            return max;
+        return static_cast<T>(value);
+    }
+};
+
+// This full specialization must be defined since otherwise the compiler
+// wouldn't know which of the two matching partial specializations to choose.
+template<> class ClampToHandleIntegralLimits<unsigned long long int, unsigned long long int> {
+public:
+    static inline unsigned long long int clampTo(unsigned long long int value, unsigned long long int min = defaultMinimumForClamp<unsigned long long int>(), unsigned long long int max = defaultMaximumForClamp<unsigned long long int>())
+    {
+        return std::max(min, std::min(value, max));
+    }
+};
+
+template<typename T, typename U> inline T clampTo(U value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())
+{
+    ASSERT(!std::isnan(static_cast<double>(value)));
+    ASSERT(min <= max); // This also ensures |min| and |max| aren't NaN.
+    return ClampToHandleNonIntegralLimits<std::numeric_limits<T>::is_integer, T, U>::clampTo(value, min, max);
 }
 
 inline bool isWithinIntRange(float x)

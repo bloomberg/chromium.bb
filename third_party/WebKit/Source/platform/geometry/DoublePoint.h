@@ -68,7 +68,7 @@ inline DoubleSize operator-(const DoublePoint& a, const DoublePoint& b)
 
 inline IntPoint flooredIntPoint(const DoublePoint& p)
 {
-    return IntPoint(clampToInteger(floor(p.x())), clampToInteger(floor(p.y())));
+    return IntPoint(clampTo<int>(floor(p.x())), clampTo<int>(floor(p.y())));
 }
 
 inline FloatPoint toFloatPoint(const DoublePoint& a)
