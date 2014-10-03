@@ -75,7 +75,6 @@
     }],
     ['OS=="linux" or OS=="mac"', {
       'variables': {
-        # Can't be enabled on Windows due to http://crbug.com/342913
         'read_only': 1,
       },
     }],
@@ -114,6 +113,8 @@
           '<(PRODUCT_DIR)/verifier_test_dll_2.dll',
           'test/data/safe_browsing/signed_binary.dll',
         ],
+        # Can't be enabled on Windows due to http://crbug.com/342913
+        'read_only': 0,
       },
     }],
     ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
