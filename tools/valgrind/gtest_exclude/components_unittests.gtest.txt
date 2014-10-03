@@ -1,0 +1,2 @@
+# Flaky, see http://crbug.com/420023
+WebDataServiceAutofillTest.ProfileUpdate
