@@ -1449,6 +1449,7 @@ _x86_release_boards = frozenset([
   'auron',
   'bayleybay',
   'beltino',
+  'bobcat',
   'butterfly',
   'candy',
   'cranky',
@@ -2314,6 +2315,17 @@ _release.add_config('beltino-release',
   boards=['beltino'],
   hw_tests=[],
   vm_tests=[],
+)
+
+# bayleybay-release does not enable vm_tests or unittests due to the compiler
+# flags enabled for baytrail.
+_release.add_config('bobcat-release',
+  boards=['bobcat'],
+  hw_tests=[],
+  profile='minimal',
+  # This build doesn't generate signed images, so don't try to release them.
+  paygen=False,
+  signer_tests=False,
 )
 
 _release.add_config('fox_wtm2-release',
