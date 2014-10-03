@@ -6,7 +6,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "content/public/test/unittest_test_suite.h"
-#include "mojo/embedder/test_embedder.h"
+#include "mojo/edk/embedder/test_embedder.h"
 
 int main(int argc, char **argv) {
   content::UnitTestTestSuite test_suite(new ChromeUnitTestSuite(argc, argv));

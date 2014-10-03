@@ -172,7 +172,8 @@ _BANNED_CPP_FUNCTIONS = (
         r"^components[\\\/]crash[\\\/]app[\\\/]breakpad_mac\.mm$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_browser_main\.cc$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
-        r"^mojo[\\\/]system[\\\/]raw_shared_buffer_posix\.cc$",
+        r"^mojo[\\\/]edk[\\\/]embedder[\\\/]" +
+            r"simple_platform_shared_buffer_posix\.cc$",
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
       ),

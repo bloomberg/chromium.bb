@@ -24,7 +24,7 @@ component("mojo") {
     "//ipc",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
-    "//mojo/system",
+    "//mojo/edk/system",
   ]
 }
 
@@ -42,8 +42,8 @@ test("ipc_mojo_unittests") {
     "//ipc",
     "//ipc:test_support",
     "//ipc/mojo",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
-    "//mojo/system",
     "//url",
   ]
 }
@@ -61,8 +61,8 @@ test("ipc_mojo_perftests") {
     "//ipc",
     "//ipc:test_support",
     "//ipc/mojo",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
-    "//mojo/system",
     "//url",
   ]
 }

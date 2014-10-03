@@ -40,6 +40,8 @@ group("tests") {
     "//mojo/apps/js/test:mojo_apps_js_unittests",
     "//mojo/bindings/js/tests:mojo_js_unittests",
     "//mojo/common:mojo_common_unittests",
+    "//mojo/edk/system:mojo_message_pipe_perftests",
+    "//mojo/edk/system:mojo_system_unittests",
     "//mojo/public/c/system/tests:perftests",
     "//mojo/public/cpp/application/tests:mojo_public_application_unittests",
     "//mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests",
@@ -50,8 +52,6 @@ group("tests") {
     "//mojo/services/public/cpp/surfaces/tests:mojo_surfaces_lib_unittests",
     "//mojo/shell:mojo_external_application_tests",
     "//mojo/shell:mojo_shell_tests",
-    "//mojo/system:mojo_message_pipe_perftests",
-    "//mojo/system:mojo_system_unittests",
     "//mojo/tools:message_generator",
   ]
 

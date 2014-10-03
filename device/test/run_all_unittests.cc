@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "mojo/embedder/test_embedder.h"
+#include "mojo/edk/embedder/test_embedder.h"
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);

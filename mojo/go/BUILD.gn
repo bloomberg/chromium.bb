@@ -19,6 +19,6 @@ go_test_binary("system_test") {
     "c_embedder/c_embedder.h",
   ]
   deps = [
-    "//mojo/system",
+    "//mojo/edk/system",
   ]
 }

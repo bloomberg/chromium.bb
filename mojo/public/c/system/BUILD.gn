@@ -19,9 +19,9 @@ source_set("system") {
   ]
 }
 
-# In an is_component_build build, everything can link against //mojo/system
+# In an is_component_build build, everything can link against //mojo/edk/system
 # because it is built as a shared library. However, in a static build,
-# //mojo/system is linked into an executable (e.g., mojo_shell), and must be
+# //mojo/edk/system is linked into an executable (e.g., mojo_shell), and must be
 # injected into other shared libraries (i.e., Mojo Apps) that need the mojo
 # system API.
 #
@@ -34,7 +34,7 @@ source_set("system") {
 group("for_shared_library") {
   public_deps = [ ":system" ]
   if (is_component_build) {
-    deps = [ "//mojo/system" ]
+    deps = [ "//mojo/edk/system" ]
   } else {
     deps = [ "//mojo/public/platform/native:system_thunks" ]
   }
@@ -43,6 +43,6 @@ group("for_shared_library") {
 group("for_component") {
   public_deps = [ ":system" ]
   if (is_component_build) {
-    deps = [ "//mojo/system" ]
+    deps = [ "//mojo/edk/system" ]
   }
 }

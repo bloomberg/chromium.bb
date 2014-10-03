@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "mojo/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/shell/app_child_process.h"
 #include "mojo/shell/switches.h"
 #include "mojo/shell/test_child_process.h"

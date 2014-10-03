@@ -1,5 +1,5 @@
 include_rules = [
-  "+mojo/embedder",
+  "+mojo/edk/embedder",
   "+net/proxy",
   "+net/url_request",
 ]

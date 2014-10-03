@@ -89,7 +89,7 @@ static_library("ui") {
       "//device/bluetooth",
       "//device/nfc",
       "//media",
-      "//mojo/system",
+      "//mojo/edk/system",
       "//net:net_with_v8",
       "//storage/browser",
       "//storage/common",

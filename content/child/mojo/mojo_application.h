@@ -7,7 +7,7 @@
 
 #include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/embedder/channel_init.h"
+#include "mojo/edk/embedder/channel_init.h"
 
 namespace IPC {
 class Message;
