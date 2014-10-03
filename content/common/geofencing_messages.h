@@ -3,12 +3,21 @@
 // found in the LICENSE file.
 
 // IPC message for geofencing
-// Multiply-included message file, hence no include guard.
 
 #include "content/common/geofencing_status.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 
+// Singly-included section for typedefs.
+#ifndef CONTENT_COMMON_GEOFENCING_MESSAGES_H_
+#define CONTENT_COMMON_GEOFENCING_MESSAGES_H_
+
+typedef std::map<std::string, blink::WebCircularGeofencingRegion>
+    GeofencingRegistrations;
+
+#endif  // CONTENT_COMMON_GEOFENCING_MESSAGES_H_
+
+// Multiply-included message file, hence no include guard.
 #define IPC_MESSAGE_START GeofencingMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::GeofencingStatus,
@@ -19,9 +28,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebCircularGeofencingRegion)
   IPC_STRUCT_TRAITS_MEMBER(longitude)
   IPC_STRUCT_TRAITS_MEMBER(radius)
 IPC_STRUCT_TRAITS_END()
-
-typedef std::map<std::string, blink::WebCircularGeofencingRegion>
-    GeofencingRegistrations;
 
 // Messages sent from the child process to the browser.
 IPC_MESSAGE_CONTROL4(GeofencingHostMsg_RegisterRegion,
