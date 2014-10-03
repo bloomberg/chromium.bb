@@ -818,6 +818,9 @@ def add_trigger_options(parser):
       help='Seconds to allow the task to be pending for a bot to run before '
            'this task request expires.')
   parser.task_group.add_option(
+      '--deadline', type='int', dest='expiration',
+      help=tools.optparse.SUPPRESS_HELP)
+  parser.task_group.add_option(
       '--hard-timeout', type='int', default=60*60,
       help='Seconds to allow the task to complete.')
   parser.task_group.add_option(
