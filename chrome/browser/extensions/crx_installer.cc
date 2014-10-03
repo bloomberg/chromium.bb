@@ -477,19 +477,36 @@ void CrxInstaller::CheckInstall() {
   if (!service || service->browser_terminating())
     return;
 
+  // TODO(crbug.com/420147): Move this code to a utility class to avoid
+  // duplication of SharedModuleService::CheckImports code.
   if (SharedModuleInfo::ImportsModules(extension())) {
     const std::vector<SharedModuleInfo::ImportInfo>& imports =
         SharedModuleInfo::GetImports(extension());
     std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
     for (i = imports.begin(); i != imports.end(); ++i) {
+      Version version_required(i->minimum_version);
       const Extension* imported_module =
           service->GetExtensionById(i->extension_id, true);
-      if (imported_module &&
-          !SharedModuleInfo::IsSharedModule(imported_module)) {
-        ReportFailureFromUIThread(
-            CrxInstallerError(l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
-                base::ASCIIToUTF16(i->extension_id))));
+      if (!imported_module) {
+        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_FOUND,
+            base::ASCIIToUTF16(i->extension_id),
+            base::ASCIIToUTF16(i->minimum_version))));
+        return;
+      } else if (imported_module &&
+                 !SharedModuleInfo::IsSharedModule(imported_module)) {
+        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
+            base::UTF8ToUTF16(imported_module->name()))));
+        return;
+      } else if (imported_module && (version_required.IsValid() &&
+                                     imported_module->version()->CompareTo(
+                                         version_required) < 0)) {
+        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALL_DEPENDENCY_OLD_VERSION,
+            base::UTF8ToUTF16(imported_module->name()),
+            base::ASCIIToUTF16(i->minimum_version),
+            base::ASCIIToUTF16(imported_module->version()->GetString()))));
         return;
       } else if (imported_module &&
           !SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
