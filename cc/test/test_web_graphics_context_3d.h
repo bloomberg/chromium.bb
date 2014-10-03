@@ -260,6 +260,10 @@ class TestWebGraphicsContext3D {
                                            GLint* params);
   virtual void* mapImageCHROMIUM(GLuint image_id);
   virtual void unmapImageCHROMIUM(GLuint image_id);
+  virtual GLuint createGpuMemoryBufferImageCHROMIUM(GLsizei width,
+                                                    GLsizei height,
+                                                    GLenum internalformat,
+                                                    GLenum usage);
   virtual void texImageIOSurface2DCHROMIUM(GLenum target,
                                            GLsizei width,
                                            GLsizei height,

@@ -592,6 +592,20 @@ void TestWebGraphicsContext3D::unmapImageCHROMIUM(
   DCHECK_GT(namespace_->images.count(image_id), 0u);
 }
 
+GLuint TestWebGraphicsContext3D::createGpuMemoryBufferImageCHROMIUM(
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage) {
+  DCHECK_EQ(GL_RGBA, static_cast<int>(internalformat));
+  GLuint image_id = NextImageId();
+  base::AutoLock lock(namespace_->lock);
+  base::ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
+  images.set(image_id, make_scoped_ptr(new Image).Pass());
+  images.get(image_id)->pixels.reset(new uint8[width * height * 4]);
+  return image_id;
+}
+
 unsigned TestWebGraphicsContext3D::insertSyncPoint() {
   return next_insert_sync_point_++;
 }

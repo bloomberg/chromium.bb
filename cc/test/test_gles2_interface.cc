@@ -332,6 +332,15 @@ void TestGLES2Interface::UnmapImageCHROMIUM(GLuint image_id) {
   test_context_->unmapImageCHROMIUM(image_id);
 }
 
+GLuint TestGLES2Interface::CreateGpuMemoryBufferImageCHROMIUM(
+    GLsizei width,
+    GLsizei height,
+    GLenum internalformat,
+    GLenum usage) {
+  return test_context_->createGpuMemoryBufferImageCHROMIUM(
+      width, height, internalformat, usage);
+}
+
 void TestGLES2Interface::BindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
   test_context_->bindTexImage2DCHROMIUM(target, image_id);
 }

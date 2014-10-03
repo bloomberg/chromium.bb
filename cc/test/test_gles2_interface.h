@@ -136,6 +136,10 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                                            GLenum pname,
                                            GLint* params) OVERRIDE;
   virtual void UnmapImageCHROMIUM(GLuint image_id) OVERRIDE;
+  virtual GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
+                                                    GLsizei height,
+                                                    GLenum internalformat,
+                                                    GLenum usage) OVERRIDE;
   virtual void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) OVERRIDE;
   virtual void ReleaseTexImage2DCHROMIUM(GLenum target,
                                          GLint image_id) OVERRIDE;
