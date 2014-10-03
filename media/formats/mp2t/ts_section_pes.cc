@@ -146,8 +146,15 @@ bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
   // See ITU H.222 Table 2-22 "Stream_id assignments"
   bool is_audio_stream_id = ((stream_id & 0xe0) == 0xc0);
   bool is_video_stream_id = ((stream_id & 0xf0) == 0xe0);
-  if (!is_audio_stream_id && !is_video_stream_id)
+  // According to ETSI DVB standard (ETSI TS 101 154) section 4.1.6.1
+  // AC-3 and DTS audio streams may have stream_id 0xbd. These streams
+  // have the same syntax as regular audio streams.
+  bool is_private_stream_1 = (stream_id == 0xbd);
+  if (!is_audio_stream_id && !is_video_stream_id && !is_private_stream_1) {
+    DVLOG(LOG_LEVEL_PES) << "Dropped TsPacket for stream_id=0x"
+                         << std::hex << stream_id << std::dec;
     return true;
+  }
 
   // Read up to "pes_header_data_length".
   int dummy_2;

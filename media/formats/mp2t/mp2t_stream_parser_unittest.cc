@@ -52,6 +52,7 @@ class Mp2tStreamParserTest : public testing::Test {
         config_count_(0),
         audio_frame_count_(0),
         video_frame_count_(0),
+        has_video_(true),
         audio_min_dts_(kNoDecodeTimestamp()),
         audio_max_dts_(kNoDecodeTimestamp()),
         video_min_dts_(kNoDecodeTimestamp()),
@@ -66,6 +67,7 @@ class Mp2tStreamParserTest : public testing::Test {
   int config_count_;
   int audio_frame_count_;
   int video_frame_count_;
+  bool has_video_;
   DecodeTimestamp audio_min_dts_;
   DecodeTimestamp audio_max_dts_;
   DecodeTimestamp video_min_dts_;
@@ -111,10 +113,9 @@ class Mp2tStreamParserTest : public testing::Test {
                    const StreamParser::TextTrackConfigMap& tc) {
     DVLOG(1) << "OnNewConfig: audio=" << ac.IsValidConfig()
              << ", video=" << vc.IsValidConfig();
-    // Test streams have both audio and video, verify the configs are valid.
     config_count_++;
     EXPECT_TRUE(ac.IsValidConfig());
-    EXPECT_TRUE(vc.IsValidConfig());
+    EXPECT_EQ(vc.IsValidConfig(), has_video_);
     return true;
   }
 
@@ -281,6 +282,19 @@ TEST_F(Mp2tStreamParserTest, TimestampWrapAround) {
                             DecodeTimestamp::FromSecondsD(95443.400)));
   EXPECT_TRUE(IsAlmostEqual(audio_max_dts_,
                             DecodeTimestamp::FromSecondsD(95446.117)));
+}
+
+TEST_F(Mp2tStreamParserTest, AudioInPrivateStream1) {
+  // Test small, non-segment-aligned appends.
+  InitializeParser();
+  has_video_ = false;
+  ParseMpeg2TsFile("bear_adts_in_private_stream_1.ts", 512);
+  parser_->Flush();
+  EXPECT_EQ(audio_frame_count_, 40);
+  EXPECT_EQ(video_frame_count_, 0);
+  // This stream has no mid-stream configuration change.
+  EXPECT_EQ(config_count_, 1);
+  EXPECT_EQ(segment_count_, 1);
 }
 
 }  // namespace mp2t
