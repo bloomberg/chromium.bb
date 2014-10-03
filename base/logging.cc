@@ -444,8 +444,6 @@ LogMessageHandlerFunction GetLogMessageHandler() {
   return log_message_handler;
 }
 
-// MSVC doesn't like complex extern templates and DLLs.
-#if !defined(COMPILER_MSVC)
 // Explicit instantiations for commonly used comparisons.
 template std::string* MakeCheckOpString<int, int>(
     const int&, const int&, const char* names);
@@ -457,7 +455,6 @@ template std::string* MakeCheckOpString<unsigned int, unsigned long>(
     const unsigned int&, const unsigned long&, const char* names);
 template std::string* MakeCheckOpString<std::string, std::string>(
     const std::string&, const std::string&, const char* name);
-#endif
 
 #if !defined(NDEBUG)
 // Displays a message box to the user with the error message in it.
