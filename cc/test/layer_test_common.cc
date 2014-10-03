@@ -40,7 +40,6 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                                   const gfx::Rect& rect) {
   Region remaining = rect;
 
-  size_t i = 0;
   for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
        ++iter) {
     const DrawQuad* quad = &*iter;
@@ -53,15 +52,13 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
 
     gfx::Rect quad_rect = gfx::ToEnclosingRect(quad_rectf);
 
-    EXPECT_TRUE(rect.Contains(quad_rect)) << quad_string << i
+    EXPECT_TRUE(rect.Contains(quad_rect)) << quad_string << iter.index()
                                           << " rect: " << rect.ToString()
                                           << " quad: " << quad_rect.ToString();
     EXPECT_TRUE(remaining.Contains(quad_rect))
-        << quad_string << i << " remaining: " << remaining.ToString()
+        << quad_string << iter.index() << " remaining: " << remaining.ToString()
         << " quad: " << quad_rect.ToString();
     remaining.Subtract(quad_rect);
-
-    ++i;
   }
 
   EXPECT_TRUE(remaining.IsEmpty());

@@ -3501,17 +3501,18 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
   // The content_to_target_transform should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(scaled_draw_transform.ToString(),
-            render_pass->shared_quad_state_list[0]
+            render_pass->shared_quad_state_list.front()
                 ->content_to_target_transform.ToString());
   // The content_bounds should be scaled by the
   // MaximumTilingContentsScale on the layer.
-  EXPECT_EQ(gfx::Size(2500u, 5000u).ToString(),
-            render_pass->shared_quad_state_list[0]->content_bounds.ToString());
+  EXPECT_EQ(
+      gfx::Size(2500u, 5000u).ToString(),
+      render_pass->shared_quad_state_list.front()->content_bounds.ToString());
   // The visible_content_rect should be scaled by the
   // MaximumTilingContentsScale on the layer.
-  EXPECT_EQ(
-      gfx::Rect(0u, 0u, 2500u, 5000u).ToString(),
-      render_pass->shared_quad_state_list[0]->visible_content_rect.ToString());
+  EXPECT_EQ(gfx::Rect(0u, 0u, 2500u, 5000u).ToString(),
+            render_pass->shared_quad_state_list.front()
+                ->visible_content_rect.ToString());
 }
 
 TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {

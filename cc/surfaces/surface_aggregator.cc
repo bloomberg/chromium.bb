@@ -188,7 +188,9 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
   for (size_t j = 0; j < passes_to_copy; ++j) {
     const RenderPass& source = *referenced_passes[j];
 
-    scoped_ptr<RenderPass> copy_pass(RenderPass::Create());
+    size_t sqs_size = source.shared_quad_state_list.size();
+    size_t dq_size = source.quad_list.size();
+    scoped_ptr<RenderPass> copy_pass(RenderPass::Create(sqs_size, dq_size));
 
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
@@ -284,29 +286,28 @@ void SurfaceAggregator::CopyQuadsToPass(
     SurfaceId surface_id) {
   const SharedQuadState* last_copied_source_shared_quad_state = NULL;
 
-  size_t sqs_i = 0;
-  for (QuadList::ConstIterator iter = source_quad_list.begin();
-       iter != source_quad_list.end();
-       ++iter) {
-    const DrawQuad* quad = &*iter;
-    while (quad->shared_quad_state != source_shared_quad_state_list[sqs_i]) {
-      ++sqs_i;
-      DCHECK_LT(sqs_i, source_shared_quad_state_list.size());
+  SharedQuadStateList::ConstIterator sqs_iter =
+      source_shared_quad_state_list.begin();
+  for (const auto& quad : source_quad_list) {
+    while (quad.shared_quad_state != &*sqs_iter) {
+      ++sqs_iter;
+      DCHECK(sqs_iter != source_shared_quad_state_list.end());
     }
-    DCHECK_EQ(quad->shared_quad_state, source_shared_quad_state_list[sqs_i]);
+    DCHECK_EQ(quad.shared_quad_state, &*sqs_iter);
 
-    if (quad->material == DrawQuad::SURFACE_CONTENT) {
-      const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
+    if (quad.material == DrawQuad::SURFACE_CONTENT) {
+      const SurfaceDrawQuad* surface_quad =
+          SurfaceDrawQuad::MaterialCast(&quad);
       HandleSurfaceQuad(surface_quad, dest_pass);
     } else {
-      if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
+      if (quad.shared_quad_state != last_copied_source_shared_quad_state) {
         CopySharedQuadState(
-            quad->shared_quad_state, content_to_target_transform, dest_pass);
-        last_copied_source_shared_quad_state = quad->shared_quad_state;
+            quad.shared_quad_state, content_to_target_transform, dest_pass);
+        last_copied_source_shared_quad_state = quad.shared_quad_state;
       }
-      if (quad->material == DrawQuad::RENDER_PASS) {
+      if (quad.material == DrawQuad::RENDER_PASS) {
         const RenderPassDrawQuad* pass_quad =
-            RenderPassDrawQuad::MaterialCast(quad);
+            RenderPassDrawQuad::MaterialCast(&quad);
         RenderPassId original_pass_id = pass_quad->render_pass_id;
         RenderPassId remapped_pass_id =
             RemapPassId(original_pass_id, surface_id);
@@ -317,7 +318,7 @@ void SurfaceAggregator::CopyQuadsToPass(
             remapped_pass_id);
       } else {
         dest_pass->CopyFromAndAppendDrawQuad(
-            quad, dest_pass->shared_quad_state_list.back());
+            &quad, dest_pass->shared_quad_state_list.back());
       }
     }
   }
@@ -328,7 +329,9 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
   for (size_t i = 0; i < source_pass_list.size(); ++i) {
     const RenderPass& source = *source_pass_list[i];
 
-    scoped_ptr<RenderPass> copy_pass(RenderPass::Create());
+    size_t sqs_size = source.shared_quad_state_list.size();
+    size_t dq_size = source.quad_list.size();
+    scoped_ptr<RenderPass> copy_pass(RenderPass::Create(sqs_size, dq_size));
 
     RenderPassId remapped_pass_id =
         RemapPassId(source.id, surface->surface_id());

@@ -47,7 +47,7 @@ class QuadList : public ListContainer<DrawQuad> {
   inline ConstBackToFrontIterator BackToFrontEnd() const { return rend(); }
 };
 
-typedef ScopedPtrVector<SharedQuadState> SharedQuadStateList;
+typedef ListContainer<SharedQuadState> SharedQuadStateList;
 
 class CC_EXPORT RenderPass {
  public:
@@ -55,6 +55,8 @@ class CC_EXPORT RenderPass {
 
   static scoped_ptr<RenderPass> Create();
   static scoped_ptr<RenderPass> Create(size_t num_layers);
+  static scoped_ptr<RenderPass> Create(size_t shared_quad_state_list_size,
+                                       size_t quad_list_size);
 
   // A shallow copy of the render pass, which does not include its quads or copy
   // requests.
@@ -117,6 +119,7 @@ class CC_EXPORT RenderPass {
  protected:
   explicit RenderPass(size_t num_layers);
   RenderPass();
+  RenderPass(size_t shared_quad_state_list_size, size_t quad_list_size);
 
  private:
   template <typename DrawQuadType>

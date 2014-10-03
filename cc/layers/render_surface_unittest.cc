@@ -119,7 +119,8 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
                               RenderPassId(2, 0));
 
   ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
-  SharedQuadState* shared_quad_state = render_pass->shared_quad_state_list[0];
+  SharedQuadState* shared_quad_state =
+      render_pass->shared_quad_state_list.front();
 
   EXPECT_EQ(
       30.0,

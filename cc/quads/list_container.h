@@ -33,8 +33,9 @@ class CC_EXPORT ListContainer {
   // is used when there is no derived classes from BaseElementType we need to
   // worry about, and allocation size is just sizeof(BaseElementType).
   ListContainer();
-  // This constructor reserves the requested memory up front so only a single
-  // allocation is needed.
+  // This constructor reserves the requested memory up front so only single
+  // allocation is needed. When num_of_elements_to_reserve_for is zero, use the
+  // default size.
   ListContainer(size_t max_size_for_derived_class,
                 size_t num_of_elements_to_reserve_for);
 
@@ -73,12 +74,22 @@ class CC_EXPORT ListContainer {
    public:
     Iterator(ListContainerCharAllocator* container,
              size_t vector_ind,
-             char* item_iter);
+             char* item_iter,
+             size_t index);
     ~Iterator();
     BaseElementType* operator->() const;
     BaseElementType& operator*() const;
     Iterator operator++(int unused_post_increment);
     Iterator operator++();
+
+    size_t index() const;
+
+   private:
+    // This is used to track how many increment has happened since begin(). It
+    // is used to avoid double increment at places an index reference is
+    // needed. For iterator this means begin() corresponds to index 0 and end()
+    // corresponds to index |size|.
+    size_t index_;
   };
 
   class CC_EXPORT ConstIterator : public PositionInListContainerCharAllocator {
@@ -87,13 +98,23 @@ class CC_EXPORT ListContainer {
    public:
     ConstIterator(ListContainerCharAllocator* container,
                   size_t vector_ind,
-                  char* item_iter);
+                  char* item_iter,
+                  size_t index);
     ConstIterator(const Iterator& other);  // NOLINT
     ~ConstIterator();
     const BaseElementType* operator->() const;
     const BaseElementType& operator*() const;
     ConstIterator operator++(int unused_post_increment);
     ConstIterator operator++();
+
+    size_t index() const;
+
+   private:
+    // This is used to track how many increment has happened since begin(). It
+    // is used to avoid double increment at places an index reference is
+    // needed. For iterator this means begin() corresponds to index 0 and end()
+    // corresponds to index |size|.
+    size_t index_;
   };
 
   class CC_EXPORT ReverseIterator
@@ -103,12 +124,22 @@ class CC_EXPORT ListContainer {
    public:
     ReverseIterator(ListContainerCharAllocator* container,
                     size_t vector_ind,
-                    char* item_iter);
+                    char* item_iter,
+                    size_t index);
     ~ReverseIterator();
     BaseElementType* operator->() const;
     BaseElementType& operator*() const;
     ReverseIterator operator++(int unused_post_increment);
     ReverseIterator operator++();
+
+    size_t index() const;
+
+   private:
+    // This is used to track how many increment has happened since rbegin(). It
+    // is used to avoid double increment at places an index reference is
+    // needed. For reverse iterator this means rbegin() corresponds to index 0
+    // and rend() corresponds to index |size|.
+    size_t index_;
   };
 
   class CC_EXPORT ConstReverseIterator
@@ -118,13 +149,23 @@ class CC_EXPORT ListContainer {
    public:
     ConstReverseIterator(ListContainerCharAllocator* container,
                          size_t vector_ind,
-                         char* item_iter);
+                         char* item_iter,
+                         size_t index);
     ConstReverseIterator(const ReverseIterator& other);  // NOLINT
     ~ConstReverseIterator();
     const BaseElementType* operator->() const;
     const BaseElementType& operator*() const;
     ConstReverseIterator operator++(int unused_post_increment);
     ConstReverseIterator operator++();
+
+    size_t index() const;
+
+   private:
+    // This is used to track how many increment has happened since rbegin(). It
+    // is used to avoid double increment at places an index reference is
+    // needed. For reverse iterator this means rbegin() corresponds to index 0
+    // and rend() corresponds to index |size|.
+    size_t index_;
   };
 
   // When called, all raw pointers that have been handed out are no longer

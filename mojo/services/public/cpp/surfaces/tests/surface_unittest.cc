@@ -290,7 +290,7 @@ TEST(SurfaceLibTest, RenderPass) {
   EXPECT_EQ(has_transparent_background, mojo_pass->has_transparent_background);
   ASSERT_EQ(1u, mojo_pass->shared_quad_states.size());
   ASSERT_EQ(3u, mojo_pass->quads.size());
-  EXPECT_EQ(0, mojo_pass->quads[0]->shared_quad_state_index);
+  EXPECT_EQ(0u, mojo_pass->quads[0]->shared_quad_state_index);
 
   scoped_ptr<cc::RenderPass> round_trip_pass =
       mojo_pass.To<scoped_ptr<cc::RenderPass> >();

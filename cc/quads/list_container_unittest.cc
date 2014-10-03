@@ -525,5 +525,32 @@ TEST(ListContainerTest,
   }
 }
 
+TEST(ListContainerTest,
+     SimpleIterationAndReverseIterationWithIndexSharedQuadState) {
+  ListContainer<SharedQuadState> list;
+  std::vector<SharedQuadState*> sqs_list;
+  size_t size = 10;
+  for (size_t i = 0; i < size; ++i) {
+    sqs_list.push_back(list.AllocateAndConstruct<SharedQuadState>());
+  }
+  EXPECT_EQ(size, list.size());
+
+  size_t i = 0;
+  for (ListContainer<SharedQuadState>::Iterator iter = list.begin();
+       iter != list.end();
+       ++iter) {
+    EXPECT_EQ(i, iter.index());
+    ++i;
+  }
+
+  i = 0;
+  for (ListContainer<SharedQuadState>::ReverseIterator iter = list.rbegin();
+       iter != list.rend();
+       ++iter) {
+    EXPECT_EQ(i, iter.index());
+    ++i;
+  }
+}
+
 }  // namespace
 }  // namespace cc

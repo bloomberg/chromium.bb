@@ -473,9 +473,12 @@ TEST_F(CCMessagesTest, AllQuads) {
   Compare(pass_cmp.get(), pass_in.get());
   ASSERT_EQ(3u, pass_in->shared_quad_state_list.size());
   ASSERT_EQ(10u, pass_in->quad_list.size());
-  for (size_t i = 0; i < 3; ++i) {
-    Compare(pass_cmp->shared_quad_state_list[i],
-            pass_in->shared_quad_state_list[i]);
+  for (cc::SharedQuadStateList::ConstIterator
+           cmp_iterator = pass_cmp->shared_quad_state_list.begin(),
+           in_iterator = pass_in->shared_quad_state_list.begin();
+       in_iterator != pass_in->shared_quad_state_list.end();
+       ++cmp_iterator, ++in_iterator) {
+    Compare(&*cmp_iterator, &*in_iterator);
   }
   for (cc::QuadList::Iterator in_iter = pass_in->quad_list.begin(),
                               cmp_iter = pass_cmp->quad_list.begin();
@@ -509,9 +512,12 @@ TEST_F(CCMessagesTest, AllQuads) {
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(10u, pass_out->quad_list.size());
-  for (size_t i = 0; i < 3; ++i) {
-    Compare(pass_cmp->shared_quad_state_list[i],
-            pass_out->shared_quad_state_list[i]);
+  for (cc::SharedQuadStateList::ConstIterator
+           cmp_iterator = pass_cmp->shared_quad_state_list.begin(),
+           out_iterator = pass_out->shared_quad_state_list.begin();
+       out_iterator != pass_out->shared_quad_state_list.end();
+       ++cmp_iterator, ++out_iterator) {
+    Compare(&*cmp_iterator, &*out_iterator);
   }
   for (cc::QuadList::Iterator out_iter = pass_out->quad_list.begin(),
                               cmp_iter = pass_cmp->quad_list.begin();
@@ -633,10 +639,12 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   ASSERT_EQ(2u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(2u, pass_out->quad_list.size());
 
-  EXPECT_EQ(gfx::Size(1, 1).ToString(),
-            pass_out->shared_quad_state_list[0]->content_bounds.ToString());
-  EXPECT_EQ(gfx::Size(4, 4).ToString(),
-            pass_out->shared_quad_state_list[1]->content_bounds.ToString());
+  EXPECT_EQ(
+      gfx::Size(1, 1).ToString(),
+      pass_out->shared_quad_state_list.ElementAt(0)->content_bounds.ToString());
+  EXPECT_EQ(
+      gfx::Size(4, 4).ToString(),
+      pass_out->shared_quad_state_list.ElementAt(1)->content_bounds.ToString());
 }
 
 TEST_F(CCMessagesTest, Resources) {

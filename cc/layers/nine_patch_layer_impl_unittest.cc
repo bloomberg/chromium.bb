@@ -70,15 +70,13 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   EXPECT_EQ(expected_quad_size, quads.size());
 
   Region remaining(visible_content_rect);
-  size_t i = 0;
   for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
        ++iter) {
     gfx::Rect quad_rect = iter->rect;
 
-    EXPECT_TRUE(visible_content_rect.Contains(quad_rect)) << i;
-    EXPECT_TRUE(remaining.Contains(quad_rect)) << i;
+    EXPECT_TRUE(visible_content_rect.Contains(quad_rect)) << iter.index();
+    EXPECT_TRUE(remaining.Contains(quad_rect)) << iter.index();
     remaining.Subtract(Region(quad_rect));
-    ++i;
   }
 
   // Check if the left-over quad is the same size as the mapped aperture quad in
