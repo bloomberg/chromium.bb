@@ -60,34 +60,6 @@ void RenderSlider::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, La
         minLogicalWidth = maxLogicalWidth;
 }
 
-void RenderSlider::computePreferredLogicalWidths()
-{
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
-    RenderStyle* styleToUse = style();
-
-    if (styleToUse->width().isFixed() && styleToUse->width().value() > 0)
-        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse->width().value());
-    else
-        computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
-
-    if (styleToUse->minWidth().isFixed() && styleToUse->minWidth().value() > 0) {
-        m_maxPreferredLogicalWidth = max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->minWidth().value()));
-        m_minPreferredLogicalWidth = max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->minWidth().value()));
-    }
-
-    if (styleToUse->maxWidth().isFixed()) {
-        m_maxPreferredLogicalWidth = min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->maxWidth().value()));
-        m_minPreferredLogicalWidth = min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->maxWidth().value()));
-    }
-
-    LayoutUnit toAdd = borderAndPaddingWidth();
-    m_minPreferredLogicalWidth += toAdd;
-    m_maxPreferredLogicalWidth += toAdd;
-
-    clearPreferredLogicalWidthsDirty();
-}
-
 inline SliderThumbElement* RenderSlider::sliderThumbElement() const
 {
     return toSliderThumbElement(toElement(node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));

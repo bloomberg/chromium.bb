@@ -342,34 +342,6 @@ void RenderMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
         minLogicalWidth = maxLogicalWidth;
 }
 
-void RenderMenuList::computePreferredLogicalWidths()
-{
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
-    RenderStyle* styleToUse = style();
-
-    if (styleToUse->width().isFixed() && styleToUse->width().value() > 0)
-        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse->width().value());
-    else
-        computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
-
-    if (styleToUse->minWidth().isFixed() && styleToUse->minWidth().value() > 0) {
-        m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->minWidth().value()));
-        m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->minWidth().value()));
-    }
-
-    if (styleToUse->maxWidth().isFixed()) {
-        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->maxWidth().value()));
-        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->maxWidth().value()));
-    }
-
-    LayoutUnit toAdd = borderAndPaddingWidth();
-    m_minPreferredLogicalWidth += toAdd;
-    m_maxPreferredLogicalWidth += toAdd;
-
-    clearPreferredLogicalWidthsDirty();
-}
-
 void RenderMenuList::showPopup()
 {
     if (m_popupIsVisible)

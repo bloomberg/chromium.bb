@@ -50,7 +50,6 @@ public:
 
 private:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
-    virtual void computePreferredLogicalWidths() OVERRIDE;
 
     LayoutUnit allowedChildFlex(RenderBox* child, bool expanding, unsigned group);
 
