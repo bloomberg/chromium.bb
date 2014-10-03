@@ -416,6 +416,8 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
                      WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
       alignment_(DOCKED_ALIGNMENT_NONE),
+      preferred_alignment_(DOCKED_ALIGNMENT_NONE),
+      event_source_(DOCKED_ACTION_SOURCE_UNKNOWN),
       last_active_window_(NULL),
       last_action_time_(base::Time::Now()),
       background_widget_(new DockedBackgroundWidget(dock_container_)) {
@@ -692,13 +694,20 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   // A window can be added without proper bounds when window is moved to another
   // display via API or due to display configuration change, so the alignment
   // is set based on which edge is closer in the new display.
-  if (alignment_ == DOCKED_ALIGNMENT_NONE)
-    alignment_ = GetEdgeNearestWindow(child);
+  if (alignment_ == DOCKED_ALIGNMENT_NONE) {
+    alignment_ = preferred_alignment_ != DOCKED_ALIGNMENT_NONE ?
+        preferred_alignment_ : GetEdgeNearestWindow(child);
+  }
   MaybeMinimizeChildrenExcept(child);
   child->AddObserver(this);
   wm::GetWindowState(child)->AddObserver(this);
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
+
+  // Only keyboard-initiated actions are recorded here. Dragging cases
+  // are handled in FinishDragging.
+  if (event_source_ != DOCKED_ACTION_SOURCE_UNKNOWN)
+    RecordUmaAction(DOCKED_ACTION_DOCK, event_source_);
 }
 
 void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
@@ -848,12 +857,16 @@ void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
     if (window != dragged_window_) {
       UndockWindow(window);
       if (window_state->IsMaximizedOrFullscreen())
-        RecordUmaAction(DOCKED_ACTION_MAXIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
+        RecordUmaAction(DOCKED_ACTION_MAXIMIZE, event_source_);
+      else
+        RecordUmaAction(DOCKED_ACTION_UNDOCK, event_source_);
     }
   } else if (window_state->IsMinimized()) {
     MinimizeDockedWindow(window_state);
   } else if (old_type == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED) {
     RestoreDockedWindow(window_state);
+  } else if (old_type == wm::WINDOW_STATE_TYPE_MINIMIZED) {
+    NOTREACHED() << "Minimized window in docked layout manager";
   }
 }
 
@@ -892,7 +905,7 @@ void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
   }
   if (window == last_active_window_)
     last_active_window_ = NULL;
-  RecordUmaAction(DOCKED_ACTION_CLOSE, DOCKED_ACTION_SOURCE_UNKNOWN);
+  RecordUmaAction(DOCKED_ACTION_CLOSE, event_source_);
 }
 
 
@@ -959,7 +972,7 @@ void DockedWindowLayoutManager::MinimizeDockedWindow(
   window_state->window()->Hide();
   if (window_state->IsActive())
     window_state->Deactivate();
-  RecordUmaAction(DOCKED_ACTION_MINIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
+  RecordUmaAction(DOCKED_ACTION_MINIMIZE, event_source_);
 }
 
 void DockedWindowLayoutManager::RestoreDockedWindow(
@@ -976,7 +989,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
   // Evict the window if it can no longer be docked because of its height.
   if (!CanDockWindow(window, DOCKED_ALIGNMENT_NONE)) {
     window_state->Restore();
-    RecordUmaAction(DOCKED_ACTION_EVICT, DOCKED_ACTION_SOURCE_UNKNOWN);
+    RecordUmaAction(DOCKED_ACTION_EVICT, event_source_);
     return;
   }
   gfx::Rect bounds(window->bounds());
@@ -984,7 +997,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
   window->SetBounds(bounds);
   window->Show();
   MaybeMinimizeChildrenExcept(window);
-  RecordUmaAction(DOCKED_ACTION_RESTORE, DOCKED_ACTION_SOURCE_UNKNOWN);
+  RecordUmaAction(DOCKED_ACTION_RESTORE, event_source_);
 }
 
 void DockedWindowLayoutManager::RecordUmaAction(DockedAction action,

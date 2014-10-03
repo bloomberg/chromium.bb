@@ -124,6 +124,7 @@ class ASH_EXPORT PanelLayoutManager
   friend class DockedWindowResizerTest;
   friend class DockedWindowLayoutManagerTest;
   friend class WorkspaceControllerTest;
+  friend class AcceleratorControllerTest;
 
   views::Widget* CreateCalloutWidget();
 

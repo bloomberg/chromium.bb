@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -64,6 +65,105 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   }
 }
 
+DockedWindowLayoutManager* GetDockedWindowLayoutManager() {
+  aura::Window* active_window = ash::wm::GetActiveWindow();
+  if (active_window) {
+    aura::Window* dock_container = Shell::GetContainer(
+      active_window->GetRootWindow(), kShellWindowId_DockedContainer);
+    DockedWindowLayoutManager* dock_layout =
+      static_cast<DockedWindowLayoutManager*>(
+        dock_container->layout_manager());
+    return dock_layout;
+  }
+  return NULL;
+}
+
+class ScopedPreferredAlignmentResetter {
+ public:
+  ScopedPreferredAlignmentResetter(DockedAlignment dock_alignment,
+                                   DockedWindowLayoutManager* dock_layout)
+      : docked_window_layout_manager_(dock_layout) {
+    docked_window_layout_manager_->set_preferred_alignment(dock_alignment);
+  }
+  ~ScopedPreferredAlignmentResetter() {
+    docked_window_layout_manager_->set_preferred_alignment(
+        DOCKED_ALIGNMENT_NONE);
+  }
+
+ private:
+  DockedWindowLayoutManager* docked_window_layout_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPreferredAlignmentResetter);
+};
+
+class ScopedDockedLayoutEventSourceResetter {
+ public:
+  ScopedDockedLayoutEventSourceResetter(DockedWindowLayoutManager* dock_layout)
+      : docked_window_layout_manager_(dock_layout) {
+    docked_window_layout_manager_->set_event_source(
+        DOCKED_ACTION_SOURCE_KEYBOARD);
+  }
+  ~ScopedDockedLayoutEventSourceResetter() {
+    docked_window_layout_manager_->set_event_source(
+        DOCKED_ACTION_SOURCE_UNKNOWN);
+  }
+
+ private:
+  DockedWindowLayoutManager* docked_window_layout_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDockedLayoutEventSourceResetter);
+};
+
+void CycleSnapDock(WindowState* window_state, WMEventType event) {
+  DockedWindowLayoutManager* dock_layout = GetDockedWindowLayoutManager();
+  wm::WindowStateType desired_snap_state = event ==
+      WM_EVENT_CYCLE_SNAP_DOCK_LEFT ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED :
+      wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+  DockedAlignment desired_dock_alignment = event ==
+      WM_EVENT_CYCLE_SNAP_DOCK_LEFT ?
+      DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
+  DockedAlignment current_dock_alignment = dock_layout ?
+      dock_layout->CalculateAlignment() : DOCKED_ALIGNMENT_NONE;
+
+  if (!window_state->IsDocked() ||
+      (current_dock_alignment != DOCKED_ALIGNMENT_NONE &&
+       current_dock_alignment != desired_dock_alignment)) {
+    if (window_state->CanSnap() &&
+        window_state->GetStateType() != desired_snap_state &&
+        window_state->window()->type() != ui::wm::WINDOW_TYPE_PANEL) {
+      const wm::WMEvent event(desired_snap_state ==
+                              wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ?
+                              wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+      window_state->OnWMEvent(&event);
+      return;
+    }
+
+    if (dock_layout &&
+        dock_layout->CanDockWindow(window_state->window(),
+                                   desired_dock_alignment)) {
+      if (window_state->IsDocked()) {
+        dock_layout->MaybeSetDesiredDockedAlignment(desired_dock_alignment);
+        return;
+      }
+
+      ScopedDockedLayoutEventSourceResetter event_source_resetter(dock_layout);
+      ScopedPreferredAlignmentResetter alignmentResetter(desired_dock_alignment,
+                                                         dock_layout);
+      const wm::WMEvent event(wm::WM_EVENT_DOCK);
+      window_state->OnWMEvent(&event);
+      return;
+    }
+  }
+
+  if (window_state->IsDocked() || window_state->IsSnapped()) {
+    ScopedDockedLayoutEventSourceResetter event_source_resetter(dock_layout);
+    window_state->Restore();
+    return;
+  }
+  ::wm::AnimateWindow(window_state->window(),
+                      ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+}
+
 }  // namespace;
 
 DefaultState::DefaultState(WindowStateType initial_state_type)
@@ -117,6 +217,8 @@ void DefaultState::OnWMEvent(WindowState* window_state,
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_FULLSCREEN:
+    case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
+    case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
     case WM_EVENT_CENTER:
       NOTREACHED() << "Compound event should not reach here:" << event;
       return;
@@ -268,6 +370,10 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_FULLSCREEN:
       ToggleFullScreen(window_state, window_state->delegate());
       return true;
+    case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
+    case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
+      CycleSnapDock(window_state, event->type());
+      return true;
     case WM_EVENT_CENTER:
       CenterWindow(window_state);
       return true;
@@ -370,6 +476,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_FULLSCREEN:
+    case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
+    case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
     case WM_EVENT_CENTER:
     case WM_EVENT_NORMAL:
     case WM_EVENT_MAXIMIZE:

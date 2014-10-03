@@ -138,6 +138,8 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_MAXIMIZE:
+    case wm::WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
+    case wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
     case wm::WM_EVENT_CENTER:
     case wm::WM_EVENT_SNAP_LEFT:
     case wm::WM_EVENT_SNAP_RIGHT:

@@ -121,6 +121,14 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Used to snap docked windows to the side of screen during drag.
   DockedAlignment CalculateAlignment() const;
 
+  void set_preferred_alignment(DockedAlignment preferred_alignment) {
+    preferred_alignment_ = preferred_alignment;
+  }
+
+  void set_event_source(DockedActionSource event_source) {
+    event_source_ = event_source;
+  }
+
   // Returns true when a window can be docked. Windows cannot be docked at the
   // edge used by the shelf or the edge opposite from existing dock.
   bool CanDockWindow(aura::Window* window, DockedAlignment desired_alignment);
@@ -298,6 +306,12 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Side of the screen that the dock is positioned at.
   DockedAlignment alignment_;
+
+  // The preferred alignment of the next window to be added to docked layout.
+  DockedAlignment preferred_alignment_;
+
+  // The current event source
+  DockedActionSource event_source_;
 
   // The last active window. Used to maintain stacking order even if no windows
   // are currently focused.

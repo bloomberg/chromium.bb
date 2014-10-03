@@ -502,24 +502,25 @@ bool HandleToggleRootWindowFullScreen() {
   return true;
 }
 
-bool HandleWindowSnap(int action) {
+bool HandleWindowSnapOrDock(int action) {
   wm::WindowState* window_state = wm::GetActiveWindowState();
   // Disable window snapping shortcut key for full screen window due to
   // http://crbug.com/135487.
   if (!window_state ||
-      window_state->window()->type() != ui::wm::WINDOW_TYPE_NORMAL ||
-      window_state->IsFullscreen() ||
-      !window_state->CanSnap()) {
+      (window_state->window()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+      window_state->window()->type() != ui::wm::WINDOW_TYPE_PANEL) ||
+      window_state->IsFullscreen()) {
     return false;
   }
 
-  if (action == WINDOW_SNAP_LEFT) {
+  if (action == WINDOW_CYCLE_SNAP_DOCK_LEFT)
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Left"));
-  } else {
+  else
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
-  }
-  const wm::WMEvent event(action == WINDOW_SNAP_LEFT ?
-                          wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+
+  const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_DOCK_LEFT ?
+                          wm::WM_EVENT_CYCLE_SNAP_DOCK_LEFT :
+                          wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT);
   window_state->OnWMEvent(&event);
   return true;
 }
@@ -1051,9 +1052,9 @@ bool AcceleratorController::PerformAction(int action,
       return HandleLaunchAppN(7);
     case LAUNCH_LAST_APP:
       return HandleLaunchLastApp();
-    case WINDOW_SNAP_LEFT:
-    case WINDOW_SNAP_RIGHT:
-      return HandleWindowSnap(action);
+    case WINDOW_CYCLE_SNAP_DOCK_LEFT:
+    case WINDOW_CYCLE_SNAP_DOCK_RIGHT:
+      return HandleWindowSnapOrDock(action);
     case WINDOW_MINIMIZE:
       return HandleWindowMinimize();
     case TOGGLE_FULLSCREEN:
