@@ -1309,9 +1309,9 @@ chrome_pfq.add_config('link_freon-chrome-pfq',
   vm_tests=[],
 )
 
-chrome_pfq.add_config('rush-chrome-pfq',
+chrome_pfq.add_config('rush_ryu-chrome-pfq',
   non_testable_builder,
-  boards=['rush'],
+  boards=['rush_ryu'],
   usepkg_toolchain=False,
 )
 
@@ -1436,6 +1436,7 @@ _arm_release_boards = frozenset([
   'peach_pi',
   'peach_pit',
   'rush',
+  'rush_ryu',
   'veyron_pinky',
 ])
 _arm_full_boards = _arm_release_boards | frozenset([
@@ -2064,10 +2065,10 @@ internal_notest_paladin.add_config('nyan-paladin',
   paladin_builder_name='nyan paladin',
 )
 
-internal_notest_paladin.add_config('rush-paladin',
-  boards=['rush'],
+internal_notest_paladin.add_config('rush_ryu-paladin',
+  boards=['rush_ryu'],
   usepkg_toolchain=False,
-  paladin_builder_name='rush paladin',
+  paladin_builder_name='rush_ryu paladin',
   important=False,
 )
 
@@ -2545,6 +2546,13 @@ _release.add_config('rush-release',
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
+)
+
+_release.add_config('rush_ryu-release',
+  non_testable_builder,
+  boards=['rush_ryu'],
+  hw_tests=[],
+  usepkg_toolchain=False,
 )
 
 ### Per-chipset release groups
