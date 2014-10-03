@@ -12,7 +12,6 @@ goog.provide('cvox.TabsApiHandler');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.BrailleInterface');
-goog.require('cvox.BrailleUtil');
 goog.require('cvox.NavBraille');
 
 

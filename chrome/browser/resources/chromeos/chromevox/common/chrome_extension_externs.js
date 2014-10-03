@@ -957,7 +957,7 @@ ChromeEvent.prototype.hasListener = function(callback) {};
 
 
 /** @return {boolean} */
-ChromeEvent.prototype.hasListeners = function(callback) {};
+ChromeEvent.prototype.hasListeners = function() {};
 
 
 /**
@@ -1209,3 +1209,296 @@ chrome.storage.local.remove = function(keys, opt_callback) {};
  * @type {ChromeEvent}
  */
 chrome.storage.onChanged;
+
+
+/**
+ * @const
+ */
+chrome.automation = {};
+
+/**
+ * @constructor
+ */
+chrome.automation.AutomationNode = function() {};
+
+
+/**
+ * @type {!Object}
+ */
+chrome.automation.AutomationNode.prototype.attributes;
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.firstChild = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.lastChild = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.nextSibling = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.previousSibling = function() {};
+
+
+/**
+ * @return {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.parent = function() {};
+
+
+/**
+ * @param {chrome.automation.EventType} eventType
+ * @param {function(chrome.automation.AutomationNode) : void} callback
+ * @param {boolean} capture
+ */
+chrome.automation.AutomationNode.prototype.addEventListener =
+    function(eventType, callback, capture) {};
+
+
+/**
+ * @param {chrome.automation.EventType} eventType
+ * @param {function(chrome.automation.AutomationNode) : void} callback
+ * @param {boolean} capture
+ */
+chrome.automation.AutomationNode.prototype.removeEventListener =
+    function(eventType, callback, capture) {};
+
+
+/**
+ * @param {function(chrome.automation.AutomationNode)} callback
+ */
+chrome.automation.getDesktop = function(callback) {};
+
+
+/**
+ * @param {function(chrome.automation.AutomationNode)} callback
+ */
+chrome.automation.getTree = function(callback) {};
+
+
+/**
+ * @const
+ */
+chrome.commands = {};
+
+
+/**
+ * @type {ChromeEvent}
+ */
+chrome.commands.onCommand;
+
+
+// Begin auto generated externs; do not edit.
+// The following was generated from tools/json_schema_compiler/compiler.py.
+/**
+ * Possible events fired on an $(ref:automation.AutomationNode).
+ * @enum {string}
+ */
+chrome.automation.EventType = {
+    activedescendantchanged: 'activedescendantchanged',
+    alert: 'alert',
+    ariaAttributeChanged: 'ariaAttributeChanged',
+    autocorrectionOccured: 'autocorrectionOccured',
+    blur: 'blur',
+    checkedStateChanged: 'checkedStateChanged',
+    childrenChanged: 'childrenChanged',
+    focus: 'focus',
+    hide: 'hide',
+    hover: 'hover',
+    invalidStatusChanged: 'invalidStatusChanged',
+    layoutComplete: 'layoutComplete',
+    liveRegionChanged: 'liveRegionChanged',
+    loadComplete: 'loadComplete',
+    locationChanged: 'locationChanged',
+    menuEnd: 'menuEnd',
+    menuListItemSelected: 'menuListItemSelected',
+    menuListValueChanged: 'menuListValueChanged',
+    menuPopupEnd: 'menuPopupEnd',
+    menuPopupStart: 'menuPopupStart',
+    menuStart: 'menuStart',
+    rowCollapsed: 'rowCollapsed',
+    rowCountChanged: 'rowCountChanged',
+    rowExpanded: 'rowExpanded',
+    scrollPositionChanged: 'scrollPositionChanged',
+    scrolledToAnchor: 'scrolledToAnchor',
+    selectedChildrenChanged: 'selectedChildrenChanged',
+    selectedTextChanged: 'selectedTextChanged',
+    selection: 'selection',
+    selectionAdd: 'selectionAdd',
+    selectionRemove: 'selectionRemove',
+    show: 'show',
+    textChanged: 'textChanged',
+    textInserted: 'textInserted',
+    textRemoved: 'textRemoved',
+    textSelectionChanged: 'textSelectionChanged',
+    valueChanged: 'valueChanged'
+};
+/**
+ * Describes the purpose of an $(ref:automation.AutomationNode).
+ * @enum {string}
+ */
+chrome.automation.RoleType = {
+    alertDialog: 'alertDialog',
+    alert: 'alert',
+    annotation: 'annotation',
+    application: 'application',
+    article: 'article',
+    banner: 'banner',
+    browser: 'browser',
+    busyIndicator: 'busyIndicator',
+    button: 'button',
+    buttonDropDown: 'buttonDropDown',
+    canvas: 'canvas',
+    cell: 'cell',
+    checkBox: 'checkBox',
+    client: 'client',
+    colorWell: 'colorWell',
+    columnHeader: 'columnHeader',
+    column: 'column',
+    comboBox: 'comboBox',
+    complementary: 'complementary',
+    contentInfo: 'contentInfo',
+    definition: 'definition',
+    descriptionListDetail: 'descriptionListDetail',
+    descriptionListTerm: 'descriptionListTerm',
+    desktop: 'desktop',
+    dialog: 'dialog',
+    directory: 'directory',
+    disclosureTriangle: 'disclosureTriangle',
+    div: 'div',
+    document: 'document',
+    drawer: 'drawer',
+    editableText: 'editableText',
+    embeddedObject: 'embeddedObject',
+    footer: 'footer',
+    form: 'form',
+    grid: 'grid',
+    group: 'group',
+    growArea: 'growArea',
+    heading: 'heading',
+    helpTag: 'helpTag',
+    horizontalRule: 'horizontalRule',
+    iframe: 'iframe',
+    ignored: 'ignored',
+    imageMapLink: 'imageMapLink',
+    imageMap: 'imageMap',
+    image: 'image',
+    incrementor: 'incrementor',
+    inlineTextBox: 'inlineTextBox',
+    labelText: 'labelText',
+    legend: 'legend',
+    link: 'link',
+    listBoxOption: 'listBoxOption',
+    listBox: 'listBox',
+    listItem: 'listItem',
+    listMarker: 'listMarker',
+    list: 'list',
+    locationBar: 'locationBar',
+    log: 'log',
+    main: 'main',
+    marquee: 'marquee',
+    mathElement: 'mathElement',
+    math: 'math',
+    matte: 'matte',
+    menuBar: 'menuBar',
+    menuButton: 'menuButton',
+    menuItem: 'menuItem',
+    menuListOption: 'menuListOption',
+    menuListPopup: 'menuListPopup',
+    menu: 'menu',
+    navigation: 'navigation',
+    note: 'note',
+    outline: 'outline',
+    pane: 'pane',
+    paragraph: 'paragraph',
+    popUpButton: 'popUpButton',
+    presentational: 'presentational',
+    progressIndicator: 'progressIndicator',
+    radioButton: 'radioButton',
+    radioGroup: 'radioGroup',
+    region: 'region',
+    rootWebArea: 'rootWebArea',
+    rowHeader: 'rowHeader',
+    row: 'row',
+    rulerMarker: 'rulerMarker',
+    ruler: 'ruler',
+    svgRoot: 'svgRoot',
+    scrollArea: 'scrollArea',
+    scrollBar: 'scrollBar',
+    seamlessWebArea: 'seamlessWebArea',
+    search: 'search',
+    sheet: 'sheet',
+    slider: 'slider',
+    sliderThumb: 'sliderThumb',
+    spinButtonPart: 'spinButtonPart',
+    spinButton: 'spinButton',
+    splitGroup: 'splitGroup',
+    splitter: 'splitter',
+    staticText: 'staticText',
+    status: 'status',
+    systemWide: 'systemWide',
+    tabGroup: 'tabGroup',
+    tabList: 'tabList',
+    tabPanel: 'tabPanel',
+    tab: 'tab',
+    tableHeaderContainer: 'tableHeaderContainer',
+    table: 'table',
+    textArea: 'textArea',
+    textField: 'textField',
+    timer: 'timer',
+    titleBar: 'titleBar',
+    toggleButton: 'toggleButton',
+    toolbar: 'toolbar',
+    treeGrid: 'treeGrid',
+    treeItem: 'treeItem',
+    tree: 'tree',
+    unknown: 'unknown',
+    tooltip: 'tooltip',
+    valueIndicator: 'valueIndicator',
+    webArea: 'webArea',
+    window: 'window'
+};
+/**
+ * Describes characteristics of an $(ref:automation.AutomationNode).
+ * @enum {string}
+ */
+chrome.automation.StateType = {
+    busy: 'busy',
+    checked: 'checked',
+    collapsed: 'collapsed',
+    default: 'default',
+    disabled: 'disabled',
+    editable: 'editable',
+    enabled: 'enabled',
+    expanded: 'expanded',
+    focusable: 'focusable',
+    focused: 'focused',
+    haspopup: 'haspopup',
+    hovered: 'hovered',
+    indeterminate: 'indeterminate',
+    invisible: 'invisible',
+    linked: 'linked',
+    multiselectable: 'multiselectable',
+    offscreen: 'offscreen',
+    pressed: 'pressed',
+    protected: 'protected',
+    readOnly: 'readOnly',
+    required: 'required',
+    selectable: 'selectable',
+    selected: 'selected',
+    vertical: 'vertical',
+    visited: 'visited'
+};
+// End auto generated externs; do not edit.

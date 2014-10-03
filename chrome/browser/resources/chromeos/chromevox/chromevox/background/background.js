@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview Script that runs on the background page.
- *
  */
 
 goog.provide('cvox.ChromeVoxBackground');
@@ -559,6 +558,7 @@ cvox.ChromeVoxBackground.prototype.onLoadStateChanged = function(
   // Export the braille object for access by the options page.
   window['braille'] = cvox.ChromeVox.braille;
 
-  // Export this background page for ChromeVox Next to access.
-  cvox.ChromeVox.background = background;
+  // Export injection for ChromeVox Next.
+  cvox.ChromeVox.injectChromeVoxIntoTabs =
+      background.injectChromeVoxIntoTabs.bind(background);
 })();
