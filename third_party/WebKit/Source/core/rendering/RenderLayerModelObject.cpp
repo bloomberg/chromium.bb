@@ -188,7 +188,7 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
     clearPaintInvalidationState(paintInvalidationState);
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    if (reason == InvalidationLocationChange || reason == InvalidationFull)
+    if (reason == InvalidationLocationChange)
         childTreeWalkState.setForceCheckForPaintInvalidation();
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }

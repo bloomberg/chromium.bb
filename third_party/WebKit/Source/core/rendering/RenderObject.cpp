@@ -1301,17 +1301,17 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidation
     setPreviousPaintInvalidationRect(newBounds);
     setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
+    InvalidationReason invalidationReason = paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
+
     // If we are set to do a full paint invalidation that means the RenderView will issue
     // paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullPaintInvalidation())
-        return InvalidationNone;
+        return invalidationReason;
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
         "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
-
-    InvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 
     invalidateSelectionIfNeeded(paintInvalidationContainer);
 
@@ -1327,14 +1327,18 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidation
     return invalidationReason;
 }
 
-InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
-    const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking, const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking)
+InvalidationReason RenderObject::paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
+    const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
+    const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking) const
 {
+    // First check for InvalidationLocationChange to avoid it from being hidden by other
+    // invalidation reasons because we'll need to force check for paint invalidation for
+    // children when location of this object changed.
+    if (newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking)
+        return InvalidationLocationChange;
+
     if (shouldDoFullPaintInvalidation())
         return m_bitfields.fullPaintInvalidationReason();
-
-    if (compositingState() != PaintsIntoOwnBacking && newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking)
-        return InvalidationLocationChange;
 
     // If the bounds are the same then we know that none of the statements below
     // can match, so we can early out since we will not need to do any
