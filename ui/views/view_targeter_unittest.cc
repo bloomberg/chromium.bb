@@ -233,8 +233,12 @@ class GestureEventForTest : public ui::GestureEvent {
                      base::TimeDelta(),
                      ui::GestureEventDetails(type)) {}
 
-  GestureEventForTest(ui::GestureEventDetails details, int x, int y)
-      : GestureEvent(x, y, 0, base::TimeDelta(), details) {}
+  GestureEventForTest(ui::GestureEventDetails details)
+      : GestureEvent(details.bounding_box().CenterPoint().x(),
+                     details.bounding_box().CenterPoint().y(),
+                     0,
+                     base::TimeDelta(),
+                     details) {}
 };
 
 // Verifies that the the functions ViewTargeter::FindTargetForEvent()
@@ -268,13 +272,13 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   gfx::Point center_point(bounding_box.CenterPoint());
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_bounding_box(bounding_box);
-  GestureEventForTest tap(details, center_point.x(), center_point.y());
+  GestureEventForTest tap(details);
   details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN);
   details.set_bounding_box(bounding_box);
-  GestureEventForTest scroll_begin(details, center_point.x(), center_point.y());
+  GestureEventForTest scroll_begin(details);
   details = ui::GestureEventDetails(ui::ET_GESTURE_END);
   details.set_bounding_box(bounding_box);
-  GestureEventForTest end(details, center_point.x(), center_point.y());
+  GestureEventForTest end(details);
 
   // Assume that the view currently handling gestures has been set as
   // |grandchild| by a previous gesture event. Thus subsequent TAP and
@@ -326,14 +330,13 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // space of the returned view).
   details = ui::GestureEventDetails(ui::ET_GESTURE_TAP);
   details.set_bounding_box(bounding_box);
-  tap = GestureEventForTest(details, center_point.x(), center_point.y());
+  tap = GestureEventForTest(details);
   details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN);
   details.set_bounding_box(bounding_box);
-  scroll_begin =
-      GestureEventForTest(details, center_point.x(), center_point.y());
+  scroll_begin = GestureEventForTest(details);
   details = ui::GestureEventDetails(ui::ET_GESTURE_END);
   details.set_bounding_box(bounding_box);
-  end = GestureEventForTest(details, center_point.x(), center_point.y());
+  end = GestureEventForTest(details);
 
   // If no default gesture handler is currently set, targeting should be
   // performed using the location of the gesture event for a TAP and a
@@ -346,6 +349,97 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // should never be re-targeted to any View.
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(NULL, &end));
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(child, &end));
+}
+
+// Tests that the contents view is targeted instead of the root view for
+// gesture events that should be targeted to the contents view. Also
+// tests that the root view is targeted for gesture events which should
+// not be targeted to any other view in the views tree.
+TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  widget.Init(init_params);
+
+  // The coordinates used for SetBounds() are in the parent coordinate space.
+  View* content = new View;
+  content->SetBounds(0, 0, 100, 100);
+  widget.SetContentsView(content);
+
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  ui::EventTargeter* targeter = root_view->targeter();
+
+  // A gesture event located entirely within the contents view should
+  // target the contents view.
+  gfx::Rect bounding_box(gfx::Point(96, 96), gfx::Size(8, 8));
+  gfx::Point center_point(bounding_box.CenterPoint());
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+  details.set_bounding_box(bounding_box);
+  GestureEventForTest tap(details);
+
+  EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
+
+  // A gesture event not located entirely within the contents view but
+  // having its center within the contents view should target
+  // the contents view.
+  bounding_box = gfx::Rect(gfx::Point(194, 100), gfx::Size(8, 8));
+  details.set_bounding_box(bounding_box);
+  center_point = bounding_box.CenterPoint();
+  tap = GestureEventForTest(details);
+
+  EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
+
+  // A gesture event with its center not located within the contents
+  // view but that overlaps the contents view by at least 60% should
+  // target the contents view.
+  bounding_box = gfx::Rect(gfx::Point(50, 0), gfx::Size(400, 200));
+  details.set_bounding_box(bounding_box);
+  center_point = bounding_box.CenterPoint();
+  tap = GestureEventForTest(details);
+
+  EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
+
+  // A gesture event not overlapping the contents view by at least
+  // 60% and not having its center within the contents view should
+  // be targeted to the root view.
+  bounding_box = gfx::Rect(gfx::Point(196, 100), gfx::Size(8, 8));
+  details.set_bounding_box(bounding_box);
+  center_point = bounding_box.CenterPoint();
+  tap = GestureEventForTest(details);
+
+  EXPECT_EQ(widget.GetRootView(),
+            targeter->FindTargetForEvent(root_view, &tap));
+
+  // A gesture event completely outside the contents view should be targeted
+  // to the root view.
+  bounding_box = gfx::Rect(gfx::Point(205, 100), gfx::Size(8, 8));
+  details.set_bounding_box(bounding_box);
+  center_point = bounding_box.CenterPoint();
+  tap = GestureEventForTest(details);
+
+  EXPECT_EQ(widget.GetRootView(),
+            targeter->FindTargetForEvent(root_view, &tap));
+
+  // A gesture event with dimensions 1x1 located entirely within the
+  // contents view should target the contents view.
+  bounding_box = gfx::Rect(gfx::Point(175, 100), gfx::Size(1, 1));
+  details.set_bounding_box(bounding_box);
+  center_point = bounding_box.CenterPoint();
+  tap = GestureEventForTest(details);
+
+  EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
+
+  // A gesture event with dimensions 1x1 located entirely outside the
+  // contents view should be targeted to the root view.
+  bounding_box = gfx::Rect(gfx::Point(205, 100), gfx::Size(1, 1));
+  details.set_bounding_box(bounding_box);
+  center_point = bounding_box.CenterPoint();
+  tap = GestureEventForTest(details);
+
+  EXPECT_EQ(widget.GetRootView(),
+            targeter->FindTargetForEvent(root_view, &tap));
 }
 
 // Tests that calls to FindTargetForEvent() and FindNextBestTarget() change
@@ -382,7 +476,7 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
   gfx::Point center_point(bounding_box.CenterPoint());
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_bounding_box(bounding_box);
-  GestureEventForTest tap(details, center_point.x(), center_point.y());
+  GestureEventForTest tap(details);
 
   // Calculate the location of the gesture in each of the different
   // coordinate spaces.
