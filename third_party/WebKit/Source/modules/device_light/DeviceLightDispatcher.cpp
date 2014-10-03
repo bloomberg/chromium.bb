@@ -12,8 +12,8 @@ namespace blink {
 
 DeviceLightDispatcher& DeviceLightDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(DeviceLightDispatcher, deviceLightDispatcher, ());
-    return deviceLightDispatcher;
+    DEFINE_STATIC_LOCAL(Persistent<DeviceLightDispatcher>, deviceLightDispatcher, (new DeviceLightDispatcher()));
+    return *deviceLightDispatcher;
 }
 
 DeviceLightDispatcher::DeviceLightDispatcher()
@@ -23,6 +23,11 @@ DeviceLightDispatcher::DeviceLightDispatcher()
 
 DeviceLightDispatcher::~DeviceLightDispatcher()
 {
+}
+
+void DeviceLightDispatcher::trace(Visitor* visitor)
+{
+    PlatformEventDispatcher::trace(visitor);
 }
 
 void DeviceLightDispatcher::startListening()

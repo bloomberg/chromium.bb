@@ -14,7 +14,8 @@ namespace blink {
 
 class WebBatteryStatus;
 
-class BatteryDispatcher FINAL : public PlatformEventDispatcher, public WebBatteryStatusListener {
+class BatteryDispatcher final : public GarbageCollectedFinalized<BatteryDispatcher>, public PlatformEventDispatcher, public WebBatteryStatusListener {
+    USING_GARBAGE_COLLECTED_MIXIN(BatteryDispatcher);
 public:
     static BatteryDispatcher& instance();
     virtual ~BatteryDispatcher();
@@ -22,16 +23,18 @@ public:
     BatteryStatus* latestData();
 
     // Inherited from WebBatteryStatusListener.
-    virtual void updateBatteryStatus(const WebBatteryStatus&) OVERRIDE;
+    virtual void updateBatteryStatus(const WebBatteryStatus&) override;
+
+    virtual void trace(Visitor*) override;
 
 private:
     BatteryDispatcher();
 
     // Inherited from PlatformEventDispatcher.
-    virtual void startListening() OVERRIDE;
-    virtual void stopListening() OVERRIDE;
+    virtual void startListening() override;
+    virtual void stopListening() override;
 
-    Persistent<BatteryStatus> m_batteryStatus;
+    Member<BatteryStatus> m_batteryStatus;
 };
 
 } // namespace blink

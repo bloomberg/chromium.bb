@@ -182,9 +182,6 @@ NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
 
 NavigatorGamepad::~NavigatorGamepad()
 {
-#if ENABLE(OILPAN)
-    stopUpdating();
-#endif
 }
 
 const char* NavigatorGamepad::supplementName()

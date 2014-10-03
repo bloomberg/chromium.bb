@@ -6,11 +6,9 @@
 #define ScreenOrientationDispatcher_h
 
 #include "core/frame/PlatformEventDispatcher.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
-
-class FrameView;
-class ScreenOrientation;
 
 // ScreenOrientationDispatcher is a singleton that handles whether the current
 // Blink instance should be listening to the screen orientation platform events.
@@ -20,14 +18,14 @@ class ScreenOrientation;
 // but some platforms require to poll to have an accurate reporting. When
 // ScreenOrientationDispatcher is listening, that means that the platform should
 // be polling if required.
-class ScreenOrientationDispatcher FINAL :
-    public PlatformEventDispatcher {
+class ScreenOrientationDispatcher final : public GarbageCollectedFinalized<ScreenOrientationDispatcher>, public PlatformEventDispatcher {
 public:
     static ScreenOrientationDispatcher& instance();
 
+    virtual void trace(Visitor*) override;
+
 private:
     ScreenOrientationDispatcher();
-    virtual ~ScreenOrientationDispatcher();
 
     // Inherited from PlatformEventDispatcher.
     virtual void startListening() OVERRIDE;

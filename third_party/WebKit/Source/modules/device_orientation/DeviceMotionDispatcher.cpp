@@ -39,8 +39,8 @@ namespace blink {
 
 DeviceMotionDispatcher& DeviceMotionDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher, ());
-    return deviceMotionDispatcher;
+    DEFINE_STATIC_LOCAL(Persistent<DeviceMotionDispatcher>, deviceMotionDispatcher, (new DeviceMotionDispatcher()));
+    return *deviceMotionDispatcher;
 }
 
 DeviceMotionDispatcher::DeviceMotionDispatcher()
@@ -49,6 +49,12 @@ DeviceMotionDispatcher::DeviceMotionDispatcher()
 
 DeviceMotionDispatcher::~DeviceMotionDispatcher()
 {
+}
+
+void DeviceMotionDispatcher::trace(Visitor* visitor)
+{
+    visitor->trace(m_lastDeviceMotionData);
+    PlatformEventDispatcher::trace(visitor);
 }
 
 void DeviceMotionDispatcher::startListening()

@@ -16,10 +16,6 @@ PlatformEventDispatcher::PlatformEventDispatcher()
 {
 }
 
-PlatformEventDispatcher::~PlatformEventDispatcher()
-{
-}
-
 void PlatformEventDispatcher::addController(PlatformEventController* controller)
 {
     bool wasEmpty = m_controllers.isEmpty();
@@ -83,5 +79,27 @@ void PlatformEventDispatcher::notifyControllers()
     if (m_needsPurge)
         purgeControllers();
 }
+
+void PlatformEventDispatcher::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    // Trace the backing store, the weak(&bare) element references won't be.
+    visitor->trace(m_controllers);
+    visitor->registerWeakMembers<PlatformEventDispatcher, &PlatformEventDispatcher::clearWeakMembers>(this);
+#endif
+}
+
+#if ENABLE(OILPAN)
+void PlatformEventDispatcher::clearWeakMembers(Visitor* visitor)
+{
+    for (size_t i = 0; i < m_controllers.size(); ++i) {
+        if (!visitor->isAlive(m_controllers[i])) {
+            m_controllers[i] = nullptr;
+            m_needsPurge = true;
+        }
+    }
+    // Next notification will purge the empty slots.
+}
+#endif
 
 } // namespace blink

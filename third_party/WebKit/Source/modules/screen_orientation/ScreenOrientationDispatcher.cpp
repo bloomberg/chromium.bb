@@ -11,16 +11,17 @@ namespace blink {
 
 ScreenOrientationDispatcher& ScreenOrientationDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(ScreenOrientationDispatcher, screenOrientationDispatcher, ());
-    return screenOrientationDispatcher;
+    DEFINE_STATIC_LOCAL(Persistent<ScreenOrientationDispatcher>, screenOrientationDispatcher, (new ScreenOrientationDispatcher()));
+    return *screenOrientationDispatcher;
 }
 
 ScreenOrientationDispatcher::ScreenOrientationDispatcher()
 {
 }
 
-ScreenOrientationDispatcher::~ScreenOrientationDispatcher()
+void ScreenOrientationDispatcher::trace(Visitor* visitor)
 {
+    PlatformEventDispatcher::trace(visitor);
 }
 
 void ScreenOrientationDispatcher::startListening()

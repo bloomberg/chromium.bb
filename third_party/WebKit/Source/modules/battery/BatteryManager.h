@@ -21,8 +21,8 @@ class BatteryManager FINAL : public RefCountedGarbageCollectedWillBeGarbageColle
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 public:
-    virtual ~BatteryManager();
     static BatteryManager* create(ExecutionContext*);
+    virtual ~BatteryManager();
 
     // Returns a promise object that will be resolved with this BatteryManager.
     ScriptPromise startRequest(ScriptState*);

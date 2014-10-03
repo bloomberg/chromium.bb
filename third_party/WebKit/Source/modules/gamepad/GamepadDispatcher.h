@@ -15,9 +15,11 @@ namespace blink {
 class NavigatorGamepad;
 class WebGamepads;
 
-class GamepadDispatcher : public PlatformEventDispatcher, public WebGamepadListener {
+class GamepadDispatcher final : public GarbageCollectedFinalized<GamepadDispatcher>, public PlatformEventDispatcher, public WebGamepadListener {
+    USING_GARBAGE_COLLECTED_MIXIN(GamepadDispatcher);
 public:
     static GamepadDispatcher& instance();
+    virtual ~GamepadDispatcher();
 
     void sampleGamepads(WebGamepads&);
 
@@ -28,17 +30,18 @@ public:
 
     const ConnectionChange& latestConnectionChange() const { return m_latestChange; }
 
+    virtual void trace(Visitor*) override;
+
 private:
     GamepadDispatcher();
-    virtual ~GamepadDispatcher();
 
     // WebGamepadListener
-    virtual void didConnectGamepad(unsigned index, const WebGamepad&) OVERRIDE;
-    virtual void didDisconnectGamepad(unsigned index, const WebGamepad&) OVERRIDE;
+    virtual void didConnectGamepad(unsigned index, const WebGamepad&) override;
+    virtual void didDisconnectGamepad(unsigned index, const WebGamepad&) override;
 
     // PlatformEventDispatcher
-    virtual void startListening() OVERRIDE;
-    virtual void stopListening() OVERRIDE;
+    virtual void startListening() override;
+    virtual void stopListening() override;
 
     void dispatchDidConnectOrDisconnectGamepad(unsigned index, const WebGamepad&, bool connected);
 
