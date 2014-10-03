@@ -21,6 +21,7 @@
  * OF THIS SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -288,7 +289,7 @@ warn(struct location *loc, const char *msg, ...)
 	va_end(ap);
 }
 
-static int
+static bool
 is_nullable_type(struct arg *arg)
 {
 	switch (arg->type) {
@@ -297,9 +298,9 @@ is_nullable_type(struct arg *arg)
 	case OBJECT:
 	case NEW_ID:
 	case ARRAY:
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	}
 }
 

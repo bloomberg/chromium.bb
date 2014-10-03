@@ -27,6 +27,7 @@
 
 #define _GNU_SOURCE
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,7 +100,7 @@ static const struct wl_buffer_interface shm_buffer_interface = {
 	shm_buffer_destroy
 };
 
-static int
+static bool
 format_is_supported(struct wl_client *client, uint32_t format)
 {
 	struct wl_display *display = wl_client_get_display(client);
@@ -109,15 +110,15 @@ format_is_supported(struct wl_client *client, uint32_t format)
 	switch (format) {
 	case WL_SHM_FORMAT_ARGB8888:
 	case WL_SHM_FORMAT_XRGB8888:
-		return 1;
+		return true;
 	default:
 		formats = wl_display_get_additional_shm_formats(display);
 		wl_array_for_each(p, formats)
 			if(*p == format)
-				return 1;
+				return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static void
