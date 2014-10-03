@@ -5,7 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
+
+class GuestViewManager;
 
 class GuestViewManagerFactory {
  public:

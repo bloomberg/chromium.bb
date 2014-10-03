@@ -5,6 +5,16 @@
 var embedder = {};
 
 // TODO(lfg) Move these functions to a common js.
+embedder.closeSocketURL = '';
+
+embedder.setUp_ = function(config) {
+  if (!config || !config.testServer) {
+    return;
+  }
+  embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
+  embedder.closeSocketURL = embedder.baseGuestURL + '/close-socket';
+};
+
 window.runTest = function(testName) {
   if (!embedder.test.testList[testName]) {
     window.console.warn('Incorrect testName: ' + testName);
@@ -852,6 +862,18 @@ function testLoadAbortChromeExtensionURLWrongPartition() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadabort event fires as expected and with the
+// appropriate fields when an empty response is returned.
+function testLoadAbortEmptyResponse() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_EMPTY_RESPONSE', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', embedder.closeSocketURL);
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the loadabort event fires as expected when an illegal
 // chrome URL is provided.
 function testLoadAbortIllegalChromeURL() {
@@ -1314,6 +1336,7 @@ embedder.test.testList = {
   'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,
   'testLoadAbortChromeExtensionURLWrongPartition':
       testLoadAbortChromeExtensionURLWrongPartition,
+  'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
@@ -1338,5 +1361,8 @@ embedder.test.testList = {
 };
 
 onload = function() {
-  chrome.test.sendMessage('LAUNCHED');
+  chrome.test.getConfig(function(config) {
+    embedder.setUp_(config);
+    chrome.test.sendMessage('LAUNCHED');
+  });
 };

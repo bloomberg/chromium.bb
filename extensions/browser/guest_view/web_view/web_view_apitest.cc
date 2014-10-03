@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_host.h"
@@ -18,6 +20,55 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/test/shell_test.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "net/base/filename_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+
+namespace {
+
+const char kEmptyResponsePath[] = "/close-socket";
+const char kRedirectResponsePath[] = "/server-redirect";
+const char kRedirectResponseFullPath[] =
+    "/extensions/platform_apps/web_view/shim/guest_redirect.html";
+const char kTestDataDirectory[] = "testDataDirectory";
+const char kTestServerPort[] = "testServer.port";
+const char kTestWebSocketPort[] = "testWebSocketPort";
+
+class EmptyHttpResponse : public net::test_server::HttpResponse {
+ public:
+  virtual std::string ToResponseString() const override {
+    return std::string();
+  }
+};
+
+// Handles |request| by serving a redirect response.
+scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
+    const std::string& path,
+    const GURL& redirect_target,
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(path, request.relative_url, true))
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", redirect_target.spec());
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
+// Handles |request| by serving an empty response.
+scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
+    const std::string& path,
+    const net::test_server::HttpRequest& request) {
+  if (StartsWithASCII(path, request.relative_url, true)) {
+    return scoped_ptr<net::test_server::HttpResponse>(new EmptyHttpResponse);
+  }
+
+  return scoped_ptr<net::test_server::HttpResponse>();
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -28,6 +79,8 @@ class WebViewAPITest : public AppShellTest {
     base::FilePath test_data_dir;
     PathService::Get(DIR_TEST_DATA, &test_data_dir);
     test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
+    test_config_.SetString(kTestDataDirectory,
+                           net::FilePathToFileURL(test_data_dir).spec());
 
     ASSERT_TRUE(extension_system_->LoadApp(test_data_dir));
     extension_system_->LaunchApp();
@@ -52,10 +105,40 @@ class WebViewAPITest : public AppShellTest {
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
+  void StartTestServer() {
+    // For serving guest pages.
+    if (!embedded_test_server()->InitializeAndWaitUntilReady()) {
+      LOG(ERROR) << "Failed to start test server.";
+      return;
+    }
+
+    TestGetConfigFunction::set_test_config_state(&test_config_);
+    base::FilePath test_data_dir;
+    test_config_.SetInteger(kTestWebSocketPort, 0);
+    test_config_.SetInteger(kTestServerPort, embedded_test_server()->port());
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&RedirectResponseHandler,
+                   kRedirectResponsePath,
+                   embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&EmptyResponseHandler, kEmptyResponsePath));
+  }
+
+  void StopTestServer() {
+    TestGetConfigFunction::set_test_config_state(nullptr);
+
+    if (!embedded_test_server()->ShutdownAndWaitUntilComplete()) {
+      LOG(ERROR) << "Failed to shutdown test server.";
+    }
+  }
+
   WebViewAPITest() { GuestViewManager::set_factory_for_testing(&factory_); }
 
  private:
   TestGuestViewManagerFactory factory_;
+  base::DictionaryValue test_config_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAllowTransparencyAttribute) {
@@ -164,6 +247,12 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestInvalidChromeExtensionURL) {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,
                        TestLoadAbortChromeExtensionURLWrongPartition) {
   RunTest("testLoadAbortChromeExtensionURLWrongPartition", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortEmptyResponse) {
+  StartTestServer();
+  RunTest("testLoadAbortEmptyResponse", "web_view/apitest");
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortIllegalChromeURL) {
