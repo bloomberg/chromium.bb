@@ -23,7 +23,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-from chromite.lib import retry_util
+from chromite.lib import retry_stats
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
@@ -739,7 +739,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
       sleep = ctx.DEFAULT_SLEEP_TIME
 
     result = cros_build_lib.CommandResult(error='')
-    with mock.patch.object(retry_util, 'GenericRetry', autospec=True,
+    with mock.patch.object(retry_stats, 'RetryWithStats', autospec=True,
                            return_value=result):
       ctx.Copy('/blah', 'gs://foon', version=version, recursive=recursive)
       cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags + list(headers)
@@ -748,7 +748,8 @@ class GSDoCommandTest(cros_test_lib.TestCase):
         cmd += ['-r', '-e']
       cmd += ['--', '/blah', 'gs://foon']
 
-      retry_util.GenericRetry.assert_called_once_with(
+      retry_stats.RetryWithStats.assert_called_once_with(
+          retry_stats.GSUTIL,
           ctx._RetryFilter, retries,
           cros_build_lib.RunCommand,
           cmd, sleep=sleep,

@@ -25,6 +25,7 @@ from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import retry_stats
 from chromite.lib import toolchain
 
 
@@ -466,6 +467,8 @@ class ReportStage(generic_stages.BuilderStage,
     version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
                                current_version=version)
+
+    retry_stats.ReportStats(sys.stdout)
 
     if cidb.CIDBConnectionFactory.IsCIDBSetup():
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()

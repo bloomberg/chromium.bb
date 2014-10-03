@@ -25,6 +25,7 @@ from chromite.lib import cidb
 from chromite.lib import cros_test_lib
 from chromite.lib import alerts
 from chromite.lib import osutils
+from chromite.lib import retry_stats
 
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
@@ -39,6 +40,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
   def setUp(self):
     self.mock_cidb = mox.MockObject(cidb.CIDBConnection)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+    retry_stats.SetupStats()
     os.environ['BUILDBOT_MASTERNAME'] = 'chromiumos'
     self._Prepare(build_id = None)
 

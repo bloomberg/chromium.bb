@@ -22,6 +22,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import retry_stats
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
@@ -623,10 +624,11 @@ class GSContext(object):
                     cros_build_lib.CmdToStr(cmd))
     else:
       try:
-        return retry_util.GenericRetry(self._RetryFilter,
-                                       retries, cros_build_lib.RunCommand,
-                                       cmd, sleep=self._sleep_time,
-                                       extra_env=extra_env, **kwargs)
+        return retry_stats.RetryWithStats(retry_stats.GSUTIL,
+                                          self._RetryFilter,
+                                          retries, cros_build_lib.RunCommand,
+                                          cmd, sleep=self._sleep_time,
+                                          extra_env=extra_env, **kwargs)
       except cros_build_lib.RunCommandError as e:
         raise GSCommandError(e.msg, e.result, e.exception)
 

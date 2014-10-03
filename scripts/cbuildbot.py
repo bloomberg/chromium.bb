@@ -59,6 +59,7 @@ from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
+from chromite.lib import retry_stats
 from chromite.lib import sudo
 from chromite.lib import timeout_util
 
@@ -1880,5 +1881,6 @@ def main(argv):
                 return_value=mock_statuses)
 
     _SetupCidb(options, build_config)
+    retry_stats.SetupStats()
 
     _RunBuildStagesWrapper(options, build_config)
