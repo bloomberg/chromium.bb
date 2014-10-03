@@ -24,7 +24,7 @@ class AthenaBrowserTest : public InProcessBrowserTest {
 
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   // Sends a memory pressure event to the resource manager with a new |pressure|
@@ -43,7 +43,7 @@ class AthenaBrowserTest : public InProcessBrowserTest {
   void WaitUntilIdle();
 
   // BrowserTestBase:
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserTest);

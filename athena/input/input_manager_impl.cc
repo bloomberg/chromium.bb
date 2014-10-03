@@ -28,25 +28,25 @@ class InputManagerImpl : public InputManager,
 
  private:
   // InputManager:
-  virtual void OnRootWindowCreated(aura::Window* root_window) OVERRIDE;
-  virtual ui::EventTarget* GetTopmostEventTarget() OVERRIDE { return this; }
-  virtual AcceleratorManager* GetAcceleratorManager() OVERRIDE {
+  virtual void OnRootWindowCreated(aura::Window* root_window) override;
+  virtual ui::EventTarget* GetTopmostEventTarget() override { return this; }
+  virtual AcceleratorManager* GetAcceleratorManager() override {
     return accelerator_manager_.get();
   }
 
   // Overridden from aura::client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
-      const aura::Window* window) const OVERRIDE {
+      const aura::Window* window) const override {
     return window && !window->ignore_events();
   }
-  virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE { return this; }
+  virtual ui::EventTarget* GetToplevelEventTarget() override { return this; }
 
   // ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
-  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
-  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual ui::EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  virtual ui::EventTargeter* GetEventTargeter() override;
+  virtual void OnEvent(ui::Event* event) override;
 
   scoped_ptr<AcceleratorManagerImpl> accelerator_manager_;
 

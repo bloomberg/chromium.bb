@@ -27,7 +27,7 @@ class PDFRendererHostFactory : public ppapi::host::HostFactory {
       ppapi::host::PpapiHost* host,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,
-      const IPC::Message& message) OVERRIDE {
+      const IPC::Message& message) override {
     DCHECK_EQ(host_->GetPpapiHost(), host);
     // Make sure the plugin is giving us a valid instance for this resource.
     if (!host_->IsValidInstance(instance))

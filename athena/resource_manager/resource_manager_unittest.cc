@@ -35,8 +35,8 @@ class TestActivity : public SampleActivity {
   void set_visible(bool visible) { is_visible_ = visible; }
 
   // Activity overrides:
-  virtual bool IsVisible() OVERRIDE { return is_visible_; }
-  virtual ActivityMediaState GetMediaState() OVERRIDE { return media_state_; }
+  virtual bool IsVisible() override { return is_visible_; }
+  virtual ActivityMediaState GetMediaState() override { return media_state_; }
 
  private:
   // The current media state.
@@ -56,12 +56,12 @@ class ResourceManagerTest : public AthenaTestBase {
   ResourceManagerTest() {}
   virtual ~ResourceManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AthenaTestBase::SetUp();
     // Override the delay to be instantaneous.
     ResourceManager::Get()->SetWaitTimeBetweenResourceManageCalls(0);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     while (!activity_list_.empty())
       DeleteActivity(activity_list_[0]);
     AthenaTestBase::TearDown();

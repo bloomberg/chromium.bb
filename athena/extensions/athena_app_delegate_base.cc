@@ -41,7 +41,7 @@ class AthenaAppDelegateBase::NewActivityContentsDelegate
   // content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE {
+      const content::OpenURLParams& params) override {
     if (!source)
       return NULL;
     return OpenURLInActivity(source->GetBrowserContext(), params);

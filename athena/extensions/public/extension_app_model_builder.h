@@ -19,7 +19,7 @@ class ATHENA_EXPORT ExtensionAppModelBuilder : public AppModelBuilder {
   explicit ExtensionAppModelBuilder(content::BrowserContext* browser_context);
   virtual ~ExtensionAppModelBuilder();
 
-  virtual void PopulateApps(app_list::AppListModel* model) OVERRIDE;
+  virtual void PopulateApps(app_list::AppListModel* model) override;
 
  private:
   content::BrowserContext* browser_context_;

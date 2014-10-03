@@ -32,15 +32,15 @@ class DragHandleDelegateTest : public DragHandleScrollDelegate {
 
  private:
   // DragHandleScrollDelegate:
-  virtual void HandleScrollBegin(float delta) OVERRIDE {
+  virtual void HandleScrollBegin(float delta) override {
     begin_delta_ = delta;
   }
 
-  virtual void HandleScrollEnd() OVERRIDE {
+  virtual void HandleScrollEnd() override {
     got_scroll_end_ = true;
   }
 
-  virtual void HandleScrollUpdate(float delta) OVERRIDE {
+  virtual void HandleScrollUpdate(float delta) override {
     update_delta_ = delta;
   }
 

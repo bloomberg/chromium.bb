@@ -109,21 +109,21 @@ class ATHENA_EXPORT SplitViewController
 
   // BezelController::ScrollDelegate:
   virtual void BezelScrollBegin(BezelController::Bezel bezel,
-                                float delta) OVERRIDE;
-  virtual void BezelScrollEnd() OVERRIDE;
-  virtual void BezelScrollUpdate(float delta) OVERRIDE;
-  virtual bool BezelCanScroll() OVERRIDE;
+                                float delta) override;
+  virtual void BezelScrollEnd() override;
+  virtual void BezelScrollUpdate(float delta) override;
+  virtual bool BezelCanScroll() override;
 
   // DragHandleScrollDelegate:
-  virtual void HandleScrollBegin(float delta) OVERRIDE;
-  virtual void HandleScrollEnd() OVERRIDE;
-  virtual void HandleScrollUpdate(float delta) OVERRIDE;
+  virtual void HandleScrollBegin(float delta) override;
+  virtual void HandleScrollEnd() override;
+  virtual void HandleScrollUpdate(float delta) override;
 
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() OVERRIDE;
-  virtual void OnOverviewModeExit() OVERRIDE;
-  virtual void OnSplitViewModeEnter() OVERRIDE;
-  virtual void OnSplitViewModeExit() OVERRIDE;
+  virtual void OnOverviewModeEnter() override;
+  virtual void OnOverviewModeExit() override;
+  virtual void OnSplitViewModeEnter() override;
+  virtual void OnSplitViewModeExit() override;
 
   State state_;
 

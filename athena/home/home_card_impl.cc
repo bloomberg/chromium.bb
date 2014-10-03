@@ -106,29 +106,29 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   }
 
   // aura::LayoutManager:
-  virtual void OnWindowResized() OVERRIDE {
+  virtual void OnWindowResized() override {
     Layout(false, gfx::Tween::LINEAR);
     UpdateMinimizedHomeBounds();
   }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+  virtual void OnWindowAddedToLayout(aura::Window* child) override {
     if (!home_card_) {
       home_card_ = child;
       Layout(false, gfx::Tween::LINEAR);
     }
   }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {
     if (home_card_ == child)
       home_card_ = NULL;
   }
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {
   }
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {
+                                              bool visible) override {
     if (home_card_ == child)
       Layout(false, gfx::Tween::LINEAR);
   }
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
+                              const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
@@ -183,7 +183,7 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
   // views::View:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     if (!gesture_manager_ &&
         event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       gesture_manager_.reset(new HomeCardGestureManager(
@@ -194,7 +194,7 @@ class HomeCardView : public views::WidgetDelegateView {
     if (gesture_manager_)
       gesture_manager_->ProcessGestureEvent(event);
   }
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
     if (HomeCard::Get()->GetState() == HomeCard::VISIBLE_MINIMIZED &&
         event.IsLeftMouseButton() && event.GetClickCount() == 1) {
       athena::WindowManager::Get()->ToggleOverview();
@@ -211,7 +211,7 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
   // views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
 

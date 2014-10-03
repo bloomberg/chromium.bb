@@ -101,7 +101,7 @@ class StatusIconContainerView::PowerStatus
 
   // chromeos::PowerManagerClient::Observer:
   virtual void PowerChanged(
-      const power_manager::PowerSupplyProperties& proto) OVERRIDE {
+      const power_manager::PowerSupplyProperties& proto) override {
     icon_->SetImage(GetPowerIcon(proto));
   }
 
@@ -145,17 +145,17 @@ class StatusIconContainerView::NetworkStatus
 
   // chromeos::NetworkStateHandlerObserver:
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) OVERRIDE {
+      const chromeos::NetworkState* network) override {
     Update();
   }
 
   virtual void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) OVERRIDE {
+      const chromeos::NetworkState* network) override {
     Update();
   }
 
   virtual void NetworkPropertiesUpdated(
-      const chromeos::NetworkState* network) OVERRIDE {
+      const chromeos::NetworkState* network) override {
     Update();
   }
 
@@ -188,7 +188,7 @@ class StatusIconContainerView::UpdateStatus
 
   // chromeos::UpdateEngineClient::Observer:
   virtual void UpdateStatusChanged(
-      const chromeos::UpdateEngineClient::Status& status) OVERRIDE {
+      const chromeos::UpdateEngineClient::Status& status) override {
     if (status.status !=
         chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       return;

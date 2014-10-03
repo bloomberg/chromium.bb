@@ -16,25 +16,25 @@ class AthenaShellAppDelegate : public AthenaAppDelegateBase {
 
  private:
   // extensions::AppDelegate:
-  virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
+  virtual void InitWebContents(content::WebContents* web_contents) override;
   virtual content::ColorChooser* ShowColorChooser(
       content::WebContents* web_contents,
-      SkColor initial_color) OVERRIDE;
+      SkColor initial_color) override;
   virtual void RunFileChooser(
       content::WebContents* tab,
-      const content::FileChooserParams& params) OVERRIDE;
+      const content::FileChooserParams& params) override;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual bool CheckMediaAccessPermission(
       content::WebContents* web_contents,
       const GURL& security_origin,
       content::MediaStreamType type,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) OVERRIDE;
+                                     bool blocked) override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaShellAppDelegate);
 };

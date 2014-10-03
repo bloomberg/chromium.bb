@@ -30,29 +30,29 @@ class ActivityFrameView : public views::NonClientFrameView,
   virtual ~ActivityFrameView();
 
   // views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForClientView() const override;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE;
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+      const gfx::Rect& client_bounds) const override;
+  virtual int NonClientHitTest(const gfx::Point& point) override;
   virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) OVERRIDE;
-  virtual void ResetWindowControls() OVERRIDE;
-  virtual void UpdateWindowIcon() OVERRIDE;
-  virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void SizeConstraintsChanged() OVERRIDE;
+                             gfx::Path* window_mask) override;
+  virtual void ResetWindowControls() override;
+  virtual void UpdateWindowIcon() override;
+  virtual void UpdateWindowTitle() override;
+  virtual void SizeConstraintsChanged() override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
+  virtual void Layout() override;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
 
  private:
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() OVERRIDE;
-  virtual void OnOverviewModeExit() OVERRIDE;
-  virtual void OnSplitViewModeEnter() OVERRIDE;
-  virtual void OnSplitViewModeExit() OVERRIDE;
+  virtual void OnOverviewModeEnter() override;
+  virtual void OnOverviewModeExit() override;
+  virtual void OnSplitViewModeEnter() override;
+  virtual void OnSplitViewModeExit() override;
 
   gfx::Insets NonClientBorderInsets() const;
   int NonClientBorderThickness() const;

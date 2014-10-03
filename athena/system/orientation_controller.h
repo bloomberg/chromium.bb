@@ -31,7 +31,7 @@ class OrientationController
 
   // chromeos::AccelerometerReader::Delegate
   virtual void HandleAccelerometerUpdate(
-      const ui::AccelerometerUpdate& update) OVERRIDE;
+      const ui::AccelerometerUpdate& update) override;
 
  private:
   // The last configured rotation.

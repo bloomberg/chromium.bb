@@ -24,9 +24,9 @@ class StatusIconContainerView : public views::View {
 
  private:
   // views::View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
 
   // Parent container that the "select network" dialog should use.
   aura::Window* system_modal_container_;

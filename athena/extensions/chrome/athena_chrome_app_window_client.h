@@ -20,10 +20,10 @@ class AthenaChromeAppWindowClient : public AthenaAppWindowClientBase {
   // extensions::AppWindowClient
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
-                                  const base::Closure& callback) OVERRIDE;
-  virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;
+                                  const base::Closure& callback) override;
+  virtual bool IsCurrentChannelOlderThanDev() override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaChromeAppWindowClient);
 };

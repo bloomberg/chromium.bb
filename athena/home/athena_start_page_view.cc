@@ -73,7 +73,7 @@ class PlaceHolderButton : public views::ImageButton,
  private:
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     // Do nothing: remove these place holders.
   }
 
@@ -93,7 +93,7 @@ class AppIconButton : public views::ImageButton,
  private:
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     DCHECK_EQ(sender, this);
     item_->Activate(event.flags());
   }
@@ -113,7 +113,7 @@ class RoundRectBackground : public views::Background {
 
  private:
   // views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(color_);
@@ -143,7 +143,7 @@ class SearchBoxContainer : public views::View {
 
  private:
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(kSearchBoxWidth, kSearchBoxHeight);
   }
 

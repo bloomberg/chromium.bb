@@ -16,7 +16,7 @@ class TestAppModelBuilder : public AppModelBuilder {
   virtual ~TestAppModelBuilder();
 
   // Overridden from AppModelBuilder:
-  virtual void PopulateApps(app_list::AppListModel* model) OVERRIDE;
+  virtual void PopulateApps(app_list::AppListModel* model) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppModelBuilder);

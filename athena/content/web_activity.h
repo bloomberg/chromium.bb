@@ -49,35 +49,35 @@ class WebActivity : public Activity,
   virtual ~WebActivity();
 
  // Activity:
-  virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
-  virtual void SetCurrentState(ActivityState state) OVERRIDE;
-  virtual ActivityState GetCurrentState() OVERRIDE;
-  virtual bool IsVisible() OVERRIDE;
-  virtual ActivityMediaState GetMediaState() OVERRIDE;
-  virtual aura::Window* GetWindow() OVERRIDE;
-  virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual athena::ActivityViewModel* GetActivityViewModel() override;
+  virtual void SetCurrentState(ActivityState state) override;
+  virtual ActivityState GetCurrentState() override;
+  virtual bool IsVisible() override;
+  virtual ActivityMediaState GetMediaState() override;
+  virtual aura::Window* GetWindow() override;
+  virtual content::WebContents* GetWebContents() override;
 
   // ActivityViewModel:
-  virtual void Init() OVERRIDE;
-  virtual SkColor GetRepresentativeColor() const OVERRIDE;
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual bool UsesFrame() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::Widget* CreateWidget() OVERRIDE;
-  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
-  virtual void PrepareContentsForOverview() OVERRIDE;
-  virtual void ResetContentsView() OVERRIDE;
+  virtual void Init() override;
+  virtual SkColor GetRepresentativeColor() const override;
+  virtual base::string16 GetTitle() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual bool UsesFrame() const override;
+  virtual views::View* GetContentsView() override;
+  virtual views::Widget* CreateWidget() override;
+  virtual gfx::ImageSkia GetOverviewModeImage() override;
+  virtual void PrepareContentsForOverview() override;
+  virtual void ResetContentsView() override;
 
   // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
   virtual void TitleWasSet(content::NavigationEntry* entry,
-                           bool explicit_set) OVERRIDE;
+                           bool explicit_set) override;
   virtual void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) OVERRIDE;
-  virtual void DidChangeThemeColor(SkColor theme_color) OVERRIDE;
+      const std::vector<content::FaviconURL>& candidates) override;
+  virtual void DidChangeThemeColor(SkColor theme_color) override;
 
  private:
   // Called when a favicon download initiated in DidUpdateFaviconURL()

@@ -69,11 +69,11 @@ class ATHENA_EXPORT AthenaStartPageView
   void OnSearchResultLayoutAnimationCompleted(bool should_show_search_results);
 
   // views::View:
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& key_event) OVERRIDE;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& key_event) override;
 
   // app_list::SearchBoxViewDelegate:
-  virtual void QueryChanged(app_list::SearchBoxView* sender) OVERRIDE;
+  virtual void QueryChanged(app_list::SearchBoxView* sender) override;
 
   // Not owned.
   app_list::AppListViewDelegate* delegate_;

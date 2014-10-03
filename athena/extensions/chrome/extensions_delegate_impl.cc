@@ -37,13 +37,13 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
 
  private:
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() const override {
     return extension_service_->GetBrowserContext();
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
+  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
     return *extension_service_->extensions();
   }
-  virtual bool LaunchApp(const std::string& app_id) OVERRIDE {
+  virtual bool LaunchApp(const std::string& app_id) override {
     // Check Running apps
     content::BrowserContext* context = GetBrowserContext();
     const extensions::Extension* extension =
@@ -84,7 +84,7 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     return true;
   }
 
-  virtual bool UnloadApp(const std::string& app_id) OVERRIDE {
+  virtual bool UnloadApp(const std::string& app_id) override {
     // TODO(skuhne): Implement using extension service.
     return false;
   }

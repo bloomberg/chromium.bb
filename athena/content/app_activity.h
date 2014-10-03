@@ -31,25 +31,25 @@ class AppActivity : public Activity,
   scoped_ptr<ContentProxy> GetContentProxy();
 
   // Activity:
-  virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
-  virtual void SetCurrentState(Activity::ActivityState state) OVERRIDE;
-  virtual ActivityState GetCurrentState() OVERRIDE;
-  virtual bool IsVisible() OVERRIDE;
-  virtual ActivityMediaState GetMediaState() OVERRIDE;
-  virtual aura::Window* GetWindow() OVERRIDE;
-  virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual athena::ActivityViewModel* GetActivityViewModel() override;
+  virtual void SetCurrentState(Activity::ActivityState state) override;
+  virtual ActivityState GetCurrentState() override;
+  virtual bool IsVisible() override;
+  virtual ActivityMediaState GetMediaState() override;
+  virtual aura::Window* GetWindow() override;
+  virtual content::WebContents* GetWebContents() override;
 
   // ActivityViewModel:
-  virtual void Init() OVERRIDE;
-  virtual SkColor GetRepresentativeColor() const OVERRIDE;
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual bool UsesFrame() const OVERRIDE;
-  virtual views::Widget* CreateWidget() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
-  virtual void PrepareContentsForOverview() OVERRIDE;
-  virtual void ResetContentsView() OVERRIDE;
+  virtual void Init() override;
+  virtual SkColor GetRepresentativeColor() const override;
+  virtual base::string16 GetTitle() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual bool UsesFrame() const override;
+  virtual views::Widget* CreateWidget() override;
+  virtual views::View* GetContentsView() override;
+  virtual gfx::ImageSkia GetOverviewModeImage() override;
+  virtual void PrepareContentsForOverview() override;
+  virtual void ResetContentsView() override;
 
  protected:
   // Constructor for test.
@@ -60,9 +60,9 @@ class AppActivity : public Activity,
  private:
  // content::WebContentsObserver:
   virtual void TitleWasSet(content::NavigationEntry* entry,
-                           bool explicit_set) OVERRIDE;
+                           bool explicit_set) override;
   virtual void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) OVERRIDE;
+      const std::vector<content::FaviconURL>& candidates) override;
 
   // Register this activity with its application.
   void RegisterActivity();

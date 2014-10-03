@@ -29,23 +29,23 @@ class RenderViewContextMenuImpl : public RenderViewContextMenuBase {
 
  private:
   // RenderViewContextMenuBase:
-  virtual void InitMenu() OVERRIDE;
-  virtual void RecordShownItem(int id) OVERRIDE;
-  virtual void RecordUsedItem(int id) OVERRIDE;
+  virtual void InitMenu() override;
+  virtual void RecordShownItem(int id) override;
+  virtual void RecordUsedItem(int id) override;
 #if defined(ENABLE_PLUGINS)
-  virtual void HandleAuthorizeAllPlugins() OVERRIDE;
+  virtual void HandleAuthorizeAllPlugins() override;
 #endif
-  virtual void NotifyMenuShown() OVERRIDE;
+  virtual void NotifyMenuShown() override;
   virtual void NotifyURLOpened(const GURL& url,
-                               content::WebContents* new_contents) OVERRIDE;
+                               content::WebContents* new_contents) override;
 
   // ui::SimpleMenuModel:
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuImpl);
 };

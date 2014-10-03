@@ -64,12 +64,12 @@ class WindowListObserver : public WindowListProviderObserver {
   int window_removal_calls() const { return window_removal_calls_; }
 
   // WindowListProviderObserver:
-  virtual void OnWindowStackingChanged() OVERRIDE {
+  virtual void OnWindowStackingChanged() override {
     calls_++;
   }
 
   virtual void OnWindowRemoved(aura::Window* removed_window,
-                               int index) OVERRIDE {
+                               int index) override {
     window_removal_calls_++;
   }
 

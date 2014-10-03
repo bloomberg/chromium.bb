@@ -18,9 +18,9 @@ class ContentActivityFactory : public ActivityFactory {
   // Overridden from ActivityFactory:
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
                                       const base::string16& title,
-                                      const GURL& url) OVERRIDE;
+                                      const GURL& url) override;
   virtual Activity* CreateAppActivity(const std::string& app_id,
-                                      views::WebView* web_view) OVERRIDE;
+                                      views::WebView* web_view) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentActivityFactory);

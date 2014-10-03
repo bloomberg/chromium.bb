@@ -48,35 +48,35 @@ class TestAppActivity : public AppActivity {
   }
 
   // Activity:
-  virtual ActivityViewModel* GetActivityViewModel() OVERRIDE {
+  virtual ActivityViewModel* GetActivityViewModel() override {
     return this;
   }
-  virtual void SetCurrentState(Activity::ActivityState state) OVERRIDE {
+  virtual void SetCurrentState(Activity::ActivityState state) override {
     current_state_ = state;
     if (state == ACTIVITY_UNLOADED)
       app_activity_registry_->Unload();
   }
-  virtual ActivityState GetCurrentState() OVERRIDE {
+  virtual ActivityState GetCurrentState() override {
     return current_state_;
   }
-  virtual bool IsVisible() OVERRIDE {
+  virtual bool IsVisible() override {
     return true;
   }
-  virtual ActivityMediaState GetMediaState() OVERRIDE {
+  virtual ActivityMediaState GetMediaState() override {
     return Activity::ACTIVITY_MEDIA_STATE_NONE;
   }
-  virtual aura::Window* GetWindow() OVERRIDE {
+  virtual aura::Window* GetWindow() override {
     return view_->GetWidget()->GetNativeWindow();
   }
 
   // ActivityViewModel:
-  virtual void Init() OVERRIDE {}
-  virtual SkColor GetRepresentativeColor() const OVERRIDE { return 0; }
-  virtual base::string16 GetTitle() const OVERRIDE { return title_; }
-  virtual bool UsesFrame() const OVERRIDE { return true; }
-  virtual views::View* GetContentsView() OVERRIDE { return view_; }
-  virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }
-  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE {
+  virtual void Init() override {}
+  virtual SkColor GetRepresentativeColor() const override { return 0; }
+  virtual base::string16 GetTitle() const override { return title_; }
+  virtual bool UsesFrame() const override { return true; }
+  virtual views::View* GetContentsView() override { return view_; }
+  virtual views::Widget* CreateWidget() override { return NULL; }
+  virtual gfx::ImageSkia GetOverviewModeImage() override {
     return gfx::ImageSkia();
   }
 
@@ -106,20 +106,20 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
   int restart_called() const { return restart_called_; }
 
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() const override {
     return NULL;
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
+  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
     return extension_set_;
   }
   // Unload an application. Returns true when unloaded.
-  virtual bool UnloadApp(const std::string& app_id) OVERRIDE {
+  virtual bool UnloadApp(const std::string& app_id) override {
     unload_called_++;
     // Since we did not close anything we let the framework clean up.
     return false;
   }
   // Restarts an application. Returns true when the restart was initiated.
-  virtual bool LaunchApp(const std::string& app_id) OVERRIDE {
+  virtual bool LaunchApp(const std::string& app_id) override {
     restart_called_++;
     return true;
   }
@@ -142,7 +142,7 @@ class AppActivityTest : public AthenaTestBase {
   virtual ~AppActivityTest() {}
 
   // AthenaTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AthenaTestBase::SetUp();
     // Create and install our TestAppContentDelegate with instrumentation.
     ExtensionsDelegate::Shutdown();

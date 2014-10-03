@@ -55,12 +55,12 @@ class AthenaFocusRules : public wm::BaseFocusRules {
   virtual ~AthenaFocusRules() {}
 
   // wm::BaseFocusRules:
-  virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE {
+  virtual bool SupportsChildActivation(aura::Window* window) const override {
     ScreenManager::ContainerParams* params =
         window->GetProperty(kContainerParamsKey);
     return params && params->can_activate_children;
   }
-  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE {
+  virtual bool CanActivateWindow(aura::Window* window) const override {
     // Check if containers of higher z-order than |window| have 'grab_inputs'
     // fields.
     if (window) {
@@ -92,7 +92,7 @@ class AthenaWindowTreeClient : public aura::client::WindowTreeClient {
   // aura::client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
-                                         const gfx::Rect& bounds) OVERRIDE {
+                                         const gfx::Rect& bounds) override {
     aura::Window* transient_parent = wm::GetTransientParent(window);
     if (transient_parent)
       return GetContainer(transient_parent);
@@ -114,26 +114,26 @@ class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
  private:
   // aura::client::ScreenPositionClient:
   virtual void ConvertPointToScreen(const aura::Window* window,
-                                    gfx::Point* point) OVERRIDE {
+                                    gfx::Point* point) override {
     const aura::Window* root = window->GetRootWindow();
     aura::Window::ConvertPointToTarget(window, root, point);
   }
 
   virtual void ConvertPointFromScreen(const aura::Window* window,
-                                      gfx::Point* point) OVERRIDE {
+                                      gfx::Point* point) override {
     const aura::Window* root = window->GetRootWindow();
     aura::Window::ConvertPointToTarget(root, window, point);
   }
 
   virtual void ConvertHostPointToScreen(aura::Window* window,
-                                        gfx::Point* point) OVERRIDE {
+                                        gfx::Point* point) override {
     // TODO(oshima): Implement this when adding multiple display support.
     NOTREACHED();
   }
 
   virtual void SetBounds(aura::Window* window,
                          const gfx::Rect& bounds,
-                         const gfx::Display& display) OVERRIDE {
+                         const gfx::Display& display) override {
     window->SetBounds(bounds);
   }
 
@@ -158,7 +158,7 @@ class AthenaEventTargeter : public aura::WindowTargeter,
   // aura::WindowTargeter:
   virtual bool SubtreeCanAcceptEvent(
       ui::EventTarget* target,
-      const ui::LocatedEvent& event) const OVERRIDE {
+      const ui::LocatedEvent& event) const override {
     aura::Window* window = static_cast<aura::Window*>(target);
     const aura::Window::Windows& containers =
         container_->GetRootWindow()->children();
@@ -173,7 +173,7 @@ class AthenaEventTargeter : public aura::WindowTargeter,
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     aura::Window* root_window = container_->GetRootWindow();
     DCHECK_EQ(window, container_);
     DCHECK_EQ(
@@ -201,11 +201,11 @@ class ScreenManagerImpl : public ScreenManager {
  private:
   // ScreenManager:
   virtual aura::Window* CreateDefaultContainer(
-      const ContainerParams& params) OVERRIDE;
-  virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
-  virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
-  virtual void SetRotation(gfx::Display::Rotation rotation) OVERRIDE;
-  virtual void SetRotationLocked(bool rotation_locked) OVERRIDE;
+      const ContainerParams& params) override;
+  virtual aura::Window* CreateContainer(const ContainerParams& params) override;
+  virtual aura::Window* GetContext() override { return root_window_; }
+  virtual void SetRotation(gfx::Display::Rotation rotation) override;
+  virtual void SetRotationLocked(bool rotation_locked) override;
 
   // Not owned.
   aura::Window* root_window_;

@@ -40,14 +40,14 @@ class SystemInfoView : public views::View {
   }
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     // The view should be as wide as its parent view.
     return gfx::Size(0,
                      std::max(time_view_->GetPreferredSize().height(),
                               status_icon_view_->GetPreferredSize().height()));
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     time_view_->SetBoundsRect(gfx::Rect(time_view_->GetPreferredSize()));
     gfx::Size status_icon_preferred_size =
         status_icon_view_->GetPreferredSize();
@@ -58,7 +58,7 @@ class SystemInfoView : public views::View {
                   status_icon_preferred_size.height()));
   }
 
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+  virtual void ChildPreferredSizeChanged(views::View* child) override {
     // Relayout to take into account changes in |status_icon_view_|'s width.
     // Assume that |time_view_|'s and |status_icon_view_|'s preferred height
     // does not change.
@@ -112,11 +112,11 @@ class SystemUIImpl : public SystemUI {
         new BackgroundController(background_container_));
   }
 
-  virtual void SetBackgroundImage(const gfx::ImageSkia& image) OVERRIDE {
+  virtual void SetBackgroundImage(const gfx::ImageSkia& image) override {
     background_controller_->SetImage(image);
   }
 
-  virtual views::View* CreateSystemInfoView(ColorScheme color_scheme) OVERRIDE {
+  virtual views::View* CreateSystemInfoView(ColorScheme color_scheme) override {
     return new SystemInfoView(color_scheme, system_modal_container_);
   }
 

@@ -46,7 +46,7 @@ class StaticViewTargeterDelegate : public views::ViewTargeterDelegate {
  private:
   // views::ViewTargeterDelegate:
   virtual views::View* TargetForRect(views::View* root,
-                                     const gfx::Rect& rect) OVERRIDE {
+                                     const gfx::Rect& rect) override {
     return target_;
   }
 
@@ -78,7 +78,7 @@ class PriorityWindowTargeter : public aura::WindowTargeter,
   // aura::WindowTargeter:
   virtual ui::EventTarget* FindTargetForLocatedEvent(
       ui::EventTarget* root,
-      ui::LocatedEvent* event) OVERRIDE {
+      ui::LocatedEvent* event) override {
     if (!window_ || (event->type() != ui::ET_TOUCH_PRESSED))
       return WindowTargeter::FindTargetForLocatedEvent(root, event);
     CHECK_EQ(window_, priority_view_->GetWidget()->GetNativeWindow());
@@ -113,7 +113,7 @@ class PriorityWindowTargeter : public aura::WindowTargeter,
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     window_->RemoveObserver(this);
     window_ = NULL;

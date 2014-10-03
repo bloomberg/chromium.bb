@@ -180,13 +180,13 @@ class StaticWindowTargeter : public aura::WindowTargeter {
  private:
   // aura::WindowTargeter:
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                              ui::Event* event) OVERRIDE {
+                                              ui::Event* event) override {
     return target_;
   }
 
   virtual ui::EventTarget* FindTargetForLocatedEvent(
       ui::EventTarget* root,
-      ui::LocatedEvent* event) OVERRIDE {
+      ui::LocatedEvent* event) override {
     return target_;
   }
 
@@ -615,7 +615,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* mouse) override {
     if (mouse->type() == ui::ET_MOUSE_PRESSED) {
       aura::Window* select = SelectWindowAt(mouse);
       if (select) {
@@ -627,12 +627,12 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     }
   }
 
-  virtual void OnScrollEvent(ui::ScrollEvent* scroll) OVERRIDE {
+  virtual void OnScrollEvent(ui::ScrollEvent* scroll) override {
     if (scroll->type() == ui::ET_SCROLL)
       DoScroll(scroll->y_offset());
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
     if (gesture->type() == ui::ET_GESTURE_TAP) {
       aura::Window* select = SelectWindowAt(gesture);
       if (select) {
@@ -694,7 +694,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   // ui::CompositorAnimationObserver:
-  virtual void OnAnimationStep(base::TimeTicks timestamp) OVERRIDE {
+  virtual void OnAnimationStep(base::TimeTicks timestamp) override {
     CHECK(fling_);
     if (fling_->start_timestamp() > timestamp)
       return;
@@ -708,7 +708,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   // WindowListProviderObserver:
-  virtual void OnWindowStackingChanged() OVERRIDE {
+  virtual void OnWindowStackingChanged() override {
     // Recompute the states of all windows. There isn't enough information at
     // this point to do anything more clever.
     ComputeTerminalStatesForAllWindows();
@@ -716,7 +716,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   virtual void OnWindowRemoved(aura::Window* removed_window,
-                               int index) OVERRIDE {
+                               int index) override {
     const aura::Window::Windows& windows =
         window_list_provider_->GetWindowList();
     if (windows.empty())

@@ -34,7 +34,7 @@ const int kScoreForWhatYouTypedResult = 1203;
 class AthenaSearchTermsData : public SearchTermsData {
  public:
   // SearchTermsData:
-  virtual std::string GetSuggestClient() const OVERRIDE {
+  virtual std::string GetSuggestClient() const override {
     return "chrome";
   }
 };
@@ -49,15 +49,15 @@ class AthenaTemplateURLServiceClient : public TemplateURLServiceClient {
 
  private:
   // TemplateURLServiceClient:
-  virtual void SetOwner(TemplateURLService* owner) OVERRIDE {}
-  virtual void DeleteAllSearchTermsForKeyword(TemplateURLID id) OVERRIDE {}
+  virtual void SetOwner(TemplateURLService* owner) override {}
+  virtual void DeleteAllSearchTermsForKeyword(TemplateURLID id) override {}
   virtual void SetKeywordSearchTermsForURL(
       const GURL& url,
       TemplateURLID id,
-      const base::string16& term) OVERRIDE {}
-  virtual void AddKeywordGeneratedVisit(const GURL& url) OVERRIDE {}
+      const base::string16& term) override {}
+  virtual void AddKeywordGeneratedVisit(const GURL& url) override {}
   virtual void RestoreExtensionInfoIfNecessary(
-      TemplateURL* template_url) OVERRIDE {}
+      TemplateURL* template_url) override {}
 
   DISALLOW_COPY_AND_ASSIGN(AthenaTemplateURLServiceClient);
 };
@@ -71,19 +71,19 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
         scheme_classifier_(CreateSchemeClassifier(browser_context)) {}
   virtual ~AthenaAutocompleteProviderClient() {}
 
-  virtual net::URLRequestContextGetter* RequestContext() OVERRIDE {
+  virtual net::URLRequestContextGetter* RequestContext() override {
     return browser_context_->GetRequestContext();
   }
-  virtual bool IsOffTheRecord() OVERRIDE {
+  virtual bool IsOffTheRecord() override {
     return browser_context_->IsOffTheRecord();
   }
-  virtual std::string AcceptLanguages() OVERRIDE {
+  virtual std::string AcceptLanguages() override {
     // TODO(hashimoto): Return the value stored in the prefs.
     return "en-US";
   }
-  virtual bool SearchSuggestEnabled() OVERRIDE { return true; }
-  virtual bool ShowBookmarkBar() OVERRIDE { return false; }
-  virtual const AutocompleteSchemeClassifier& SchemeClassifier() OVERRIDE {
+  virtual bool SearchSuggestEnabled() override { return true; }
+  virtual bool ShowBookmarkBar() override { return false; }
+  virtual const AutocompleteSchemeClassifier& SchemeClassifier() override {
     return *scheme_classifier_;
   }
   virtual void Classify(
@@ -92,13 +92,13 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
       bool allow_exact_keyword_match,
       metrics::OmniboxEventProto::PageClassification page_classification,
       AutocompleteMatch* match,
-      GURL* alternate_nav_url) OVERRIDE {}
-  virtual history::URLDatabase* InMemoryDatabase() OVERRIDE { return NULL; }
+      GURL* alternate_nav_url) override {}
+  virtual history::URLDatabase* InMemoryDatabase() override { return NULL; }
   virtual void DeleteMatchingURLsForKeywordFromHistory(
       history::KeywordID keyword_id,
-      const base::string16& term) OVERRIDE {}
-  virtual bool TabSyncEnabledAndUnencrypted() OVERRIDE { return false; }
-  virtual void PrefetchImage(const GURL& url) OVERRIDE {}
+      const base::string16& term) override {}
+  virtual bool TabSyncEnabledAndUnencrypted() override { return false; }
+  virtual void PrefetchImage(const GURL& url) override {}
 
  private:
   content::BrowserContext* browser_context_;
@@ -171,7 +171,7 @@ class UrlSearchResult : public app_list::SearchResult {
 
  private:
   // Overriddenn from app_list::SearchResult:
-  virtual void Open(int event_flags) OVERRIDE {
+  virtual void Open(int event_flags) override {
     Activity* activity = ActivityFactory::Get()->CreateWebActivity(
         browser_context_, base::string16(), match_.destination_url);
     Activity::Show(activity);

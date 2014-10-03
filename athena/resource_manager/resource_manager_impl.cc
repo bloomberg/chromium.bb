@@ -35,15 +35,15 @@ class ResourceManagerImpl : public ResourceManager,
 
   // ResourceManager:
   virtual void SetMemoryPressureAndStopMonitoring(
-      MemoryPressure pressure) OVERRIDE;
-  virtual void SetWaitTimeBetweenResourceManageCalls(int time_in_ms) OVERRIDE {
+      MemoryPressure pressure) override;
+  virtual void SetWaitTimeBetweenResourceManageCalls(int time_in_ms) override {
     wait_time_for_resource_deallocation_ =
         base::TimeDelta::FromMilliseconds(time_in_ms);
     // Reset the timeout to force the next resource call to execute immediately.
     next_resource_management_time_ = base::Time::Now();
   }
 
-  virtual void Pause(bool pause) OVERRIDE {
+  virtual void Pause(bool pause) override {
     if (pause) {
       if (!pause_)
         queued_command_ = false;
@@ -59,23 +59,23 @@ class ResourceManagerImpl : public ResourceManager,
   }
 
   // ActivityManagerObserver:
-  virtual void OnActivityStarted(Activity* activity) OVERRIDE;
-  virtual void OnActivityEnding(Activity* activity) OVERRIDE;
+  virtual void OnActivityStarted(Activity* activity) override;
+  virtual void OnActivityEnding(Activity* activity) override;
 
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() OVERRIDE;
-  virtual void OnOverviewModeExit() OVERRIDE;
-  virtual void OnSplitViewModeEnter() OVERRIDE;
-  virtual void OnSplitViewModeExit() OVERRIDE;
+  virtual void OnOverviewModeEnter() override;
+  virtual void OnOverviewModeExit() override;
+  virtual void OnSplitViewModeEnter() override;
+  virtual void OnSplitViewModeExit() override;
 
   // MemoryPressureObserver:
-  virtual void OnMemoryPressure(MemoryPressure pressure) OVERRIDE;
-  virtual ResourceManagerDelegate* GetDelegate() OVERRIDE;
+  virtual void OnMemoryPressure(MemoryPressure pressure) override;
+  virtual ResourceManagerDelegate* GetDelegate() override;
 
   // WindowListProviderObserver:
-  virtual void OnWindowStackingChanged() OVERRIDE;
+  virtual void OnWindowStackingChanged() override;
   virtual void OnWindowRemoved(aura::Window* removed_window,
-                               int index) OVERRIDE;
+                               int index) override;
 
  private:
   // Manage the resources for our activities.

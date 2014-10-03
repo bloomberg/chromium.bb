@@ -21,9 +21,9 @@ class ScreenAcceleratorHandler : public AcceleratorHandler {
   virtual ~ScreenAcceleratorHandler();
 
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int command_id) const override;
   virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) OVERRIDE;
+                                  const ui::Accelerator& accelerator) override;
 
   aura::Window* root_window_;
 

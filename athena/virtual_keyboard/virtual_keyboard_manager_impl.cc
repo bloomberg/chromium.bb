@@ -35,7 +35,7 @@ class BasicKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
   virtual ~BasicKeyboardControllerProxy() {}
 
   // keyboard::KeyboardControllerProxy:
-  virtual ui::InputMethod* GetInputMethod() OVERRIDE {
+  virtual ui::InputMethod* GetInputMethod() override {
     ui::InputMethod* input_method =
         root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
     return input_method;
@@ -44,13 +44,13 @@ class BasicKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
   virtual void RequestAudioInput(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE {}
+      const content::MediaResponseCallback& callback) override {}
 
-  virtual content::BrowserContext* GetBrowserContext() OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() override {
     return browser_context_;
   }
 
-  virtual void SetUpdateInputType(ui::TextInputType type) OVERRIDE {}
+  virtual void SetUpdateInputType(ui::TextInputType type) override {}
 
  private:
   content::BrowserContext* browser_context_;

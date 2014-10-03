@@ -25,8 +25,8 @@ class AthenaTestBase : public testing::Test {
   virtual ~AthenaTestBase();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   void RunAllPendingInMessageLoop();

@@ -17,7 +17,7 @@ class AthenaContentClient : public extensions::ShellContentClient {
  private:
   // extensions::ShellContentClient:
   virtual void AddPepperPlugins(
-      std::vector<content::PepperPluginInfo>* plugins) OVERRIDE;
+      std::vector<content::PepperPluginInfo>* plugins) override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaContentClient);
 };

@@ -153,14 +153,14 @@ class PasswordView : public views::View, public views::ButtonListener {
 
   // views::View:
   virtual void ViewHierarchyChanged(
-      const views::View::ViewHierarchyChangedDetails& details) OVERRIDE {
+      const views::View::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       textfield_->RequestFocus();
   }
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     if (sender == connect_) {
       if (error_msg_) {
         RemoveChildView(error_msg_);
@@ -295,14 +295,14 @@ class NetworkRow : public views::View {
   }
 
   // views::View:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() != ui::ET_MOUSE_PRESSED)
       return;
     ActivateNetwork();
     event->SetHandled();
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
     if (gesture->type() != ui::ET_GESTURE_TAP)
       return;
     ActivateNetwork();
@@ -391,46 +391,46 @@ class NetworkSelector : public ui::NetworkListDelegate,
 
   // ui::NetworkListDelegate:
   virtual views::View* CreateViewForNetwork(
-      const ui::NetworkInfo& info) OVERRIDE {
+      const ui::NetworkInfo& info) override {
     return new NetworkRow(info, background_view_);
   }
 
-  virtual bool IsViewHovered(views::View* view) OVERRIDE {
+  virtual bool IsViewHovered(views::View* view) override {
     return static_cast<NetworkRow*>(view)->has_password_view();
   }
 
-  virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const OVERRIDE {
+  virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const override {
     return chromeos::NetworkTypePattern::NonVirtual();
   }
 
   virtual void UpdateViewForNetwork(views::View* view,
-                                    const ui::NetworkInfo& info) OVERRIDE {
+                                    const ui::NetworkInfo& info) override {
     static_cast<NetworkRow*>(view)->Update(info);
   }
 
-  virtual views::Label* CreateInfoLabel() OVERRIDE {
+  virtual views::Label* CreateInfoLabel() override {
     views::Label* label = new views::Label();
     return label;
   }
 
-  virtual void RelayoutScrollList() OVERRIDE { scroller_->Layout(); }
+  virtual void RelayoutScrollList() override { scroller_->Layout(); }
 
   // chromeos::NetworkStateHandlerObserver:
-  virtual void NetworkListChanged() OVERRIDE { UpdateNetworkList(); }
+  virtual void NetworkListChanged() override { UpdateNetworkList(); }
 
-  virtual void DeviceListChanged() OVERRIDE {}
+  virtual void DeviceListChanged() override {}
 
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) OVERRIDE {}
+      const chromeos::NetworkState* network) override {}
 
   virtual void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) OVERRIDE {}
+      const chromeos::NetworkState* network) override {}
 
   virtual void NetworkPropertiesUpdated(
-      const chromeos::NetworkState* network) OVERRIDE {}
+      const chromeos::NetworkState* network) override {}
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* mouse) override {
     CHECK_EQ(background_view_, mouse->target());
     if (mouse->type() == ui::ET_MOUSE_PRESSED && !mouse->handled()) {
       Close();
@@ -438,7 +438,7 @@ class NetworkSelector : public ui::NetworkListDelegate,
     }
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
     CHECK_EQ(background_view_, gesture->target());
     if (gesture->type() == ui::ET_GESTURE_TAP && !gesture->handled()) {
       Close();

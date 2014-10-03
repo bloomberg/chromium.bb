@@ -50,7 +50,7 @@ class AthenaDesktopController : public extensions::DesktopController {
 
  private:
   // extensions::DesktopController:
-  virtual aura::WindowTreeHost* GetHost() OVERRIDE {
+  virtual aura::WindowTreeHost* GetHost() override {
     return athena::AthenaEnv::Get()->GetHost();
   }
 
@@ -59,18 +59,18 @@ class AthenaDesktopController : public extensions::DesktopController {
   // TODO(jamescook|oshima): Is this function needed?
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
-      const extensions::Extension* extension) OVERRIDE {
+      const extensions::Extension* extension) override {
     NOTIMPLEMENTED();
     return NULL;
   }
 
   // Adds the window to the desktop.
-  virtual void AddAppWindow(aura::Window* window) OVERRIDE {
+  virtual void AddAppWindow(aura::Window* window) override {
     NOTIMPLEMENTED();
   }
 
   // Closes and destroys the app windows.
-  virtual void CloseAppWindows() OVERRIDE {}
+  virtual void CloseAppWindows() override {}
 
   DISALLOW_COPY_AND_ASSIGN(AthenaDesktopController);
 };
@@ -81,7 +81,7 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
   virtual ~AthenaBrowserMainDelegate() {}
 
   // extensions::ShellBrowserMainDelegate:
-  virtual void Start(content::BrowserContext* context) OVERRIDE {
+  virtual void Start(content::BrowserContext* context) override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
@@ -105,12 +105,12 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
     athena::StartAthenaSessionWithContext(context);
   }
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
     athena::AthenaEnv::Get()->OnTerminating();
     athena::ShutdownAthena();
   }
 
-  virtual extensions::DesktopController* CreateDesktopController() OVERRIDE {
+  virtual extensions::DesktopController* CreateDesktopController() override {
     return new AthenaDesktopController();
   }
 
@@ -128,7 +128,7 @@ class AthenaContentBrowserClient
 
   // content::ContentBrowserClient:
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
-      content::WebContents* web_contents) OVERRIDE {
+      content::WebContents* web_contents) override {
     return athena::CreateWebContentsViewDelegate(web_contents);
   }
 
@@ -143,13 +143,13 @@ class AthenaContentRendererClient
   virtual ~AthenaContentRendererClient() {}
 
   // content::ContentRendererClient:
-  virtual void RenderFrameCreated(content::RenderFrame* render_frame) OVERRIDE {
+  virtual void RenderFrameCreated(content::RenderFrame* render_frame) override {
     new athena::AthenaRendererPDFHelper(render_frame);
     extensions::ShellContentRendererClient::RenderFrameCreated(render_frame);
   }
 
   virtual const void* CreatePPAPIInterface(
-      const std::string& interface_name) OVERRIDE {
+      const std::string& interface_name) override {
     if (interface_name == PPB_PDF_INTERFACE)
       return pdf::PPB_PDF_Impl::GetInterface();
     return extensions::ShellContentRendererClient::CreatePPAPIInterface(
@@ -164,20 +164,20 @@ class AthenaMainDelegate : public extensions::ShellMainDelegate {
 
  private:
   // extensions::ShellMainDelegate:
-  virtual content::ContentClient* CreateContentClient() OVERRIDE {
+  virtual content::ContentClient* CreateContentClient() override {
     return new athena::AthenaContentClient();
   }
   virtual content::ContentBrowserClient* CreateShellContentBrowserClient()
-      OVERRIDE {
+      override {
     return new AthenaContentBrowserClient();
   }
 
   virtual content::ContentRendererClient* CreateShellContentRendererClient()
-      OVERRIDE {
+      override {
     return new AthenaContentRendererClient();
   }
 
-  virtual void InitializeResourceBundle() OVERRIDE {
+  virtual void InitializeResourceBundle() override {
     base::FilePath pak_dir;
     PathService::Get(base::DIR_MODULE, &pak_dir);
     base::FilePath pak_file =

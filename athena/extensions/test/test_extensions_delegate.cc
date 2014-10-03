@@ -17,14 +17,14 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
 
  private:
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() const override {
     return NULL;
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
+  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
     return shell_extensions_;
   }
-  virtual bool LaunchApp(const std::string& app_id) OVERRIDE { return true; }
-  virtual bool UnloadApp(const std::string& app_id) OVERRIDE { return false; }
+  virtual bool LaunchApp(const std::string& app_id) override { return true; }
+  virtual bool UnloadApp(const std::string& app_id) override { return false; }
 
   extensions::ExtensionSet shell_extensions_;
 

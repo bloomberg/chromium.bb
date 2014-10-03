@@ -23,12 +23,12 @@ class SplitViewControllerTest : public test::AthenaTestBase {
   virtual ~SplitViewControllerTest() {}
 
   // test::AthenaTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AthenaTestBase::SetUp();
     api_.reset(new test::WindowManagerImplTestApi);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     api_.reset();
     test::AthenaTestBase::TearDown();
   }

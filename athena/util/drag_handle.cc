@@ -28,8 +28,8 @@ class DragHandleView : public views::View {
   void SetIsScrolling(bool scrolling);
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool scroll_in_progress_;
   DragHandleScrollDelegate* delegate_;

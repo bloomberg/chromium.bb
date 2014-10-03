@@ -48,10 +48,10 @@ class PowerButtonController : public chromeos::PowerManagerClient::Observer {
   void Shutdown();
 
   // chromeos::PowerManagerClient::Observer:
-  virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE;
+  virtual void BrightnessChanged(int level, bool user_initiated) override;
   virtual void PowerButtonEventReceived(
       bool down,
-      const base::TimeTicks& timestamp) OVERRIDE;
+      const base::TimeTicks& timestamp) override;
 
   // |shutdown_warning_message_|'s parent container.
   aura::Window* warning_message_container_;

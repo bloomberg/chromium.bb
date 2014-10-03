@@ -64,7 +64,7 @@ class ActionButton : public ui::LayerDelegate {
   }
 
   // ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     canvas->DrawImageInt(*bundle.GetImageSkiaNamed(resource_id_), 0, 0);
     gfx::ShadowValues shadow;
@@ -83,10 +83,10 @@ class ActionButton : public ui::LayerDelegate {
   }
 
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+      const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  virtual base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 

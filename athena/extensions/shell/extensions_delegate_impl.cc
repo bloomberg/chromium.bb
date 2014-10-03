@@ -25,21 +25,21 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
 
  private:
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() const override {
     return context_;
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
+  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
     shell_extensions_.Clear();
     if (extension_system_->extension().get())
       shell_extensions_.Insert(extension_system_->extension());
     return shell_extensions_;
   }
-  virtual bool LaunchApp(const std::string& app_id) OVERRIDE {
+  virtual bool LaunchApp(const std::string& app_id) override {
     extension_system_->LaunchApp();
     return true;
   }
 
-  virtual bool UnloadApp(const std::string& app_id) OVERRIDE { return false; }
+  virtual bool UnloadApp(const std::string& app_id) override { return false; }
 
   content::BrowserContext* context_;
   extensions::ShellExtensionSystem* extension_system_;

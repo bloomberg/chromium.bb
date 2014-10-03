@@ -25,11 +25,11 @@ class ResourceManagerDelegateImpl : public ResourceManagerDelegate {
   virtual ~ResourceManagerDelegateImpl() {}
 
  private:
-  virtual int GetUsedMemoryInPercent() OVERRIDE {
+  virtual int GetUsedMemoryInPercent() override {
     return 0;
   }
 
-  virtual int MemoryPressureIntervalInMS() OVERRIDE {
+  virtual int MemoryPressureIntervalInMS() override {
     return kMemoryPressureIntervalMs;
   }
   DISALLOW_COPY_AND_ASSIGN(ResourceManagerDelegateImpl);

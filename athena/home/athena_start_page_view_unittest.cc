@@ -33,7 +33,7 @@ class AthenaTestViewDelegate : public app_list::test::AppListTestViewDelegate {
 
  private:
   // app_list::AppListViewDelegate:
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE {
+  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override {
     return new views::View();
   }
 
@@ -46,7 +46,7 @@ class AthenaStartPageViewTest : public test::AthenaTestBase {
   virtual ~AthenaStartPageViewTest() {}
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AthenaTestBase::SetUp();
     app_list::test::AppListTestModel* model = view_delegate_.GetTestModel();
     for (size_t i = 0; i < kNumApps; ++i) {
@@ -57,7 +57,7 @@ class AthenaStartPageViewTest : public test::AthenaTestBase {
     view_.reset(new AthenaStartPageView(&view_delegate_));
     SetSize(gfx::Size(1280, 800));
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     view_.reset();
     test::AthenaTestBase::TearDown();
   }

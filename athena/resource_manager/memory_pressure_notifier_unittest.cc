@@ -17,12 +17,12 @@ class TestResourceManagerDelegate : public ResourceManagerDelegate {
   TestResourceManagerDelegate() : memory_fill_level_percent_(0) {}
   virtual ~TestResourceManagerDelegate() {}
 
-  virtual int GetUsedMemoryInPercent() OVERRIDE {
+  virtual int GetUsedMemoryInPercent() override {
     timer_called_++;
     return memory_fill_level_percent_;
   }
 
-  virtual int MemoryPressureIntervalInMS() OVERRIDE {
+  virtual int MemoryPressureIntervalInMS() override {
     return 5;
   }
 
@@ -54,12 +54,12 @@ class TestMemoryPressureObserver : public MemoryPressureObserver {
 
   // The observer.
   virtual void OnMemoryPressure(
-      ResourceManager::MemoryPressure pressure) OVERRIDE {
+      ResourceManager::MemoryPressure pressure) override {
     number_of_calls_++;
     pressure_ = pressure;
   }
 
-  virtual ResourceManagerDelegate* GetDelegate() OVERRIDE {
+  virtual ResourceManagerDelegate* GetDelegate() override {
     return delegate_.get();
   }
 
@@ -87,7 +87,7 @@ class MemoryPressureTest : public AthenaTestBase {
   virtual ~MemoryPressureTest() {}
 
   // AthenaTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AthenaTestBase::SetUp();
     // Create and install our TestAppContentDelegate with instrumentation.
     test_resource_manager_delegate_ =
@@ -98,7 +98,7 @@ class MemoryPressureTest : public AthenaTestBase {
         new MemoryPressureNotifier(test_memory_pressure_observer_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     memory_pressure_notifier_.reset();
     RunAllPendingInMessageLoop();
     test_memory_pressure_observer_.reset();

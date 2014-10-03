@@ -26,12 +26,12 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
       : web_contents_(web_contents) {}
   virtual ~WebContentsViewDelegateImpl() {}
 
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE {
+  virtual content::WebDragDestDelegate* GetDragDestDelegate() override {
     // TODO(oshima): crbug.com/401610
     return NULL;
   }
 
-  virtual bool Focus() OVERRIDE {
+  virtual bool Focus() override {
     web_modal::PopupManager* popup_manager =
         web_modal::PopupManager::FromWebContents(web_contents_);
     if (popup_manager)
@@ -41,12 +41,12 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
 
   virtual void ShowContextMenu(
       content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) OVERRIDE {
+      const content::ContextMenuParams& params) override {
     ShowMenu(BuildMenu(
         content::WebContents::FromRenderFrameHost(render_frame_host), params));
   }
 
-  virtual void SizeChanged(const gfx::Size& size) OVERRIDE {
+  virtual void SizeChanged(const gfx::Size& size) override {
     // TODO(oshima|sadrul): Implement this when sad_tab is componentized.
     // See c/b/ui/views/tab_contents/chrome_web_contents_view_delegate_views.cc
   }
@@ -56,10 +56,10 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
       const SkBitmap& zoomed_bitmap,
       const gfx::NativeView content,
       const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) OVERRIDE {
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) override {
   }
 
-  virtual void HideDisambiguationPopup() OVERRIDE {
+  virtual void HideDisambiguationPopup() override {
   }
 
   scoped_ptr<RenderViewContextMenuImpl> BuildMenu(

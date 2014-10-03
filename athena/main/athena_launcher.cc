@@ -77,7 +77,7 @@ class VirtualKeyboardObserver : public keyboard::KeyboardControllerObserver {
   }
 
  private:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE {
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {
     HomeCard::Get()->UpdateVirtualKeyboardBounds(new_bounds);
   }
 

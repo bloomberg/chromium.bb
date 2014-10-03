@@ -63,35 +63,35 @@ class ATHENA_EXPORT HomeCardImpl
   void InstallAccelerators();
 
   // Overridden from HomeCard:
-  virtual void SetState(HomeCard::State state) OVERRIDE;
-  virtual State GetState() OVERRIDE;
+  virtual void SetState(HomeCard::State state) override;
+  virtual State GetState() override;
   virtual void RegisterSearchProvider(
-      app_list::SearchProvider* search_provider) OVERRIDE;
+      app_list::SearchProvider* search_provider) override;
   virtual void UpdateVirtualKeyboardBounds(
-      const gfx::Rect& bounds) OVERRIDE;
+      const gfx::Rect& bounds) override;
 
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int command_id) const override;
   virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) OVERRIDE;
+                                  const ui::Accelerator& accelerator) override;
 
   // HomeCardGestureManager::Delegate:
   virtual void OnGestureEnded(HomeCard::State final_state,
-                              bool is_fling) OVERRIDE;
+                              bool is_fling) override;
   virtual void OnGestureProgressed(
       HomeCard::State from_state,
       HomeCard::State to_state,
-      float progress) OVERRIDE;
+      float progress) override;
 
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() OVERRIDE;
-  virtual void OnOverviewModeExit() OVERRIDE;
-  virtual void OnSplitViewModeEnter() OVERRIDE;
-  virtual void OnSplitViewModeExit() OVERRIDE;
+  virtual void OnOverviewModeEnter() override;
+  virtual void OnOverviewModeExit() override;
+  virtual void OnSplitViewModeEnter() override;
+  virtual void OnSplitViewModeExit() override;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   scoped_ptr<AppModelBuilder> model_builder_;
 

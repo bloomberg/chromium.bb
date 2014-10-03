@@ -17,12 +17,12 @@ class AppRegistryImpl : public AppRegistry {
   // AppRegistry:
   virtual AppActivityRegistry* GetAppActivityRegistry(
       const std::string& app_id,
-      content::BrowserContext* browser_context) OVERRIDE;
-  virtual int NumberOfApplications() const OVERRIDE { return app_list_.size(); }
+      content::BrowserContext* browser_context) override;
+  virtual int NumberOfApplications() const override { return app_list_.size(); }
 
  private:
   virtual void RemoveAppActivityRegistry(
-      AppActivityRegistry* registry) OVERRIDE;
+      AppActivityRegistry* registry) override;
 
   std::vector<AppActivityRegistry*> app_list_;
 

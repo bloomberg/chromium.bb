@@ -22,12 +22,12 @@ class AthenaViewsDelegate: public views::ViewsDelegate {
 
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
+      views::internal::NativeWidgetDelegate* delegate) override {
     params->context = athena::ScreenManager::Get()->GetContext();
   }
 
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      views::Widget* widget) override {
     return new AthenaFrameView(widget);
   }
 

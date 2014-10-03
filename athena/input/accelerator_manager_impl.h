@@ -52,7 +52,7 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   // AcceleratorManager:
   // This is made public so that implementation classes can use this.
   virtual bool IsRegistered(const ui::Accelerator& accelerator,
-                            int flags) const OVERRIDE;
+                            int flags) const override;
 
  private:
   class InternalData;
@@ -62,12 +62,12 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   // AcceleratorManager:
   virtual void RegisterAccelerators(const AcceleratorData accelerators[],
                                     size_t num_accelerators,
-                                    AcceleratorHandler* handler) OVERRIDE;
-  virtual void SetDebugAcceleratorsEnabled(bool enabled) OVERRIDE;
+                                    AcceleratorHandler* handler) override;
+  virtual void SetDebugAcceleratorsEnabled(bool enabled) override;
 
   // ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual bool CanHandleAccelerators() const override;
 
   void RegisterAccelerator(const AcceleratorData& accelerator,
                            AcceleratorHandler* handler);

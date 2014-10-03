@@ -17,7 +17,7 @@ class AthenaRendererPDFHelper : public content::RenderFrameObserver {
  private:
   // RenderFrameObserver:
   virtual void DidCreatePepperPlugin(
-      content::RendererPpapiHost* host) OVERRIDE;
+      content::RendererPpapiHost* host) override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaRendererPDFHelper);
 };

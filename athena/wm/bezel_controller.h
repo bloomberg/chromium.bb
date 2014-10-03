@@ -76,7 +76,7 @@ class BezelController : public ui::EventHandler {
   void SetState(State state, float scroll_delta);
 
   // ui::EventHandler overrides
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   aura::Window* container_;
 

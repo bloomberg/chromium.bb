@@ -28,11 +28,11 @@ class TestHandler : public AcceleratorHandler {
 
  private:
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandEnabled(int command_id) const override {
     return enabled_;
   }
   virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) OVERRIDE {
+                                  const ui::Accelerator& accelerator) override {
     fired_command_id_ = command_id;
     return true;
   }
