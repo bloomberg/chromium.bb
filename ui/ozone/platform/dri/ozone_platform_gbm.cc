@@ -24,6 +24,8 @@
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
 #include "ui/ozone/platform/dri/gpu_platform_support_gbm.h"
 #include "ui/ozone/platform/dri/gpu_platform_support_host_gbm.h"
+#include "ui/ozone/platform/dri/native_display_delegate_dri.h"
+#include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
@@ -32,12 +34,6 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/ozone/platform/dri/chromeos/display_message_handler.h"
-#include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
-#include "ui/ozone/platform/dri/chromeos/native_display_delegate_proxy.h"
-#endif
 
 namespace ui {
 
@@ -114,13 +110,11 @@ class OzonePlatformGbm : public OzonePlatform {
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
   }
-#if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get()));
   }
-#endif
   virtual void InitializeUI() OVERRIDE {
     vt_manager_.reset(new VirtualTerminalManager());
     ui_window_delegate_manager_.reset(new DriWindowDelegateManager());
@@ -150,18 +144,12 @@ class OzonePlatformGbm : public OzonePlatform {
                                           buffer_generator_->device(),
                                           screen_manager_.get(),
                                           gpu_window_delegate_manager_.get());
-    gpu_platform_support_.reset(
-        new GpuPlatformSupportGbm(surface_factory_ozone_.get(),
-                                  gpu_window_delegate_manager_.get(),
-                                  screen_manager_.get()));
-#if defined(OS_CHROMEOS)
-    gpu_platform_support_->AddHandler(scoped_ptr<GpuPlatformSupport>(
-        new DisplayMessageHandler(
-            scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
-                dri_.get(),
-                screen_manager_.get(),
-                NULL)))));
-#endif
+    gpu_platform_support_.reset(new GpuPlatformSupportGbm(
+        surface_factory_ozone_.get(),
+        gpu_window_delegate_manager_.get(),
+        screen_manager_.get(),
+        scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
+            dri_.get(), screen_manager_.get(), NULL))));
     if (surface_factory_ozone_->InitializeHardware() !=
         DriSurfaceFactory::INITIALIZED)
       LOG(FATAL) << "failed to initialize display hardware";

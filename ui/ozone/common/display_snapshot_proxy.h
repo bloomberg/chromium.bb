@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_COMMON_CHROMEOS_DISPLAY_SNAPSHOT_PROXY_H_
-#define UI_OZONE_COMMON_CHROMEOS_DISPLAY_SNAPSHOT_PROXY_H_
+#ifndef UI_OZONE_COMMON_DISPLAY_SNAPSHOT_PROXY_H_
+#define UI_OZONE_COMMON_DISPLAY_SNAPSHOT_PROXY_H_
 
 #include "ui/display/types/display_snapshot.h"
 
@@ -27,4 +27,4 @@ class DisplaySnapshotProxy : public DisplaySnapshot {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_COMMON_CHROMEOS_DISPLAY_SNAPSHOT_PROXY_H_
+#endif  // UI_OZONE_COMMON_DISPLAY_SNAPSHOT_PROXY_H_

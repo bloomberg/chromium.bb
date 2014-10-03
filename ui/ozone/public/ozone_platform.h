@@ -60,10 +60,8 @@ class OZONE_EXPORT OzonePlatform {
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) = 0;
-#if defined(OS_CHROMEOS)
   virtual scoped_ptr<ui::NativeDisplayDelegate>
       CreateNativeDisplayDelegate() = 0;
-#endif
 
  private:
   virtual void InitializeUI() = 0;

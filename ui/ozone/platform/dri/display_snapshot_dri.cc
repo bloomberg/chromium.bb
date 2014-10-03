@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/chromeos/display_snapshot_dri.h"
+#include "ui/ozone/platform/dri/display_snapshot_dri.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/util/edid_parser.h"
-#include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"
+#include "ui/ozone/platform/dri/display_mode_dri.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
@@ -57,11 +57,10 @@ bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {
 
 }  // namespace
 
-DisplaySnapshotDri::DisplaySnapshotDri(
-    DriWrapper* drm,
-    drmModeConnector* connector,
-    drmModeCrtc* crtc,
-    uint32_t index)
+DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
+                                       drmModeConnector* connector,
+                                       drmModeCrtc* crtc,
+                                       uint32_t index)
     : DisplaySnapshot(index,
                       false,
                       gfx::Point(crtc->x, crtc->y),
@@ -112,7 +111,8 @@ DisplaySnapshotDri::DisplaySnapshotDri(
     native_mode_ = modes_.front();
 }
 
-DisplaySnapshotDri::~DisplaySnapshotDri() {}
+DisplaySnapshotDri::~DisplaySnapshotDri() {
+}
 
 std::string DisplaySnapshotDri::ToString() const {
   return base::StringPrintf(

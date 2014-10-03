@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
+#include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 
 #include "base/bind.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"
-#include "ui/ozone/platform/dri/chromeos/display_snapshot_dri.h"
+#include "ui/ozone/platform/dri/display_mode_dri.h"
+#include "ui/ozone/platform/dri/display_snapshot_dri.h"
 #include "ui/ozone/platform/dri/dri_console_buffer.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
@@ -131,11 +131,14 @@ void NativeDisplayDelegateDri::Initialize() {
   }
 }
 
-void NativeDisplayDelegateDri::GrabServer() {}
+void NativeDisplayDelegateDri::GrabServer() {
+}
 
-void NativeDisplayDelegateDri::UngrabServer() {}
+void NativeDisplayDelegateDri::UngrabServer() {
+}
 
-void NativeDisplayDelegateDri::SyncWithServer() {}
+void NativeDisplayDelegateDri::SyncWithServer() {
+}
 
 void NativeDisplayDelegateDri::SetBackgroundColor(uint32_t color_argb) {
   if (console_buffer_)
@@ -159,13 +162,13 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());
   for (size_t i = 0;
-       i < displays.size() && cached_displays_.size() < kMaxDisplayCount; ++i) {
+       i < displays.size() && cached_displays_.size() < kMaxDisplayCount;
+       ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
         dri_, displays[i]->connector(), displays[i]->crtc(), i);
     cached_displays_.push_back(display);
-    cached_modes_.insert(cached_modes_.end(),
-                         display->modes().begin(),
-                         display->modes().end());
+    cached_modes_.insert(
+        cached_modes_.end(), display->modes().begin(), display->modes().end());
   }
 
   NotifyScreenManager(cached_displays_.get(), old_displays.get());
@@ -176,7 +179,8 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
 }
 
 void NativeDisplayDelegateDri::AddMode(const DisplaySnapshot& output,
-                                       const DisplayMode* mode) {}
+                                       const DisplayMode* mode) {
+}
 
 bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
                                          const DisplayMode* mode,
@@ -209,7 +213,8 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
   return true;
 }
 
-void NativeDisplayDelegateDri::CreateFrameBuffer(const gfx::Size& size) {}
+void NativeDisplayDelegateDri::CreateFrameBuffer(const gfx::Size& size) {
+}
 
 bool NativeDisplayDelegateDri::GetHDCPState(const DisplaySnapshot& output,
                                             HDCPState* state) {

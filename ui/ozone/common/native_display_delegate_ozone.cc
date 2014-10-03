@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
+#include "ui/ozone/common/native_display_delegate_ozone.h"
 
 #include "base/logging.h"
 
 namespace ui {
 
-NativeDisplayDelegateOzone::NativeDisplayDelegateOzone() {}
+NativeDisplayDelegateOzone::NativeDisplayDelegateOzone() {
+}
 
-NativeDisplayDelegateOzone::~NativeDisplayDelegateOzone() {}
+NativeDisplayDelegateOzone::~NativeDisplayDelegateOzone() {
+}
 
 void NativeDisplayDelegateOzone::Initialize() {
   NOTIMPLEMENTED();

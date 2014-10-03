@@ -4,15 +4,12 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
+#include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/platform/caca/caca_event_source.h"
 #include "ui/ozone/platform/caca/caca_window.h"
 #include "ui/ozone/platform/caca/caca_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
-#endif
 
 namespace ui {
 
@@ -45,13 +42,10 @@ class OzonePlatformCaca : public OzonePlatform {
       return scoped_ptr<PlatformWindow>();
     return caca_window.PassAs<PlatformWindow>();
   }
-
-#if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
   }
-#endif
 
   virtual void InitializeUI() OVERRIDE {
     window_manager_.reset(new CacaWindowManager);

@@ -23,13 +23,18 @@ namespace ui {
 class DriSurfaceFactory;
 class DriWindowDelegate;
 class DriWindowDelegateManager;
+class NativeDisplayDelegateDri;
 class ScreenManager;
+
+struct DisplayMode_Params;
+struct DisplaySnapshot_Params;
 
 class GpuPlatformSupportGbm : public GpuPlatformSupport {
  public:
   GpuPlatformSupportGbm(DriSurfaceFactory* dri,
                         DriWindowDelegateManager* window_manager,
-                        ScreenManager* screen_manager);
+                        ScreenManager* screen_manager,
+                        scoped_ptr<NativeDisplayDelegateDri> ndd);
   virtual ~GpuPlatformSupportGbm();
 
   void AddHandler(scoped_ptr<GpuPlatformSupport> handler);
@@ -51,10 +56,21 @@ class GpuPlatformSupportGbm : public GpuPlatformSupport {
                    int frame_delay_ms);
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location);
 
-  IPC::Sender* sender_;
-  DriSurfaceFactory* dri_;
-  DriWindowDelegateManager* window_manager_;
-  ScreenManager* screen_manager_;
+  // Display related IPC handlers.
+  void OnForceDPMSOn();
+  void OnRefreshNativeDisplays(
+      const std::vector<DisplaySnapshot_Params>& cached_displays);
+  void OnConfigureNativeDisplay(int64_t id,
+                                const DisplayMode_Params& mode,
+                                const gfx::Point& origin);
+  void OnDisableNativeDisplay(int64_t id);
+
+  IPC::Sender* sender_;                       // Not owned.
+  DriSurfaceFactory* dri_;                    // Not owned.
+  DriWindowDelegateManager* window_manager_;  // Not owned.
+  ScreenManager* screen_manager_;             // Not owned.
+
+  scoped_ptr<NativeDisplayDelegateDri> ndd_;
   ScopedVector<GpuPlatformSupport> handlers_;
 };
 

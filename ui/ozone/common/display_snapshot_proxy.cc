@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/common/chromeos/display_snapshot_proxy.h"
+#include "ui/ozone/common/display_snapshot_proxy.h"
 
-#include "ui/ozone/common/chromeos/display_mode_proxy.h"
+#include "ui/ozone/common/display_mode_proxy.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
 namespace ui {
@@ -13,7 +13,7 @@ namespace {
 
 bool SameModes(const DisplayMode_Params& lhs, const DisplayMode_Params& rhs) {
   return lhs.size == rhs.size && lhs.is_interlaced == rhs.is_interlaced &&
-      lhs.refresh_rate == rhs.refresh_rate;
+         lhs.refresh_rate == rhs.refresh_rate;
 }
 
 }  // namespace
@@ -44,7 +44,8 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
   }
 }
 
-DisplaySnapshotProxy::~DisplaySnapshotProxy() {}
+DisplaySnapshotProxy::~DisplaySnapshotProxy() {
+}
 
 std::string DisplaySnapshotProxy::ToString() const {
   return string_representation_;

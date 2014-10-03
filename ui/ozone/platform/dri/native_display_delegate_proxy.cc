@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/chromeos/native_display_delegate_proxy.h"
+#include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 
 #include "base/logging.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/ozone/common/chromeos/display_snapshot_proxy.h"
-#include "ui/ozone/common/chromeos/display_util.h"
+#include "ui/ozone/common/display_snapshot_proxy.h"
+#include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/gpu_platform_support_host_gbm.h"
 
@@ -19,8 +19,7 @@ namespace ui {
 NativeDisplayDelegateProxy::NativeDisplayDelegateProxy(
     GpuPlatformSupportHostGbm* proxy,
     DeviceManager* device_manager)
-    : proxy_(proxy),
-      device_manager_(device_manager) {
+    : proxy_(proxy), device_manager_(device_manager) {
   proxy_->RegisterHandler(this);
 }
 
@@ -36,11 +35,14 @@ void NativeDisplayDelegateProxy::Initialize() {
     device_manager_->AddObserver(this);
 }
 
-void NativeDisplayDelegateProxy::GrabServer() {}
+void NativeDisplayDelegateProxy::GrabServer() {
+}
 
-void NativeDisplayDelegateProxy::UngrabServer() {}
+void NativeDisplayDelegateProxy::UngrabServer() {
+}
 
-void NativeDisplayDelegateProxy::SyncWithServer() {}
+void NativeDisplayDelegateProxy::SyncWithServer() {
+}
 
 void NativeDisplayDelegateProxy::SetBackgroundColor(uint32_t color_argb) {
   NOTIMPLEMENTED();
@@ -55,7 +57,8 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateProxy::GetDisplays() {
 }
 
 void NativeDisplayDelegateProxy::AddMode(const DisplaySnapshot& output,
-                                         const DisplayMode* mode) {}
+                                         const DisplayMode* mode) {
+}
 
 bool NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
                                            const DisplayMode* mode,
@@ -70,7 +73,8 @@ bool NativeDisplayDelegateProxy::Configure(const DisplaySnapshot& output,
   return true;
 }
 
-void NativeDisplayDelegateProxy::CreateFrameBuffer(const gfx::Size& size) {}
+void NativeDisplayDelegateProxy::CreateFrameBuffer(const gfx::Size& size) {
+}
 
 bool NativeDisplayDelegateProxy::GetHDCPState(const DisplaySnapshot& output,
                                               HDCPState* state) {
@@ -118,8 +122,8 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
   }
 }
 
-void NativeDisplayDelegateProxy::OnChannelEstablished(
-    int host_id, IPC::Sender* sender) {
+void NativeDisplayDelegateProxy::OnChannelEstablished(int host_id,
+                                                      IPC::Sender* sender) {
   std::vector<DisplaySnapshot_Params> display_params;
   for (size_t i = 0; i < displays_.size(); ++i)
     display_params.push_back(GetDisplaySnapshotParams(*displays_[i]));
@@ -138,8 +142,7 @@ bool NativeDisplayDelegateProxy::OnMessageReceived(
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(NativeDisplayDelegateProxy, message)
-  IPC_MESSAGE_HANDLER(OzoneHostMsg_UpdateNativeDisplays,
-                      OnUpdateNativeDisplays)
+  IPC_MESSAGE_HANDLER(OzoneHostMsg_UpdateNativeDisplays, OnUpdateNativeDisplays)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

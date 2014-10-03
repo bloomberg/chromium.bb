@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_COMMON_CHROMEOS_DISPLAY_UTIL_H_
-#define UI_OZONE_COMMON_CHROMEOS_DISPLAY_UTIL_H_
+#ifndef UI_OZONE_COMMON_DISPLAY_UTIL_H_
+#define UI_OZONE_COMMON_DISPLAY_UTIL_H_
 
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
@@ -13,9 +13,8 @@ class DisplayMode;
 class DisplaySnapshot;
 
 DisplayMode_Params GetDisplayModeParams(const DisplayMode& mode);
-DisplaySnapshot_Params GetDisplaySnapshotParams(
-    const DisplaySnapshot& display);
+DisplaySnapshot_Params GetDisplaySnapshotParams(const DisplaySnapshot& display);
 
 }  // namespace ui
 
-#endif  // UI_OZONE_COMMON_CHROMEOS_DISPLAY_UTIL_H_
+#endif  // UI_OZONE_COMMON_DISPLAY_UTIL_H_

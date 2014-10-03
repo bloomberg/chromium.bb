@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_SNAPSHOT_DRI_H_
-#define UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_SNAPSHOT_DRI_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DISPLAY_SNAPSHOT_DRI_H_
+#define UI_OZONE_PLATFORM_DRI_DISPLAY_SNAPSHOT_DRI_H_
 
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
@@ -41,4 +41,4 @@ class DisplaySnapshotDri : public DisplaySnapshot {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_SNAPSHOT_DRI_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DISPLAY_SNAPSHOT_DRI_H_

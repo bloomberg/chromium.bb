@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/platform/test/test_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -15,10 +16,6 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
-#endif
 
 namespace ui {
 
@@ -51,13 +48,10 @@ class OzonePlatformTest : public OzonePlatform {
     return make_scoped_ptr<PlatformWindow>(
         new TestWindow(delegate, window_manager_.get(), bounds));
   }
-
-#if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
   }
-#endif
 
   virtual void InitializeUI() OVERRIDE {
     window_manager_.reset(new TestWindowManager(file_path_));

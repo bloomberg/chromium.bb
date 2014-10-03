@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_MODE_DRI_H_
-#define UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_MODE_DRI_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DISPLAY_MODE_DRI_H_
+#define UI_OZONE_PLATFORM_DRI_DISPLAY_MODE_DRI_H_
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -30,4 +30,4 @@ class DisplayModeDri : public DisplayMode {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRI_CHROMEOS_DISPLAY_MODE_DRI_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DISPLAY_MODE_DRI_H_

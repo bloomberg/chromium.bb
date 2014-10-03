@@ -16,6 +16,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -25,10 +26,6 @@
 #include "ui/ozone/public/surface_ozone_egl.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
-#endif
 
 namespace ui {
 
@@ -341,13 +338,10 @@ class OzonePlatformEgltest : public OzonePlatform {
                           event_factory_ozone_.get(),
                           bounds));
   }
-
-#if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
   }
-#endif
 
   virtual void InitializeUI() OVERRIDE {
     device_manager_ = CreateDeviceManager();

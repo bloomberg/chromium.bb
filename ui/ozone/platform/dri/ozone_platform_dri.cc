@@ -17,13 +17,10 @@
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
-#endif
 
 namespace ui {
 
@@ -76,13 +73,11 @@ class OzonePlatformDri : public OzonePlatform {
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
   }
-#if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateDri(
         dri_.get(), screen_manager_.get(), device_manager_.get()));
   }
-#endif
   virtual void InitializeUI() OVERRIDE {
     dri_->Initialize();
     surface_factory_ozone_.reset(new DriSurfaceFactory(

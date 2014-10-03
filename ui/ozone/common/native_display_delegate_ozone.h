@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_
-#define UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_
+#ifndef UI_OZONE_COMMON_NATIVE_DISPLAY_DELEGATE_OZONE_H_
+#define UI_OZONE_COMMON_NATIVE_DISPLAY_DELEGATE_OZONE_H_
 
 #include "base/macros.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -34,8 +34,8 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
   virtual bool SetHDCPState(const ui::DisplaySnapshot& output,
                             ui::HDCPState state) OVERRIDE;
   virtual std::vector<ui::ColorCalibrationProfile>
-      GetAvailableColorCalibrationProfiles(
-          const ui::DisplaySnapshot& output) OVERRIDE;
+  GetAvailableColorCalibrationProfiles(
+      const ui::DisplaySnapshot& output) OVERRIDE;
   virtual bool SetColorCalibrationProfile(
       const ui::DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) OVERRIDE;
@@ -48,4 +48,4 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_
+#endif  // UI_OZONE_COMMON_NATIVE_DISPLAY_DELEGATE_OZONE_H_

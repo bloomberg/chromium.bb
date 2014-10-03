@@ -50,6 +50,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/ipc/ipc.gyp:ipc',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/display/display.gyp:display_types',
         '<(DEPTH)/ui/events/events.gyp:events',
         '<(DEPTH)/ui/events/ozone/events_ozone.gyp:events_ozone',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
@@ -80,22 +81,19 @@
         '<(platform_list_h_file)',
         '<(constructor_list_cc_file)',
 
-        # common/chromeos files are excluded automatically when building with
-        # chromeos=0, by exclusion rules in filename_rules.gypi due to the
-        # 'chromeos' folder name.
-        'common/chromeos/display_mode_proxy.cc',
-        'common/chromeos/display_mode_proxy.h',
-        'common/chromeos/display_snapshot_proxy.cc',
-        'common/chromeos/display_snapshot_proxy.h',
-        'common/chromeos/display_util.cc',
-        'common/chromeos/display_util.h',
-        'common/chromeos/native_display_delegate_ozone.cc',
-        'common/chromeos/native_display_delegate_ozone.h',
+        'common/display_mode_proxy.cc',
+        'common/display_mode_proxy.h',
+        'common/display_snapshot_proxy.cc',
+        'common/display_snapshot_proxy.h',
+        'common/display_util.cc',
+        'common/display_util.h',
         'common/gpu/ozone_gpu_message_generator.cc',
         'common/gpu/ozone_gpu_message_generator.h',
         'common/gpu/ozone_gpu_message_params.cc',
         'common/gpu/ozone_gpu_message_params.h',
         'common/gpu/ozone_gpu_messages.h',
+        'common/native_display_delegate_ozone.cc',
+        'common/native_display_delegate_ozone.h',
         'public/ozone_platform.cc',
         'public/ozone_platform.h',
         'public/ozone_switches.cc',
@@ -159,11 +157,6 @@
         ['use_udev == 0', {
           'sources/': [
             ['exclude', '_udev\\.(h|cc)$'],
-          ],
-        }],
-        ['chromeos==1', {
-          'dependencies': [
-            '<(DEPTH)/ui/display/display.gyp:display_types',
           ],
         }],
       ],

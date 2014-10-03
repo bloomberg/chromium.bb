@@ -11,14 +11,12 @@ pkg_config("libdrm") {
 
 source_set("dri_common") {
   sources = [
-    "chromeos/display_mode_dri.cc",
-    "chromeos/display_mode_dri.h",
-    "chromeos/display_snapshot_dri.cc",
-    "chromeos/display_snapshot_dri.h",
-    "chromeos/native_display_delegate_dri.cc",
-    "chromeos/native_display_delegate_dri.h",
     "crtc_state.cc",
     "crtc_state.h",
+    "display_mode_dri.cc",
+    "display_mode_dri.h",
+    "display_snapshot_dri.cc",
+    "display_snapshot_dri.h",
     "dri_console_buffer.cc",
     "dri_console_buffer.h",
     "dri_cursor.cc",
@@ -46,6 +44,8 @@ source_set("dri_common") {
     "dri_wrapper.h",
     "hardware_display_controller.cc",
     "hardware_display_controller.h",
+    "native_display_delegate_dri.cc",
+    "native_display_delegate_dri.h",
     "scoped_drm_types.cc",
     "scoped_drm_types.h",
     "screen_manager.cc",
@@ -114,10 +114,6 @@ if (ozone_platform_gbm) {
   source_set("gbm") {
     sources = [
       "channel_observer.h",
-      "chromeos/display_message_handler.cc",
-      "chromeos/display_message_handler.h",
-      "chromeos/native_display_delegate_proxy.cc",
-      "chromeos/native_display_delegate_proxy.h",
       "dri_window_delegate_proxy.cc",
       "dri_window_delegate_proxy.h",
       "gbm_buffer.cc",
@@ -134,6 +130,8 @@ if (ozone_platform_gbm) {
       "gpu_platform_support_gbm.h",
       "gpu_platform_support_host_gbm.cc",
       "gpu_platform_support_host_gbm.h",
+      "native_display_delegate_proxy.cc",
+      "native_display_delegate_proxy.h",
       "ozone_platform_gbm.cc",
       "ozone_platform_gbm.h",
     ]
