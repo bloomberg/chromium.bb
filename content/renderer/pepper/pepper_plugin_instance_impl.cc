@@ -494,7 +494,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       plugin_mouse_lock_interface_(NULL),
       plugin_pdf_interface_(NULL),
       plugin_private_interface_(NULL),
-      plugin_selection_interface_(NULL),
       plugin_textinput_interface_(NULL),
       plugin_zoom_interface_(NULL),
       checked_for_plugin_input_event_interface_(false),
@@ -1335,6 +1334,8 @@ void PepperPluginInstanceImpl::ViewFlushedPaint() {
 void PepperPluginInstanceImpl::SetSelectedText(
     const base::string16& selected_text) {
   selected_text_ = selected_text;
+  gfx::Range range(0, selected_text.length());
+  render_frame_->SetSelectedText(selected_text, 0, range);
 }
 
 void PepperPluginInstanceImpl::SetLinkUnderCursor(const std::string& url) {
@@ -1377,20 +1378,7 @@ void PepperPluginInstanceImpl::UnregisterMessageHandler(PP_Instance instance) {
 }
 
 base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (!LoadSelectionInterface())
-    return selected_text_;
-
-  PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
-                                                           PP_FromBool(html));
-  StringVar* string = StringVar::FromPPVar(rv);
-  base::string16 selection;
-  if (string)
-    selection = base::UTF8ToUTF16(string->value());
-  // Release the ref the plugin transfered to us.
-  HostGlobals::Get()->GetVarTracker()->ReleaseVar(rv);
-  return selection;
+  return selected_text_;
 }
 
 base::string16 PepperPluginInstanceImpl::GetLinkAtPosition(
@@ -1540,14 +1528,6 @@ bool PepperPluginInstanceImpl::LoadPrivateInterface() {
   }
 
   return !!plugin_private_interface_;
-}
-
-bool PepperPluginInstanceImpl::LoadSelectionInterface() {
-  if (!plugin_selection_interface_) {
-    plugin_selection_interface_ = static_cast<const PPP_Selection_Dev*>(
-        module_->GetPluginInterface(PPP_SELECTION_DEV_INTERFACE));
-  }
-  return !!plugin_selection_interface_;
 }
 
 bool PepperPluginInstanceImpl::LoadTextInputInterface() {
@@ -2898,7 +2878,6 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   plugin_pdf_interface_ = NULL;
   checked_for_plugin_pdf_interface_ = false;
   plugin_private_interface_ = NULL;
-  plugin_selection_interface_ = NULL;
   plugin_textinput_interface_ = NULL;
   plugin_zoom_interface_ = NULL;
 

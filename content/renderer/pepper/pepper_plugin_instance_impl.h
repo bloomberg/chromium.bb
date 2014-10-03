@@ -618,7 +618,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool LoadPdfInterface();
   bool LoadPrintInterface();
   bool LoadPrivateInterface();
-  bool LoadSelectionInterface();
   bool LoadTextInputInterface();
   bool LoadZoomInterface();
 
@@ -768,7 +767,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   const PPP_MouseLock* plugin_mouse_lock_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
-  const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_TextInput_Dev* plugin_textinput_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
 

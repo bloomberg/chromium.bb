@@ -7,6 +7,7 @@
 #include "base/files/scoped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/pdf/common/pdf_messages.h"
 #include "components/pdf/renderer/pdf_resource_util.h"
@@ -308,8 +309,16 @@ PP_Bool IsOutOfProcess(PP_Instance instance_id) {
   return PP_FALSE;
 }
 
+// This function is intended for both in-process and out-of-process pdf.
 void SetSelectedText(PP_Instance instance_id, const char* selected_text) {
-  // This function is intended for out of process PDF plugin.
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
+  if (!instance)
+    return;
+
+  base::string16 selection_text;
+  base::UTF8ToUTF16(selected_text, strlen(selected_text), &selection_text);
+  instance->SetSelectedText(selection_text);
 }
 
 void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {

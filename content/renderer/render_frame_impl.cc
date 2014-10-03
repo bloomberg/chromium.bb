@@ -1414,26 +1414,6 @@ void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector) {
   frame_->document().beginExitTransition(WebString::fromUTF8(css_selector));
 }
 
-bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
-    const base::string16& selection_text,
-    size_t selection_text_offset,
-    const gfx::Range& selection_range,
-    const ContextMenuParams& params) {
-  base::string16 trimmed_selection_text;
-  if (!selection_text.empty() && !selection_range.is_empty()) {
-    const int start = selection_range.GetMin() - selection_text_offset;
-    const size_t length = selection_range.length();
-    if (start >= 0 && start + length <= selection_text.length()) {
-      base::TrimWhitespace(selection_text.substr(start, length), base::TRIM_ALL,
-                           &trimmed_selection_text);
-    }
-  }
-  base::string16 trimmed_params_text;
-  base::TrimWhitespace(params.selection_text, base::TRIM_ALL,
-                       &trimmed_params_text);
-  return trimmed_params_text != trimmed_selection_text;
-}
-
 bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
                                            const base::string16& message,
                                            const base::string16& default_value,
@@ -1559,6 +1539,16 @@ bool RenderFrameImpl::IsFTPDirectoryListing() {
 
 void RenderFrameImpl::AttachGuest(int element_instance_id) {
   render_view_->GetBrowserPluginManager()->Attach(element_instance_id);
+}
+
+void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
+                                      size_t offset,
+                                      const gfx::Range& range) {
+  // Use the routing id of Render Widget Host.
+  Send(new ViewHostMsg_SelectionChanged(GetRenderWidget()->routing_id(),
+                                        selection_text,
+                                        offset,
+                                        range));
 }
 
 // blink::WebFrameClient implementation ----------------------------------------
@@ -2576,23 +2566,6 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   if (GetRenderWidget()->has_host_context_menu_location()) {
     params.x = GetRenderWidget()->host_context_menu_location().x();
     params.y = GetRenderWidget()->host_context_menu_location().y();
-  }
-
-  // Plugins, e.g. PDF, don't currently update the render view when their
-  // selected text changes, but the context menu params do contain the updated
-  // selection. If that's the case, update the render view's state just prior
-  // to showing the context menu.
-  // TODO(asvitkine): http://crbug.com/152432
-  if (ShouldUpdateSelectionTextFromContextMenuParams(
-          selection_text_, selection_text_offset_, selection_range_, params)) {
-    selection_text_ = params.selection_text;
-    // TODO(asvitkine): Text offset and range is not available in this case.
-    selection_text_offset_ = 0;
-    selection_range_ = gfx::Range(0, selection_text_.length());
-    // This IPC is dispatched by RenderWidetHost, so use its routing ID.
-    Send(new ViewHostMsg_SelectionChanged(
-        GetRenderWidget()->routing_id(), selection_text_,
-        selection_text_offset_, selection_range_));
   }
 
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do
@@ -3817,9 +3790,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
     selection_text_ = text;
     selection_text_offset_ = offset;
     selection_range_ = range;
-    // This IPC is dispatched by RenderWidetHost, so use its routing ID.
-    Send(new ViewHostMsg_SelectionChanged(
-        GetRenderWidget()->routing_id(), text, offset, range));
+    SetSelectedText(text, offset, range);
   }
   GetRenderWidget()->UpdateSelectionBounds();
 }

@@ -718,7 +718,6 @@
         'renderer/pepper/mock_resource.h',
         'renderer/pepper/pepper_broker_unittest.cc',
         'renderer/pepper/v8_var_converter_unittest.cc',
-        'renderer/render_frame_impl_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
         'renderer/render_widget_unittest.cc',
         'renderer/screen_orientation/screen_orientation_dispatcher_unittest.cc',

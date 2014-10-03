@@ -271,6 +271,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
   virtual bool IsFTPDirectoryListing() OVERRIDE;
   virtual void AttachGuest(int element_instance_id) OVERRIDE;
+  virtual void SetSelectedText(const base::string16& selection_text,
+                               size_t offset,
+                               const gfx::Range& range) OVERRIDE;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -478,8 +481,6 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
-  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
-                           ShouldUpdateSelectionTextFromContextMenuParams);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            OnExtendSelectionAndDelete);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ReloadWhileSwappedOut);
@@ -587,14 +588,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(varunjain): delete this method once we figure out how to keep
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
-
-  // Returns whether |params.selection_text| should be synchronized to the
-  // browser before bringing up the context menu. Static for testing.
-  static bool ShouldUpdateSelectionTextFromContextMenuParams(
-      const base::string16& selection_text,
-      size_t selection_text_offset,
-      const gfx::Range& selection_range,
-      const ContextMenuParams& params);
 
   bool RunJavaScriptMessage(JavaScriptMessageType type,
                             const base::string16& message,
