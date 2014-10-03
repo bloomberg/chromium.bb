@@ -410,10 +410,10 @@ bool PicturePile::UpdateAndExpandInvalidation(
       updated = picture_it->second.Invalidate(frame_number) || updated;
       // Invalidate drops the picture so the whole tile better be invalidated if
       // it won't be re-recorded below.
-      DCHECK(
-          tiling_.TileBounds(key.first, key.second).Intersects(interest_rect) ||
-          invalidation_expanded_to_full_tiles.Contains(
-              tiling_.TileBounds(key.first, key.second)));
+      DCHECK_IMPLIES(!tiling_.TileBounds(key.first, key.second)
+                          .Intersects(interest_rect_over_tiles),
+                     invalidation_expanded_to_full_tiles.Contains(
+                         tiling_.TileBounds(key.first, key.second)));
     }
   }
 
