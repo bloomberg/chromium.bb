@@ -511,7 +511,6 @@
         },
       ],
       'dependencies': [
-        '<(DEPTH)/build/android/rezip.gyp:rezip#host',
         '<(DEPTH)/build/android/rezip.gyp:rezip_apk_jar',
       ],
     }],
@@ -547,7 +546,6 @@
         },
       ],
       'dependencies': [
-        '<(DEPTH)/build/android/rezip.gyp:rezip#host',
         '<(DEPTH)/build/android/rezip.gyp:rezip_apk_jar',
       ],
     }],

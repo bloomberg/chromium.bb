@@ -6,20 +6,6 @@
 {
   'targets': [
     {
-      'target_name': 'rezip',
-      'type': 'executable',
-      'toolsets': [ 'host' ],
-      'dependencies': [
-        '<(DEPTH)/third_party/zlib/zlib.gyp:minizip',
-      ],
-      'include_dirs': [
-        '<(DEPTH)',
-      ],
-      'sources': [
-        'rezip/rezip.cc',
-      ],
-    },
-    {
       'target_name': 'rezip_apk_jar',
       'type': 'none',
       'variables': {
