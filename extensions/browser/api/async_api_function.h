@@ -39,7 +39,7 @@ class AsyncApiFunction : public AsyncExtensionFunction {
   virtual bool Respond() = 0;
 
   // ExtensionFunction::RunAsync()
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  protected:
   content::BrowserThread::ID work_thread_id() const { return work_thread_id_; }

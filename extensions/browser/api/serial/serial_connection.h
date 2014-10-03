@@ -49,7 +49,7 @@ class SerialConnection : public ApiResource,
   virtual ~SerialConnection();
 
   // ApiResource override.
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
   void set_persistent(bool persistent) { persistent_ = persistent; }
   bool persistent() const { return persistent_; }

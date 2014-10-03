@@ -34,20 +34,20 @@ class TestManagementPolicyProvider : public ManagementPolicy::Provider {
   void SetProhibitedActions(int prohibited_actions);
   void SetDisableReason(Extension::DisableReason reason);
 
-  virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
+  virtual std::string GetDebugPolicyProviderName() const override;
 
   virtual bool UserMayLoad(const Extension* extension,
-                           base::string16* error) const OVERRIDE;
+                           base::string16* error) const override;
 
   virtual bool UserMayModifySettings(const Extension* extension,
-                                     base::string16* error) const OVERRIDE;
+                                     base::string16* error) const override;
 
   virtual bool MustRemainEnabled(const Extension* extension,
-                                 base::string16* error) const OVERRIDE;
+                                 base::string16* error) const override;
 
   virtual bool MustRemainDisabled(const Extension* extension,
                                   Extension::DisableReason* reason,
-                                  base::string16* error) const OVERRIDE;
+                                  base::string16* error) const override;
 
  private:
   bool may_load_;

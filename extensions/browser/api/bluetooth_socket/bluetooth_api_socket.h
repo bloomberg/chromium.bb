@@ -89,7 +89,7 @@ class BluetoothApiSocket : public ApiResource {
   const device::BluetoothUUID& uuid() const { return uuid_; }
 
   // Overriden from extensions::ApiResource.
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
   const std::string* name() const { return name_.get(); }
   void set_name(const std::string& name) { name_.reset(new std::string(name)); }

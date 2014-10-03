@@ -46,7 +46,7 @@ void ContentWatcher::OnWatchPages(
     explicit WatchSelectors(const WebVector<WebString>& css_selectors)
         : css_selectors_(css_selectors) {}
 
-    virtual bool Visit(content::RenderView* view) OVERRIDE {
+    virtual bool Visit(content::RenderView* view) override {
       for (blink::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
            frame = frame->traverseNext(/*wrap=*/false))
         frame->document().watchCSSSelectors(css_selectors_);

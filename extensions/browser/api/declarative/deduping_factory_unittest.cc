@@ -38,7 +38,7 @@ class BaseClass : public base::RefCounted<BaseClass> {
 class Foo : public BaseClass {
  public:
   explicit Foo(int parameter) : BaseClass(FOO), parameter_(parameter) {}
-  virtual bool Equals(const BaseClass* other) const OVERRIDE {
+  virtual bool Equals(const BaseClass* other) const override {
     return other->type() == type() &&
            static_cast<const Foo*>(other)->parameter_ == parameter_;
   }

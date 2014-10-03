@@ -2130,7 +2130,7 @@ class ClearCacheQuotaHeuristic : public extensions::QuotaLimitHeuristic {
         weak_ptr_factory_(this) {}
   virtual ~ClearCacheQuotaHeuristic() {}
   virtual bool Apply(Bucket* bucket,
-                     const base::TimeTicks& event_time) OVERRIDE;
+                     const base::TimeTicks& event_time) override;
 
  private:
   // Callback that is triggered by the ExtensionWebRequestEventRouter on a page

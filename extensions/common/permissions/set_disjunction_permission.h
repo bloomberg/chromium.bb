@@ -34,9 +34,9 @@ class SetDisjunctionPermission : public APIPermission {
   ~SetDisjunctionPermission() {}
 
   // APIPermission overrides
-  virtual bool HasMessages() const OVERRIDE { return !data_set_.empty(); }
+  virtual bool HasMessages() const override { return !data_set_.empty(); }
 
-  virtual bool Check(const APIPermission::CheckParam* param) const OVERRIDE {
+  virtual bool Check(const APIPermission::CheckParam* param) const override {
     for (typename std::set<PermissionDataType>::const_iterator i =
              data_set_.begin();
          i != data_set_.end();
@@ -47,7 +47,7 @@ class SetDisjunctionPermission : public APIPermission {
     return false;
   }
 
-  virtual bool Contains(const APIPermission* rhs) const OVERRIDE {
+  virtual bool Contains(const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
@@ -55,20 +55,20 @@ class SetDisjunctionPermission : public APIPermission {
         data_set_, perm->data_set_);
   }
 
-  virtual bool Equal(const APIPermission* rhs) const OVERRIDE {
+  virtual bool Equal(const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     return data_set_ == perm->data_set_;
   }
 
-  virtual APIPermission* Clone() const OVERRIDE {
+  virtual APIPermission* Clone() const override {
     SetDisjunctionPermission* result = new DerivedType(info());
     result->data_set_ = data_set_;
     return result;
   }
 
-  virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE {
+  virtual APIPermission* Diff(const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
@@ -78,7 +78,7 @@ class SetDisjunctionPermission : public APIPermission {
     return result->data_set_.empty() ? NULL : result.release();
   }
 
-  virtual APIPermission* Union(const APIPermission* rhs) const OVERRIDE {
+  virtual APIPermission* Union(const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
@@ -88,7 +88,7 @@ class SetDisjunctionPermission : public APIPermission {
     return result.release();
   }
 
-  virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE {
+  virtual APIPermission* Intersect(const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
@@ -101,7 +101,7 @@ class SetDisjunctionPermission : public APIPermission {
   virtual bool FromValue(
       const base::Value* value,
       std::string* error,
-      std::vector<std::string>* unhandled_permissions) OVERRIDE {
+      std::vector<std::string>* unhandled_permissions) override {
     data_set_.clear();
     const base::ListValue* list = NULL;
 
@@ -137,7 +137,7 @@ class SetDisjunctionPermission : public APIPermission {
     return true;
   }
 
-  virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
+  virtual scoped_ptr<base::Value> ToValue() const override {
     base::ListValue* list = new base::ListValue();
     typename std::set<PermissionDataType>::const_iterator i;
     for (i = data_set_.begin(); i != data_set_.end(); ++i) {
@@ -147,15 +147,15 @@ class SetDisjunctionPermission : public APIPermission {
     return scoped_ptr<base::Value>(list);
   }
 
-  virtual void Write(IPC::Message* m) const OVERRIDE {
+  virtual void Write(IPC::Message* m) const override {
     IPC::WriteParam(m, data_set_);
   }
 
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE {
+  virtual bool Read(const IPC::Message* m, PickleIterator* iter) override {
     return IPC::ReadParam(m, iter, &data_set_);
   }
 
-  virtual void Log(std::string* log) const OVERRIDE {
+  virtual void Log(std::string* log) const override {
     IPC::LogParam(data_set_, log);
   }
 

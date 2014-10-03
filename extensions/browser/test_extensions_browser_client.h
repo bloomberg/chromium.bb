@@ -30,61 +30,61 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   void SetIncognitoContext(content::BrowserContext* incognito_context);
 
   // ExtensionsBrowserClient overrides:
-  virtual bool IsShuttingDown() OVERRIDE;
+  virtual bool IsShuttingDown() override;
   virtual bool AreExtensionsDisabled(const base::CommandLine& command_line,
-                                     content::BrowserContext* context) OVERRIDE;
-  virtual bool IsValidContext(content::BrowserContext* context) OVERRIDE;
+                                     content::BrowserContext* context) override;
+  virtual bool IsValidContext(content::BrowserContext* context) override;
   virtual bool IsSameContext(content::BrowserContext* first,
-                             content::BrowserContext* second) OVERRIDE;
+                             content::BrowserContext* second) override;
   virtual bool HasOffTheRecordContext(content::BrowserContext* context)
-      OVERRIDE;
+      override;
   virtual content::BrowserContext* GetOffTheRecordContext(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
   virtual content::BrowserContext* GetOriginalContext(
-      content::BrowserContext* context) OVERRIDE;
-  virtual bool IsGuestSession(content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) override;
+  virtual bool IsGuestSession(content::BrowserContext* context) const override;
   virtual bool IsExtensionIncognitoEnabled(
       const std::string& extension_id,
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual bool CanExtensionCrossIncognito(
       const extensions::Extension* extension,
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual net::URLRequestJob* MaybeCreateResourceBundleRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       const base::FilePath& directory_path,
       const std::string& content_security_policy,
-      bool send_cors_header) OVERRIDE;
+      bool send_cors_header) override;
   virtual bool AllowCrossRendererResourceLoad(net::URLRequest* request,
                                               bool is_incognito,
                                               const Extension* extension,
                                               InfoMap* extension_info_map)
-      OVERRIDE;
+      override;
   virtual PrefService* GetPrefServiceForContext(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
   virtual void GetEarlyExtensionPrefsObservers(
       content::BrowserContext* context,
-      std::vector<ExtensionPrefsObserver*>* observers) const OVERRIDE;
-  virtual ProcessManagerDelegate* GetProcessManagerDelegate() const OVERRIDE;
+      std::vector<ExtensionPrefsObserver*>* observers) const override;
+  virtual ProcessManagerDelegate* GetProcessManagerDelegate() const override;
   virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate()
-      OVERRIDE;
-  virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
-  virtual void PermitExternalProtocolHandler() OVERRIDE;
-  virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
-  virtual bool IsRunningInForcedAppMode() OVERRIDE;
+      override;
+  virtual bool DidVersionUpdate(content::BrowserContext* context) override;
+  virtual void PermitExternalProtocolHandler() override;
+  virtual scoped_ptr<AppSorting> CreateAppSorting() override;
+  virtual bool IsRunningInForcedAppMode() override;
   virtual ApiActivityMonitor* GetApiActivityMonitor(
-      content::BrowserContext* context) OVERRIDE;
-  virtual ExtensionSystemProvider* GetExtensionSystemFactory() OVERRIDE;
+      content::BrowserContext* context) override;
+  virtual ExtensionSystemProvider* GetExtensionSystemFactory() override;
   virtual void RegisterExtensionFunctions(
-      ExtensionFunctionRegistry* registry) const OVERRIDE;
+      ExtensionFunctionRegistry* registry) const override;
   virtual scoped_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual ComponentExtensionResourceManager*
-  GetComponentExtensionResourceManager() OVERRIDE;
+  GetComponentExtensionResourceManager() override;
   virtual void BroadcastEventToRenderers(
       const std::string& event_name,
-      scoped_ptr<base::ListValue> args) OVERRIDE;
-  virtual net::NetLog* GetNetLog() OVERRIDE;
+      scoped_ptr<base::ListValue> args) override;
+  virtual net::NetLog* GetNetLog() override;
 
  private:
   content::BrowserContext* main_context_;       // Not owned.

@@ -40,7 +40,7 @@ class BluetoothSocketApiTest : public ExtensionApiTest {
  public:
   BluetoothSocketApiTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     empty_extension_ = extensions::test_util::CreateEmptyExtension();
     SetUpMockAdapter();

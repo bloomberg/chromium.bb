@@ -24,7 +24,7 @@ class SystemNetworkGetNetworkInterfacesFunction
   virtual ~SystemNetworkGetNetworkInterfacesFunction();
 
   // AsyncApiFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void GetListOnFileThread();

@@ -57,7 +57,7 @@ class GuestView : public GuestViewBase {
   }
 
   // GuestViewBase implementation.
-  virtual const char* GetViewType() const OVERRIDE {
+  virtual const char* GetViewType() const override {
     return T::Type;
   }
 

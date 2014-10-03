@@ -20,7 +20,7 @@ class TestExtensionFunction : public SyncExtensionFunction {
   virtual ~TestExtensionFunction();
 
   // SyncExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
   virtual bool RunSafe() = 0;
 };
@@ -33,7 +33,7 @@ class TestNotifyPassFunction : public TestExtensionFunction {
   virtual ~TestNotifyPassFunction();
 
   // TestExtensionFunction:
-  virtual bool RunSafe() OVERRIDE;
+  virtual bool RunSafe() override;
 };
 
 class TestNotifyFailFunction : public TestExtensionFunction {
@@ -44,7 +44,7 @@ class TestNotifyFailFunction : public TestExtensionFunction {
   virtual ~TestNotifyFailFunction();
 
   // TestExtensionFunction:
-  virtual bool RunSafe() OVERRIDE;
+  virtual bool RunSafe() override;
 };
 
 class TestLogFunction : public TestExtensionFunction {
@@ -55,7 +55,7 @@ class TestLogFunction : public TestExtensionFunction {
   virtual ~TestLogFunction();
 
   // TestExtensionFunction:
-  virtual bool RunSafe() OVERRIDE;
+  virtual bool RunSafe() override;
 };
 
 class TestSendMessageFunction : public AsyncExtensionFunction {
@@ -73,7 +73,7 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
   virtual ~TestSendMessageFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class TestGetConfigFunction : public TestExtensionFunction {
@@ -111,7 +111,7 @@ class TestGetConfigFunction : public TestExtensionFunction {
   virtual ~TestGetConfigFunction();
 
   // TestExtensionFunction:
-  virtual bool RunSafe() OVERRIDE;
+  virtual bool RunSafe() override;
 };
 
 class TestWaitForRoundTripFunction : public TestExtensionFunction {
@@ -122,7 +122,7 @@ class TestWaitForRoundTripFunction : public TestExtensionFunction {
   virtual ~TestWaitForRoundTripFunction();
 
   // TestExtensionFunction:
-  virtual bool RunSafe() OVERRIDE;
+  virtual bool RunSafe() override;
 };
 
 }  // namespace extensions

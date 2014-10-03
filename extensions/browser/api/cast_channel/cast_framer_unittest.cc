@@ -17,7 +17,7 @@ class CastFramerTest : public testing::Test {
   CastFramerTest() {}
   virtual ~CastFramerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     cast_message_.set_protocol_version(CastMessage::CASTV2_1_0);
     cast_message_.set_source_id("source");
     cast_message_.set_destination_id("destination");

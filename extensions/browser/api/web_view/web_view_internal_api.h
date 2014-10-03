@@ -27,7 +27,7 @@ class WebViewInternalExtensionFunction : public AsyncExtensionFunction {
   virtual ~WebViewInternalExtensionFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE FINAL;
+  virtual bool RunAsync() override final;
 
  private:
   virtual bool RunAsyncSafe(WebViewGuest* guest) = 0;
@@ -45,7 +45,7 @@ class WebViewInternalNavigateFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalNavigateFunction);
 };
@@ -59,13 +59,13 @@ class WebViewInternalExecuteCodeFunction
   virtual ~WebViewInternalExecuteCodeFunction();
 
   // Initialize |details_| if it hasn't already been.
-  virtual bool Init() OVERRIDE;
-  virtual bool ShouldInsertCSS() const OVERRIDE;
-  virtual bool CanExecuteScriptOnPage() OVERRIDE;
+  virtual bool Init() override;
+  virtual bool ShouldInsertCSS() const override;
+  virtual bool CanExecuteScriptOnPage() override;
   // Guarded by a process ID check.
-  virtual extensions::ScriptExecutor* GetScriptExecutor() OVERRIDE FINAL;
-  virtual bool IsWebView() const OVERRIDE;
-  virtual const GURL& GetWebViewSrc() const OVERRIDE;
+  virtual extensions::ScriptExecutor* GetScriptExecutor() override final;
+  virtual bool IsWebView() const override;
+  virtual const GURL& GetWebViewSrc() const override;
 
  private:
   // Contains extension resource built from path of file which is
@@ -89,7 +89,7 @@ class WebViewInternalExecuteScriptFunction
 
   virtual void OnExecuteCodeFinished(const std::string& error,
                                      const GURL& on_url,
-                                     const base::ListValue& result) OVERRIDE;
+                                     const base::ListValue& result) override;
 
   DECLARE_EXTENSION_FUNCTION("webViewInternal.executeScript",
                              WEBVIEWINTERNAL_EXECUTESCRIPT)
@@ -106,7 +106,7 @@ class WebViewInternalInsertCSSFunction
  protected:
   virtual ~WebViewInternalInsertCSSFunction() {}
 
-  virtual bool ShouldInsertCSS() const OVERRIDE;
+  virtual bool ShouldInsertCSS() const override;
 
   DECLARE_EXTENSION_FUNCTION("webViewInternal.insertCSS",
                              WEBVIEWINTERNAL_INSERTCSS)
@@ -127,9 +127,9 @@ class WebViewInternalCaptureVisibleRegionFunction
 
  private:
   // extensions::CaptureWebContentsFunction implementation.
-  virtual bool IsScreenshotEnabled() OVERRIDE;
-  virtual content::WebContents* GetWebContentsForID(int id) OVERRIDE;
-  virtual void OnCaptureFailure(FailureReason reason) OVERRIDE;
+  virtual bool IsScreenshotEnabled() override;
+  virtual content::WebContents* GetWebContentsForID(int id) override;
+  virtual void OnCaptureFailure(FailureReason reason) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalCaptureVisibleRegionFunction);
 };
@@ -145,7 +145,7 @@ class WebViewInternalSetNameFunction : public WebViewInternalExtensionFunction {
   virtual ~WebViewInternalSetNameFunction();
 
  private:
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetNameFunction);
 };
@@ -162,7 +162,7 @@ class WebViewInternalSetAllowTransparencyFunction :
   virtual ~WebViewInternalSetAllowTransparencyFunction();
 
  private:
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetAllowTransparencyFunction);
 };
@@ -178,7 +178,7 @@ class WebViewInternalSetZoomFunction : public WebViewInternalExtensionFunction {
   virtual ~WebViewInternalSetZoomFunction();
 
  private:
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetZoomFunction);
 };
@@ -194,7 +194,7 @@ class WebViewInternalGetZoomFunction : public WebViewInternalExtensionFunction {
   virtual ~WebViewInternalGetZoomFunction();
 
  private:
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalGetZoomFunction);
 };
@@ -213,7 +213,7 @@ class WebViewInternalFindFunction : public WebViewInternalExtensionFunction {
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalFindFunction);
 };
@@ -231,7 +231,7 @@ class WebViewInternalStopFindingFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalStopFindingFunction);
 };
@@ -248,7 +248,7 @@ class WebViewInternalLoadDataWithBaseUrlFunction
   virtual ~WebViewInternalLoadDataWithBaseUrlFunction();
 
  private:
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalLoadDataWithBaseUrlFunction);
 };
@@ -264,7 +264,7 @@ class WebViewInternalGoFunction : public WebViewInternalExtensionFunction {
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalGoFunction);
 };
@@ -280,7 +280,7 @@ class WebViewInternalReloadFunction : public WebViewInternalExtensionFunction {
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalReloadFunction);
 };
@@ -298,7 +298,7 @@ class WebViewInternalSetPermissionFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetPermissionFunction);
 };
@@ -316,7 +316,7 @@ class WebViewInternalOverrideUserAgentFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalOverrideUserAgentFunction);
 };
@@ -332,7 +332,7 @@ class WebViewInternalStopFunction : public WebViewInternalExtensionFunction {
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalStopFunction);
 };
@@ -350,7 +350,7 @@ class WebViewInternalTerminateFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalTerminateFunction);
 };
@@ -368,7 +368,7 @@ class WebViewInternalClearDataFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   uint32 GetRemovalMask();
   void ClearDataDone();

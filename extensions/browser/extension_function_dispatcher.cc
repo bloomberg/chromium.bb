@@ -157,7 +157,7 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
 
   // content::WebContentsObserver overrides.
   virtual void RenderViewDeleted(
-      RenderViewHost* render_view_host) OVERRIDE {
+      RenderViewHost* render_view_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (render_view_host != render_view_host_)
       return;

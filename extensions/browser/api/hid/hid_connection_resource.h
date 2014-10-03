@@ -32,7 +32,7 @@ class HidConnectionResource : public ApiResource {
     return connection_;
   }
 
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
   static const char* service_name() { return "HidConnectionResourceManager"; }
 

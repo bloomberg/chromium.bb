@@ -133,21 +133,21 @@ class ScriptContext : public RequestSender::Source, public gin::Runner {
                                       bool match_about_blank);
 
   // RequestSender::Source implementation.
-  virtual ScriptContext* GetContext() OVERRIDE;
+  virtual ScriptContext* GetContext() override;
   virtual void OnResponseReceived(const std::string& name,
                                   int request_id,
                                   bool success,
                                   const base::ListValue& response,
-                                  const std::string& error) OVERRIDE;
+                                  const std::string& error) override;
 
   // gin::Runner overrides.
   virtual void Run(const std::string& source,
-                   const std::string& resource_name) OVERRIDE;
+                   const std::string& resource_name) override;
   virtual v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
                                      v8::Handle<v8::Value> receiver,
                                      int argc,
-                                     v8::Handle<v8::Value> argv[]) OVERRIDE;
-  virtual gin::ContextHolder* GetContextHolder() OVERRIDE;
+                                     v8::Handle<v8::Value> argv[]) override;
+  virtual gin::ContextHolder* GetContextHolder() override;
 
  protected:
   // The v8 context the bindings are accessible to.

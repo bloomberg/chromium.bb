@@ -29,8 +29,8 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
  protected:
   virtual ~UsbAsyncApiFunction();
 
-  virtual bool PrePrepare() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool PrePrepare() override;
+  virtual bool Respond() override;
 
   static void CreateDeviceFilter(
       const extensions::core_api::usb::DeviceFilter& input,
@@ -79,8 +79,8 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbFindDevicesFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   void OpenDevices(
@@ -96,8 +96,8 @@ class UsbGetDevicesFunction : public UsbAsyncApiFunction {
 
   UsbGetDevicesFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  protected:
   virtual ~UsbGetDevicesFunction();
@@ -115,8 +115,8 @@ class UsbRequestAccessFunction : public UsbAsyncApiFunction {
 
   UsbRequestAccessFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  protected:
   virtual ~UsbRequestAccessFunction();
@@ -133,8 +133,8 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
 
   UsbOpenDeviceFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  protected:
   virtual ~UsbOpenDeviceFunction();
@@ -153,8 +153,8 @@ class UsbGetConfigurationFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbGetConfigurationFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::GetConfiguration::Params> parameters_;
@@ -169,8 +169,8 @@ class UsbListInterfacesFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbListInterfacesFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::ListInterfaces::Params> parameters_;
@@ -185,8 +185,8 @@ class UsbCloseDeviceFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbCloseDeviceFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::CloseDevice::Params> parameters_;
@@ -201,8 +201,8 @@ class UsbClaimInterfaceFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbClaimInterfaceFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::ClaimInterface::Params> parameters_;
@@ -217,8 +217,8 @@ class UsbReleaseInterfaceFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbReleaseInterfaceFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::ReleaseInterface::Params> parameters_;
@@ -234,8 +234,8 @@ class UsbSetInterfaceAlternateSettingFunction : public UsbAsyncApiFunction {
  private:
   virtual ~UsbSetInterfaceAlternateSettingFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
   scoped_ptr<extensions::core_api::usb::SetInterfaceAlternateSetting::Params>
       parameters_;
@@ -250,8 +250,8 @@ class UsbControlTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   virtual ~UsbControlTransferFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::ControlTransfer::Params> parameters_;
@@ -266,8 +266,8 @@ class UsbBulkTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   virtual ~UsbBulkTransferFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::BulkTransfer::Params> parameters_;
@@ -282,8 +282,8 @@ class UsbInterruptTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   virtual ~UsbInterruptTransferFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::InterruptTransfer::Params> parameters_;
@@ -298,8 +298,8 @@ class UsbIsochronousTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   virtual ~UsbIsochronousTransferFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::IsochronousTransfer::Params>
@@ -315,8 +315,8 @@ class UsbResetDeviceFunction : public UsbAsyncApiFunction {
  protected:
   virtual ~UsbResetDeviceFunction();
 
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   scoped_ptr<extensions::core_api::usb::ResetDevice::Params> parameters_;

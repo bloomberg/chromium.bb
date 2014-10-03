@@ -39,7 +39,7 @@ class SafeManifestParser : public content::UtilityProcessHostClient {
   void ParseInSandbox();
 
   // content::UtilityProcessHostClient implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& results);
   void OnParseUpdateManifestFailed(const std::string& error_message);

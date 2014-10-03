@@ -96,12 +96,12 @@ class WebRequestConditionAttributeResourceType
       bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
-  virtual int GetStages() const OVERRIDE;
+  virtual int GetStages() const override;
   virtual bool IsFulfilled(
-      const WebRequestData& request_data) const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
+      const WebRequestData& request_data) const override;
+  virtual Type GetType() const override;
+  virtual std::string GetName() const override;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const override;
 
  private:
   explicit WebRequestConditionAttributeResourceType(
@@ -126,12 +126,12 @@ class WebRequestConditionAttributeContentType
       bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
-  virtual int GetStages() const OVERRIDE;
+  virtual int GetStages() const override;
   virtual bool IsFulfilled(
-      const WebRequestData& request_data) const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
+      const WebRequestData& request_data) const override;
+  virtual Type GetType() const override;
+  virtual std::string GetName() const override;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const override;
 
  private:
   explicit WebRequestConditionAttributeContentType(
@@ -161,12 +161,12 @@ class WebRequestConditionAttributeRequestHeaders
       bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
-  virtual int GetStages() const OVERRIDE;
+  virtual int GetStages() const override;
   virtual bool IsFulfilled(
-      const WebRequestData& request_data) const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
+      const WebRequestData& request_data) const override;
+  virtual Type GetType() const override;
+  virtual std::string GetName() const override;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const override;
 
  private:
   WebRequestConditionAttributeRequestHeaders(
@@ -195,12 +195,12 @@ class WebRequestConditionAttributeResponseHeaders
       bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
-  virtual int GetStages() const OVERRIDE;
+  virtual int GetStages() const override;
   virtual bool IsFulfilled(
-      const WebRequestData& request_data) const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
+      const WebRequestData& request_data) const override;
+  virtual Type GetType() const override;
+  virtual std::string GetName() const override;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const override;
 
  private:
   WebRequestConditionAttributeResponseHeaders(
@@ -225,12 +225,12 @@ class WebRequestConditionAttributeThirdParty
       bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
-  virtual int GetStages() const OVERRIDE;
+  virtual int GetStages() const override;
   virtual bool IsFulfilled(
-      const WebRequestData& request_data) const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
+      const WebRequestData& request_data) const override;
+  virtual Type GetType() const override;
+  virtual std::string GetName() const override;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const override;
 
  private:
   explicit WebRequestConditionAttributeThirdParty(bool match_third_party);
@@ -254,12 +254,12 @@ class WebRequestConditionAttributeStages
       bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
-  virtual int GetStages() const OVERRIDE;
+  virtual int GetStages() const override;
   virtual bool IsFulfilled(
-      const WebRequestData& request_data) const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
+      const WebRequestData& request_data) const override;
+  virtual Type GetType() const override;
+  virtual std::string GetName() const override;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const override;
 
  private:
   explicit WebRequestConditionAttributeStages(int allowed_stages);

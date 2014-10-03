@@ -81,9 +81,9 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // BrowserPluginGuestManager implementation.
   virtual content::WebContents* GetGuestByInstanceID(
       content::WebContents* embedder_web_contents,
-      int element_instance_id) OVERRIDE;
+      int element_instance_id) override;
   virtual bool ForEachGuest(content::WebContents* embedder_web_contents,
-                            const GuestCallback& callback) OVERRIDE;
+                            const GuestCallback& callback) override;
  protected:
   friend class GuestViewBase;
   FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);

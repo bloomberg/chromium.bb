@@ -156,10 +156,10 @@ class Dispatcher : public content::RenderProcessObserver,
                            CannotScriptWebstore);
 
   // RenderProcessObserver implementation:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebKitInitialized() OVERRIDE;
-  virtual void IdleNotification() OVERRIDE;
-  virtual void OnRenderProcessShutdown() OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void WebKitInitialized() override;
+  virtual void IdleNotification() override;
+  virtual void OnRenderProcessShutdown() override;
 
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);
@@ -201,7 +201,7 @@ class Dispatcher : public content::RenderProcessObserver,
   // UserScriptSetManager::Observer implementation.
   virtual void OnUserScriptsUpdated(
       const std::set<std::string>& changed_extensions,
-      const std::vector<UserScript*>& scripts) OVERRIDE;
+      const std::vector<UserScript*>& scripts) override;
 
   void UpdateActiveExtensions();
 

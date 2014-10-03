@@ -12,9 +12,9 @@ namespace extensions {
 
 class ExtensionsAPIPermissions : public PermissionsProvider {
  public:
-  virtual std::vector<APIPermissionInfo*> GetAllPermissions() const OVERRIDE;
+  virtual std::vector<APIPermissionInfo*> GetAllPermissions() const override;
   virtual std::vector<PermissionsProvider::AliasInfo> GetAllAliases()
-      const OVERRIDE;
+      const override;
 };
 
 }  // namespace extensions

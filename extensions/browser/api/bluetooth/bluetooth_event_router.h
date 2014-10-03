@@ -92,28 +92,28 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
 
   // Override from device::BluetoothAdapter::Observer.
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE;
+                                     bool present) override;
   virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                     bool has_power) OVERRIDE;
+                                     bool has_power) override;
   virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
-                                         bool discovering) OVERRIDE;
+                                         bool discovering) override;
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
-                           device::BluetoothDevice* device) OVERRIDE;
+                           device::BluetoothDevice* device) override;
   virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
 
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Overridden from ExtensionRegistryObserver.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "BluetoothEventRouter"; }

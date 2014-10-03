@@ -93,22 +93,22 @@ class SimpleFeature : public Feature {
                                              Manifest::Type type,
                                              Manifest::Location location,
                                              int manifest_version,
-                                             Platform platform) const OVERRIDE;
+                                             Platform platform) const override;
 
   virtual Availability IsAvailableToContext(const Extension* extension,
                                             Context context,
                                             const GURL& url,
-                                            Platform platform) const OVERRIDE;
+                                            Platform platform) const override;
 
   virtual std::string GetAvailabilityMessage(AvailabilityResult result,
                                              Manifest::Type type,
                                              const GURL& url,
-                                             Context context) const OVERRIDE;
+                                             Context context) const override;
 
-  virtual bool IsInternal() const OVERRIDE;
+  virtual bool IsInternal() const override;
 
-  virtual bool IsIdInBlacklist(const std::string& extension_id) const OVERRIDE;
-  virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;
+  virtual bool IsIdInBlacklist(const std::string& extension_id) const override;
+  virtual bool IsIdInWhitelist(const std::string& extension_id) const override;
   static bool IsIdInList(const std::string& extension_id,
                          const std::set<std::string>& list);
 

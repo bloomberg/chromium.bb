@@ -40,13 +40,13 @@ class ScriptInjectionManager::RVOHelper : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
-  virtual void OnDestruct() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
+  virtual void FrameDetached(blink::WebFrame* frame) override;
+  virtual void OnDestruct() override;
 
   virtual void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   virtual void OnExecuteDeclarativeScript(int tab_id,

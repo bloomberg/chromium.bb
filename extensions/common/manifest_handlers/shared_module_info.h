@@ -65,13 +65,13 @@ class SharedModuleHandler : public ManifestHandler {
   SharedModuleHandler();
   virtual ~SharedModuleHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
-                        std::vector<InstallWarning>* warnings) const OVERRIDE;
+                        std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 };
 
 }  // namespace extensions

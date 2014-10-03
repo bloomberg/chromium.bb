@@ -140,14 +140,14 @@ class SendBuffer : public device::ReadOnlyBuffer {
       const base::Callback<void(int, device::serial::SendError)>& callback)
       : data_(data), callback_(callback) {}
   virtual ~SendBuffer() {}
-  virtual const char* GetData() OVERRIDE { return data_.c_str(); }
-  virtual uint32_t GetSize() OVERRIDE {
+  virtual const char* GetData() override { return data_.c_str(); }
+  virtual uint32_t GetSize() override {
     return static_cast<uint32_t>(data_.size());
   }
-  virtual void Done(uint32_t bytes_read) OVERRIDE {
+  virtual void Done(uint32_t bytes_read) override {
     callback_.Run(bytes_read, device::serial::SEND_ERROR_NONE);
   }
-  virtual void DoneWithError(uint32_t bytes_read, int32_t error) OVERRIDE {
+  virtual void DoneWithError(uint32_t bytes_read, int32_t error) override {
     callback_.Run(bytes_read, static_cast<device::serial::SendError>(error));
   }
 
@@ -164,12 +164,12 @@ class ReceiveBuffer : public device::WritableBuffer {
       const base::Callback<void(int, device::serial::ReceiveError)>& callback)
       : buffer_(buffer), size_(size), callback_(callback) {}
   virtual ~ReceiveBuffer() {}
-  virtual char* GetData() OVERRIDE { return buffer_->data(); }
-  virtual uint32_t GetSize() OVERRIDE { return size_; }
-  virtual void Done(uint32_t bytes_written) OVERRIDE {
+  virtual char* GetData() override { return buffer_->data(); }
+  virtual uint32_t GetSize() override { return size_; }
+  virtual void Done(uint32_t bytes_written) override {
     callback_.Run(bytes_written, device::serial::RECEIVE_ERROR_NONE);
   }
-  virtual void DoneWithError(uint32_t bytes_written, int32_t error) OVERRIDE {
+  virtual void DoneWithError(uint32_t bytes_written, int32_t error) override {
     callback_.Run(bytes_written,
                   static_cast<device::serial::ReceiveError>(error));
   }

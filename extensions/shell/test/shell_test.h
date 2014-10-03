@@ -28,9 +28,9 @@ class AppShellTest : public content::BrowserTestBase {
   virtual ~AppShellTest();
 
   // content::BrowserTestBase implementation.
-  virtual void SetUp() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void RunTestOnMainThreadLoop() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void SetUpOnMainThread() override;
+  virtual void RunTestOnMainThreadLoop() override;
 
   content::BrowserContext* browser_context() { return browser_context_; }
 

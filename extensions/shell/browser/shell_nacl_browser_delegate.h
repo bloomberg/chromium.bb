@@ -26,25 +26,25 @@ class ShellNaClBrowserDelegate : public NaClBrowserDelegate {
 
   // NaClBrowserDelegate overrides:
   virtual void ShowMissingArchInfobar(int render_process_id,
-                                      int render_view_id) OVERRIDE;
-  virtual bool DialogsAreSuppressed() OVERRIDE;
-  virtual bool GetCacheDirectory(base::FilePath* cache_dir) OVERRIDE;
-  virtual bool GetPluginDirectory(base::FilePath* plugin_dir) OVERRIDE;
-  virtual bool GetPnaclDirectory(base::FilePath* pnacl_dir) OVERRIDE;
-  virtual bool GetUserDirectory(base::FilePath* user_dir) OVERRIDE;
-  virtual std::string GetVersionString() const OVERRIDE;
+                                      int render_view_id) override;
+  virtual bool DialogsAreSuppressed() override;
+  virtual bool GetCacheDirectory(base::FilePath* cache_dir) override;
+  virtual bool GetPluginDirectory(base::FilePath* plugin_dir) override;
+  virtual bool GetPnaclDirectory(base::FilePath* pnacl_dir) override;
+  virtual bool GetUserDirectory(base::FilePath* user_dir) override;
+  virtual std::string GetVersionString() const override;
   virtual ppapi::host::HostFactory* CreatePpapiHostFactory(
-      content::BrowserPpapiHost* ppapi_host) OVERRIDE;
+      content::BrowserPpapiHost* ppapi_host) override;
   virtual bool MapUrlToLocalFilePath(const GURL& url,
                                      bool is_blocking,
                                      const base::FilePath& profile_directory,
-                                     base::FilePath* file_path) OVERRIDE;
-  virtual void SetDebugPatterns(std::string debug_patterns) OVERRIDE;
-  virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE;
+                                     base::FilePath* file_path) override;
+  virtual void SetDebugPatterns(std::string debug_patterns) override;
+  virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) override;
   virtual content::BrowserPpapiHost::OnKeepaliveCallback
-      GetOnKeepaliveCallback() OVERRIDE;
+      GetOnKeepaliveCallback() override;
   virtual bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
-                                   const GURL& manifest_url) OVERRIDE;
+                                   const GURL& manifest_url) override;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

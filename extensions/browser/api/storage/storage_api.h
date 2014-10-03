@@ -21,8 +21,8 @@ class SettingsFunction : public UIThreadExtensionFunction {
   virtual ~SettingsFunction();
 
   // ExtensionFunction:
-  virtual bool ShouldSkipQuotaLimiting() const OVERRIDE;
-  virtual ResponseAction Run() OVERRIDE;
+  virtual bool ShouldSkipQuotaLimiting() const override;
+  virtual ResponseAction Run() override;
 
   // Extension settings function implementations should do their work here.
   // The StorageFrontend makes sure this is posted to the appropriate thread.
@@ -80,7 +80,7 @@ class StorageStorageAreaGetFunction : public SettingsFunction {
   virtual ~StorageStorageAreaGetFunction() {}
 
   // SettingsFunction:
-  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) override;
 };
 
 class StorageStorageAreaSetFunction : public SettingsFunction {
@@ -91,11 +91,11 @@ class StorageStorageAreaSetFunction : public SettingsFunction {
   virtual ~StorageStorageAreaSetFunction() {}
 
   // SettingsFunction:
-  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) override;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
+      QuotaLimitHeuristics* heuristics) const override;
 };
 
 class StorageStorageAreaRemoveFunction : public SettingsFunction {
@@ -106,11 +106,11 @@ class StorageStorageAreaRemoveFunction : public SettingsFunction {
   virtual ~StorageStorageAreaRemoveFunction() {}
 
   // SettingsFunction:
-  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) override;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
+      QuotaLimitHeuristics* heuristics) const override;
 };
 
 class StorageStorageAreaClearFunction : public SettingsFunction {
@@ -121,11 +121,11 @@ class StorageStorageAreaClearFunction : public SettingsFunction {
   virtual ~StorageStorageAreaClearFunction() {}
 
   // SettingsFunction:
-  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) override;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
+      QuotaLimitHeuristics* heuristics) const override;
 };
 
 class StorageStorageAreaGetBytesInUseFunction : public SettingsFunction {
@@ -136,7 +136,7 @@ class StorageStorageAreaGetBytesInUseFunction : public SettingsFunction {
   virtual ~StorageStorageAreaGetBytesInUseFunction() {}
 
   // SettingsFunction:
-  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) override;
 };
 
 }  // namespace extensions

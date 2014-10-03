@@ -16,16 +16,16 @@ class ShellRuntimeAPIDelegate : public RuntimeAPIDelegate {
   virtual ~ShellRuntimeAPIDelegate();
 
   // RuntimeAPIDelegate implementation.
-  virtual void AddUpdateObserver(UpdateObserver* observer) OVERRIDE;
-  virtual void RemoveUpdateObserver(UpdateObserver* observer) OVERRIDE;
+  virtual void AddUpdateObserver(UpdateObserver* observer) override;
+  virtual void RemoveUpdateObserver(UpdateObserver* observer) override;
   virtual base::Version GetPreviousExtensionVersion(
-      const Extension* extension) OVERRIDE;
-  virtual void ReloadExtension(const std::string& extension_id) OVERRIDE;
+      const Extension* extension) override;
+  virtual void ReloadExtension(const std::string& extension_id) override;
   virtual bool CheckForUpdates(const std::string& extension_id,
-                               const UpdateCheckCallback& callback) OVERRIDE;
-  virtual void OpenURL(const GURL& uninstall_url) OVERRIDE;
-  virtual bool GetPlatformInfo(core_api::runtime::PlatformInfo* info) OVERRIDE;
-  virtual bool RestartDevice(std::string* error_message) OVERRIDE;
+                               const UpdateCheckCallback& callback) override;
+  virtual void OpenURL(const GURL& uninstall_url) override;
+  virtual bool GetPlatformInfo(core_api::runtime::PlatformInfo* info) override;
+  virtual bool RestartDevice(std::string* error_message) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellRuntimeAPIDelegate);

@@ -22,7 +22,7 @@ class ErrorMapUnitTest : public testing::Test {
   ErrorMapUnitTest() { }
   virtual ~ErrorMapUnitTest() { }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
   }
 

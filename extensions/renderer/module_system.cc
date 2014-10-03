@@ -72,7 +72,7 @@ class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
   // Fatally dumps the debug info from |try_catch| to the console.
   // Make sure this is never used for exceptions that originate in external
   // code!
-  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
+  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) override {
     v8::HandleScope handle_scope(context_->isolate());
     std::string stack_trace = "<stack trace unavailable>";
     if (!try_catch.StackTrace().IsEmpty()) {

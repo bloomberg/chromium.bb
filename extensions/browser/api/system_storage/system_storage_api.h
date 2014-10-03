@@ -20,7 +20,7 @@ class SystemStorageGetInfoFunction : public AsyncExtensionFunction {
 
  private:
   virtual ~SystemStorageGetInfoFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void OnGetStorageInfoCompleted(bool success);
 };
@@ -34,7 +34,7 @@ class SystemStorageEjectDeviceFunction : public AsyncExtensionFunction {
   virtual ~SystemStorageEjectDeviceFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnStorageMonitorInit(const std::string& transient_device_id);
@@ -55,7 +55,7 @@ class SystemStorageGetAvailableCapacityFunction
   void OnQueryCompleted(const std::string& transient_id,
                         double available_capacity);
   virtual ~SystemStorageGetAvailableCapacityFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 }  // namespace extensions

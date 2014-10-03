@@ -40,7 +40,7 @@ class TestProcessManager : public ProcessManager {
 
   // ProcessManager overrides:
   virtual bool CreateBackgroundHost(const Extension* extension,
-                                    const GURL& url) OVERRIDE {
+                                    const GURL& url) override {
     // Don't actually try to create a web contents.
     create_count_++;
     return false;
@@ -59,7 +59,7 @@ class MockExtensionSystemWithProcessManager : public MockExtensionSystem {
       : MockExtensionSystem(context), test_process_manager_(context) {}
   virtual ~MockExtensionSystemWithProcessManager() {}
 
-  virtual ProcessManager* process_manager() OVERRIDE {
+  virtual ProcessManager* process_manager() override {
     return &test_process_manager_;
   }
 

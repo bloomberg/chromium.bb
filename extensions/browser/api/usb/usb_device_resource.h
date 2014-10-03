@@ -33,7 +33,7 @@ class UsbDeviceResource : public ApiResource {
 
   scoped_refptr<device::UsbDeviceHandle> device() { return device_; }
 
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
  private:
   friend class ApiResourceManager<UsbDeviceResource>;

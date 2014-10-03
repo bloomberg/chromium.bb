@@ -95,13 +95,13 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
 
   virtual ~BluetoothLowEnergyApiTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     empty_extension_ = extensions::test_util::CreateEmptyExtension();
     SetUpMocks();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     EXPECT_CALL(*mock_adapter_, RemoveObserver(_));
   }
 

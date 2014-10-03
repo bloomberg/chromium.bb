@@ -66,7 +66,7 @@ class MockExtensionSystemWithEventRouter : public MockExtensionSystem {
   static KeyedService* Build(content::BrowserContext* context);
 
   // MockExtensionSystem overrides:
-  virtual EventRouter* event_router() OVERRIDE;
+  virtual EventRouter* event_router() override;
 
  private:
   scoped_ptr<EventRouter> event_router_;
@@ -87,10 +87,10 @@ class ScopedSettingsStorageFactory : public SettingsStorageFactory {
 
   // SettingsStorageFactory implementation.
   virtual ValueStore* Create(const base::FilePath& base_path,
-                             const std::string& extension_id) OVERRIDE;
+                             const std::string& extension_id) override;
   virtual void DeleteDatabaseIfExists(
       const base::FilePath& base_path,
-      const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
 
  private:
   // SettingsStorageFactory is refcounted.

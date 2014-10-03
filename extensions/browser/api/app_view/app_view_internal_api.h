@@ -17,7 +17,7 @@ class AppViewInternalAttachFrameFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~AppViewInternalAttachFrameFunction() {}
-  virtual bool RunAsync() OVERRIDE FINAL;
+  virtual bool RunAsync() override final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppViewInternalAttachFrameFunction);
@@ -31,7 +31,7 @@ class AppViewInternalDenyRequestFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~AppViewInternalDenyRequestFunction() {}
-  virtual bool RunAsync() OVERRIDE FINAL;
+  virtual bool RunAsync() override final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppViewInternalDenyRequestFunction);

@@ -38,30 +38,30 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
   // content::ContentBrowserClient overrides.
   virtual content::BrowserMainParts* CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) OVERRIDE;
+      const content::MainFunctionParams& parameters) override;
   virtual void RenderProcessWillLaunch(
-      content::RenderProcessHost* host) OVERRIDE;
+      content::RenderProcessHost* host) override;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
-                                       const GURL& effective_url) OVERRIDE;
+                                       const GURL& effective_url) override;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
   // TODO(jamescook): Quota management?
   // TODO(jamescook): Speech recognition?
-  virtual bool IsHandledURL(const GURL& url) OVERRIDE;
+  virtual bool IsHandledURL(const GURL& url) override;
   virtual void SiteInstanceGotProcess(
-      content::SiteInstance* site_instance) OVERRIDE;
+      content::SiteInstance* site_instance) override;
   virtual void SiteInstanceDeleting(
-      content::SiteInstance* site_instance) OVERRIDE;
+      content::SiteInstance* site_instance) override;
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
-                                              int child_process_id) OVERRIDE;
+                                              int child_process_id) override;
   virtual content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
-      int plugin_process_id) OVERRIDE;
+      int plugin_process_id) override;
   virtual void GetAdditionalAllowedSchemesForFileSystem(
-      std::vector<std::string>* additional_schemes) OVERRIDE;
+      std::vector<std::string>* additional_schemes) override;
   virtual content::DevToolsManagerDelegate*
-      GetDevToolsManagerDelegate() OVERRIDE;
+      GetDevToolsManagerDelegate() override;
 
  private:
   // Appends command line switches for a renderer process.

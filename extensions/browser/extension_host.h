@@ -76,41 +76,41 @@ class ExtensionHost : public content::WebContentsDelegate,
   void CreateRenderViewSoon();
 
   // content::WebContentsObserver
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReady() OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual void DocumentAvailableInMainFrame() OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
+  virtual void RenderViewReady() override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  virtual void DocumentAvailableInMainFrame() override;
   virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   // content::WebContentsDelegate
   virtual content::JavaScriptDialogManager*
-      GetJavaScriptDialogManager() OVERRIDE;
+      GetJavaScriptDialogManager() override;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
-  virtual void CloseContents(content::WebContents* contents) OVERRIDE;
+                              bool* was_blocked) override;
+  virtual void CloseContents(content::WebContents* contents) override;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
+      const content::MediaResponseCallback& callback) override;
   virtual bool CheckMediaAccessPermission(
       content::WebContents* web_contents,
       const GURL& security_origin,
-      content::MediaStreamType type) OVERRIDE;
-  virtual bool IsNeverVisible(content::WebContents* web_contents) OVERRIDE;
+      content::MediaStreamType type) override;
+  virtual bool IsNeverVisible(content::WebContents* web_contents) override;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  protected:
   content::NotificationRegistrar* registrar() { return &registrar_; }

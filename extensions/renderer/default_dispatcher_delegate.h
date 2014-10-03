@@ -21,7 +21,7 @@ class DefaultDispatcherDelegate : public DispatcherDelegate {
       const Extension* extension,
       Feature::Context context_type,
       const Extension* effective_extension,
-      Feature::Context effective_context_type) OVERRIDE;
+      Feature::Context effective_context_type) override;
 };
 
 }  // namespace extensions

@@ -19,13 +19,13 @@ class ShellAppWindowClient : public AppWindowClient {
 
   // AppWindowClient overrides:
   virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
-                                     const Extension* extension) OVERRIDE;
+                                     const Extension* extension) override;
   virtual NativeAppWindow* CreateNativeAppWindow(
       AppWindow* window,
-      const AppWindow::CreateParams& params) OVERRIDE;
+      const AppWindow::CreateParams& params) override;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
-                                  const base::Closure& callback) OVERRIDE;
-  virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;
+                                  const base::Closure& callback) override;
+  virtual bool IsCurrentChannelOlderThanDev() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAppWindowClient);

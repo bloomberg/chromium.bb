@@ -73,9 +73,9 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // CastSocket::Delegate.  Called on IO thread.
   virtual void OnError(const cast_channel::CastSocket* socket,
                        cast_channel::ChannelError error_state,
-                       const cast_channel::LastErrors& last_errors) OVERRIDE;
+                       const cast_channel::LastErrors& last_errors) override;
   virtual void OnMessage(const cast_channel::CastSocket* socket,
-                         const cast_channel::MessageInfo& message) OVERRIDE;
+                         const cast_channel::MessageInfo& message) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "CastChannelAPI"; }
@@ -95,8 +95,8 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   virtual ~CastChannelAsyncApiFunction();
 
   // AsyncApiFunction:
-  virtual bool PrePrepare() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool PrePrepare() override;
+  virtual bool Respond() override;
 
   // Returns the socket corresponding to |channel_id| if one exists.  Otherwise,
   // sets the function result with CHANNEL_ERROR_INVALID_CHANNEL_ID, completes
@@ -142,9 +142,9 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   virtual ~CastChannelOpenFunction();
 
   // AsyncApiFunction:
-  virtual bool PrePrepare() OVERRIDE;
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool PrePrepare() override;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.open", CAST_CHANNEL_OPEN)
@@ -183,8 +183,8 @@ class CastChannelSendFunction : public CastChannelAsyncApiFunction {
   virtual ~CastChannelSendFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.send", CAST_CHANNEL_SEND)
@@ -204,8 +204,8 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
   virtual ~CastChannelCloseFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.close", CAST_CHANNEL_CLOSE)
@@ -225,9 +225,9 @@ class CastChannelGetLogsFunction : public CastChannelAsyncApiFunction {
   virtual ~CastChannelGetLogsFunction();
 
   // AsyncApiFunction:
-  virtual bool PrePrepare() OVERRIDE;
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool PrePrepare() override;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.getLogs", CAST_CHANNEL_GETLOGS)

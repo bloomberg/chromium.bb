@@ -20,23 +20,23 @@ class SettingsOverrideAPIPermission : public APIPermission {
   virtual ~SettingsOverrideAPIPermission();
 
   // APIPermission overrides.
-  virtual bool HasMessages() const OVERRIDE;
-  virtual PermissionMessages GetMessages() const OVERRIDE;
-  virtual bool Check(const APIPermission::CheckParam* param) const OVERRIDE;
-  virtual bool Contains(const APIPermission* rhs) const OVERRIDE;
-  virtual bool Equal(const APIPermission* rhs) const OVERRIDE;
+  virtual bool HasMessages() const override;
+  virtual PermissionMessages GetMessages() const override;
+  virtual bool Check(const APIPermission::CheckParam* param) const override;
+  virtual bool Contains(const APIPermission* rhs) const override;
+  virtual bool Equal(const APIPermission* rhs) const override;
   virtual bool FromValue(
       const base::Value* value,
       std::string* error,
-      std::vector<std::string>* unhandled_permissions) OVERRIDE;
-  virtual scoped_ptr<base::Value> ToValue() const OVERRIDE;
-  virtual APIPermission* Clone() const OVERRIDE;
-  virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE;
-  virtual APIPermission* Union(const APIPermission* rhs) const OVERRIDE;
-  virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE;
-  virtual void Write(IPC::Message* m) const OVERRIDE;
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE;
-  virtual void Log(std::string* log) const OVERRIDE;
+      std::vector<std::string>* unhandled_permissions) override;
+  virtual scoped_ptr<base::Value> ToValue() const override;
+  virtual APIPermission* Clone() const override;
+  virtual APIPermission* Diff(const APIPermission* rhs) const override;
+  virtual APIPermission* Union(const APIPermission* rhs) const override;
+  virtual APIPermission* Intersect(const APIPermission* rhs) const override;
+  virtual void Write(IPC::Message* m) const override;
+  virtual bool Read(const IPC::Message* m, PickleIterator* iter) override;
+  virtual void Log(std::string* log) const override;
 
  private:
   std::string setting_value_;

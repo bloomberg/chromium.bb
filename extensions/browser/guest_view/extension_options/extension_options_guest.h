@@ -32,27 +32,27 @@ class ExtensionOptionsGuest
       int embedder_render_process_id,
       const GURL& embedder_site_url,
       const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback) OVERRIDE;
-  virtual void DidAttachToEmbedder() OVERRIDE;
-  virtual void DidInitialize() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual const char* GetAPINamespace() const OVERRIDE;
-  virtual int GetTaskPrefix() const OVERRIDE;
+      const WebContentsCreatedCallback& callback) override;
+  virtual void DidAttachToEmbedder() override;
+  virtual void DidInitialize() override;
+  virtual void DidStopLoading() override;
+  virtual const char* GetAPINamespace() const override;
+  virtual int GetTaskPrefix() const override;
   virtual void GuestSizeChangedDueToAutoSize(
       const gfx::Size& old_size,
-      const gfx::Size& new_size) OVERRIDE;
-  virtual bool IsAutoSizeSupported() const OVERRIDE;
+      const gfx::Size& new_size) override;
+  virtual bool IsAutoSizeSupported() const override;
 
   // ExtensionFunctionDispatcher::Delegate implementation.
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsDelegate implementation.
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-  virtual void CloseContents(content::WebContents* source) OVERRIDE;
+      const content::OpenURLParams& params) override;
+  virtual void CloseContents(content::WebContents* source) override;
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
   virtual bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,
@@ -60,10 +60,10 @@ class ExtensionOptionsGuest
       const base::string16& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
-      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
+      content::SessionStorageNamespace* session_storage_namespace) override;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   ExtensionOptionsGuest(content::BrowserContext* browser_context,

@@ -22,8 +22,8 @@ class TestGuestViewManager : public GuestViewManager {
  private:
   // GuestViewManager override:
   virtual void AddGuest(int guest_instance_id,
-                        content::WebContents* guest_web_contents) OVERRIDE;
-  virtual void RemoveGuest(int guest_instance_id) OVERRIDE;
+                        content::WebContents* guest_web_contents) override;
+  virtual void RemoveGuest(int guest_instance_id) override;
 
   bool seen_guest_removed_;
   content::WebContents* web_contents_;
@@ -40,7 +40,7 @@ class TestGuestViewManagerFactory : public GuestViewManagerFactory {
   virtual ~TestGuestViewManagerFactory();
 
   virtual GuestViewManager* CreateGuestViewManager(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
 
   TestGuestViewManager* GetManager(content::BrowserContext* context);
 

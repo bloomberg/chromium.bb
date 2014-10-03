@@ -23,7 +23,7 @@ class TCPSocketAsyncApiFunction : public SocketAsyncApiFunction {
   virtual ~TCPSocketAsyncApiFunction();
 
   virtual scoped_ptr<SocketResourceManagerInterface>
-      CreateSocketResourceManager() OVERRIDE;
+      CreateSocketResourceManager() override;
 
   ResumableTCPSocket* GetTcpSocket(int socket_id);
 };
@@ -34,7 +34,7 @@ class TCPSocketExtensionWithDnsLookupFunction
   virtual ~TCPSocketExtensionWithDnsLookupFunction();
 
   virtual scoped_ptr<SocketResourceManagerInterface>
-      CreateSocketResourceManager() OVERRIDE;
+      CreateSocketResourceManager() override;
 
   ResumableTCPSocket* GetTcpSocket(int socket_id);
 };
@@ -49,8 +49,8 @@ class SocketsTcpCreateFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpCreateFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketsTcpUnitTest, Create);
@@ -67,8 +67,8 @@ class SocketsTcpUpdateFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpUpdateFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::Update::Params> params_;
@@ -84,8 +84,8 @@ class SocketsTcpSetPausedFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpSetPausedFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::SetPaused::Params> params_;
@@ -103,8 +103,8 @@ class SocketsTcpSetKeepAliveFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpSetKeepAliveFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::SetKeepAlive::Params> params_;
@@ -120,8 +120,8 @@ class SocketsTcpSetNoDelayFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpSetNoDelayFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::SetNoDelay::Params> params_;
@@ -138,11 +138,11 @@ class SocketsTcpConnectFunction
   virtual ~SocketsTcpConnectFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
   // SocketExtensionWithDnsLookupFunction:
-  virtual void AfterDnsLookup(int lookup_result) OVERRIDE;
+  virtual void AfterDnsLookup(int lookup_result) override;
 
  private:
   void StartConnect();
@@ -162,8 +162,8 @@ class SocketsTcpDisconnectFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpDisconnectFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::Disconnect::Params> params_;
@@ -179,8 +179,8 @@ class SocketsTcpSendFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpSendFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   void OnCompleted(int net_result);
@@ -201,8 +201,8 @@ class SocketsTcpCloseFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpCloseFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::Close::Params> params_;
@@ -218,8 +218,8 @@ class SocketsTcpGetInfoFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpGetInfoFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<sockets_tcp::GetInfo::Params> params_;
@@ -235,8 +235,8 @@ class SocketsTcpGetSocketsFunction : public TCPSocketAsyncApiFunction {
   virtual ~SocketsTcpGetSocketsFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 };
 
 class SocketsTcpSecureFunction : public TCPSocketAsyncApiFunction {
@@ -247,8 +247,8 @@ class SocketsTcpSecureFunction : public TCPSocketAsyncApiFunction {
 
  protected:
   virtual ~SocketsTcpSecureFunction();
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual void TlsConnectDone(scoped_ptr<extensions::TLSSocket> sock,

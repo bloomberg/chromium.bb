@@ -22,11 +22,11 @@ class SystemInfoAPI : public BrowserContextKeyedAPI,
   virtual ~SystemInfoAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<SystemInfoAPI>;

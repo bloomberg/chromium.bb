@@ -81,8 +81,8 @@ class ModuleSystemTest : public testing::Test {
   ModuleSystemTest();
   virtual ~ModuleSystemTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   ModuleSystemTestEnvironment* env() { return env_.get(); }

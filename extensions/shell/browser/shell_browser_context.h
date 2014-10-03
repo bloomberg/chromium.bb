@@ -27,8 +27,8 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual ~ShellBrowserContext();
 
   // content::BrowserContext implementation.
-  virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual content::BrowserPluginGuestManager* GetGuestManager() override;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
 
   net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,

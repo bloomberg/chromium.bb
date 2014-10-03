@@ -20,9 +20,9 @@ class PermissionFeature : public SimpleFeature {
       const Extension* extension,
       Feature::Context context,
       const GURL& url,
-      Feature::Platform platform) const OVERRIDE;
+      Feature::Platform platform) const override;
 
-  virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
+  virtual std::string Parse(const base::DictionaryValue* value) override;
 };
 
 }  // namespace extensions

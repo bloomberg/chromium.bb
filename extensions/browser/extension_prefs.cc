@@ -209,7 +209,7 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
   }
 
   // DictionaryPrefUpdate overrides:
-  virtual base::DictionaryValue* Get() OVERRIDE {
+  virtual base::DictionaryValue* Get() override {
     base::DictionaryValue* dict = DictionaryPrefUpdate::Get();
     base::DictionaryValue* extension = NULL;
     if (!dict->GetDictionary(extension_id_, &extension)) {

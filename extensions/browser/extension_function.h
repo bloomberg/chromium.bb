@@ -406,7 +406,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   UIThreadExtensionFunction();
 
-  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() OVERRIDE;
+  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() override;
 
   void set_test_delegate(DelegateForTests* delegate) {
     delegate_ = delegate;
@@ -455,7 +455,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   virtual ~UIThreadExtensionFunction();
 
-  virtual void SendResponse(bool success) OVERRIDE;
+  virtual void SendResponse(bool success) override;
 
   // Sets the Blob UUIDs whose ownership is being transferred to the renderer.
   void SetTransferredBlobUUIDs(const std::vector<std::string>& blob_uuids);
@@ -477,7 +477,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
  private:
   class RenderHostTracker;
 
-  virtual void Destruct() const OVERRIDE;
+  virtual void Destruct() const override;
 
   // TODO(tommycli): Remove once RenderViewHost is gone.
   IPC::Sender* GetIPCSender();
@@ -501,7 +501,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
  public:
   IOThreadExtensionFunction();
 
-  virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() OVERRIDE;
+  virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() override;
 
   void set_ipc_sender(
       base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender,
@@ -530,9 +530,9 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   virtual ~IOThreadExtensionFunction();
 
-  virtual void Destruct() const OVERRIDE;
+  virtual void Destruct() const override;
 
-  virtual void SendResponse(bool success) OVERRIDE;
+  virtual void SendResponse(bool success) override;
 
  private:
   base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender_;
@@ -561,7 +561,7 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
   static bool ValidationFailure(AsyncExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 };
 
 // A SyncExtensionFunction is an ExtensionFunction that runs synchronously
@@ -588,7 +588,7 @@ class SyncExtensionFunction : public UIThreadExtensionFunction {
   static bool ValidationFailure(SyncExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 };
 
 class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
@@ -609,7 +609,7 @@ class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
   static bool ValidationFailure(SyncIOThreadExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_

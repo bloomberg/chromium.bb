@@ -25,8 +25,8 @@ class HidAsyncApiFunction : public AsyncApiFunction {
  public:
   HidAsyncApiFunction();
 
-  virtual bool PrePrepare() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool PrePrepare() override;
+  virtual bool Respond() override;
 
  protected:
   virtual ~HidAsyncApiFunction();
@@ -50,8 +50,8 @@ class HidGetDevicesFunction : public HidAsyncApiFunction {
   HidGetDevicesFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
   virtual ~HidGetDevicesFunction();
 
@@ -68,8 +68,8 @@ class HidConnectFunction : public HidAsyncApiFunction {
   HidConnectFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual ~HidConnectFunction();
@@ -86,8 +86,8 @@ class HidDisconnectFunction : public HidAsyncApiFunction {
   HidDisconnectFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual ~HidDisconnectFunction();
@@ -104,8 +104,8 @@ class HidReceiveFunction : public HidAsyncApiFunction {
   HidReceiveFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual ~HidReceiveFunction();
@@ -126,8 +126,8 @@ class HidSendFunction : public HidAsyncApiFunction {
   HidSendFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual ~HidSendFunction();
@@ -147,8 +147,8 @@ class HidReceiveFeatureReportFunction : public HidAsyncApiFunction {
   HidReceiveFeatureReportFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual ~HidReceiveFeatureReportFunction();
@@ -169,8 +169,8 @@ class HidSendFeatureReportFunction : public HidAsyncApiFunction {
   HidSendFeatureReportFunction();
 
  protected:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   virtual ~HidSendFeatureReportFunction();

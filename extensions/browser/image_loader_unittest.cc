@@ -100,7 +100,7 @@ class ImageLoaderTest : public testing::Test {
   gfx::ImageFamily image_family_;
 
  private:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     file_thread_.Start();
     io_thread_.Start();

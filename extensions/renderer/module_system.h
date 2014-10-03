@@ -143,7 +143,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
  protected:
   friend class ScriptContext;
-  virtual void Invalidate() OVERRIDE;
+  virtual void Invalidate() override;
 
  private:
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
@@ -204,7 +204,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // gin::ModuleRegistryObserver overrides.
   virtual void OnDidAddPendingModule(
       const std::string& id,
-      const std::vector<std::string>& dependencies) OVERRIDE;
+      const std::vector<std::string>& dependencies) override;
 
   ScriptContext* context_;
 

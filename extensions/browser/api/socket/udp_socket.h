@@ -20,23 +20,23 @@ class UDPSocket : public Socket {
 
   virtual void Connect(const std::string& address,
                        int port,
-                       const CompletionCallback& callback) OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual int Bind(const std::string& address, int port) OVERRIDE;
-  virtual void Read(int count, const ReadCompletionCallback& callback) OVERRIDE;
+                       const CompletionCallback& callback) override;
+  virtual void Disconnect() override;
+  virtual int Bind(const std::string& address, int port) override;
+  virtual void Read(int count, const ReadCompletionCallback& callback) override;
   virtual void RecvFrom(int count,
-                        const RecvFromCompletionCallback& callback) OVERRIDE;
+                        const RecvFromCompletionCallback& callback) override;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                       int byte_count,
                       const std::string& address,
                       int port,
-                      const CompletionCallback& callback) OVERRIDE;
+                      const CompletionCallback& callback) override;
 
-  virtual bool IsConnected() OVERRIDE;
+  virtual bool IsConnected() override;
 
-  virtual bool GetPeerAddress(net::IPEndPoint* address) OVERRIDE;
-  virtual bool GetLocalAddress(net::IPEndPoint* address) OVERRIDE;
-  virtual Socket::SocketType GetSocketType() const OVERRIDE;
+  virtual bool GetPeerAddress(net::IPEndPoint* address) override;
+  virtual bool GetLocalAddress(net::IPEndPoint* address) override;
+  virtual Socket::SocketType GetSocketType() const override;
 
   bool IsBound();
 
@@ -51,7 +51,7 @@ class UDPSocket : public Socket {
  protected:
   virtual int WriteImpl(net::IOBuffer* io_buffer,
                         int io_buffer_size,
-                        const net::CompletionCallback& callback) OVERRIDE;
+                        const net::CompletionCallback& callback) override;
 
  private:
   // Make net::IPEndPoint can be refcounted
@@ -82,7 +82,7 @@ class ResumableUDPSocket : public UDPSocket {
   explicit ResumableUDPSocket(const std::string& owner_extension_id);
 
   // Overriden from ApiResource
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }

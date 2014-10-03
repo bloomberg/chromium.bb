@@ -93,7 +93,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   MOCK_METHOD2(SetInterfaceAlternateSetting,
                bool(const int interface_number, const int alternate_setting));
 
-  virtual scoped_refptr<UsbDevice> GetDevice() const OVERRIDE {
+  virtual scoped_refptr<UsbDevice> GetDevice() const override {
     return device_;
   }
 
@@ -112,11 +112,11 @@ class MockUsbDevice : public UsbDevice {
     mock_handle->set_device(this);
   }
 
-  virtual scoped_refptr<UsbDeviceHandle> Open() OVERRIDE {
+  virtual scoped_refptr<UsbDeviceHandle> Open() override {
     return mock_handle_;
   }
 
-  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) OVERRIDE {
+  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) override {
     EXPECT_TRUE(false) << "Should not be reached";
     return false;
   }
@@ -124,7 +124,7 @@ class MockUsbDevice : public UsbDevice {
 #if defined(OS_CHROMEOS)
   virtual void RequestUsbAccess(
       int interface_id,
-      const base::Callback<void(bool success)>& callback) OVERRIDE {
+      const base::Callback<void(bool success)>& callback) override {
     BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE, base::Bind(callback, true));
   }
@@ -145,13 +145,13 @@ class MockUsbService : public UsbService {
   explicit MockUsbService(scoped_refptr<UsbDevice> device) : device_(device) {}
 
  protected:
-  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) OVERRIDE {
+  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     EXPECT_EQ(unique_id, 0U);
     return device_;
   }
 
   virtual void GetDevices(
-      std::vector<scoped_refptr<UsbDevice> >* devices) OVERRIDE {
+      std::vector<scoped_refptr<UsbDevice> >* devices) override {
     STLClearObject(devices);
     devices->push_back(device_);
   }
@@ -165,7 +165,7 @@ class MockUsbService : public UsbService {
 
 class UsbApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     mock_device_handle_ = new MockUsbDeviceHandle();
     mock_device_ = new MockUsbDevice(mock_device_handle_.get());
     scoped_refptr<content::MessageLoopRunner> runner =
@@ -181,7 +181,7 @@ class UsbApiTest : public ExtensionApiTest {
     UsbService::SetInstanceForTest(new MockUsbService(mock_device_));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     UsbService* service = NULL;

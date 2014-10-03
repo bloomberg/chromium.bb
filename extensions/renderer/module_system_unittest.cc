@@ -36,7 +36,7 @@ class TestExceptionHandler : public ModuleSystem::ExceptionHandler {
  public:
   TestExceptionHandler() : handled_exception_(false) {}
 
-  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
+  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) override {
     handled_exception_ = true;
   }
 

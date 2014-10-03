@@ -44,7 +44,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
     ASSERT_EQ(256u, validate_sizes.size());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ASSERT_TRUE(storage_.get() != NULL);
   }
 

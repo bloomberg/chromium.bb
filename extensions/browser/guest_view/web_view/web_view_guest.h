@@ -84,94 +84,94 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                            std::string* error);
 
   // GuestViewBase implementation.
-  virtual const char* GetAPINamespace() const OVERRIDE;
-  virtual int GetTaskPrefix() const OVERRIDE;
+  virtual const char* GetAPINamespace() const override;
+  virtual int GetTaskPrefix() const override;
   virtual void CreateWebContents(
       const std::string& embedder_extension_id,
       int embedder_render_process_id,
       const GURL& embedder_site_url,
       const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback) OVERRIDE;
-  virtual void DidAttachToEmbedder() OVERRIDE;
-  virtual void DidInitialize() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual void EmbedderDestroyed() OVERRIDE;
-  virtual void GuestDestroyed() OVERRIDE;
-  virtual void GuestReady() OVERRIDE;
+      const WebContentsCreatedCallback& callback) override;
+  virtual void DidAttachToEmbedder() override;
+  virtual void DidInitialize() override;
+  virtual void DidStopLoading() override;
+  virtual void EmbedderDestroyed() override;
+  virtual void GuestDestroyed() override;
+  virtual void GuestReady() override;
   virtual void GuestSizeChangedDueToAutoSize(
       const gfx::Size& old_size,
-      const gfx::Size& new_size) OVERRIDE;
-  virtual bool IsAutoSizeSupported() const OVERRIDE;
-  virtual bool IsDragAndDropEnabled() const OVERRIDE;
-  virtual void WillAttachToEmbedder() OVERRIDE;
-  virtual void WillDestroy() OVERRIDE;
+      const gfx::Size& new_size) override;
+  virtual bool IsAutoSizeSupported() const override;
+  virtual bool IsDragAndDropEnabled() const override;
+  virtual void WillAttachToEmbedder() override;
+  virtual void WillDestroy() override;
 
   // WebContentsDelegate implementation.
   virtual bool AddMessageToConsole(content::WebContents* source,
                                    int32 level,
                                    const base::string16& message,
                                    int32 line_no,
-                                   const base::string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) override;
   virtual void LoadProgressChanged(content::WebContents* source,
-                                   double progress) OVERRIDE;
-  virtual void CloseContents(content::WebContents* source) OVERRIDE;
+                                   double progress) override;
+  virtual void CloseContents(content::WebContents* source) override;
   virtual void FindReply(content::WebContents* source,
                          int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
-                         bool final_update) OVERRIDE;
+                         bool final_update) override;
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void RendererResponsive(content::WebContents* source) OVERRIDE;
-  virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual void RendererResponsive(content::WebContents* source) override;
+  virtual void RendererUnresponsive(content::WebContents* source) override;
   virtual void RequestMediaAccessPermission(
       content::WebContents* source,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
+      const content::MediaResponseCallback& callback) override;
   virtual bool CheckMediaAccessPermission(
       content::WebContents* source,
       const GURL& security_origin,
-      content::MediaStreamType type) OVERRIDE;
+      content::MediaStreamType type) override;
   virtual void CanDownload(content::RenderViewHost* render_view_host,
                            const GURL& url,
                            const std::string& request_method,
-                           const base::Callback<void(bool)>& callback) OVERRIDE;
+                           const base::Callback<void(bool)>& callback) override;
   virtual content::JavaScriptDialogManager*
-      GetJavaScriptDialogManager() OVERRIDE;
+      GetJavaScriptDialogManager() override;
   virtual content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
+      const std::vector<content::ColorSuggestion>& suggestions) override;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
+                              bool* was_blocked) override;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int opener_render_frame_id,
                                   const base::string16& frame_name,
                                   const GURL& target_url,
-                                  content::WebContents* new_contents) OVERRIDE;
+                                  content::WebContents* new_contents) override;
 
   // BrowserPluginGuestDelegate implementation.
   virtual content::WebContents* CreateNewGuestWindow(
-      const content::WebContents::CreateParams& create_params) OVERRIDE;
+      const content::WebContents::CreateParams& create_params) override;
   virtual void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback) override;
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns the current zoom factor.
   double GetZoom();
@@ -256,24 +256,24 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) override;
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) OVERRIDE;
+      const base::string16& error_description) override;
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
   virtual void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  virtual void UserAgentOverrideSet(const std::string& user_agent) override;
 
   // Informs the embedder of a frame name change.
   void ReportFrameNameChange(const std::string& name);

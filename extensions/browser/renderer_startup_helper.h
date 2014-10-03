@@ -34,7 +34,7 @@ class RendererStartupHelper : public KeyedService,
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.
@@ -61,10 +61,10 @@ class RendererStartupHelperFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory implementation:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(RendererStartupHelperFactory);
 };

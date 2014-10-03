@@ -33,7 +33,7 @@ class TestServiceProvider : public gin::Wrappable<TestServiceProvider> {
   virtual ~TestServiceProvider();
 
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   template <typename Interface>
   void AddService(const base::Callback<void(mojo::InterfaceRequest<Interface>)>
@@ -73,7 +73,7 @@ class ApiTestBase : public ModuleSystemTest {
  protected:
   ApiTestBase();
   virtual ~ApiTestBase();
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
   void RunTest(const std::string& file_name, const std::string& test_name);
   TestServiceProvider* service_provider() { return service_provider_; }
 

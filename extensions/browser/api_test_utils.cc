@@ -62,7 +62,7 @@ class SendResponseDelegate
 
   virtual void OnSendResponse(UIThreadExtensionFunction* function,
                               bool success,
-                              bool bad_message) OVERRIDE {
+                              bool bad_message) override {
     ASSERT_FALSE(bad_message);
     ASSERT_FALSE(HasResponse());
     response_.reset(new bool);

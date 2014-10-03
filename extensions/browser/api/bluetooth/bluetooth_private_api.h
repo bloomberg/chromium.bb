@@ -29,11 +29,11 @@ class BluetoothPrivateAPI : public BrowserContextKeyedAPI,
   virtual ~BluetoothPrivateAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "BluetoothPrivateAPI"; }
@@ -65,7 +65,7 @@ class BluetoothPrivateSetAdapterStateFunction
   void SendError();
 
   // BluetoothExtensionFunction overrides:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
+  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
   // Set of expected adapter properties to be changed.
   std::set<std::string> pending_properties_;
@@ -83,7 +83,7 @@ class BluetoothPrivateSetPairingResponseFunction
                              BLUETOOTHPRIVATE_SETPAIRINGRESPONSE)
   BluetoothPrivateSetPairingResponseFunction();
   // BluetoothExtensionFunction overrides:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
+  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  private:
   virtual ~BluetoothPrivateSetPairingResponseFunction();

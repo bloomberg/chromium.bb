@@ -15,7 +15,7 @@ class ShellExtensionSystemFactory : public ExtensionSystemProvider {
  public:
   // ExtensionSystemProvider implementation:
   virtual ExtensionSystem* GetForBrowserContext(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
 
   static ShellExtensionSystemFactory* GetInstance();
 
@@ -27,10 +27,10 @@ class ShellExtensionSystemFactory : public ExtensionSystemProvider {
 
   // BrowserContextKeyedServiceFactory implementation:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionSystemFactory);
 };

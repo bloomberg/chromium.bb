@@ -47,7 +47,7 @@ class ApiUnitTest : public ExtensionsTest {
 
  protected:
   // SetUp creates and loads an empty, unpacked Extension.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Various ways of running an API function. These methods take ownership of
   // |function|. |args| should be in JSON format, wrapped in a list.

@@ -41,10 +41,10 @@ class MediaGalleriesPermission
   virtual bool FromValue(
       const base::Value* value,
       std::string* error,
-      std::vector<std::string>* unhandled_permissions) OVERRIDE;
+      std::vector<std::string>* unhandled_permissions) override;
 
   // APIPermission overrides.
-  virtual PermissionMessages GetMessages() const OVERRIDE;
+  virtual PermissionMessages GetMessages() const override;
 
   // Permission strings.
   static const char kAllAutoDetectedPermission[];

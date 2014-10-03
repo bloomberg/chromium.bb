@@ -58,7 +58,7 @@ class SocketResourceManager : public SocketResourceManagerInterface {
  public:
   SocketResourceManager() : manager_(NULL) {}
 
-  virtual bool SetBrowserContext(content::BrowserContext* context) OVERRIDE {
+  virtual bool SetBrowserContext(content::BrowserContext* context) override {
     manager_ = ApiResourceManager<T>::Get(context);
     DCHECK(manager_)
         << "There is no socket manager. "
@@ -68,29 +68,29 @@ class SocketResourceManager : public SocketResourceManagerInterface {
     return manager_ != NULL;
   }
 
-  virtual int Add(Socket* socket) OVERRIDE {
+  virtual int Add(Socket* socket) override {
     // Note: Cast needed here, because "T" may be a subclass of "Socket".
     return manager_->Add(static_cast<T*>(socket));
   }
 
   virtual Socket* Get(const std::string& extension_id,
-                      int api_resource_id) OVERRIDE {
+                      int api_resource_id) override {
     return manager_->Get(extension_id, api_resource_id);
   }
 
   virtual void Replace(const std::string& extension_id,
                        int api_resource_id,
-                       Socket* socket) OVERRIDE {
+                       Socket* socket) override {
     manager_->Replace(extension_id, api_resource_id, static_cast<T*>(socket));
   }
 
   virtual void Remove(const std::string& extension_id,
-                      int api_resource_id) OVERRIDE {
+                      int api_resource_id) override {
     manager_->Remove(extension_id, api_resource_id);
   }
 
   virtual base::hash_set<int>* GetResourceIds(const std::string& extension_id)
-      OVERRIDE {
+      override {
     return manager_->GetResourceIds(extension_id);
   }
 
@@ -106,8 +106,8 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   virtual ~SocketAsyncApiFunction();
 
   // AsyncApiFunction:
-  virtual bool PrePrepare() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool PrePrepare() override;
+  virtual bool Respond() override;
 
   virtual scoped_ptr<SocketResourceManagerInterface>
       CreateSocketResourceManager();
@@ -128,7 +128,7 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
   virtual ~SocketExtensionWithDnsLookupFunction();
 
   // AsyncApiFunction:
-  virtual bool PrePrepare() OVERRIDE;
+  virtual bool PrePrepare() override;
 
   void StartDnsLookup(const std::string& hostname);
   virtual void AfterDnsLookup(int lookup_result) = 0;
@@ -155,8 +155,8 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
   virtual ~SocketCreateFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketUnitTest, Create);
@@ -174,8 +174,8 @@ class SocketDestroyFunction : public SocketAsyncApiFunction {
   virtual ~SocketDestroyFunction() {}
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   int socket_id_;
@@ -191,11 +191,11 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
   virtual ~SocketConnectFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
   // SocketExtensionWithDnsLookupFunction:
-  virtual void AfterDnsLookup(int lookup_result) OVERRIDE;
+  virtual void AfterDnsLookup(int lookup_result) override;
 
  private:
   void StartConnect();
@@ -214,8 +214,8 @@ class SocketDisconnectFunction : public SocketAsyncApiFunction {
   virtual ~SocketDisconnectFunction() {}
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   int socket_id_;
@@ -229,8 +229,8 @@ class SocketBindFunction : public SocketAsyncApiFunction {
   virtual ~SocketBindFunction() {}
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   int socket_id_;
@@ -248,8 +248,8 @@ class SocketListenFunction : public SocketAsyncApiFunction {
   virtual ~SocketListenFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::Listen::Params> params_;
@@ -265,8 +265,8 @@ class SocketAcceptFunction : public SocketAsyncApiFunction {
   virtual ~SocketAcceptFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   void OnAccept(int result_code, net::TCPClientSocket* socket);
@@ -284,8 +284,8 @@ class SocketReadFunction : public SocketAsyncApiFunction {
   virtual ~SocketReadFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
   void OnCompleted(int result, scoped_refptr<net::IOBuffer> io_buffer);
 
  private:
@@ -302,8 +302,8 @@ class SocketWriteFunction : public SocketAsyncApiFunction {
   virtual ~SocketWriteFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
   void OnCompleted(int result);
 
  private:
@@ -322,8 +322,8 @@ class SocketRecvFromFunction : public SocketAsyncApiFunction {
   virtual ~SocketRecvFromFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
   void OnCompleted(int result,
                    scoped_refptr<net::IOBuffer> io_buffer,
                    const std::string& address,
@@ -343,12 +343,12 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
   virtual ~SocketSendToFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
   void OnCompleted(int result);
 
   // SocketExtensionWithDnsLookupFunction:
-  virtual void AfterDnsLookup(int lookup_result) OVERRIDE;
+  virtual void AfterDnsLookup(int lookup_result) override;
 
  private:
   void StartSendTo();
@@ -370,8 +370,8 @@ class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {
   virtual ~SocketSetKeepAliveFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::SetKeepAlive::Params> params_;
@@ -387,8 +387,8 @@ class SocketSetNoDelayFunction : public SocketAsyncApiFunction {
   virtual ~SocketSetNoDelayFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::SetNoDelay::Params> params_;
@@ -404,8 +404,8 @@ class SocketGetInfoFunction : public SocketAsyncApiFunction {
   virtual ~SocketGetInfoFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::GetInfo::Params> params_;
@@ -417,7 +417,7 @@ class SocketGetNetworkListFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~SocketGetNetworkListFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void GetNetworkListOnFileThread();
@@ -435,8 +435,8 @@ class SocketJoinGroupFunction : public SocketAsyncApiFunction {
   virtual ~SocketJoinGroupFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::JoinGroup::Params> params_;
@@ -452,8 +452,8 @@ class SocketLeaveGroupFunction : public SocketAsyncApiFunction {
   virtual ~SocketLeaveGroupFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::LeaveGroup::Params> params_;
@@ -470,8 +470,8 @@ class SocketSetMulticastTimeToLiveFunction : public SocketAsyncApiFunction {
   virtual ~SocketSetMulticastTimeToLiveFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::SetMulticastTimeToLive::Params> params_;
@@ -488,8 +488,8 @@ class SocketSetMulticastLoopbackModeFunction : public SocketAsyncApiFunction {
   virtual ~SocketSetMulticastLoopbackModeFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::SetMulticastLoopbackMode::Params> params_;
@@ -506,8 +506,8 @@ class SocketGetJoinedGroupsFunction : public SocketAsyncApiFunction {
   virtual ~SocketGetJoinedGroupsFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
 
  private:
   scoped_ptr<core_api::socket::GetJoinedGroups::Params> params_;
@@ -522,8 +522,8 @@ class SocketSecureFunction : public SocketAsyncApiFunction {
   virtual ~SocketSecureFunction();
 
   // AsyncApiFunction
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void AsyncWorkStart() override;
 
  private:
   // Callback from TLSSocket::UpgradeSocketToTLS().

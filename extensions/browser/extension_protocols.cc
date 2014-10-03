@@ -86,7 +86,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     *mime_type = "text/html";
     *charset = "utf-8";
 
@@ -102,7 +102,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
     return net::OK;
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override {
     *info = response_info_;
   }
 
@@ -192,11 +192,11 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     }
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override {
     *info = response_info_;
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     request_timer_.reset(new base::ElapsedTimer());
     base::FilePath* read_file_path = new base::FilePath;
     base::Time* last_modified_time = new base::Time();
@@ -215,7 +215,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE {
+      const net::HttpRequestHeaders& headers) override {
     // TODO(asargent) - we'll need to add proper support for range headers.
     // crbug.com/369895.
     std::string range_header;
@@ -226,7 +226,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     URLRequestFileJob::SetExtraRequestHeaders(headers);
   }
 
-  virtual void OnSeekComplete(int64 result) OVERRIDE {
+  virtual void OnSeekComplete(int64 result) override {
     DCHECK_EQ(seek_position_, 0);
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
@@ -235,7 +235,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       verify_job_ = NULL;
   }
 
-  virtual void OnReadComplete(net::IOBuffer* buffer, int result) OVERRIDE {
+  virtual void OnReadComplete(net::IOBuffer* buffer, int result) override {
     if (result >= 0)
       UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult", result);
     else
@@ -383,7 +383,7 @@ class ExtensionProtocolHandler
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
   const bool is_incognito_;

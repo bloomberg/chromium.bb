@@ -26,8 +26,8 @@ class CaptureWebContentsFunction : public AsyncExtensionFunction {
   virtual ~CaptureWebContentsFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool HasPermission() OVERRIDE;
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool HasPermission() override;
+  virtual bool RunAsync() override;
 
   virtual bool IsScreenshotEnabled() = 0;
   virtual content::WebContents* GetWebContentsForID(int context_id) = 0;

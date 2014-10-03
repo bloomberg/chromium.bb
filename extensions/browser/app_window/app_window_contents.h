@@ -33,20 +33,20 @@ class AppWindowContentsImpl : public AppWindowContents,
 
   // AppWindowContents
   virtual void Initialize(content::BrowserContext* context,
-                          const GURL& url) OVERRIDE;
-  virtual void LoadContents(int32 creator_process_id) OVERRIDE;
-  virtual void NativeWindowChanged(NativeAppWindow* native_app_window) OVERRIDE;
-  virtual void NativeWindowClosed() OVERRIDE;
-  virtual void DispatchWindowShownForTests() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+                          const GURL& url) override;
+  virtual void LoadContents(int32 creator_process_id) override;
+  virtual void NativeWindowChanged(NativeAppWindow* native_app_window) override;
+  virtual void NativeWindowClosed() override;
+  virtual void DispatchWindowShownForTests() const override;
+  virtual content::WebContents* GetWebContents() const override;
 
  private:
   // content::WebContentsObserver
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+  virtual WindowController* GetExtensionWindowController() const override;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void UpdateDraggableRegions(const std::vector<DraggableRegion>& regions);

@@ -29,7 +29,7 @@ namespace extensions {
 
 class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunAsync() OVERRIDE {
+  virtual bool RunAsync() override {
     base::ListValue* devices = new base::ListValue();
     base::DictionaryValue* device0 = new base::DictionaryValue();
     device0->SetString("path", "/dev/fakeserial");
@@ -69,7 +69,7 @@ class FakeSerialConnectFunction : public core_api::SerialConnectFunction {
  protected:
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
-      const std::string& owner_extension_id) const OVERRIDE {
+      const std::string& owner_extension_id) const override {
     scoped_refptr<FakeEchoSerialIoHandler> io_handler =
         new FakeEchoSerialIoHandler;
     EXPECT_CALL(*io_handler.get(), SetControlSignals(_)).Times(1).WillOnce(

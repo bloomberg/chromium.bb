@@ -114,10 +114,10 @@ class DevicePermissionsManager : public KeyedService,
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // device::UsbDevice::Observer
-  virtual void OnDisconnect(scoped_refptr<device::UsbDevice> device) OVERRIDE;
+  virtual void OnDisconnect(scoped_refptr<device::UsbDevice> device) override;
 
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
@@ -141,7 +141,7 @@ class DevicePermissionsManagerFactory
 
   // BrowserContextKeyedServiceFactory
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManagerFactory);
 };

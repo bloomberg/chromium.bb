@@ -26,9 +26,9 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   virtual ~ShellNetworkController();
 
   // chromeos::NetworkStateHandlerObserver overrides:
-  virtual void NetworkListChanged() OVERRIDE;
+  virtual void NetworkListChanged() override;
   virtual void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* state) OVERRIDE;
+      const chromeos::NetworkState* state) override;
 
  private:
   // State of communication with the connection manager.

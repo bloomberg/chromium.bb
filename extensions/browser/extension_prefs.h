@@ -221,33 +221,33 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // ExtensionScopedPrefs methods:
   virtual void UpdateExtensionPref(const std::string& id,
                                    const std::string& key,
-                                   base::Value* value) OVERRIDE;
+                                   base::Value* value) override;
 
-  virtual void DeleteExtensionPrefs(const std::string& id) OVERRIDE;
+  virtual void DeleteExtensionPrefs(const std::string& id) override;
 
   virtual bool ReadPrefAsBoolean(const std::string& extension_id,
                                  const std::string& pref_key,
-                                 bool* out_value) const OVERRIDE;
+                                 bool* out_value) const override;
 
   virtual bool ReadPrefAsInteger(const std::string& extension_id,
                                  const std::string& pref_key,
-                                 int* out_value) const OVERRIDE;
+                                 int* out_value) const override;
 
   virtual bool ReadPrefAsString(const std::string& extension_id,
                                 const std::string& pref_key,
-                                std::string* out_value) const OVERRIDE;
+                                std::string* out_value) const override;
 
   virtual bool ReadPrefAsList(const std::string& extension_id,
                               const std::string& pref_key,
-                              const base::ListValue** out_value) const OVERRIDE;
+                              const base::ListValue** out_value) const override;
 
   virtual bool ReadPrefAsDictionary(
       const std::string& extension_id,
       const std::string& pref_key,
-      const base::DictionaryValue** out_value) const OVERRIDE;
+      const base::DictionaryValue** out_value) const override;
 
   virtual bool HasPrefForExtension(const std::string& extension_id) const
-      OVERRIDE;
+      override;
 
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);

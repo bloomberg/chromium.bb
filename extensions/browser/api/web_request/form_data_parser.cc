@@ -82,9 +82,9 @@ class FormDataParserUrlEncoded : public FormDataParser {
   virtual ~FormDataParserUrlEncoded();
 
   // Implementation of FormDataParser.
-  virtual bool AllDataReadOK() OVERRIDE;
-  virtual bool GetNextNameValue(Result* result) OVERRIDE;
-  virtual bool SetSource(base::StringPiece source) OVERRIDE;
+  virtual bool AllDataReadOK() override;
+  virtual bool GetNextNameValue(Result* result) override;
+  virtual bool SetSource(base::StringPiece source) override;
 
  private:
   // Returns the pattern to match a single name-value pair. This could be even
@@ -193,9 +193,9 @@ class FormDataParserMultipart : public FormDataParser {
   virtual ~FormDataParserMultipart();
 
   // Implementation of FormDataParser.
-  virtual bool AllDataReadOK() OVERRIDE;
-  virtual bool GetNextNameValue(Result* result) OVERRIDE;
-  virtual bool SetSource(base::StringPiece source) OVERRIDE;
+  virtual bool AllDataReadOK() override;
+  virtual bool GetNextNameValue(Result* result) override;
+  virtual bool SetSource(base::StringPiece source) override;
 
  private:
   enum State {

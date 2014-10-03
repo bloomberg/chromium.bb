@@ -144,8 +144,8 @@ class WebViewPermissionHelper
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 #endif  // defined(ENABLE_PLUGINS)
 
   // A counter to generate a unique request id for a permission request.

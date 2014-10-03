@@ -35,27 +35,27 @@ class AppViewGuest : public GuestView<AppViewGuest>,
                                int guest_instance_id);
 
   // ExtensionFunctionDispatcher::Delegate implementation.
-  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+  virtual WindowController* GetExtensionWindowController() const override;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // content::WebContentsDelegate implementation.
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
 
   // GuestViewBase implementation.
-  virtual const char* GetAPINamespace() const OVERRIDE;
-  virtual int GetTaskPrefix() const OVERRIDE;
+  virtual const char* GetAPINamespace() const override;
+  virtual int GetTaskPrefix() const override;
   virtual void CreateWebContents(
       const std::string& embedder_extension_id,
       int embedder_render_process_id,
       const GURL& embedder_site_url,
       const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback) OVERRIDE;
-  virtual void DidAttachToEmbedder() OVERRIDE;
-  virtual void DidInitialize() OVERRIDE;
+      const WebContentsCreatedCallback& callback) override;
+  virtual void DidAttachToEmbedder() override;
+  virtual void DidInitialize() override;
 
  private:
   AppViewGuest(content::BrowserContext* browser_context, int guest_instance_id);

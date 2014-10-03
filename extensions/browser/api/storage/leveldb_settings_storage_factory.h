@@ -13,10 +13,10 @@ namespace extensions {
 class LeveldbSettingsStorageFactory : public SettingsStorageFactory {
  public:
   virtual ValueStore* Create(const base::FilePath& base_path,
-                             const std::string& extension_id) OVERRIDE;
+                             const std::string& extension_id) override;
 
   virtual void DeleteDatabaseIfExists(const base::FilePath& base_path,
-                                      const std::string& extension_id) OVERRIDE;
+                                      const std::string& extension_id) override;
 
  private:
   // SettingsStorageFactory is refcounted.

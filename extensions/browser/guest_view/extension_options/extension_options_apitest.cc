@@ -15,7 +15,7 @@ using extensions::FeatureSwitch;
 
 class ExtensionOptionsApiTest : public ExtensionApiTest {
  private:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
     enable_options_.reset(new FeatureSwitch::ScopedOverride(

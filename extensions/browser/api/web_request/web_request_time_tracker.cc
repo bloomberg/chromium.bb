@@ -41,12 +41,12 @@ class DefaultDelegate : public ExtensionWebRequestTimeTrackerDelegate {
       void* profile,
       size_t num_delayed_messages,
       size_t total_num_messages,
-      const std::set<std::string>& extension_ids) OVERRIDE;
+      const std::set<std::string>& extension_ids) override;
   virtual void NotifyModerateDelays(
       void* profile,
       size_t num_delayed_messages,
       size_t total_num_messages,
-      const std::set<std::string>& extension_ids) OVERRIDE;
+      const std::set<std::string>& extension_ids) override;
 };
 
 void DefaultDelegate::NotifyExcessiveDelays(

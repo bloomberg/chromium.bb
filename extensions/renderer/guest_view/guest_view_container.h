@@ -30,13 +30,13 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
                    v8::Isolate* isolate);
 
   // BrowserPluginDelegate implementation.
-  virtual void SetElementInstanceID(int element_instance_id) OVERRIDE;
-  virtual void DidFinishLoading() OVERRIDE;
-  virtual void DidReceiveData(const char* data, int data_length) OVERRIDE;
+  virtual void SetElementInstanceID(int element_instance_id) override;
+  virtual void DidFinishLoading() override;
+  virtual void DidReceiveData(const char* data, int data_length) override;
 
   // RenderFrameObserver override.
-  virtual void OnDestruct() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnDestruct() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);

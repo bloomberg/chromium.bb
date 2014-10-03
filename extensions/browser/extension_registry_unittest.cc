@@ -49,14 +49,14 @@ class TestObserver : public ExtensionRegistryObserver {
 
  private:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE {
+                                 const Extension* extension) override {
     loaded_.push_back(extension);
   }
 
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionInfo::Reason reason)
-      OVERRIDE {
+      override {
     unloaded_.push_back(extension);
   }
 
@@ -65,18 +65,18 @@ class TestObserver : public ExtensionRegistryObserver {
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE {
+      const std::string& old_name) override {
     installed_.push_back(extension);
   }
 
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE {
+      extensions::UninstallReason reason) override {
     uninstalled_.push_back(extension);
   }
 
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE {
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override {
     Reset();
   }
 

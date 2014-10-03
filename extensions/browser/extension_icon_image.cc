@@ -59,7 +59,7 @@ class BlankImageSource : public gfx::CanvasImageSource {
 
  private:
   // gfx::CanvasImageSource overrides:
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     canvas->DrawColor(SkColorSetARGB(0, 0, 0, 0));
   }
 
@@ -82,7 +82,7 @@ class IconImage::Source : public gfx::ImageSkiaSource {
 
  private:
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE;
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
   // Used to load images, possibly asynchronously. NULLed out when the IconImage
   // is destroyed.

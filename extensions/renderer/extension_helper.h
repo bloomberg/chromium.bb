@@ -52,14 +52,14 @@ class ExtensionHelper
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
   virtual void DidMatchCSS(
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
-      OVERRIDE;
-  virtual void DraggableRegionsChanged(blink::WebFrame* frame) OVERRIDE;
+      override;
+  virtual void DraggableRegionsChanged(blink::WebFrame* frame) override;
 
   void OnExtensionResponse(int request_id, bool success,
                            const base::ListValue& response,

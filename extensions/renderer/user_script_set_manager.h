@@ -83,7 +83,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   typedef std::map<ExtensionId, linked_ptr<UserScriptSet> > UserScriptSetMap;
 
   // content::RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   UserScriptSet* GetProgrammaticScriptsByExtension(
       const ExtensionId& extensionId);

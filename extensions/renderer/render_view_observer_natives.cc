@@ -23,13 +23,13 @@ class LoadWatcher : public content::RenderViewObserver {
               v8::Handle<v8::Function> cb)
       : content::RenderViewObserver(view), context_(context), callback_(cb) {}
 
-  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE {
+  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) override {
     CallbackAndDie(true);
   }
 
   virtual void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
                                       const blink::WebURLError& error)
-      OVERRIDE {
+      override {
     CallbackAndDie(false);
   }
 

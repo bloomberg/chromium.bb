@@ -23,7 +23,7 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~AppWindowCreateFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   bool GetBoundsSpec(

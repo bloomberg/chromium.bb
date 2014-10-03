@@ -73,7 +73,7 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void Init();
 
@@ -88,13 +88,13 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
   virtual void OnExtensionWillBeInstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
 
   // Path to our database, on disk. Empty during testing.
   base::FilePath db_path_;

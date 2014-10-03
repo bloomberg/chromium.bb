@@ -35,13 +35,13 @@ class LeveldbValueStoreUnitTest : public testing::Test {
   virtual ~LeveldbValueStoreUnitTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     OpenStore();
     ASSERT_FALSE(store_->Get()->HasError());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     store_->Clear();
     store_.reset();
   }

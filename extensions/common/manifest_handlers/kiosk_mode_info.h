@@ -40,10 +40,10 @@ class KioskModeHandler : public ManifestHandler {
   KioskModeHandler();
   virtual ~KioskModeHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   std::vector<std::string> supported_keys_;
 

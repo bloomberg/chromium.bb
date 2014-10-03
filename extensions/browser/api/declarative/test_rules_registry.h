@@ -25,12 +25,12 @@ class TestRulesRegistry : public RulesRegistry {
   // RulesRegistry implementation:
   virtual std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
+      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) override;
   virtual std::string RemoveRulesImpl(
       const std::string& extension_id,
-      const std::vector<std::string>& rule_identifiers) OVERRIDE;
+      const std::vector<std::string>& rule_identifiers) override;
   virtual std::string RemoveAllRulesImpl(
-      const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
 
   // Sets the result message that will be returned by the next call of
   // AddRulesImpl, RemoveRulesImpl and RemoveAllRulesImpl.

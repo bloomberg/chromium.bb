@@ -56,11 +56,11 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
 
   // ExtensionRegistryObserver interface
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);

@@ -32,8 +32,8 @@ typedef base::Callback<scoped_ptr<EventListener>(
     )> EventListenerConstructor;
 
 class EmptyDelegate : public EventListenerMap::Delegate {
-  virtual void OnListenerAdded(const EventListener* listener) OVERRIDE {};
-  virtual void OnListenerRemoved(const EventListener* listener) OVERRIDE {};
+  virtual void OnListenerAdded(const EventListener* listener) override {};
+  virtual void OnListenerRemoved(const EventListener* listener) override {};
 };
 
 class EventListenerMapTest : public testing::Test {

@@ -29,7 +29,7 @@ class SocketPermission
   virtual ~SocketPermission();
 
   // Returns the localized permission messages of this permission.
-  virtual PermissionMessages GetMessages() const OVERRIDE;
+  virtual PermissionMessages GetMessages() const override;
 
  private:
   bool AddAnyHostMessage(PermissionMessages& messages) const;

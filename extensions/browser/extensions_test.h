@@ -43,8 +43,8 @@ class ExtensionsTest : public testing::Test {
   }
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  private:
   scoped_ptr<content::ContentClient> content_client_;

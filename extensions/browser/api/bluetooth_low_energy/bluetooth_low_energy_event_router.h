@@ -230,37 +230,37 @@ class BluetoothLowEnergyEventRouter
   // device::BluetoothAdapter::Observer overrides.
   virtual void GattServiceAdded(device::BluetoothAdapter* adapter,
                                 device::BluetoothDevice* device,
-                                device::BluetoothGattService* service) OVERRIDE;
+                                device::BluetoothGattService* service) override;
   virtual void GattServiceRemoved(
       device::BluetoothAdapter* adapter,
       device::BluetoothDevice* device,
-      device::BluetoothGattService* service) OVERRIDE;
+      device::BluetoothGattService* service) override;
   virtual void GattDiscoveryCompleteForService(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) OVERRIDE;
+      device::BluetoothGattService* service) override;
   virtual void GattServiceChanged(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) OVERRIDE;
+      device::BluetoothGattService* service) override;
   virtual void GattCharacteristicAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
+      device::BluetoothGattCharacteristic* characteristic) override;
   virtual void GattCharacteristicRemoved(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
+      device::BluetoothGattCharacteristic* characteristic) override;
   virtual void GattDescriptorAdded(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor) OVERRIDE;
+      device::BluetoothGattDescriptor* descriptor) override;
   virtual void GattDescriptorRemoved(
       device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor) OVERRIDE;
+      device::BluetoothGattDescriptor* descriptor) override;
   virtual void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
-      const std::vector<uint8>& value) OVERRIDE;
+      const std::vector<uint8>& value) override;
   virtual void GattDescriptorValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattDescriptor* descriptor,
-      const std::vector<uint8>& value) OVERRIDE;
+      const std::vector<uint8>& value) override;
 
  private:
   // Called by BluetoothAdapterFactory.

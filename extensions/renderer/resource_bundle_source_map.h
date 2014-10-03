@@ -27,8 +27,8 @@ class ResourceBundleSourceMap : public extensions::ModuleSystem::SourceMap {
   virtual ~ResourceBundleSourceMap();
 
   virtual v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
-                                          const std::string& name) OVERRIDE;
-  virtual bool Contains(const std::string& name) OVERRIDE;
+                                          const std::string& name) override;
+  virtual bool Contains(const std::string& name) override;
 
   void RegisterSource(const std::string& name, int resource_id);
 

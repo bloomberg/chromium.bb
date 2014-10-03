@@ -28,7 +28,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   // Create an object with bindings to the native functions defined through
   // RouteFunction().
-  virtual v8::Handle<v8::Object> NewInstance() OVERRIDE;
+  virtual v8::Handle<v8::Object> NewInstance() override;
 
   v8::Isolate* GetIsolate() const;
 
@@ -44,7 +44,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   ScriptContext* context() const { return context_; }
 
-  virtual void Invalidate() OVERRIDE;
+  virtual void Invalidate() override;
 
  private:
   // Callback for RouteFunction which routes the V8 call to the correct

@@ -10,7 +10,7 @@ namespace extensions {
 
 class JsonSchemaTest : public ModuleSystemTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ModuleSystemTest::SetUp();
 
     env()->RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);

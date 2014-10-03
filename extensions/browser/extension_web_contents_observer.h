@@ -39,7 +39,7 @@ class ExtensionWebContentsObserver : public content::WebContentsObserver {
 
   // A subclass should invoke this method to finish extension process setup.
   virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
-      OVERRIDE;
+      override;
 
   // Returns the extension or app associated with a render view host. Returns
   // NULL if the render view host is not for a valid extension.

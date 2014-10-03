@@ -182,7 +182,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
     ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
     data_->InitiateExtensionSuspendedCleanup(host->extension_id());
@@ -192,7 +192,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE {
+      UnloadedExtensionInfo::Reason reason) override {
     data_->InitiateExtensionUnloadedCleanup(extension->id());
   }
 

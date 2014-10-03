@@ -30,7 +30,7 @@ class UsbDevicePermission
   virtual ~UsbDevicePermission();
 
   // APIPermission overrides
-  virtual PermissionMessages GetMessages() const OVERRIDE;
+  virtual PermissionMessages GetMessages() const override;
 };
 
 }  // namespace extensions

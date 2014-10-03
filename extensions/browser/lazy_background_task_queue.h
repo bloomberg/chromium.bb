@@ -74,13 +74,13 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver,
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver interface.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // Called when a lazy background page has finished loading, or has failed to
   // load (host is NULL in that case). All enqueued tasks are run in order.

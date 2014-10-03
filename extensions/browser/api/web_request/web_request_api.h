@@ -69,7 +69,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<WebRequestAPI>* GetFactoryInstance();
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;
@@ -498,7 +498,7 @@ class WebRequestInternalAddEventListenerFunction
   virtual ~WebRequestInternalAddEventListenerFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class WebRequestInternalEventHandledFunction
@@ -522,7 +522,7 @@ class WebRequestInternalEventHandledFunction
       const std::string& error);
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class WebRequestHandlerBehaviorChangedFunction
@@ -536,11 +536,11 @@ class WebRequestHandlerBehaviorChangedFunction
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
-      extensions::QuotaLimitHeuristics* heuristics) const OVERRIDE;
+      extensions::QuotaLimitHeuristics* heuristics) const override;
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
-  virtual void OnQuotaExceeded(const std::string& error) OVERRIDE;
-  virtual bool RunSync() OVERRIDE;
+  virtual void OnQuotaExceeded(const std::string& error) override;
+  virtual bool RunSync() override;
 };
 
 #endif  // EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_H_

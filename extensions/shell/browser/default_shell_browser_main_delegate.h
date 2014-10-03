@@ -19,9 +19,9 @@ class DefaultShellBrowserMainDelegate : public ShellBrowserMainDelegate {
   virtual ~DefaultShellBrowserMainDelegate();
 
   // ShellBrowserMainDelegate:
-  virtual void Start(content::BrowserContext* context) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual DesktopController* CreateDesktopController() OVERRIDE;
+  virtual void Start(content::BrowserContext* context) override;
+  virtual void Shutdown() override;
+  virtual DesktopController* CreateDesktopController() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultShellBrowserMainDelegate);

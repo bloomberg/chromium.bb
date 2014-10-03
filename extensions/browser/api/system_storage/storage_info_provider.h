@@ -41,9 +41,9 @@ class StorageInfoProvider : public SystemInfoProvider {
   static StorageInfoProvider* Get();
 
   // SystemInfoProvider implementations
-  virtual void PrepareQueryOnUIThread() OVERRIDE;
+  virtual void PrepareQueryOnUIThread() override;
   virtual void InitializeProvider(
-      const base::Closure& do_query_info_callback) OVERRIDE;
+      const base::Closure& do_query_info_callback) override;
 
   virtual double GetStorageFreeSpaceFromTransientIdOnFileThread(
       const std::string& transient_id);
@@ -73,7 +73,7 @@ class StorageInfoProvider : public SystemInfoProvider {
   // SystemInfoProvider implementations.
   // Override to query the available capacity of all known storage devices on
   // the blocking pool, including fixed and removable devices.
-  virtual bool QueryInfo() OVERRIDE;
+  virtual bool QueryInfo() override;
 
   static base::LazyInstance<scoped_refptr<StorageInfoProvider> > provider_;
 

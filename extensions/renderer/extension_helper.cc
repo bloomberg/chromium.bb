@@ -47,7 +47,7 @@ class ViewAccumulator : public content::RenderViewVisitor {
   std::vector<content::RenderView*> views() { return views_; }
 
   // Returns false to terminate the iteration.
-  virtual bool Visit(content::RenderView* render_view) OVERRIDE {
+  virtual bool Visit(content::RenderView* render_view) override {
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
     if (!ViewTypeMatches(helper->view_type(), view_type_))
       return true;

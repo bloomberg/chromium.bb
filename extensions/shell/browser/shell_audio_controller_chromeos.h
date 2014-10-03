@@ -25,20 +25,20 @@ class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
 
     // chromeos::AudioDevicesPrefHandler implementation:
     virtual double GetOutputVolumeValue(
-        const chromeos::AudioDevice* device) OVERRIDE;
+        const chromeos::AudioDevice* device) override;
     virtual double GetInputGainValue(
-        const chromeos::AudioDevice* device) OVERRIDE;
+        const chromeos::AudioDevice* device) override;
     virtual void SetVolumeGainValue(const chromeos::AudioDevice& device,
-                                    double value) OVERRIDE;
-    virtual bool GetMuteValue(const chromeos::AudioDevice& device) OVERRIDE;
+                                    double value) override;
+    virtual bool GetMuteValue(const chromeos::AudioDevice& device) override;
     virtual void SetMuteValue(const chromeos::AudioDevice& device,
-                              bool mute_on) OVERRIDE;
-    virtual bool GetAudioCaptureAllowedValue() OVERRIDE;
-    virtual bool GetAudioOutputAllowedValue() OVERRIDE;
+                              bool mute_on) override;
+    virtual bool GetAudioCaptureAllowedValue() override;
+    virtual bool GetAudioOutputAllowedValue() override;
     virtual void AddAudioPrefObserver(
-        chromeos::AudioPrefObserver* observer) OVERRIDE;
+        chromeos::AudioPrefObserver* observer) override;
     virtual void RemoveAudioPrefObserver(
-        chromeos::AudioPrefObserver* observer) OVERRIDE;
+        chromeos::AudioPrefObserver* observer) override;
 
    protected:
     virtual ~PrefHandler();
@@ -51,13 +51,13 @@ class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
   virtual ~ShellAudioController();
 
   // chromeos::CrasAudioHandler::Observer implementation:
-  virtual void OnOutputVolumeChanged() OVERRIDE;
-  virtual void OnOutputMuteChanged() OVERRIDE;
-  virtual void OnInputGainChanged() OVERRIDE;
-  virtual void OnInputMuteChanged() OVERRIDE;
-  virtual void OnAudioNodesChanged() OVERRIDE;
-  virtual void OnActiveOutputNodeChanged() OVERRIDE;
-  virtual void OnActiveInputNodeChanged() OVERRIDE;
+  virtual void OnOutputVolumeChanged() override;
+  virtual void OnOutputMuteChanged() override;
+  virtual void OnInputGainChanged() override;
+  virtual void OnInputMuteChanged() override;
+  virtual void OnAudioNodesChanged() override;
+  virtual void OnActiveOutputNodeChanged() override;
+  virtual void OnActiveInputNodeChanged() override;
 
  private:
   // Gets the current device list from CRAS, chooses the best input and output

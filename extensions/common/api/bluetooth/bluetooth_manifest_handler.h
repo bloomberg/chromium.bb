@@ -24,14 +24,14 @@ class BluetoothManifestHandler : public ManifestHandler {
   virtual ~BluetoothManifestHandler();
 
   // ManifestHandler overrides.
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
-  virtual ManifestPermission* CreatePermission() OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
+  virtual ManifestPermission* CreatePermission() override;
   virtual ManifestPermission* CreateInitialRequiredPermission(
-      const Extension* extension) OVERRIDE;
+      const Extension* extension) override;
 
  private:
   // ManifestHandler overrides.
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothManifestHandler);
 };

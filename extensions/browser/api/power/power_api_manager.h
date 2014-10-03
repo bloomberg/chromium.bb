@@ -54,7 +54,7 @@ class PowerApiManager : public BrowserContextKeyedAPI,
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionInfo::Reason reason)
-      OVERRIDE;
+      override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PowerApiManager>;
@@ -70,7 +70,7 @@ class PowerApiManager : public BrowserContextKeyedAPI,
   static const char* service_name() { return "PowerApiManager"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsCreatedWithBrowserContext = false;
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   content::BrowserContext* browser_context_;
 

@@ -17,9 +17,9 @@ class APIFeature : public SimpleFeature {
   virtual ~APIFeature();
 
   // extensions::Feature:
-  virtual bool IsInternal() const OVERRIDE;
+  virtual bool IsInternal() const override;
 
-  virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
+  virtual std::string Parse(const base::DictionaryValue* value) override;
 
  private:
   bool internal_;

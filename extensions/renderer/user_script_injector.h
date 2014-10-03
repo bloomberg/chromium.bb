@@ -33,32 +33,32 @@ class UserScriptInjector : public ScriptInjector,
   // UserScriptSet::Observer implementation.
   virtual void OnUserScriptsUpdated(
       const std::set<std::string>& changed_extensions,
-      const std::vector<UserScript*>& scripts) OVERRIDE;
+      const std::vector<UserScript*>& scripts) override;
 
   // ScriptInjector implementation.
-  virtual UserScript::InjectionType script_type() const OVERRIDE;
-  virtual bool ShouldExecuteInChildFrames() const OVERRIDE;
-  virtual bool ShouldExecuteInMainWorld() const OVERRIDE;
-  virtual bool IsUserGesture() const OVERRIDE;
-  virtual bool ExpectsResults() const OVERRIDE;
+  virtual UserScript::InjectionType script_type() const override;
+  virtual bool ShouldExecuteInChildFrames() const override;
+  virtual bool ShouldExecuteInMainWorld() const override;
+  virtual bool IsUserGesture() const override;
+  virtual bool ExpectsResults() const override;
   virtual bool ShouldInjectJs(
-      UserScript::RunLocation run_location) const OVERRIDE;
+      UserScript::RunLocation run_location) const override;
   virtual bool ShouldInjectCss(
-      UserScript::RunLocation run_location) const OVERRIDE;
+      UserScript::RunLocation run_location) const override;
   virtual PermissionsData::AccessType CanExecuteOnFrame(
       const Extension* extension,
       blink::WebFrame* web_frame,
       int tab_id,
-      const GURL& top_url) const OVERRIDE;
+      const GURL& top_url) const override;
   virtual std::vector<blink::WebScriptSource> GetJsSources(
-      UserScript::RunLocation run_location) const OVERRIDE;
+      UserScript::RunLocation run_location) const override;
   virtual std::vector<std::string> GetCssSources(
-      UserScript::RunLocation run_location) const OVERRIDE;
+      UserScript::RunLocation run_location) const override;
   virtual void OnInjectionComplete(
       scoped_ptr<base::ListValue> execution_results,
       ScriptsRunInfo* scripts_run_info,
-      UserScript::RunLocation run_location) OVERRIDE;
-  virtual void OnWillNotInject(InjectFailureReason reason) OVERRIDE;
+      UserScript::RunLocation run_location) override;
+  virtual void OnWillNotInject(InjectFailureReason reason) override;
 
   // The associated user script. Owned by the UserScriptInjector that created
   // this object.

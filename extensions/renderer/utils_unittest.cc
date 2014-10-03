@@ -12,7 +12,7 @@ namespace {
 
 class UtilsUnittest : public ModuleSystemTest {
  private:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ModuleSystemTest::SetUp();
 
     env()->RegisterModule("utils", IDR_UTILS_JS);

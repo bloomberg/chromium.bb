@@ -27,7 +27,7 @@ class BluetoothLowEnergyNotifySession : public ApiResource {
   device::BluetoothGattNotifySession* GetSession() const;
 
   // ApiResource override.
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
   // This resource should be managed on the UI thread.
   static const content::BrowserThread::ID kThreadId =

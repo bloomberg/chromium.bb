@@ -32,14 +32,14 @@ class RequirementsHandler : public ManifestHandler {
   RequirementsHandler();
   virtual ~RequirementsHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
-  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) const override;
 
-  virtual const std::vector<std::string> PrerequisiteKeys() const OVERRIDE;
+  virtual const std::vector<std::string> PrerequisiteKeys() const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(RequirementsHandler);
 };

@@ -29,7 +29,7 @@ class BluetoothExtensionFunction : public AsyncExtensionFunction {
   virtual ~BluetoothExtensionFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void RunOnAdapterReady(scoped_refptr<device::BluetoothAdapter> adapter);

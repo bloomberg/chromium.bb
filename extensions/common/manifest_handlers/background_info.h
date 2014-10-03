@@ -83,14 +83,14 @@ class BackgroundManifestHandler : public ManifestHandler {
   BackgroundManifestHandler();
   virtual ~BackgroundManifestHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
-                        std::vector<InstallWarning>* warnings) const OVERRIDE;
-  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
+                        std::vector<InstallWarning>* warnings) const override;
+  virtual bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundManifestHandler);
 };

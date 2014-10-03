@@ -18,7 +18,7 @@ class PowerRequestKeepAwakeFunction : public SyncExtensionFunction {
   virtual ~PowerRequestKeepAwakeFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 // Implementation of the chrome.power.releaseKeepAwake API.
@@ -30,7 +30,7 @@ class PowerReleaseKeepAwakeFunction : public SyncExtensionFunction {
   virtual ~PowerReleaseKeepAwakeFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

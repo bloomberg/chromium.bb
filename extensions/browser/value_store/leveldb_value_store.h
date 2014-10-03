@@ -30,23 +30,23 @@ class LeveldbValueStore : public ValueStore {
   virtual ~LeveldbValueStore();
 
   // ValueStore implementation.
-  virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
-  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
-  virtual size_t GetBytesInUse() OVERRIDE;
-  virtual ReadResult Get(const std::string& key) OVERRIDE;
-  virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
-  virtual ReadResult Get() OVERRIDE;
+  virtual size_t GetBytesInUse(const std::string& key) override;
+  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) override;
+  virtual size_t GetBytesInUse() override;
+  virtual ReadResult Get(const std::string& key) override;
+  virtual ReadResult Get(const std::vector<std::string>& keys) override;
+  virtual ReadResult Get() override;
   virtual WriteResult Set(
       WriteOptions options,
       const std::string& key,
-      const base::Value& value) OVERRIDE;
+      const base::Value& value) override;
   virtual WriteResult Set(
-      WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
-  virtual WriteResult Remove(const std::string& key) OVERRIDE;
-  virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
-  virtual WriteResult Clear() OVERRIDE;
-  virtual bool Restore() OVERRIDE;
-  virtual bool RestoreKey(const std::string& key) OVERRIDE;
+      WriteOptions options, const base::DictionaryValue& values) override;
+  virtual WriteResult Remove(const std::string& key) override;
+  virtual WriteResult Remove(const std::vector<std::string>& keys) override;
+  virtual WriteResult Clear() override;
+  virtual bool Restore() override;
+  virtual bool RestoreKey(const std::string& key) override;
 
   // Write directly to the backing levelDB. Only used for testing to cause
   // corruption in the database.

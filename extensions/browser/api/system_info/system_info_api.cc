@@ -60,16 +60,16 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
 
  private:
   // gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
   virtual void OnRemovableStorageDetached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
 
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.

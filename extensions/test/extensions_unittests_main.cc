@@ -31,7 +31,7 @@ class ExtensionsContentClient : public content::ContentClient {
   // content::ContentClient overrides:
   virtual void AddAdditionalSchemes(
       std::vector<std::string>* standard_schemes,
-      std::vector<std::string>* savable_schemes) OVERRIDE {
+      std::vector<std::string>* savable_schemes) override {
     standard_schemes->push_back(extensions::kExtensionScheme);
     savable_schemes->push_back(extensions::kExtensionScheme);
     standard_schemes->push_back(extensions::kExtensionResourceScheme);
@@ -50,8 +50,8 @@ class ExtensionsTestSuite : public content::ContentTestSuiteBase {
 
  private:
   // base::TestSuite:
-  virtual void Initialize() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void Shutdown() override;
 
   scoped_ptr<extensions::TestExtensionsClient> client_;
 

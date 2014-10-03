@@ -49,10 +49,10 @@ class AppWindowGeometryCache : public KeyedService,
 
     // BrowserContextKeyedServiceFactory
     virtual KeyedService* BuildServiceInstanceFor(
-        content::BrowserContext* context) const OVERRIDE;
-    virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+        content::BrowserContext* context) const override;
+    virtual bool ServiceIsNULLWhileTesting() const override;
     virtual content::BrowserContext* GetBrowserContextToUse(
-        content::BrowserContext* context) const OVERRIDE;
+        content::BrowserContext* context) const override;
   };
 
   class Observer {
@@ -90,7 +90,7 @@ class AppWindowGeometryCache : public KeyedService,
                    ui::WindowShowState* state);
 
   // KeyedService
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -122,11 +122,11 @@ class AppWindowGeometryCache : public KeyedService,
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   void LoadGeometryFromStorage(const std::string& extension_id);
   void SyncToStorage();

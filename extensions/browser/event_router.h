@@ -210,14 +210,14 @@ class EventRouter : public content::NotificationObserver,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // Returns true if the given listener map contains a event listeners for
   // the given event. If |extension_id| is non-empty, we also check that that
@@ -292,8 +292,8 @@ class EventRouter : public content::NotificationObserver,
                             ExtensionHost* host);
 
   // Implementation of EventListenerMap::Delegate.
-  virtual void OnListenerAdded(const EventListener* listener) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListener* listener) OVERRIDE;
+  virtual void OnListenerAdded(const EventListener* listener) override;
+  virtual void OnListenerRemoved(const EventListener* listener) override;
 
   content::BrowserContext* browser_context_;
 

@@ -97,7 +97,7 @@ class ContentHashFetcherJob
   void DoneCheckingForVerifiedContents(bool found);
 
   // URLFetcherDelegate interface
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Callback for when we're done ensuring we have verified contents, and are
   // ready to move on to MaybeCreateHashes.

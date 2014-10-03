@@ -96,9 +96,9 @@ class ManifestError : public ExtensionError {
                 const base::string16& manifest_specific);
   virtual ~ManifestError();
 
-  virtual scoped_ptr<base::DictionaryValue> ToValue() const OVERRIDE;
+  virtual scoped_ptr<base::DictionaryValue> ToValue() const override;
 
-  virtual std::string PrintForTest() const OVERRIDE;
+  virtual std::string PrintForTest() const override;
 
   const base::string16& manifest_key() const { return manifest_key_; }
   const base::string16& manifest_specific() const { return manifest_specific_; }
@@ -108,7 +108,7 @@ class ManifestError : public ExtensionError {
   static const char kManifestSpecificKey[];
 
  private:
-  virtual bool IsEqualImpl(const ExtensionError* rhs) const OVERRIDE;
+  virtual bool IsEqualImpl(const ExtensionError* rhs) const override;
 
   // If present, this indicates the feature in the manifest which caused the
   // error.
@@ -133,9 +133,9 @@ class RuntimeError : public ExtensionError {
                int render_process_id);
   virtual ~RuntimeError();
 
-  virtual scoped_ptr<base::DictionaryValue> ToValue() const OVERRIDE;
+  virtual scoped_ptr<base::DictionaryValue> ToValue() const override;
 
-  virtual std::string PrintForTest() const OVERRIDE;
+  virtual std::string PrintForTest() const override;
 
   const GURL& context_url() const { return context_url_; }
   const StackTrace& stack_trace() const { return stack_trace_; }
@@ -153,7 +153,7 @@ class RuntimeError : public ExtensionError {
   static const char kRenderViewIdKey[];
 
  private:
-  virtual bool IsEqualImpl(const ExtensionError* rhs) const OVERRIDE;
+  virtual bool IsEqualImpl(const ExtensionError* rhs) const override;
 
   // Since we piggy-back onto other error reporting systems (like V8 and
   // WebKit), the reported information may need to be cleaned up in order to be

@@ -26,17 +26,17 @@ class BluetoothApiPairingDelegate
   virtual ~BluetoothApiPairingDelegate();
 
   // device::PairingDelegate overrides:
-  virtual void RequestPinCode(device::BluetoothDevice* device) OVERRIDE;
-  virtual void RequestPasskey(device::BluetoothDevice* device) OVERRIDE;
+  virtual void RequestPinCode(device::BluetoothDevice* device) override;
+  virtual void RequestPasskey(device::BluetoothDevice* device) override;
   virtual void DisplayPinCode(device::BluetoothDevice* device,
-                              const std::string& pincode) OVERRIDE;
+                              const std::string& pincode) override;
   virtual void DisplayPasskey(device::BluetoothDevice* device,
-                              uint32 passkey) OVERRIDE;
+                              uint32 passkey) override;
   virtual void KeysEntered(device::BluetoothDevice* device,
-                           uint32 entered) OVERRIDE;
+                           uint32 entered) override;
   virtual void ConfirmPasskey(device::BluetoothDevice* device,
-                              uint32 passkey) OVERRIDE;
-  virtual void AuthorizePairing(device::BluetoothDevice* device) OVERRIDE;
+                              uint32 passkey) override;
+  virtual void AuthorizePairing(device::BluetoothDevice* device) override;
 
  private:
   // Dispatches a pairing event to the extension.

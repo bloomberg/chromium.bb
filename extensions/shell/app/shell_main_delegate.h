@@ -25,14 +25,14 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   virtual ~ShellMainDelegate();
 
   // ContentMainDelegate implementation:
-  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
-  virtual void PreSandboxStartup() OVERRIDE;
-  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
+  virtual bool BasicStartupComplete(int* exit_code) override;
+  virtual void PreSandboxStartup() override;
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() override;
   virtual content::ContentRendererClient* CreateContentRendererClient()
-      OVERRIDE;
+      override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   virtual void ZygoteStarting(
-      ScopedVector<content::ZygoteForkDelegate>* delegates) OVERRIDE;
+      ScopedVector<content::ZygoteForkDelegate>* delegates) override;
 #endif
 
  protected:

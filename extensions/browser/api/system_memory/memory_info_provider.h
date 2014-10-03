@@ -28,7 +28,7 @@ class MemoryInfoProvider : public SystemInfoProvider {
   virtual ~MemoryInfoProvider();
 
   // Overriden from SystemInfoProvider.
-  virtual bool QueryInfo() OVERRIDE;
+  virtual bool QueryInfo() override;
 
   // The last information filled up by QueryInfo and is accessed on multiple
   // threads, but the whole class is being guarded by SystemInfoProvider base

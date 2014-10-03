@@ -40,18 +40,18 @@ class SocketsManifestPermission : public ManifestPermission {
   void AddPermission(const SocketPermissionEntry& entry);
 
   // extensions::ManifestPermission overrides.
-  virtual std::string name() const OVERRIDE;
-  virtual std::string id() const OVERRIDE;
-  virtual bool HasMessages() const OVERRIDE;
-  virtual PermissionMessages GetMessages() const OVERRIDE;
-  virtual bool FromValue(const base::Value* value) OVERRIDE;
-  virtual scoped_ptr<base::Value> ToValue() const OVERRIDE;
+  virtual std::string name() const override;
+  virtual std::string id() const override;
+  virtual bool HasMessages() const override;
+  virtual PermissionMessages GetMessages() const override;
+  virtual bool FromValue(const base::Value* value) override;
+  virtual scoped_ptr<base::Value> ToValue() const override;
   virtual ManifestPermission* Diff(const ManifestPermission* rhs) const
-      OVERRIDE;
+      override;
   virtual ManifestPermission* Union(const ManifestPermission* rhs) const
-      OVERRIDE;
+      override;
   virtual ManifestPermission* Intersect(const ManifestPermission* rhs) const
-      OVERRIDE;
+      override;
 
   const SocketPermissionEntrySet& entries() const { return permissions_; }
 

@@ -38,12 +38,12 @@ class MockEventRouterObserver : public EventRouter::Observer {
   }
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE {
+  virtual void OnListenerAdded(const EventListenerInfo& details) override {
     listener_added_count_++;
     last_event_name_ = details.event_name;
   }
 
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE {
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override {
     listener_removed_count_++;
     last_event_name_ = details.event_name;
   }

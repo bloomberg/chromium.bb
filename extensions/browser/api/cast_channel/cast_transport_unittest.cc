@@ -145,14 +145,14 @@ class MockCastSocket : public CastSocketInterface {
   virtual ~MockCastSocket() {}
 
   // The IP endpoint for the destination of the channel.
-  virtual const net::IPEndPoint& ip_endpoint() const OVERRIDE { return ip_; }
+  virtual const net::IPEndPoint& ip_endpoint() const override { return ip_; }
 
   // The authentication level requested for the channel.
-  virtual ChannelAuthType channel_auth() const OVERRIDE {
+  virtual ChannelAuthType channel_auth() const override {
     return CHANNEL_AUTH_TYPE_SSL_VERIFIED;
   }
 
-  virtual int id() const OVERRIDE { return 1; }
+  virtual int id() const override { return 1; }
 
   MOCK_METHOD3(Write,
                int(net::IOBuffer* buffer,

@@ -28,12 +28,12 @@ class BaseFeatureProvider : public FeatureProvider {
   virtual ~BaseFeatureProvider();
 
   // Gets the feature |feature_name|, if it exists.
-  virtual Feature* GetFeature(const std::string& feature_name) const OVERRIDE;
-  virtual Feature* GetParent(Feature* feature) const OVERRIDE;
+  virtual Feature* GetFeature(const std::string& feature_name) const override;
+  virtual Feature* GetParent(Feature* feature) const override;
   virtual std::vector<Feature*> GetChildren(const Feature& parent) const
-      OVERRIDE;
+      override;
 
-  virtual const std::vector<std::string>& GetAllFeatureNames() const OVERRIDE;
+  virtual const std::vector<std::string>& GetAllFeatureNames() const override;
 
  private:
   typedef std::map<std::string, linked_ptr<Feature> > FeatureMap;
