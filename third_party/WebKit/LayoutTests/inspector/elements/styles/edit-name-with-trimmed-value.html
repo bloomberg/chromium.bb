@@ -17,7 +17,7 @@ function test()
         treeElement.startEditing(treeElement.nameElement);
         treeElement.nameElement.textContent = "background-image";
         treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", step2);
+        InspectorTest.waitForStyleApplied(step2);
     }
 
     function step2()

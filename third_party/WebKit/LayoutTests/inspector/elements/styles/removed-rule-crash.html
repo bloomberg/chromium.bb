@@ -28,7 +28,7 @@ function test()
         InspectorTest.addResult("Before disable");
         InspectorTest.dumpSelectedElementStyles(true);
         InspectorTest.toggleMatchedStyleProperty("font-weight", false);
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.waitForStyleApplied(step2);
     }
 
     function step2()

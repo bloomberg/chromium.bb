@@ -52,13 +52,12 @@ function test()
 
         document.execCommand("SelectAll");
         document.execCommand("Copy");
+        InspectorTest.waitForStyleApplied(reloadStyles.bind(this, callback));
         document.execCommand("Paste");
-        InspectorTest.runAfterPendingDispatches(reloadStyles.bind(this, callback));
     }
 
     function reloadStyles(callback) {
-        InspectorTest.selectNodeWithId("other");
-        InspectorTest.runAfterPendingDispatches(otherCallback);
+        InspectorTest.selectNodeAndWaitForStyles("other", otherCallback);
 
         function otherCallback()
         {

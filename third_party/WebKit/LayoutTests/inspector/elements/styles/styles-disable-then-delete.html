@@ -14,7 +14,7 @@ function test()
         InspectorTest.addResult("Before disable");
         InspectorTest.dumpSelectedElementStyles(true, true);
         InspectorTest.toggleStyleProperty("font-weight", false);
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.waitForStyleApplied(step2);
     }
 
     function step2()
@@ -26,13 +26,12 @@ function test()
         var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
         treeItem.applyStyleText("", true);
 
-        InspectorTest.runAfterPendingDispatches(step3);
+        InspectorTest.waitForStyleApplied(step3);
     }
 
     function step3()
     {
-        InspectorTest.selectNodeWithId("other");
-        InspectorTest.runAfterPendingDispatches(step4);
+        InspectorTest.selectNodeWithId("other", step4);
     }
 
     function step4()

@@ -119,8 +119,8 @@ function test()
         InspectorTest.dumpSelectedElementStyles(true, false, true);
         var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
         var treeElement = treeItem.section().addNewBlankProperty(1);
+        InspectorTest.waitForStyleApplied(onPropertyInserted);
         treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
-        InspectorTest.runAfterPendingDispatches(onPropertyInserted);
     }
 
     function onPropertyInserted()
@@ -136,8 +136,8 @@ function test()
         var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][4];
         section.startEditingSelector();
         section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
+        InspectorTest.waitForSelectorCommitted(onSelectorEdited);
         section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(onSelectorEdited);
     }
 
     function onSelectorEdited()
@@ -151,8 +151,8 @@ function test()
     function disableProperty()
     {
         var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("border");
+        InspectorTest.waitForStyleApplied(onPropertyDisabled);
         treeItem.toggleEnabled({ target: { checked: false }, consume: function() { } });
-        InspectorTest.runAfterPendingDispatches(onPropertyDisabled);
     }
 
     function onPropertyDisabled()

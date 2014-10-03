@@ -27,21 +27,20 @@ function test()
         // Update incrementally to a valid value. 
         treeElement.valueElement.textContent = "rgb(";
         treeElement.kickFreeFlowStyleEditForTest();
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.waitForStyleApplied(step2);
     }
 
     function step2()
     {
         // Commit invalid value. 
         treeElement.valueElement.textContent = "rgb(1";
+        InspectorTest.waitForStyleApplied(step3);
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(step3);
     }
 
     function step3()
     {
-        InspectorTest.selectNodeWithId("other");
-        InspectorTest.runAfterPendingDispatches(step4);
+        InspectorTest.selectNodeWithId("other", step4);
     }
 
     function step4()

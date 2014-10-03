@@ -136,6 +136,16 @@ InspectorTest.waitForStylesForClass = function(classValue, callback, requireRebu
     waitForStylesRebuild(nodeWithClass, callback, requireRebuild);
 }
 
+InspectorTest.waitForSelectorCommitted = function(callback)
+{
+    InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_editingSelectorCommittedForTest", callback);
+}
+
+InspectorTest.waitForStyleApplied = function(callback)
+{
+    InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", callback);
+}
+
 InspectorTest.selectNodeAndWaitForStyles = function(idValue, callback)
 {
 
@@ -756,7 +766,7 @@ function onBlankSection(selector, callback)
     if (typeof selector === "string")
         section._selectorElement.textContent = selector;
     section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-    InspectorTest.addSniffer(WebInspector.BlankStylePropertiesSection.prototype, "_finishedAddingRuleForTest", callback.bind(null, section));
+    InspectorTest.waitForSelectorCommitted(callback.bind(null, section));
 }
 
 InspectorTest.dumpInspectorHighlight = function(node, callback)

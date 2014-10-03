@@ -38,8 +38,8 @@ function test()
             section.startEditingSelector();
             var selectorElement = section._selectorElement;
             selectorElement.textContent = "#inspected, a, hr";
+            InspectorTest.waitForSelectorCommitted(callback);
             selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.runAfterPendingDispatches(callback);
 
             function callback()
             {

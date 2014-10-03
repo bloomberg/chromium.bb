@@ -26,27 +26,21 @@ function test()
 
         // Cancel editing.
         treeElement.valueElement.firstChild.select();
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", onStyleApplied);
+        InspectorTest.waitForStyleApplied(onStyleApplied);
 
         function onStyleApplied()
         {
             treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
-            InspectorTest.runAfterPendingDispatches(step2);
+            InspectorTest.selectNodeWithId("other", step2);
         }
     }
 
     function step2()
     {
-        InspectorTest.selectNodeWithId("other");
-        InspectorTest.runAfterPendingDispatches(step3);
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step3);
     }
 
     function step3()
-    {
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step4);
-    }
-
-    function step4()
     {
         InspectorTest.addResult("After append:");
         InspectorTest.dumpSelectedElementStyles(true);

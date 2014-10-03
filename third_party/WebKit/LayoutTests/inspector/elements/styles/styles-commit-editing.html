@@ -29,7 +29,7 @@ function test()
 
             // Update incrementally, do not commit.
             treeElement.valueElement.textContent = "rgb(/*";
-            InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", next);
+            InspectorTest.waitForStyleApplied(next);
             treeElement.kickFreeFlowStyleEditForTest();
         },
 
@@ -64,8 +64,7 @@ function test()
                 return;
             }
 
-            InspectorTest.selectNodeWithId("other");
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.selectNodeWithId("other", next);
         },
 
         function testNodeStyles(next)

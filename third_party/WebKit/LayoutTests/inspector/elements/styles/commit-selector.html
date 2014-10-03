@@ -20,8 +20,8 @@ function test()
         var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
         section.startEditingSelector();
         section._selectorElement.textContent = "hr, #inspected ";
+        InspectorTest.waitForSelectorCommitted(step2);
         section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(step2);
     }
 
     function step2()
@@ -31,8 +31,8 @@ function test()
         var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
         section.startEditingSelector();
         section._selectorElement.textContent = "#inspectedChanged";
+        InspectorTest.waitForSelectorCommitted(step3);
         section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(step3);
     }
 
     function step3()

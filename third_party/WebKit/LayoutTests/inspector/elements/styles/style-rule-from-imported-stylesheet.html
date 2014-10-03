@@ -13,8 +13,8 @@ function test()
     {
         InspectorTest.addResult("Rules before toggling:");
         InspectorTest.dumpSelectedElementStyles(true, false, true);
+        InspectorTest.waitForStyleApplied(step2);
         InspectorTest.toggleMatchedStyleProperty("background-color", false);
-        InspectorTest.runAfterPendingDispatches(step2);
     }
 
     function step2()

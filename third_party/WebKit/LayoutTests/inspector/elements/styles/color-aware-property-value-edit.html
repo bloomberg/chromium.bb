@@ -6,7 +6,6 @@
 
 function test()
 {
-
     InspectorTest.runTestSuite([
         function init(next)
         {
@@ -63,30 +62,14 @@ function test()
             treeElement.startEditing();
             treeElement.nameElement.textContent = "border-color";
             treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.runAfterPendingDispatches(callbackName);
-
-            function callbackName()
-            {
-                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
-                treeElement.valueElement.textContent = "hsl(120, 100%, 25%)";
-                treeElement.kickFreeFlowStyleEditForTest();
-                InspectorTest.runAfterPendingDispatches(kicked);
-            }
+            treeElement.valueElement.textContent = "hsl(120, 100%, 25%)";
+            treeElement.kickFreeFlowStyleEditForTest();
+            InspectorTest.waitForStyleApplied(kicked);
 
             function kicked()
             {
                 treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009", false, false, true));
-                InspectorTest.runAfterPendingDispatches(callbackBack);
-            }
-
-            function callbackBack()
-            {
                 treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009"));
-                InspectorTest.runAfterPendingDispatches(callbackForward);
-            }
-
-            function callbackForward()
-            {
                 InspectorTest.addResult(treeElement.valueElement.textContent);
                 next();
             }

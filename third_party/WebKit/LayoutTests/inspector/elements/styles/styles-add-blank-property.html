@@ -27,14 +27,14 @@ function test()
         treeElement.valueElement.textContent = "1px";
         treeElement.valueElement.firstChild.select();
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up"));
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", incrementProperty);
+        InspectorTest.waitForStyleApplied(incrementProperty);
     }
 
     function incrementProperty()
     {
         // Increment again.
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up"));
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", commitProperty);
+        InspectorTest.waitForStyleApplied(commitProperty);
     }
 
     function commitProperty()
@@ -61,7 +61,7 @@ function test()
         treeElement.kickFreeFlowStyleEditForTest();
 
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", reloadStyles.bind(this, addAndCommitMiddleProperty));
+        InspectorTest.waitForStyleApplied(reloadStyles.bind(this, addAndCommitMiddleProperty));
     }
 
     function addAndCommitMiddleProperty()
@@ -76,7 +76,7 @@ function test()
         treeElement.valueElement.textContent = "third-value";
 
         treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", reloadStyles.bind(this, dumpAndComplete));
+        InspectorTest.waitForStyleApplied(reloadStyles.bind(this, dumpAndComplete));
     }
 
     function dumpAndComplete()
