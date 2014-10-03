@@ -19,14 +19,14 @@
 
 #define NOTIFY_ERROR()                      \
   do {                                      \
-    DLOG(ERROR) << "calling NotifyError()"; \
+    LOG(ERROR) << "calling NotifyError()";  \
     NotifyError();                          \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value)              \
   do {                                                             \
     if (device_->Ioctl(type, arg) != 0) {                          \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;  \
       return value;                                                \
     }                                                              \
   } while (0)
@@ -40,7 +40,7 @@
 #define IOCTL_OR_LOG_ERROR(type, arg)                              \
   do {                                                             \
     if (device_->Ioctl(type, arg) != 0)                            \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;  \
   } while (0)
 
 namespace content {
@@ -110,7 +110,7 @@ bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
       V4L2Device::VideoFrameFormatToV4L2PixFmt(output_format);
 
   if (!input_format_fourcc_ || !output_format_fourcc_) {
-    DLOG(ERROR) << "Unrecognized format(s)";
+    LOG(ERROR) << "Unrecognized format(s)";
     return false;
   }
 
@@ -130,8 +130,8 @@ bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
                               V4L2_CAP_VIDEO_OUTPUT_MPLANE | V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    DLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
-                   "caps check failed: 0x" << std::hex << caps.capabilities;
+    LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
+                  "caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -139,7 +139,7 @@ bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
     return false;
 
   if (!device_thread_.Start()) {
-    DLOG(ERROR) << "Initialize(): encoder thread failed to start";
+    LOG(ERROR) << "Initialize(): encoder thread failed to start";
     return false;
   }
 
@@ -503,7 +503,7 @@ void V4L2ImageProcessor::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      DPLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+      PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
       NOTIFY_ERROR();
       return;
     }
@@ -530,7 +530,7 @@ void V4L2ImageProcessor::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      DPLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+      PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
       NOTIFY_ERROR();
       return;
     }
@@ -648,7 +648,7 @@ bool V4L2ImageProcessor::StartDevicePoll() {
 
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
-    DLOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
+    LOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
     NOTIFY_ERROR();
     return false;
   }

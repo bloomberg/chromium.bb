@@ -697,7 +697,7 @@ void VEAClient::CreateEncoder() {
                             test_stream_->requested_profile,
                             requested_bitrate_,
                             this)) {
-    DLOG(ERROR) << "VideoEncodeAccelerator::Initialize() failed";
+    LOG(ERROR) << "VideoEncodeAccelerator::Initialize() failed";
     SetState(CS_ERROR);
     return;
   }

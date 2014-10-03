@@ -24,7 +24,7 @@ static const base::FilePath::CharType kVaLib[] =
 
 #define LOG_VA_ERROR_AND_REPORT(va_error, err_msg)         \
   do {                                                     \
-    DVLOG(1) << err_msg                                    \
+    LOG(ERROR) << err_msg                                  \
              << " VA error: " << vaErrorStr(va_error);     \
     report_error_to_uma_cb_.Run();                         \
   } while (0)
@@ -204,7 +204,7 @@ bool VaapiWrapper::VaInitialize(Display* x_display,
                                 const base::Closure& report_error_to_uma_cb) {
   static bool vaapi_functions_initialized = PostSandboxInitialization();
   if (!vaapi_functions_initialized) {
-    DVLOG(1) << "Failed to initialize VAAPI libs";
+    LOG(ERROR) << "Failed to initialize VAAPI libs";
     return false;
   }
 
@@ -214,7 +214,7 @@ bool VaapiWrapper::VaInitialize(Display* x_display,
 
   va_display_ = vaGetDisplay(x_display);
   if (!vaDisplayIsValid(va_display_)) {
-    DVLOG(1) << "Could not get a valid VA display";
+    LOG(ERROR) << "Could not get a valid VA display";
     return false;
   }
 
@@ -223,7 +223,7 @@ bool VaapiWrapper::VaInitialize(Display* x_display,
   DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
 
   if (VAAPIVersionLessThan(0, 34)) {
-    DVLOG(1) << "VAAPI version < 0.34 is not supported.";
+    LOG(ERROR) << "VAAPI version < 0.34 is not supported.";
     return false;
   }
   return true;
@@ -241,7 +241,7 @@ bool VaapiWrapper::GetSupportedVaProfiles(std::vector<VAProfile>* profiles) {
       va_display_, &supported_profiles[0], &num_supported_profiles);
   VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigProfiles failed", false);
   if (num_supported_profiles < 0 || num_supported_profiles > max_profiles) {
-    DVLOG(1) << "vaQueryConfigProfiles returned: " << num_supported_profiles;
+    LOG(ERROR) << "vaQueryConfigProfiles returned: " << num_supported_profiles;
     return false;
   }
 
@@ -266,8 +266,8 @@ bool VaapiWrapper::IsEntrypointSupported(VAProfile va_profile,
   VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigEntrypoints failed", false);
   if (num_supported_entrypoints < 0 ||
       num_supported_entrypoints > max_entrypoints) {
-    DVLOG(1) << "vaQueryConfigEntrypoints returned: "
-             << num_supported_entrypoints;
+    LOG(ERROR) << "vaQueryConfigEntrypoints returned: "
+               << num_supported_entrypoints;
     return false;
   }
 
@@ -646,12 +646,12 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
       base::Bind(&DestroyVAImage, va_display_, image));
 
   if (image.format.fourcc != VA_FOURCC_NV12) {
-    DVLOG(1) << "Unsupported image format: " << image.format.fourcc;
+    LOG(ERROR) << "Unsupported image format: " << image.format.fourcc;
     return false;
   }
 
   if (gfx::Rect(image.width, image.height) < gfx::Rect(frame->coded_size())) {
-    DVLOG(1) << "Buffer too small to fit the frame.";
+    LOG(ERROR) << "Buffer too small to fit the frame.";
     return false;
   }
 
@@ -707,7 +707,7 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
       DCHECK(buffer_segment->buf);
 
       if (buffer_segment->size > target_size) {
-        DVLOG(1) << "Insufficient output buffer size";
+        LOG(ERROR) << "Insufficient output buffer size";
         break;
       }
 

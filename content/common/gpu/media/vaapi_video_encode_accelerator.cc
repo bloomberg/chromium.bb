@@ -20,8 +20,8 @@
 #define NOTIFY_ERROR(error, msg)                         \
   do {                                                   \
     SetState(kError);                                    \
-    DVLOGF(1) << msg;                                    \
-    DVLOGF(1) << "Calling NotifyError(" << error << ")"; \
+    LOG(ERROR) << msg;                                   \
+    LOG(ERROR) << "Calling NotifyError(" << error << ")";\
     NotifyError(error);                                  \
   } while (0)
 
@@ -220,12 +220,12 @@ bool VaapiVideoEncodeAccelerator::Initialize(
                                         x_display_,
                                         base::Bind(&ReportToUMA, VAAPI_ERROR));
   if (!vaapi_wrapper_) {
-    DVLOGF(1) << "Failed initializing VAAPI";
+    LOG(ERROR) << "Failed initializing VAAPI";
     return false;
   }
 
   if (!encoder_thread_.Start()) {
-    DVLOGF(1) << "Failed to start encoder thread";
+    LOG(ERROR) << "Failed to start encoder thread";
     return false;
   }
   encoder_thread_proxy_ = encoder_thread_.message_loop_proxy();

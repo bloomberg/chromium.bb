@@ -55,7 +55,7 @@ class TegraFunctionSymbolFinder {
   TegraFunctionSymbolFinder() : initialized_(false) {
     if (!dlopen("/usr/lib/libtegrav4l2.so",
                 RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {
-      DLOG(ERROR) << "Failed to load libtegrav4l2.so ";
+      DLOG(ERROR) << "Failed to load libtegrav4l2.so";
       return;
     }
 #define TEGRAV4L2_DLSYM_OR_RETURN_ON_ERROR(name)          \
@@ -109,7 +109,7 @@ int TegraV4L2Device::Ioctl(int flags, void* arg) {
 bool TegraV4L2Device::Poll(bool poll_device, bool* event_pending) {
   if (HANDLE_EINTR(TegraV4L2_Poll(device_fd_, poll_device, event_pending)) ==
       -1) {
-    DLOG(ERROR) << "TegraV4L2Poll returned -1 ";
+    LOG(ERROR) << "TegraV4L2Poll returned -1 ";
     return false;
   }
   return true;
@@ -129,7 +129,7 @@ void TegraV4L2Device::Munmap(void* addr, unsigned int len) {
 
 bool TegraV4L2Device::SetDevicePollInterrupt() {
   if (HANDLE_EINTR(TegraV4L2_SetDevicePollInterrupt(device_fd_)) == -1) {
-    DLOG(ERROR) << "Error in calling TegraV4L2SetDevicePollInterrupt";
+    LOG(ERROR) << "Error in calling TegraV4L2SetDevicePollInterrupt";
     return false;
   }
   return true;
@@ -137,7 +137,7 @@ bool TegraV4L2Device::SetDevicePollInterrupt() {
 
 bool TegraV4L2Device::ClearDevicePollInterrupt() {
   if (HANDLE_EINTR(TegraV4L2_ClearDevicePollInterrupt(device_fd_)) == -1) {
-    DLOG(ERROR) << "Error in calling TegraV4L2ClearDevicePollInterrupt";
+    LOG(ERROR) << "Error in calling TegraV4L2ClearDevicePollInterrupt";
     return false;
   }
   return true;
@@ -158,7 +158,7 @@ bool TegraV4L2Device::Initialize() {
   }
 
   if (!g_tegra_function_symbol_finder_.Get().initialized()) {
-    DLOG(ERROR) << "Unable to initialize functions ";
+    DLOG(ERROR) << "Unable to initialize functions";
     return false;
   }
   device_fd_ = HANDLE_EINTR(
@@ -185,9 +185,11 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(EGLDisplay egl_display,
                         reinterpret_cast<EGLClientBuffer>(texture_id),
                         &attr);
   if (egl_image == EGL_NO_IMAGE_KHR) {
+    LOG(ERROR) << "Unable to create EGL image";
     return egl_image;
   }
   if (TegraV4L2_UseEglImage(device_fd_, buffer_index, egl_image) != 0) {
+    LOG(ERROR) << "Unable to use EGL image";
     eglDestroyImageKHR(egl_display, egl_image);
     egl_image = EGL_NO_IMAGE_KHR;
   }

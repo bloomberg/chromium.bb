@@ -30,7 +30,7 @@ namespace content {
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret)  \
   do {                                                              \
     if (!(result)) {                                                \
-      DVLOG(1) << log;                                              \
+      LOG(ERROR) << log;                                            \
       NotifyError(error_code);                                      \
       return ret;                                                   \
     }                                                               \
@@ -54,7 +54,7 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
 
-  DVLOG(1) << "Notifying of error " << error;
+  LOG(ERROR) << "Notifying of error " << error;
   if (client_) {
     client_->NotifyError(error);
     client_ptr_factory_.reset();
@@ -169,7 +169,7 @@ bool VaapiVideoDecodeAccelerator::TFPPicture::Initialize(
   x_pixmap_ = XCreatePixmap(x_display_, RootWindow(x_display_, screen),
                             size_.width(), size_.height(), win_attr.depth);
   if (!x_pixmap_) {
-    DVLOG(1) << "Failed creating an X Pixmap for TFP";
+    LOG(ERROR) << "Failed creating an X Pixmap for TFP";
     return false;
   }
 
@@ -182,7 +182,7 @@ bool VaapiVideoDecodeAccelerator::TFPPicture::Initialize(
   glx_pixmap_ = glXCreatePixmap(x_display_, fb_config, x_pixmap_, pixmap_attr);
   if (!glx_pixmap_) {
     // x_pixmap_ will be freed in the destructor.
-    DVLOG(1) << "Failed creating a GLX Pixmap for TFP";
+    LOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
     return false;
   }
 
@@ -219,7 +219,7 @@ VaapiVideoDecodeAccelerator::TFPPicture*
     VaapiVideoDecodeAccelerator::TFPPictureById(int32 picture_buffer_id) {
   TFPPictures::iterator it = tfp_pictures_.find(picture_buffer_id);
   if (it == tfp_pictures_.end()) {
-    DVLOG(1) << "Picture id " << picture_buffer_id << " does not exist";
+    LOG(ERROR) << "Picture id " << picture_buffer_id << " does not exist";
     return NULL;
   }
 
@@ -295,7 +295,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
 
   if (!InitializeFBConfig()) {
-    DVLOG(1) << "Could not get a usable FBConfig";
+    LOG(ERROR) << "Could not get a usable FBConfig";
     return false;
   }
 
@@ -306,7 +306,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       base::Bind(&ReportToUMA, content::VaapiH264Decoder::VAAPI_ERROR));
 
   if (!vaapi_wrapper_.get()) {
-    DVLOG(1) << "Failed initializing VAAPI";
+    LOG(ERROR) << "Failed initializing VAAPI";
     return false;
   }
 

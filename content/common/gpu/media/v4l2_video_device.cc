@@ -24,7 +24,7 @@ scoped_ptr<V4L2Device> V4L2Device::Create(Type type) {
   if (tegra_device->Initialize())
     return tegra_device.PassAs<V4L2Device>();
 
-  DLOG(ERROR) << "Failed to create V4L2Device";
+  LOG(ERROR) << "Failed to create V4L2Device";
   return scoped_ptr<V4L2Device>();
 }
 
@@ -113,7 +113,7 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
            << ", horiz_bpp=" << horiz_bpp;
   if (sizeimage == 0 || bytesperline == 0 || horiz_bpp == 0 ||
       (bytesperline * 8) % horiz_bpp != 0) {
-    DLOG(ERROR) << "Invalid format provided";
+    LOG(ERROR) << "Invalid format provided";
     return coded_size;
   }
 

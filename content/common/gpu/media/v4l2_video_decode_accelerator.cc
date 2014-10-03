@@ -26,14 +26,14 @@
 #define NOTIFY_ERROR(x)                            \
   do {                                             \
     SetDecoderState(kError);                       \
-    DLOG(ERROR) << "calling NotifyError(): " << x; \
+    LOG(ERROR) << "calling NotifyError(): " << x;  \
     NotifyError(x);                                \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value)              \
   do {                                                             \
     if (device_->Ioctl(type, arg) != 0) {                          \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;  \
       NOTIFY_ERROR(PLATFORM_FAILURE);                              \
       return value;                                                \
     }                                                              \
@@ -48,7 +48,7 @@
 #define IOCTL_OR_LOG_ERROR(type, arg)                              \
   do {                                                             \
     if (device_->Ioctl(type, arg) != 0)                            \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;  \
   } while (0)
 
 namespace content {
@@ -234,20 +234,20 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   video_profile_ = profile;
 
   if (egl_display_ == EGL_NO_DISPLAY) {
-    DLOG(ERROR) << "Initialize(): could not get EGLDisplay";
+    LOG(ERROR) << "Initialize(): could not get EGLDisplay";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
 
   // We need the context to be initialized to query extensions.
   if (!make_context_current_.Run()) {
-    DLOG(ERROR) << "Initialize(): could not make context current";
+    LOG(ERROR) << "Initialize(): could not make context current";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
 
   if (!gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
-    DLOG(ERROR) << "Initialize(): context does not have EGL_KHR_fence_sync";
+    LOG(ERROR) << "Initialize(): context does not have EGL_KHR_fence_sync";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -260,7 +260,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    DLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
+    LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
         ", caps check failed: 0x" << std::hex << caps.capabilities;
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
@@ -295,7 +295,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   }
 
   if (!decoder_thread_.Start()) {
-    DLOG(ERROR) << "Initialize(): decoder thread failed to start";
+    LOG(ERROR) << "Initialize(): decoder thread failed to start";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -329,15 +329,15 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
   if (buffers.size() != output_buffer_map_.size()) {
-    DLOG(ERROR) << "AssignPictureBuffers(): Failed to provide requested picture"
-                   " buffers. (Got " << buffers.size()
-                << ", requested " << output_buffer_map_.size() << ")";
+    LOG(ERROR) << "AssignPictureBuffers(): Failed to provide requested picture"
+                  " buffers. (Got " << buffers.size()
+               << ", requested " << output_buffer_map_.size() << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
 
   if (!make_context_current_.Run()) {
-    DLOG(ERROR) << "AssignPictureBuffers(): could not make context current";
+    LOG(ERROR) << "AssignPictureBuffers(): could not make context current";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -365,7 +365,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
                                                     i,
                                                     output_planes_count_);
     if (egl_image == EGL_NO_IMAGE_KHR) {
-      DLOG(ERROR) << "AssignPictureBuffers(): could not create EGLImageKHR";
+      LOG(ERROR) << "AssignPictureBuffers(): could not create EGLImageKHR";
       // Ownership of EGLImages allocated in previous iterations of this loop
       // has been transferred to output_buffer_map_. After we error-out here
       // the destructor will handle their cleanup.
@@ -389,7 +389,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
   if (!make_context_current_.Run()) {
-    DLOG(ERROR) << "ReusePictureBuffer(): could not make context current";
+    LOG(ERROR) << "ReusePictureBuffer(): could not make context current";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -397,7 +397,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   EGLSyncKHR egl_sync =
       eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
   if (egl_sync == EGL_NO_SYNC_KHR) {
-    DLOG(ERROR) << "ReusePictureBuffer(): eglCreateSyncKHR() failed";
+    LOG(ERROR) << "ReusePictureBuffer(): eglCreateSyncKHR() failed";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -464,7 +464,7 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
       new base::SharedMemory(bitstream_buffer.handle(), true),
       bitstream_buffer.size(), bitstream_buffer.id()));
   if (!bitstream_record->shm->Map(bitstream_buffer.size())) {
-    DLOG(ERROR) << "Decode(): could not map bitstream_buffer";
+    LOG(ERROR) << "Decode(): could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);
     return;
   }
@@ -964,7 +964,7 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt()) {
-      DPLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+      PLOG(ERROR) << "SetDevicePollInterrupt(): failed";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -986,7 +986,7 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt()) {
-      DPLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+      PLOG(ERROR) << "SetDevicePollInterrupt(): failed";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1013,7 +1013,7 @@ void V4L2VideoDecodeAccelerator::DequeueEvents() {
       DCHECK(!resolution_change_pending_);
       resolution_change_pending_ = IsResolutionChangeNecessary();
     } else {
-      DLOG(FATAL) << "DequeueEvents(): got an event (" << ev.type
+      LOG(ERROR) << "DequeueEvents(): got an event (" << ev.type
                   << ") we haven't subscribed to.";
     }
   }
@@ -1042,7 +1042,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      DPLOG(ERROR) << "Dequeue(): ioctl() failed: VIDIOC_DQBUF";
+      PLOG(ERROR) << "Dequeue(): ioctl() failed: VIDIOC_DQBUF";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1073,7 +1073,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      DPLOG(ERROR) << "Dequeue(): ioctl() failed: VIDIOC_DQBUF";
+      PLOG(ERROR) << "Dequeue(): ioctl() failed: VIDIOC_DQBUF";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1158,7 +1158,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
       DVLOG(1) << __func__ << " eglClientWaitSyncKHR failed!";
     }
     if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
-      DLOG(FATAL) << __func__ << " eglDestroySyncKHR failed!";
+      LOG(ERROR) << __func__ << " eglDestroySyncKHR failed!";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return false;
     }
@@ -1218,7 +1218,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
 
   OutputRecord& output_record = output_buffer_map_[index];
   if (output_record.at_device || !output_record.at_client) {
-    DLOG(ERROR) << "ReusePictureBufferTask(): picture_buffer_id not reusable";
+    LOG(ERROR) << "ReusePictureBufferTask(): picture_buffer_id not reusable";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1424,7 +1424,7 @@ bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
 
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
-    DLOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
+    LOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1443,7 +1443,7 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt()) {
-    DPLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+    PLOG(ERROR) << "SetDevicePollInterrupt(): failed";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1544,13 +1544,13 @@ void V4L2VideoDecodeAccelerator::FinishResolutionChange() {
   bool again;
   bool ret = GetFormatInfo(&format, &again);
   if (!ret || again) {
-    DVLOG(3) << "Couldn't get format information after resolution change";
+    LOG(ERROR) << "Couldn't get format information after resolution change";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
 
   if (!CreateBuffersForFormat(format)) {
-    DVLOG(3) << "Couldn't reallocate buffers after resolution change";
+    LOG(ERROR) << "Couldn't reallocate buffers after resolution change";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -1632,7 +1632,7 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
       *again = true;
       return true;
     } else {
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: VIDIOC_G_FMT";
+      PLOG(ERROR) << __func__ << "(): ioctl() failed: VIDIOC_G_FMT";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return false;
     }
@@ -1708,7 +1708,7 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
                                   MAP_SHARED,
                                   buffer.m.planes[0].m.mem_offset);
     if (address == MAP_FAILED) {
-      DPLOG(ERROR) << "CreateInputBuffers(): mmap() failed";
+      PLOG(ERROR) << "CreateInputBuffers(): mmap() failed";
       return false;
     }
     input_buffer_map_[i].address = address;
@@ -1835,7 +1835,7 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
-    DPLOG(ERROR) << "DestroyOutputBuffers() ioctl() failed: VIDIOC_REQBUFS";
+    PLOG(ERROR) << "DestroyOutputBuffers() ioctl() failed: VIDIOC_REQBUFS";
     success = false;
   }
 
@@ -1851,7 +1851,7 @@ void V4L2VideoDecodeAccelerator::ResolutionChangeDestroyBuffers() {
   DVLOG(3) << "ResolutionChangeDestroyBuffers()";
 
   if (!DestroyOutputBuffers()) {
-    DLOG(FATAL) << __func__ << " Failed destroying output buffers.";
+    LOG(ERROR) << __func__ << " Failed destroying output buffers.";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
