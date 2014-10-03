@@ -1679,20 +1679,23 @@ compile_only_pre_cq = pre_cq.derive(
 # VMTest and this takes a long time, the remaining boards still finish well
 # before Rambi finishes.
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
+# TODO(davidjames): Revert CL:221326 so daisy_spring and duck can build
+#                   images again
 _config.add_group(constants.PRE_CQ_BUILDER_NAME,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
 
   # daisy_spring w/kernel 3.8.
-  pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
-                    boards=['daisy_spring']),
+  compile_only_pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
+                                 boards=['daisy_spring']),
 
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
   # after samus finishes BuildPackages.
-  pre_cq.add_config('duck-pre-cq', brillo, boards=['duck'],
-                    build_packages_in_background=False),
+  compile_only_pre_cq.add_config('duck-pre-cq', brillo,
+                                 boards=['duck'],
+                                 build_packages_in_background=False),
 
   # samus w/kernel 3.14.
   compile_only_pre_cq.add_config('samus-pre-cq', boards=['samus']),
