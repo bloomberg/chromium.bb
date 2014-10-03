@@ -28,6 +28,7 @@ CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
 
 _RETRYABLE_OPERATIONAL_ERROR_CODES = (
     1053,   # 'Server shutdown in progress'
+    2003,   # 'Can't connect to MySQL server'
     2006,   # Error code 2006 'MySQL server has gone away' indicates that
             # the connection used was closed or dropped
     2013,   # 'Lost connection to MySQL server during query'
