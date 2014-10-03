@@ -29,9 +29,9 @@ class FileStreamWriter : public storage::FileStreamWriter {
   // storage::FileStreamWriter overrides.
   virtual int Write(net::IOBuffer* buf,
                     int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual int Cancel(const net::CompletionCallback& callback) override;
+  virtual int Flush(const net::CompletionCallback& callback) override;
 
  private:
   // Helper class for executing operations on the provided file system. All

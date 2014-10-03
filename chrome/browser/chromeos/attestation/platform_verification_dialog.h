@@ -38,21 +38,21 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback);
 
   // Overridden from views::DialogDelegate:
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Close() OVERRIDE;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
+  virtual bool Close() override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
+      ui::DialogButton button) const override;
 
   // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Overridden from views::StyledLabelListener:
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) OVERRIDE;
+                                      int event_flags) override;
 
   content::WebContents* web_contents_;
   base::string16 domain_;

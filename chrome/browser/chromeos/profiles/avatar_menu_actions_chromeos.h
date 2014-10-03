@@ -20,11 +20,11 @@ class AvatarMenuActionsChromeOS : public AvatarMenuActions {
   virtual ~AvatarMenuActionsChromeOS();
 
   // AvatarMenuActions overrides:
-  virtual void AddNewProfile(ProfileMetrics::ProfileAdd type) OVERRIDE;
-  virtual void EditProfile(Profile* profile, size_t index) OVERRIDE;
-  virtual bool ShouldShowAddNewProfileLink() const OVERRIDE;
-  virtual bool ShouldShowEditProfileLink() const OVERRIDE;
-  virtual void ActiveBrowserChanged(Browser* browser) OVERRIDE;
+  virtual void AddNewProfile(ProfileMetrics::ProfileAdd type) override;
+  virtual void EditProfile(Profile* profile, size_t index) override;
+  virtual bool ShouldShowAddNewProfileLink() const override;
+  virtual bool ShouldShowEditProfileLink() const override;
+  virtual void ActiveBrowserChanged(Browser* browser) override;
 
  private:
   // Browser in which this avatar menu resides. Weak.

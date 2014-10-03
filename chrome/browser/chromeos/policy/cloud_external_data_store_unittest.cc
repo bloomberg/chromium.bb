@@ -31,7 +31,7 @@ class CouldExternalDataStoreTest : public testing::Test {
  public:
   CouldExternalDataStoreTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   const std::string kData1Hash;

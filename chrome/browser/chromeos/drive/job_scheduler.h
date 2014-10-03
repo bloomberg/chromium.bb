@@ -69,11 +69,11 @@ class JobScheduler
   virtual ~JobScheduler();
 
   // JobListInterface overrides.
-  virtual std::vector<JobInfo> GetJobInfoList() OVERRIDE;
-  virtual void AddObserver(JobListObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(JobListObserver* observer) OVERRIDE;
-  virtual void CancelJob(JobID job_id) OVERRIDE;
-  virtual void CancelAllJobs() OVERRIDE;
+  virtual std::vector<JobInfo> GetJobInfoList() override;
+  virtual void AddObserver(JobListObserver* observer) override;
+  virtual void RemoveObserver(JobListObserver* observer) override;
+  virtual void CancelJob(JobID job_id) override;
+  virtual void CancelAllJobs() override;
 
   // Adds a GetAppList operation to the queue.
   // |callback| must not be null.
@@ -342,7 +342,7 @@ class JobScheduler
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Get the type of queue the specified job should be put in.
   QueueType GetJobQueueType(JobType type);

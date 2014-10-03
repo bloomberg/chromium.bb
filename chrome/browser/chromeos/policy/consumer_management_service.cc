@@ -80,13 +80,13 @@ class DesktopNotificationDelegate : public NotificationDelegate {
                               const base::Closure& button_click_callback);
 
   // NotificationDelegate:
-  virtual std::string id() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual void Display() OVERRIDE;
-  virtual void ButtonClick(int button_index) OVERRIDE;
-  virtual void Error() OVERRIDE;
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual void Click() OVERRIDE;
+  virtual std::string id() const override;
+  virtual content::WebContents* GetWebContents() const override;
+  virtual void Display() override;
+  virtual void ButtonClick(int button_index) override;
+  virtual void Error() override;
+  virtual void Close(bool by_user) override;
+  virtual void Click() override;
 
  private:
   virtual ~DesktopNotificationDelegate();

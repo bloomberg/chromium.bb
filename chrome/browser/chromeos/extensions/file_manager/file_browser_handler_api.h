@@ -110,7 +110,7 @@ class FileBrowserHandlerInternalSelectFileFunction
 
   // AsyncExtensionFunction implementation.
   // Runs the extension function implementation.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Respond to the API with selected entry definition.

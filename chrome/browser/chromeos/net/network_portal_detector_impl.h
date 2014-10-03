@@ -68,23 +68,23 @@ class NetworkPortalDetectorImpl
   virtual ~NetworkPortalDetectorImpl();
 
   // NetworkPortalDetector implementation:
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void AddAndFireObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
   virtual CaptivePortalState GetCaptivePortalState(
-      const std::string& guid) OVERRIDE;
-  virtual bool IsEnabled() OVERRIDE;
-  virtual void Enable(bool start_detection) OVERRIDE;
-  virtual bool StartDetectionIfIdle() OVERRIDE;
-  virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) OVERRIDE;
+      const std::string& guid) override;
+  virtual bool IsEnabled() override;
+  virtual void Enable(bool start_detection) override;
+  virtual bool StartDetectionIfIdle() override;
+  virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
 
   // NetworkStateHandlerObserver implementation:
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) override;
 
   // PortalDetectorStrategy::Delegate implementation:
-  virtual int NoResponseResultCount() OVERRIDE;
-  virtual base::TimeTicks AttemptStartTime() OVERRIDE;
-  virtual base::TimeTicks GetCurrentTimeTicks() OVERRIDE;
+  virtual int NoResponseResultCount() override;
+  virtual base::TimeTicks AttemptStartTime() override;
+  virtual base::TimeTicks GetCurrentTimeTicks() override;
 
  private:
   friend class NetworkPortalDetectorImplTest;
@@ -143,7 +143,7 @@ class NetworkPortalDetectorImpl
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Stores captive portal state for a |network| and notifies observers.
   void OnDetectionCompleted(const NetworkState* network,

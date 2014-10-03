@@ -74,7 +74,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
                                          &consumer_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     fake_cryptohome_client_->SetServiceIsAvailable(true);
     fake_cryptohome_client_->set_system_salt(
@@ -95,7 +95,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     CrosSettings::Initialize();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     CrosSettings::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
     content::BrowserThread::GetBlockingPool()->FlushForTesting();

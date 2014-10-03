@@ -37,7 +37,7 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     worker_thread_.reset(new base::Thread("WebkitFileStreamReaderImplTest"));
     ASSERT_TRUE(worker_thread_->Start());
 

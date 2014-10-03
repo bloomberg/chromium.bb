@@ -35,8 +35,8 @@ class EventRewriterController : public aura::EnvObserver {
   void Init();
 
   // aura::EnvObserver overrides:
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE {}
-  virtual void OnHostInitialized(aura::WindowTreeHost* host) OVERRIDE;
+  virtual void OnWindowInitialized(aura::Window* window) override {}
+  virtual void OnHostInitialized(aura::WindowTreeHost* host) override;
 
  private:
   typedef std::list<ui::EventSource*> EventSourceList;

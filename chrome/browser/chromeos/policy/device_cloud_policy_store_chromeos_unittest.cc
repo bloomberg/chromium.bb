@@ -51,7 +51,7 @@ class DeviceCloudPolicyStoreChromeOSTest
             base::MessageLoopProxy::current())) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DeviceSettingsTestBase::SetUp();
 
     dbus_setter_->SetCryptohomeClient(

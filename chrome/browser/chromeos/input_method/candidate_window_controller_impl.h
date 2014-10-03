@@ -47,10 +47,10 @@ class CandidateWindowControllerImpl
 
   // CandidateWindowController overrides:
   virtual void AddObserver(
-      CandidateWindowController::Observer* observer) OVERRIDE;
+      CandidateWindowController::Observer* observer) override;
   virtual void RemoveObserver(
-      CandidateWindowController::Observer* observer) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+      CandidateWindowController::Observer* observer) override;
+  virtual void Hide() override;
 
  protected:
   static void ConvertLookupTableToInfolistEntry(
@@ -60,20 +60,20 @@ class CandidateWindowControllerImpl
 
  private:
   // ash::ime::CandidateWindowView::Observer implementation.
-  virtual void OnCandidateCommitted(int index) OVERRIDE;
+  virtual void OnCandidateCommitted(int index) override;
 
   // views::WidgetObserver implementation.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) override;
 
   // IMECandidateWindowHandlerInterface implementation.
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
-                               const gfx::Rect& composition_head) OVERRIDE;
+                               const gfx::Rect& composition_head) override;
   virtual void UpdateLookupTable(
       const ui::CandidateWindow& candidate_window,
-      bool visible) OVERRIDE;
+      bool visible) override;
   virtual void UpdatePreeditText(const base::string16& text,
-                                 unsigned int cursor, bool visible) OVERRIDE;
-  virtual void FocusStateChanged(bool is_focused) OVERRIDE;
+                                 unsigned int cursor, bool visible) override;
+  virtual void FocusStateChanged(bool is_focused) override;
 
   void InitCandidateWindowView();
 

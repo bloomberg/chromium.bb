@@ -168,7 +168,7 @@ class IdleAppNameNotificationDelegateView
     layer->SetBounds(rect);
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(kWindowBackgroundColor);
@@ -176,13 +176,13 @@ class IdleAppNameNotificationDelegateView
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) override {
     state->name = spoken_text_;
     state->role = ui::AX_ROLE_ALERT;
   }
 
   // ImplicitAnimationObserver overrides
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     Close();
   }
 

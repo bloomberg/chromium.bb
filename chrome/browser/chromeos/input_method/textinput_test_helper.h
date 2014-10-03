@@ -23,7 +23,7 @@ class TextInputTestBase : public InProcessBrowserTest {
   TextInputTestBase() {}
   virtual ~TextInputTestBase() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
  private:
   DISALLOW_COPY_AND_ASSIGN(TextInputTestBase);
 };
@@ -72,15 +72,15 @@ class TextInputTestHelper : public ui::InputMethodObserver {
 
   // ui::InputMethodObserver overrides.
   virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) OVERRIDE;
+      const ui::TextInputClient* client) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) OVERRIDE;
-  virtual void OnShowImeIfNeeded() OVERRIDE;
+      const ui::TextInputClient* client) override;
+  virtual void OnShowImeIfNeeded() override;
   virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) OVERRIDE;
+      const ui::InputMethod* input_method) override;
 
   // Represents waiting type of text input event.
   WaitImeEventType waiting_type_;

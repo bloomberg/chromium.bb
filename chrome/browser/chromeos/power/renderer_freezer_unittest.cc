@@ -65,17 +65,17 @@ class TestDelegate : public RendererFreezer::Delegate, public ActionRecorder {
   virtual ~TestDelegate() {}
 
   // RendererFreezer::Delegate overrides.
-  virtual bool FreezeRenderers() OVERRIDE {
+  virtual bool FreezeRenderers() override {
     AppendAction(kFreezeRenderers);
 
     return freeze_renderers_result_;
   }
-  virtual bool ThawRenderers() OVERRIDE {
+  virtual bool ThawRenderers() override {
     AppendAction(kThawRenderers);
 
     return thaw_renderers_result_;
   }
-  virtual bool CanFreezeRenderers() OVERRIDE { return can_freeze_renderers_; }
+  virtual bool CanFreezeRenderers() override { return can_freeze_renderers_; }
 
   void set_freeze_renderers_result(bool result) {
     freeze_renderers_result_ = result;

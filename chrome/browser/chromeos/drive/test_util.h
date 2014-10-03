@@ -72,7 +72,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   void SetConnectionType(ConnectionType type);
 
   // NetworkChangeNotifier override.
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE;
+  virtual ConnectionType GetCurrentConnectionType() const override;
 
  private:
   net::NetworkChangeNotifier::ConnectionType type_;

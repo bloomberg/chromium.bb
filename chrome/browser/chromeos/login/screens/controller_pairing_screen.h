@@ -32,20 +32,20 @@ class ControllerPairingScreen :
   bool ExpectStageIs(Stage stage) const;
 
   // Overridden from WizardScreen:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // Overridden from pairing_chromeos::ControllerPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
-  virtual void DiscoveredDevicesListChanged() OVERRIDE;
+  virtual void PairingStageChanged(Stage new_stage) override;
+  virtual void DiscoveredDevicesListChanged() override;
 
   // Overridden from ControllerPairingView::Delegate:
-  virtual void OnActorDestroyed(ControllerPairingScreenActor* actor) OVERRIDE;
+  virtual void OnActorDestroyed(ControllerPairingScreenActor* actor) override;
   virtual void OnScreenContextChanged(
-      const base::DictionaryValue& diff) OVERRIDE;
-  virtual void OnUserActed(const std::string& action) OVERRIDE;
+      const base::DictionaryValue& diff) override;
+  virtual void OnUserActed(const std::string& action) override;
 
   // Context for sharing data between C++ and JS.
   // TODO(dzhioev): move to BaseScreen when possible.

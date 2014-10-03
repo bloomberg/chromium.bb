@@ -48,23 +48,23 @@ class UserImageManagerImpl
                        user_manager::UserManager* user_manager);
   virtual ~UserImageManagerImpl();
 
-  virtual void LoadUserImage() OVERRIDE;
-  virtual void UserLoggedIn(bool user_is_new, bool user_is_local) OVERRIDE;
-  virtual void SaveUserDefaultImageIndex(int default_image_index) OVERRIDE;
+  virtual void LoadUserImage() override;
+  virtual void UserLoggedIn(bool user_is_new, bool user_is_local) override;
+  virtual void SaveUserDefaultImageIndex(int default_image_index) override;
   virtual void SaveUserImage(
-      const user_manager::UserImage& user_image) OVERRIDE;
-  virtual void SaveUserImageFromFile(const base::FilePath& path) OVERRIDE;
-  virtual void SaveUserImageFromProfileImage() OVERRIDE;
-  virtual void DeleteUserImage() OVERRIDE;
-  virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
-  virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
-  virtual UserImageSyncObserver* GetSyncObserver() const OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+      const user_manager::UserImage& user_image) override;
+  virtual void SaveUserImageFromFile(const base::FilePath& path) override;
+  virtual void SaveUserImageFromProfileImage() override;
+  virtual void DeleteUserImage() override;
+  virtual void DownloadProfileImage(const std::string& reason) override;
+  virtual const gfx::ImageSkia& DownloadedProfileImage() const override;
+  virtual UserImageSyncObserver* GetSyncObserver() const override;
+  virtual void Shutdown() override;
 
-  virtual void OnExternalDataSet(const std::string& policy) OVERRIDE;
-  virtual void OnExternalDataCleared(const std::string& policy) OVERRIDE;
+  virtual void OnExternalDataSet(const std::string& policy) override;
+  virtual void OnExternalDataCleared(const std::string& policy) override;
   virtual void OnExternalDataFetched(const std::string& policy,
-                                     scoped_ptr<std::string> data) OVERRIDE;
+                                     scoped_ptr<std::string> data) override;
 
   static void IgnoreProfileDataDownloadDelayForTesting();
 
@@ -85,14 +85,14 @@ class UserImageManagerImpl
   class Job;
 
   // ProfileDownloaderDelegate:
-  virtual bool NeedsProfilePicture() const OVERRIDE;
-  virtual int GetDesiredImageSideLength() const OVERRIDE;
-  virtual Profile* GetBrowserProfile() OVERRIDE;
-  virtual std::string GetCachedPictureURL() const OVERRIDE;
-  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
+  virtual bool NeedsProfilePicture() const override;
+  virtual int GetDesiredImageSideLength() const override;
+  virtual Profile* GetBrowserProfile() override;
+  virtual std::string GetCachedPictureURL() const override;
+  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
   virtual void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
-      ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
+      ProfileDownloaderDelegate::FailureReason reason) override;
 
   // Returns true if the user image for the user is managed by
   // policy and the user is not allowed to change it.

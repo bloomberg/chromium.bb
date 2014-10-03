@@ -32,7 +32,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
   }
 
   // chromeos::OfflineLoadPage override.
-  virtual void NotifyBlockingPageComplete(bool proceed) OVERRIDE;
+  virtual void NotifyBlockingPageComplete(bool proceed) override;
 
  private:
   OfflineLoadPageTest* test_page_;

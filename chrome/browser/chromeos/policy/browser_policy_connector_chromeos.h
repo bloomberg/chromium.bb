@@ -44,7 +44,7 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
 
   virtual void Init(
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) OVERRIDE;
+      scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
   // Shutdown() is called from BrowserProcessImpl::StartTearDown() but |this|
   // observes some objects that get destroyed earlier. PreShutdown() is called
@@ -52,7 +52,7 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   // connection to these dependencies to be severed earlier.
   void PreShutdown();
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

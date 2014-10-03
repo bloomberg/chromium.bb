@@ -36,8 +36,8 @@ class DeviceLocalAccountExternalDataService
   virtual ~DeviceLocalAccountExternalDataService();
 
   // DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
-  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) override;
+  virtual void OnDeviceLocalAccountsChanged() override;
 
   scoped_refptr<DeviceLocalAccountExternalDataManager>
       GetExternalDataManager(const std::string& account_id,

@@ -37,8 +37,8 @@ class LocaleChangeGuard : public content::NotificationObserver,
   virtual ~LocaleChangeGuard();
 
   // ash::LocaleChangeDelegate implementation.
-  virtual void AcceptLocaleChange() OVERRIDE;
-  virtual void RevertLocaleChange() OVERRIDE;
+  virtual void AcceptLocaleChange() override;
+  virtual void RevertLocaleChange() override;
 
   // Called just before changing locale.
   void PrepareChangingLocale(
@@ -59,7 +59,7 @@ class LocaleChangeGuard : public content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns true if we should notify user about automatic locale change.
   static bool ShouldShowLocaleChangeNotification(const std::string& from_locale,

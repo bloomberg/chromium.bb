@@ -25,7 +25,7 @@ namespace internal {
 
 class EntryUpdatePerformerTest : public file_system::OperationTestBase {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     OperationTestBase::SetUp();
     performer_.reset(new EntryUpdatePerformer(blocking_task_runner(),
                                               delegate(),

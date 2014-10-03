@@ -48,10 +48,10 @@ class AccessibilityFocusRingController
 
  private:
   // FocusRingLayerDelegate.
-  virtual void OnDeviceScaleFactorChanged() OVERRIDE;
+  virtual void OnDeviceScaleFactorChanged() override;
 
   // CompositorAnimationObserver.
-  virtual void OnAnimationStep(base::TimeTicks timestamp) OVERRIDE;
+  virtual void OnAnimationStep(base::TimeTicks timestamp) override;
 
   void Update();
 

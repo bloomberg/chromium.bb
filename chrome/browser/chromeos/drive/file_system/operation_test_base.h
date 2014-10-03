@@ -57,14 +57,14 @@ class OperationTestBase : public testing::Test {
 
     // OperationDelegate overrides.
     virtual void OnFileChangedByOperation(
-        const FileChange& changed_files) OVERRIDE;
+        const FileChange& changed_files) override;
     virtual void OnEntryUpdatedByOperation(
-        const std::string& local_id) OVERRIDE;
+        const std::string& local_id) override;
     virtual void OnDriveSyncError(DriveSyncErrorType type,
-                                  const std::string& local_id) OVERRIDE;
+                                  const std::string& local_id) override;
     virtual bool WaitForSyncComplete(
         const std::string& local_id,
-        const FileOperationCallback& callback) OVERRIDE;
+        const FileOperationCallback& callback) override;
 
     // Gets the set of changed paths.
     const FileChange& get_changed_files() { return changed_files_; }
@@ -97,7 +97,7 @@ class OperationTestBase : public testing::Test {
   virtual ~OperationTestBase();
 
   // testing::Test overrides.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Returns the path of the temporary directory for putting test files.
   base::FilePath temp_dir() const { return temp_dir_.path(); }

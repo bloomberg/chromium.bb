@@ -45,19 +45,19 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   static bool IsDeviceSetting(const std::string& name);
 
   // CrosSettingsProvider implementation.
-  virtual const base::Value* Get(const std::string& path) const OVERRIDE;
+  virtual const base::Value* Get(const std::string& path) const override;
   virtual TrustedStatus PrepareTrustedValues(
-      const base::Closure& callback) OVERRIDE;
-  virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
+      const base::Closure& callback) override;
+  virtual bool HandlesSetting(const std::string& path) const override;
 
  private:
   // CrosSettingsProvider implementation:
   virtual void DoSet(const std::string& path,
-                     const base::Value& value) OVERRIDE;
+                     const base::Value& value) override;
 
   // DeviceSettingsService::Observer implementation:
-  virtual void OwnershipStatusChanged() OVERRIDE;
-  virtual void DeviceSettingsUpdated() OVERRIDE;
+  virtual void OwnershipStatusChanged() override;
+  virtual void DeviceSettingsUpdated() override;
 
   // Populates in-memory cache from the local_state cache that is used to store
   // device settings before the device is owned and to speed up policy

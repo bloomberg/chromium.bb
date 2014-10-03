@@ -42,23 +42,23 @@ class BurnControllerImpl
 
   // BurnManager::Observer override.
   virtual void OnDeviceAdded(
-      const disks::DiskMountManager::Disk& disk) OVERRIDE {
+      const disks::DiskMountManager::Disk& disk) override {
     delegate_->OnDeviceAdded(disk);
   }
 
   // BurnManager::Observer override.
   virtual void OnDeviceRemoved(
-      const disks::DiskMountManager::Disk& disk) OVERRIDE {
+      const disks::DiskMountManager::Disk& disk) override {
     delegate_->OnDeviceRemoved(disk);
   }
 
   // BurnManager::Observer override.
-  virtual void OnNetworkDetected() OVERRIDE {
+  virtual void OnNetworkDetected() override {
     delegate_->OnNetworkDetected();
   }
 
   // BurnManager::Observer override.
-  virtual void OnSuccess() OVERRIDE {
+  virtual void OnSuccess() override {
     delegate_->OnSuccess();
     // TODO(hidehiko): Remove |working_| flag.
     working_ = false;
@@ -69,7 +69,7 @@ class BurnControllerImpl
       ProgressType progress_type,
       int64 received_bytes,
       int64 total_bytes,
-      const base::TimeDelta& estimated_remaining_time) OVERRIDE {
+      const base::TimeDelta& estimated_remaining_time) override {
     delegate_->OnProgressWithRemainingTime(
         progress_type, received_bytes, total_bytes, estimated_remaining_time);
   }
@@ -77,25 +77,25 @@ class BurnControllerImpl
   // BurnManager::Observer override.
   virtual void OnProgress(ProgressType progress_type,
                           int64 received_bytes,
-                          int64 total_bytes) OVERRIDE {
+                          int64 total_bytes) override {
     delegate_->OnProgress(progress_type, received_bytes, total_bytes);
   }
 
   // StateMachine::Observer interface.
-  virtual void OnBurnStateChanged(StateMachine::State state) OVERRIDE {
+  virtual void OnBurnStateChanged(StateMachine::State state) override {
     if (state != StateMachine::INITIAL && !working_) {
       // User has started burn process, so let's start observing.
       StartBurnImage(base::FilePath(), base::FilePath());
     }
   }
 
-  virtual void OnError(int error_message_id) OVERRIDE {
+  virtual void OnError(int error_message_id) override {
     delegate_->OnFail(error_message_id);
     working_ = false;
   }
 
   // BurnController override.
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     if (state_machine_->state() == StateMachine::BURNING) {
       // There is nothing else left to do but observe burn progress.
       burn_manager_->DoBurn();
@@ -107,14 +107,14 @@ class BurnControllerImpl
 
   // BurnController override.
   virtual std::vector<disks::DiskMountManager::Disk> GetBurnableDevices()
-      OVERRIDE {
+      override {
     // Now this is just a proxy to the BurnManager.
     // TODO(hidehiko): Remove this method.
     return burn_manager_->GetBurnableDevices();
   }
 
   // BurnController override.
-  virtual void CancelBurnImage() OVERRIDE {
+  virtual void CancelBurnImage() override {
     burn_manager_->Cancel();
   }
 
@@ -122,7 +122,7 @@ class BurnControllerImpl
   // May be called with empty values if there is a handler that has started
   // burning, and thus set the target paths.
   virtual void StartBurnImage(const base::FilePath& target_device_path,
-                              const base::FilePath& target_file_path) OVERRIDE {
+                              const base::FilePath& target_file_path) override {
     if (!target_device_path.empty() && !target_file_path.empty() &&
         state_machine_->new_burn_posible()) {
       if (!NetworkHandler::Get()->network_state_handler()->DefaultNetwork()) {

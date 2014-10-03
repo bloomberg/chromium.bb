@@ -18,10 +18,10 @@ class InputEventsBlocker : public ui::EventHandler {
   InputEventsBlocker();
   virtual ~InputEventsBlocker();
 
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputEventsBlocker);

@@ -60,7 +60,7 @@ class FakeUser : public user_manager::User {
   virtual ~FakeUser() {}
 
   // User overrides
-  virtual user_manager::UserType GetType() const OVERRIDE {
+  virtual user_manager::UserType GetType() const override {
     return user_manager::USER_TYPE_REGULAR;
   }
 
@@ -74,7 +74,7 @@ class FakeWebTrustedCertsObserver
   FakeWebTrustedCertsObserver() {}
 
   virtual void OnTrustAnchorsChanged(
-      const net::CertificateList& trust_anchors) OVERRIDE {
+      const net::CertificateList& trust_anchors) override {
     trust_anchors_ = trust_anchors;
   }
   net::CertificateList trust_anchors_;
@@ -87,7 +87,7 @@ class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
   public:
    FakeNetworkDeviceHandler() : allow_roaming_(false) {}
 
-   virtual void SetCellularAllowRoaming(bool allow_roaming) OVERRIDE {
+   virtual void SetCellularAllowRoaming(bool allow_roaming) override {
      allow_roaming_ = allow_roaming;
    }
 
@@ -124,7 +124,7 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
 
   virtual void ImportCertificates(const base::ListValue& certificates,
                                   ::onc::ONCSource source,
-                                  const DoneCallback& done_callback) OVERRIDE {
+                                  const DoneCallback& done_callback) override {
     if (expected_onc_source_ != ::onc::ONC_SOURCE_UNKNOWN)
       EXPECT_EQ(expected_onc_source_, source);
     if (expected_onc_certificates_) {
@@ -202,7 +202,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
  protected:
   NetworkConfigurationUpdaterTest() : certificate_importer_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(false));
     provider_.Init();
@@ -232,7 +232,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     certificate_importer_owned_.reset(certificate_importer_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     network_configuration_updater_.reset();
     provider_.Shutdown();
     base::RunLoop().RunUntilIdle();

@@ -26,12 +26,12 @@ class ChromeUserSelectionScreen
 
   // UserSelectionScreen:
   virtual void Init(const user_manager::UserList& users,
-                    bool show_guest) OVERRIDE;
-  virtual void SendUserList() OVERRIDE;
+                    bool show_guest) override;
+  virtual void SendUserList() override;
 
   // policy::DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
-  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) override;
+  virtual void OnDeviceLocalAccountsChanged() override;
 
  private:
   // Check whether the display name set by policy for a public session has

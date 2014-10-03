@@ -45,14 +45,14 @@ class MockTimeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
   MockTimeSingleThreadTaskRunner();
 
   // base::SingleThreadTaskRunner:
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+  virtual bool RunsTasksOnCurrentThread() const override;
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE;
+                               base::TimeDelta delay) override;
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) override;
 
   const base::TimeTicks& GetCurrentTime() const;
 
@@ -83,8 +83,8 @@ class SessionLengthLimiterTest : public testing::Test {
   SessionLengthLimiterTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void SetSessionUserActivitySeenPref(bool user_activity_seen);
   void ClearSessionUserActivitySeenPref();

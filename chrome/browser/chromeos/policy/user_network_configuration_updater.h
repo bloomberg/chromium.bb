@@ -102,16 +102,16 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
 
   // NetworkConfigurationUpdater:
   virtual void ImportCertificates(
-      const base::ListValue& certificates_onc) OVERRIDE;
+      const base::ListValue& certificates_onc) override;
   virtual void ApplyNetworkPolicy(
       base::ListValue* network_configs_onc,
-      base::DictionaryValue* global_network_config) OVERRIDE;
+      base::DictionaryValue* global_network_config) override;
 
   // content::NotificationObserver implementation. Observes the profile to which
   // |this| belongs to for PROFILE_ADDED notification.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Creates onc::CertImporter with |database| and passes it to
   // |SetCertificateImporter|.

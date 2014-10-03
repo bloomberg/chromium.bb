@@ -30,10 +30,10 @@ class KioskModeIdleAppNameNotification : public wm::UserActivityObserver,
   void Setup();
 
   // wm::UserActivityObserver overrides:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // PowerManagerClient::Observer overrides:
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // Begins listening for user activity and calls ResetTimer().
   void Start();

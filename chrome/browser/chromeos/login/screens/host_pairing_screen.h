@@ -28,22 +28,22 @@ class HostPairingScreen :
   void CommitContextChanges();
 
   // Overridden from WizardScreen:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // pairing_chromeos::HostPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
+  virtual void PairingStageChanged(Stage new_stage) override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,
                              const std::string& timezone,
                              bool send_reports,
-                             const std::string& keyboard_layout) OVERRIDE;
-  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
+                             const std::string& keyboard_layout) override;
+  virtual void EnrollHost(const std::string& auth_token) override;
 
   // Overridden from ControllerPairingView::Delegate:
-  virtual void OnActorDestroyed(HostPairingScreenActor* actor) OVERRIDE;
+  virtual void OnActorDestroyed(HostPairingScreenActor* actor) override;
 
   // Context for sharing data between C++ and JS.
   // TODO(dzhioev): move to BaseScreen when possible.

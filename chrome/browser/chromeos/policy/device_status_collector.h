@@ -63,10 +63,10 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
 
   // CloudPolicyClient::StatusProvider:
   virtual bool GetDeviceStatus(
-      enterprise_management::DeviceStatusReportRequest* status) OVERRIDE;
+      enterprise_management::DeviceStatusReportRequest* status) override;
   virtual bool GetSessionStatus(
-      enterprise_management::SessionStatusReportRequest* status) OVERRIDE;
-  virtual void OnSubmittedSuccessfully() OVERRIDE;
+      enterprise_management::SessionStatusReportRequest* status) override;
+  virtual void OnSubmittedSuccessfully() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

@@ -65,7 +65,7 @@ class AppPackUpdater : public chromeos::ExternalCache::Delegate {
  private:
   // Implementation of ExternalCache::Delegate:
   virtual void OnExtensionListsUpdated(
-      const base::DictionaryValue* prefs) OVERRIDE;
+      const base::DictionaryValue* prefs) override;
 
   // Called when the app pack device setting changes.
   void AppPackChanged();

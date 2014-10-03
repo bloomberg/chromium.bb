@@ -70,8 +70,8 @@ class ScreensaverUnpackerClient
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
-                               const SkBitmap& install_icon) OVERRIDE;
-  virtual void OnUnpackFailure(const base::string16& error) OVERRIDE;
+                               const SkBitmap& install_icon) override;
+  virtual void OnUnpackFailure(const base::string16& error) override;
 
  protected:
   virtual ~ScreensaverUnpackerClient() {}

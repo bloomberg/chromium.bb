@@ -34,7 +34,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
   virtual ~TouchExplorationTest() {}
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // The RenderView for WebContents is created as a result of the
     // navigation to the New Tab page which is done as part of the test
     // SetUp. The creation involves sending a resize message to the renderer
@@ -50,7 +50,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
     root_window_->AddPreTargetHandler(event_handler_.get());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     SwitchTouchExplorationMode(false);
     root_window_->RemovePreTargetHandler(event_handler_.get());
   }

@@ -47,7 +47,7 @@ class TestDirectoryLoaderObserver : public ChangeListLoaderObserver {
 
   // ChageListObserver overrides:
   virtual void OnDirectoryReloaded(
-      const base::FilePath& directory_path) OVERRIDE {
+      const base::FilePath& directory_path) override {
     changed_directories_.insert(directory_path);
   }
 
@@ -68,7 +68,7 @@ void AccumulateReadDirectoryResult(ResourceEntryVector* out_entries,
 
 class DirectoryLoaderTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());

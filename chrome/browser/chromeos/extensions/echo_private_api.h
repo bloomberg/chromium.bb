@@ -31,7 +31,7 @@ class EchoPrivateGetRegistrationCodeFunction
 
  protected:
   virtual ~EchoPrivateGetRegistrationCodeFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   void GetRegistrationCode(const std::string& type);
@@ -46,7 +46,7 @@ class EchoPrivateGetOobeTimestampFunction
 
  protected:
   virtual ~EchoPrivateGetOobeTimestampFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   bool GetOobeTimestampOnFileThread();
@@ -60,7 +60,7 @@ class EchoPrivateSetOfferInfoFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~EchoPrivateSetOfferInfoFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("echoPrivate.setOfferInfo",
@@ -73,7 +73,7 @@ class EchoPrivateGetOfferInfoFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~EchoPrivateGetOfferInfoFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getOfferInfo",
@@ -102,13 +102,13 @@ class EchoPrivateGetUserConsentFunction : public ChromeAsyncExtensionFunction,
  protected:
   virtual ~EchoPrivateGetUserConsentFunction();
 
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // chromeos::EchoDialogListener overrides.
-  virtual void OnAccept() OVERRIDE;
-  virtual void OnCancel() OVERRIDE;
-  virtual void OnMoreInfoLinkClicked() OVERRIDE;
+  virtual void OnAccept() override;
+  virtual void OnCancel() override;
+  virtual void OnMoreInfoLinkClicked() override;
 
   // Checks whether "allow redeem ChromeOS registration offers" setting is
   // disabled in cros settings. It may be asynchronous if the needed settings

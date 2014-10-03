@@ -94,7 +94,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DeviceSettingsTestBase::SetUp();
     dbus_setter_->SetCryptohomeClient(
         scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
@@ -130,7 +130,7 @@ class DeviceCloudPolicyManagerChromeOSTest
                                    "\"refresh_token\":\"refreshToken4Test\"}";
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     manager_->Shutdown();
     if (initializer_)
       initializer_->Shutdown();
@@ -309,7 +309,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         status_(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)),
         done_(false) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DeviceCloudPolicyManagerChromeOSTest::SetUp();
 
     // Set up test data.

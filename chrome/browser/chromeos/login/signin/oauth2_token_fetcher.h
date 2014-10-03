@@ -53,9 +53,9 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
 
   // GaiaAuthConsumer overrides.
   virtual void OnClientOAuthSuccess(
-      const GaiaAuthConsumer::ClientOAuthResult& result) OVERRIDE;
+      const GaiaAuthConsumer::ClientOAuthResult& result) override;
   virtual void OnClientOAuthFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   OAuth2TokenFetcher::Delegate* delegate_;
   GaiaAuthConsumer::ClientOAuthResult oauth_tokens_;

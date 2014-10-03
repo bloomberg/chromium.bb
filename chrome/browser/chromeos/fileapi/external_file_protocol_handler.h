@@ -23,7 +23,7 @@ class ExternalFileProtocolHandler
   // Creates URLRequestJobs for drive:// URLs.
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
   // The profile for processing Drive accesses. Should not be NULL.

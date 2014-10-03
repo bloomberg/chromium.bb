@@ -95,8 +95,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   std::string GetForcedEnrollmentDomain() const;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
  private:
   // Handles completion signaled by |enrollment_handler_|.

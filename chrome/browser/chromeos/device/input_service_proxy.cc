@@ -55,7 +55,7 @@ class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
 
   // InputServiceLinux::Observer implementation:
   virtual void OnInputDeviceAdded(
-      const InputServiceLinux::InputDeviceInfo& info) OVERRIDE {
+      const InputServiceLinux::InputDeviceInfo& info) override {
     DCHECK(CalledOnValidThread());
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -63,7 +63,7 @@ class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
         base::Bind(&InputServiceProxy::OnDeviceAdded, proxy_, info));
   }
 
-  virtual void OnInputDeviceRemoved(const std::string& id) OVERRIDE {
+  virtual void OnInputDeviceRemoved(const std::string& id) override {
     DCHECK(CalledOnValidThread());
     BrowserThread::PostTask(
         BrowserThread::UI,

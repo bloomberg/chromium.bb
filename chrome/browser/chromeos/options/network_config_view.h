@@ -55,23 +55,23 @@ class NetworkConfigView : public views::DialogDelegateView,
 
   // views::DialogDelegate methods.
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual views::View* CreateExtraView() OVERRIDE;
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
+  virtual views::View* CreateExtraView() override;
+  virtual views::View* GetInitiallyFocusedView() override;
 
   // views::WidgetDelegate methods.
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual ui::ModalType GetModalType() const override;
 
   // views::View overrides.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(
-      views::Button* sender, const ui::Event& event) OVERRIDE;
+      views::Button* sender, const ui::Event& event) override;
 
   void set_delegate(Delegate* delegate) {
     delegate_ = delegate;
@@ -79,10 +79,10 @@ class NetworkConfigView : public views::DialogDelegateView,
 
  protected:
   // views::View overrides:
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
  private:
   NetworkConfigView();
@@ -171,8 +171,8 @@ class ControlledSettingIndicatorView : public views::View {
 
  protected:
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
  private:
   // Initializes the view.

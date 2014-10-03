@@ -85,8 +85,8 @@ class LoginScreenDefaultPolicyBrowsertestBase
   virtual ~LoginScreenDefaultPolicyBrowsertestBase();
 
   // DevicePolicyCrosBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void SetUpOnMainThread() override;
 
   void RefreshDevicePolicyAndWaitForPrefChange(const char* pref_name);
 
@@ -103,9 +103,9 @@ class LoginScreenDefaultPolicyLoginScreenBrowsertest
   virtual ~LoginScreenDefaultPolicyLoginScreenBrowsertest();
 
   // LoginScreenDefaultPolicyBrowsertestBase:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   void VerifyPrefFollowsRecommendation(const char* pref_name,
                                        const base::Value& recommended_value);
@@ -121,7 +121,7 @@ class LoginScreenDefaultPolicyInSessionBrowsertest
   virtual ~LoginScreenDefaultPolicyInSessionBrowsertest();
 
   // LoginScreenDefaultPolicyBrowsertestBase:
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
   void VerifyPrefFollowsDefault(const char* pref_name);
 

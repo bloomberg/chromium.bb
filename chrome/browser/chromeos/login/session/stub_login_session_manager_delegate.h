@@ -24,7 +24,7 @@ class StubLoginSessionManagerDelegate
 
  private:
   // session_manager::SessionManagerDelegate implementation:
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   Profile* profile_;
 

@@ -25,7 +25,7 @@ class FileManagerPrivateGetStringsFunction
   virtual ~FileManagerPrivateGetStringsFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

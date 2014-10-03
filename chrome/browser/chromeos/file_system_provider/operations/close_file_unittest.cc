@@ -35,7 +35,7 @@ class FileSystemProviderOperationsCloseFileTest : public testing::Test {
   FileSystemProviderOperationsCloseFileTest() {}
   virtual ~FileSystemProviderOperationsCloseFileTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,

@@ -34,15 +34,15 @@ class TermsOfServiceScreen : public WizardScreen,
   virtual ~TermsOfServiceScreen();
 
   // WizardScreen:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // TermsOfServiceScreenActor::Delegate:
-  virtual void OnDecline() OVERRIDE;
-  virtual void OnAccept() OVERRIDE;
-  virtual void OnActorDestroyed(TermsOfServiceScreenActor* actor) OVERRIDE;
+  virtual void OnDecline() override;
+  virtual void OnAccept() override;
+  virtual void OnActorDestroyed(TermsOfServiceScreenActor* actor) override;
 
  private:
   // Start downloading the Terms of Service.
@@ -52,7 +52,7 @@ class TermsOfServiceScreen : public WizardScreen,
   void OnDownloadTimeout();
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   TermsOfServiceScreenActor* actor_;
 

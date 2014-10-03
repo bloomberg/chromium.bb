@@ -175,8 +175,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   void RemoveObserver(Observer* observer);
 
   // SessionManagerClient::Observer:
-  virtual void OwnerKeySet(bool success) OVERRIDE;
-  virtual void PropertyChangeComplete(bool success) OVERRIDE;
+  virtual void OwnerKeySet(bool success) override;
+  virtual void PropertyChangeComplete(bool success) override;
 
  private:
   friend class OwnerSettingsServiceChromeOS;

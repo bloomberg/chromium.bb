@@ -27,14 +27,14 @@ class ComponentExtensionIMEManagerImpl
   virtual ~ComponentExtensionIMEManagerImpl();
 
   // ComponentExtensionIMEManagerDelegate overrides:
-  virtual std::vector<ComponentExtensionIME> ListIME() OVERRIDE;
+  virtual std::vector<ComponentExtensionIME> ListIME() override;
   virtual void Load(Profile* profile,
                     const std::string& extension_id,
                     const std::string& manifest,
-                    const base::FilePath& file_path) OVERRIDE;
+                    const base::FilePath& file_path) override;
   virtual void Unload(Profile* profile,
                       const std::string& extension_id,
-                      const base::FilePath& file_path) OVERRIDE;
+                      const base::FilePath& file_path) override;
 
  private:
   // Reads component extensions and extract their localized information: name,

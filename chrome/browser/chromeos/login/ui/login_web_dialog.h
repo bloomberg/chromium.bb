@@ -65,29 +65,29 @@ class LoginWebDialog : public ui::WebDialogDelegate,
 
  protected:
   // ui::WebDialogDelegate implementation.
-  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual base::string16 GetDialogTitle() const OVERRIDE;
-  virtual GURL GetDialogContentURL() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const override;
+  virtual base::string16 GetDialogTitle() const override;
+  virtual GURL GetDialogContentURL() const override;
   virtual void GetWebUIMessageHandlers(
-      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
-  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual void GetMinimumDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual std::string GetDialogArgs() const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const override;
+  virtual void GetDialogSize(gfx::Size* size) const override;
+  virtual void GetMinimumDialogSize(gfx::Size* size) const override;
+  virtual std::string GetDialogArgs() const override;
   virtual void OnDialogShown(
       content::WebUI* webui,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   // NOTE: This function deletes this object at the end.
-  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) override;
   virtual void OnCloseContents(
-      content::WebContents* source, bool* out_close_dialog) OVERRIDE;
-  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+      content::WebContents* source, bool* out_close_dialog) override;
+  virtual bool ShouldShowDialogTitle() const override;
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   content::BrowserContext* browser_context_;

@@ -97,19 +97,19 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void RemoveObserver(AutomaticRebootManagerObserver* observer);
 
   // PowerManagerClient::Observer:
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // UpdateEngineClient::Observer:
   virtual void UpdateStatusChanged(
-      const UpdateEngineClient::Status& status) OVERRIDE;
+      const UpdateEngineClient::Status& status) override;
 
   // wm::UserActivityObserver:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

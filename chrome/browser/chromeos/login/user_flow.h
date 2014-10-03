@@ -50,16 +50,16 @@ class DefaultUserFlow : public UserFlow {
  public:
   virtual ~DefaultUserFlow();
 
-  virtual bool CanLockScreen() OVERRIDE;
-  virtual bool ShouldShowSettings() OVERRIDE;
-  virtual bool ShouldLaunchBrowser() OVERRIDE;
-  virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
-  virtual bool HandleLoginFailure(const AuthFailure& failure) OVERRIDE;
-  virtual void HandleLoginSuccess(const UserContext& context) OVERRIDE;
-  virtual bool HandlePasswordChangeDetected() OVERRIDE;
+  virtual bool CanLockScreen() override;
+  virtual bool ShouldShowSettings() override;
+  virtual bool ShouldLaunchBrowser() override;
+  virtual bool ShouldSkipPostLoginScreens() override;
+  virtual bool HandleLoginFailure(const AuthFailure& failure) override;
+  virtual void HandleLoginSuccess(const UserContext& context) override;
+  virtual bool HandlePasswordChangeDetected() override;
   virtual void HandleOAuthTokenStatusChange(
-      user_manager::User::OAuthTokenStatus status) OVERRIDE;
-  virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
+      user_manager::User::OAuthTokenStatus status) override;
+  virtual void LaunchExtraSteps(Profile* profile) override;
 };
 
 // UserFlow stub for non-regular flows.
@@ -68,7 +68,7 @@ class ExtendedUserFlow : public UserFlow {
   explicit ExtendedUserFlow(const std::string& user_id);
   virtual ~ExtendedUserFlow();
 
-  virtual bool ShouldShowSettings() OVERRIDE;
+  virtual bool ShouldShowSettings() override;
 
  protected:
   // Subclasses can call this method to unregister flow in the next event.

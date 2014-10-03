@@ -34,7 +34,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // chromeos::UpdateEngineClient::Observer implementation.
   virtual void UpdateStatusChanged(
-      const chromeos::UpdateEngineClient::Status& status) OVERRIDE;
+      const chromeos::UpdateEngineClient::Status& status) override;
 
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the

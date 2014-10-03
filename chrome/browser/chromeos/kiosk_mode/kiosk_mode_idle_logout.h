@@ -31,10 +31,10 @@ class KioskModeIdleLogout : public wm::UserActivityObserver,
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // wm::UserActivityObserver overrides:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // Begins listening for user activity and calls ResetTimer().
   void Start();

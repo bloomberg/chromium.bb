@@ -34,7 +34,7 @@ class PolicyCertVerifierTest : public testing::Test {
 
   virtual ~PolicyCertVerifierTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(test_nss_user_.constructed_successfully());
     test_nss_user_.FinishInit();
 
@@ -57,7 +57,7 @@ class PolicyCertVerifierTest : public testing::Test {
     test_ca_cert_list_.push_back(test_ca_cert_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Destroy |cert_verifier_| before destroying the ThreadBundle, otherwise
     // BrowserThread::CurrentlyOn checks fail.
     cert_verifier_.reset();

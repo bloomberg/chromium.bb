@@ -33,7 +33,7 @@ class FileSystemProviderOperationsUnmountTest : public testing::Test {
   FileSystemProviderOperationsUnmountTest() {}
   virtual ~FileSystemProviderOperationsUnmountTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,

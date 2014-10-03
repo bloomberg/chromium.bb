@@ -45,7 +45,7 @@ class CloudExternalDataPolicyObserver::PolicyServiceObserver
   // PolicyService::Observer:
   virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
-                               const PolicyMap& current) OVERRIDE;
+                               const PolicyMap& current) override;
 
  private:
   CloudExternalDataPolicyObserver* parent_;

@@ -19,7 +19,7 @@ class CHROMEOS_EXPORT LightBar : public PowerManagerClient::Observer {
   virtual ~LightBar();
 
   // PowerManagerClient::Observer implementation.
-  virtual void DarkSuspendImminent() OVERRIDE;
+  virtual void DarkSuspendImminent() override;
 
  private:
   // Path to control the light bar.

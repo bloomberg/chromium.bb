@@ -50,43 +50,43 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   user_manager::UserManager* GetUserManager();
 
   // SigninScreenHandlerDelegate implementation:
-  virtual void CancelPasswordChangedFlow() OVERRIDE;
-  virtual void CancelUserAdding() OVERRIDE;
-  virtual void CreateAccount() OVERRIDE;
-  virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
+  virtual void CancelPasswordChangedFlow() override;
+  virtual void CancelUserAdding() override;
+  virtual void CreateAccount() override;
+  virtual void CompleteLogin(const UserContext& user_context) override;
   virtual void Login(const UserContext& user_context,
-                     const SigninSpecifics& specifics) OVERRIDE;
-  virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
-  virtual void LoadWallpaper(const std::string& username) OVERRIDE;
-  virtual void LoadSigninWallpaper() OVERRIDE;
-  virtual void OnSigninScreenReady() OVERRIDE;
-  virtual void RemoveUser(const std::string& username) OVERRIDE;
-  virtual void ResyncUserData() OVERRIDE;
-  virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
-  virtual void ShowKioskEnableScreen() OVERRIDE;
-  virtual void ShowKioskAutolaunchScreen() OVERRIDE;
-  virtual void ShowWrongHWIDScreen() OVERRIDE;
+                     const SigninSpecifics& specifics) override;
+  virtual void MigrateUserData(const std::string& old_password) override;
+  virtual void LoadWallpaper(const std::string& username) override;
+  virtual void LoadSigninWallpaper() override;
+  virtual void OnSigninScreenReady() override;
+  virtual void RemoveUser(const std::string& username) override;
+  virtual void ResyncUserData() override;
+  virtual void ShowEnterpriseEnrollmentScreen() override;
+  virtual void ShowKioskEnableScreen() override;
+  virtual void ShowKioskAutolaunchScreen() override;
+  virtual void ShowWrongHWIDScreen() override;
   virtual void SetWebUIHandler(
-      LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
+      LoginDisplayWebUIHandler* webui_handler) override;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password);
-  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
-  virtual bool IsShowGuest() const OVERRIDE;
-  virtual bool IsShowUsers() const OVERRIDE;
-  virtual bool IsSigninInProgress() const OVERRIDE;
-  virtual bool IsUserSigninCompleted() const OVERRIDE;
-  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
-  virtual void Signout() OVERRIDE;
-  virtual void HandleGetUsers() OVERRIDE;
+  virtual const user_manager::UserList& GetUsers() const override;
+  virtual bool IsShowGuest() const override;
+  virtual bool IsShowUsers() const override;
+  virtual bool IsSigninInProgress() const override;
+  virtual bool IsUserSigninCompleted() const override;
+  virtual void SetDisplayEmail(const std::string& email) override;
+  virtual void Signout() override;
+  virtual void HandleGetUsers() override;
   virtual void SetAuthType(
       const std::string& username,
-      ScreenlockBridge::LockHandler::AuthType auth_type) OVERRIDE;
+      ScreenlockBridge::LockHandler::AuthType auth_type) override;
   virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const OVERRIDE;
+      const std::string& username) const override;
 
   // AuthStatusConsumer implementation:
-  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
-  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) override;
+  virtual void OnAuthSuccess(const UserContext& user_context) override;
 
   OobeUI* oobe_ui_;
   Delegate* delegate_;

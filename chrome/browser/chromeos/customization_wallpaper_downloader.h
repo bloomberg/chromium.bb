@@ -50,7 +50,7 @@ class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
   void Start();
 
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // This is called in tests to modify (lower) retry delay.
   void set_retry_delay_for_testing(base::TimeDelta value) {

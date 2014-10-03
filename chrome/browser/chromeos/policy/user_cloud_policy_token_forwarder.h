@@ -36,20 +36,20 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   virtual ~UserCloudPolicyTokenForwarder();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // OAuth2TokenService::Consumer:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // CloudPolicyService::Observer:
-  virtual void OnInitializationCompleted(CloudPolicyService* service) OVERRIDE;
+  virtual void OnInitializationCompleted(CloudPolicyService* service) override;
 
  private:
   void Initialize();

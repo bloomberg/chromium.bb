@@ -23,7 +23,7 @@ class StubDelegate : public CaptivePortalWindowProxyDelegate {
  public:
   StubDelegate() {}
   virtual ~StubDelegate() {}
-  virtual void OnPortalDetected() OVERRIDE {}
+  virtual void OnPortalDetected() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubDelegate);
@@ -41,7 +41,7 @@ class InterstitialPageDelegate : public content::InterstitialPageDelegate {
 
  private:
   // InterstitialPageDelegate implementation:
-  virtual std::string GetHTMLContents() OVERRIDE { return "HTML Contents"; }
+  virtual std::string GetHTMLContents() override { return "HTML Contents"; }
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageDelegate);
 };

@@ -46,7 +46,7 @@ class LoginUtilsTest : public InProcessBrowserTest {
  public:
   LoginUtilsTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Initialize the test server early, so that we can use its base url for
     // the command line flags.
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -65,13 +65,13 @@ class LoginUtilsTest : public InProcessBrowserTest {
                                     embedded_test_server()->base_url().spec());
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     fake_gaia_.Initialize();
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     RunUntilIdle();
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
   }

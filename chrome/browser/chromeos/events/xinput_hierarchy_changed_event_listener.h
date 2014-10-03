@@ -36,8 +36,8 @@ class XInputHierarchyChangedEventListener : public ui::PlatformEventObserver {
   virtual ~XInputHierarchyChangedEventListener();
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) override;
 
   // Returns true if the event was processed, false otherwise.
   void ProcessedXEvent(XEvent* xevent);

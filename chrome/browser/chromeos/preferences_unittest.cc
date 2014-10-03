@@ -25,7 +25,7 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
         : MockInputMethodManager::State(manager), manager_(manager) {};
 
     virtual void ChangeInputMethod(const std::string& input_method_id,
-                                   bool show_message) OVERRIDE {
+                                   bool show_message) override {
       manager_->last_input_method_id_ = input_method_id;
       // Do the same thing as BrowserStateMonitor::UpdateUserPreferences.
       const std::string current_input_method_on_pref =

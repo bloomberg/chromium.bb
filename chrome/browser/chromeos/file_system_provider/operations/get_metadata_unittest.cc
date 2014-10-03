@@ -76,7 +76,7 @@ class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
   FileSystemProviderOperationsGetMetadataTest() {}
   virtual ~FileSystemProviderOperationsGetMetadataTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,

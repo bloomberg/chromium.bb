@@ -41,9 +41,9 @@ class CryptohomeTokenEncryptor : public TokenEncryptor {
   virtual ~CryptohomeTokenEncryptor();
 
   // TokenEncryptor overrides:
-  virtual std::string EncryptWithSystemSalt(const std::string& token) OVERRIDE;
+  virtual std::string EncryptWithSystemSalt(const std::string& token) override;
   virtual std::string DecryptWithSystemSalt(
-      const std::string& encrypted_token_hex) OVERRIDE;
+      const std::string& encrypted_token_hex) override;
 
  private:
   // Converts |passphrase| to a SymmetricKey using the given |salt|.

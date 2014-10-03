@@ -51,13 +51,13 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   }
 
   // ChageListObserver overrides:
-  virtual void OnFileChanged(const FileChange& changed_files) OVERRIDE {
+  virtual void OnFileChanged(const FileChange& changed_files) override {
     changed_files_.Apply(changed_files);
   }
-  virtual void OnLoadFromServerComplete() OVERRIDE {
+  virtual void OnLoadFromServerComplete() override {
     ++load_from_server_complete_count_;
   }
-  virtual void OnInitialLoadComplete() OVERRIDE {
+  virtual void OnInitialLoadComplete() override {
     ++initial_load_complete_count_;
   }
 
@@ -72,7 +72,7 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
 
 class ChangeListLoaderTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());

@@ -42,9 +42,9 @@ class BootTimesLoader : public content::NotificationObserver,
 
   // LoginEventRecorder::Delegate override.
   virtual void AddLoginTimeMarker(const std::string& marker_name,
-                                  bool send_to_uma) OVERRIDE;
-  virtual void RecordAuthenticationSuccess() OVERRIDE;
-  virtual void RecordAuthenticationFailure() OVERRIDE;
+                                  bool send_to_uma) override;
+  virtual void RecordAuthenticationSuccess() override;
+  virtual void RecordAuthenticationFailure() override;
 
   // Add a time marker for logout. A timeline will be dumped to
   // /tmp/logout-times-sent after logout is done. If |send_to_uma| is true
@@ -73,7 +73,7 @@ class BootTimesLoader : public content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Records "LoginDone" event.
   void LoginDone(bool is_user_new);

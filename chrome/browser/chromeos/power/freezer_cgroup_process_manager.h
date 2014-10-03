@@ -18,9 +18,9 @@ class FreezerCgroupProcessManager : public RendererFreezer::Delegate {
   virtual ~FreezerCgroupProcessManager();
 
   // RendererFreezer::Delegate overrides.
-  virtual bool FreezeRenderers() OVERRIDE;
-  virtual bool ThawRenderers() OVERRIDE;
-  virtual bool CanFreezeRenderers() OVERRIDE;
+  virtual bool FreezeRenderers() override;
+  virtual bool ThawRenderers() override;
+  virtual bool CanFreezeRenderers() override;
 
  private:
   bool WriteCommandToStateFile(const std::string& command);

@@ -83,7 +83,7 @@ class CertLibrary : public CertLoader::Observer {
 
   // CertLoader::Observer
   virtual void OnCertificatesLoaded(const net::CertificateList&,
-                                    bool initial_load) OVERRIDE;
+                                    bool initial_load) override;
 
  private:
   CertLibrary();

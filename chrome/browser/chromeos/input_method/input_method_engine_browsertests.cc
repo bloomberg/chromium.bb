@@ -50,11 +50,11 @@ class InputMethodEngineBrowserTest
       : ExtensionBrowserTest() {}
   virtual ~InputMethodEngineBrowserTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     extension_ = NULL;
   }
 

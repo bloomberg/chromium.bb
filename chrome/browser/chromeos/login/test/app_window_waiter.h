@@ -29,7 +29,7 @@ class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
   extensions::AppWindow* Wait();
 
   // AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override;
 
  private:
   extensions::AppWindowRegistry* registry_;

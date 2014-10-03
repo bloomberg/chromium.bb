@@ -17,7 +17,7 @@ class TrayStep : public Step {
 
  private:
   // Overriden from Step.
-  virtual void DoShow() OVERRIDE;
+  virtual void DoShow() override;
 
   DISALLOW_COPY_AND_ASSIGN(TrayStep);
 };

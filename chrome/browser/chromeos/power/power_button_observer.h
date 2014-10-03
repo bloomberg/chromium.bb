@@ -28,11 +28,11 @@ class PowerButtonObserver : public content::NotificationObserver,
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // PowerManagerObserver implementation:
   virtual void PowerButtonEventReceived(
-      bool down, const base::TimeTicks& timestamp) OVERRIDE;
+      bool down, const base::TimeTicks& timestamp) override;
 
   content::NotificationRegistrar registrar_;
 

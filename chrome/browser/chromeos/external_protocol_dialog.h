@@ -32,17 +32,17 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   virtual ~ExternalProtocolDialog();
 
   // views::DialogDelegate Methods:
-  virtual int GetDialogButtons() const OVERRIDE;
+  virtual int GetDialogButtons() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual void DeleteDelegate() override;
+  virtual bool Accept() override;
+  virtual views::View* GetContentsView() override;
 
   // views::WidgetDelegate Methods:
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const override;
+  virtual views::Widget* GetWidget() override;
 
  private:
   // The message box view whose commands we handle.

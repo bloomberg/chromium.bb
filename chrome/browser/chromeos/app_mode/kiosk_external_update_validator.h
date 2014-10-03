@@ -51,12 +51,12 @@ class KioskExternalUpdateValidator
   virtual ~KioskExternalUpdateValidator();
 
   // SandboxedUnpackerClient overrides.
-  virtual void OnUnpackFailure(const base::string16& error_message) OVERRIDE;
+  virtual void OnUnpackFailure(const base::string16& error_message) override;
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,
                                const extensions::Extension* extension,
-                               const SkBitmap& install_icon) OVERRIDE;
+                               const SkBitmap& install_icon) override;
 
   // Task runner for executing file I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

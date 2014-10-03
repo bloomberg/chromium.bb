@@ -277,7 +277,7 @@ class DownloadsTestVolume : public LocalTestVolume {
   DownloadsTestVolume() : LocalTestVolume("Downloads") {}
   virtual ~DownloadsTestVolume() {}
 
-  virtual bool Mount(Profile* profile) OVERRIDE {
+  virtual bool Mount(Profile* profile) override {
     return CreateRootDirectory(profile) &&
            VolumeManager::Get(profile)
                ->RegisterDownloadsDirectoryForTesting(root_path());
@@ -309,7 +309,7 @@ class FakeTestVolume : public LocalTestVolume {
     return true;
   }
 
-  virtual bool Mount(Profile* profile) OVERRIDE {
+  virtual bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))
       return false;
     storage::ExternalMountPoints* const mount_points =
@@ -505,7 +505,7 @@ class FileManagerTestListener : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     Message entry;
     entry.type = type;
     entry.message = type != extensions::NOTIFICATION_EXTENSION_TEST_PASSED
@@ -527,12 +527,12 @@ class FileManagerTestListener : public content::NotificationObserver {
 // The base test class.
 class FileManagerBrowserTestBase : public ExtensionApiTest {
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
 
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
   // Adds an incognito and guest-mode flags for tests in the guest mode.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
 
   // Loads our testing extension and sends it a string identifying the current
   // test.
@@ -739,10 +739,10 @@ typedef std::tr1::tuple<GuestMode, const char*> TestParameter;
 class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
-  virtual GuestMode GetGuestModeParam() const OVERRIDE {
+  virtual GuestMode GetGuestModeParam() const override {
     return std::tr1::get<0>(GetParam());
   }
-  virtual const char* GetTestCaseNameParam() const OVERRIDE {
+  virtual const char* GetTestCaseNameParam() const override {
     return std::tr1::get<1>(GetParam());
   }
 };
@@ -1087,7 +1087,7 @@ static const TestAccountInfo kTestAccounts[] = {
 class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
  protected:
   // Enables multi-profiles.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
     // Logs in to a dummy profile (For making MultiProfileWindowManager happy;
     // browser test creates a default window and the manager tries to assign a
@@ -1099,7 +1099,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
   // Logs in to the primary profile of this test.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     const TestAccountInfo& info = kTestAccounts[PRIMARY_ACCOUNT_INDEX];
 
     AddUser(info, true);
@@ -1115,7 +1115,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
   // Returns primary profile (if it is already created.)
-  virtual Profile* profile() OVERRIDE {
+  virtual Profile* profile() override {
     Profile* const profile = chromeos::ProfileHelper::GetProfileByUserIdHash(
         kTestAccounts[PRIMARY_ACCOUNT_INDEX].hash);
     return profile ? profile : FileManagerBrowserTestBase::profile();
@@ -1137,16 +1137,16 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
  private:
-  virtual GuestMode GetGuestModeParam() const OVERRIDE {
+  virtual GuestMode GetGuestModeParam() const override {
     return NOT_IN_GUEST_MODE;
   }
 
-  virtual const char* GetTestCaseNameParam() const OVERRIDE {
+  virtual const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
   virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value) OVERRIDE {
+                                const base::Value* value) override {
     if (name == "addAllUsers") {
       AddAllUsers();
       return "true";
@@ -1217,22 +1217,22 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
 template<GuestMode M>
 class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
  public:
-  virtual GuestMode GetGuestModeParam() const OVERRIDE { return M; }
-  virtual const char* GetTestCaseNameParam() const OVERRIDE {
+  virtual GuestMode GetGuestModeParam() const override { return M; }
+  virtual const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AddScript("common/test_util_common.js");
     AddScript("gallery/test_util.js");
     FileManagerBrowserTestBase::SetUp();
   }
 
   virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value) OVERRIDE;
+                                const base::Value* value) override;
 
-  virtual const char* GetTestManifestName() const OVERRIDE {
+  virtual const char* GetTestManifestName() const override {
     return "gallery_test_manifest.json";
   }
 
@@ -1419,28 +1419,28 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
 template<GuestMode M>
 class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
-  virtual GuestMode GetGuestModeParam() const OVERRIDE { return M; }
-  virtual const char* GetTestCaseNameParam() const OVERRIDE {
+  virtual GuestMode GetGuestModeParam() const override { return M; }
+  virtual const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AddScript("common/test_util_common.js");
     AddScript("video_player/test_util.js");
     FileManagerBrowserTestBase::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
   virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value) OVERRIDE;
+                                const base::Value* value) override;
 
-  virtual const char* GetTestManifestName() const OVERRIDE {
+  virtual const char* GetTestManifestName() const override {
     return "video_player_test_manifest.json";
   }
 

@@ -68,31 +68,31 @@ class TrayAccessibilityTest
   // The profile which should be used by these tests.
   Profile* GetProfile() { return ProfileManager::GetActiveUserProfile(); }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     AccessibilityManager::Get()->SetProfileForTest(GetProfile());
     MagnificationManager::Get()->SetProfileForTest(GetProfile());
   }
 
-  virtual void RunTestOnMainThreadLoop() OVERRIDE {
+  virtual void RunTestOnMainThreadLoop() override {
     // Need to mark oobe completed to show detailed views.
     StartupUtils::MarkOobeCompleted();
     InProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 

@@ -47,8 +47,8 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
 
  private:
   // policy::CloudPolicyStore::Observer interface:
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  virtual void OnStoreError(policy::CloudPolicyStore* store) override;
 
   // Update the version label.
   void UpdateVersionLabel();

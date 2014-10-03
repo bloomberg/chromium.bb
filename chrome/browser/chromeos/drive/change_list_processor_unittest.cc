@@ -95,7 +95,7 @@ ScopedVector<ChangeList> CreateBaseChangeList() {
 
 class ChangeListProcessorTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     metadata_storage_.reset(new ResourceMetadataStorage(

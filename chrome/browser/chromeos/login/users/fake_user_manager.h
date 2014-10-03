@@ -38,110 +38,110 @@ class FakeUserManager : public ChromeUserManager {
   void LoginUser(const std::string& email);
 
   // ChromeUserManager overrides.
-  virtual MultiProfileUserController* GetMultiProfileUserController() OVERRIDE;
+  virtual MultiProfileUserController* GetMultiProfileUserController() override;
   virtual UserImageManager* GetUserImageManager(
-      const std::string& user_id) OVERRIDE;
-  virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
-  virtual void SetUserFlow(const std::string& email, UserFlow* flow) OVERRIDE {}
-  virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
-  virtual UserFlow* GetUserFlow(const std::string& email) const OVERRIDE;
-  virtual void ResetUserFlow(const std::string& email) OVERRIDE {}
+      const std::string& user_id) override;
+  virtual SupervisedUserManager* GetSupervisedUserManager() override;
+  virtual void SetUserFlow(const std::string& email, UserFlow* flow) override {}
+  virtual UserFlow* GetCurrentUserFlow() const override;
+  virtual UserFlow* GetUserFlow(const std::string& email) const override;
+  virtual void ResetUserFlow(const std::string& email) override {}
 
   // UserManager overrides.
-  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetUsers() const override;
   virtual user_manager::UserList GetUsersAllowedForMultiProfile()
-      const OVERRIDE;
-  virtual const user_manager::UserList& GetLoggedInUsers() const OVERRIDE;
+      const override;
+  virtual const user_manager::UserList& GetLoggedInUsers() const override;
 
   // Set the user as logged in.
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
-                            bool browser_restart) OVERRIDE;
+                            bool browser_restart) override;
 
-  virtual const user_manager::User* GetActiveUser() const OVERRIDE;
-  virtual user_manager::User* GetActiveUser() OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
+  virtual const user_manager::User* GetActiveUser() const override;
+  virtual user_manager::User* GetActiveUser() override;
+  virtual void SwitchActiveUser(const std::string& email) override;
   virtual void SaveUserDisplayName(const std::string& username,
-      const base::string16& display_name) OVERRIDE;
+      const base::string16& display_name) override;
 
   // Not implemented.
   virtual void UpdateUserAccountData(
       const std::string& user_id,
-      const UserAccountData& account_data) OVERRIDE {}
-  virtual void Shutdown() OVERRIDE {}
-  virtual const user_manager::UserList& GetLRULoggedInUsers() const OVERRIDE;
-  virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
-  virtual const std::string& GetOwnerEmail() const OVERRIDE;
-  virtual void SessionStarted() OVERRIDE {}
+      const UserAccountData& account_data) override {}
+  virtual void Shutdown() override {}
+  virtual const user_manager::UserList& GetLRULoggedInUsers() const override;
+  virtual user_manager::UserList GetUnlockUsers() const override;
+  virtual const std::string& GetOwnerEmail() const override;
+  virtual void SessionStarted() override {}
   virtual void RemoveUser(const std::string& email,
-                          user_manager::RemoveUserDelegate* delegate) OVERRIDE {
+                          user_manager::RemoveUserDelegate* delegate) override {
   }
-  virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
-  virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
+  virtual void RemoveUserFromList(const std::string& email) override;
+  virtual bool IsKnownUser(const std::string& email) const override;
   virtual const user_manager::User* FindUser(
-      const std::string& email) const OVERRIDE;
+      const std::string& email) const override;
   virtual user_manager::User* FindUserAndModify(
-      const std::string& email) OVERRIDE;
-  virtual const user_manager::User* GetLoggedInUser() const OVERRIDE;
-  virtual user_manager::User* GetLoggedInUser() OVERRIDE;
-  virtual const user_manager::User* GetPrimaryUser() const OVERRIDE;
+      const std::string& email) override;
+  virtual const user_manager::User* GetLoggedInUser() const override;
+  virtual user_manager::User* GetLoggedInUser() override;
+  virtual const user_manager::User* GetPrimaryUser() const override;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
-      user_manager::User::OAuthTokenStatus oauth_token_status) OVERRIDE {}
+      user_manager::User::OAuthTokenStatus oauth_token_status) override {}
   virtual void SaveForceOnlineSignin(const std::string& user_id,
-                                     bool force_online_signin) OVERRIDE {}
+                                     bool force_online_signin) override {}
   virtual base::string16 GetUserDisplayName(
-      const std::string& username) const OVERRIDE;
+      const std::string& username) const override;
   virtual void SaveUserDisplayEmail(const std::string& username,
-      const std::string& display_email) OVERRIDE {}
+      const std::string& display_email) override {}
   virtual std::string GetUserDisplayEmail(
-      const std::string& username) const OVERRIDE;
-  virtual bool IsCurrentUserOwner() const OVERRIDE;
-  virtual bool IsCurrentUserNew() const OVERRIDE;
-  virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const OVERRIDE;
-  virtual bool CanCurrentUserLock() const OVERRIDE;
-  virtual bool IsUserLoggedIn() const OVERRIDE;
-  virtual bool IsLoggedInAsRegularUser() const OVERRIDE;
-  virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
-  virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
-  virtual bool IsLoggedInAsGuest() const OVERRIDE;
-  virtual bool IsLoggedInAsSupervisedUser() const OVERRIDE;
-  virtual bool IsLoggedInAsKioskApp() const OVERRIDE;
-  virtual bool IsLoggedInAsStub() const OVERRIDE;
-  virtual bool IsSessionStarted() const OVERRIDE;
+      const std::string& username) const override;
+  virtual bool IsCurrentUserOwner() const override;
+  virtual bool IsCurrentUserNew() const override;
+  virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
+  virtual bool CanCurrentUserLock() const override;
+  virtual bool IsUserLoggedIn() const override;
+  virtual bool IsLoggedInAsRegularUser() const override;
+  virtual bool IsLoggedInAsDemoUser() const override;
+  virtual bool IsLoggedInAsPublicAccount() const override;
+  virtual bool IsLoggedInAsGuest() const override;
+  virtual bool IsLoggedInAsSupervisedUser() const override;
+  virtual bool IsLoggedInAsKioskApp() const override;
+  virtual bool IsLoggedInAsStub() const override;
+  virtual bool IsSessionStarted() const override;
   virtual bool IsUserNonCryptohomeDataEphemeral(
-      const std::string& email) const OVERRIDE;
-  virtual void AddObserver(Observer* obs) OVERRIDE {}
-  virtual void RemoveObserver(Observer* obs) OVERRIDE {}
+      const std::string& email) const override;
+  virtual void AddObserver(Observer* obs) override {}
+  virtual void RemoveObserver(Observer* obs) override {}
   virtual void AddSessionStateObserver(
-      UserSessionStateObserver* obs) OVERRIDE {}
+      UserSessionStateObserver* obs) override {}
   virtual void RemoveSessionStateObserver(
-      UserSessionStateObserver* obs) OVERRIDE {}
-  virtual void NotifyLocalStateChanged() OVERRIDE {}
-  virtual bool AreSupervisedUsersAllowed() const OVERRIDE;
+      UserSessionStateObserver* obs) override {}
+  virtual void NotifyLocalStateChanged() override {}
+  virtual bool AreSupervisedUsersAllowed() const override;
 
   // UserManagerBase overrides:
-  virtual bool AreEphemeralUsersEnabled() const OVERRIDE;
-  virtual const std::string& GetApplicationLocale() const OVERRIDE;
-  virtual PrefService* GetLocalState() const OVERRIDE;
+  virtual bool AreEphemeralUsersEnabled() const override;
+  virtual const std::string& GetApplicationLocale() const override;
+  virtual PrefService* GetLocalState() const override;
   virtual void HandleUserOAuthTokenStatusChange(
       const std::string& user_id,
-      user_manager::User::OAuthTokenStatus status) const OVERRIDE {}
-  virtual bool IsEnterpriseManaged() const OVERRIDE;
+      user_manager::User::OAuthTokenStatus status) const override {}
+  virtual bool IsEnterpriseManaged() const override;
   virtual void LoadPublicAccounts(
-      std::set<std::string>* public_sessions_set) OVERRIDE {}
-  virtual void PerformPreUserListLoadingActions() OVERRIDE {}
-  virtual void PerformPostUserListLoadingActions() OVERRIDE {}
-  virtual void PerformPostUserLoggedInActions(bool browser_restart) OVERRIDE {}
-  virtual bool IsDemoApp(const std::string& user_id) const OVERRIDE;
-  virtual bool IsKioskApp(const std::string& user_id) const OVERRIDE;
+      std::set<std::string>* public_sessions_set) override {}
+  virtual void PerformPreUserListLoadingActions() override {}
+  virtual void PerformPostUserListLoadingActions() override {}
+  virtual void PerformPostUserLoggedInActions(bool browser_restart) override {}
+  virtual bool IsDemoApp(const std::string& user_id) const override;
+  virtual bool IsKioskApp(const std::string& user_id) const override;
   virtual bool IsPublicAccountMarkedForRemoval(
-      const std::string& user_id) const OVERRIDE;
-  virtual void DemoAccountLoggedIn() OVERRIDE {}
-  virtual void KioskAppLoggedIn(const std::string& app_id) OVERRIDE {}
-  virtual void PublicAccountUserLoggedIn(user_manager::User* user) OVERRIDE {}
-  virtual void RetailModeUserLoggedIn() OVERRIDE {}
-  virtual void SupervisedUserLoggedIn(const std::string& user_id) OVERRIDE {}
+      const std::string& user_id) const override;
+  virtual void DemoAccountLoggedIn() override {}
+  virtual void KioskAppLoggedIn(const std::string& app_id) override {}
+  virtual void PublicAccountUserLoggedIn(user_manager::User* user) override {}
+  virtual void RetailModeUserLoggedIn() override {}
+  virtual void SupervisedUserLoggedIn(const std::string& user_id) override {}
 
   void set_owner_email(const std::string& owner_email) {
     owner_email_ = owner_email;

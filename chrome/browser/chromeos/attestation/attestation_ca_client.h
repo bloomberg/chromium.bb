@@ -26,12 +26,12 @@ class AttestationCAClient : public ServerProxy,
 
   // chromeos::attestation::ServerProxy:
   virtual void SendEnrollRequest(const std::string& request,
-                                 const DataCallback& on_response) OVERRIDE;
+                                 const DataCallback& on_response) override;
   virtual void SendCertificateRequest(const std::string& request,
-                                      const DataCallback& on_response) OVERRIDE;
+                                      const DataCallback& on_response) override;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   typedef std::map<const net::URLFetcher*, DataCallback> FetcherCallbackMap;

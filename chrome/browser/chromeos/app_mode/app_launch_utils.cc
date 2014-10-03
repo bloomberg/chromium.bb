@@ -33,29 +33,29 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
   void Cleanup() { delete this; }
 
   // StartupAppLauncher::Delegate overrides:
-  virtual void InitializeNetwork() OVERRIDE {
+  virtual void InitializeNetwork() override {
     // This is on crash-restart path and assumes network is online.
     // TODO(xiyuan): Remove the crash-restart path for kiosk or add proper
     // network configure handling.
     startup_app_launcher_->ContinueWithNetworkReady();
   }
-  virtual bool IsNetworkReady() OVERRIDE {
+  virtual bool IsNetworkReady() override {
     // See comments above. Network is assumed to be online here.
     return true;
   }
-  virtual void OnLoadingOAuthFile() OVERRIDE {}
-  virtual void OnInitializingTokenService() OVERRIDE {}
-  virtual void OnInstallingApp() OVERRIDE {}
-  virtual void OnReadyToLaunch() OVERRIDE {
+  virtual void OnLoadingOAuthFile() override {}
+  virtual void OnInitializingTokenService() override {}
+  virtual void OnInstallingApp() override {}
+  virtual void OnReadyToLaunch() override {
     startup_app_launcher_->LaunchApp();
   }
-  virtual void OnLaunchSucceeded() OVERRIDE { Cleanup(); }
-  virtual void OnLaunchFailed(KioskAppLaunchError::Error error) OVERRIDE {
+  virtual void OnLaunchSucceeded() override { Cleanup(); }
+  virtual void OnLaunchFailed(KioskAppLaunchError::Error error) override {
     KioskAppLaunchError::Save(error);
     chrome::AttemptUserExit();
     Cleanup();
   }
-  virtual bool IsShowingNetworkConfigScreen() OVERRIDE { return false; }
+  virtual bool IsShowingNetworkConfigScreen() override { return false; }
 
   scoped_ptr<StartupAppLauncher> startup_app_launcher_;
 

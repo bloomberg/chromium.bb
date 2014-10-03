@@ -67,7 +67,7 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Start new request.
   void StartRequest();

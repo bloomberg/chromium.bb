@@ -21,8 +21,8 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
  public:
   FakeDeviceCloudPolicyInitializer();
 
-  virtual void Init() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+  virtual void Init() override;
+  virtual void Shutdown() override;
 
   virtual void StartEnrollment(
       enterprise_management::PolicyData::ManagementMode management_mode,
@@ -30,7 +30,7 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
       const std::string& auth_token,
       bool is_auto_enrollment,
       const AllowedDeviceModes& allowed_modes,
-      const EnrollmentCallback& enrollment_callback) OVERRIDE;
+      const EnrollmentCallback& enrollment_callback) override;
 
   bool was_start_enrollment_called() {
     return was_start_enrollment_called_;

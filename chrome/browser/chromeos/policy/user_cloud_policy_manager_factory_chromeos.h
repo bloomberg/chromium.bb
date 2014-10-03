@@ -76,13 +76,13 @@ class UserCloudPolicyManagerFactoryChromeOS
 
   // BrowserContextKeyedBaseFactory:
   virtual void BrowserContextShutdown(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
   virtual void BrowserContextDestroyed(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
   virtual void SetEmptyTestingFactory(
-      content::BrowserContext* context) OVERRIDE;
-  virtual bool HasTestingFactory(content::BrowserContext* context) OVERRIDE;
-  virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
+  virtual bool HasTestingFactory(content::BrowserContext* context) override;
+  virtual void CreateServiceNow(content::BrowserContext* context) override;
 
   typedef std::map<Profile*, UserCloudPolicyManagerChromeOS*> ManagerMap;
   ManagerMap managers_;

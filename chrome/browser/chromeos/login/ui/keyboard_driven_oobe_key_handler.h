@@ -19,7 +19,7 @@ class KeyboardDrivenOobeKeyHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenOobeKeyHandler);
 };

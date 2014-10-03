@@ -34,15 +34,15 @@ class RecommendationRestorer : public KeyedService,
   virtual ~RecommendationRestorer();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // wm::UserActivityObserver:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // If a recommended value and a user setting exist for |pref_name|, clears the
   // user setting so that the recommended value can take effect. If

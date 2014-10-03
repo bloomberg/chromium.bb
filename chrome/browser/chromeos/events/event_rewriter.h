@@ -75,10 +75,10 @@ class EventRewriter : public ui::EventRewriter {
   // EventRewriter overrides:
   virtual ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      scoped_ptr<ui::Event>* rewritten_event) OVERRIDE;
+      scoped_ptr<ui::Event>* rewritten_event) override;
   virtual ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
-      scoped_ptr<ui::Event>* new_event) OVERRIDE;
+      scoped_ptr<ui::Event>* new_event) override;
 
   // Generate a new key event from an original key event and the replacement
   // key code and flags determined by a key rewriter.

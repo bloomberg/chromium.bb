@@ -20,7 +20,7 @@ namespace internal {
 
 class EntryRevertPerformerTest : public file_system::OperationTestBase {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
    OperationTestBase::SetUp();
    performer_.reset(new EntryRevertPerformer(blocking_task_runner(),
                                              delegate(),

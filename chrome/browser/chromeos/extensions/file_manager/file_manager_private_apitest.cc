@@ -123,7 +123,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
   }
 
   // ExtensionApiTest override
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     disk_mount_manager_mock_ = new chromeos::disks::MockDiskMountManager;
@@ -131,7 +131,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
         disk_mount_manager_mock_);
     disk_mount_manager_mock_->SetupDefaultReplies();
 
-    // OVERRIDE mock functions.
+    // override mock functions.
     ON_CALL(*disk_mount_manager_mock_, FindDiskBySourcePath(_)).WillByDefault(
         Invoke(this, &FileManagerPrivateApiTest::FindVolumeBySourcePath));
     EXPECT_CALL(*disk_mount_manager_mock_, disks())
@@ -141,7 +141,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
   }
 
   // ExtensionApiTest override
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     chromeos::disks::DiskMountManager::Shutdown();
     disk_mount_manager_mock_ = NULL;
 

@@ -85,11 +85,11 @@ class DriveOfflineNotificationDelegate
       : profile_(profile) {}
 
   // message_center::NotificationDelegate overrides:
-  virtual void Display() OVERRIDE {}
-  virtual void Error() OVERRIDE {}
-  virtual void Close(bool by_user) OVERRIDE {}
-  virtual void Click() OVERRIDE {}
-  virtual void ButtonClick(int button_index) OVERRIDE;
+  virtual void Display() override {}
+  virtual void Error() override {}
+  virtual void Close(bool by_user) override {}
+  virtual void Click() override {}
+  virtual void ButtonClick(int button_index) override;
 
  protected:
   virtual ~DriveOfflineNotificationDelegate() {}
@@ -156,12 +156,12 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) OVERRIDE;
+      const base::string16& error_description) override;
 
   virtual void DidFailLoad(content::RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
                            int error_code,
-                           const base::string16& error_description) OVERRIDE;
+                           const base::string16& error_description) override;
 
   // content::WebContentsDelegate overrides:
   virtual bool ShouldCreateWebContents(
@@ -171,12 +171,12 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       const base::string16& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
-      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
+      content::SessionStorageNamespace* session_storage_namespace) override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   Profile* profile_;
   const std::string app_id_;

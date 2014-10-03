@@ -64,15 +64,15 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   // MagnificationManager implimentation:
-  virtual bool IsMagnifierEnabled() const OVERRIDE {
+  virtual bool IsMagnifierEnabled() const override {
     return enabled_;
   }
 
-  virtual ash::MagnifierType GetMagnifierType() const OVERRIDE {
+  virtual ash::MagnifierType GetMagnifierType() const override {
     return type_;
   }
 
-  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE {
+  virtual void SetMagnifierEnabled(bool enabled) override {
     if (!profile_)
       return;
 
@@ -81,7 +81,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     prefs->CommitPendingWrite();
   }
 
-  virtual void SetMagnifierType(ash::MagnifierType type) OVERRIDE {
+  virtual void SetMagnifierType(ash::MagnifierType type) override {
     if (!profile_)
       return;
 
@@ -90,7 +90,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     prefs->CommitPendingWrite();
   }
 
-  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE {
+  virtual void SaveScreenMagnifierScale(double scale) override {
     if (!profile_)
       return;
 
@@ -98,7 +98,7 @@ class MagnificationManagerImpl : public MagnificationManager,
                                     scale);
   }
 
-  virtual double GetSavedScreenMagnifierScale() const OVERRIDE {
+  virtual double GetSavedScreenMagnifierScale() const override {
     if (!profile_)
       return std::numeric_limits<double>::min();
 
@@ -106,12 +106,12 @@ class MagnificationManagerImpl : public MagnificationManager,
         prefs::kAccessibilityScreenMagnifierScale);
   }
 
-  virtual void SetProfileForTest(Profile* profile) OVERRIDE {
+  virtual void SetProfileForTest(Profile* profile) override {
     SetProfile(profile);
   }
 
   // SessionStateObserver overrides:
-  virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE {
+  virtual void ActiveUserChanged(const std::string& user_id) override {
     SetProfile(ProfileManager::GetActiveUserProfile());
   }
 
@@ -216,7 +216,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
         // Update |profile_| when entering the login screen.

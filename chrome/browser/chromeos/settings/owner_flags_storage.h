@@ -22,7 +22,7 @@ class OwnerFlagsStorage : public ::about_flags::PrefServiceFlagsStorage {
   OwnerFlagsStorage(PrefService *prefs, CrosSettings *cros_settings);
   virtual ~OwnerFlagsStorage();
 
-  virtual bool SetFlags(const std::set<std::string>& flags) OVERRIDE;
+  virtual bool SetFlags(const std::set<std::string>& flags) override;
 
  private:
   CrosSettings* cros_settings_;

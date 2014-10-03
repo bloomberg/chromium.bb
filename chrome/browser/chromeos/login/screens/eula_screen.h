@@ -25,20 +25,20 @@ class EulaScreen : public WizardScreen,
   virtual ~EulaScreen();
 
   // WizardScreen implementation:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // EulaScreenActor::Delegate implementation:
-  virtual GURL GetOemEulaUrl() const OVERRIDE;
-  virtual void OnExit(bool accepted, bool usage_stats_enabled) OVERRIDE;
-  virtual void InitiatePasswordFetch() OVERRIDE;
-  virtual bool IsUsageStatsEnabled() const OVERRIDE;
-  virtual void OnActorDestroyed(EulaScreenActor* actor) OVERRIDE;
+  virtual GURL GetOemEulaUrl() const override;
+  virtual void OnExit(bool accepted, bool usage_stats_enabled) override;
+  virtual void InitiatePasswordFetch() override;
+  virtual bool IsUsageStatsEnabled() const override;
+  virtual void OnActorDestroyed(EulaScreenActor* actor) override;
 
   // TpmPasswordFetcherDelegate implementation:
-  virtual void OnPasswordFetched(const std::string& tpm_password) OVERRIDE;
+  virtual void OnPasswordFetched(const std::string& tpm_password) override;
 
  private:
   // URL of the OEM EULA page (on disk).

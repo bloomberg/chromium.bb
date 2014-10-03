@@ -80,8 +80,8 @@ class LowMemoryObserverImpl
     virtual ~FileWatcherDelegate() {}
 
     // Overrides for base::MessageLoopForIO::Watcher
-    virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {}
-    virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+    virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
+    virtual void OnFileCanReadWithoutBlocking(int fd) override {
       LOG(WARNING) << "Low memory condition detected.  Discarding a tab.";
       // We can only discard tabs on the UI thread.
       base::Callback<void(void)> callback = base::Bind(&DiscardTab);

@@ -48,7 +48,7 @@ class UserSelectionScreen : public wm::UserActivityObserver {
       const std::string& username) const;
 
   // wm::UserActivityDetector implementation:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(

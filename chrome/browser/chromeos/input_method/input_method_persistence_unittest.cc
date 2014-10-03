@@ -38,7 +38,7 @@ class InputMethodPersistenceTest : public testing::Test {
         fake_user_manager_(new chromeos::FakeUserManager()),
         user_manager_enabler_(fake_user_manager_) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(mock_profile_manager_.SetUp());
 
     // Add a user.

@@ -32,15 +32,15 @@ class FileTaskExecutorDelegateImpl : public FileTaskExecutorDelegate {
   explicit FileTaskExecutorDelegateImpl(Profile* profile) : profile_(profile) {
   }
 
-  virtual FileSystemInterface* GetFileSystem() OVERRIDE {
+  virtual FileSystemInterface* GetFileSystem() override {
     return util::GetFileSystemByProfile(profile_);
   }
 
-  virtual DriveServiceInterface* GetDriveService() OVERRIDE {
+  virtual DriveServiceInterface* GetDriveService() override {
     return util::GetDriveServiceByProfile(profile_);
   }
 
-  virtual void OpenBrowserWindow(const GURL& open_link) OVERRIDE {
+  virtual void OpenBrowserWindow(const GURL& open_link) override {
     chrome::ScopedTabbedBrowserDisplayer displayer(
          profile_, chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::AddSelectedTabWithURL(displayer.browser(), open_link,

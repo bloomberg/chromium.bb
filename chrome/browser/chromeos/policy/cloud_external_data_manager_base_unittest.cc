@@ -74,7 +74,7 @@ class FakeURLFetcherFactory : public net::FakeURLFetcherFactory {
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* delegate) OVERRIDE;
+      net::URLFetcherDelegate* delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
@@ -104,8 +104,8 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
  protected:
   CloudExternalDataManagerBaseTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void SetUpExternalDataManager();
 

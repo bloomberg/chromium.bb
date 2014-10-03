@@ -19,7 +19,7 @@ class TiclDeviceSettingsProvider : public invalidation::TiclSettingsProvider {
   virtual ~TiclDeviceSettingsProvider();
 
   // TiclInvalidationServiceSettingsProvider:
-  virtual bool UseGCMChannel() const OVERRIDE;
+  virtual bool UseGCMChannel() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TiclDeviceSettingsProvider);

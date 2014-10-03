@@ -114,7 +114,7 @@ class OomMemoryDetails : public MemoryDetails {
   OomMemoryDetails();
 
   // MemoryDetails overrides:
-  virtual void OnDetailsAvailable() OVERRIDE;
+  virtual void OnDetailsAvailable() override;
 
  private:
   virtual ~OomMemoryDetails() {}

@@ -28,7 +28,7 @@ void TestCallback(bool* out_success, const base::Closure& quit, bool success) {
 
 class ZipFileCreatorTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateDirectory(zip_base_dir()));
   }

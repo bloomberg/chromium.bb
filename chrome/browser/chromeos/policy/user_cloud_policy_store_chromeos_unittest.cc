@@ -54,7 +54,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyStoreChromeOSTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EXPECT_CALL(cryptohome_client_,
                 GetSanitizedUsername(PolicyBuilder::kFakeUsername, _))
         .Times(AnyNumber())
@@ -82,7 +82,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     policy_.Build();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     store_->RemoveObserver(&observer_);
     store_.reset();
     RunUntilIdle();

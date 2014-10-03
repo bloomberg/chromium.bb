@@ -32,19 +32,19 @@ class ProviderNotificationDelegate
       NotificationManager* notification_manager)
       : notification_manager_(notification_manager) {}
 
-  virtual void ButtonClick(int button_index) OVERRIDE {
+  virtual void ButtonClick(int button_index) override {
     notification_manager_->OnButtonClick(button_index);
   }
 
-  virtual void Display() OVERRIDE {}
+  virtual void Display() override {}
 
-  virtual void Error() OVERRIDE { notification_manager_->OnError(); }
+  virtual void Error() override { notification_manager_->OnError(); }
 
-  virtual void Close(bool by_user) OVERRIDE {
+  virtual void Close(bool by_user) override {
     notification_manager_->OnClose();
   }
 
-  virtual void Click() OVERRIDE {}
+  virtual void Click() override {}
 
  private:
   virtual ~ProviderNotificationDelegate() {}

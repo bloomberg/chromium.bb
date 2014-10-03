@@ -42,7 +42,7 @@ class KioskAppUpdateServiceTest : public extensions::PlatformAppBrowserTest {
   virtual ~KioskAppUpdateServiceTest() {}
 
   // extensions::PlatformAppBrowserTest overrides:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

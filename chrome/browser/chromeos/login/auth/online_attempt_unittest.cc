@@ -37,12 +37,12 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
   TestContextURLRequestContextGetter()
       : null_task_runner_(new base::NullTaskRunner) {}
 
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     return &context_;
   }
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const OVERRIDE {
+      const override {
     return null_task_runner_;
   }
 
@@ -63,7 +63,7 @@ class OnlineAttemptTest : public testing::Test {
       : state_(UserContext(), false),
         attempt_(new OnlineAttempt(&state_, &resolver_)) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     message_loop_ = base::MessageLoopProxy::current();
     request_context_ = new TestContextURLRequestContextGetter();
   }

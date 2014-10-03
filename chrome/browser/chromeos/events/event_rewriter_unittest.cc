@@ -1787,7 +1787,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
  private:
   // ui::EventProcessor overrides:
   virtual ui::EventDispatchDetails OnEventFromSource(
-      ui::Event* event) OVERRIDE {
+      ui::Event* event) override {
     if (event->IsKeyEvent()) {
       events_.push_back(new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event)));
     } else if (event->IsMouseWheelEvent()) {
@@ -1810,7 +1810,7 @@ class TestEventSource : public ui::EventSource {
  public:
   explicit TestEventSource(ui::EventProcessor* processor)
       : processor_(processor) {}
-  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE {
+  virtual ui::EventProcessor* GetEventProcessor() override {
     return processor_;
   }
   ui::EventDispatchDetails Send(ui::Event* event) {
@@ -1857,7 +1857,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
     buffer_.PopEvents(events);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     sticky_keys_controller_ =
         ash::Shell::GetInstance()->sticky_keys_controller();
@@ -1871,7 +1871,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
     sticky_keys_controller_->Enable(true);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     rewriter_.reset();
     AshTestBase::TearDown();
   }
@@ -2311,7 +2311,7 @@ class StickyKeysOverlayTest : public EventRewriterAshTest {
 
   virtual ~StickyKeysOverlayTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EventRewriterAshTest::SetUp();
     overlay_ = sticky_keys_controller_->GetOverlayForTest();
     ASSERT_TRUE(overlay_);

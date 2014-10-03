@@ -25,19 +25,19 @@ class TestLoginUtils : public LoginUtils {
 
   // LoginUtils:
   virtual void RespectLocalePreference(Profile* profile,
-                                       const base::Closure& callback) OVERRIDE;
+                                       const base::Closure& callback) override;
   virtual void DoBrowserLaunch(Profile* profile,
-                               LoginDisplayHost* login_host) OVERRIDE {}
+                               LoginDisplayHost* login_host) override {}
   virtual void PrepareProfile(const UserContext& user_context,
                               bool has_auth_cookies,
                               bool has_active_session,
-                              Delegate* delegate) OVERRIDE;
-  virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE {}
+                              Delegate* delegate) override;
+  virtual void DelegateDeleted(Delegate* delegate) override;
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) override {}
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
-      AuthStatusConsumer* consumer) OVERRIDE;
+      AuthStatusConsumer* consumer) override;
   virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
-                                                   bool early_restart) OVERRIDE;
+                                                   bool early_restart) override;
 
  private:
   UserContext expected_user_context_;

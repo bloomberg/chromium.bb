@@ -23,8 +23,8 @@ class UserAddingScreenInputMethodsController
   virtual ~UserAddingScreenInputMethodsController();
 
   // UserAddingScreen::Observer implementation:
-  virtual void OnUserAddingStarted() OVERRIDE;
-  virtual void OnUserAddingFinished() OVERRIDE;
+  virtual void OnUserAddingStarted() override;
+  virtual void OnUserAddingFinished() override;
 
  private:
   UserAddingScreen* screen_;

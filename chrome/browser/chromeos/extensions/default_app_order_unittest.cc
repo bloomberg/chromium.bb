@@ -31,10 +31,10 @@ class DefaultAppOrderTest : public testing::Test {
   virtual ~DefaultAppOrderTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     default_app_order::Get(&built_in_default_);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
   }
 
   bool IsBuiltInDefault(const std::vector<std::string>& apps) {

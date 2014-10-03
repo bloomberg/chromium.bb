@@ -34,7 +34,7 @@ class StubCrosSettingsProviderTest : public testing::Test {
   virtual ~StubCrosSettingsProviderTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Reset the observer notification count.
     observer_count_.clear();
   }

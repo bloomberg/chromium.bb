@@ -18,15 +18,15 @@ public:
   explicit MockIdleLogoutSettingsProvider(KioskModeSettings* mock_settings)
       : mock_settings_(mock_settings) {}
 
-  virtual base::TimeDelta GetCountdownUpdateInterval() OVERRIDE {
+  virtual base::TimeDelta GetCountdownUpdateInterval() override {
     return base::TimeDelta::FromMilliseconds(0);
   }
 
-  virtual KioskModeSettings* GetKioskModeSettings() OVERRIDE {
+  virtual KioskModeSettings* GetKioskModeSettings() override {
     return mock_settings_;
   }
 
-  virtual void LogoutCurrentUser(IdleLogoutDialogView* dialog) OVERRIDE {
+  virtual void LogoutCurrentUser(IdleLogoutDialogView* dialog) override {
     dialog->GetWidget()->Close();
   }
 
@@ -42,7 +42,7 @@ class IdleLogoutDialogViewTest : public InProcessBrowserTest {
 
   virtual ~IdleLogoutDialogViewTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     mock_settings_.reset(new MockKioskModeSettings());
     mock_provider_.reset(
         new MockIdleLogoutSettingsProvider(mock_settings_.get()));

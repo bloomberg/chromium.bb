@@ -24,19 +24,19 @@ class SupervisedUserLoginFlow
   virtual ~SupervisedUserLoginFlow();
 
   // ExtendedUserFlow overrides.
-  virtual bool CanLockScreen() OVERRIDE;
-  virtual bool ShouldLaunchBrowser() OVERRIDE;
-  virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
-  virtual bool HandleLoginFailure(const AuthFailure& failure) OVERRIDE;
-  virtual void HandleLoginSuccess(const UserContext& context) OVERRIDE;
-  virtual bool HandlePasswordChangeDetected() OVERRIDE;
+  virtual bool CanLockScreen() override;
+  virtual bool ShouldLaunchBrowser() override;
+  virtual bool ShouldSkipPostLoginScreens() override;
+  virtual bool HandleLoginFailure(const AuthFailure& failure) override;
+  virtual void HandleLoginSuccess(const UserContext& context) override;
+  virtual bool HandlePasswordChangeDetected() override;
   virtual void HandleOAuthTokenStatusChange(
-      user_manager::User::OAuthTokenStatus status) OVERRIDE;
-  virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
+      user_manager::User::OAuthTokenStatus status) override;
+  virtual void LaunchExtraSteps(Profile* profile) override;
 
   // ExtendedAuthenticator::NewAuthStatusConsumer overrides.
   virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState state)
-      OVERRIDE;
+      override;
 
  private:
   void Launch();

@@ -48,10 +48,10 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // PrefProxyConfigTrackerImpl implementation.
   virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
-                                    const net::ProxyConfig& config) OVERRIDE;
+                                    const net::ProxyConfig& config) override;
 
   // NetworkStateHandlerObserver implementation.
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) override;
 
  protected:
   friend class UIProxyConfigService;

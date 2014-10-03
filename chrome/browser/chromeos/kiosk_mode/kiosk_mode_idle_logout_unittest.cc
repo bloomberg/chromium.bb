@@ -26,12 +26,12 @@ class KioskModeIdleLogoutTest : public ash::test::AshTestBase {
       : idle_logout_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
     idle_logout_ = new KioskModeIdleLogout();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     delete idle_logout_;
     AshTestBase::TearDown();
   }

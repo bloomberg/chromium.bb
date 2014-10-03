@@ -78,7 +78,7 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
                        MockFlushAndSignBootAttributes));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     testing_profile_manager_.reset(new TestingProfileManager(
@@ -89,7 +89,7 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
                                                  NULL));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     testing_profile_manager_.reset();
 
     service_.reset();
@@ -247,7 +247,7 @@ class ConsumerManagementServiceEnrollmentTest
         scoped_ptr<DeviceCloudPolicyInitializer>(fake_initializer_));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ConsumerManagementServiceTest::SetUp();
 
     // Set up the testing profile.
@@ -269,7 +269,7 @@ class ConsumerManagementServiceEnrollmentTest
         ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     g_browser_process->notification_ui_manager()->CancelAll();
 
     ConsumerManagementServiceTest::TearDown();

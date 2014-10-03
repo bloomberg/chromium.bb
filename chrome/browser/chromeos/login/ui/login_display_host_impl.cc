@@ -148,7 +148,7 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
 
  private:
   // ui::ImplicitAnimationObserver implementation:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     callback_.Run();
     delete this;
   }
@@ -222,19 +222,19 @@ class LoginWidgetDelegate : public views::WidgetDelegate {
   virtual ~LoginWidgetDelegate() {}
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE {
+  virtual void DeleteDelegate() override {
     delete this;
   }
-  virtual views::Widget* GetWidget() OVERRIDE {
+  virtual views::Widget* GetWidget() override {
     return widget_;
   }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
+  virtual const views::Widget* GetWidget() const override {
     return widget_;
   }
-  virtual bool CanActivate() const OVERRIDE {
+  virtual bool CanActivate() const override {
     return true;
   }
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
     return true;
   }
 

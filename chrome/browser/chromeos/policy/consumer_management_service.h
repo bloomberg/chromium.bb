@@ -145,25 +145,25 @@ class ConsumerManagementService
   void SetOwner(const std::string& user_id, const SetOwnerCallback& callback);
 
   // chromeos::DeviceSettingsService::Observer:
-  virtual void OwnershipStatusChanged() OVERRIDE;
-  virtual void DeviceSettingsUpdated() OVERRIDE;
+  virtual void OwnershipStatusChanged() override;
+  virtual void DeviceSettingsUpdated() override;
 
   // content::NotificationObserver implmentation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // OAuth2TokenService::Consumer:
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
-      const base::Time& expiration_time) OVERRIDE;
+      const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   OAuth2TokenService::Request* GetTokenRequestForTesting() {
     return token_request_.get();

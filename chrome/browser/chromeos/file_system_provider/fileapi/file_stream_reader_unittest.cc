@@ -84,7 +84,7 @@ class FileSystemProviderFileStreamReader : public testing::Test {
   FileSystemProviderFileStreamReader() : profile_(NULL), fake_file_(NULL) {}
   virtual ~FileSystemProviderFileStreamReader() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -122,7 +122,7 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     ASSERT_TRUE(wrong_file_url_.is_valid());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Setting the testing factory to NULL will destroy the created service
     // associated with the testing profile.
     ServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);

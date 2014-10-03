@@ -80,23 +80,23 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void StopPublicSessionAutoLoginTimer();
 
   // LoginDisplay::Delegate: implementation
-  virtual void CancelPasswordChangedFlow() OVERRIDE;
-  virtual void CreateAccount() OVERRIDE;
-  virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
-  virtual base::string16 GetConnectedNetworkName() OVERRIDE;
-  virtual bool IsSigninInProgress() const OVERRIDE;
+  virtual void CancelPasswordChangedFlow() override;
+  virtual void CreateAccount() override;
+  virtual void CompleteLogin(const UserContext& user_context) override;
+  virtual base::string16 GetConnectedNetworkName() override;
+  virtual bool IsSigninInProgress() const override;
   virtual void Login(const UserContext& user_context,
-                     const SigninSpecifics& specifics) OVERRIDE;
-  virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
-  virtual void OnSigninScreenReady() OVERRIDE;
-  virtual void OnStartEnterpriseEnrollment() OVERRIDE;
-  virtual void OnStartKioskEnableScreen() OVERRIDE;
-  virtual void OnStartKioskAutolaunchScreen() OVERRIDE;
-  virtual void ResetPublicSessionAutoLoginTimer() OVERRIDE;
-  virtual void ResyncUserData() OVERRIDE;
-  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
-  virtual void ShowWrongHWIDScreen() OVERRIDE;
-  virtual void Signout() OVERRIDE;
+                     const SigninSpecifics& specifics) override;
+  virtual void MigrateUserData(const std::string& old_password) override;
+  virtual void OnSigninScreenReady() override;
+  virtual void OnStartEnterpriseEnrollment() override;
+  virtual void OnStartKioskEnableScreen() override;
+  virtual void OnStartKioskAutolaunchScreen() override;
+  virtual void ResetPublicSessionAutoLoginTimer() override;
+  virtual void ResyncUserData() override;
+  virtual void SetDisplayEmail(const std::string& email) override;
+  virtual void ShowWrongHWIDScreen() override;
+  virtual void Signout() override;
 
   void LoginAsRetailModeUser();
   void LoginAsGuest();
@@ -106,7 +106,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Set a delegate that we will pass AuthStatusConsumer events to.
   // Used for testing.
@@ -146,17 +146,17 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnPublicSessionAutoLoginTimerFire();
 
   // LoginPerformer::Delegate implementation:
-  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
-  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
-  virtual void OnOffTheRecordAuthSuccess() OVERRIDE;
-  virtual void OnPasswordChangeDetected() OVERRIDE;
-  virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
-  virtual void PolicyLoadFailed() OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) override;
+  virtual void OnAuthSuccess(const UserContext& user_context) override;
+  virtual void OnOffTheRecordAuthSuccess() override;
+  virtual void OnPasswordChangeDetected() override;
+  virtual void WhiteListCheckFailed(const std::string& email) override;
+  virtual void PolicyLoadFailed() override;
   virtual void OnOnlineChecked(
-      const std::string& username, bool success) OVERRIDE;
+      const std::string& username, bool success) override;
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
+  virtual void OnProfilePrepared(Profile* profile) override;
 
   // Called when device settings change.
   void DeviceSettingsChanged();

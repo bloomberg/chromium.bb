@@ -37,8 +37,8 @@ class SessionLengthLimiterDelegateImpl : public SessionLengthLimiter::Delegate {
   SessionLengthLimiterDelegateImpl();
   virtual ~SessionLengthLimiterDelegateImpl();
 
-  virtual const base::TimeTicks GetCurrentTime() const OVERRIDE;
-  virtual void StopSession() OVERRIDE;
+  virtual const base::TimeTicks GetCurrentTime() const override;
+  virtual void StopSession() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionLengthLimiterDelegateImpl);

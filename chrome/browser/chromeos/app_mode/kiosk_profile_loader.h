@@ -49,15 +49,15 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void ReportLaunchResult(KioskAppLaunchError::Error error);
 
   // LoginPerformer::Delegate overrides
-  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
-  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
-  virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
-  virtual void PolicyLoadFailed() OVERRIDE;
+  virtual void OnAuthSuccess(const UserContext& user_context) override;
+  virtual void OnAuthFailure(const AuthFailure& error) override;
+  virtual void WhiteListCheckFailed(const std::string& email) override;
+  virtual void PolicyLoadFailed() override;
   virtual void OnOnlineChecked(
-      const std::string& email, bool success) OVERRIDE;
+      const std::string& email, bool success) override;
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
+  virtual void OnProfilePrepared(Profile* profile) override;
 
   std::string user_id_;
   bool use_guest_mount_;

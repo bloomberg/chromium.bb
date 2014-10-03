@@ -55,7 +55,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
       : signal_received_successfully_(false) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a mock proxy resolver. Will be owned by
     // |proxy_resolution_service|.
     MockProxyResolver* mock_resolver = new MockProxyResolver;
@@ -86,7 +86,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test_helper_.TearDown();
     service_provider_.reset();
   }

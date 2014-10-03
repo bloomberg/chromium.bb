@@ -30,7 +30,7 @@ class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
   void PushFakeValue(int64 value);
 
   // FreeDiskSpaceGetterInterface overrides.
-  virtual int64 AmountOfFreeDiskSpace() OVERRIDE;
+  virtual int64 AmountOfFreeDiskSpace() override;
 
  private:
   std::list<int64> fake_values_;

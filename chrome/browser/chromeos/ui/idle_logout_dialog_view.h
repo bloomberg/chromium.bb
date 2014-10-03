@@ -44,10 +44,10 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   static void CloseDialog();
 
   // views::DialogDelegateView:
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool Close() OVERRIDE;
+  virtual int GetDialogButtons() const override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool Close() override;
 
  private:
   friend class MockIdleLogoutSettingsProvider;

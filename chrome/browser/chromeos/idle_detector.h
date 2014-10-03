@@ -24,7 +24,7 @@ class IdleDetector : public wm::UserActivityObserver {
 
  private:
   // wm::UserActivityObserver overrides:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // Resets |timer_| to fire when we reach our idle timeout.
   void ResetTimer();

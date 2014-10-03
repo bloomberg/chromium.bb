@@ -58,67 +58,67 @@ class WebUIScreenLocker : public WebUILoginView,
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
   // ScreenLockerDelegate implementation.
-  virtual void LockScreen() OVERRIDE;
-  virtual void ScreenLockReady() OVERRIDE;
-  virtual void OnAuthenticate() OVERRIDE;
-  virtual void SetInputEnabled(bool enabled) OVERRIDE;
+  virtual void LockScreen() override;
+  virtual void ScreenLockReady() override;
+  virtual void OnAuthenticate() override;
+  virtual void SetInputEnabled(bool enabled) override;
   virtual void ShowErrorMessage(
       int error_msg_id,
-      HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
-  virtual void ClearErrors() OVERRIDE;
-  virtual void AnimateAuthenticationSuccess() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual content::WebUI* GetAssociatedWebUI() OVERRIDE;
-  virtual void OnLockWebUIReady() OVERRIDE;
-  virtual void OnLockBackgroundDisplayed() OVERRIDE;
+      HelpAppLauncher::HelpTopic help_topic_id) override;
+  virtual void ClearErrors() override;
+  virtual void AnimateAuthenticationSuccess() override;
+  virtual gfx::NativeWindow GetNativeWindow() const override;
+  virtual content::WebUI* GetAssociatedWebUI() override;
+  virtual void OnLockWebUIReady() override;
+  virtual void OnLockBackgroundDisplayed() override;
 
   // LoginDisplay::Delegate: implementation
-  virtual void CancelPasswordChangedFlow() OVERRIDE;
-  virtual void CreateAccount() OVERRIDE;
-  virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
-  virtual base::string16 GetConnectedNetworkName() OVERRIDE;
-  virtual bool IsSigninInProgress() const OVERRIDE;
+  virtual void CancelPasswordChangedFlow() override;
+  virtual void CreateAccount() override;
+  virtual void CompleteLogin(const UserContext& user_context) override;
+  virtual base::string16 GetConnectedNetworkName() override;
+  virtual bool IsSigninInProgress() const override;
   virtual void Login(const UserContext& user_context,
-                     const SigninSpecifics& specifics) OVERRIDE;
-  virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
-  virtual void OnSigninScreenReady() OVERRIDE;
-  virtual void OnStartEnterpriseEnrollment() OVERRIDE;
-  virtual void OnStartKioskEnableScreen() OVERRIDE;
-  virtual void OnStartKioskAutolaunchScreen() OVERRIDE;
-  virtual void ShowWrongHWIDScreen() OVERRIDE;
-  virtual void ResetPublicSessionAutoLoginTimer() OVERRIDE;
-  virtual void ResyncUserData() OVERRIDE;
-  virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
-  virtual void Signout() OVERRIDE;
+                     const SigninSpecifics& specifics) override;
+  virtual void MigrateUserData(const std::string& old_password) override;
+  virtual void OnSigninScreenReady() override;
+  virtual void OnStartEnterpriseEnrollment() override;
+  virtual void OnStartKioskEnableScreen() override;
+  virtual void OnStartKioskAutolaunchScreen() override;
+  virtual void ShowWrongHWIDScreen() override;
+  virtual void ResetPublicSessionAutoLoginTimer() override;
+  virtual void ResyncUserData() override;
+  virtual void SetDisplayEmail(const std::string& email) override;
+  virtual void Signout() override;
 
   // content::NotificationObserver (via WebUILoginView) implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // LockWindow::Observer implementation.
-  virtual void OnLockWindowReady() OVERRIDE;
+  virtual void OnLockWindowReady() override;
 
   // LockStateObserver override.
   virtual void OnLockStateEvent(
-      ash::LockStateObserver::EventType event) OVERRIDE;
+      ash::LockStateObserver::EventType event) override;
 
   // WidgetObserver override.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // PowerManagerClient::Observer overrides:
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
   virtual void LidEventReceived(bool open,
-                                const base::TimeTicks& time) OVERRIDE;
+                                const base::TimeTicks& time) override;
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
 
   // Overridden from ash::KeyboardStateObserver:
-  virtual void OnVirtualKeyboardStateChanged(bool activated) OVERRIDE;
+  virtual void OnVirtualKeyboardStateChanged(bool activated) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Returns instance of the OOBE WebUI.
   OobeUI* GetOobeUI();

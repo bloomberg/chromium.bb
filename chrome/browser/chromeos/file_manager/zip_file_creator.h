@@ -47,8 +47,8 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
   void StartProcessOnIOThread(base::File dest_file);
 
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnProcessCrashed(int exit_code) override;
 
   // IPC message handlers.
   void OnCreateZipFileSucceeded();

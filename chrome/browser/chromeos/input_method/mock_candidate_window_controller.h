@@ -19,9 +19,9 @@ class MockCandidateWindowController : public CandidateWindowController {
   virtual ~MockCandidateWindowController();
 
   // CandidateWindowController overrides:
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual void Hide() override;
 
   // Notifies observers.
   void NotifyCandidateWindowOpened();

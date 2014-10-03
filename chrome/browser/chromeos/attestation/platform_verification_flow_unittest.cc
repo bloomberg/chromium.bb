@@ -76,30 +76,30 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
   virtual void ShowConsentPrompt(
       content::WebContents* web_contents,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
-      OVERRIDE {
+      override {
     num_consent_calls_++;
     callback.Run(response_);
   }
 
-  virtual PrefService* GetPrefs(content::WebContents* web_contents) OVERRIDE {
+  virtual PrefService* GetPrefs(content::WebContents* web_contents) override {
     return &pref_service_;
   }
 
-  virtual const GURL& GetURL(content::WebContents* web_contents) OVERRIDE {
+  virtual const GURL& GetURL(content::WebContents* web_contents) override {
     return url_;
   }
 
   virtual user_manager::User* GetUser(
-      content::WebContents* web_contents) OVERRIDE {
+      content::WebContents* web_contents) override {
     return mock_user_manager_.GetActiveUser();
   }
 
   virtual HostContentSettingsMap* GetContentSettings(
-      content::WebContents* web_contents) OVERRIDE {
+      content::WebContents* web_contents) override {
     return content_settings_.get();
   }
 
-  virtual bool IsGuestOrIncognito(content::WebContents* web_contents) OVERRIDE {
+  virtual bool IsGuestOrIncognito(content::WebContents* web_contents) override {
     return is_incognito_;
   }
 
@@ -141,7 +141,7 @@ class CustomFakeCryptohomeClient : public FakeCryptohomeClient {
                                  attestation_enrolled_(true),
                                  attestation_prepared_(true) {}
   virtual void TpmAttestationIsEnrolled(
-      const BoolDBusMethodCallback& callback) OVERRIDE {
+      const BoolDBusMethodCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback,
                                                       call_status_,
@@ -149,7 +149,7 @@ class CustomFakeCryptohomeClient : public FakeCryptohomeClient {
   }
 
   virtual void TpmAttestationIsPrepared(
-      const BoolDBusMethodCallback& callback) OVERRIDE {
+      const BoolDBusMethodCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback,
                                                       call_status_,

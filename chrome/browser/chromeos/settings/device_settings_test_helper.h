@@ -82,46 +82,46 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   }
 
   // SessionManagerClient:
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void SetStubDelegate(SessionManagerClient::StubDelegate* delegate)
-      OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool HasObserver(Observer* observer) OVERRIDE;
-  virtual void EmitLoginPromptVisible() OVERRIDE;
-  virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE;
-  virtual void StartSession(const std::string& user_email) OVERRIDE;
-  virtual void StopSession() OVERRIDE;
-  virtual void StartDeviceWipe() OVERRIDE;
-  virtual void RequestLockScreen() OVERRIDE;
-  virtual void NotifyLockScreenShown() OVERRIDE;
-  virtual void NotifyLockScreenDismissed() OVERRIDE;
+      override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual bool HasObserver(Observer* observer) override;
+  virtual void EmitLoginPromptVisible() override;
+  virtual void RestartJob(int pid, const std::string& command_line) override;
+  virtual void StartSession(const std::string& user_email) override;
+  virtual void StopSession() override;
+  virtual void StartDeviceWipe() override;
+  virtual void RequestLockScreen() override;
+  virtual void NotifyLockScreenShown() override;
+  virtual void NotifyLockScreenDismissed() override;
   virtual void RetrieveActiveSessions(
-      const ActiveSessionsCallback& callback) OVERRIDE;
+      const ActiveSessionsCallback& callback) override;
   virtual void RetrieveDevicePolicy(
-      const RetrievePolicyCallback& callback) OVERRIDE;
+      const RetrievePolicyCallback& callback) override;
   virtual void RetrievePolicyForUser(
       const std::string& username,
-      const RetrievePolicyCallback& callback) OVERRIDE;
+      const RetrievePolicyCallback& callback) override;
   virtual std::string BlockingRetrievePolicyForUser(
-      const std::string& username) OVERRIDE;
+      const std::string& username) override;
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
-      const RetrievePolicyCallback& callback) OVERRIDE;
+      const RetrievePolicyCallback& callback) override;
   virtual void StoreDevicePolicy(const std::string& policy_blob,
-                                 const StorePolicyCallback& callback) OVERRIDE;
+                                 const StorePolicyCallback& callback) override;
   virtual void StorePolicyForUser(const std::string& username,
                                   const std::string& policy_blob,
-                                  const StorePolicyCallback& callback) OVERRIDE;
+                                  const StorePolicyCallback& callback) override;
   virtual void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,
-      const StorePolicyCallback& callback) OVERRIDE;
+      const StorePolicyCallback& callback) override;
   virtual void SetFlagsForUser(
       const std::string& account_id,
-      const std::vector<std::string>& flags) OVERRIDE;
+      const std::vector<std::string>& flags) override;
   virtual void GetServerBackedStateKeys(
-      const StateKeysCallback& callback) OVERRIDE;
+      const StateKeysCallback& callback) override;
 
  private:
   struct PolicyState {
@@ -164,8 +164,8 @@ class DeviceSettingsTestBase : public testing::Test {
   DeviceSettingsTestBase();
   virtual ~DeviceSettingsTestBase();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Flushes any pending device settings operations.
   void FlushDeviceSettings();

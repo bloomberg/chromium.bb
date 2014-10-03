@@ -83,8 +83,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // ImageDecoder::Delegate implementation. These callbacks will only be invoked
   // via the |background_task_runner_|.
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+                              const SkBitmap& decoded_image) override;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // The foreground task runner on which |this| is instantiated, Start() is
   // called and LoadedCallbacks are invoked.

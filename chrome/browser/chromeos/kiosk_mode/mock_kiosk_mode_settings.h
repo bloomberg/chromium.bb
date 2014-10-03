@@ -34,17 +34,17 @@ class MockKioskModeSettings : public KioskModeSettings {
   MockKioskModeSettings();
   virtual ~MockKioskModeSettings();
 
-  virtual bool IsKioskModeEnabled() OVERRIDE;
+  virtual bool IsKioskModeEnabled() override;
 
   // Initialize the mock class.
-  virtual void Initialize(const base::Closure& notify_initialized) OVERRIDE;
-  virtual bool is_initialized() const OVERRIDE;
+  virtual void Initialize(const base::Closure& notify_initialized) override;
+  virtual bool is_initialized() const override;
 
   // The time to logout the user in on idle.
-  virtual base::TimeDelta GetIdleLogoutTimeout() const OVERRIDE;
+  virtual base::TimeDelta GetIdleLogoutTimeout() const override;
 
   // The time to show the countdown timer for.
-  virtual base::TimeDelta GetIdleLogoutWarningDuration() const OVERRIDE;
+  virtual base::TimeDelta GetIdleLogoutWarningDuration() const override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MockKioskModeSettings>;

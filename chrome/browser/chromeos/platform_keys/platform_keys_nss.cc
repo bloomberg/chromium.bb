@@ -141,7 +141,7 @@ class GenerateRSAKeyState : public NSSOperationState {
   virtual ~GenerateRSAKeyState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) OVERRIDE {
+                       const std::string& error_message) override {
     CallBack(from, std::string() /* no public key */, error_message);
   }
 
@@ -168,7 +168,7 @@ class SignState : public NSSOperationState {
   virtual ~SignState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) OVERRIDE {
+                       const std::string& error_message) override {
     CallBack(from, std::string() /* no signature */, error_message);
   }
 
@@ -194,7 +194,7 @@ class GetCertificatesState : public NSSOperationState {
   virtual ~GetCertificatesState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) OVERRIDE {
+                       const std::string& error_message) override {
     CallBack(from,
              scoped_ptr<net::CertificateList>() /* no certificates */,
              error_message);
@@ -221,7 +221,7 @@ class ImportCertificateState : public NSSOperationState {
   virtual ~ImportCertificateState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) OVERRIDE {
+                       const std::string& error_message) override {
     CallBack(from, error_message);
   }
 
@@ -244,7 +244,7 @@ class RemoveCertificateState : public NSSOperationState {
   virtual ~RemoveCertificateState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) OVERRIDE {
+                       const std::string& error_message) override {
     CallBack(from, error_message);
   }
 
@@ -266,7 +266,7 @@ class GetTokensState : public NSSOperationState {
   virtual ~GetTokensState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) OVERRIDE {
+                       const std::string& error_message) override {
     CallBack(from,
              scoped_ptr<std::vector<std::string> >() /* no token ids */,
              error_message);

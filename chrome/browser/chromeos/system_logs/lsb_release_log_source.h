@@ -15,7 +15,7 @@ class LsbReleaseLogSource : public SystemLogsSource {
   virtual ~LsbReleaseLogSource() {}
 
   // SystemLogsSource override.
-  virtual void Fetch(const SysLogsSourceCallback& callback) OVERRIDE;
+  virtual void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LsbReleaseLogSource);

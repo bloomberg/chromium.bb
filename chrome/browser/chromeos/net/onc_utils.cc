@@ -157,7 +157,7 @@ class UserStringSubstitution : public chromeos::onc::StringSubstitution {
   virtual ~UserStringSubstitution() {}
 
   virtual bool GetSubstitute(const std::string& placeholder,
-                             std::string* substitute) const OVERRIDE {
+                             std::string* substitute) const override {
     if (placeholder == ::onc::substitutes::kLoginIDField)
       *substitute = user_->GetAccountName(false);
     else if (placeholder == ::onc::substitutes::kEmailField)

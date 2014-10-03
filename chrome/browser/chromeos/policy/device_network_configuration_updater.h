@@ -57,12 +57,12 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
       chromeos::NetworkDeviceHandler* network_device_handler,
       chromeos::CrosSettings* cros_settings);
 
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
   virtual void ImportCertificates(const base::ListValue& certificates_onc)
-      OVERRIDE;
+      override;
   virtual void ApplyNetworkPolicy(base::ListValue* network_configs_onc,
                                   base::DictionaryValue* global_network_config)
-      OVERRIDE;
+      override;
   void OnDataRoamingSettingChanged();
 
   chromeos::NetworkDeviceHandler* network_device_handler_;

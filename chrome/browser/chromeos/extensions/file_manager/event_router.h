@@ -61,7 +61,7 @@ class EventRouter : public KeyedService,
   virtual ~EventRouter();
 
   // KeyedService overrides.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   typedef base::Callback<void(bool success)> BoolCallback;
 
@@ -93,44 +93,44 @@ class EventRouter : public KeyedService,
 
   // chromeos::NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
 
   // drive::JobListObserver overrides.
-  virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE;
-  virtual void OnJobUpdated(const drive::JobInfo& job_info) OVERRIDE;
+  virtual void OnJobAdded(const drive::JobInfo& job_info) override;
+  virtual void OnJobUpdated(const drive::JobInfo& job_info) override;
   virtual void OnJobDone(const drive::JobInfo& job_info,
-                         drive::FileError error) OVERRIDE;
+                         drive::FileError error) override;
 
   // drive::DriveServiceObserver overrides.
-  virtual void OnRefreshTokenInvalid() OVERRIDE;
+  virtual void OnRefreshTokenInvalid() override;
 
   // drive::FileSystemObserver overrides.
-  virtual void OnDirectoryChanged(const base::FilePath& drive_path) OVERRIDE;
-  virtual void OnFileChanged(const drive::FileChange& changed_files) OVERRIDE;
+  virtual void OnDirectoryChanged(const base::FilePath& drive_path) override;
+  virtual void OnFileChanged(const drive::FileChange& changed_files) override;
   virtual void OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
-                                const base::FilePath& drive_path) OVERRIDE;
+                                const base::FilePath& drive_path) override;
 
   // VolumeManagerObserver overrides.
   virtual void OnDiskAdded(
       const chromeos::disks::DiskMountManager::Disk& disk,
-      bool mounting) OVERRIDE;
+      bool mounting) override;
   virtual void OnDiskRemoved(
-      const chromeos::disks::DiskMountManager::Disk& disk) OVERRIDE;
-  virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
-  virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+      const chromeos::disks::DiskMountManager::Disk& disk) override;
+  virtual void OnDeviceAdded(const std::string& device_path) override;
+  virtual void OnDeviceRemoved(const std::string& device_path) override;
   virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info) OVERRIDE;
+                               const VolumeInfo& volume_info) override;
   virtual void OnVolumeUnmounted(chromeos::MountError error_code,
-                                 const VolumeInfo& volume_info) OVERRIDE;
+                                 const VolumeInfo& volume_info) override;
   virtual void OnFormatStarted(
-      const std::string& device_path, bool success) OVERRIDE;
+      const std::string& device_path, bool success) override;
   virtual void OnFormatCompleted(
-      const std::string& device_path, bool success) OVERRIDE;
+      const std::string& device_path, bool success) override;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;

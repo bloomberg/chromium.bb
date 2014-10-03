@@ -22,19 +22,19 @@ class FakeLoginUtils : public LoginUtils {
   FakeLoginUtils();
   virtual ~FakeLoginUtils();
   virtual void RespectLocalePreference(Profile*,
-                                       const base::Closure& callback) OVERRIDE;
+                                       const base::Closure& callback) override;
   virtual void DoBrowserLaunch(Profile* profile,
-                               LoginDisplayHost* login_host) OVERRIDE;
+                               LoginDisplayHost* login_host) override;
   virtual void PrepareProfile(const UserContext& user_context,
                               bool has_cookies,
                               bool has_active_session,
-                              LoginUtils::Delegate* delegate) OVERRIDE;
-  virtual void DelegateDeleted(LoginUtils::Delegate* delegate) OVERRIDE;
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
+                              LoginUtils::Delegate* delegate) override;
+  virtual void DelegateDeleted(LoginUtils::Delegate* delegate) override;
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) override;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
-      AuthStatusConsumer* consumer) OVERRIDE;
+      AuthStatusConsumer* consumer) override;
   virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
-                                                   bool early_restart) OVERRIDE;
+                                                   bool early_restart) override;
 
   void SetExpectedCredentials(const UserContext& user_context);
   void set_should_launch_browser(bool should_launch_browser) {

@@ -49,29 +49,29 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   }
 
   // DiskMountManager overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual const DiskMap& disks() const OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual const DiskMap& disks() const override;
   virtual const Disk* FindDiskBySourcePath(
-      const std::string& source_path) const OVERRIDE;
-  virtual const MountPointMap& mount_points() const OVERRIDE;
+      const std::string& source_path) const override;
+  virtual const MountPointMap& mount_points() const override;
   virtual void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback) OVERRIDE;
+      const EnsureMountInfoRefreshedCallback& callback) override;
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,
-                         chromeos::MountType type) OVERRIDE;
+                         chromeos::MountType type) override;
   virtual void UnmountPath(const std::string& mount_path,
                            chromeos::UnmountOptions options,
-                           const UnmountPathCallback& callback) OVERRIDE;
-  virtual void FormatMountedDevice(const std::string& mount_path) OVERRIDE;
+                           const UnmountPathCallback& callback) override;
+  virtual void FormatMountedDevice(const std::string& mount_path) override;
   virtual void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE;
+      const UnmountDeviceRecursivelyCallbackType& callback) override;
 
-  virtual bool AddDiskForTest(Disk* disk) OVERRIDE;
+  virtual bool AddDiskForTest(Disk* disk) override;
   virtual bool AddMountPointForTest(
-      const MountPointInfo& mount_point) OVERRIDE;
+      const MountPointInfo& mount_point) override;
   void InvokeDiskEventForTest(DiskEvent event, const Disk* disk);
 
  private:

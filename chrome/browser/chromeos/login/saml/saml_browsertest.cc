@@ -245,7 +245,7 @@ class SamlTest : public InProcessBrowserTest {
   SamlTest() : saml_load_injected_(false) {}
   virtual ~SamlTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     // Start the GAIA https wrapper here so that the GAIA URLs can be pointed at
@@ -267,11 +267,11 @@ class SamlTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
@@ -295,7 +295,7 @@ class SamlTest : public InProcessBrowserTest {
     fake_gaia_.Initialize();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     fake_gaia_.SetFakeMergeSessionParams(kFirstSAMLUserEmail,
                                          kTestAuthSIDCookie1,
                                          kTestAuthLSIDCookie1);
@@ -313,7 +313,7 @@ class SamlTest : public InProcessBrowserTest {
         content::NotificationService::AllSources()));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHostImpl::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -645,8 +645,8 @@ class SAMLPolicyTest : public SamlTest {
   virtual ~SAMLPolicyTest();
 
   // SamlTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void SetUpOnMainThread() override;
 
   void SetSAMLOfflineSigninTimeLimitPolicy(int limit);
   void EnableTransferSAMLCookiesPolicy();

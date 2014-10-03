@@ -33,7 +33,7 @@ class TestFileSystem : public DummyFileSystem {
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
                         const std::string& mime_type,
-                        const OpenFileCallback& callback) OVERRIDE {
+                        const OpenFileCallback& callback) override {
     EXPECT_EQ(OPEN_OR_CREATE_FILE, open_mode);
 
     // Emulate a case of opening a hosted document.

@@ -33,7 +33,7 @@ class CaptivePortalWindowProxyStubDelegate
   virtual ~CaptivePortalWindowProxyStubDelegate() {
   }
 
-  virtual void OnPortalDetected() OVERRIDE {
+  virtual void OnPortalDetected() override {
     ++num_portal_notifications_;
   }
 
@@ -74,12 +74,12 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
     ASSERT_EQ(num_portal_notifications, delegate_.num_portal_notifications());
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     host_ = LoginDisplayHostImpl::default_host();
     CHECK(host_);
     content::WebContents* web_contents =
@@ -89,7 +89,7 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
         new CaptivePortalWindowProxy(&delegate_, web_contents));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     captive_portal_window_proxy_.reset();
     base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
     base::MessageLoopForUI::current()->RunUntilIdle();
@@ -179,7 +179,7 @@ class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
       : LoginManagerTest(false) {}
   virtual ~CaptivePortalWindowCtorDtorTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
     network_portal_detector_ = new NetworkPortalDetectorTestImpl();

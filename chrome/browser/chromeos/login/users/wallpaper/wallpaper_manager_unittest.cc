@@ -48,7 +48,7 @@ class WallpaperManagerCacheTest : public test::AshTestBase {
 
   FakeUserManager* fake_user_manager() { return fake_user_manager_; }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test::AshTestBase::SetUp();
   }
 

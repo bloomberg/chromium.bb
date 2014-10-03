@@ -22,14 +22,14 @@ class ResetScreen : public WizardScreen,
   virtual ~ResetScreen();
 
   // WizardScreen implementation:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // ResetScreenActor::Delegate implementation:
-  virtual void OnExit() OVERRIDE;
-  virtual void OnActorDestroyed(ResetScreenActor* actor) OVERRIDE;
+  virtual void OnExit() override;
+  virtual void OnActorDestroyed(ResetScreenActor* actor) override;
 
  private:
   ResetScreenActor* actor_;

@@ -14,13 +14,13 @@ class PowerDataCollectorTest : public testing::Test {
   PowerDataCollectorTest() : power_data_collector_(NULL) {}
   virtual ~PowerDataCollectorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DBusThreadManager::Initialize();
     PowerDataCollector::InitializeForTesting();
     power_data_collector_ = PowerDataCollector::Get();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     PowerDataCollector::Shutdown();
     DBusThreadManager::Shutdown();
     power_data_collector_ = NULL;

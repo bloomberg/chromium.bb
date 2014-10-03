@@ -30,10 +30,10 @@ class AuthSyncObserver : public KeyedService,
   friend class AuthSyncObserverFactory;
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // Called on attempt to restore supervised user token.
   void OnSupervisedTokenLoaded(const std::string& token);

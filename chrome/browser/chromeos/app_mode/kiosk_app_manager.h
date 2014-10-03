@@ -227,17 +227,17 @@ class KioskAppManager : public KioskAppDataDelegate,
   void UpdateAppData();
 
   // KioskAppDataDelegate overrides:
-  virtual void GetKioskAppIconCacheDir(base::FilePath* cache_dir) OVERRIDE;
-  virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
-  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
+  virtual void GetKioskAppIconCacheDir(base::FilePath* cache_dir) override;
+  virtual void OnKioskAppDataChanged(const std::string& app_id) override;
+  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) override;
 
   // ExternalCache::Delegate:
   virtual void OnExtensionListsUpdated(
-      const base::DictionaryValue* prefs) OVERRIDE;
-  virtual void OnExtensionLoadedInCache(const std::string& id) OVERRIDE;
+      const base::DictionaryValue* prefs) override;
+  virtual void OnExtensionLoadedInCache(const std::string& id) override;
   virtual void OnExtensionDownloadFailed(
       const std::string& id,
-      extensions::ExtensionDownloaderDelegate::Error error) OVERRIDE;
+      extensions::ExtensionDownloaderDelegate::Error error) override;
 
   // Callback for EnterpriseInstallAttributes::LockDevice() during
   // EnableConsumerModeKiosk() call.

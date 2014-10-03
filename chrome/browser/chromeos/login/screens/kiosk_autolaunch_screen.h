@@ -24,14 +24,14 @@ class KioskAutolaunchScreen : public WizardScreen,
   virtual ~KioskAutolaunchScreen();
 
   // WizardScreen implementation:
-  virtual void PrepareToShow() OVERRIDE {}
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE {}
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override {}
+  virtual void Show() override;
+  virtual void Hide() override {}
+  virtual std::string GetName() const override;
 
   // KioskAutolaunchScreenActor::Delegate implementation:
-  virtual void OnExit(bool confirmed) OVERRIDE;
-  virtual void OnActorDestroyed(KioskAutolaunchScreenActor* actor) OVERRIDE;
+  virtual void OnExit(bool confirmed) override;
+  virtual void OnActorDestroyed(KioskAutolaunchScreenActor* actor) override;
 
  private:
   KioskAutolaunchScreenActor* actor_;

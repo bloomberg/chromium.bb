@@ -48,13 +48,13 @@ class AutoEnrollmentClientTest : public testing::Test {
         local_state_(scoped_testing_local_state_.Get()),
         state_(AUTO_ENROLLMENT_STATE_PENDING) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CreateClient(kStateKey, true, 4, 8);
     ASSERT_FALSE(local_state_->GetUserPref(prefs::kShouldAutoEnroll));
     ASSERT_FALSE(local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Flush any deletion tasks.
     base::RunLoop().RunUntilIdle();
   }

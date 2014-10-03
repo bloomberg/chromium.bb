@@ -69,7 +69,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
   FileSystemProviderMountPathUtilTest() {}
   virtual ~FileSystemProviderMountPathUtilTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -83,7 +83,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
         base::Bind(&FakeProvidedFileSystem::Create));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Setting the testing factory to NULL will destroy the created service
     // associated with the testing profile.
     ServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);

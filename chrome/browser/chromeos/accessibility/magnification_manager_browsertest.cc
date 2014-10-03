@@ -152,13 +152,13 @@ class MagnificationManagerTest : public InProcessBrowserTest {
   MagnificationManagerTest() {}
   virtual ~MagnificationManagerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Set the login-screen profile.
     MagnificationManager::Get()->SetProfileForTest(
         ProfileManager::GetActiveUserProfile());

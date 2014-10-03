@@ -30,19 +30,19 @@ class NotificationObserver : public message_center::MessageCenterObserver {
 
   // Overridden from message_center::MessageCenterObserver:
   virtual void OnNotificationAdded(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     if (notification_id == kNotificationId)
       ++add_count_;
   }
 
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool /* by_user */) OVERRIDE {
+                                     bool /* by_user */) override {
     if (notification_id == kNotificationId)
       ++remove_count_;
   }
 
   virtual void OnNotificationUpdated(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     if (notification_id == kNotificationId)
       ++update_count_;
   }
@@ -66,14 +66,14 @@ class NetworkPortalNotificationControllerTest : public testing::Test {
   NetworkPortalNotificationControllerTest() {}
   virtual ~NetworkPortalNotificationControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine* cl = CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kEnableNetworkPortalNotification);
     MessageCenter::Initialize();
     MessageCenter::Get()->AddObserver(&observer_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     MessageCenter::Get()->RemoveObserver(&observer_);
     MessageCenter::Shutdown();
   }

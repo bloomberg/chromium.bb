@@ -31,7 +31,7 @@ class InstallLimiterFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory overrides:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(InstallLimiterFactory);
 };

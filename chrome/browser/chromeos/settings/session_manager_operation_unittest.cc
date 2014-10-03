@@ -48,7 +48,7 @@ class SessionManagerOperationTest : public testing::Test {
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     policy_.payload().mutable_pinned_apps()->add_app_id("fake-app");
     policy_.Build();
 

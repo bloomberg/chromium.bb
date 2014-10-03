@@ -33,7 +33,7 @@ class MergeSessionXHRRequestWaiter : public OAuth2LoginManager::Observer {
   // OAuth2LoginManager::Observer overrides.
   virtual void OnSessionRestoreStateChanged(
       Profile* user_profile,
-      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
+      OAuth2LoginManager::SessionRestoreState state) override;
 
   // Timeout callback.
   void OnTimeout();

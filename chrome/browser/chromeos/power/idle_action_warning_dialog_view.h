@@ -28,10 +28,10 @@ class IdleActionWarningDialogView : public views::DialogDelegateView {
   void Update(base::TimeTicks idle_action_time);
 
   // views::DialogDelegateView:
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual int GetDialogButtons() const override;
+  virtual bool Cancel() override;
 
  private:
   virtual ~IdleActionWarningDialogView();

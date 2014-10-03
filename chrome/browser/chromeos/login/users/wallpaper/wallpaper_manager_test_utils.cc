@@ -37,9 +37,9 @@ class TestWallpaperObserverPendingListEmpty
   }
 
   virtual void OnWallpaperAnimationFinished(
-      const std::string& user_id) OVERRIDE {}
+      const std::string& user_id) override {}
 
-  virtual void OnPendingListEmptyForTesting() OVERRIDE {
+  virtual void OnPendingListEmptyForTesting() override {
     empty_ = true;
     base::MessageLoop::current()->Quit();
   }

@@ -46,18 +46,18 @@ class BurnDeviceHandler : public disks::DiskMountManager::Observer {
   // DiskMountManager::Observer overrides.
   virtual void OnDiskEvent(
       disks::DiskMountManager::DiskEvent event,
-      const disks::DiskMountManager::Disk* disk) OVERRIDE;
+      const disks::DiskMountManager::Disk* disk) override;
   virtual void OnDeviceEvent(
       disks::DiskMountManager::DeviceEvent event,
-      const std::string& device_path) OVERRIDE;
+      const std::string& device_path) override;
   virtual void OnMountEvent(
       disks::DiskMountManager::MountEvent event,
       MountError error_code,
-      const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE;
+      const disks::DiskMountManager::MountPointInfo& mount_info) override;
   virtual void OnFormatEvent(
       disks::DiskMountManager::FormatEvent event,
       FormatError error_code,
-      const std::string& device_path) OVERRIDE;
+      const std::string& device_path) override;
 
  private:
   disks::DiskMountManager* disk_mount_manager_;  // Not owned by this class.

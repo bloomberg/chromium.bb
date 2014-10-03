@@ -36,7 +36,7 @@ class TestDelegate : public OperationDelegate {
   }
 
   // OperationDelegate overrides.
-  virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE {
+  virtual void OnEntryUpdatedByOperation(const std::string& local_id) override {
     updated_local_id_ = local_id;
     if (!quit_closure_.is_null())
       quit_closure_.Run();
@@ -56,7 +56,7 @@ class GetFileForSavingOperationTest : public OperationTestBase {
       : OperationTestBase(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     OperationTestBase::SetUp();
 
     operation_.reset(new GetFileForSavingOperation(

@@ -69,11 +69,11 @@ class CloudExternalDataPolicyObserver
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
-  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) override;
+  virtual void OnDeviceLocalAccountsChanged() override;
 
  private:
   // Helper class that observes |policy_| for a logged-in user.

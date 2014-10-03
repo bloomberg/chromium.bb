@@ -41,7 +41,7 @@ class TestListener : public content::NotificationObserver {
   // Implements the content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     const std::string& content = *content::Details<std::string>(details).ptr();
     if (content == kBackgroundReady) {
       // Initializes IMF for testing when receives ready message from
@@ -64,7 +64,7 @@ class TestListener : public content::NotificationObserver {
 };
 
 class ExtensionInputMethodApiTest : public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,

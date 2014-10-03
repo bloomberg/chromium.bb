@@ -38,9 +38,9 @@ class BufferingFileStreamReader : public storage::FileStreamReader {
   // storage::FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf,
                    int buf_len,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int64 GetLength(
-      const net::Int64CompletionCallback& callback) OVERRIDE;
+      const net::Int64CompletionCallback& callback) override;
 
  private:
   // Copies data from the preloading buffer and updates the internal iterator.

@@ -76,8 +76,8 @@ class DeviceCloudPolicyInvalidatorTest : public testing::Test {
   virtual ~DeviceCloudPolicyInvalidatorTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Ownership is not passed. The Profile is owned by the global ProfileManager.
   Profile *LogInAndReturnProfile(const std::string& user_id);

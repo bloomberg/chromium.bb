@@ -24,10 +24,10 @@ class KeyboardDrivenEventRewriter : public ui::EventRewriter {
   // EventRewriter overrides:
   virtual ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      scoped_ptr<ui::Event>* new_event) OVERRIDE;
+      scoped_ptr<ui::Event>* new_event) override;
   virtual ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
-      scoped_ptr<ui::Event>* new_event) OVERRIDE;
+      scoped_ptr<ui::Event>* new_event) override;
 
  private:
   ui::EventRewriteStatus Rewrite(const ui::Event& event,

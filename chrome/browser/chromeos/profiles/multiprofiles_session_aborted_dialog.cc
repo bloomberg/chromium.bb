@@ -38,16 +38,16 @@ class MultiprofilesSessionAbortedView : public views::DialogDelegateView {
   static void ShowDialog(const std::string& user_email);
 
   // views::DialogDelegate overrides.
-  virtual bool Accept() OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
+  virtual bool Accept() override;
+  virtual int GetDialogButtons() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
+      ui::DialogButton button) const override;
 
   // views::WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
  private:
   void InitDialog(const std::string& user_email);

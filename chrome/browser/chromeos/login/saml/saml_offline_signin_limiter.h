@@ -39,7 +39,7 @@ class SAMLOfflineSigninLimiter : public KeyedService {
   void SignedIn(UserContext::AuthFlow auth_flow);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   friend class SAMLOfflineSigninLimiterFactory;

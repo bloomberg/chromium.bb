@@ -87,7 +87,7 @@ class MockFileSelector : public file_manager::FileSelector {
       const base::FilePath& suggested_name,
       const std::vector<std::string>& allowed_extensions,
       Browser* browser,
-      FileBrowserHandlerInternalSelectFileFunction* function) OVERRIDE {
+      FileBrowserHandlerInternalSelectFileFunction* function) override {
     // Confirm that the function suggested us the right name.
     EXPECT_EQ(suggested_name_, suggested_name);
     // Confirm that the function allowed us the right extensions.
@@ -136,7 +136,7 @@ class MockFileSelectorFactory : public file_manager::FileSelectorFactory {
   virtual ~MockFileSelectorFactory() {}
 
   // file_manager::FileSelectorFactory implementation.
-  virtual file_manager::FileSelector* CreateFileSelector() const OVERRIDE {
+  virtual file_manager::FileSelector* CreateFileSelector() const override {
     return new MockFileSelector(suggested_name_,
                                 allowed_extensions_,
                                 success_,
@@ -159,7 +159,7 @@ class MockFileSelectorFactory : public file_manager::FileSelectorFactory {
 // Extension api test for the fileBrowserHandler extension API.
 class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create mount point directory that will be used in the test.
     // Mount point will be called "tmp", and it will be located in a tmp
     // directory with an unique name.

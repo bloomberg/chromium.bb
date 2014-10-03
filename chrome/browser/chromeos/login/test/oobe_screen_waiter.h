@@ -32,7 +32,7 @@ class OobeScreenWaiter : public OobeUI::Observer {
   // OobeUI::Observer implementation:
   virtual void OnCurrentScreenChanged(
         OobeDisplay::Screen current_screen,
-        OobeDisplay::Screen new_screen) OVERRIDE;
+        OobeDisplay::Screen new_screen) override;
 
  private:
   OobeUI* GetOobeUI();

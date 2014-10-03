@@ -22,7 +22,7 @@ class ProfileRelatedTest : public testing::Test {
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
   }
 

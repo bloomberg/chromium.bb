@@ -122,27 +122,27 @@ class NetworkMenuModel : public ui::MenuModel {
 
   // ui::MenuModel implementation
   // GetCommandIdAt() must be implemented by subclasses.
-  virtual bool HasIcons() const OVERRIDE;
-  virtual int GetItemCount() const OVERRIDE;
-  virtual ui::MenuModel::ItemType GetTypeAt(int index) const OVERRIDE;
-  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
-  virtual base::string16 GetLabelAt(int index) const OVERRIDE;
-  virtual bool IsItemDynamicAt(int index) const OVERRIDE;
-  virtual const gfx::FontList* GetLabelFontListAt(int index) const OVERRIDE;
+  virtual bool HasIcons() const override;
+  virtual int GetItemCount() const override;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const override;
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override;
+  virtual base::string16 GetLabelAt(int index) const override;
+  virtual bool IsItemDynamicAt(int index) const override;
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const override;
   virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const OVERRIDE;
-  virtual bool IsItemCheckedAt(int index) const OVERRIDE;
-  virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE;
+                                ui::Accelerator* accelerator) const override;
+  virtual bool IsItemCheckedAt(int index) const override;
+  virtual int GetGroupIdAt(int index) const override;
+  virtual bool GetIconAt(int index, gfx::Image* icon) override;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
-      int index) const OVERRIDE;
-  virtual bool IsEnabledAt(int index) const OVERRIDE;
-  virtual bool IsVisibleAt(int index) const OVERRIDE;
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const OVERRIDE;
-  virtual void HighlightChangedTo(int index) OVERRIDE;
-  virtual void ActivatedAt(int index) OVERRIDE;
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE;
-  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE;
+      int index) const override;
+  virtual bool IsEnabledAt(int index) const override;
+  virtual bool IsVisibleAt(int index) const override;
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const override;
+  virtual void HighlightChangedTo(int index) override;
+  virtual void ActivatedAt(int index) override;
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override;
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const override;
 
  protected:
   enum MenuItemFlags {
@@ -180,10 +180,10 @@ class MoreMenuModel : public NetworkMenuModel {
   virtual ~MoreMenuModel() {}
 
   // NetworkMenuModel implementation.
-  virtual void InitMenuItems(bool should_open_button_options) OVERRIDE;
+  virtual void InitMenuItems(bool should_open_button_options) override;
 
   // ui::MenuModel implementation
-  virtual int GetCommandIdAt(int index) const OVERRIDE;
+  virtual int GetCommandIdAt(int index) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MoreMenuModel);
@@ -198,10 +198,10 @@ class MainMenuModel : public NetworkMenuModel {
   virtual ~MainMenuModel() {}
 
   // NetworkMenuModel implementation.
-  virtual void InitMenuItems(bool should_open_button_options) OVERRIDE;
+  virtual void InitMenuItems(bool should_open_button_options) override;
 
   // ui::MenuModel implementation
-  virtual int GetCommandIdAt(int index) const OVERRIDE;
+  virtual int GetCommandIdAt(int index) const override;
 
  private:
   void AddWirelessNetworkMenuItem(const NetworkState* wifi_network, int flag);

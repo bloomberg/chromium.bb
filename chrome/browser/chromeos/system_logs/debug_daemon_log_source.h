@@ -27,7 +27,7 @@ class DebugDaemonLogSource : public SystemLogsSource {
   // Fetches logs from the daemon over dbus. After the fetch is complete, the
   // results will be forwarded to the request supplied to the constructor and
   // this instance will free itself.
-  virtual void Fetch(const SysLogsSourceCallback& callback) OVERRIDE;
+  virtual void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
   typedef std::map<std::string, std::string> KeyValueMap;

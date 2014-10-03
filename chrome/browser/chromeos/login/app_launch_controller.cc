@@ -82,7 +82,7 @@ class AppLaunchController::AppWindowWatcher
 
  private:
   // extensions::AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE {
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     if (app_window->extension_id() == app_id_) {
       window_registry_->RemoveObserver(this);
       NotifyAppWindowCreated();

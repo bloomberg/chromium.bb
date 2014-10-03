@@ -56,10 +56,10 @@ class PolicyCertService
 
   // UserNetworkConfigurationUpdater::WebTrustedCertsObserver:
   virtual void OnTrustAnchorsChanged(const net::CertificateList& trust_anchors)
-      OVERRIDE;
+      override;
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   static scoped_ptr<PolicyCertService> CreateForTesting(
       const std::string& user_id,

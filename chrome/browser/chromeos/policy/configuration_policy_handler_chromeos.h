@@ -29,10 +29,10 @@ class ExternalDataPolicyHandler : public TypeCheckingPolicyHandler {
 
   // TypeCheckingPolicyHandler:
   virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
+                                   PolicyErrorMap* errors) override;
 
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalDataPolicyHandler);
@@ -50,10 +50,10 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
+                                   PolicyErrorMap* errors) override;
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-  virtual void PrepareForDisplaying(PolicyMap* policies) const OVERRIDE;
+                                   PrefValueMap* prefs) override;
+  virtual void PrepareForDisplaying(PolicyMap* policies) const override;
 
  private:
   explicit NetworkConfigurationPolicyHandler(
@@ -86,7 +86,7 @@ class PinnedLauncherAppsPolicyHandler
 
   // ExtensionListPolicyHandler methods:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PinnedLauncherAppsPolicyHandler);
@@ -99,7 +99,7 @@ class ScreenMagnifierPolicyHandler : public IntRangePolicyHandlerBase {
 
   // IntRangePolicyHandlerBase:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenMagnifierPolicyHandler);
@@ -116,7 +116,7 @@ class LoginScreenPowerManagementPolicyHandler
 
   // SchemaValidatingPolicyHandler:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginScreenPowerManagementPolicyHandler);
@@ -131,7 +131,7 @@ class DeprecatedIdleActionHandler : public IntRangePolicyHandlerBase {
 
   // ConfigurationPolicyHandler methods:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeprecatedIdleActionHandler);
@@ -146,7 +146,7 @@ class PowerManagementIdleSettingsPolicyHandler
 
   // SchemaValidatingPolicyHandler:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerManagementIdleSettingsPolicyHandler);
@@ -159,7 +159,7 @@ class ScreenLockDelayPolicyHandler : public SchemaValidatingPolicyHandler {
 
   // SchemaValidatingPolicyHandler:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenLockDelayPolicyHandler);

@@ -135,15 +135,15 @@ class ProfileHelper
   friend class SessionStateDelegateChromeOSTest;
 
   // BrowsingDataRemover::Observer implementation:
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+  virtual void OnBrowsingDataRemoverDone() override;
 
   // OAuth2LoginManager::Observer overrides.
   virtual void OnSessionRestoreStateChanged(
       Profile* user_profile,
-      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
+      OAuth2LoginManager::SessionRestoreState state) override;
 
   // user_manager::UserManager::UserSessionStateObserver implementation:
-  virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
+  virtual void ActiveUserHashChanged(const std::string& hash) override;
 
   // Associates |user| with profile with the same user_id,
   // for GetUserByProfile() testing.

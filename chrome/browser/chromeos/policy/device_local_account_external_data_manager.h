@@ -57,7 +57,7 @@ class DeviceLocalAccountExternalDataManager
   virtual ~DeviceLocalAccountExternalDataManager();
 
   // CloudExternalDataManagerBase:
-  virtual void OnPolicyStoreLoaded() OVERRIDE;
+  virtual void OnPolicyStoreLoaded() override;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountExternalDataManager);
 };

@@ -33,7 +33,7 @@ const char kCacheFileDirectory[] = "files";
 // Tests FileCache methods working with the blocking task runner.
 class FileCacheTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
     cache_files_dir_ = temp_dir_.path().AppendASCII(kCacheFileDirectory);

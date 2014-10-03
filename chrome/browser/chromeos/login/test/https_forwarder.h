@@ -20,11 +20,11 @@ class HTTPSForwarder : public net::LocalTestServer {
   virtual ~HTTPSForwarder();
 
   // net::LocalTestServer:
-  virtual bool SetPythonPath() const OVERRIDE;
+  virtual bool SetPythonPath() const override;
   virtual bool GetTestServerPath(
-      base::FilePath* testserver_path) const OVERRIDE;
+      base::FilePath* testserver_path) const override;
   virtual bool GenerateAdditionalArguments(
-      base::DictionaryValue* arguments) const OVERRIDE;
+      base::DictionaryValue* arguments) const override;
 
  private:
   GURL forward_target_;

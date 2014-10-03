@@ -42,8 +42,8 @@ class CHROMEOS_EXPORT RendererFreezer : public PowerManagerClient::Observer {
   virtual ~RendererFreezer();
 
   // PowerManagerClient::Observer implementation
-  virtual void SuspendImminent() OVERRIDE;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendImminent() override;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
  private:
   // Called when all asynchronous work is complete and renderers can be frozen.

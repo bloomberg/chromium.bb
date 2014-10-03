@@ -32,7 +32,7 @@ class DisplayPowerServiceProvider
 
   // CrosDBusService::ServiceProviderInterface overrides:
   virtual void Start(
-      scoped_refptr<dbus::ExportedObject> exported_object) OVERRIDE;
+      scoped_refptr<dbus::ExportedObject> exported_object) override;
 
  private:
   // Called from ExportedObject when a handler is exported as a D-Bus

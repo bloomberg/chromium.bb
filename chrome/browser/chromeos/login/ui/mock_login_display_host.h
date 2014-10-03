@@ -33,7 +33,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD2(StartWizardPtr, void(const std::string&,
                                     base::DictionaryValue*));
   virtual void StartWizard(const std::string& name,
-                           scoped_ptr<base::DictionaryValue> value) OVERRIDE;
+                           scoped_ptr<base::DictionaryValue> value) override;
   MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));
   MOCK_METHOD1(StartUserAdding, void(const base::Closure&));

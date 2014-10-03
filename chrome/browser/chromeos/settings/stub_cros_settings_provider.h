@@ -22,15 +22,15 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
   virtual ~StubCrosSettingsProvider();
 
   // CrosSettingsProvider implementation.
-  virtual const base::Value* Get(const std::string& path) const OVERRIDE;
+  virtual const base::Value* Get(const std::string& path) const override;
   virtual TrustedStatus PrepareTrustedValues(
-      const base::Closure& callback) OVERRIDE;
-  virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
+      const base::Closure& callback) override;
+  virtual bool HandlesSetting(const std::string& path) const override;
 
  private:
   // CrosSettingsProvider implementation:
   virtual void DoSet(const std::string& path,
-                     const base::Value& value) OVERRIDE;
+                     const base::Value& value) override;
 
   // Initializes settings to their defaults.
   void SetDefaults();

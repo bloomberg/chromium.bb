@@ -55,7 +55,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   bool IsSharkRequisition() const;
 
   // CloudPolicyManager:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Pref registration helper.
   static void RegisterPrefs(PrefRegistrySimple* registry);

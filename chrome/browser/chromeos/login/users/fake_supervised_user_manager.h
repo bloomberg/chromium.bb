@@ -17,42 +17,42 @@ class FakeSupervisedUserManager : public SupervisedUserManager {
   FakeSupervisedUserManager();
   virtual ~FakeSupervisedUserManager();
 
-  virtual bool HasSupervisedUsers(const std::string& manager_id) const OVERRIDE;
+  virtual bool HasSupervisedUsers(const std::string& manager_id) const override;
   virtual const user_manager::User* CreateUserRecord(
       const std::string& manager_id,
       const std::string& local_user_id,
       const std::string& sync_user_id,
-      const base::string16& display_name) OVERRIDE;
-  virtual std::string GenerateUserId() OVERRIDE;
+      const base::string16& display_name) override;
+  virtual std::string GenerateUserId() override;
   virtual const user_manager::User* FindByDisplayName(
-      const base::string16& display_name) const OVERRIDE;
+      const base::string16& display_name) const override;
   virtual const user_manager::User* FindBySyncId(
-      const std::string& sync_id) const OVERRIDE;
-  virtual std::string GetUserSyncId(const std::string& user_id) const OVERRIDE;
+      const std::string& sync_id) const override;
+  virtual std::string GetUserSyncId(const std::string& user_id) const override;
   virtual base::string16 GetManagerDisplayName(const std::string& user_id) const
-      OVERRIDE;
+      override;
   virtual std::string GetManagerUserId(const std::string& user_id) const
-      OVERRIDE;
+      override;
   virtual std::string GetManagerDisplayEmail(const std::string& user_id) const
-      OVERRIDE;
+      override;
   virtual void StartCreationTransaction(const base::string16& display_name)
-      OVERRIDE {}
+      override {}
   virtual void SetCreationTransactionUserId(const std::string& user_id)
-      OVERRIDE {}
-  virtual void CommitCreationTransaction() OVERRIDE {}
-  virtual SupervisedUserAuthentication* GetAuthentication() OVERRIDE;
+      override {}
+  virtual void CommitCreationTransaction() override {}
+  virtual SupervisedUserAuthentication* GetAuthentication() override;
   virtual void GetPasswordInformation(
       const std::string& user_id,
-      base::DictionaryValue* result) OVERRIDE {}
+      base::DictionaryValue* result) override {}
   virtual void SetPasswordInformation(
       const std::string& user_id,
-      const base::DictionaryValue* password_info) OVERRIDE {}
+      const base::DictionaryValue* password_info) override {}
   virtual void LoadSupervisedUserToken(
       Profile * profile,
-      const LoadTokenCallback& callback) OVERRIDE;
+      const LoadTokenCallback& callback) override;
   virtual void ConfigureSyncWithToken(
       Profile* profile,
-      const std::string& token) OVERRIDE {}
+      const std::string& token) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSupervisedUserManager);

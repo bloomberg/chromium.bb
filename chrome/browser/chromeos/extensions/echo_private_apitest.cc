@@ -34,7 +34,7 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
 
   virtual ~ExtensionEchoPrivateApiTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
     // Force usage of stub cros settings provider instead of device settings

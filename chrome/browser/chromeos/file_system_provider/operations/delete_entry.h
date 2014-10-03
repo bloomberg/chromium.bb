@@ -37,13 +37,13 @@ class DeleteEntry : public Operation {
   virtual ~DeleteEntry();
 
   // Operation overrides.
-  virtual bool Execute(int request_id) OVERRIDE;
+  virtual bool Execute(int request_id) override;
   virtual void OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
-                         bool has_more) OVERRIDE;
+                         bool has_more) override;
   virtual void OnError(int request_id,
                        scoped_ptr<RequestValue> result,
-                       base::File::Error error) OVERRIDE;
+                       base::File::Error error) override;
 
  private:
   base::FilePath entry_path_;

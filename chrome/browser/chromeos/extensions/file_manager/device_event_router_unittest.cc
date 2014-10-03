@@ -35,7 +35,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 
   // DeviceEventRouter overrides.
   virtual void OnDeviceEvent(file_manager_private::DeviceEventType type,
-                             const std::string& device_path) OVERRIDE {
+                             const std::string& device_path) override {
     DeviceEvent event;
     event.type = type;
     event.device_path = device_path;
@@ -43,7 +43,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   }
 
   // DeviceEventRouter overrides.
-  virtual bool IsExternalStorageDisabled() OVERRIDE {
+  virtual bool IsExternalStorageDisabled() override {
     return external_storage_disabled;
   }
 
@@ -61,7 +61,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 
 class DeviceEventRouterTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     device_event_router.reset(new DeviceEventRouterImpl());
   }
 

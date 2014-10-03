@@ -107,11 +107,11 @@ const char kTimezoneResponseBody[] =
 class PrefStoreStub : public TestingPrefStore {
  public:
   // TestingPrefStore overrides:
-  virtual PrefReadError GetReadError() const OVERRIDE {
+  virtual PrefReadError GetReadError() const override {
     return PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE;
   }
 
-  virtual bool IsInitializationComplete() const OVERRIDE {
+  virtual bool IsInitializationComplete() const override {
     return true;
   }
 
@@ -224,7 +224,7 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
       WizardController::kTestNoScreenName) {}
   virtual ~WizardControllerTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     AccessibilityManager::Get()->
         SetProfileForTest(ProfileHelper::GetSigninProfile());
     WizardInProcessBrowserTest::SetUpOnMainThread();
@@ -345,7 +345,7 @@ class WizardControllerTestURLFetcherFactory
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) OVERRIDE {
+      net::URLFetcherDelegate* d) override {
     if (StartsWithASCII(
             url.spec(),
             SimpleGeolocationProvider::DefaultGeolocationProviderURL().spec(),
@@ -384,7 +384,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
  protected:
   WizardControllerFlowTest() {}
   // Overriden from InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
@@ -702,7 +702,7 @@ class WizardControllerEnrollmentFlowTest : public WizardControllerFlowTest {
  protected:
   WizardControllerEnrollmentFlowTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(
@@ -780,7 +780,7 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
 
   virtual ~WizardControllerBrokenLocalStateTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     WizardControllerTest::SetUpInProcessBrowserTestFixture();
 
     fake_session_manager_client_ = new FakeSessionManagerClient;
@@ -788,7 +788,7 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     base::PrefServiceFactory factory;
     factory.set_user_prefs(make_scoped_refptr(new PrefStoreStub()));
     local_state_ = factory.Create(new PrefRegistrySimple()).Pass();
@@ -800,7 +800,7 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     WizardController::default_controller()->is_official_build_ = true;
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     WizardControllerTest::TearDownInProcessBrowserTestFixture();
   }
 
@@ -852,18 +852,18 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
   virtual ~WizardControllerProxyAuthOnSigninTest() {}
 
   // Overridden from WizardControllerTest:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(proxy_server_.Start());
     WizardControllerTest::SetUp();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
     WizardController::default_controller()->AdvanceToScreen(
         WizardController::kNetworkScreenName);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(::switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
   }
@@ -893,7 +893,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
   WizardControllerKioskFlowTest() {}
 
   // Overridden from InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
                     "app_mode", "kiosk_manifest", &test_data_dir));
@@ -997,7 +997,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
  protected:
   WizardControllerOobeResumeTest() {}
   // Overriden from InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.

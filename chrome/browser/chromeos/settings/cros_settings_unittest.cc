@@ -37,7 +37,7 @@ class CrosSettingsTest : public testing::Test {
 
   virtual ~CrosSettingsTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ASSERT_TRUE(expected_props_.empty());
     STLDeleteValues(&expected_props_);
     expected_props_.clear();

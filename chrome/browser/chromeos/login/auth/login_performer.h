@@ -57,12 +57,12 @@ class LoginPerformer : public AuthStatusConsumer,
   virtual ~LoginPerformer();
 
   // AuthStatusConsumer implementation:
-  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) override;
   virtual void OnRetailModeAuthSuccess(
-      const UserContext& user_context) OVERRIDE;
-  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
-  virtual void OnOffTheRecordAuthSuccess() OVERRIDE;
-  virtual void OnPasswordChangeDetected() OVERRIDE;
+      const UserContext& user_context) override;
+  virtual void OnAuthSuccess(const UserContext& user_context) override;
+  virtual void OnOffTheRecordAuthSuccess() override;
+  virtual void OnPasswordChangeDetected() override;
 
   // Performs a login for |user_context|.
   // If auth_mode is AUTH_MODE_EXTENSION, there are no further auth checks,
@@ -115,7 +115,7 @@ class LoginPerformer : public AuthStatusConsumer,
 
  protected:
   // Implements OnlineAttemptHost::Delegate.
-  virtual void OnChecked(const std::string& username, bool success) OVERRIDE;
+  virtual void OnChecked(const std::string& username, bool success) override;
 
  private:
   // Starts login completion of externally authenticated user.

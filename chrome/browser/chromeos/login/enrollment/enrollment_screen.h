@@ -56,27 +56,27 @@ class EnrollmentScreen
       pairing_chromeos::HostPairingController* remora_controller);
 
   // WizardScreen implementation:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // pairing_chromeos::HostPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
+  virtual void PairingStageChanged(Stage new_stage) override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,
                              const std::string& timezone,
                              bool send_reports,
-                             const std::string& keyboard_layout) OVERRIDE;
-  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
+                             const std::string& keyboard_layout) override;
+  virtual void EnrollHost(const std::string& auth_token) override;
 
   // EnrollmentScreenActor::Controller implementation:
-  virtual void OnLoginDone(const std::string& user) OVERRIDE;
-  virtual void OnAuthError(const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthTokenAvailable(const std::string& oauth_token) OVERRIDE;
-  virtual void OnRetry() OVERRIDE;
-  virtual void OnCancel() OVERRIDE;
-  virtual void OnConfirmationClosed() OVERRIDE;
+  virtual void OnLoginDone(const std::string& user) override;
+  virtual void OnAuthError(const GoogleServiceAuthError& error) override;
+  virtual void OnOAuthTokenAvailable(const std::string& oauth_token) override;
+  virtual void OnRetry() override;
+  virtual void OnCancel() override;
+  virtual void OnConfirmationClosed() override;
 
   // Used for testing.
   EnrollmentScreenActor* GetActor() {

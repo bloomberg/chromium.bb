@@ -48,15 +48,15 @@ class DeviceLocalAccountExternalPolicyLoader
   void StopCache(const base::Closure& callback);
 
   // extensions::ExternalLoader:
-  virtual void StartLoading() OVERRIDE;
+  virtual void StartLoading() override;
 
   // policy::CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  virtual void OnStoreError(policy::CloudPolicyStore* store) override;
 
   // ExternalCache::Delegate:
   virtual void OnExtensionListsUpdated(
-      const base::DictionaryValue* prefs) OVERRIDE;
+      const base::DictionaryValue* prefs) override;
 
   ExternalCache* GetExternalCacheForTesting();
 

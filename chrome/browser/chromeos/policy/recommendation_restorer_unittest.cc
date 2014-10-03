@@ -41,7 +41,7 @@ class RecommendationRestorerTest : public testing::Test {
   RecommendationRestorerTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void RegisterUserProfilePrefs();
   void RegisterLoginProfilePrefs();

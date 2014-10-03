@@ -222,10 +222,10 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static void SetApplied(bool val);
 
   // Overriden from CustomizationDocument:
-  virtual bool LoadManifestFromString(const std::string& manifest) OVERRIDE;
+  virtual bool LoadManifestFromString(const std::string& manifest) override;
 
   // Overriden from net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Initiate file fetching. Wait for online status.
   void StartFileFetch();

@@ -21,11 +21,11 @@ class ExtensionSystemEventObserver : public PowerManagerClient::Observer,
   virtual ~ExtensionSystemEventObserver();
 
   // PowerManagerClient::Observer overrides:
-  virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void BrightnessChanged(int level, bool user_initiated) override;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // SessionManagerClient::Observer override.
-  virtual void ScreenIsUnlocked() OVERRIDE;
+  virtual void ScreenIsUnlocked() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemEventObserver);

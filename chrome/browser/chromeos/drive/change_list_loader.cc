@@ -48,7 +48,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   virtual ~FullFeedFetcher() {
   }
 
-  virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
+  virtual void Run(const FeedFetcherCallback& callback) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 
@@ -114,7 +114,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   virtual ~DeltaFeedFetcher() {
   }
 
-  virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
+  virtual void Run(const FeedFetcherCallback& callback) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 

@@ -44,7 +44,7 @@ class LocalFileReaderAdapter {
 
 class LocalFileReaderTest : public ::testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     worker_thread_.reset(new base::Thread("LocalFileReaderTest"));
     ASSERT_TRUE(worker_thread_->Start());

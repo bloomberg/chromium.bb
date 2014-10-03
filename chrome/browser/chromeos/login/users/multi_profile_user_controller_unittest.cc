@@ -119,7 +119,7 @@ class MultiProfileUserControllerTest
         user_not_allowed_count_(0) {}
   virtual ~MultiProfileUserControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -141,7 +141,7 @@ class MultiProfileUserControllerTest
     }
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Clear our cached pointer to the PolicyCertVerifier.
     g_policy_cert_verifier_for_factory = NULL;
 
@@ -189,7 +189,7 @@ class MultiProfileUserControllerTest
   }
 
   // MultiProfileUserControllerDeleagte overrides:
-  virtual void OnUserNotAllowed(const std::string& user_email) OVERRIDE {
+  virtual void OnUserNotAllowed(const std::string& user_email) override {
     ++user_not_allowed_count_;
   }
 

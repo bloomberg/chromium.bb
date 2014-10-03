@@ -33,7 +33,7 @@ class InputMethodPersistence : public InputMethodManager::Observer {
 
   // InputMethodManager::Observer overrides.
   virtual void InputMethodChanged(InputMethodManager* manager,
-                                  bool show_message) OVERRIDE;
+                                  bool show_message) override;
 
  private:
   InputMethodManager* input_method_manager_;

@@ -82,7 +82,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         profile_(NULL),
         signin_profile_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // The initialization path that blocks on the initial policy fetch requires
     // a signin Profile to use its URLRequestContext.
     profile_manager_.reset(
@@ -144,7 +144,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         .Times(AnyNumber());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (token_forwarder_)
       token_forwarder_->Shutdown();
     if (manager_) {

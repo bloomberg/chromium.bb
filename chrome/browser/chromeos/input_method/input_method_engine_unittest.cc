@@ -65,38 +65,38 @@ class TestObserver : public InputMethodEngineInterface::Observer {
   TestObserver() : calls_bitmap_(NONE) {}
   virtual ~TestObserver() {}
 
-  virtual void OnActivate(const std::string& engine_id) OVERRIDE {
+  virtual void OnActivate(const std::string& engine_id) override {
     calls_bitmap_ |= ACTIVATE;
   }
-  virtual void OnDeactivated(const std::string& engine_id) OVERRIDE {
+  virtual void OnDeactivated(const std::string& engine_id) override {
     calls_bitmap_ |= DEACTIVATED;
   }
   virtual void OnFocus(
-      const InputMethodEngineInterface::InputContext& context) OVERRIDE {
+      const InputMethodEngineInterface::InputContext& context) override {
     calls_bitmap_ |= ONFOCUS;
   }
-  virtual void OnBlur(int context_id) OVERRIDE {
+  virtual void OnBlur(int context_id) override {
     calls_bitmap_ |= ONBLUR;
   }
   virtual void OnKeyEvent(
       const std::string& engine_id,
       const InputMethodEngineInterface::KeyboardEvent& event,
-      input_method::KeyEventHandle* key_data) OVERRIDE {}
+      input_method::KeyEventHandle* key_data) override {}
   virtual void OnInputContextUpdate(
-      const InputMethodEngineInterface::InputContext& context) OVERRIDE {}
+      const InputMethodEngineInterface::InputContext& context) override {}
   virtual void OnCandidateClicked(
       const std::string& engine_id,
       int candidate_id,
-      InputMethodEngineInterface::MouseButtonEvent button) OVERRIDE {}
+      InputMethodEngineInterface::MouseButtonEvent button) override {}
   virtual void OnMenuItemActivated(
       const std::string& engine_id,
-      const std::string& menu_id) OVERRIDE {}
+      const std::string& menu_id) override {}
   virtual void OnSurroundingTextChanged(
       const std::string& engine_id,
       const std::string& text,
       int cursor_pos,
-      int anchor_pos) OVERRIDE {}
-  virtual void OnReset(const std::string& engine_id) OVERRIDE {}
+      int anchor_pos) override {}
+  virtual void OnReset(const std::string& engine_id) override {}
 
   unsigned char GetCallsBitmapAndReset() {
     unsigned char ret = calls_bitmap_;

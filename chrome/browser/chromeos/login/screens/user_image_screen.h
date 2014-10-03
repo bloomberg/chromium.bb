@@ -44,39 +44,39 @@ class UserImageScreen: public WizardScreen,
   static UserImageScreen* Get(ScreenManager* manager);
 
   // WizardScreen implementation:
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // UserImageScreenActor::Delegate implementation:
-  virtual void OnScreenReady() OVERRIDE;
-  virtual void OnPhotoTaken(const std::string& raw_data) OVERRIDE;
+  virtual void OnScreenReady() override;
+  virtual void OnPhotoTaken(const std::string& raw_data) override;
   virtual void OnImageSelected(const std::string& image_url,
                                const std::string& image_type,
-                               bool is_user_selection) OVERRIDE;
-  virtual void OnImageAccepted() OVERRIDE;
-  virtual void OnActorDestroyed(UserImageScreenActor* actor) OVERRIDE;
+                               bool is_user_selection) override;
+  virtual void OnImageAccepted() override;
+  virtual void OnActorDestroyed(UserImageScreenActor* actor) override;
 
-  virtual bool profile_picture_absent() OVERRIDE;
-  virtual int selected_image() OVERRIDE;
-  virtual std::string profile_picture_data_url() OVERRIDE;
+  virtual bool profile_picture_absent() override;
+  virtual int selected_image() override;
+  virtual std::string profile_picture_data_url() override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ImageDecoder::Delegate implementation:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+                              const SkBitmap& decoded_image) override;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // CameraPresenceNotifier::Observer implementation:
-  virtual void OnCameraPresenceCheckDone(bool is_camera_present) OVERRIDE;
+  virtual void OnCameraPresenceCheckDone(bool is_camera_present) override;
 
   // UserImageSyncObserver::Observer implementation:
-  virtual void OnInitialSync(bool local_image_updated) OVERRIDE;
+  virtual void OnInitialSync(bool local_image_updated) override;
 
   bool user_selected_image() const { return user_has_selected_image_; }
 

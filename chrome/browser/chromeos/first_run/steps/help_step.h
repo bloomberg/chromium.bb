@@ -17,8 +17,8 @@ class HelpStep : public Step {
 
  private:
   // Overriden from Step.
-  virtual void DoShow() OVERRIDE;
-  virtual void DoOnAfterHide() OVERRIDE;
+  virtual void DoShow() override;
+  virtual void DoOnAfterHide() override;
 
   DISALLOW_COPY_AND_ASSIGN(HelpStep);
 };

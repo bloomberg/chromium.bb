@@ -38,7 +38,7 @@ class SessionLengthLimiter : public wm::UserActivityObserver {
   virtual ~SessionLengthLimiter();
 
   // wm::UserActivityObserver:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
  private:
   // Attempt to restore the session start time and the flag indicating user

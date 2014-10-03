@@ -20,11 +20,11 @@ class ProfileListChromeOS : public ProfileList {
   virtual ~ProfileListChromeOS();
 
   // ProfileList overrides:
-  virtual size_t GetNumberOfItems() const OVERRIDE;
-  virtual const AvatarMenu::Item& GetItemAt(size_t index) const OVERRIDE;
-  virtual void RebuildMenu() OVERRIDE;
-  virtual size_t MenuIndexFromProfileIndex(size_t index) OVERRIDE;
-  virtual void ActiveProfilePathChanged(base::FilePath& path) OVERRIDE;
+  virtual size_t GetNumberOfItems() const override;
+  virtual const AvatarMenu::Item& GetItemAt(size_t index) const override;
+  virtual void RebuildMenu() override;
+  virtual size_t MenuIndexFromProfileIndex(size_t index) override;
+  virtual void ActiveProfilePathChanged(base::FilePath& path) override;
 
  private:
   void ClearMenu();

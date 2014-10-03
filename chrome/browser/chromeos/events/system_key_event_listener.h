@@ -31,8 +31,8 @@ class SystemKeyEventListener : public ui::PlatformEventObserver {
   virtual ~SystemKeyEventListener();
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) override;
 
   void ProcessedXEvent(XEvent* xevent);
 

@@ -61,31 +61,31 @@ class WifiConfigView : public ChildNetworkConfigView,
 
   // views::TextfieldController
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
 
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::ComboboxListener
-  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) override;
 
   // CertLibrary::Observer
-  virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
+  virtual void OnCertificatesLoaded(bool initial_load) override;
 
   // ChildNetworkConfigView
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual bool CanLogin() OVERRIDE;
-  virtual bool Login() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual void InitFocus() OVERRIDE;
-  virtual bool IsConfigureDialog() OVERRIDE;
+  virtual base::string16 GetTitle() const override;
+  virtual views::View* GetInitiallyFocusedView() override;
+  virtual bool CanLogin() override;
+  virtual bool Login() override;
+  virtual void Cancel() override;
+  virtual void InitFocus() override;
+  virtual bool IsConfigureDialog() override;
 
   // NetworkStateHandlerObserver
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // Parses a UI |property| from the ONC associated with |network|. |key|
   // is the property name within the ONC dictionary.

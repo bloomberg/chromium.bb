@@ -60,12 +60,12 @@ class UserImageSyncObserver: public PrefServiceSyncableObserver,
 
  private:
   // PrefServiceSyncableObserver implementation.
-  virtual void OnIsSyncingChanged() OVERRIDE;
+  virtual void OnIsSyncingChanged() override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Called after user profile was loaded.
   void OnProfileGained(Profile* profile);

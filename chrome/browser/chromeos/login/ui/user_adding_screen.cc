@@ -25,12 +25,12 @@ namespace {
 
 class UserAddingScreenImpl : public UserAddingScreen {
  public:
-  virtual void Start() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual bool IsRunning() OVERRIDE;
+  virtual void Start() override;
+  virtual void Cancel() override;
+  virtual bool IsRunning() override;
 
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
 
   static UserAddingScreenImpl* GetInstance();
  private:

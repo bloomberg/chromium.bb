@@ -68,13 +68,13 @@ class LoggingObserver : public Observer {
   // file_system_provider::Observer overrides.
   virtual void OnProvidedFileSystemMount(
       const ProvidedFileSystemInfo& file_system_info,
-      base::File::Error error) OVERRIDE {
+      base::File::Error error) override {
     mounts.push_back(Event(file_system_info, error));
   }
 
   virtual void OnProvidedFileSystemUnmount(
       const ProvidedFileSystemInfo& file_system_info,
-      base::File::Error error) OVERRIDE {
+      base::File::Error error) override {
     unmounts.push_back(Event(file_system_info, error));
   }
 
@@ -130,7 +130,7 @@ class FileSystemProviderServiceTest : public testing::Test {
 
   virtual ~FileSystemProviderServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());

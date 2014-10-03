@@ -186,25 +186,25 @@ class LoginUtilsImpl : public LoginUtils,
 
   // LoginUtils implementation:
   virtual void RespectLocalePreference(Profile* profile,
-                                       const base::Closure& callback) OVERRIDE;
+                                       const base::Closure& callback) override;
   virtual void DoBrowserLaunch(Profile* profile,
-                               LoginDisplayHost* login_host) OVERRIDE;
+                               LoginDisplayHost* login_host) override;
   virtual void PrepareProfile(
       const UserContext& user_context,
       bool has_auth_cookies,
       bool has_active_session,
-      LoginUtils::Delegate* delegate) OVERRIDE;
-  virtual void DelegateDeleted(LoginUtils::Delegate* delegate) OVERRIDE;
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
+      LoginUtils::Delegate* delegate) override;
+  virtual void DelegateDeleted(LoginUtils::Delegate* delegate) override;
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) override;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
-      AuthStatusConsumer* consumer) OVERRIDE;
+      AuthStatusConsumer* consumer) override;
   virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
-                                                   bool early_restart) OVERRIDE;
+                                                   bool early_restart) override;
 
   // UserSessionManager::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
+  virtual void OnProfilePrepared(Profile* profile) override;
 #if defined(ENABLE_RLZ)
-  virtual void OnRlzInitialized() OVERRIDE;
+  virtual void OnRlzInitialized() override;
 #endif
 
  private:

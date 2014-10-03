@@ -48,9 +48,9 @@ class WebkitFileStreamWriterImpl : public storage::FileStreamWriter {
 
   // FileWriter override.
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual int Cancel(const net::CompletionCallback& callback) override;
+  virtual int Flush(const net::CompletionCallback& callback) override;
 
  private:
   // Part of Write(). Called after CreateWritableSnapshotFile is completed.

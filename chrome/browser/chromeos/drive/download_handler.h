@@ -76,9 +76,9 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
  private:
   // AllDownloadItemNotifier::Observer overrides:
   virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* download) OVERRIDE;
+                                 content::DownloadItem* download) override;
   virtual void OnDownloadUpdated(content::DownloadManager* manager,
-                                 content::DownloadItem* download) OVERRIDE;
+                                 content::DownloadItem* download) override;
 
   // Removes the download.
   void RemoveDownload(void* manager_id, int id);

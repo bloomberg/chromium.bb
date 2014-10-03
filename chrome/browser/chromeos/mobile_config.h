@@ -151,7 +151,7 @@ class MobileConfig : public CustomizationDocument  {
   const MobileConfig::LocaleConfig* GetLocaleConfig() const;
 
  protected:
-  virtual bool LoadManifestFromString(const std::string& manifest) OVERRIDE;
+  virtual bool LoadManifestFromString(const std::string& manifest) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, Basic);

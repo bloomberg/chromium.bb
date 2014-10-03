@@ -57,16 +57,16 @@ class FirstRunController : public FirstRunActor::Delegate,
   static FirstRunController* GetInstanceForTest();
 
   // Overriden from FirstRunActor::Delegate.
-  virtual void OnActorInitialized() OVERRIDE;
-  virtual void OnNextButtonClicked(const std::string& step_name) OVERRIDE;
-  virtual void OnHelpButtonClicked() OVERRIDE;
-  virtual void OnStepShown(const std::string& step_name) OVERRIDE;
-  virtual void OnStepHidden(const std::string& step_name) OVERRIDE;
-  virtual void OnActorFinalized() OVERRIDE;
-  virtual void OnActorDestroyed() OVERRIDE;
+  virtual void OnActorInitialized() override;
+  virtual void OnNextButtonClicked(const std::string& step_name) override;
+  virtual void OnHelpButtonClicked() override;
+  virtual void OnStepShown(const std::string& step_name) override;
+  virtual void OnStepHidden(const std::string& step_name) override;
+  virtual void OnActorFinalized() override;
+  virtual void OnActorDestroyed() override;
 
   // Overriden from ash::FirstRunHelper::Observer.
-  virtual void OnCancelled() OVERRIDE;
+  virtual void OnCancelled() override;
 
   void RegisterSteps();
   void ShowNextStep();

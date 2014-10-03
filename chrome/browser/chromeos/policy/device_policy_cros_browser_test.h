@@ -47,8 +47,8 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   DevicePolicyCrosBrowserTest();
   virtual ~DevicePolicyCrosBrowserTest();
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void TearDownInProcessBrowserTestFixture() override;
 
   // Marks the device as enterprise-owned. Must be called to make device
   // policies apply Chrome-wide. If this is not called, device policies will

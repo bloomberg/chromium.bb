@@ -40,8 +40,8 @@ class ImageLoader : public ImageDecoder::Delegate {
 
   // ImageDecoder::Delegate:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+                              const SkBitmap& decoded_image) override;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
  private:
   base::FilePath path_;

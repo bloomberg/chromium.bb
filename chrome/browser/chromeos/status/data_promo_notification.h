@@ -31,8 +31,8 @@ class DataPromoNotification : public NetworkStateHandlerObserver {
 
  private:
   // NetworkStateHandlerObserver
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
+  virtual void DefaultNetworkChanged(const NetworkState* network) override;
 
   // Shows 3G promo notification if needed.
   void ShowOptionalMobileDataPromoNotification();

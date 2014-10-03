@@ -20,8 +20,8 @@ class DeviceChangeHandler : public PointerDeviceObserver::Observer {
 
  private:
   // PointerDeviceObserver::Observer implementation.
-  virtual void TouchpadExists(bool exists) OVERRIDE;
-  virtual void MouseExists(bool exists) OVERRIDE;
+  virtual void TouchpadExists(bool exists) override;
+  virtual void MouseExists(bool exists) override;
 
   scoped_ptr<PointerDeviceObserver> pointer_device_observer_;
 };

@@ -30,7 +30,7 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
   // FileSystemInterface overrides.
   virtual void GetResourceEntry(
       const base::FilePath& file_path,
-      const GetResourceEntryCallback& callback) OVERRIDE {
+      const GetResourceEntryCallback& callback) override {
     callback.Run(error_, scoped_ptr<ResourceEntry>(
         error_ == FILE_ERROR_OK ? new ResourceEntry : NULL));
   }
@@ -39,7 +39,7 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
       const base::FilePath& directory_path,
       bool is_exclusive,
       bool is_recursive,
-      const FileOperationCallback& callback) OVERRIDE {
+      const FileOperationCallback& callback) override {
     callback.Run(error_);
   }
 
@@ -54,7 +54,7 @@ class DownloadHandlerTest : public testing::Test {
   DownloadHandlerTest()
       : download_manager_(new content::MockDownloadManager) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Set expectations for download item.

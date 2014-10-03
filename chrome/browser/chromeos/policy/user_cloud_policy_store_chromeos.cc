@@ -76,12 +76,12 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 
   // UserPolicyTokenLoader::Delegate:
   virtual void OnTokenLoaded(const std::string& token,
-                             const std::string& device_id) OVERRIDE;
+                             const std::string& device_id) override;
 
   // UserPolicyDiskCache::Delegate:
   virtual void OnDiskCacheLoaded(
       UserPolicyDiskCache::LoadResult result,
-      const em::CachedCloudPolicyResponse& policy) OVERRIDE;
+      const em::CachedCloudPolicyResponse& policy) override;
 
  private:
   // Checks whether the load operations from the legacy caches completed. If so,

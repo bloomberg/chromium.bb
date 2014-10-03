@@ -56,7 +56,7 @@ class ExternalCacheTest : public testing::Test,
   }
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
@@ -68,19 +68,19 @@ class ExternalCacheTest : public testing::Test,
         pool_owner_->pool()->GetNamedSequenceToken("background"));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     pool_owner_->pool()->Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
   // ExternalCache::Delegate:
   virtual void OnExtensionListsUpdated(
-      const base::DictionaryValue* prefs) OVERRIDE {
+      const base::DictionaryValue* prefs) override {
     prefs_.reset(prefs->DeepCopy());
   }
 
   virtual std::string GetInstalledExtensionVersion(
-      const std::string& id) OVERRIDE {
+      const std::string& id) override {
     std::map<std::string, std::string>::iterator it =
         installed_extensions_.find(id);
     return it != installed_extensions_.end() ? it->second : std::string();

@@ -186,7 +186,7 @@ class SyslogsProviderImpl : public SyslogsProvider {
       bool compress_logs,
       SyslogsContext context,
       const ReadCompleteCallback& callback,
-      base::CancelableTaskTracker* tracker) OVERRIDE;
+      base::CancelableTaskTracker* tracker) override;
 
   static SyslogsProviderImpl* GetInstance();
 
@@ -264,7 +264,7 @@ class SyslogsMemoryHandler : public MemoryDetails {
                        LogDictionaryType* logs,
                        std::string* zip_content);
 
-  virtual void OnDetailsAvailable() OVERRIDE;
+  virtual void OnDetailsAvailable() override;
 
  private:
   virtual ~SyslogsMemoryHandler();

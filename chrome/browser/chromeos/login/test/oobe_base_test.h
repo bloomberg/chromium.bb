@@ -35,11 +35,11 @@ class OobeBaseTest : public ExtensionApiTest {
 
  protected:
   // InProcessBrowserTest overrides.
-  virtual void SetUp() OVERRIDE;
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUp() override;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Network status control functions.
   void SimulateNetworkOffline();

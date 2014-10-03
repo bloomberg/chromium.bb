@@ -54,12 +54,12 @@ class PolicyCertVerifier : public net::CertVerifier,
                      net::CertVerifyResult* verify_result,
                      const net::CompletionCallback& callback,
                      RequestHandle* out_req,
-                     const net::BoundNetLog& net_log) OVERRIDE;
+                     const net::BoundNetLog& net_log) override;
 
-  virtual void CancelRequest(RequestHandle req) OVERRIDE;
+  virtual void CancelRequest(RequestHandle req) override;
 
   // CertTrustAnchorProvider:
-  virtual const net::CertificateList& GetAdditionalTrustAnchors() OVERRIDE;
+  virtual const net::CertificateList& GetAdditionalTrustAnchors() override;
 
  private:
   net::CertificateList trust_anchors_;

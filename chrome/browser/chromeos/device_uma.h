@@ -28,8 +28,8 @@ class DeviceUMA : public ui::PlatformEventObserver {
   virtual ~DeviceUMA();
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) override;
 
   // Check CrOS touchpad events to see if the metrics gesture is present
   void CheckTouchpadEvent(XEvent* event);

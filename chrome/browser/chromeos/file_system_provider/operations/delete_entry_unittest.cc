@@ -36,7 +36,7 @@ class FileSystemProviderOperationsDeleteEntryTest : public testing::Test {
   FileSystemProviderOperationsDeleteEntryTest() {}
   virtual ~FileSystemProviderOperationsDeleteEntryTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,

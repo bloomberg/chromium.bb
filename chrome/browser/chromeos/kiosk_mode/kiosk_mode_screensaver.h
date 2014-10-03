@@ -25,7 +25,7 @@ class KioskModeScreensaver : public wm::UserActivityObserver {
   friend class KioskModeScreensaverTest;
 
   // wm::UserActivityObserver overrides:
-  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) override;
 
   // Initialization functions, in order
   // Get the screensaver path once KioskModeHelper is initialized.

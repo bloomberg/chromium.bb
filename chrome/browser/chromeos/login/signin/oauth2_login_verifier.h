@@ -66,22 +66,22 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
     RESTORE_FROM_OAUTH2_REFRESH_TOKEN = 2,
   };
   // GaiaAuthConsumer overrides.
-  virtual void OnUberAuthTokenSuccess(const std::string& token) OVERRIDE;
+  virtual void OnUberAuthTokenSuccess(const std::string& token) override;
   virtual void OnUberAuthTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
+  virtual void OnMergeSessionSuccess(const std::string& data) override;
   virtual void OnMergeSessionFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
+  virtual void OnListAccountsSuccess(const std::string& data) override;
   virtual void OnListAccountsFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Consumer overrides.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // Starts fetching OAuth1 access token for OAuthLogin call.
   void StartFetchingOAuthLoginAccessToken(Profile* profile);

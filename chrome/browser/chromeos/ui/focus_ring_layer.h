@@ -50,11 +50,11 @@ class FocusRingLayer : public ui::LayerDelegate {
 
  private:
   // ui::LayerDelegate overrides:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
+      const gfx::Rect& damage_rect_in_dip) override;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  virtual base::Closure PrepareForLayerBoundsChange() override;
 
   // The object that owns this layer.
   FocusRingLayerDelegate* delegate_;

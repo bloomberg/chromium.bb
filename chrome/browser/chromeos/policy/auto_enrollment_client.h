@@ -110,7 +110,7 @@ class AutoEnrollmentClient
 
   // Implementation of net::NetworkChangeNotifier::NetworkChangeObserver:
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:
   typedef bool (AutoEnrollmentClient::*RequestCompletionHandler)(

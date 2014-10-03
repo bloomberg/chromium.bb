@@ -30,10 +30,10 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   explicit LoginManagerTest(bool should_launch_browser);
 
   // Overriden from InProcessBrowserTest.
-  virtual void TearDownOnMainThread() OVERRIDE;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() override;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void SetUpOnMainThread() override;
 
   // Registers the user with the given |user_id| on the device.
   // This method should be called in PRE_* test.

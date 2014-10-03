@@ -136,7 +136,7 @@ class WizardController : public ScreenObserver, public ScreenManager {
   bool login_screen_started() const { return login_screen_started_; }
 
   // ScreenManager implementation.
-  virtual WizardScreen* CreateScreen(const std::string& screen_name) OVERRIDE;
+  virtual WizardScreen* CreateScreen(const std::string& screen_name) override;
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -233,15 +233,15 @@ class WizardController : public ScreenObserver, public ScreenManager {
   void PerformOOBECompletedActions();
 
   // Overridden from ScreenObserver:
-  virtual void OnExit(ExitCodes exit_code) OVERRIDE;
-  virtual void ShowCurrentScreen() OVERRIDE;
+  virtual void OnExit(ExitCodes exit_code) override;
+  virtual void ShowCurrentScreen() override;
   virtual void OnSetUserNamePassword(const std::string& username,
-                                     const std::string& password) OVERRIDE;
-  virtual void SetUsageStatisticsReporting(bool val) OVERRIDE;
-  virtual bool GetUsageStatisticsReporting() const OVERRIDE;
-  virtual ErrorScreen* GetErrorScreen() OVERRIDE;
-  virtual void ShowErrorScreen() OVERRIDE;
-  virtual void HideErrorScreen(WizardScreen* parent_screen) OVERRIDE;
+                                     const std::string& password) override;
+  virtual void SetUsageStatisticsReporting(bool val) override;
+  virtual bool GetUsageStatisticsReporting() const override;
+  virtual ErrorScreen* GetErrorScreen() override;
+  virtual void ShowErrorScreen() override;
+  virtual void HideErrorScreen(WizardScreen* parent_screen) override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

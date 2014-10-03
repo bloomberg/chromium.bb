@@ -107,13 +107,13 @@ class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
 
   // ContentSettingBubbleModelDelegate implementation:
   virtual void ShowCollectedCookiesDialog(
-      content::WebContents* web_contents) OVERRIDE {
+      content::WebContents* web_contents) override {
   }
 
-  virtual void ShowContentSettingsPage(ContentSettingsType type) OVERRIDE {
+  virtual void ShowContentSettingsPage(ContentSettingsType type) override {
   }
 
-  virtual void ShowLearnMorePage(ContentSettingsType type) OVERRIDE {
+  virtual void ShowLearnMorePage(ContentSettingsType type) override {
   }
 
  private:

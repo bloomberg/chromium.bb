@@ -25,10 +25,10 @@ class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
   virtual ~ScreenshotTestingMixin();
 
   // Override from BrowsertestBase::Mixin.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
 
   // Override from BrowsertestBase::Mixin.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Runs screenshot testing if it is turned on by command line switches.
   void RunScreenshotTesting(const std::string& test_name);

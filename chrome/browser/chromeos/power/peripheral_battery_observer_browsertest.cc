@@ -34,23 +34,23 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
   PeripheralBatteryObserverTest() {}
   virtual ~PeripheralBatteryObserverTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     observer_.reset(new PeripheralBatteryObserver());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     observer_.reset();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

@@ -44,12 +44,12 @@ class DeviceLocalAccountPolicyProvider
       DeviceLocalAccountPolicyService* service);
 
   // ConfigurationPolicyProvider:
-  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
+  virtual void RefreshPolicies() override;
 
   // DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
-  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) override;
+  virtual void OnDeviceLocalAccountsChanged() override;
 
  private:
   // Returns the broker for |user_id_| or NULL if not available.

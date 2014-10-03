@@ -26,8 +26,8 @@ class DeviceLocalAccountExtensionTracker : public CloudPolicyStore::Observer {
   virtual ~DeviceLocalAccountExtensionTracker();
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
  private:
   void UpdateFromStore();

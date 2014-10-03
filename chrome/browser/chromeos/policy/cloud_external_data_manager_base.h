@@ -47,14 +47,14 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
       scoped_ptr<CloudExternalDataStore> external_data_store);
 
   // CloudExternalDataManager:
-  virtual void SetPolicyStore(CloudPolicyStore* policy_store) OVERRIDE;
-  virtual void OnPolicyStoreLoaded() OVERRIDE;
+  virtual void SetPolicyStore(CloudPolicyStore* policy_store) override;
+  virtual void OnPolicyStoreLoaded() override;
   virtual void Connect(
-      scoped_refptr<net::URLRequestContextGetter> request_context) OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
+      scoped_refptr<net::URLRequestContextGetter> request_context) override;
+  virtual void Disconnect() override;
   virtual void Fetch(
       const std::string& policy,
-      const ExternalDataFetcher::FetchCallback& callback) OVERRIDE;
+      const ExternalDataFetcher::FetchCallback& callback) override;
 
   // Allows policies to reference |max_size| bytes of external data even if no
   // |max_size| was specified in policy_templates.json.

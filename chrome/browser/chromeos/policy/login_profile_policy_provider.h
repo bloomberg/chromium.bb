@@ -24,15 +24,15 @@ class LoginProfilePolicyProvider : public ConfigurationPolicyProvider,
   virtual ~LoginProfilePolicyProvider();
 
   // ConfigurationPolicyProvider:
-  virtual void Init(SchemaRegistry* registry) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  virtual void Init(SchemaRegistry* registry) override;
+  virtual void Shutdown() override;
+  virtual void RefreshPolicies() override;
 
   // PolicyService::Observer:
   virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
-                               const PolicyMap& current) OVERRIDE;
-  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
+                               const PolicyMap& current) override;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) override;
 
   void OnDevicePolicyRefreshDone();
 

@@ -20,7 +20,7 @@ class CertVerifyProcChromeOSTest : public testing::Test {
  public:
   CertVerifyProcChromeOSTest() : user_1_("user1"), user_2_("user2") {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Initialize nss_util slots.
     ASSERT_TRUE(user_1_.constructed_successfully());
     ASSERT_TRUE(user_2_.constructed_successfully());

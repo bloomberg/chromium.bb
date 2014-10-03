@@ -54,14 +54,14 @@ class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
 
 class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
   test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
 #if defined OS_CHROMEOS
     // Clean up pending tasks that might depend on the user manager.
     base::RunLoop().RunUntilIdle();

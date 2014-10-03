@@ -218,7 +218,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ServicesCustomizationDocument::InitializeForTesting();
 
     EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
@@ -250,7 +250,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     ServicesCustomizationDocument::RegisterPrefs(local_state_.registry());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();

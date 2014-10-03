@@ -25,7 +25,7 @@ class MockUpdateScreenActor : public UpdateScreenActor {
   MockUpdateScreenActor();
   virtual ~MockUpdateScreenActor();
 
-  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) OVERRIDE;
+  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) override;
 
   MOCK_METHOD1(MockSetDelegate, void(UpdateScreenActor::Delegate* screen));
   MOCK_METHOD0(Show, void());

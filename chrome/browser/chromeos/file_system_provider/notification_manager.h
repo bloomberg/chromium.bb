@@ -41,8 +41,8 @@ class NotificationManager : public NotificationManagerInterface,
   // NotificationManagerInterface overrides:
   virtual void ShowUnresponsiveNotification(
       int id,
-      const NotificationCallback& callback) OVERRIDE;
-  virtual void HideUnresponsiveNotification(int id) OVERRIDE;
+      const NotificationCallback& callback) override;
+  virtual void HideUnresponsiveNotification(int id) override;
 
   // Invoked when a button on the notification is clicked.
   void OnButtonClick(int button_index);
@@ -55,7 +55,7 @@ class NotificationManager : public NotificationManagerInterface,
 
   // extensions::AppIconLoader::Delegate overrides:
   virtual void SetAppImage(const std::string& id,
-                           const gfx::ImageSkia& image) OVERRIDE;
+                           const gfx::ImageSkia& image) override;
 
  private:
   typedef std::map<int, NotificationCallback> CallbackMap;

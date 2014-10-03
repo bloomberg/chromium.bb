@@ -54,7 +54,7 @@ class SupervisedUserCreationControllerNew
   // be called to actually start creating user.
   virtual void StartCreation(const base::string16& display_name,
                              const std::string& password,
-                             int avatar_index) OVERRIDE;
+                             int avatar_index) override;
 
   // Starts import of the supervised users created prior to M35. They lack
   // information about password.
@@ -65,7 +65,7 @@ class SupervisedUserCreationControllerNew
                            const std::string& password,
                            int avatar_index,
                            const std::string& sync_id,
-                           const std::string& master_key) OVERRIDE;
+                           const std::string& master_key) override;
 
   // Configures and initiates importing existing supervised user to this device.
   // Existing user is identified by |sync_id|, has |display_name|,
@@ -78,14 +78,14 @@ class SupervisedUserCreationControllerNew
                            const std::string& master_key,
                            const base::DictionaryValue* password_data,
                            const std::string& encryption_key,
-                           const std::string& signature_key) OVERRIDE;
+                           const std::string& signature_key) override;
 
-  virtual void SetManagerProfile(Profile* manager_profile) OVERRIDE;
-  virtual Profile* GetManagerProfile() OVERRIDE;
+  virtual void SetManagerProfile(Profile* manager_profile) override;
+  virtual Profile* GetManagerProfile() override;
 
-  virtual void CancelCreation() OVERRIDE;
-  virtual void FinishCreation() OVERRIDE;
-  virtual std::string GetSupervisedUserId() OVERRIDE;
+  virtual void CancelCreation() override;
+  virtual void FinishCreation() override;
+  virtual std::string GetSupervisedUserId() override;
 
  private:
   enum Stage {
@@ -147,7 +147,7 @@ class SupervisedUserCreationControllerNew
 
   // SupervisedUserAuthenticator::StatusConsumer overrides.
   virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error)
-      OVERRIDE;
+      override;
 
   // Authenticator success callbacks.
   void OnMountSuccess(const std::string& mount_hash);

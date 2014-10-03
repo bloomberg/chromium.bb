@@ -37,9 +37,9 @@ class PointerDeviceObserver : public DeviceHierarchyObserver {
 
  private:
   // DeviceHierarchyObserver implementation.
-  virtual void DeviceHierarchyChanged() OVERRIDE;
-  virtual void DeviceAdded(int device_id) OVERRIDE {}
-  virtual void DeviceRemoved(int device_id) OVERRIDE {}
+  virtual void DeviceHierarchyChanged() override;
+  virtual void DeviceAdded(int device_id) override {}
+  virtual void DeviceRemoved(int device_id) override {}
 
   // Check for pointer devices.
   void CheckTouchpadExists();

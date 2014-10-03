@@ -81,7 +81,7 @@ class ProxyResolutionServiceProvider
 
   // CrosDBusService::ServiceProviderInterface override.
   virtual void Start(
-      scoped_refptr<dbus::ExportedObject> exported_object) OVERRIDE;
+      scoped_refptr<dbus::ExportedObject> exported_object) override;
 
   // Creates the instance.
   static ProxyResolutionServiceProvider* Create();

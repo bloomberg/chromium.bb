@@ -20,8 +20,8 @@ class DisplayConfigurationObserver : public ash::DisplayController::Observer {
 
  protected:
   // ash::DisplayController::Observer overrides:
-  virtual void OnDisplaysInitialized() OVERRIDE;
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+  virtual void OnDisplaysInitialized() override;
+  virtual void OnDisplayConfigurationChanged() override;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurationObserver);
 };

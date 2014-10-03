@@ -42,23 +42,23 @@ class DeviceEventRouter : public VolumeManagerObserver,
 
   // VolumeManagerObserver overrides.
   virtual void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
-                           bool mounting) OVERRIDE;
+                           bool mounting) override;
   virtual void OnDiskRemoved(
-      const chromeos::disks::DiskMountManager::Disk& disk) OVERRIDE;
-  virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
-  virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+      const chromeos::disks::DiskMountManager::Disk& disk) override;
+  virtual void OnDeviceAdded(const std::string& device_path) override;
+  virtual void OnDeviceRemoved(const std::string& device_path) override;
   virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info) OVERRIDE;
+                               const VolumeInfo& volume_info) override;
   virtual void OnVolumeUnmounted(chromeos::MountError error_code,
-                                 const VolumeInfo& volume_info) OVERRIDE;
+                                 const VolumeInfo& volume_info) override;
   virtual void OnFormatStarted(const std::string& device_path,
-                               bool success) OVERRIDE;
+                               bool success) override;
   virtual void OnFormatCompleted(const std::string& device_path,
-                                 bool success) OVERRIDE;
+                                 bool success) override;
 
   // PowerManagerClient::Observer overrides.
-  virtual void SuspendImminent() OVERRIDE;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendImminent() override;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   bool is_resuming() const { return is_resuming_; }
   bool is_starting_up() const { return is_starting_up_; }

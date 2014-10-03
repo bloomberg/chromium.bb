@@ -43,9 +43,9 @@ class WebkitFileStreamReaderImpl : public storage::FileStreamReader {
   // storage::FileStreamReader override.
   virtual int Read(net::IOBuffer* buffer,
                    int buffer_length,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int64 GetLength(const net::Int64CompletionCallback& callback)
-      OVERRIDE;
+      override;
 
  private:
   // Called upon the initialization completion of |stream_reader_|.

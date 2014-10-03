@@ -19,7 +19,7 @@ class LoginOobeSessionManagerDelegate
 
  private:
   // session_manager::SessionManagerDelegate implementation:
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   DISALLOW_COPY_AND_ASSIGN(LoginOobeSessionManagerDelegate);
 };

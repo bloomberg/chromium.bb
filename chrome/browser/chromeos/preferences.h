@@ -101,14 +101,14 @@ class Preferences : public PrefServiceSyncableObserver,
   void ForceNaturalScrollDefault();
 
   // PrefServiceSyncableObserver implementation.
-  virtual void OnIsSyncingChanged() OVERRIDE;
+  virtual void OnIsSyncingChanged() override;
 
   // Overriden from ash::ShellObserver.
-  virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
+  virtual void OnTouchHudProjectionToggled(bool enabled) override;
 
   // Overriden form user_manager::UserManager::UserSessionStateObserver.
   virtual void ActiveUserChanged(
-      const user_manager::User* active_user) OVERRIDE;
+      const user_manager::User* active_user) override;
 
   void ActivateInputMethods(const user_manager::User* active_user);
 

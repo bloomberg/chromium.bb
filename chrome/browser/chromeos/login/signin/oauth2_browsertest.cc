@@ -104,7 +104,7 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
   // OAuth2LoginManager::Observer overrides.
   virtual void OnSessionRestoreStateChanged(
       Profile* user_profile,
-      OAuth2LoginManager::SessionRestoreState state) OVERRIDE {
+      OAuth2LoginManager::SessionRestoreState state) override {
     if (!waiting_for_state_)
       return;
 
@@ -218,7 +218,7 @@ class OAuth2Test : public OobeBaseTest {
 
  protected:
   // OobeBaseTest overrides.
-  virtual Profile* profile() OVERRIDE {
+  virtual Profile* profile() override {
     if (user_manager::UserManager::Get()->GetActiveUser())
       return ProfileManager::GetPrimaryUserProfile();
 
@@ -578,7 +578,7 @@ class DelayedFakeGaia : public FakeGaia {
  private:
   // FakeGaia overrides.
   virtual void HandleMergeSession(const HttpRequest& request,
-                                  BasicHttpResponse* http_response) OVERRIDE {
+                                  BasicHttpResponse* http_response) override {
     start_event_.Signal();
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -606,7 +606,7 @@ class MergeSessionTest : public OAuth2Test {
     fake_gaia_.reset(delayed_fake_gaia_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     OAuth2Test::SetUpCommandLine(command_line);
 
     // Get fake URL for fake google.com.
@@ -624,7 +624,7 @@ class MergeSessionTest : public OAuth2Test {
     non_google_page_url_ = non_google_url.Resolve(kRandomPagePath);
 }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGoogle::HandleRequest,
                    base::Unretained(&fake_google_)));

@@ -57,10 +57,10 @@ class DeviceCloudPolicyInvalidator::InvalidationServiceObserver
 
   // public syncer::InvalidationHandler:
   virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
+      syncer::InvalidatorState state) override;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
  private:
   DeviceCloudPolicyInvalidator* parent_;

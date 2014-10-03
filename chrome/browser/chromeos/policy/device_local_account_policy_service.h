@@ -104,11 +104,11 @@ class DeviceLocalAccountPolicyBroker
   std::string GetDisplayName() const;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
   // ComponentCloudPolicyService::Delegate:
-  virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
+  virtual void OnComponentCloudPolicyUpdated() override;
 
  private:
   void CreateComponentCloudPolicyService(

@@ -27,7 +27,7 @@ class ExtensionInputMethodEventRouter
   // Implements input_method::InputMethodManager::Observer:
   virtual void InputMethodChanged(
       input_method::InputMethodManager* manager,
-      bool show_message) OVERRIDE;
+      bool show_message) override;
 
  private:
   content::BrowserContext* context_;

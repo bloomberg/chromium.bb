@@ -73,13 +73,13 @@ class TestObserver : public MessageCenterObserver {
   virtual void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source)
-      OVERRIDE {
+      override {
     if (notification_id == kNotificationId)
       MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());
   }
 
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) OVERRIDE {
+                                     bool by_user) override {
     if (notification_id == kNotificationId && by_user)
       MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());
   }
@@ -100,7 +100,7 @@ class NetworkPortalDetectorImplBrowserTest
       : LoginManagerTest(false), network_portal_detector_(NULL) {}
   virtual ~NetworkPortalDetectorImplBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
 
     ShillServiceClient::TestInterface* service_test =

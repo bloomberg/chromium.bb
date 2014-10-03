@@ -40,8 +40,8 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
   // PolicyService::Observer overrides
   virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
-                               const PolicyMap& current) OVERRIDE;
-  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
+                               const PolicyMap& current) override;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) override;
 
  protected:
   NetworkConfigurationUpdater(

@@ -258,7 +258,7 @@ class WallpaperManager: public content::NotificationObserver {
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Removes all |user_id| related wallpaper info and saved wallpapers.
   void RemoveUserWallpaperInfo(const std::string& user_id);

@@ -36,13 +36,13 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
   // PowerManagerClient::Observer implementation.
   virtual void PeripheralBatteryStatusReceived(const std::string& path,
                                                const std::string& name,
-                                               int level) OVERRIDE;
+                                               int level) override;
 
   // device::BluetoothAdapter::Observer implementation.
   virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
 
  private:
   friend class PeripheralBatteryObserverTest;

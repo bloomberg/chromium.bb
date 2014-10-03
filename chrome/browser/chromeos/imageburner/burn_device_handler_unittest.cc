@@ -59,43 +59,43 @@ class FakeDiskMountManager : public disks::DiskMountManager {
   }
 
   // DiskMountManager overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE {
+  virtual void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual const DiskMap& disks() const OVERRIDE {
+  virtual const DiskMap& disks() const override {
     return disks_;
   }
 
   // Following methods are not implemented.
   virtual const Disk* FindDiskBySourcePath(
-      const std::string& source_path) const OVERRIDE {
+      const std::string& source_path) const override {
     return NULL;
   }
-  virtual const MountPointMap& mount_points() const OVERRIDE {
+  virtual const MountPointMap& mount_points() const override {
     // Note: mount_points_ will always be empty, now.
     return mount_points_;
   }
   virtual void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback) OVERRIDE {}
+      const EnsureMountInfoRefreshedCallback& callback) override {}
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,
-                         MountType type) OVERRIDE {}
+                         MountType type) override {}
   virtual void UnmountPath(const std::string& mount_path,
                            UnmountOptions options,
-                           const UnmountPathCallback& callback) OVERRIDE {}
-  virtual void FormatMountedDevice(const std::string& mount_path) OVERRIDE {}
+                           const UnmountPathCallback& callback) override {}
+  virtual void FormatMountedDevice(const std::string& mount_path) override {}
   virtual void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE {}
-  virtual bool AddDiskForTest(Disk* disk) OVERRIDE { return false; }
+      const UnmountDeviceRecursivelyCallbackType& callback) override {}
+  virtual bool AddDiskForTest(Disk* disk) override { return false; }
   virtual bool AddMountPointForTest(
-      const MountPointInfo& mount_point) OVERRIDE {
+      const MountPointInfo& mount_point) override {
     return false;
   }
 
@@ -138,11 +138,11 @@ void CopyDevicePathCallback(
 
 class BurnDeviceHandlerTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     disk_mount_manager_.reset(new FakeDiskMountManager);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     disk_mount_manager_.reset();
   }
 

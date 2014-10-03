@@ -39,7 +39,7 @@ class FileSystemProviderOperationsWriteFileTest : public testing::Test {
   FileSystemProviderOperationsWriteFileTest() {}
   virtual ~FileSystemProviderOperationsWriteFileTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,

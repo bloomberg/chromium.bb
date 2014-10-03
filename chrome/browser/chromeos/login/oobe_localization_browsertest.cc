@@ -59,13 +59,13 @@ class FakeStatisticsProvider : public StatisticsProvider {
   // StatisticsProvider overrides.
   virtual void StartLoadingMachineStatistics(
       const scoped_refptr<base::TaskRunner>& file_task_runner,
-      bool load_oem_manifest) OVERRIDE {
+      bool load_oem_manifest) override {
   }
 
   // Populates the named machine statistic for initial_locale and
   // keyboard_layout only.
   virtual bool GetMachineStatistic(const std::string& name,
-                                   std::string* result) OVERRIDE {
+                                   std::string* result) override {
     if (name == "initial_locale")
       *result = initial_locale_;
     else if (name == "keyboard_layout")
@@ -76,11 +76,11 @@ class FakeStatisticsProvider : public StatisticsProvider {
     return true;
   }
 
-  virtual bool GetMachineFlag(const std::string& name, bool* result) OVERRIDE {
+  virtual bool GetMachineFlag(const std::string& name, bool* result) override {
     return false;
   }
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
   }
 
   std::string initial_locale_;

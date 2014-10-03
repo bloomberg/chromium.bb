@@ -37,7 +37,7 @@ bool CopyWaitForSyncCompleteArguments(std::string* out_local_id,
 
 class CopyOperationTest : public OperationTestBase {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
    OperationTestBase::SetUp();
    operation_.reset(new CopyOperation(
        blocking_task_runner(), delegate(), scheduler(), metadata(), cache()));

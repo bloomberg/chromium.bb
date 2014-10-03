@@ -50,19 +50,19 @@ class KioskAppUpdateService : public KeyedService,
   void ForceAppUpdateRestart();
 
   // KeyedService overrides:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // extensions::UpdateObserver overrides:
   virtual void OnAppUpdateAvailable(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void OnChromeUpdateAvailable() OVERRIDE {}
+      const extensions::Extension* extension) override;
+  virtual void OnChromeUpdateAvailable() override {}
 
   // system::AutomaticRebootManagerObserver overrides:
-  virtual void OnRebootScheduled(Reason reason) OVERRIDE;
-  virtual void WillDestroyAutomaticRebootManager() OVERRIDE;
+  virtual void OnRebootScheduled(Reason reason) override;
+  virtual void WillDestroyAutomaticRebootManager() override;
 
   // KioskAppManagerObserver overrides:
-  virtual void OnKioskAppCacheUpdated(const std::string& app_id) OVERRIDE;
+  virtual void OnKioskAppCacheUpdated(const std::string& app_id) override;
 
   Profile* profile_;
   std::string app_id_;
@@ -94,7 +94,7 @@ class KioskAppUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory overrides:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 };
 
 }  // namespace chromeos

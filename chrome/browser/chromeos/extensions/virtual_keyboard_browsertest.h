@@ -52,7 +52,7 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest.
   // Ensure that the virtual keyboard is enabled.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
  protected:
   // Accumulates the javascript and injects it when the test starts. The test

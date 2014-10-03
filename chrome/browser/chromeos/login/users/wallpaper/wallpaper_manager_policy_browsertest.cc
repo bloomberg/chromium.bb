@@ -163,7 +163,7 @@ class WallpaperManagerPolicyTest
   }
 
   // LoginManagerTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
 
@@ -171,7 +171,7 @@ class WallpaperManagerPolicyTest
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Set the same switches as LoginManagerTest, except that kMultiProfiles is
     // only set when GetParam() is true and except that kLoginProfile is set
     // when GetParam() is false.  The latter seems to be required for the sane
@@ -180,7 +180,7 @@ class WallpaperManagerPolicyTest
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     ash::Shell::GetInstance()->
         desktop_background_controller()->AddObserver(this);
@@ -192,14 +192,14 @@ class WallpaperManagerPolicyTest
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     ash::Shell::GetInstance()->
         desktop_background_controller()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 
   // ash::DesktopBackgroundControllerObserver:
-  virtual void OnWallpaperDataChanged() OVERRIDE {
+  virtual void OnWallpaperDataChanged() override {
     ++wallpaper_change_count_;
     if (run_loop_)
       run_loop_->Quit();

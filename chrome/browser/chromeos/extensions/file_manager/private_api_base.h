@@ -28,7 +28,7 @@ class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
   virtual ~LoggedAsyncExtensionFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual void SendResponse(bool success) OVERRIDE;
+  virtual void SendResponse(bool success) override;
 
   // Sets the logging on completion flag. By default, logging is turned off.
   void set_log_on_completion(bool log_on_completion) {

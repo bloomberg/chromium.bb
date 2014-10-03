@@ -88,60 +88,60 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
   static bool CanHandleURL(const storage::FileSystemURL& url);
 
   // storage::FileSystemBackend overrides.
-  virtual bool CanHandleType(storage::FileSystemType type) const OVERRIDE;
-  virtual void Initialize(storage::FileSystemContext* context) OVERRIDE;
+  virtual bool CanHandleType(storage::FileSystemType type) const override;
+  virtual void Initialize(storage::FileSystemContext* context) override;
   virtual void ResolveURL(const storage::FileSystemURL& url,
                           storage::OpenFileSystemMode mode,
-                          const OpenFileSystemCallback& callback) OVERRIDE;
+                          const OpenFileSystemCallback& callback) override;
   virtual storage::AsyncFileUtil* GetAsyncFileUtil(
-      storage::FileSystemType type) OVERRIDE;
+      storage::FileSystemType type) override;
   virtual storage::WatcherManager* GetWatcherManager(
-      storage::FileSystemType type) OVERRIDE;
+      storage::FileSystemType type) override;
   virtual storage::CopyOrMoveFileValidatorFactory*
       GetCopyOrMoveFileValidatorFactory(storage::FileSystemType type,
-                                        base::File::Error* error_code) OVERRIDE;
+                                        base::File::Error* error_code) override;
   virtual storage::FileSystemOperation* CreateFileSystemOperation(
       const storage::FileSystemURL& url,
       storage::FileSystemContext* context,
-      base::File::Error* error_code) const OVERRIDE;
+      base::File::Error* error_code) const override;
   virtual bool SupportsStreaming(
-      const storage::FileSystemURL& url) const OVERRIDE;
+      const storage::FileSystemURL& url) const override;
   virtual bool HasInplaceCopyImplementation(
-      storage::FileSystemType type) const OVERRIDE;
+      storage::FileSystemType type) const override;
   virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& path,
       int64 offset,
       int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
-      storage::FileSystemContext* context) const OVERRIDE;
+      storage::FileSystemContext* context) const override;
   virtual scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
       int64 offset,
-      storage::FileSystemContext* context) const OVERRIDE;
-  virtual storage::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+      storage::FileSystemContext* context) const override;
+  virtual storage::FileSystemQuotaUtil* GetQuotaUtil() override;
   virtual const storage::UpdateObserverList* GetUpdateObservers(
-      storage::FileSystemType type) const OVERRIDE;
+      storage::FileSystemType type) const override;
   virtual const storage::ChangeObserverList* GetChangeObservers(
-      storage::FileSystemType type) const OVERRIDE;
+      storage::FileSystemType type) const override;
   virtual const storage::AccessObserverList* GetAccessObservers(
-      storage::FileSystemType type) const OVERRIDE;
+      storage::FileSystemType type) const override;
 
   // storage::ExternalFileSystemBackend overrides.
   virtual bool IsAccessAllowed(
-      const storage::FileSystemURL& url) const OVERRIDE;
-  virtual std::vector<base::FilePath> GetRootDirectories() const OVERRIDE;
+      const storage::FileSystemURL& url) const override;
+  virtual std::vector<base::FilePath> GetRootDirectories() const override;
   virtual void GrantFullAccessToExtension(
-      const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
   virtual void GrantFileAccessToExtension(
       const std::string& extension_id,
-      const base::FilePath& virtual_path) OVERRIDE;
+      const base::FilePath& virtual_path) override;
   virtual void RevokeAccessForExtension(
-      const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
   virtual bool GetVirtualPath(const base::FilePath& filesystem_path,
-                              base::FilePath* virtual_path) OVERRIDE;
+                              base::FilePath* virtual_path) override;
   virtual void GetRedirectURLForContents(
       const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) OVERRIDE;
+      const storage::URLCallback& callback) override;
 
  private:
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

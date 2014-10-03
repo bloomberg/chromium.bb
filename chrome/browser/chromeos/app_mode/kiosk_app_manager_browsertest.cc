@@ -126,7 +126,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
  private:
   // KioskAppManagerObserver overrides:
-  virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE {
+  virtual void OnKioskAppDataChanged(const std::string& app_id) override {
     ++data_change_count_;
     if (data_change_count_ < data_loaded_threshold_)
       return;
@@ -136,7 +136,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
       runner_->Quit();
   }
 
-  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE {
+  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) override {
     loaded_ = false;
     quit_ = true;
     if (runner_.get())
@@ -144,12 +144,12 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   }
 
   virtual void OnKioskExtensionLoadedInCache(
-      const std::string& app_id) OVERRIDE {
+      const std::string& app_id) override {
     OnKioskAppDataChanged(app_id);
   }
 
   virtual void OnKioskExtensionDownloadFailed(
-      const std::string& app_id) OVERRIDE {
+      const std::string& app_id) override {
     OnKioskAppDataLoadFailure(app_id);
   }
 
@@ -171,7 +171,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   virtual ~KioskAppManagerTest() {}
 
   // InProcessBrowserTest overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
@@ -185,21 +185,21 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
     // Initialize fake_cws_ to setup web store gallery.
     fake_cws_->Init(embedded_test_server());
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
     // Restart the thread as the sandbox host process has already been spawned.
     embedded_test_server()->RestartThreadAndListen();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     host_resolver()->AddRule("*", "127.0.0.1");

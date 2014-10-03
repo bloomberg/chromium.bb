@@ -160,7 +160,7 @@ class UserSessionManager
   void RemoveSessionStateObserver(chromeos::UserSessionStateObserver* observer);
 
   virtual void ActiveUserChanged(
-      const user_manager::User* active_user) OVERRIDE;
+      const user_manager::User* active_user) override;
 
   // Returns default IME state for user session.
   scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
@@ -180,16 +180,16 @@ class UserSessionManager
   // OAuth2LoginManager::Observer overrides:
   virtual void OnSessionRestoreStateChanged(
       Profile* user_profile,
-      OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
-  virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) OVERRIDE;
+      OAuth2LoginManager::SessionRestoreState state) override;
+  virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // UserSessionManagerDelegate overrides:
   // Used when restoring user sessions after crash.
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
+  virtual void OnProfilePrepared(Profile* profile) override;
 
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);

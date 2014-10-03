@@ -76,7 +76,7 @@ class FileSystemProviderOperationsReadFileTest : public testing::Test {
   FileSystemProviderOperationsReadFileTest() {}
   virtual ~FileSystemProviderOperationsReadFileTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,

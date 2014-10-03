@@ -65,14 +65,14 @@ class PolicyOAuth2TokenFetcher
  private:
   // GaiaAuthConsumer overrides.
   virtual void OnClientOAuthSuccess(
-      const GaiaAuthConsumer::ClientOAuthResult& oauth_tokens) OVERRIDE;
+      const GaiaAuthConsumer::ClientOAuthResult& oauth_tokens) override;
   virtual void OnClientOAuthFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // OAuth2AccessTokenConsumer overrides.
   virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+                                 const base::Time& expiration_time) override;
+  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
 
   // Starts fetching OAuth2 refresh token.
   void StartFetchingRefreshToken();

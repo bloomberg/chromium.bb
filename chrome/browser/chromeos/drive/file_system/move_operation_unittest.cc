@@ -15,7 +15,7 @@ namespace file_system {
 
 class MoveOperationTest : public OperationTestBase {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
    OperationTestBase::SetUp();
    operation_.reset(new MoveOperation(blocking_task_runner(),
                                       delegate(),

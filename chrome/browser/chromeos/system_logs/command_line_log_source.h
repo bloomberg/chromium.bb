@@ -17,7 +17,7 @@ class CommandLineLogSource : public SystemLogsSource {
   virtual ~CommandLineLogSource() {}
 
   // SystemLogsSource override.
-  virtual void Fetch(const SysLogsSourceCallback& callback) OVERRIDE;
+  virtual void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandLineLogSource);

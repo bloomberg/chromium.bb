@@ -12,7 +12,7 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
       : current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
   // Loads a helper testing extension.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     const extensions::Extension* extension = LoadExtensionWithFlags(
         test_data_dir_.AppendASCII("file_system_provider/test_util"),

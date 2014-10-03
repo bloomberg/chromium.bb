@@ -47,7 +47,7 @@ class KioskModeSettingsTest : public testing::Test {
     cros_settings->AddSettingsProvider(device_settings_provider_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     if (!KioskModeSettings::Get()->is_initialized()) {
       KioskModeSettings::Get()->Initialize(
           base::Bind(&KioskModeSettingsTest::SetUp,
@@ -56,7 +56,7 @@ class KioskModeSettingsTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     KioskModeSettings::Get()->set_initialized(false);
   }
 

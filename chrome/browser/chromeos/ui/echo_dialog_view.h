@@ -50,23 +50,24 @@ class EchoDialogView : public views::DialogDelegateView,
   friend class ExtensionEchoPrivateApiTest;
 
   // views::DialogDelegate overrides.
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE;
-  virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+  virtual int GetDialogButtons() const override;
+  virtual int GetDefaultDialogButton() const override;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
 
   // views::WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual bool ShouldShowWindowIcon() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual bool ShouldShowWindowTitle() const override;
+  virtual bool ShouldShowWindowIcon() const override;
 
   // views::LinkListener override.
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) OVERRIDE;
+                                      int event_flags) override;
 
   // views::View override.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Sets the border and bounds for the styled label containing the dialog
   // text.

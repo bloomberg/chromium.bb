@@ -35,11 +35,11 @@ class FakeNotificationManager : public NotificationManagerInterface {
   // NotificationManagerInterface overrides:
   virtual void ShowUnresponsiveNotification(
       int id,
-      const NotificationCallback& callback) OVERRIDE {
+      const NotificationCallback& callback) override {
     callbacks_[id] = callback;
   }
 
-  virtual void HideUnresponsiveNotification(int id) OVERRIDE {
+  virtual void HideUnresponsiveNotification(int id) override {
     callbacks_.erase(id);
   }
 
@@ -169,7 +169,7 @@ class FakeHandler : public RequestManager::HandlerInterface {
       : logger_(logger), execute_reply_(execute_reply) {}
 
   // RequestManager::Handler overrides.
-  virtual bool Execute(int request_id) OVERRIDE {
+  virtual bool Execute(int request_id) override {
     if (logger_.get())
       logger_->OnExecute(request_id);
 
@@ -179,7 +179,7 @@ class FakeHandler : public RequestManager::HandlerInterface {
   // RequestManager::Handler overrides.
   virtual void OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
-                         bool has_more) OVERRIDE {
+                         bool has_more) override {
     if (logger_.get())
       logger_->OnSuccess(request_id, result.Pass(), has_more);
   }
@@ -187,7 +187,7 @@ class FakeHandler : public RequestManager::HandlerInterface {
   // RequestManager::Handler overrides.
   virtual void OnError(int request_id,
                        scoped_ptr<RequestValue> result,
-                       base::File::Error error) OVERRIDE {
+                       base::File::Error error) override {
     if (logger_.get())
       logger_->OnError(request_id, result.Pass(), error);
   }
@@ -253,36 +253,36 @@ class RequestObserver : public RequestManager::Observer {
   virtual ~RequestObserver() {}
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestCreated(int request_id, RequestType type) OVERRIDE {
+  virtual void OnRequestCreated(int request_id, RequestType type) override {
     created_.push_back(CreatedEvent(request_id, type));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestDestroyed(int request_id) OVERRIDE {
+  virtual void OnRequestDestroyed(int request_id) override {
     destroyed_.push_back(Event(request_id));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestExecuted(int request_id) OVERRIDE {
+  virtual void OnRequestExecuted(int request_id) override {
     executed_.push_back(Event(request_id));
   }
 
   // RequestManager::Observer overrides.
   virtual void OnRequestFulfilled(int request_id,
                                   const RequestValue& result,
-                                  bool has_more) OVERRIDE {
+                                  bool has_more) override {
     fulfilled_.push_back(FulfilledEvent(request_id, has_more));
   }
 
   // RequestManager::Observer overrides.
   virtual void OnRequestRejected(int request_id,
                                  const RequestValue& result,
-                                 base::File::Error error) OVERRIDE {
+                                 base::File::Error error) override {
     rejected_.push_back(RejectedEvent(request_id, error));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestTimeouted(int request_id) OVERRIDE {
+  virtual void OnRequestTimeouted(int request_id) override {
     timeouted_.push_back(Event(request_id));
   }
 
@@ -311,7 +311,7 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
   FileSystemProviderRequestManagerTest() {}
   virtual ~FileSystemProviderRequestManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     notification_manager_.reset(new FakeNotificationManager);
     request_manager_.reset(new RequestManager(notification_manager_.get()));
   }

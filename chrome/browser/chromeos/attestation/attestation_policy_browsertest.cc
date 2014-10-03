@@ -24,7 +24,7 @@ namespace policy {
 class CustomFakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
  public:
   virtual void TpmAttestationIsEnrolled(
-      const chromeos::BoolDBusMethodCallback& callback) OVERRIDE {
+      const chromeos::BoolDBusMethodCallback& callback) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, chromeos::DBUS_METHOD_CALL_FAILURE, false));
@@ -36,15 +36,15 @@ class AttestationDevicePolicyTest
       public chromeos::DeviceSettingsService::Observer {
  public:
     // DeviceSettingsService::Observer
-    virtual void OwnershipStatusChanged() OVERRIDE {}
-    virtual void DeviceSettingsUpdated() OVERRIDE {
+    virtual void OwnershipStatusChanged() override {}
+    virtual void DeviceSettingsUpdated() override {
       operation_complete_ = true;
     }
 
  protected:
   AttestationDevicePolicyTest() : operation_complete_(false) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
     InstallOwnerKey();
     RefreshDevicePolicy();

@@ -59,7 +59,7 @@ class ScopedModeIndicatorObserverForTesting :
   }
 
   // ModeIndicatorObserverInterface override:
-  virtual void AddModeIndicatorWidget(views::Widget* widget) OVERRIDE {
+  virtual void AddModeIndicatorWidget(views::Widget* widget) override {
     widget_list_.push_back(widget);
     max_widget_list_size_ =
         std::max(max_widget_list_size_, widget_list_.size());
@@ -67,7 +67,7 @@ class ScopedModeIndicatorObserverForTesting :
   }
 
   // views::WidgetObserver override:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) override {
     std::vector<views::Widget*>::iterator it =
       std::find(widget_list_.begin(), widget_list_.end(), widget);
     if (it != widget_list_.end())
@@ -76,7 +76,7 @@ class ScopedModeIndicatorObserverForTesting :
 
   // views::WidgetObserver override:
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     last_bounds_ = widget->GetWindowBoundsInScreen();
     is_displayed_ |= visible;
   }
@@ -94,7 +94,7 @@ class ModeIndicatorBrowserTest : public InProcessBrowserTest {
       : InProcessBrowserTest() {}
   virtual ~ModeIndicatorBrowserTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ui::SetUpInputMethodFactoryForTesting();
   }
 

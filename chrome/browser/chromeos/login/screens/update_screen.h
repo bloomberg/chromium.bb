@@ -39,15 +39,15 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   static UpdateScreen* Get(ScreenManager* manager);
 
   // Overridden from WizardScreen.
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual std::string GetName() const override;
 
   // UpdateScreenActor::Delegate implementation:
-  virtual void CancelUpdate() OVERRIDE;
-  virtual void OnActorDestroyed(UpdateScreenActor* actor) OVERRIDE;
-  virtual void OnConnectToNetworkRequested() OVERRIDE;
+  virtual void CancelUpdate() override;
+  virtual void OnActorDestroyed(UpdateScreenActor* actor) override;
+  virtual void OnConnectToNetworkRequested() override;
 
   // Starts network check. Made virtual to simplify mocking.
   virtual void StartNetworkCheck();
@@ -72,12 +72,12 @@ class UpdateScreen: public UpdateEngineClient::Observer,
 
   // UpdateEngineClient::Observer implementation:
   virtual void UpdateStatusChanged(
-      const UpdateEngineClient::Status& status) OVERRIDE;
+      const UpdateEngineClient::Status& status) override;
 
   // NetworkPortalDetector::Observer implementation:
   virtual void OnPortalDetectionCompleted(
       const NetworkState* network,
-      const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
+      const NetworkPortalDetector::CaptivePortalState& state) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);

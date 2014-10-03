@@ -33,12 +33,12 @@ class ResourceLoaderBrowserTest : public InProcessBrowserTest {
   ResourceLoaderBrowserTest() {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Needed to load file:// URLs in XHRs.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Create the root page containing resource_loader.js.
     std::string root_page =
         "<html>"

@@ -81,33 +81,33 @@ class AppLaunchController
   void MaybeShowNetworkConfigureUI();
 
   // KioskProfileLoader::Delegate overrides:
-  virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
-  virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) OVERRIDE;
+  virtual void OnProfileLoaded(Profile* profile) override;
+  virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
 
   // AppLaunchSplashScreenActor::Delegate overrides:
-  virtual void OnConfigureNetwork() OVERRIDE;
-  virtual void OnCancelAppLaunch() OVERRIDE;
-  virtual void OnNetworkConfigRequested(bool requested) OVERRIDE;
-  virtual void OnNetworkStateChanged(bool online) OVERRIDE;
+  virtual void OnConfigureNetwork() override;
+  virtual void OnCancelAppLaunch() override;
+  virtual void OnNetworkConfigRequested(bool requested) override;
+  virtual void OnNetworkStateChanged(bool online) override;
 
   // StartupAppLauncher::Delegate overrides:
-  virtual void InitializeNetwork() OVERRIDE;
-  virtual bool IsNetworkReady() OVERRIDE;
-  virtual void OnLoadingOAuthFile() OVERRIDE;
-  virtual void OnInitializingTokenService() OVERRIDE;
-  virtual void OnInstallingApp() OVERRIDE;
-  virtual void OnReadyToLaunch() OVERRIDE;
-  virtual void OnLaunchSucceeded() OVERRIDE;
-  virtual void OnLaunchFailed(KioskAppLaunchError::Error error) OVERRIDE;
-  virtual bool IsShowingNetworkConfigScreen() OVERRIDE;
+  virtual void InitializeNetwork() override;
+  virtual bool IsNetworkReady() override;
+  virtual void OnLoadingOAuthFile() override;
+  virtual void OnInitializingTokenService() override;
+  virtual void OnInstallingApp() override;
+  virtual void OnReadyToLaunch() override;
+  virtual void OnLaunchSucceeded() override;
+  virtual void OnLaunchFailed(KioskAppLaunchError::Error error) override;
+  virtual bool IsShowingNetworkConfigScreen() override;
 
   // AppLaunchSigninScreen::Delegate overrides:
-  virtual void OnOwnerSigninSuccess() OVERRIDE;
+  virtual void OnOwnerSigninSuccess() override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   Profile* profile_;
   const std::string app_id_;

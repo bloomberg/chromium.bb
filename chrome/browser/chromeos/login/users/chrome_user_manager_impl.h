@@ -65,84 +65,84 @@ class ChromeUserManagerImpl
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // ChromeUserManager implementation:
-  virtual MultiProfileUserController* GetMultiProfileUserController() OVERRIDE;
+  virtual MultiProfileUserController* GetMultiProfileUserController() override;
   virtual UserImageManager* GetUserImageManager(
-      const std::string& user_id) OVERRIDE;
-  virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
-  virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
-  virtual UserFlow* GetUserFlow(const std::string& user_id) const OVERRIDE;
-  virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) OVERRIDE;
-  virtual void ResetUserFlow(const std::string& user_id) OVERRIDE;
+      const std::string& user_id) override;
+  virtual SupervisedUserManager* GetSupervisedUserManager() override;
+  virtual UserFlow* GetCurrentUserFlow() const override;
+  virtual UserFlow* GetUserFlow(const std::string& user_id) const override;
+  virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) override;
+  virtual void ResetUserFlow(const std::string& user_id) override;
 
   // UserManager implementation:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
   virtual user_manager::UserList GetUsersAllowedForMultiProfile()
-      const OVERRIDE;
-  virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
-  virtual void SessionStarted() OVERRIDE;
+      const override;
+  virtual user_manager::UserList GetUnlockUsers() const override;
+  virtual void SessionStarted() override;
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
-      user_manager::User::OAuthTokenStatus oauth_token_status) OVERRIDE;
+      user_manager::User::OAuthTokenStatus oauth_token_status) override;
   virtual void SaveUserDisplayName(const std::string& user_id,
-                                   const base::string16& display_name) OVERRIDE;
-  virtual bool CanCurrentUserLock() const OVERRIDE;
+                                   const base::string16& display_name) override;
+  virtual bool CanCurrentUserLock() const override;
   virtual bool IsUserNonCryptohomeDataEphemeral(
-      const std::string& user_id) const OVERRIDE;
-  virtual bool AreSupervisedUsersAllowed() const OVERRIDE;
+      const std::string& user_id) const override;
+  virtual bool AreSupervisedUsersAllowed() const override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // policy::CloudExternalDataPolicyObserver::Delegate:
   virtual void OnExternalDataSet(const std::string& policy,
-                                 const std::string& user_id) OVERRIDE;
+                                 const std::string& user_id) override;
   virtual void OnExternalDataCleared(const std::string& policy,
-                                     const std::string& user_id) OVERRIDE;
+                                     const std::string& user_id) override;
   virtual void OnExternalDataFetched(const std::string& policy,
                                      const std::string& user_id,
-                                     scoped_ptr<std::string> data) OVERRIDE;
+                                     scoped_ptr<std::string> data) override;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
-  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) override;
+  virtual void OnDeviceLocalAccountsChanged() override;
 
   void StopPolicyObserverForTesting();
 
  protected:
   // UserManagerBase implementation:
-  virtual bool AreEphemeralUsersEnabled() const OVERRIDE;
-  virtual const std::string& GetApplicationLocale() const OVERRIDE;
-  virtual PrefService* GetLocalState() const OVERRIDE;
+  virtual bool AreEphemeralUsersEnabled() const override;
+  virtual const std::string& GetApplicationLocale() const override;
+  virtual PrefService* GetLocalState() const override;
   virtual void HandleUserOAuthTokenStatusChange(
       const std::string& user_id,
-      user_manager::User::OAuthTokenStatus status) const OVERRIDE;
-  virtual bool IsEnterpriseManaged() const OVERRIDE;
-  virtual void LoadPublicAccounts(std::set<std::string>* users_set) OVERRIDE;
-  virtual void NotifyOnLogin() OVERRIDE;
+      user_manager::User::OAuthTokenStatus status) const override;
+  virtual bool IsEnterpriseManaged() const override;
+  virtual void LoadPublicAccounts(std::set<std::string>* users_set) override;
+  virtual void NotifyOnLogin() override;
   virtual void NotifyUserAddedToSession(const user_manager::User* added_user,
-                                        bool user_switch_pending) OVERRIDE;
-  virtual void PerformPreUserListLoadingActions() OVERRIDE;
-  virtual void PerformPostUserListLoadingActions() OVERRIDE;
-  virtual void PerformPostUserLoggedInActions(bool browser_restart) OVERRIDE;
-  virtual void RemoveNonCryptohomeData(const std::string& user_id) OVERRIDE;
+                                        bool user_switch_pending) override;
+  virtual void PerformPreUserListLoadingActions() override;
+  virtual void PerformPostUserListLoadingActions() override;
+  virtual void PerformPostUserLoggedInActions(bool browser_restart) override;
+  virtual void RemoveNonCryptohomeData(const std::string& user_id) override;
   virtual void RemoveUserInternal(
       const std::string& user_email,
-      user_manager::RemoveUserDelegate* delegate) OVERRIDE;
-  virtual bool IsDemoApp(const std::string& user_id) const OVERRIDE;
-  virtual bool IsKioskApp(const std::string& user_id) const OVERRIDE;
+      user_manager::RemoveUserDelegate* delegate) override;
+  virtual bool IsDemoApp(const std::string& user_id) const override;
+  virtual bool IsKioskApp(const std::string& user_id) const override;
   virtual bool IsPublicAccountMarkedForRemoval(
-      const std::string& user_id) const OVERRIDE;
-  virtual void DemoAccountLoggedIn() OVERRIDE;
-  virtual void GuestUserLoggedIn() OVERRIDE;
-  virtual void KioskAppLoggedIn(const std::string& app_id) OVERRIDE;
-  virtual void PublicAccountUserLoggedIn(user_manager::User* user) OVERRIDE;
-  virtual void RegularUserLoggedIn(const std::string& user_id) OVERRIDE;
+      const std::string& user_id) const override;
+  virtual void DemoAccountLoggedIn() override;
+  virtual void GuestUserLoggedIn() override;
+  virtual void KioskAppLoggedIn(const std::string& app_id) override;
+  virtual void PublicAccountUserLoggedIn(user_manager::User* user) override;
+  virtual void RegularUserLoggedIn(const std::string& user_id) override;
   virtual void RegularUserLoggedInAsEphemeral(
-      const std::string& user_id) OVERRIDE;
-  virtual void RetailModeUserLoggedIn() OVERRIDE;
-  virtual void SupervisedUserLoggedIn(const std::string& user_id) OVERRIDE;
+      const std::string& user_id) override;
+  virtual void RetailModeUserLoggedIn() override;
+  virtual void SupervisedUserLoggedIn(const std::string& user_id) override;
 
  private:
   friend class SupervisedUserManagerImpl;
@@ -193,7 +193,7 @@ class ChromeUserManagerImpl
   UserFlow* GetDefaultUserFlow() const;
 
   // MultiProfileUserControllerDelegate implementation:
-  virtual void OnUserNotAllowed(const std::string& user_email) OVERRIDE;
+  virtual void OnUserNotAllowed(const std::string& user_email) override;
 
   // Update the number of users.
   void UpdateNumberOfUsers();

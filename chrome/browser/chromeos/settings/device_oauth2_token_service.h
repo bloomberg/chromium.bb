@@ -57,32 +57,32 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
 
   // Implementation of OAuth2TokenService.
   virtual bool RefreshTokenIsAvailable(const std::string& account_id)
-      const OVERRIDE;
+      const override;
 
   // Pull the robot account ID from device policy.
   virtual std::string GetRobotAccountId() const;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) OVERRIDE;
+                                      int expires_in_seconds) override;
   virtual void OnGetTokenInfoResponse(
-      scoped_ptr<base::DictionaryValue> token_info) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> token_info) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
  protected:
   // Implementation of OAuth2TokenService.
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContext() override;
   virtual void FetchOAuth2Token(RequestImpl* request,
                                 const std::string& account_id,
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
-                                const ScopeSet& scopes) OVERRIDE;
+                                const ScopeSet& scopes) override;
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) OVERRIDE;
+      OAuth2AccessTokenConsumer* consumer) override;
 
  private:
   struct PendingRequest;

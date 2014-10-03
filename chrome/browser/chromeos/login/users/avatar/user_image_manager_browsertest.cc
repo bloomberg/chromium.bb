@@ -103,27 +103,27 @@ class UserImageManagerTest : public LoginManagerTest,
   }
 
   // LoginManagerTest overrides:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     local_state_ = g_browser_process->local_state();
     user_manager::UserManager::Get()->AddObserver(this);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     user_manager::UserManager::Get()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 
   // UserManager::Observer overrides:
   virtual void LocalStateChanged(
-      user_manager::UserManager* user_manager) OVERRIDE {
+      user_manager::UserManager* user_manager) override {
     if (run_loop_)
       run_loop_->Quit();
   }
@@ -604,13 +604,13 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   }
 
   // UserImageManagerTest overrides:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     UserImageManagerTest::SetUpOnMainThread();
 
     base::FilePath user_keys_dir;
@@ -639,12 +639,12 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   }
 
   // policy::CloudPolicyStore::Observer overrides:
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE {
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override {
     if (run_loop_)
       run_loop_->Quit();
   }
 
-  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE {
+  virtual void OnStoreError(policy::CloudPolicyStore* store) override {
     if (run_loop_)
       run_loop_->Quit();
   }

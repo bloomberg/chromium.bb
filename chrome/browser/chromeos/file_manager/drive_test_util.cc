@@ -27,7 +27,7 @@ class DriveMountPointWaiter : public drive::DriveIntegrationServiceObserver {
   }
 
   // DriveIntegrationServiceObserver override.
-  virtual void OnFileSystemMounted() OVERRIDE {
+  virtual void OnFileSystemMounted() override {
     // Note that it is OK for |run_loop_.Quit| to be called before
     // |run_loop_.Run|. In this case |Run| will return immediately.
     run_loop_.Quit();

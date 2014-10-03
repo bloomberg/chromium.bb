@@ -44,7 +44,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       : local_state_(TestingBrowserProcess::GetGlobal()),
         user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DeviceSettingsTestBase::SetUp();
 
     EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
@@ -56,7 +56,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     DeviceSettingsTestBase::TearDown();
   }
 

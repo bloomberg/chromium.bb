@@ -79,7 +79,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
       const std::string& source_url,
       const std::string& signal_interface,
       const std::string& signal_name,
-      scoped_refptr<dbus::ExportedObject> exported_object) OVERRIDE {
+      scoped_refptr<dbus::ExportedObject> exported_object) override {
     DCHECK(OnOriginThread());
 
     // Create a request slot for this proxy resolution request.

@@ -25,7 +25,7 @@ class GetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~GetCurrentInputMethodFunction() {}
 
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCurrentInputMethod",
@@ -40,7 +40,7 @@ class SetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~SetCurrentInputMethodFunction() {}
 
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setCurrentInputMethod",
@@ -55,7 +55,7 @@ class GetInputMethodsFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~GetInputMethodsFunction() {}
 
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethods",
@@ -78,11 +78,11 @@ class InputMethodAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<InputMethodAPI>* GetFactoryInstance();
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+      override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<InputMethodAPI>;

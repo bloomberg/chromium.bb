@@ -30,7 +30,7 @@ class ProxySettingsDialog : public LoginWebDialog {
 
  protected:
   // ui::WebDialogDelegate implementation.
-  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) override;
 
  private:
   // TODO(altimofeev): consider avoidance static variable by extending current

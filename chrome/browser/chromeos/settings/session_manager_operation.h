@@ -142,7 +142,7 @@ class LoadSettingsOperation : public SessionManagerOperation {
 
  protected:
   // SessionManagerOperation:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoadSettingsOperation);
@@ -160,7 +160,7 @@ class StoreSettingsOperation : public SessionManagerOperation {
 
  protected:
   // SessionManagerOperation:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   // Handles the result of the store operation and triggers the load.
@@ -183,7 +183,7 @@ class SignAndStoreSettingsOperation : public SessionManagerOperation {
   virtual ~SignAndStoreSettingsOperation();
 
   // SessionManagerOperation:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   void StartSigning(bool has_private_key);

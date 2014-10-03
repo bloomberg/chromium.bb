@@ -97,8 +97,8 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   DeviceLocalAccountExternalPolicyLoaderTest();
   virtual ~DeviceLocalAccountExternalPolicyLoaderTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void VerifyAndResetVisitorCallExpectations();
   void SetForceInstallListPolicy();

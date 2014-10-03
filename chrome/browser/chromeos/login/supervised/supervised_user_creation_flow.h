@@ -21,16 +21,16 @@ class SupervisedUserCreationFlow : public ExtendedUserFlow {
   explicit SupervisedUserCreationFlow(const std::string& manager_id);
   virtual ~SupervisedUserCreationFlow();
 
-  virtual bool CanLockScreen() OVERRIDE;
-  virtual bool ShouldShowSettings() OVERRIDE;
-  virtual bool ShouldLaunchBrowser() OVERRIDE;
-  virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
-  virtual bool HandleLoginFailure(const AuthFailure& failure) OVERRIDE;
-  virtual void HandleLoginSuccess(const UserContext& context) OVERRIDE;
-  virtual bool HandlePasswordChangeDetected() OVERRIDE;
+  virtual bool CanLockScreen() override;
+  virtual bool ShouldShowSettings() override;
+  virtual bool ShouldLaunchBrowser() override;
+  virtual bool ShouldSkipPostLoginScreens() override;
+  virtual bool HandleLoginFailure(const AuthFailure& failure) override;
+  virtual void HandleLoginSuccess(const UserContext& context) override;
+  virtual bool HandlePasswordChangeDetected() override;
   virtual void HandleOAuthTokenStatusChange(
-      user_manager::User::OAuthTokenStatus status) OVERRIDE;
-  virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
+      user_manager::User::OAuthTokenStatus status) override;
+  virtual void LaunchExtraSteps(Profile* profile) override;
  private:
   // Display name for user being created.
   base::string16 name_;

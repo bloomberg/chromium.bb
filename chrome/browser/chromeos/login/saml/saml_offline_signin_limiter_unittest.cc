@@ -36,8 +36,8 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
   virtual ~SAMLOfflineSigninLimiterTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void DestroyLimiter();
   void CreateLimiter();

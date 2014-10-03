@@ -53,7 +53,7 @@ class AppWindowHandler : public AppWindowRegistry::Observer {
 
  private:
   // extensions::AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {
+  virtual void OnAppWindowRemoved(AppWindow* app_window) override {
     if (window_registry_->app_windows().empty()) {
       if (DemoAppLauncher::IsDemoAppSession(
               user_manager::UserManager::Get()->GetActiveUser()->email())) {
@@ -104,7 +104,7 @@ class BrowserWindowHandler : public chrome::BrowserListObserver {
   }
 
   // chrome::BrowserListObserver overrides:
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
+  virtual void OnBrowserAdded(Browser* browser) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&BrowserWindowHandler::HandleBrowser,

@@ -22,19 +22,19 @@ class ChooseMobileNetworkDialog : public ui::WebDialogDelegate {
   ChooseMobileNetworkDialog();
 
   // Overridden from ui::WebDialogDelegate:
-  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual base::string16 GetDialogTitle() const OVERRIDE;
-  virtual GURL GetDialogContentURL() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const override;
+  virtual base::string16 GetDialogTitle() const override;
+  virtual GURL GetDialogContentURL() const override;
   virtual void GetWebUIMessageHandlers(
-      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
-  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual std::string GetDialogArgs() const OVERRIDE;
-  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const override;
+  virtual void GetDialogSize(gfx::Size* size) const override;
+  virtual std::string GetDialogArgs() const override;
+  virtual void OnDialogClosed(const std::string& json_retval) override;
   virtual void OnCloseContents(
-      content::WebContents* source, bool* out_close_dialog) OVERRIDE;
-  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+      content::WebContents* source, bool* out_close_dialog) override;
+  virtual bool ShouldShowDialogTitle() const override;
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkDialog);
 };

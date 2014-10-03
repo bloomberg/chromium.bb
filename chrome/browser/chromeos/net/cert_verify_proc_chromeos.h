@@ -38,7 +38,7 @@ class CertVerifyProcChromeOS : public net::CertVerifyProcNSS {
       int flags,
       net::CRLSet* crl_set,
       const net::CertificateList& additional_trust_anchors,
-      net::CertVerifyResult* verify_result) OVERRIDE;
+      net::CertVerifyResult* verify_result) override;
 
   // Check if the trust root of |current_chain| is allowed.
   // |is_chain_valid_arg| is actually a ChainVerifyArgs*, which is used to pass

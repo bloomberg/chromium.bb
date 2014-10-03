@@ -62,9 +62,9 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   void OnOriginalURLLoaded();
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) override;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  virtual void OnWidgetDestroyed(views::Widget* widget) override;
 
  private:
   friend class CaptivePortalWindowTest;

@@ -25,12 +25,12 @@ class SystemUse24HourClockPolicyTest
   SystemUse24HourClockPolicyTest() {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     InstallOwnerKey();
     MarkAsEnterpriseOwned();
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();

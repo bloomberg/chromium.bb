@@ -59,15 +59,15 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
 
   // net::URLRequestJob overrides:
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+      const net::HttpRequestHeaders& headers) override;
+  virtual void Start() override;
+  virtual void Kill() override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
+                                  int* http_status_code) override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
+                           int* bytes_read) override;
 
  protected:
   virtual ~ExternalFileURLRequestJob();

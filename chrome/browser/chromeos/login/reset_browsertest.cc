@@ -38,13 +38,13 @@ class ResetTest : public LoginManagerTest {
   }
   virtual ~ResetTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableRollbackOption);
   }
 
   // LoginManagerTest overrides:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     session_manager_client_ = new FakeSessionManagerClient;
@@ -103,7 +103,7 @@ class ResetFirstAfterBootTest : public ResetTest {
  public:
   virtual ~ResetFirstAfterBootTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kFirstExecAfterBoot);
     command_line->AppendSwitch(switches::kEnableRollbackOption);

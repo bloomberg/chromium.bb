@@ -22,7 +22,7 @@ class TestableAccessibilityFocusRingController
     AccessibilityFocusRingController::RectsToRings(rects, rings);
   }
 
-  virtual int GetMargin() const OVERRIDE {
+  virtual int GetMargin() const override {
     return margin_;
   }
 

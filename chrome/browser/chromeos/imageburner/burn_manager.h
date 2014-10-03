@@ -311,13 +311,13 @@ class BurnManager : public net::URLFetcherDelegate,
   void CancelImageFetch();
 
   // URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
-                                          int64 total) OVERRIDE;
+                                          int64 total) override;
 
   // NetworkStateHandlerObserver override.
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) override;
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.

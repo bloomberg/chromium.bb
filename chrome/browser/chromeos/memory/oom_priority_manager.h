@@ -130,7 +130,7 @@ class OomPriorityManager : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   base::RepeatingTimer<OomPriorityManager> timer_;
   base::OneShotTimer<OomPriorityManager> focus_tab_score_adjust_timer_;

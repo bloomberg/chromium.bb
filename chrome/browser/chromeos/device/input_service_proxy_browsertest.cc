@@ -41,14 +41,14 @@ class TestObserver : public InputServiceProxy::Observer {
       : wait_for_device_addition_(false), wait_for_device_removal_(false) {}
   virtual ~TestObserver() {}
 
-  virtual void OnInputDeviceAdded(const InputDeviceInfo& info) OVERRIDE {
+  virtual void OnInputDeviceAdded(const InputDeviceInfo& info) override {
     if (!wait_for_device_addition_)
       return;
     EXPECT_TRUE(Equals(expected_info_, info));
     done_.Run();
   }
 
-  virtual void OnInputDeviceRemoved(const std::string& id) OVERRIDE {
+  virtual void OnInputDeviceRemoved(const std::string& id) override {
     if (!wait_for_device_removal_)
       return;
     EXPECT_EQ(expected_id_, id);

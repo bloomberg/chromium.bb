@@ -36,8 +36,8 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   friend class DemoAppLauncherTest;
 
   // KioskProfileLoader::Delegate overrides:
-  virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
-  virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) OVERRIDE;
+  virtual void OnProfileLoaded(Profile* profile) override;
+  virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
 
   scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
 

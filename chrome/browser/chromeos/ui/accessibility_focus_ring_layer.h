@@ -23,7 +23,7 @@ class AccessibilityFocusRingLayer : public FocusRingLayer {
 
  private:
   // ui::LayerDelegate overrides:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
 
   // The outline of the current focus ring.
   AccessibilityFocusRing ring_;

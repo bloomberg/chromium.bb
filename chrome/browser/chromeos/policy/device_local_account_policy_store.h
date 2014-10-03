@@ -49,8 +49,8 @@ class DeviceLocalAccountPolicyStore
 
   // CloudPolicyStore:
   virtual void Store(
-      const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
-  virtual void Load() OVERRIDE;
+      const enterprise_management::PolicyFetchResponse& policy) override;
+  virtual void Load() override;
 
  private:
   // Called back by |session_manager_client_| after policy retrieval. Checks for

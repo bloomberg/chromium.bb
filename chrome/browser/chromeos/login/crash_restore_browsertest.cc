@@ -37,14 +37,14 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
 
   virtual ~CrashRestoreSimpleTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kLoginUser, kUserId1);
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,
         CryptohomeClient::GetStubSanitizedUsername(kUserId1));
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     // Redirect session_manager DBus calls to FakeSessionManagerClient.
     session_manager_client_ = new FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -77,7 +77,7 @@ class UserSessionRestoreObserver : public UserSessionStateObserver {
   }
   virtual ~UserSessionRestoreObserver() {}
 
-  virtual void PendingUserSessionsRestoreFinished() OVERRIDE {
+  virtual void PendingUserSessionsRestoreFinished() override {
     user_sessions_restored_ = true;
     UserSessionManager::GetInstance()->RemoveSessionStateObserver(this);
     if (!running_loop_)
@@ -112,7 +112,7 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
   CrashRestoreComplexTest() {}
   virtual ~CrashRestoreComplexTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     CrashRestoreSimpleTest::SetUpInProcessBrowserTestFixture();
     session_manager_client_->StartSession(kUserId2);
     session_manager_client_->StartSession(kUserId3);

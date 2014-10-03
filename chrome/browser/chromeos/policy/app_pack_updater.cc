@@ -44,7 +44,7 @@ class AppPackExternalLoader
   }
 
   // Implementation of extensions::ExternalLoader:
-  virtual void StartLoading() OVERRIDE {
+  virtual void StartLoading() override {
     prefs_.reset(app_pack_prefs_.DeepCopy());
     VLOG(1) << "AppPack extension loader publishing "
             << app_pack_prefs_.size() << " crx files.";

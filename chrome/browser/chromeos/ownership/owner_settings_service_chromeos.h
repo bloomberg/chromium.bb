@@ -47,15 +47,15 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   // ownership::OwnerSettingsService implementation:
   virtual void SignAndStorePolicyAsync(
       scoped_ptr<enterprise_management::PolicyData> policy,
-      const base::Closure& callback) OVERRIDE;
+      const base::Closure& callback) override;
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // SessionManagerClient::Observer:
-  virtual void OwnerKeySet(bool success) OVERRIDE;
+  virtual void OwnerKeySet(bool success) override;
 
   // Checks if the user is the device owner, without the user profile having to
   // been initialized. Should be used only if login state is in safe mode.
@@ -80,10 +80,10 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   virtual void ReloadKeypairImpl(const base::Callback<
       void(const scoped_refptr<ownership::PublicKey>& public_key,
            const scoped_refptr<ownership::PrivateKey>& private_key)>& callback)
-      OVERRIDE;
+      override;
 
   // Possibly notifies DeviceSettingsService that owner's keypair is loaded.
-  virtual void OnPostKeypairLoadedActions() OVERRIDE;
+  virtual void OnPostKeypairLoadedActions() override;
 
   // Performs next operation in the queue.
   void StartNextOperation();

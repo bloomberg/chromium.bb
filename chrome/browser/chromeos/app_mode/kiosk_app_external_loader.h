@@ -24,7 +24,7 @@ class KioskAppExternalLoader
   void SetCurrentAppExtensions(scoped_ptr<base::DictionaryValue> prefs);
 
   // extensions::ExternalLoader overrides:
-  virtual void StartLoading() OVERRIDE;
+  virtual void StartLoading() override;
 
  private:
   virtual ~KioskAppExternalLoader();
