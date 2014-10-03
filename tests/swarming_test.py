@@ -4,13 +4,13 @@
 # can be found in the LICENSE file.
 
 import datetime
-import getpass
 import hashlib
 import json
 import logging
 import os
 import shutil
 import StringIO
+import subprocess
 import sys
 import tempfile
 import threading
@@ -26,7 +26,6 @@ import swarming
 import test_utils
 
 from utils import tools
-from utils import zip_package
 
 
 ALGO = hashlib.sha1
@@ -41,10 +40,94 @@ SHARD_OUTPUT_2 = 'Shard 2 of 3.'
 SHARD_OUTPUT_3 = 'Shard 3 of 3.'
 
 
-FAKE_BUNDLE_URL = 'http://localhost:8081/fetch_url'
+FAKE_BUNDLE_URL = 'https://localhost:1/fetch_url'
 
 
-def gen_data(**kwargs):
+def gen_yielded_data(index, **kwargs):
+  """Returns an entry as it would be yielded by yield_results()."""
+  return index, gen_result_response(**kwargs)
+
+
+def get_results(keys, output_collector=None):
+  """Simplifies the call to yield_results().
+
+  The timeout is hard-coded to 10 seconds.
+  """
+  return list(
+      swarming.yield_results(
+          'https://host:9001', keys, 10., None, True, output_collector))
+
+
+def collect(url, task_name, task_ids):
+  """Simplifies the call to swarming.collect()."""
+  return swarming.collect(
+    url=url,
+    task_name=task_name,
+    task_ids=task_ids,
+    timeout=10,
+    decorate=True,
+    print_status_updates=True,
+    task_summary_json=None,
+    task_output_dir=None)
+
+
+def main(args):
+  """Bypassies swarming.main()'s exception handling.
+
+  It gets in the way when debugging test failures.
+  """
+  dispatcher = swarming.subcommand.CommandDispatcher('swarming')
+  return dispatcher.execute(swarming.OptionParserSwarming(), args)
+
+
+def gen_request_data(isolated_hash=FILE_HASH, **kwargs):
+  out = {
+    'name': u'unit_tests',
+    'priority': 101,
+    'properties': {
+      'commands': [
+        [
+          'python',
+          'run_isolated.zip',
+          '--hash',
+          isolated_hash,
+          '--isolate-server',
+          'https://localhost:2',
+          '--namespace',
+          'default-gzip',
+          '--',
+          '--some-arg',
+          '123',
+        ],
+        ['python', 'swarm_cleanup.py']],
+      'data': [('https://localhost:1/fetch_url', 'swarm_data.zip')],
+      'dimensions': {
+        'foo': 'bar',
+        'os': 'Mac',
+      },
+      'env': {},
+      'execution_timeout_secs': 60,
+      'io_timeout_secs': 60,
+    },
+    'scheduling_expiration_secs': 3600,
+    'tags': ['taga', 'tagb'],
+    'user': 'joe@localhost',
+  }
+  out.update(kwargs)
+  return out
+
+
+def gen_request_response(request, **kwargs):
+  # As seen in services/swarming/handlers_api.py.
+  out = {
+    'request': request.copy(),
+    'task_id': '12300',
+  }
+  out.update(kwargs)
+  return out
+
+
+def gen_result_response(**kwargs):
   out = {
     "abandoned_ts": None,
     "bot_id": "swarm6",
@@ -66,59 +149,6 @@ def gen_data(**kwargs):
   return out
 
 
-def gen_yielded_data(index, **kwargs):
-  """Returns an entry as it would be yielded by yield_results()."""
-  return index, gen_data(**kwargs)
-
-
-def get_results(keys, output_collector=None):
-  """Simplifies the call to yield_results().
-
-  The timeout is hard-coded to 10 seconds.
-  """
-  return list(
-      swarming.yield_results(
-          'http://host:9001', keys, 10., None, True, output_collector))
-
-
-def collect(url, task_name, task_ids):
-  """Simplifies the call to swarming.collect()."""
-  return swarming.collect(
-    url=url,
-    task_name=task_name,
-    task_ids=task_ids,
-    timeout=10,
-    decorate=True,
-    print_status_updates=True,
-    task_summary_json=None,
-    task_output_dir=None)
-
-
-def gen_trigger_response(priority=101):
-  # As seen in services/swarming/handlers_frontend.py.
-  return {
-    'priority': priority,
-    'test_case_name': 'foo',
-    'test_keys': [
-      {
-        'config_name': 'foo',
-        'instance_index': 0,
-        'num_instances': 1,
-        'test_key': '123',
-      }
-    ],
-  }
-
-
-def main(args):
-  """Bypassies swarming.main()'s exception handling.
-
-  It gets in the way when debugging test failures.
-  """
-  dispatcher = swarming.subcommand.CommandDispatcher('swarming')
-  return dispatcher.execute(swarming.OptionParserSwarming(), args)
-
-
 # Silence pylint 'Access to a protected member _Event of a client class'.
 class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
   """Just like threading.Event, but a class and ignores timeout in 'wait'.
@@ -130,6 +160,23 @@ class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
     return super(NonBlockingEvent, self).wait(0)
 
 
+class MockedStorage(object):
+  def __init__(self, warm_cache):
+    self._warm_cache = warm_cache
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, *_args):
+    pass
+
+  def upload_items(self, items):
+    return [] if self._warm_cache else items
+
+  def get_fetch_url(self, _item):  # pylint: disable=R0201
+    return FAKE_BUNDLE_URL
+
+
 class TestCase(net_utils.TestCase):
   """Base class that defines the url_open mock."""
   def setUp(self):
@@ -137,7 +184,7 @@ class TestCase(net_utils.TestCase):
     self._lock = threading.Lock()
     self.mock(swarming.auth, 'ensure_logged_in', lambda _: None)
     self.mock(swarming.time, 'sleep', lambda _: None)
-    self.mock(swarming.subprocess, 'call', lambda *_: self.fail())
+    self.mock(subprocess, 'call', lambda *_: self.fail())
     self.mock(swarming.threading, 'Event', NonBlockingEvent)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
@@ -150,8 +197,10 @@ class TestCase(net_utils.TestCase):
       super(TestCase, self).tearDown()
 
   def _check_output(self, out, err):
-    self.assertEqual(out, sys.stdout.getvalue())
-    self.assertEqual(err, sys.stderr.getvalue())
+    self.assertEqual(
+        out.splitlines(True), sys.stdout.getvalue().splitlines(True))
+    self.assertEqual(
+        err.splitlines(True), sys.stderr.getvalue().splitlines(True))
 
     # Flush their content by mocking them again.
     self.mock(sys, 'stdout', StringIO.StringIO())
@@ -163,12 +212,12 @@ class TestGetResults(TestCase):
     self.expected_requests(
         [
           (
-            'http://host:9001/swarming/api/v1/client/task/10100',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
-            gen_data(),
+            gen_result_response(),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10100/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
             {'outputs': [OUTPUT]},
           ),
@@ -181,12 +230,12 @@ class TestGetResults(TestCase):
     self.expected_requests(
         [
           (
-            'http://host:9001/swarming/api/v1/client/task/10100',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
-            gen_data(exit_codes=[0, 1]),
+            gen_result_response(exit_codes=[0, 1]),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10100/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
             {'outputs': [OUTPUT]},
           ),
@@ -215,7 +264,7 @@ class TestGetResults(TestCase):
     self.expected_requests(
         9 * [
           (
-            'http://host:9001/swarming/api/v1/client/task/10100',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
             None,
           )
@@ -228,32 +277,32 @@ class TestGetResults(TestCase):
     self.expected_requests(
         [
           (
-            'http://host:9001/swarming/api/v1/client/task/10100',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
-            gen_data(),
+            gen_result_response(),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10100/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
             {'outputs': [SHARD_OUTPUT_1]},
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10200',
+            'https://host:9001/swarming/api/v1/client/task/10200',
             {'retry_50x': False},
-            gen_data(),
+            gen_result_response(),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10200/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10200/output/all',
             {},
             {'outputs': [SHARD_OUTPUT_2]},
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10300',
+            'https://host:9001/swarming/api/v1/client/task/10300',
             {'retry_50x': False},
-            gen_data(),
+            gen_result_response(),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10300/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10300/output/all',
             {},
             {'outputs': [SHARD_OUTPUT_3]},
           ),
@@ -271,32 +320,32 @@ class TestGetResults(TestCase):
     self.expected_requests(
         [
           (
-            'http://host:9001/swarming/api/v1/client/task/10100',
+            'https://host:9001/swarming/api/v1/client/task/10100',
             {'retry_50x': False},
-            gen_data(),
+            gen_result_response(),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10100/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10100/output/all',
             {},
             {'outputs': [SHARD_OUTPUT_1]},
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10200',
+            'https://host:9001/swarming/api/v1/client/task/10200',
             {'retry_50x': False},
-            gen_data(),
+            gen_result_response(),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10200/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10200/output/all',
             {},
             {'outputs': [SHARD_OUTPUT_2]},
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10300',
+            'https://host:9001/swarming/api/v1/client/task/10300',
             {'retry_50x': False},
-            gen_data(exit_codes=[0, 1]),
+            gen_result_response(exit_codes=[0, 1]),
           ),
           (
-            'http://host:9001/swarming/api/v1/client/task/10300/output/all',
+            'https://host:9001/swarming/api/v1/client/task/10300/output/all',
             {},
             {'outputs': [SHARD_OUTPUT_3]},
           ),
@@ -327,7 +376,7 @@ class TestGetResults(TestCase):
     self._check_output('', 'Results from some shards are missing: 0, 1\n')
 
   def test_collect_success(self):
-    data = gen_data(outputs=['Foo'])
+    data = gen_result_response(outputs=['Foo'])
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(0, collect('url', 'name', ['10100']))
     self._check_output(
@@ -341,7 +390,7 @@ class TestGetResults(TestCase):
         '')
 
   def test_collect_fail(self):
-    data = gen_data(outputs=['Foo'], exit_codes=[-9])
+    data = gen_result_response(outputs=['Foo'], exit_codes=[-9])
     data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(1, collect('url', 'name', ['10100']))
@@ -356,7 +405,7 @@ class TestGetResults(TestCase):
         '')
 
   def test_collect_one_missing(self):
-    data = gen_data(outputs=['Foo'])
+    data = gen_result_response(outputs=['Foo'])
     data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(1, collect('url', 'name', ['10100', '10200']))
@@ -372,310 +421,124 @@ class TestGetResults(TestCase):
         'Results from some shards are missing: 1\n')
 
 
-def chromium_tasks(retrieval_url, file_hash, extra_args):
-  return [
-    {
-      u'action': [
-        u'python', u'run_isolated.zip',
-        u'--hash', file_hash,
-        u'--namespace', u'default-gzip',
-        u'--isolate-server', retrieval_url,
-      ] + (['--'] + list(extra_args) if extra_args else []),
-      u'decorate_output': False,
-      u'test_name': u'Run Test',
-      u'hard_time_out': 2*60*60,
-    },
-    {
-      u'action' : [
-          u'python', u'swarm_cleanup.py',
-      ],
-      u'decorate_output': False,
-      u'test_name': u'Clean Up',
-      u'hard_time_out': 2*60*60,
-    }
-  ]
-
-
-def generate_expected_json(
-    shards,
-    shard_index,
-    dimensions,
-    env,
-    isolate_server,
-    profile,
-    test_case_name=TEST_NAME,
-    file_hash=FILE_HASH,
-    extra_args=None):
-  expected = {
-    u'cleanup': u'root',
-    u'configurations': [
-      {
-        u'config_name': u'isolated',
-        u'deadline_to_run': 60*60,
-        u'dimensions': dimensions,
-        u'priority': 101,
-      },
-    ],
-    u'data': [],
-    u'env_vars': env.copy(),
-    u'test_case_name': test_case_name,
-    u'tests': chromium_tasks(isolate_server, file_hash, extra_args),
-  }
-  if shards > 1:
-    expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%d' % shard_index
-    expected[u'env_vars'][u'GTEST_TOTAL_SHARDS'] = u'%d' % shards
-  if profile:
-    expected[u'tests'][0][u'action'].append(u'--verbose')
-  return expected
-
-
-class MockedStorage(object):
-  def __init__(self, warm_cache):
-    self._warm_cache = warm_cache
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, *_args):
-    pass
-
-  def upload_items(self, items):
-    return [] if self._warm_cache else items
-
-  def get_fetch_url(self, _item):  # pylint: disable=R0201
-    return FAKE_BUNDLE_URL
-
-
 class TriggerTaskShardsTest(TestCase):
-  def test_zip_bundle_files(self):
-    manifest = swarming.Manifest(
-        isolate_server='http://localhost:8081',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=None,
-        env={},
-        dimensions={'os': 'Linux'},
-        deadline=60*60,
-        verbose=False,
-        profile=False,
-        priority=101)
-
-    bundle = zip_package.ZipPackage(swarming.ROOT_DIR)
-    swarming.setup_run_isolated(manifest, bundle)
-
-    self.assertEqual(
-        set(['run_isolated.zip', 'swarm_cleanup.py']), set(bundle.files))
-
-  def test_basic(self):
-    manifest = swarming.Manifest(
-        isolate_server='http://localhost:8081',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=None,
-        env={},
-        dimensions={'os': 'Linux'},
-        deadline=60*60,
-        verbose=False,
-        profile=False,
-        priority=101)
-
-    swarming.setup_run_isolated(manifest, None)
-    manifest_json = json.loads(manifest.to_json())
-
-    expected = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={u'os': u'Linux'},
-        env={},
-        isolate_server=u'http://localhost:8081',
-        profile=False)
-    self.assertEqual(expected, manifest_json)
-
-  def test_basic_profile(self):
-    manifest = swarming.Manifest(
-        isolate_server='http://localhost:8081',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=None,
-        env={},
-        dimensions={'os': 'Linux'},
-        deadline=60*60,
-        verbose=False,
-        profile=True,
-        priority=101)
-
-    swarming.setup_run_isolated(manifest, None)
-    manifest_json = json.loads(manifest.to_json())
-
-    expected = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={u'os': u'Linux'},
-        env={},
-        isolate_server=u'http://localhost:8081',
-        profile=True)
-    self.assertEqual(expected, manifest_json)
-
-  def test_manifest_with_extra_args(self):
-    manifest = swarming.Manifest(
-        isolate_server='http://localhost:8081',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=['--extra-cmd-arg=1234', 'some more'],
-        env={},
-        dimensions={'os': 'Windows'},
-        deadline=60*60,
-        verbose=False,
-        profile=False,
-        priority=101)
-
-    swarming.setup_run_isolated(manifest, None)
-    manifest_json = json.loads(manifest.to_json())
-
-    expected = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={u'os': u'Windows'},
-        env={},
-        isolate_server=u'http://localhost:8081',
-        profile=False,
-        extra_args=['--extra-cmd-arg=1234', 'some more'])
-    self.assertEqual(expected, manifest_json)
-
-  def test_manifest_for_shard(self):
-    manifest = swarming.Manifest(
-        isolate_server='http://localhost:8081',
-        namespace='default-gzip',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=None,
-        env=swarming.setup_googletest({}, 5, 3),
-        dimensions={'os': 'Linux'},
-        deadline=60*60,
-        verbose=False,
-        profile=False,
-        priority=101)
-
-    swarming.setup_run_isolated(manifest, None)
-    manifest_json = json.loads(manifest.to_json())
-
-    expected = generate_expected_json(
-        shards=5,
-        shard_index=3,
-        dimensions={u'os': u'Linux'},
-        env={},
-        isolate_server=u'http://localhost:8081',
-        profile=False)
-    self.assertEqual(expected, manifest_json)
-
-  def test_trigger_task_shards_success(self):
-    self.mock(
-        swarming.net, 'url_read',
-        lambda url, data=None: json.dumps(gen_trigger_response()))
+  def test_trigger_task_shards_2_shards(self):
     self.mock(
         isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
+    request_1 = gen_request_data(name=u'unit_tests:0:2')
+    request_1['properties']['env'] = {
+      'GTEST_SHARD_INDEX': '0', 'GTEST_TOTAL_SHARDS': '2',
+    }
+    result_1 = gen_request_response(request_1)
+    request_2 = gen_request_data(name=u'unit_tests:1:2')
+    request_2['properties']['env'] = {
+      'GTEST_SHARD_INDEX': '1', 'GTEST_TOTAL_SHARDS': '2',
+    }
+    result_2 = gen_request_response(request_2, task_id='12400')
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request_1, 'headers': {'X-XSRF-Token': 'Token'}},
+            result_1,
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request_2, 'headers': {'X-XSRF-Token': 'Token'}},
+            result_2,
+          ),
+        ])
 
     tasks = swarming.trigger_task_shards(
-        swarming='http://localhost:8082',
-        isolate_server='http://localhost:8081',
-        namespace='default',
+        swarming='https://localhost:1',
+        isolate_server='https://localhost:2',
+        namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         extra_args=['--some-arg', '123'],
-        shards=1,
-        dimensions={},
+        shards=2,
+        dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
-        deadline=60*60,
+        expiration=60*60,
+        hard_timeout=60,
+        io_timeout=60,
         verbose=False,
         profile=False,
-        priority=101)
+        priority=101,
+        tags=['taga', 'tagb'],
+        user='joe@localhost')
     expected = {
-      'unit_tests': {
+      u'unit_tests:0:2': {
         'shard_index': 0,
-        'task_id': '123',
-        'view_url': 'http://localhost:8082/user/task/123',
-      }
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
+      },
+      u'unit_tests:1:2': {
+        'shard_index': 1,
+        'task_id': '12400',
+        'view_url': 'https://localhost:1/user/task/12400',
+      },
     }
     self.assertEqual(expected, tasks)
 
   def test_trigger_task_shards_priority_override(self):
     self.mock(
-        swarming.net, 'url_read',
-        lambda url, data=None: json.dumps(gen_trigger_response(priority=200)))
-    self.mock(
         isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
+    request = gen_request_data()
+    result = gen_request_response(request)
+    result['request']['priority'] = 200
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
+            result,
+          ),
+        ])
 
     tasks = swarming.trigger_task_shards(
-        swarming='http://localhost:8082',
-        isolate_server='http://localhost:8081',
-        namespace='default',
+        swarming='https://localhost:1',
+        isolate_server='https://localhost:2',
+        namespace='default-gzip',
         isolated_hash=FILE_HASH,
         task_name=TEST_NAME,
         extra_args=['--some-arg', '123'],
-        shards=2,
-        dimensions={},
+        shards=1,
+        dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
-        deadline=60*60,
+        expiration=60*60,
+        hard_timeout=60,
+        io_timeout=60,
         verbose=False,
         profile=False,
-        priority=101)
+        priority=101,
+        tags=['taga', 'tagb'],
+        user='joe@localhost')
     expected = {
-      u'unit_tests:2:0': {
-        u'shard_index': 0,
-        u'task_id': u'123',
-        u'view_url': u'http://localhost:8082/user/task/123',
-      },
-      u'unit_tests:2:1': {
-        u'shard_index': 1,
-        u'task_id': u'123',
-        u'view_url': u'http://localhost:8082/user/task/123',
+      u'unit_tests': {
+        'shard_index': 0,
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
       }
     }
     self.assertEqual(expected, tasks)
     self._check_output('', 'Priority was reset to 200\n')
 
-  def test_trigger_task_shards_success_zip_already_uploaded(self):
-    self.mock(
-        swarming.net, 'url_read',
-        lambda url, data=None: json.dumps(gen_trigger_response()))
-    self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=True))
-
-    dimensions = {'os': 'linux2'}
-    tasks = swarming.trigger_task_shards(
-        swarming='http://localhost:8082',
-        isolate_server='http://localhost:8081',
-        namespace='default',
-        isolated_hash=FILE_HASH,
-        task_name=TEST_NAME,
-        extra_args=['--some-arg', '123'],
-        shards=1,
-        dimensions=dimensions,
-        env={},
-        deadline=60*60,
-        verbose=False,
-        profile=False,
-        priority=101)
-
-    expected = {
-      'unit_tests': {
-        'shard_index': 0,
-        'task_id': '123',
-        'view_url': 'http://localhost:8082/user/task/123',
-      }
-    }
-    self.assertEqual(expected, tasks)
-
   def test_isolated_to_hash(self):
     calls = []
-    self.mock(swarming.subprocess, 'call', lambda *c: calls.append(c))
+    self.mock(subprocess, 'call', lambda *c: calls.append(c))
     content = '{}'
     expected_hash = hashlib.sha1(content).hexdigest()
     handle, isolated = tempfile.mkstemp(
@@ -685,7 +548,7 @@ class TriggerTaskShardsTest(TestCase):
       with open(isolated, 'w') as f:
         f.write(content)
       hash_value, is_file = swarming.isolated_to_hash(
-          'http://localhost:1', 'default', isolated, hashlib.sha1, False)
+          'https://localhost:2', 'default-gzip', isolated, hashlib.sha1, False)
     finally:
       os.remove(isolated)
     self.assertEqual(expected_hash, hash_value)
@@ -696,8 +559,8 @@ class TriggerTaskShardsTest(TestCase):
             sys.executable,
             os.path.join(swarming.ROOT_DIR, 'isolate.py'),
             'archive',
-            '--isolate-server', 'http://localhost:1',
-            '--namespace', 'default',
+            '--isolate-server', 'https://localhost:2',
+            '--namespace', 'default-gzip',
             '--isolated',
             isolated,
           ],
@@ -732,55 +595,59 @@ class MainTest(TestCase):
         lambda *_: MockedStorage(warm_cache=False))
     self.mock(swarming, 'now', lambda: 123456)
 
-    task_name = (
-        '%s/foo=bar_os=Mac/1111111111111111111111111111111111111111/123456000' %
-        getpass.getuser())
-    j = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={'foo': 'bar', 'os': 'Mac'},
-        env={},
-        isolate_server='https://host2',
-        profile=False,
-        test_case_name=task_name)
-    j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
-    data = {
-      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
-    }
+    request = gen_request_data()
+    result = gen_request_response(request)
     self.expected_requests(
         [
           (
-            'https://host1/test',
-            {'data': data},
-            json.dumps(gen_trigger_response()),
-            None,
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
+            result,
           ),
         ])
     ret = main([
         'trigger',
-        '--swarming', 'https://host1',
-        '--isolate-server', 'https://host2',
+        '--swarming', 'https://localhost:1',
+        '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
         '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
-        '--deadline', '3600',
+        '--expiration', '3600',
+        '--user', 'joe@localhost',
+        '--tags', 'taga',
+        '--tags', 'tagb',
+        '--hard-timeout', '60',
+        '--io-timeout', '60',
+        '--task-name', 'unit_tests',
         FILE_HASH,
+        '--',
+        '--some-arg',
+        '123',
       ])
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: %s\n'
+        #'Triggered task: unit_tests\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://host1 123\n' % task_name,
+        '  swarming.py collect -S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
         '')
 
-  def test_run_isolated(self):
+  def test_run_isolated_and_json(self):
+    write_json_calls = []
+    self.mock(tools, 'write_json', lambda *args: write_json_calls.append(args))
     self.mock(
         isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
-    calls = []
-    self.mock(swarming.subprocess, 'call', lambda *c: calls.append(c))
+    subprocess_calls = []
+    self.mock(subprocess, 'call', lambda *c: subprocess_calls.append(c))
     self.mock(swarming, 'now', lambda: 123456)
 
     isolated = os.path.join(self.tmpdir, 'zaz.isolated')
@@ -789,39 +656,41 @@ class MainTest(TestCase):
       f.write(content)
 
     isolated_hash = ALGO(content).hexdigest()
-    task_name = 'zaz/foo=bar_os=Mac/%s/123456000' % isolated_hash
-    j = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={'foo': 'bar', 'os': 'Mac'},
-        env={},
-        isolate_server='https://host2',
-        profile=False,
-        test_case_name=task_name,
-        file_hash=isolated_hash)
-    j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
-    data = {
-      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
-    }
+    request = gen_request_data(isolated_hash=isolated_hash)
+    result = gen_request_response(request)
     self.expected_requests(
         [
           (
-            'https://host1/test',
-            {'data': data},
-            json.dumps(gen_trigger_response()),
-            None,
+            'https://localhost:1/swarming/api/v1/client/handshake',
+            {'data': {}, 'headers': {'X-XSRF-Token-Request': '1'}},
+            {'server_version': 'v1', 'xsrf_token': 'Token'},
+          ),
+          (
+            'https://localhost:1/swarming/api/v1/client/request',
+            {'data': request, 'headers': {'X-XSRF-Token': 'Token'}},
+            result,
           ),
         ])
     ret = main([
         'trigger',
-        '--swarming', 'https://host1',
-        '--isolate-server', 'https://host2',
+        '--swarming', 'https://localhost:1',
+        '--isolate-server', 'https://localhost:2',
         '--shards', '1',
         '--priority', '101',
         '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
-        '--deadline', '3600',
+        '--expiration', '3600',
+        '--user', 'joe@localhost',
+        '--tags', 'taga',
+        '--tags', 'tagb',
+        '--hard-timeout', '60',
+        '--io-timeout', '60',
+        '--task-name', 'unit_tests',
+        '--dump-json', 'foo.json',
         isolated,
+        '--',
+        '--some-arg',
+        '123',
       ])
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
@@ -830,19 +699,38 @@ class MainTest(TestCase):
         [
           sys.executable,
           os.path.join(swarming.ROOT_DIR, 'isolate.py'), 'archive',
-          '--isolate-server', 'https://host2',
+          '--isolate-server', 'https://localhost:2',
           '--namespace' ,'default-gzip',
           '--isolated', isolated,
         ],
       0),
     ]
-    self.assertEqual(expected, calls)
+    self.assertEqual(expected, subprocess_calls)
     self._check_output(
         'Archiving: %s\n'
-        'Triggered task: %s\n'
+        #'Triggered task: .\n'
         'To collect results, use:\n'
-        '  swarming.py collect -S https://host1 123\n' % (isolated, task_name),
+        '  swarming.py collect -S https://localhost:1 --json foo.json\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n' % isolated,
         '')
+    expected = [
+      (
+        'foo.json',
+        {
+          'base_task_name': 'unit_tests',
+          'tasks': {
+            'unit_tests': {
+              'shard_index': 0,
+              'task_id': '12300',
+              'view_url': 'https://localhost:1/user/task/12300',
+            }
+          },
+        },
+        True,
+      ),
+    ]
+    self.assertEqual(expected, write_json_calls)
 
   def test_trigger_no_request(self):
     with self.assertRaises(SystemExit):
@@ -912,152 +800,6 @@ class MainTest(TestCase):
         'Usage: swarming.py trigger [options] (hash|isolated) [-- extra_args]'
         '\n\n'
         'swarming.py: error: Please at least specify one --dimension\n')
-
-  def test_trigger_env(self):
-    self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
-    j = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={'os': 'Mac'},
-        env={'foo': 'bar'},
-        isolate_server='https://host2',
-        profile=False)
-    j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
-    data = {
-      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
-    }
-    self.expected_requests(
-        [
-          (
-            'https://host1/test',
-            {'data': data},
-            json.dumps(gen_trigger_response()),
-            None,
-          ),
-        ])
-    ret = main([
-        'trigger',
-        '--swarming', 'https://host1',
-        '--isolate-server', 'https://host2',
-        '--shards', '1',
-        '--priority', '101',
-        '--env', 'foo', 'bar',
-        '--dimension', 'os', 'Mac',
-        '--task-name', TEST_NAME,
-        '--deadline', '3600',
-        FILE_HASH,
-      ])
-    self._check_output(
-        u'To collect results, use:\n'
-        '  swarming.py collect -S https://host1 123\n',
-        '')
-    self.assertEqual(0, ret)
-
-  def test_trigger_dimension_filter(self):
-    self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
-    j = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={'foo': 'bar', 'os': 'Mac'},
-        env={},
-        isolate_server='https://host2',
-        profile=False)
-    j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
-    data = {
-      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
-    }
-    self.expected_requests(
-        [
-          (
-            'https://host1/test',
-            {'data': data},
-            json.dumps(gen_trigger_response()),
-            None,
-          ),
-        ])
-    ret = main([
-        'trigger',
-        '--swarming', 'https://host1',
-        '--isolate-server', 'https://host2',
-        '--shards', '1',
-        '--priority', '101',
-        '--dimension', 'foo', 'bar',
-        '--dimension', 'os', 'Mac',
-        '--task-name', TEST_NAME,
-        '--deadline', '3600',
-        FILE_HASH,
-      ])
-    self._check_output(
-        u'To collect results, use:\n'
-        '  swarming.py collect -S https://host1 123\n',
-        '')
-    self.assertEqual(0, ret)
-
-  def test_trigger_dump_json(self):
-    called = []
-    self.mock(tools, 'write_json', lambda *args: called.append(args))
-    self.mock(
-        isolateserver, 'get_storage',
-        lambda *_: MockedStorage(warm_cache=False))
-    j = generate_expected_json(
-        shards=1,
-        shard_index=0,
-        dimensions={'foo': 'bar', 'os': 'Mac'},
-        env={},
-        isolate_server='https://host2',
-        profile=False)
-    j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
-    data = {
-      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
-    }
-    self.expected_requests(
-        [
-          (
-            'https://host1/test',
-            {'data': data},
-            json.dumps(gen_trigger_response()),
-            None,
-          ),
-        ])
-    ret = main([
-        'trigger',
-        '--swarming', 'https://host1',
-        '--isolate-server', 'https://host2',
-        '--shards', '1',
-        '--priority', '101',
-        '--dimension', 'foo', 'bar',
-        '--dimension', 'os', 'Mac',
-        '--task-name', TEST_NAME,
-        '--deadline', '3600',
-        '--dump-json', 'foo.json',
-        FILE_HASH,
-      ])
-    expected = [
-      (
-        'foo.json',
-        {
-          u'base_task_name': u'unit_tests',
-          u'tasks': {
-            u'unit_tests': {
-              u'shard_index': 0,
-              u'task_id': u'123',
-              u'view_url': u'https://host1/user/task/123',
-            }
-          },
-        },
-        True,
-      ),
-    ]
-    self.assertEqual(expected, called)
-    self._check_output(
-        u'To collect results, use:\n'
-        '  swarming.py collect -S https://host1 --json foo.json\n',
-        '')
-    self.assertEqual(0, ret)
 
   def test_query_base(self):
     self.expected_requests(
@@ -1412,7 +1154,8 @@ class TaskOutputCollectorTest(auto_stub.TestCase):
     collector = swarming.TaskOutputCollector(
         self.tempdir, 'name', len(shards_output))
     for index, shard_output in enumerate(shards_output):
-      collector.process_shard_result(index, gen_data(outputs=[shard_output]))
+      collector.process_shard_result(
+          index, gen_result_response(outputs=[shard_output]))
     summary = collector.finalize()
 
     expected_calls = [
@@ -1456,7 +1199,7 @@ class TaskOutputCollectorTest(auto_stub.TestCase):
     ]
     expected = {
       'shards': [
-        gen_data(isolated_out=isolated_out, outputs=[shard_output])
+        gen_result_response(isolated_out=isolated_out, outputs=[shard_output])
         for index, (isolated_out, shard_output) in
             enumerate(zip(isolated_outs, shards_output))
       ],
@@ -1475,11 +1218,11 @@ class TaskOutputCollectorTest(auto_stub.TestCase):
         isolateserver, 'fetch_isolated',
         lambda *args: actual_calls.append(args))
     data = [
-      gen_data(
+      gen_result_response(
         outputs=[
           gen_run_isolated_out_hack_log('https://server1', 'namespace', 'hash1')
         ]),
-      gen_data(
+      gen_result_response(
         outputs=[
           gen_run_isolated_out_hack_log('https://server2', 'namespace', 'hash2')
         ]),

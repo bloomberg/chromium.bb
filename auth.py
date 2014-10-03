@@ -89,7 +89,7 @@ def ensure_logged_in(server_url):
   on bots.
   """
   if net.get_auth_method() not in ('cookie', 'oauth'):
-    return
+    return None
   server_url = server_url.lower().rstrip('/')
   assert server_url.startswith(('https://', 'http://localhost:')), server_url
   service = AuthService(server_url)
@@ -102,6 +102,7 @@ def ensure_logged_in(server_url):
     sys.exit(1)
   email = identity.split(':')[1]
   logging.info('Logged in to %s: %s', server_url, email)
+  return email
 
 
 @subcommand.usage('[options]')
