@@ -141,9 +141,10 @@ void ErrorCallback(PipelineStatus* output, PipelineStatus status) {
 // connection. The test also initializes a media::AudioRendererImpl which
 // will error-out expectedly due to lack of support for decoder selection.
 TEST_F(MojoRendererTest, BasicInitialize) {
-  MojoRendererImpl rimpl(task_runner(), stream_provider(), service_provider());
+  MojoRendererImpl rimpl(task_runner(), service_provider());
   PipelineStatus expected_error(PIPELINE_OK);
-  rimpl.Initialize(base::MessageLoop::current()->QuitClosure(),
+  rimpl.Initialize(stream_provider(),
+                   base::MessageLoop::current()->QuitClosure(),
                    media::StatisticsCB(),
                    base::Closure(),
                    base::Bind(&ErrorCallback, &expected_error),

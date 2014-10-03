@@ -293,7 +293,6 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
 
   scoped_ptr<RendererImpl> renderer_impl(
       new RendererImpl(message_loop_.message_loop_proxy(),
-                       demuxer_.get(),
                        audio_renderer.Pass(),
                        video_renderer.Pass()));
 

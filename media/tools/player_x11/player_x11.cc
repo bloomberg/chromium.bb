@@ -144,7 +144,7 @@ void InitPipeline(
                                    new media::MediaLog()));
 
   scoped_ptr<media::Renderer> renderer(new media::RendererImpl(
-      task_runner, demuxer, audio_renderer.Pass(), video_renderer.Pass()));
+      task_runner, audio_renderer.Pass(), video_renderer.Pass()));
 
   base::WaitableEvent event(true, false);
   media::PipelineStatus status;

@@ -32,18 +32,16 @@ class DemuxerStreamProvider;
 class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
  public:
   // |task_runner| is the TaskRunner on which all methods are invoked.
-  // |demuxer_stream_provider| provides encoded streams for decoding and
-  //     rendering.
   // |audio_renderer_provider| is a ServiceProvider from a connected
   //     Application that is hosting a mojo::MediaRenderer.
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      DemuxerStreamProvider* demuxer_stream_provider,
       mojo::ServiceProvider* audio_renderer_provider);
   virtual ~MojoRendererImpl();
 
   // Renderer implementation.
-  virtual void Initialize(const base::Closure& init_cb,
+  virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+                          const base::Closure& init_cb,
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,

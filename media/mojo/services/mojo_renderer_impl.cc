@@ -17,10 +17,8 @@ namespace media {
 
 MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    DemuxerStreamProvider* demuxer_stream_provider,
     mojo::ServiceProvider* audio_renderer_provider)
     : task_runner_(task_runner),
-      demuxer_stream_provider_(demuxer_stream_provider),
       weak_factory_(this) {
   // For now we only support audio and there must be a provider.
   DCHECK(audio_renderer_provider);
@@ -33,12 +31,17 @@ MojoRendererImpl::~MojoRendererImpl() {
   // Connection to |remote_audio_renderer_| will error-out here.
 }
 
-void MojoRendererImpl::Initialize(const base::Closure& init_cb,
-                                  const StatisticsCB& statistics_cb,
-                                  const base::Closure& ended_cb,
-                                  const PipelineStatusCB& error_cb,
-                                  const BufferingStateCB& buffering_state_cb) {
+void MojoRendererImpl::Initialize(
+    DemuxerStreamProvider* demuxer_stream_provider,
+    const base::Closure& init_cb,
+    const StatisticsCB& statistics_cb,
+    const base::Closure& ended_cb,
+    const PipelineStatusCB& error_cb,
+    const BufferingStateCB& buffering_state_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(demuxer_stream_provider);
+
+  demuxer_stream_provider_ = demuxer_stream_provider;
   init_cb_ = init_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;

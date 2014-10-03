@@ -161,7 +161,8 @@ class MockRenderer : public Renderer {
   virtual ~MockRenderer();
 
   // Renderer implementation.
-  MOCK_METHOD5(Initialize, void(const base::Closure& init_cb,
+  MOCK_METHOD6(Initialize, void(DemuxerStreamProvider* demuxer_stream_provider,
+                                const base::Closure& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const base::Closure& ended_cb,
                                 const PipelineStatusCB& error_cb,

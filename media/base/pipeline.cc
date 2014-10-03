@@ -691,6 +691,7 @@ void Pipeline::InitializeRenderer(const base::Closure& done_cb) {
 
   base::WeakPtr<Pipeline> weak_this = weak_factory_.GetWeakPtr();
   renderer_->Initialize(
+      demuxer_,
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, weak_this),
       base::Bind(&Pipeline::OnRendererEnded, weak_this),

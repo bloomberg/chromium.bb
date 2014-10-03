@@ -31,19 +31,19 @@ class WallClockTimeSource;
 
 class MEDIA_EXPORT RendererImpl : public Renderer {
  public:
-  // Renders audio/video streams in |demuxer_stream_provider| using
-  // |audio_renderer| and |video_renderer| provided. All methods except for
-  // GetMediaTime() run on the |task_runner|. GetMediaTime() runs on the render
-  // main thread because it's part of JS sync API.
+  // Renders audio/video streams using |audio_renderer| and |video_renderer|
+  // provided. All methods except for GetMediaTime() run on the |task_runner|.
+  // GetMediaTime() runs on the render main thread because it's part of JS sync
+  // API.
   RendererImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-               DemuxerStreamProvider* demuxer_stream_provider,
                scoped_ptr<AudioRenderer> audio_renderer,
                scoped_ptr<VideoRenderer> video_renderer);
 
   virtual ~RendererImpl();
 
   // Renderer implementation.
-  virtual void Initialize(const base::Closure& init_cb,
+  virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+                          const base::Closure& init_cb,
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,

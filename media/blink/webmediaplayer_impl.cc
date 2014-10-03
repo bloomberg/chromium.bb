@@ -879,10 +879,7 @@ scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
 
   // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(
-      media_task_runner_,
-      demuxer_.get(),
-      audio_renderer.Pass(),
-      video_renderer.Pass()));
+      media_task_runner_, audio_renderer.Pass(), video_renderer.Pass()));
 }
 
 void WebMediaPlayerImpl::StartPipeline() {

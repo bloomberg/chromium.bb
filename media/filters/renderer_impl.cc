@@ -20,12 +20,10 @@ namespace media {
 
 RendererImpl::RendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    DemuxerStreamProvider* demuxer_stream_provider,
     scoped_ptr<AudioRenderer> audio_renderer,
     scoped_ptr<VideoRenderer> video_renderer)
     : state_(STATE_UNINITIALIZED),
       task_runner_(task_runner),
-      demuxer_stream_provider_(demuxer_stream_provider),
       audio_renderer_(audio_renderer.Pass()),
       video_renderer_(video_renderer.Pass()),
       time_source_(NULL),
@@ -53,7 +51,8 @@ RendererImpl::~RendererImpl() {
   FireAllPendingCallbacks();
 }
 
-void RendererImpl::Initialize(const base::Closure& init_cb,
+void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+                              const base::Closure& init_cb,
                               const StatisticsCB& statistics_cb,
                               const base::Closure& ended_cb,
                               const PipelineStatusCB& error_cb,
@@ -66,9 +65,10 @@ void RendererImpl::Initialize(const base::Closure& init_cb,
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO) ||
-         demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO));
+  DCHECK(demuxer_stream_provider->GetStream(DemuxerStream::AUDIO) ||
+         demuxer_stream_provider->GetStream(DemuxerStream::VIDEO));
 
+  demuxer_stream_provider_ = demuxer_stream_provider;
   statistics_cb_ = statistics_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
