@@ -898,6 +898,9 @@ content::ColorChooser* WebViewGuest::OpenColorChooser(
 
 void WebViewGuest::NavigateGuest(const std::string& src,
                                  bool force_navigation) {
+  if (!attached())
+    return;
+
   if (src.empty())
     return;
 

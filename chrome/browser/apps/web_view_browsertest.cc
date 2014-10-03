@@ -819,6 +819,24 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
       << message_;
 }
 
+// Test for http://crbug.com/419611.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
+  LoadAndLaunchPlatformApp("web_view/display_none_set_src",
+                           "WebViewTest.LAUNCHED");
+  // Navigate the guest while it's in "display: none" state.
+  SendMessageToEmbedder("navigate-guest");
+  GetGuestViewManager()->WaitForGuestCreated();
+
+  // Now attempt to navigate the guest again.
+  SendMessageToEmbedder("navigate-guest");
+
+  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
+                                                    false);
+  // Making the guest visible would trigger loadstop.
+  SendMessageToEmbedder("show-guest");
+  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
+}
+
 // http://crbug.com/326332
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);

@@ -96,10 +96,15 @@ ContextMenuParams WebContentsViewGuest::ConvertContextMenuParams(
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
-  // We need embedder container's bounds to calculate our bounds.
-  guest_->embedder_web_contents()->GetView()->GetContainerBounds(out);
-  gfx::Point guest_coordinates = guest_->GetScreenCoordinates(gfx::Point());
-  out->Offset(guest_coordinates.x(), guest_coordinates.y());
+  if (guest_->embedder_web_contents()) {
+    // We need embedder container's bounds to calculate our bounds.
+    guest_->embedder_web_contents()->GetView()->GetContainerBounds(out);
+    gfx::Point guest_coordinates = guest_->GetScreenCoordinates(gfx::Point());
+    out->Offset(guest_coordinates.x(), guest_coordinates.y());
+  } else {
+    out->set_origin(gfx::Point());
+  }
+
   out->set_size(size_);
 }
 
