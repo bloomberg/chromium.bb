@@ -12,7 +12,7 @@ namespace ash {
 namespace wm {
 
 // This enum defines both common show state copied from
-// ui::WindowShowState as well as new states intoruduced in ash.
+// ui::WindowShowState as well as new states introduced in ash.
 // The separate enum is defined here because we don't want to leak
 // these type to ui/base until they're stable and we know for sure
 // that they'll persist over time.
@@ -33,6 +33,9 @@ enum WindowStateType {
 
   WINDOW_STATE_TYPE_LEFT_SNAPPED,
   WINDOW_STATE_TYPE_RIGHT_SNAPPED,
+
+  WINDOW_STATE_TYPE_DOCKED,
+  WINDOW_STATE_TYPE_DOCKED_MINIMIZED,
 
   // A window is in this state when it is automatically placed and
   // sized by the window manager. (it's newly opened, or pushed to the side

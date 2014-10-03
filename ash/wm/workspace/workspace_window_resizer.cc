@@ -72,7 +72,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   // It may be possible to refactor and eliminate chaining.
   WindowResizer* window_resizer = NULL;
 
-  if (!window_state->IsNormalOrSnapped())
+  if (!window_state->IsNormalOrSnapped() && !window_state->IsDocked())
     return scoped_ptr<WindowResizer>();
 
   int bounds_change = WindowResizer::GetBoundsChangeForWindowComponent(

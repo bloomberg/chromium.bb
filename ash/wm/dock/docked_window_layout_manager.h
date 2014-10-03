@@ -107,6 +107,11 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Records |action| by |source| in UMA.
   void FinishDragging(DockedAction action, DockedActionSource source);
 
+  // Checks the rules and possibly updates the docked layout to match
+  // the |alignment|. May not apply the |alignment| when
+  // the current shelf alignment conflicts. Never clears the |alignment_|.
+  void MaybeSetDesiredDockedAlignment(DockedAlignment alignment);
+
   Shelf* shelf() { return shelf_; }
   void SetShelf(Shelf* shelf);
 
@@ -182,6 +187,13 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Ideal (starting) width of the dock.
   static const int kIdealWidth;
+
+  // Returns the alignment of the docked windows other than the |child|.
+  DockedAlignment CalculateAlignmentExcept(const aura::Window* child) const;
+
+  // Determines if the |alignment| is applicable taking into account
+  // the shelf alignment.
+  bool IsDockedAlignmentValid(DockedAlignment alignment) const;
 
   // Keep at most kMaxVisibleWindows visible in the dock and minimize the rest
   // (except for |child|).

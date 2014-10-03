@@ -101,7 +101,8 @@ WindowStateType WindowState::GetStateType() const {
 }
 
 bool WindowState::IsMinimized() const {
-  return GetStateType() == WINDOW_STATE_TYPE_MINIMIZED;
+  return GetStateType() == WINDOW_STATE_TYPE_MINIMIZED ||
+         GetStateType() == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
 }
 
 bool WindowState::IsMaximized() const {
@@ -136,8 +137,8 @@ bool WindowState::IsActive() const {
 }
 
 bool WindowState::IsDocked() const {
-  return window_->parent() &&
-         window_->parent()->id() == kShellWindowId_DockedContainer;
+  return GetStateType() == WINDOW_STATE_TYPE_DOCKED ||
+         GetStateType() == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
 }
 
 bool WindowState::CanMaximize() const {

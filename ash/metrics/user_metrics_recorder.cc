@@ -398,6 +398,7 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
     ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED,
     ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN,
     ACTIVE_WINDOW_STATE_TYPE_SNAPPED,
+    ACTIVE_WINDOW_STATE_TYPE_DOCKED,
     ACTIVE_WINDOW_STATE_TYPE_COUNT
   };
 
@@ -415,6 +416,10 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
       case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
       case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
+        break;
+      case wm::WINDOW_STATE_TYPE_DOCKED:
+      case wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_DOCKED;
         break;
       case wm::WINDOW_STATE_TYPE_DEFAULT:
       case wm::WINDOW_STATE_TYPE_NORMAL:

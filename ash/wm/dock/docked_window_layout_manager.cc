@@ -576,16 +576,21 @@ DockedAlignment DockedWindowLayoutManager::GetAlignmentOfWindow(
 }
 
 DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
-  // Find a child that is not being dragged and is not a popup.
+  return CalculateAlignmentExcept(dragged_window_);
+}
+
+DockedAlignment DockedWindowLayoutManager::CalculateAlignmentExcept(
+    const aura::Window* window) const {
+  // Find a child that is not the window being queried and is not a popup.
   // If such exists the current alignment is returned - even if some of the
   // children are hidden or minimized (so they can be restored without losing
   // the docked state).
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
-    aura::Window* window(dock_container_->children()[i]);
-    if (window != dragged_window_ && !IsPopupOrTransient(window))
+    aura::Window* child(dock_container_->children()[i]);
+    if (window != child && !IsPopupOrTransient(child))
       return alignment_;
   }
-  // No docked windows remain other than possibly the window being dragged.
+  // No docked windows remain other than possibly the window being queried.
   // Return |NONE| to indicate that windows may get docked on either side.
   return DOCKED_ALIGNMENT_NONE;
 }
@@ -620,23 +625,45 @@ bool DockedWindowLayoutManager::CanDockWindow(
   if (GetWindowHeightCloseTo(window, work_area.height()) > work_area.height())
     return false;
   // Cannot dock on the other size from an existing dock.
-  const DockedAlignment alignment = CalculateAlignment();
+  const DockedAlignment alignment = CalculateAlignmentExcept(window);
   if (desired_alignment != DOCKED_ALIGNMENT_NONE &&
       alignment != DOCKED_ALIGNMENT_NONE &&
       alignment != desired_alignment) {
     return false;
   }
   // Do not allow docking on the same side as shelf.
-  ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
-  if (shelf_)
-    shelf_alignment = shelf_->alignment();
-  if ((desired_alignment == DOCKED_ALIGNMENT_LEFT &&
+  return IsDockedAlignmentValid(desired_alignment);
+}
+
+bool DockedWindowLayoutManager::IsDockedAlignmentValid(
+    DockedAlignment alignment) const {
+  ShelfAlignment shelf_alignment = shelf_ ? shelf_->alignment() :
+      SHELF_ALIGNMENT_BOTTOM;
+  if ((alignment == DOCKED_ALIGNMENT_LEFT &&
        shelf_alignment == SHELF_ALIGNMENT_LEFT) ||
-      (desired_alignment == DOCKED_ALIGNMENT_RIGHT &&
+      (alignment == DOCKED_ALIGNMENT_RIGHT &&
        shelf_alignment == SHELF_ALIGNMENT_RIGHT)) {
     return false;
   }
   return true;
+}
+
+void DockedWindowLayoutManager::MaybeSetDesiredDockedAlignment(
+    DockedAlignment alignment) {
+  // If the requested alignment is |NONE| or there are no
+  // docked windows return early as we can't change whether there is a
+  // dock or not. If the requested alignment is the same as the current
+  // alignment return early as an optimization.
+  if (alignment == DOCKED_ALIGNMENT_NONE ||
+      alignment_ == DOCKED_ALIGNMENT_NONE ||
+      alignment_ == alignment ||
+      !IsDockedAlignmentValid(alignment)) {
+    return;
+  }
+  alignment_ = alignment;
+
+  Relayout();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnShelfBoundsChanged() {
@@ -700,8 +727,10 @@ void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
     bool visible) {
   if (IsPopupOrTransient(child))
     return;
-  if (visible)
-    wm::GetWindowState(child)->Restore();
+
+  wm::WindowState* window_state = wm::GetWindowState(child);
+  if (visible && window_state->IsMinimized())
+    window_state->Restore();
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
@@ -815,15 +844,15 @@ void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
   // until OnFullscreenStateChange is called when exiting fullscreen.
   if (in_fullscreen_)
     return;
-  if (window_state->IsMinimized()) {
-    MinimizeDockedWindow(window_state);
-  } else if (window_state->IsMaximizedOrFullscreen() ||
-             window_state->IsSnapped()) {
+  if (!window_state->IsDocked()) {
     if (window != dragged_window_) {
       UndockWindow(window);
-      RecordUmaAction(DOCKED_ACTION_MAXIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
+      if (window_state->IsMaximizedOrFullscreen())
+        RecordUmaAction(DOCKED_ACTION_MAXIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
     }
-  } else if (old_type == wm::WINDOW_STATE_TYPE_MINIMIZED) {
+  } else if (window_state->IsMinimized()) {
+    MinimizeDockedWindow(window_state);
+  } else if (old_type == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED) {
     RestoreDockedWindow(window_state);
   }
 }
@@ -946,7 +975,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
 
   // Evict the window if it can no longer be docked because of its height.
   if (!CanDockWindow(window, DOCKED_ALIGNMENT_NONE)) {
-    UndockWindow(window);
+    window_state->Restore();
     RecordUmaAction(DOCKED_ACTION_EVICT, DOCKED_ACTION_SOURCE_UNKNOWN);
     return;
   }

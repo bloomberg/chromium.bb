@@ -15,6 +15,7 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/command_line.h"
@@ -219,10 +220,11 @@ void DockedWindowResizer::FinishedDragging(
   const bool is_resized =
       (details().bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
 
-  // Undock the window if it is not in the normal or minimized state type. This
-  // happens if a user snaps or maximizes a window using a keyboard shortcut
-  // while it is being dragged.
-  if (!window_state_->IsMinimized() && !window_state_->IsNormalStateType())
+  // Undock the window if it is not in the normal, docked or minimized state
+  // type. This happens if a user snaps or maximizes a window using a
+  // keyboard shortcut while it is being dragged.
+  if (!window_state_->IsMinimized() && !window_state_->IsDocked() &&
+      !window_state_->IsNormalStateType())
     is_docked_ = false;
 
   // When drag is completed the dragged docked window is resized to the bounds
@@ -315,6 +317,16 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
     wm::GetWindowState(window)->set_bounds_changed_by_user(
         was_docked_ && (is_resized || was_bounds_changed_by_user_));
   }
+
+  if (action == DOCKED_ACTION_DOCK) {
+    const wm::WMEvent event(wm::WM_EVENT_DOCK);
+    window_state_->OnWMEvent(&event);
+  } else if (wm::GetWindowState(window)->IsDocked() &&
+             action == DOCKED_ACTION_UNDOCK) {
+    const wm::WMEvent event(wm::WM_EVENT_NORMAL);
+    window_state_->OnWMEvent(&event);
+  }
+
   return action;
 }
 

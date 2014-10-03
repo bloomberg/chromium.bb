@@ -710,8 +710,11 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsMinimize) {
 
   // The first window should get minimized but parented by the dock container.
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMinimized());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->IsNormalStateType());
-  EXPECT_TRUE(wm::GetWindowState(w3.get())->IsNormalStateType());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsDocked());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->IsDocked());
+  EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(w3.get())->IsDocked());
   EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
 }
 

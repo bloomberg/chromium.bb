@@ -143,6 +143,7 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_SNAP_RIGHT:
     case wm::WM_EVENT_NORMAL:
     case wm::WM_EVENT_MAXIMIZE:
+    case wm::WM_EVENT_DOCK:
       UpdateWindow(window_state,
                    GetMaximizedOrCenteredWindowType(window_state),
                    true);

@@ -30,9 +30,9 @@ namespace {
 // must be visible when the window is added to the workspace.
 const float kMinimumPercentOnScreenArea = 0.3f;
 
-bool IsPanel(aura::Window* window) {
-  return window->parent() &&
-         window->parent()->id() == kShellWindowId_PanelContainer;
+bool IsMinimizedWindowState(const WindowStateType state_type) {
+  return state_type == WINDOW_STATE_TYPE_MINIMIZED ||
+         state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
 }
 
 void MoveToDisplayForRestore(WindowState* window_state) {
@@ -78,16 +78,21 @@ void DefaultState::OnWMEvent(WindowState* window_state,
   if (ProcessCompoundEvents(window_state, event))
     return;
 
+  WindowStateType current_state_type = window_state->GetStateType();
   WindowStateType next_state_type = WINDOW_STATE_TYPE_NORMAL;
   switch (event->type()) {
     case WM_EVENT_NORMAL:
-      next_state_type = WINDOW_STATE_TYPE_NORMAL;
+      next_state_type =
+          current_state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED ?
+              WINDOW_STATE_TYPE_DOCKED : WINDOW_STATE_TYPE_NORMAL;
       break;
     case WM_EVENT_MAXIMIZE:
       next_state_type = WINDOW_STATE_TYPE_MAXIMIZED;
       break;
     case WM_EVENT_MINIMIZE:
-      next_state_type = WINDOW_STATE_TYPE_MINIMIZED;
+      next_state_type =
+          current_state_type == WINDOW_STATE_TYPE_DOCKED ?
+              WINDOW_STATE_TYPE_DOCKED_MINIMIZED : WINDOW_STATE_TYPE_MINIMIZED;
       break;
     case WM_EVENT_FULLSCREEN:
       next_state_type = WINDOW_STATE_TYPE_FULLSCREEN;
@@ -97,6 +102,9 @@ void DefaultState::OnWMEvent(WindowState* window_state,
       break;
     case WM_EVENT_SNAP_RIGHT:
       next_state_type = WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+      break;
+    case WM_EVENT_DOCK:
+      next_state_type = WINDOW_STATE_TYPE_DOCKED;
       break;
     case WM_EVENT_SET_BOUNDS:
       SetBounds(window_state, static_cast<const SetBoundsEvent*>(event));
@@ -119,9 +127,7 @@ void DefaultState::OnWMEvent(WindowState* window_state,
       return;
   }
 
-  WindowStateType current = window_state->GetStateType();
-
-  if (next_state_type == current && window_state->IsSnapped()) {
+  if (next_state_type == current_state_type && window_state->IsSnapped()) {
     gfx::Rect snapped_bounds = event->type() == WM_EVENT_SNAP_LEFT ?
         GetDefaultLeftSnappedWindowBoundsInParent(window_state->window()) :
         GetDefaultRightSnappedWindowBoundsInParent(window_state->window());
@@ -273,6 +279,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case WM_EVENT_SNAP_RIGHT:
     case WM_EVENT_SET_BOUNDS:
     case WM_EVENT_SHOW_INACTIVE:
+    case WM_EVENT_DOCK:
       break;
     case WM_EVENT_ADDED_TO_WORKSPACE:
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
@@ -372,6 +379,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_SNAP_RIGHT:
     case WM_EVENT_SET_BOUNDS:
     case WM_EVENT_SHOW_INACTIVE:
+    case WM_EVENT_DOCK:
       break;
   }
   return false;
@@ -422,12 +430,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   window_state->UpdateWindowShowStateFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
-  // This Docked/Snapped hack is due to the issue that IsDocked returns
-  // true for dragging window.  TODO(oshima): Make docked window a state
-  // and remove this hack.
-  if (window_state->window()->parent() &&
-      (window_state->IsSnapped() ||
-       (!window_state->IsDocked() && !IsPanel(window_state->window())))) {
+  if (window_state->window()->parent()) {
     if (!window_state->HasRestoreBounds() &&
         (previous_state_type == WINDOW_STATE_TYPE_DEFAULT ||
          previous_state_type == WINDOW_STATE_TYPE_NORMAL) &&
@@ -436,10 +439,10 @@ void DefaultState::EnterToNextState(WindowState* window_state,
       window_state->SaveCurrentBoundsForRestore();
     }
 
-    // When restoring from a minimized state, we want to restore to the previous
-    // bounds. However, we want to maintain the restore bounds. (The restore
-    // bounds are set if a user maximized the window in one axis by double
-    // clicking the window border for example).
+    // When restoring from a minimized state, we want to restore to the
+    // previous bounds. However, we want to maintain the restore bounds.
+    // (The restore bounds are set if a user maximized the window in one
+    // axis by double clicking the window border for example).
     gfx::Rect restore_bounds_in_screen;
     if (previous_state_type == WINDOW_STATE_TYPE_MINIMIZED &&
         window_state->IsNormalStateType() &&
@@ -455,7 +458,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
     UpdateBoundsFromState(window_state, previous_state_type);
 
     // Normal state should have no restore bounds unless it's
-    // unminimzied.
+    // unminimized.
     if (!restore_bounds_in_screen.IsEmpty())
       window_state->SetRestoreBoundsInScreen(restore_bounds_in_screen);
     else if (window_state->IsNormalStateType())
@@ -507,6 +510,19 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
           GetDefaultLeftSnappedWindowBoundsInParent(window_state->window()) :
           GetDefaultRightSnappedWindowBoundsInParent(window_state->window());
       break;
+    case WINDOW_STATE_TYPE_DOCKED: {
+      if (window->parent()->id() != kShellWindowId_DockedContainer) {
+        aura::Window* docked_container = Shell::GetContainer(
+            window->GetRootWindow(),
+            kShellWindowId_DockedContainer);
+        wm::ReparentChildWithTransientChildren(window,
+            window->parent(),
+            docked_container);
+      }
+      // Return early because we don't want to update the bounds of the
+      // window below; as the bounds are managed by the dock layout.
+      return;
+    }
     case WINDOW_STATE_TYPE_DEFAULT:
     case WINDOW_STATE_TYPE_NORMAL: {
       gfx::Rect work_area_in_parent =
@@ -540,6 +556,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       bounds_in_parent = ScreenUtil::GetDisplayBoundsInParent(window);
       break;
 
+    case WINDOW_STATE_TYPE_DOCKED_MINIMIZED:
     case WINDOW_STATE_TYPE_MINIMIZED:
       break;
     case WINDOW_STATE_TYPE_INACTIVE:
@@ -548,8 +565,8 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       return;
   }
 
-  if (state_type_ != WINDOW_STATE_TYPE_MINIMIZED) {
-    if (previous_state_type == WINDOW_STATE_TYPE_MINIMIZED ||
+  if (!window_state->IsMinimized()) {
+    if (IsMinimizedWindowState(previous_state_type) ||
         window_state->IsFullscreen()) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else if (window_state->IsMaximized() ||
@@ -577,12 +594,12 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     if (window_state->IsActive())
       window_state->Deactivate();
   } else if ((window_state->window()->TargetVisibility() ||
-              previous_state_type == WINDOW_STATE_TYPE_MINIMIZED) &&
+             IsMinimizedWindowState(previous_state_type)) &&
              !window_state->window()->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window_state->window()->Show();
-    if (previous_state_type == WINDOW_STATE_TYPE_MINIMIZED &&
+    if (IsMinimizedWindowState(previous_state_type) &&
         !window_state->IsMaximizedOrFullscreen()) {
       window_state->set_unminimize_to_restore_bounds(false);
     }
