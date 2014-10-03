@@ -67,7 +67,7 @@ class CIDBConnectionFactoryTest(cros_test_lib.MoxTestCase):
                       cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder)
 
   def testSetupMock(self):
-    """Test that SetupMock behaves as expected."""
+    """Test that SetupDebug behaves as expected."""
     # Set the CIDB to mock mode, but without supplying a mock
     cidb.CIDBConnectionFactory.SetupMockCidb()
     self.assertFalse(cidb.CIDBConnectionFactory.IsCIDBSetup())
@@ -90,11 +90,6 @@ class CIDBConnectionFactoryTest(cros_test_lib.MoxTestCase):
     cidb.CIDBConnectionFactory.SetupMockCidb(b)
     self.assertEqual(cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder(),
                      b)
-
-    # Mock object can be cleared by future ClearMock call.
-    cidb.CIDBConnectionFactory.ClearMock()
-    self.assertRaises(AssertionError,
-                      cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder)
 
     # Calls to non-mock Setup methods should still fail.
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
