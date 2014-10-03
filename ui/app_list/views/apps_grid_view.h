@@ -422,7 +422,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // there is no item displayed at |slot|, returns NULL. Note that this finds an
   // item *displayed* at a slot, which may differ from the item's location in
   // the model (as it may have been temporarily moved during a drag operation).
-  AppListItemView* GetViewDisplayedAtSlotOnCurrentPage(int slot);
+  AppListItemView* GetViewDisplayedAtSlotOnCurrentPage(int slot) const;
 
   // Sets state of the view with |target_index| to |is_target_folder| for
   // dropping |drag_view_|.

@@ -23,6 +23,14 @@ views::View* AppsGridViewTestApi::GetViewAtModelIndex(int index) const {
 }
 
 void AppsGridViewTestApi::LayoutToIdealBounds() {
+  if (view_->reorder_timer_.IsRunning()) {
+    view_->reorder_timer_.Stop();
+    view_->OnReorderTimer();
+  }
+  if (view_->folder_dropping_timer_.IsRunning()) {
+    view_->folder_dropping_timer_.Stop();
+    view_->OnFolderDroppingTimer();
+  }
   view_->bounds_animator_.Cancel();
   view_->Layout();
 }

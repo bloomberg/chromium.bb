@@ -149,9 +149,9 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
   // Points are in |apps_grid_view_|'s coordinates.
-  void SimulateDrag(AppsGridView::Pointer pointer,
-                    const gfx::Point& from,
-                    const gfx::Point& to) {
+  AppListItemView* SimulateDrag(AppsGridView::Pointer pointer,
+                                const gfx::Point& from,
+                                const gfx::Point& to) {
     AppListItemView* view = GetItemViewForPoint(from);
     DCHECK(view);
 
@@ -167,6 +167,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
                               translated_to, to, 0, 0);
     apps_grid_view_->UpdateDragFromItem(pointer, drag_event);
+    return view;
   }
 
   void SimulateKeyPress(ui::KeyboardCode key_code) {
@@ -411,6 +412,56 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   // item.
   SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_grid_view_->EndDrag(false);
+  EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
+  test_api_->LayoutToIdealBounds();
+}
+
+// Check that moving items around doesn't allow a drop to happen into a full
+// folder.
+TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
+  EnsureFoldersEnabled();
+
+  // Create and add a folder with 16 items in it.
+  size_t kTotalItems = kMaxFolderItems;
+  model_->CreateAndPopulateFolderWithApps(kTotalItems);
+  EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(AppListFolderItem::kItemType,
+            model_->top_level_item_list()->item_at(0)->GetItemType());
+  AppListFolderItem* folder_item = static_cast<AppListFolderItem*>(
+      model_->top_level_item_list()->item_at(0));
+  EXPECT_EQ(kTotalItems, folder_item->ChildItemCount());
+
+  // Create and add another item.
+  model_->PopulateAppWithId(kTotalItems);
+  EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
+  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+            model_->top_level_item_list()->item_at(1)->id());
+
+  AppListItemView* folder_view =
+      GetItemViewForPoint(GetItemTileRectAt(0, 0).CenterPoint());
+
+  // Drag the new item to the left so that the grid reorders.
+  gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point to = GetItemTileRectAt(0, 0).bottom_left();
+  AppListItemView* dragged_view = SimulateDrag(AppsGridView::MOUSE, from, to);
+  test_api_->LayoutToIdealBounds();
+
+  // The grid now looks like | blank | folder |.
+  EXPECT_EQ(NULL, GetItemViewForPoint(GetItemTileRectAt(0, 0).CenterPoint()));
+  EXPECT_EQ(folder_view,
+            GetItemViewForPoint(GetItemTileRectAt(0, 1).CenterPoint()));
+
+  // Move onto the folder and end the drag.
+  to = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point translated_to =
+      gfx::PointAtOffsetFromOrigin(to - dragged_view->bounds().origin());
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to, 0, 0);
+  apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event);
+  apps_grid_view_->EndDrag(false);
+
+  // The item should not have moved into the folder.
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
   test_api_->LayoutToIdealBounds();

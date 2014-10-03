@@ -2085,7 +2085,8 @@ bool AppsGridView::EnableFolderDragDropUI() {
 }
 
 bool AppsGridView::CanDropIntoTarget(const Index& drop_target) const {
-  AppListItemView* target_view = GetViewAtIndex(drop_target);
+  AppListItemView* target_view =
+      GetViewDisplayedAtSlotOnCurrentPage(drop_target.slot);
   if (!target_view)
     return false;
 
@@ -2132,7 +2133,8 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(int row, int col) const {
   return tile_bounds;
 }
 
-AppListItemView* AppsGridView::GetViewDisplayedAtSlotOnCurrentPage(int slot) {
+AppListItemView* AppsGridView::GetViewDisplayedAtSlotOnCurrentPage(
+    int slot) const {
   if (slot < 0)
     return NULL;
 
