@@ -78,6 +78,7 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
 }
 
 bool EVWhitelistComponentInstallerTraits::VerifyInstallation(
+    const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   const base::FilePath expected_file = GetInstalledPath(install_dir);
   VLOG(1) << "Verifying install: " << expected_file.value();

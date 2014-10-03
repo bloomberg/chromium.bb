@@ -222,7 +222,8 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
   virtual ~SwReporterInstallerTraits() {}
 
-  virtual bool VerifyInstallation(const base::FilePath& dir) const {
+  virtual bool VerifyInstallation(const base::DictionaryValue& manifest,
+                                  const base::FilePath& dir) const {
     return base::PathExists(dir.Append(kSwReporterExeName));
   }
 

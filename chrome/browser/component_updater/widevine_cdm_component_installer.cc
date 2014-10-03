@@ -242,6 +242,7 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
   virtual bool OnCustomInstall(const base::DictionaryValue& manifest,
                                const base::FilePath& install_dir) OVERRIDE;
   virtual bool VerifyInstallation(
+      const base::DictionaryValue& manifest,
       const base::FilePath& install_dir) const OVERRIDE;
   virtual void ComponentReady(
       const base::Version& version,
@@ -296,9 +297,11 @@ void WidevineCdmComponentInstallerTraits::ComponentReady(
 }
 
 bool WidevineCdmComponentInstallerTraits::VerifyInstallation(
+    const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
-  return base::PathExists(
-      GetPlatformDirectory(install_dir).AppendASCII(kWidevineCdmFileName));
+  return IsCompatibleWithChrome(manifest) &&
+         base::PathExists(GetPlatformDirectory(install_dir)
+                              .AppendASCII(kWidevineCdmFileName));
 }
 
 // The base directory on Windows looks like:

@@ -45,6 +45,7 @@ class CldComponentInstallerTraits : public ComponentInstallerTraits {
   virtual bool OnCustomInstall(const base::DictionaryValue& manifest,
                                const base::FilePath& install_dir) OVERRIDE;
   virtual bool VerifyInstallation(
+      const base::DictionaryValue& manifest,
       const base::FilePath& install_dir) const OVERRIDE;
   virtual void ComponentReady(
       const base::Version& version,

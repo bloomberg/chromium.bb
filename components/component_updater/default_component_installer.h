@@ -35,11 +35,13 @@ class ComponentInstallerTraits {
   virtual ~ComponentInstallerTraits();
 
   // Verifies that a working installation resides within the directory specified
-  // by |dir|. |dir| is of the form <base directory>/<version>.
+  // by |install_dir|. |install_dir| is of the form <base directory>/<version>.
+  // |manifest| should have been read from the manifest file in |install_dir|.
   // Called only from a thread belonging to a blocking thread pool.
   // The implementation of this function must be efficient since the function
   // can be called when Chrome starts.
-  virtual bool VerifyInstallation(const base::FilePath& dir) const = 0;
+  virtual bool VerifyInstallation(const base::DictionaryValue& manifest,
+                                  const base::FilePath& install_dir) const = 0;
 
   // Returns true if the component can be automatically updated. Called once
   // during component registration from the UI thread.

@@ -79,6 +79,7 @@ void CldComponentInstallerTraits::ComponentReady(
 }
 
 bool CldComponentInstallerTraits::VerifyInstallation(
+    const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   // We can't really do much to verify the CLD2 data file. In theory we could
   // read the headers, but that won't do much other than tell us whether or
