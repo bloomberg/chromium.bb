@@ -200,7 +200,6 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
-crbug.com/380217 virtual/regionbasedmulticol/fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
@@ -1087,8 +1086,6 @@ crbug.com/350853 fast/multicol/newmulticol/float-paginate.html [ Skip ]
 crbug.com/350853 fast/multicol/newmulticol/hide-box-horizontal-bt.html [ Skip ]
 crbug.com/350853 fast/multicol/newmulticol/hide-box-vertical-lr.html [ Skip ]
 crbug.com/350853 fast/multicol/newmulticol/hide-box-vertical-rl.html [ Skip ]
-crbug.com/350853 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
-crbug.com/350853 fast/multicol/newmulticol/layers-split-across-columns.html [ Skip ]
 crbug.com/350853 fast/multicol/newmulticol/leading-and-trailing-margin.html [ Skip ]
 crbug.com/350853 fast/multicol/newmulticol/leading-margin.html [ Skip ]
 crbug.com/350853 fast/multicol/newmulticol/list-item.html [ Skip ]
