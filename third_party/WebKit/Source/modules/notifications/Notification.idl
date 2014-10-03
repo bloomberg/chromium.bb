@@ -43,7 +43,7 @@
     // FIXME: Implement the Notification.get() method.
 
     attribute EventHandler onclick;
-    attribute EventHandler onshow;
+    [MeasureAs=NotificationShowEvent] attribute EventHandler onshow;
     attribute EventHandler onerror;
     attribute EventHandler onclose;
 
