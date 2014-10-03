@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/video_source_handler.h"
 #include "ppapi/c/pp_time.h"
@@ -42,17 +43,16 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
     explicit FrameReceiver(const base::WeakPtr<PepperVideoSourceHost>& host);
 
     // FrameReaderInterface implementation.
-    virtual bool GotFrame(const scoped_refptr<media::VideoFrame>& frame)
+    virtual void GotFrame(const scoped_refptr<media::VideoFrame>& frame)
         OVERRIDE;
-
-    void OnGotFrame(const scoped_refptr<media::VideoFrame>& frame);
 
    private:
     friend class base::RefCountedThreadSafe<FrameReceiver>;
     virtual ~FrameReceiver();
 
     base::WeakPtr<PepperVideoSourceHost> host_;
-    scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
+    // |thread_checker_| is bound to the main render thread.
+    base::ThreadChecker thread_checker_;
   };
 
   friend class FrameReceiver;

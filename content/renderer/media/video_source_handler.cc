@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -56,6 +57,7 @@ class PpFrameReceiver : public MediaStreamVideoSink {
       const scoped_refptr<media::VideoFrame>& frame,
       const media::VideoCaptureFormat& format,
       const base::TimeTicks& estimated_capture_time) {
+    TRACE_EVENT0("video", "PpFrameReceiver::OnVideoFrame");
     if (reader_) {
       reader_->GotFrame(frame);
     }

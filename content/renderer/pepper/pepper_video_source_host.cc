@@ -27,23 +27,13 @@ namespace content {
 
 PepperVideoSourceHost::FrameReceiver::FrameReceiver(
     const base::WeakPtr<PepperVideoSourceHost>& host)
-    : host_(host),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()) {}
+    : host_(host) {}
 
 PepperVideoSourceHost::FrameReceiver::~FrameReceiver() {}
 
-bool PepperVideoSourceHost::FrameReceiver::GotFrame(
+void PepperVideoSourceHost::FrameReceiver::GotFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
-  // It's not safe to access the host from this thread, so post a task to our
-  // main thread to transfer the new frame.
-  main_message_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&FrameReceiver::OnGotFrame, this, frame));
-
-  return true;
-}
-
-void PepperVideoSourceHost::FrameReceiver::OnGotFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (host_.get()) {
     // Hold a reference to the new frame and release the previous.
     host_->last_frame_ = frame;

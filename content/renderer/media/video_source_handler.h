@@ -28,7 +28,7 @@ class PpFrameReceiver;
 class CONTENT_EXPORT FrameReaderInterface {
  public:
   // Got a new captured frame.
-  virtual bool GotFrame(const scoped_refptr<media::VideoFrame>& frame) = 0;
+  virtual void GotFrame(const scoped_refptr<media::VideoFrame>& frame) = 0;
 
  protected:
   virtual ~FrameReaderInterface() {}

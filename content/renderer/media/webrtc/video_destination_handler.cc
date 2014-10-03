@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,6 +111,7 @@ void PpFrameWriter::StopSourceImpl() {
 void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                              int64 time_stamp_ns) {
   DCHECK(CalledOnValidThread());
+  TRACE_EVENT0("video", "PpFrameWriter::PutFrame");
   DVLOG(3) << "PpFrameWriter::PutFrame()";
 
   if (!image_data) {
