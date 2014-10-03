@@ -242,7 +242,7 @@ Press Ctrl+Alt+Z to disable.
         Lock
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT" desc="The string for the button which lets the user add another account to the current session.">
-        Sign in another account...
+        Sign in another user...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER" desc="The caption for the error message when the user has reached the limit of multi profile users.">
         Can't sign in to another account.
