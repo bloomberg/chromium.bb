@@ -224,12 +224,12 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
   EXPECT_EQ(display_modes[2].refresh_rate, 60);
 
   EXPECT_EQ("1920x1080", display_modes[3].size.ToString());
-  EXPECT_FALSE(display_modes[3].native);
+  EXPECT_TRUE(display_modes[3].native);
   EXPECT_NEAR(display_modes[3].ui_scale, 1.0, 0.01);
   EXPECT_EQ(display_modes[3].refresh_rate, 60);
 
   EXPECT_EQ("1920x1080", display_modes[4].size.ToString());
-  EXPECT_TRUE(display_modes[4].native);
+  EXPECT_FALSE(display_modes[4].native);
   EXPECT_NEAR(display_modes[4].ui_scale, 1.25, 0.01);
   EXPECT_EQ(display_modes[4].refresh_rate, 60);
 }

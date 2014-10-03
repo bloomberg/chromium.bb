@@ -66,7 +66,10 @@ DisplayMode::DisplayMode(const gfx::Size& size,
 gfx::Size DisplayMode::GetSizeInDIP() const {
   gfx::SizeF size_dip(size);
   size_dip.Scale(ui_scale);
-  size_dip.Scale(1.0f / device_scale_factor);
+  // DSF=1.25 is special. The screen is drawn with DSF=1.25 in some mode but it
+  // doesn't affect the screen size computation.
+  if (!use_125_dsf_for_ui_scaling || device_scale_factor != 1.25f)
+    size_dip.Scale(1.0f / device_scale_factor);
   return gfx::ToFlooredSize(size_dip);
 }
 
@@ -81,8 +84,6 @@ bool DisplayMode::IsEquivalent(const DisplayMode& other) const {
 DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
   return CreateFromSpecWithID(spec, gfx::Display::kInvalidDisplayID);
 }
-
-// static
 
 // static
 void DisplayInfo::SetUse125DSFForUIScaling(bool enable) {

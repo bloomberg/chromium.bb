@@ -85,10 +85,12 @@ std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
   native_mode.device_scale_factor = display_info.device_scale_factor();
   std::vector<float> ui_scales =
       DisplayManager::GetScalesForDisplay(display_info);
+  float native_ui_scale = (display_info.device_scale_factor() == 1.25f) ?
+      1.0f : display_info.device_scale_factor();
   for (size_t i = 0; i < ui_scales.size(); ++i) {
     DisplayMode mode = native_mode;
     mode.ui_scale = ui_scales[i];
-    mode.native = (ui_scales[i] == display_info.device_scale_factor());
+    mode.native = (ui_scales[i] == native_ui_scale);
     display_mode_list.push_back(mode);
   }
 
