@@ -117,6 +117,7 @@ bool BrowserAccessibilityAndroid::IsCollection() const {
   return (GetRole() == ui::AX_ROLE_GRID ||
           GetRole() == ui::AX_ROLE_LIST ||
           GetRole() == ui::AX_ROLE_LIST_BOX ||
+          GetRole() == ui::AX_ROLE_DESCRIPTION_LIST ||
           GetRole() == ui::AX_ROLE_TABLE ||
           GetRole() == ui::AX_ROLE_TREE);
 }
@@ -165,6 +166,7 @@ bool BrowserAccessibilityAndroid::IsHeading() const {
 
 bool BrowserAccessibilityAndroid::IsHierarchical() const {
   return (GetRole() == ui::AX_ROLE_LIST ||
+          GetRole() == ui::AX_ROLE_DESCRIPTION_LIST ||
           GetRole() == ui::AX_ROLE_TREE);
 }
 
@@ -250,6 +252,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
       break;
     case ui::AX_ROLE_LIST:
     case ui::AX_ROLE_LIST_BOX:
+    case ui::AX_ROLE_DESCRIPTION_LIST:
       class_name = "android.widget.ListView";
       break;
     case ui::AX_ROLE_DIALOG:
@@ -356,6 +359,7 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
   switch(GetRole()) {
     case ui::AX_ROLE_LIST:
     case ui::AX_ROLE_LIST_BOX:
+    case ui::AX_ROLE_DESCRIPTION_LIST:
       count = PlatformChildCount();
       break;
     case ui::AX_ROLE_SLIDER:
@@ -519,6 +523,7 @@ int BrowserAccessibilityAndroid::RowCount() const {
 
   if (GetRole() == ui::AX_ROLE_LIST ||
       GetRole() == ui::AX_ROLE_LIST_BOX ||
+      GetRole() == ui::AX_ROLE_DESCRIPTION_LIST ||
       GetRole() == ui::AX_ROLE_TREE) {
     return PlatformChildCount();
   }

@@ -700,16 +700,11 @@ NSDictionary* attributeToMethodNameMap = nil;
     return @"AXSecureTextField";
   }
 
-  NSString* htmlTag = NSStringForStringAttribute(
-      browserAccessibility_, ui::AX_ATTR_HTML_TAG);
+  if (browserAccessibilityRole == ui::AX_ROLE_DESCRIPTION_LIST)
+    return @"AXDescriptionList";
 
-  if (browserAccessibilityRole == ui::AX_ROLE_LIST) {
-    if ([htmlTag isEqualToString:@"dl"]) {
-      return @"AXDescriptionList";
-    } else {
-      return @"AXContentList";
-    }
-  }
+  if (browserAccessibilityRole == ui::AX_ROLE_LIST)
+    return @"AXContentList";
 
   return [AXPlatformNodeCocoa nativeSubroleFromAXRole:browserAccessibilityRole];
 }

@@ -527,8 +527,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDiv) {
   RunTest(FILE_PATH_LITERAL("div.html"));
 }
 
-// crbug.com/418600
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilityDl) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDl) {
   RunTest(FILE_PATH_LITERAL("dl.html"));
 }
 
