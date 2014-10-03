@@ -34,7 +34,7 @@ shouldBeNull('document.getElementById("mock-page-popup")');
 var dateElement = document.getElementById('date');
 
 window.onload = function() {
-    openPicker(dateElement, test1);
+    openPickerWithMock(dateElement, test1);
 }
 
 function test1() {
@@ -54,7 +54,7 @@ function test1() {
 
 function test1AfterClosing() {
     dateElement.step = 5;
-    openPicker(dateElement, test2);
+    openPickerWithMock(dateElement, test2);
 }
 
 function test2() {
@@ -71,7 +71,7 @@ function test2() {
 
 function test2AfterClosing() {
     dateElement.step = 30;
-    openPicker(dateElement, test3);
+    openPickerWithMock(dateElement, test3);
 }
 
 function test3() {

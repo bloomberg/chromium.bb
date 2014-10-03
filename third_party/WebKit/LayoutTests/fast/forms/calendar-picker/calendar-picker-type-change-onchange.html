@@ -6,7 +6,7 @@
 <script>
 description('Check if we have no crash in a case that the input type is changed by selecting a day in the calendar picker.');
 
-openPicker(document.getElementById('date1'), selectToday);
+openPickerWithMock(document.getElementById('date1'), selectToday);
 
 function selectToday() {
     eventSender.keyDown('t');

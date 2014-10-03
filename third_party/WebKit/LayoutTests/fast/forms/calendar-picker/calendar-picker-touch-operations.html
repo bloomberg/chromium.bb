@@ -16,7 +16,7 @@ description("Tests if calendar picker mouse operations work as expected.");
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPicker(document.getElementById('date'), test);
+openPickerWithMock(document.getElementById('date'), test);
 
 var position;
 eventSender.clearTouchPoints();

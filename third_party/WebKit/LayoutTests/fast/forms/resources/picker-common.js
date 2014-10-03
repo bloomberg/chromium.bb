@@ -3,7 +3,8 @@ window.jsTestIsAsync = true;
 var popupWindow = null;
 
 var popupOpenCallback = null;
-function openPicker(input, callback) {
+
+function openPickerWithMock(input, callback) {
     if (window.internals)
         internals.setEnableMockPagePopup(true);
     input.offsetTop; // Force to lay out
@@ -35,7 +36,7 @@ function sendKey(input, keyName, ctrlKey, altKey) {
     input.dispatchEvent(event);
 }
 
-function openPickerWithoutMock(input, callback) {
+function openPicker(input, callback) {
     window.moveTo();
     input.offsetTop; // Force to lay out
     if (input.type === "color") {

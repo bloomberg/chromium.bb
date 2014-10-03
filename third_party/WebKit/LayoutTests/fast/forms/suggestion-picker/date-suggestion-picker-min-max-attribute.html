@@ -27,7 +27,7 @@ description('Tests that min/max attributes filter out suggestions as expected.')
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPicker(document.getElementById('date'), test);
+openPickerWithMock(document.getElementById('date'), test);
 
 function test() {
     popupWindow.focus();

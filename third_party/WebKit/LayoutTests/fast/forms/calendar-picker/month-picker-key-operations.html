@@ -15,7 +15,7 @@ description("Tests if month picker key bindings work as expected.");
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPicker(document.getElementById('month'), test1);
+openPickerWithMock(document.getElementById('month'), test1);
 
 function test1() {
     debug('Check that page popup exists.');

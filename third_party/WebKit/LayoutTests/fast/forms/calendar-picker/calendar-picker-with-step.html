@@ -16,7 +16,7 @@
 description('Test if step limits available dates in calendar picker.');
 
 document.getElementById('date-bare').value = '2011-05-01';
-openPicker(document.getElementById('date-bare'), test1);
+openPickerWithMock(document.getElementById('date-bare'), test1);
 
 function test1() {
     debug("Step without value or min attributes.");
@@ -28,7 +28,7 @@ function test1() {
 }
 
 function test1AfterClose() {
-    openPicker(document.getElementById('date'), test2);
+    openPickerWithMock(document.getElementById('date'), test2);
 }
 
 function test2() {
@@ -44,7 +44,7 @@ function test2AfterClose() {
     document.getElementById('date').min = '2011-05-01';
 
     // Reopen popup
-    openPicker(document.getElementById('date'), test3);
+    openPickerWithMock(document.getElementById('date'), test3);
 }
 
 function test3() {

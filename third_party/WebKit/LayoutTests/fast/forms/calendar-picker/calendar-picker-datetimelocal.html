@@ -15,7 +15,7 @@ description("Tests if calendar picker works for datetime-local as expected.");
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPicker(document.getElementById('datetimelocal'), test);
+openPickerWithMock(document.getElementById('datetimelocal'), test);
 
 function test() {
     shouldBeEqualToString('selectedValue()', '2011-12-31');

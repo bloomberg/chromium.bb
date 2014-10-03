@@ -32,7 +32,7 @@ window.accessibilityController.setNotificationListener(function(axnode, type) {
 });
 var activeDescendantCounter = 0;
 var date1 = document.getElementById('date1');
-openPicker(date1, test1);
+openPickerWithMock(date1, test1);
 
 function test1() {
     eventSender.keyDown('rightArrow');

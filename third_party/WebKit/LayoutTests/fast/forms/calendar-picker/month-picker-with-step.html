@@ -14,7 +14,7 @@
 <script>
 description('Test if step limits available dates in month picker.');
 
-openPicker(document.getElementById('month'), test1);
+openPickerWithMock(document.getElementById('month'), test1);
 
 function test1() {
     debug("Step without min.");
@@ -31,7 +31,7 @@ function test1() {
 
 function test1AfterClosing() {
     // Reopen popup
-    openPicker(document.getElementById('month'), test2);
+    openPickerWithMock(document.getElementById('month'), test2);
 }
 
 function test2() {
