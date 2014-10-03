@@ -53,7 +53,7 @@
 #define JMPBUF(png_ptr) png_ptr->jmpbuf
 #endif
 
-namespace blink {
+namespace {
 
 // Gamma constants.
 const double cMaxGamma = 21474.83;
@@ -63,8 +63,13 @@ const double cInverseGamma = 0.45455;
 // Protect against large PNGs. See Mozilla's bug #251381 for more info.
 const unsigned long cMaxPNGSize = 1000000UL;
 
+inline blink::PNGImageDecoder* imageDecoder(png_structp png)
+{
+    return static_cast<blink::PNGImageDecoder*>(png_get_progressive_ptr(png));
+}
+
 // Called if the decoding of the image fails.
-static void PNGAPI decodingFailed(png_structp png, png_const_charp)
+void PNGAPI decodingFailed(png_structp png, png_const_charp)
 {
     longjmp(JMPBUF(png), 1);
 }
@@ -72,7 +77,7 @@ static void PNGAPI decodingFailed(png_structp png, png_const_charp)
 // Callbacks given to the read struct.  The first is for warnings (we want to
 // treat a particular warning as an error, which is why we have to register this
 // callback).
-static void PNGAPI decodingWarning(png_structp png, png_const_charp warningMsg)
+void PNGAPI decodingWarning(png_structp png, png_const_charp warningMsg)
 {
     // Mozilla did this, so we will too.
     // Convert a tRNS warning to be an error (see
@@ -82,28 +87,33 @@ static void PNGAPI decodingWarning(png_structp png, png_const_charp warningMsg)
 }
 
 // Called when we have obtained the header information (including the size).
-static void PNGAPI headerAvailable(png_structp png, png_infop)
+void PNGAPI headerAvailable(png_structp png, png_infop)
 {
-    static_cast<PNGImageDecoder*>(png_get_progressive_ptr(png))->headerAvailable();
+    imageDecoder(png)->headerAvailable();
 }
 
 // Called when a row is ready.
-static void PNGAPI rowAvailable(png_structp png, png_bytep rowBuffer, png_uint_32 rowIndex, int interlacePass)
+void PNGAPI rowAvailable(png_structp png, png_bytep rowBuffer, png_uint_32 rowIndex, int interlacePass)
 {
-    static_cast<PNGImageDecoder*>(png_get_progressive_ptr(png))->rowAvailable(rowBuffer, rowIndex, interlacePass);
+    imageDecoder(png)->rowAvailable(rowBuffer, rowIndex, interlacePass);
 }
 
 // Called when we have completely finished decoding the image.
-static void PNGAPI pngComplete(png_structp png, png_infop)
+void PNGAPI pngComplete(png_structp png, png_infop)
 {
-    static_cast<PNGImageDecoder*>(png_get_progressive_ptr(png))->pngComplete();
+    imageDecoder(png)->pngComplete();
 }
+
+} // anonymous
+
+namespace blink {
 
 class PNGImageReader {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     PNGImageReader(PNGImageDecoder* decoder)
-        : m_readOffset(0)
+        : m_decoder(decoder)
+        , m_readOffset(0)
         , m_currentBufferSize(0)
         , m_decodingSizeOnly(false)
         , m_hasAlpha(false)
@@ -115,7 +125,7 @@ public:
     {
         m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, decodingFailed, decodingWarning);
         m_info = png_create_info_struct(m_png);
-        png_set_progressive_read_fn(m_png, decoder, headerAvailable, rowAvailable, pngComplete);
+        png_set_progressive_read_fn(m_png, m_decoder, headerAvailable, rowAvailable, pngComplete);
     }
 
     ~PNGImageReader()
@@ -139,11 +149,10 @@ public:
     bool decode(const SharedBuffer& data, bool sizeOnly)
     {
         m_decodingSizeOnly = sizeOnly;
-        PNGImageDecoder* decoder = static_cast<PNGImageDecoder*>(png_get_progressive_ptr(m_png));
 
         // We need to do the setjmp here. Otherwise bad things will happen.
         if (setjmp(JMPBUF(m_png)))
-            return decoder->setFailed();
+            return m_decoder->setFailed();
 
         const char* segment;
         while (unsigned segmentLength = data.getSomeData(segment, m_readOffset)) {
@@ -153,9 +162,10 @@ public:
             // We explicitly specify the superclass isSizeAvailable() because we
             // merely want to check if we've managed to set the size, not
             // (recursively) trigger additional decoding if we haven't.
-            if (sizeOnly ? decoder->ImageDecoder::isSizeAvailable() : decoder->isComplete())
+            if (sizeOnly ? m_decoder->ImageDecoder::isSizeAvailable() : m_decoder->isComplete())
                 return true;
         }
+
         return false;
     }
 
@@ -206,6 +216,7 @@ public:
 private:
     png_structp m_png;
     png_infop m_info;
+    PNGImageDecoder* m_decoder;
     unsigned m_readOffset;
     unsigned m_currentBufferSize;
     bool m_decodingSizeOnly;
