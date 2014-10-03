@@ -2661,30 +2661,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Updates the location information displayed on the toolbar.
-   * @param {DirectoryEntry=} opt_entry Directory entry to be displayed as
-   *     current location. Default entry is the current directory.
-   * @private
-   */
-  FileManager.prototype.updateLocationLine_ = function(opt_entry) {
-    var entry = opt_entry || this.getCurrentDirectoryEntry();
-    // Updates volume icon.
-    var location = this.volumeManager_.getLocationInfo(entry);
-    if (location && location.rootType && location.isRootEntry) {
-      this.ui_.locationVolumeIcon.setAttribute(
-          'volume-type-icon', location.rootType);
-      this.ui_.locationVolumeIcon.removeAttribute('volume-subtype');
-    } else {
-      this.ui_.locationVolumeIcon.setAttribute(
-          'volume-type-icon', location.volumeInfo.volumeType);
-      this.ui_.locationVolumeIcon.setAttribute(
-          'volume-subtype', location.volumeInfo.deviceType);
-    }
-    // Updates breadcrumbs.
-    this.ui_.locationBreadcrumbs.show(entry);
-  };
-
-  /**
    * Update the gear menu.
    * @private
    */
@@ -2781,7 +2757,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
-    this.updateLocationLine_();
+    this.ui_.updateLocationLine(
+        this.volumeManager_, this.getCurrentDirectoryEntry());
 
     var currentEntry = this.getCurrentDirectoryEntry();
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
@@ -3875,13 +3852,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (locationInfo && locationInfo.isDriveBased) {
         var rootEntry = locationInfo.volumeInfo.displayRoot;
         if (rootEntry)
-          this.updateLocationLine_(rootEntry);
+          this.ui_.updateLocationLine(this.volumeManager_, rootEntry);
       }
     };
 
     var hideNoResultsDiv = function() {
       noResultsDiv.removeAttribute('show');
-      this.updateLocationLine_();
+      this.ui_.updateLocationLine(
+          this.volumeManager_, this.getCurrentDirectoryEntry());
     };
 
     this.doSearch(searchString,

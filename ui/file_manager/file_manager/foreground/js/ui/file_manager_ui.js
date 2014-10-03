@@ -236,6 +236,29 @@ FileManagerUI.prototype.initAdditionalUI = function() {
 };
 
 /**
+ * Updates the location information displayed on the toolbar.
+ * @param {DirectoryEntry=} opt_entry Directory entry to be displayed as
+ *     current location. Default entry is the current directory.
+ */
+FileManagerUI.prototype.updateLocationLine = function(volumeManager, entry) {
+  // Updates volume icon.
+  var location = volumeManager.getLocationInfo(entry);
+  if (location && location.rootType && location.isRootEntry) {
+    this.locationVolumeIcon.setAttribute(
+        'volume-type-icon', location.rootType);
+    this.locationVolumeIcon.removeAttribute('volume-subtype');
+  } else {
+    this.locationVolumeIcon.setAttribute(
+        'volume-type-icon', location.volumeInfo.volumeType);
+    this.locationVolumeIcon.setAttribute(
+        'volume-subtype', location.volumeInfo.deviceType);
+  }
+
+  // Updates breadcrumbs.
+  this.locationBreadcrumbs.show(entry);
+};
+
+/**
  * Handles click event on the search button.
  * @param {Event} event Click event.
  * @private
@@ -243,4 +266,3 @@ FileManagerUI.prototype.initAdditionalUI = function() {
 FileManagerUI.prototype.onSearchButtonClick_ = function(event) {
   this.searchBox.inputElement.focus();
 };
-
