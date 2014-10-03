@@ -75,7 +75,24 @@ class MEDIA_EXPORT VideoCaptureFormat {
   VideoPixelFormat pixel_format;
 };
 
+// Image capture format specification.
+// This class is used by the video capture device to specify the format of a
+// still image captured and returned to a client. A list of these is also
+// provided when client queries supported formats for still image capture.
+class MEDIA_EXPORT ImageCaptureFormat {
+ public:
+  ImageCaptureFormat();
+
+  ImageCaptureFormat(const gfx::Size& frame_size,
+                     VideoPixelFormat pixel_format);
+
+  gfx::Size frame_size;
+  VideoPixelFormat pixel_format;
+};
+
 typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
+
+typedef std::vector<ImageCaptureFormat> ImageCaptureFormats;
 
 // Parameters for starting video capture.
 // This class is used by the client of a video capture device to specify the

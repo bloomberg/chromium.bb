@@ -79,4 +79,10 @@ int VideoCaptureDevice::GetPowerLineFrequencyForLocation() const {
   return kPowerLine60Hz;
 }
 
+bool VideoCaptureDevice::InitializeImageCapture(
+    const ImageCaptureFormat& image_format,
+    scoped_ptr<ImageClient> client) {
+  return false;
+}
+
 }  // namespace media

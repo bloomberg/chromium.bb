@@ -38,6 +38,13 @@ class MEDIA_EXPORT VideoCaptureDeviceFactory {
       const VideoCaptureDevice::Name& device,
       VideoCaptureFormats* supported_formats) = 0;
 
+  // Gets the supported formats for still image of a particular device attached
+  // to the system. In case format enumeration is not supported, or there was
+  // a problem, the formats array will be empty.
+  virtual void GetDeviceSupportedImageFormats(
+      const VideoCaptureDevice::Name& device,
+      ImageCaptureFormats* supported_formats) {}
+
  protected:
   // Gets the names of all video capture devices connected to this computer.
   // Used by the default implementation of EnumerateDeviceNames().

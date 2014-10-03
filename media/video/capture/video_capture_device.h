@@ -231,6 +231,41 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
     // VideoCaptureDevice requests the |message| to be logged.
     virtual void OnLog(const std::string& message) {}
+
+    // The video stream has been muted. After this callback, no more
+    // OnIncomingCapturedData() will be called. This may happen when
+    // CaptureImage() has called. After the still image captured, the client
+    // will get notified by OnUnmute() and the video stream will be resumed.
+    virtual void OnMute() {}
+
+    // The video stream has resumed.
+    virtual void OnUnmute() {}
+  };
+
+  // Interface for clients that use VideoCaptureDevice for taking still images.
+  class MEDIA_EXPORT ImageClient {
+   public:
+    virtual ~ImageClient() {}
+
+    // Callback function to notify the client a captured image is available.
+    //
+    // The captured still image is stored at address |data| and is of |length|
+    // bytes. The format of the frame is described by |format|, and is assumed
+    // to be tightly packed. The still image should be rotated |rotation|
+    // degrees clockwise for viewing.
+    //
+    // Note that the content in |data| will not be valid after this callback
+    // returns. Copy the content to use it later.
+    virtual void OnIncomingCapturedData(const uint8* data,
+                                        size_t length,
+                                        const ImageCaptureFormat& format,
+                                        int rotation,
+                                        base::TimeTicks timestamp) = 0;
+
+    // Callback function to notify the client about a failure of the image
+    // capture. The VideoCaptureDevice must be StopAndDeAllocate()-ed.
+    // |reason| contains a text description of the error.
+    virtual void OnError(const std::string& reason) = 0;
   };
 
   virtual ~VideoCaptureDevice();
@@ -257,6 +292,32 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // Gets the power line frequency from the current system time zone if this is
   // defined, otherwise returns 0.
   int GetPowerLineFrequencyForLocation() const;
+
+  // Initializes the device for still image capture for the given image format.
+  // This call is synchronous and returns true iff the initialization is
+  // successful.
+  //
+  // This function must be called between AllocateAndStart() and
+  // StopAndDeAllocate().
+  virtual bool InitializeImageCapture(const ImageCaptureFormat& image_format,
+                                      scoped_ptr<ImageClient> client);
+
+  // Releases resources for image capture.
+  //
+  // The ImageClient passed from InitializeImageCapture will be freed. This
+  // method must be called between InitializeImageCapture() and
+  // StopAndDeAllocate().
+  virtual void ReleaseImageCapture() {}
+
+  // Requests one image from the device.
+  //
+  // The image will be returned via the ImageClient::OnIncomingCapturedData()
+  // callback. If the video stream has to be stopped to capture the still image,
+  // the Client::OnMute() and Client::OnUnmute() will be called.
+  //
+  // This function must be called between InitializeImageCapture() and
+  // ReleaseImageCapture().
+  virtual void CaptureImage() {}
 
  protected:
   static const int kPowerLine50Hz = 50;
