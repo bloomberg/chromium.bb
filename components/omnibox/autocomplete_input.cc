@@ -388,6 +388,17 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
       parts->port.is_nonempty())
     return metrics::OmniboxInputType::URL;
 
+  // If the input looks like a word followed by a pound sign and possibly more
+  // characters ("c#" or "c# foo"), this is almost certainly an attempt to
+  // search.  We try to be conservative here by not firing on cases like "c/#"
+  // or "c?#" that might actually indicate some cryptic attempt to access an
+  // intranet host, and by placing this check late enough that other tests
+  // (e.g., for a non-empty TLD or a non-empty scheme) will have already
+  // returned URL.
+  if (!parts->path.is_valid() && !parts->query.is_valid() &&
+      parts->ref.is_valid())
+    return metrics::OmniboxInputType::QUERY;
+
   // No scheme, username, port, and no known TLD on the host.
   // This could be:
   // * A single word "foo"; possibly an intranet site, but more likely a search.

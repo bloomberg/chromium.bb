@@ -922,33 +922,6 @@ bool HistoryURLProvider::FixupExactSuggestion(
       break;
   }
 
-  const GURL& url = params->what_you_typed_match.destination_url;
-  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-  // If the what-you-typed result looks like a single word (which can be
-  // interpreted as an intranet address) followed by a pound sign ("#"),
-  // leave the score for the url-what-you-typed result as is.  It will be
-  // outscored by a search query from the SearchProvider. This test fixes
-  // cases such as "c#" and "c# foo" where the user has visited an intranet
-  // site "c".  We want the search-what-you-typed score to beat the
-  // URL-what-you-typed score in this case.  Most of the below test tries to
-  // make sure that this code does not trigger if the user did anything to
-  // indicate the desired match is a URL.  For instance, "c/# foo" will not
-  // pass the test because that will be classified as input type URL.  The
-  // parsed.CountCharactersBefore() in the test looks for the presence of a
-  // reference fragment in the URL by checking whether the position differs
-  // included the delimiter (pound sign) versus not including the delimiter.
-  // (One cannot simply check url.ref() because it will not distinguish
-  // between the input "c" and the input "c#", both of which will have empty
-  // reference fragments.)
-  if ((type == UNVISITED_INTRANET) &&
-      (params->input.type() != metrics::OmniboxInputType::URL) &&
-      url.username().empty() && url.password().empty() && url.port().empty() &&
-      (url.path() == "/") && url.query().empty() &&
-      (parsed.CountCharactersBefore(url::Parsed::REF, true) !=
-       parsed.CountCharactersBefore(url::Parsed::REF, false))) {
-    return false;
-  }
-
   params->what_you_typed_match.relevance = CalculateRelevance(type, 0);
 
   // If there are any other matches, then don't promote this match here, in

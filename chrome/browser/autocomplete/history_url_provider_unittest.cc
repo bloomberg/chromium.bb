@@ -679,43 +679,6 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
   }
 }
 
-TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
-  struct TestCase {
-    const char* input;
-    int relevance;
-    metrics::OmniboxInputType::Type type;
-  } test_cases[] = {
-    { "gooey", 1410, metrics::OmniboxInputType::UNKNOWN },
-    { "gooey/", 1410, metrics::OmniboxInputType::URL },
-    { "gooey#", 1200, metrics::OmniboxInputType::UNKNOWN },
-    { "gooey/#", 1200, metrics::OmniboxInputType::URL },
-    { "gooey#foo", 1200, metrics::OmniboxInputType::UNKNOWN },
-    { "gooey/#foo", 1200, metrics::OmniboxInputType::URL },
-    { "gooey# foo", 1200, metrics::OmniboxInputType::UNKNOWN },
-    { "gooey/# foo", 1200, metrics::OmniboxInputType::URL },
-  };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    SCOPED_TRACE(test_cases[i].input);
-    const UrlAndLegalDefault output[] = {
-        {url_fixer::FixupURL(test_cases[i].input, std::string()).spec(), true}};
-    metrics::OmniboxInputType::Type type;
-    ASSERT_NO_FATAL_FAILURE(
-        RunTest(ASCIIToUTF16(test_cases[i].input),
-                base::string16(), false, output, arraysize(output), &type));
-    // Actual relevance should be at least what test_cases expects and
-    // and no more than 10 more.
-    EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
-    EXPECT_LT(matches_[0].relevance, test_cases[i].relevance + 10);
-    // Input type should be what we expect.  This is important because
-    // this provider counts on SearchProvider to give queries a relevance
-    // score >1200 for UNKNOWN inputs and <1200 for URL inputs.  (That's
-    // already tested in search_provider_unittest.cc.)  For this test
-    // here to test that the user sees the correct behavior, it needs
-    // to check that the input type was identified correctly.
-    EXPECT_EQ(test_cases[i].type, type);
-  }
-}
-
 // Makes sure autocompletion happens for intranet sites that have been
 // previoulsy visited.
 TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
