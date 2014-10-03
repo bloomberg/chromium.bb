@@ -712,11 +712,6 @@ void RenderBox::autoscroll(const IntPoint& position)
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-bool RenderBox::autoscrollInProgress() const
-{
-    return frame() && frame()->page() && frame()->page()->autoscrollController().autoscrollInProgress(this);
-}
-
 // There are two kinds of renderer that can autoscroll.
 bool RenderBox::canAutoscroll() const
 {

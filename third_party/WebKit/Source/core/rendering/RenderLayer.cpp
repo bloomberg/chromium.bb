@@ -393,18 +393,6 @@ TransformationMatrix RenderLayer::renderableTransform(PaintBehavior paintBehavio
     return *m_transform;
 }
 
-RenderLayer* RenderLayer::enclosingOverflowClipLayer(IncludeSelfOrNot includeSelf) const
-{
-    const RenderLayer* layer = (includeSelf == IncludeSelf) ? this : parent();
-    while (layer) {
-        if (layer->renderer()->hasOverflowClip())
-            return const_cast<RenderLayer*>(layer);
-
-        layer = layer->parent();
-    }
-    return 0;
-}
-
 static bool checkContainingBlockChainForPagination(RenderLayerModelObject* renderer, RenderBox* ancestorColumnsRenderer)
 {
     RenderView* view = renderer->view();
@@ -2587,22 +2575,6 @@ bool RenderLayer::hasVisibleBoxDecorations() const
         return false;
 
     return hasBoxDecorationsOrBackground() || hasOverflowControls();
-}
-
-bool RenderLayer::isVisuallyNonEmpty() const
-{
-    ASSERT(!m_visibleDescendantStatusDirty);
-
-    if (hasVisibleContent() && hasNonEmptyChildRenderers())
-        return true;
-
-    if (renderer()->isReplaced() || renderer()->hasMask())
-        return true;
-
-    if (hasVisibleBoxDecorations())
-        return true;
-
-    return false;
 }
 
 void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)

@@ -146,9 +146,4 @@ void RenderLayerReflectionInfo::paint(GraphicsContext* context, const LayerPaint
     m_isPaintingInsideReflection = false;
 }
 
-String RenderLayerReflectionInfo::debugName() const
-{
-    return box().debugName() + " (reflection)";
-}
-
 } // namespace blink

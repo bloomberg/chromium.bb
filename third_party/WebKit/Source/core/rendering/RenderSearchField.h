@@ -33,7 +33,6 @@ class RenderSearchField FINAL : public RenderTextControlSingleLine {
 public:
     RenderSearchField(HTMLInputElement*);
     virtual ~RenderSearchField();
-    void stopSearchEventTimer();
 
 private:
     virtual void centerContainerIfNeeded(RenderBox*) const OVERRIDE;

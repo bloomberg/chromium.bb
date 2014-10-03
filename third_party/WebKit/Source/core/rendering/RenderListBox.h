@@ -44,8 +44,6 @@ public:
 
     int size() const;
 
-    void paintInvalidationOfScrollbarIfNeeded();
-
 private:
     HTMLSelectElement* selectElement() const;
 
@@ -57,10 +55,6 @@ private:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
 
     virtual void stopAutoscroll() OVERRIDE;
-
-    void setHasVerticalScrollbar(bool hasScrollbar);
-    PassRefPtr<Scrollbar> createScrollbar();
-    void destroyScrollbar();
 
     LayoutUnit defaultItemHeight() const;
     LayoutUnit itemHeight() const;

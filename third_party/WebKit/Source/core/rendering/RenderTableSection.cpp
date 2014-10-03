@@ -1290,10 +1290,10 @@ CellSpan RenderTableSection::dirtiedRows(const LayoutRect& damageRect) const
 
     // To issue paint invalidations for the border we might need to paint invalidate the first or last row even if they are not spanned themselves.
     if (coveredRows.start() >= m_rowPos.size() - 1 && m_rowPos[m_rowPos.size() - 1] + table()->outerBorderAfter() >= damageRect.y())
-        --coveredRows.start();
+        coveredRows.decreaseStart();
 
     if (!coveredRows.end() && m_rowPos[0] - table()->outerBorderBefore() <= damageRect.maxY())
-        ++coveredRows.end();
+        coveredRows.increaseEnd();
 
     return coveredRows;
 }
@@ -1308,10 +1308,10 @@ CellSpan RenderTableSection::dirtiedColumns(const LayoutRect& damageRect) const
     const Vector<int>& columnPos = table()->columnPositions();
     // To issue paint invalidations for the border we might need to paint invalidate the first or last column even if they are not spanned themselves.
     if (coveredColumns.start() >= columnPos.size() - 1 && columnPos[columnPos.size() - 1] + table()->outerBorderEnd() >= damageRect.x())
-        --coveredColumns.start();
+        coveredColumns.decreaseStart();
 
     if (!coveredColumns.end() && columnPos[0] - table()->outerBorderStart() <= damageRect.maxX())
-        ++coveredColumns.end();
+        coveredColumns.increaseEnd();
 
     return coveredColumns;
 }

@@ -96,7 +96,6 @@ public:
 
     enum SelectionPaintInvalidationMode { PaintInvalidationNewXOROld, PaintInvalidationNewMinusOld };
     void setSelection(RenderObject* start, int startPos, RenderObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
-    void getSelection(RenderObject*& startRenderer, int& startOffset, RenderObject*& endRenderer, int& endOffset) const;
     void clearSelection();
     RenderObject* selectionStart() const { return m_selectionStart; }
     RenderObject* selectionEnd() const { return m_selectionEnd; }
@@ -169,8 +168,6 @@ private:
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
-
-    bool shouldInvalidatePaint(const LayoutRect&) const;
 
     void layoutContent();
 #if ENABLE(ASSERT)

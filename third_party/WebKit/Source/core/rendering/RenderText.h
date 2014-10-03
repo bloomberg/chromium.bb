@@ -78,7 +78,6 @@ public:
     const LChar* characters8() const { return m_text.impl()->characters8(); }
     const UChar* characters16() const { return m_text.impl()->characters16(); }
     bool hasEmptyText() const { return m_text.isEmpty(); }
-    String substring(unsigned position, unsigned length) const { return m_text.substring(position, length); }
     UChar characterAt(unsigned) const;
     UChar uncheckedCharacterAt(unsigned) const;
     UChar operator[](unsigned i) const { return uncheckedCharacterAt(i); }
@@ -116,9 +115,6 @@ public:
     virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE;
 
-    LayoutUnit marginLeft() const { return minimumValueForLength(style()->marginLeft(), 0); }
-    LayoutUnit marginRight() const { return minimumValueForLength(style()->marginRight(), 0); }
-
     InlineTextBox* firstTextBox() const { return m_firstTextBox; }
     InlineTextBox* lastTextBox() const { return m_lastTextBox; }
 
@@ -134,8 +130,6 @@ public:
 
     bool isSecure() const { return style()->textSecurity() != TSNONE; }
     void momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacterOffset);
-
-    void checkConsistency() const;
 
     bool isAllCollapsibleWhitespace() const;
 
@@ -189,6 +183,8 @@ private:
         invalidateSelectionIfNeeded(paintInvalidationContainer);
         return InvalidationNone;
     }
+
+    void checkConsistency() const;
 
     // We put the bitfield first to minimize padding on 64-bit.
     bool m_hasBreakableChar : 1; // Whether or not we can be broken into multiple lines.

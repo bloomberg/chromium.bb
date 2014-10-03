@@ -42,8 +42,6 @@ private:
 
     virtual const char* renderName() const OVERRIDE { return "RenderMeter"; }
     virtual bool isMeter() const OVERRIDE { return true; }
-
-    double valueRatio() const;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMeter, isMeter());

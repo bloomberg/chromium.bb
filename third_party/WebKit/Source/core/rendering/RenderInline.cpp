@@ -1268,11 +1268,6 @@ void RenderInline::dirtyLineBoxes(bool fullLayout)
         m_lineBoxes.dirtyLineBoxes();
 }
 
-void RenderInline::deleteLineBoxTree()
-{
-    m_lineBoxes.deleteLineBoxTree();
-}
-
 InlineFlowBox* RenderInline::createInlineFlowBox()
 {
     return new InlineFlowBox(*this);

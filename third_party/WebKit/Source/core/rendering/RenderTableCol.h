@@ -39,7 +39,6 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     // If you have a RenderTableCol, use firstChild or lastChild instead.
     void slowFirstChild() const WTF_DELETED_FUNCTION;
@@ -51,7 +50,6 @@ public:
     void clearPreferredLogicalWidthsDirtyBits();
 
     unsigned span() const { return m_span; }
-    void setSpan(unsigned span) { m_span = span; }
 
     bool isTableColumnGroupWithColumnChildren() { return firstChild(); }
     bool isTableColumn() const { return style()->display() == TABLE_COLUMN; }

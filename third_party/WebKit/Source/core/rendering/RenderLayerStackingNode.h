@@ -89,10 +89,6 @@ public:
 
     RenderLayerStackingNode* ancestorStackingContextNode() const;
 
-    // Gets the enclosing stacking context for this node, possibly the node
-    // itself, if it is a stacking context.
-    RenderLayerStackingNode* enclosingStackingContextNode() { return isStackingContext() ? this : ancestorStackingContextNode(); }
-
     RenderLayer* layer() const { return m_layer; }
 
 #if ENABLE(ASSERT)

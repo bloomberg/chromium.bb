@@ -70,8 +70,6 @@ public:
 
     void paint(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
-    String debugName() const;
-
 private:
     RenderBox& box() { return *m_box; }
     const RenderBox& box() const { return *m_box; }

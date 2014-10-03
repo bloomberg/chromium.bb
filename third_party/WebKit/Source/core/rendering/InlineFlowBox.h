@@ -208,7 +208,6 @@ public:
 
     bool hasTextChildren() const { return m_hasTextChildren; }
     bool hasTextDescendants() const { return m_hasTextDescendants; }
-    void setHasTextChildren() { m_hasTextChildren = true; setHasTextDescendants(); }
     void setHasTextDescendants() { m_hasTextDescendants = true; }
 
     void checkConsistency() const;
@@ -220,16 +219,6 @@ public:
     LayoutRect layoutOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         return m_overflow ? m_overflow->layoutOverflowRect() : enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
-    }
-    LayoutUnit logicalLeftLayoutOverflow() const
-    {
-        return m_overflow ? (isHorizontal() ? m_overflow->layoutOverflowRect().x() : m_overflow->layoutOverflowRect().y()) :
-                            static_cast<LayoutUnit>(logicalLeft());
-    }
-    LayoutUnit logicalRightLayoutOverflow() const
-    {
-        return m_overflow ? (isHorizontal() ? m_overflow->layoutOverflowRect().maxX() : m_overflow->layoutOverflowRect().maxY()) :
-                            static_cast<LayoutUnit>(ceilf(logicalRight()));
     }
     LayoutUnit logicalTopLayoutOverflow(LayoutUnit lineTop) const
     {
@@ -305,7 +294,6 @@ private:
     void addOutlineVisualOverflow(LayoutRect& logicalVisualOverflow);
     void addTextBoxVisualOverflow(InlineTextBox*, GlyphOverflowAndFallbackFontsMap&, LayoutRect& logicalVisualOverflow);
     void addReplacedChildOverflow(const InlineBox*, LayoutRect& logicalLayoutOverflow, LayoutRect& logicalVisualOverflow);
-    void constrainToLineTopAndBottomIfNeeded(LayoutRect&) const;
 
     void setLayoutOverflow(const LayoutRect&, const LayoutRect&);
     void setVisualOverflow(const LayoutRect&, const LayoutRect&);

@@ -72,9 +72,6 @@ TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, 
 TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*, TextDirection,
     TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
-TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, RenderStyle*,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
 TextRun constructTextRun(RenderObject* context, const Font&, const LChar* characters, int length, RenderStyle*, TextDirection,
     TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 

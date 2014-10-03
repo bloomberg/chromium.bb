@@ -265,8 +265,6 @@ public:
 
 #endif
 
-    bool skipInvalidationWhenLaidOutChildren() const;
-
     // FIXME: This could be used when changing the size of a renderer without children to skip some invalidations.
     bool rendererHasNoBoxEffect() const
     {
@@ -323,6 +321,8 @@ private:
     // Gets pseudoStyle from Shadow host(in case of input elements)
     // or from Parent element.
     PassRefPtr<RenderStyle> getUncachedPseudoStyleFromParentOrShadowHost() const;
+
+    bool skipInvalidationWhenLaidOutChildren() const;
 
 public:
 #ifndef NDEBUG

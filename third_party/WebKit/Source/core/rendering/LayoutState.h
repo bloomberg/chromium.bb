@@ -48,7 +48,6 @@ public:
     explicit LayoutState(RenderObject& root);
 
     LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
-    LayoutState(RenderInline&);
 
     ~LayoutState();
 

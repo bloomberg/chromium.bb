@@ -90,14 +90,6 @@ LayoutRect AbstractInlineTextBox::bounds() const
     return m_renderText->localToAbsoluteQuad(boundaries).enclosingBoundingBox();
 }
 
-unsigned AbstractInlineTextBox::start() const
-{
-    if (!m_inlineTextBox)
-        return 0;
-
-    return m_inlineTextBox->start();
-}
-
 unsigned AbstractInlineTextBox::len() const
 {
     if (!m_inlineTextBox)

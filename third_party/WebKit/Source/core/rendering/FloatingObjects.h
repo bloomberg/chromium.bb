@@ -74,7 +74,6 @@ public:
     void setHeight(LayoutUnit height) { ASSERT(!isInPlacedTree()); m_frameRect.setHeight(height); }
 
     const LayoutRect& frameRect() const { ASSERT(isPlaced()); return m_frameRect; }
-    void setFrameRect(const LayoutRect& frameRect) { ASSERT(!isInPlacedTree()); m_frameRect = frameRect; }
 
     int paginationStrut() const { return m_paginationStrut; }
     void setPaginationStrut(int strut) { m_paginationStrut = strut; }

@@ -60,7 +60,6 @@ public:
     bool isFirstAfterPageBreak() const { return m_fragmentationData ? m_fragmentationData->m_isFirstAfterPageBreak : false; }
     void setIsFirstAfterPageBreak(bool isFirstAfterPageBreak) { ensureLineFragmentationData()->m_isFirstAfterPageBreak = isFirstAfterPageBreak; }
 
-    LayoutUnit paginatedLineWidth() const { return m_fragmentationData ? m_fragmentationData->m_paginatedLineWidth : LayoutUnit(0); }
     void setPaginatedLineWidth(LayoutUnit width) { ensureLineFragmentationData()->m_paginatedLineWidth = width; }
 
     LayoutUnit selectionTop() const;

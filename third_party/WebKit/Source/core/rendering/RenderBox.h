@@ -97,11 +97,6 @@ public:
     int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
     int pixelSnappedHeight() const { return m_frameRect.pixelSnappedHeight(); }
 
-    // These represent your location relative to your container as a physical offset.
-    // In layout related methods you almost always want the logical location (e.g. x() and y()).
-    LayoutUnit top() const { return topLeftLocation().y(); }
-    LayoutUnit left() const { return topLeftLocation().x(); }
-
     void setX(LayoutUnit x) { m_frameRect.setX(x); }
     void setY(LayoutUnit y) { m_frameRect.setY(y); }
     void setWidth(LayoutUnit width) { m_frameRect.setWidth(width); }
@@ -156,13 +151,6 @@ public:
         else
             setWidth(size);
     }
-    void setLogicalSize(const LayoutSize& size)
-    {
-        if (style()->isHorizontalWritingMode())
-            setSize(size);
-        else
-            setSize(size.transposedSize());
-    }
 
     LayoutPoint location() const { return m_frameRect.location(); }
     LayoutSize locationOffset() const { return LayoutSize(x(), y()); }
@@ -175,7 +163,6 @@ public:
     void move(LayoutUnit dx, LayoutUnit dy) { m_frameRect.move(dx, dy); }
 
     LayoutRect frameRect() const { return m_frameRect; }
-    IntRect pixelSnappedFrameRect() const { return pixelSnappedIntRect(m_frameRect); }
     void setFrameRect(const LayoutRect& rect) { m_frameRect = rect; }
 
     LayoutRect borderBoxRect() const { return LayoutRect(LayoutPoint(), size()); }
@@ -473,7 +460,6 @@ public:
     bool canBeScrolledAndHasScrollableArea() const;
     virtual bool canBeProgramaticallyScrolled() const;
     virtual void autoscroll(const IntPoint&);
-    bool autoscrollInProgress() const;
     bool canAutoscroll() const;
     IntSize calculateAutoscrollDirection(const IntPoint& windowPoint) const;
     static RenderBox* findAutoscrollable(RenderObject*);

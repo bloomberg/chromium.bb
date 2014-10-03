@@ -85,8 +85,6 @@ public:
         return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
     }
 
-    Color bgColor() const { return resolveColor(CSSPropertyBackgroundColor); }
-
     int outerBorderBefore() const;
     int outerBorderAfter() const;
     int outerBorderStart() const;

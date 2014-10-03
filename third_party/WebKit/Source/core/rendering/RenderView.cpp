@@ -669,14 +669,6 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         i->value->object()->setShouldInvalidateSelection();
 }
 
-void RenderView::getSelection(RenderObject*& startRenderer, int& startOffset, RenderObject*& endRenderer, int& endOffset) const
-{
-    startRenderer = m_selectionStart;
-    startOffset = m_selectionStartPos;
-    endRenderer = m_selectionEnd;
-    endOffset = m_selectionEndPos;
-}
-
 void RenderView::clearSelection()
 {
     // For querying RenderLayer::compositingState()

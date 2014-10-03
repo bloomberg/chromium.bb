@@ -45,7 +45,6 @@ public:
     { }
 
     const LayoutRect& rect() const { return m_rect; }
-    void setRect(const LayoutRect& rect) { m_rect = rect; }
 
     bool hasRadius() const { return m_hasRadius; }
     void setHasRadius(bool hasRadius) { m_hasRadius = hasRadius; }
@@ -61,12 +60,10 @@ public:
         if (other.hasRadius())
             m_hasRadius = true;
     }
-    void move(LayoutUnit x, LayoutUnit y) { m_rect.move(x, y); }
     void move(const LayoutSize& size) { m_rect.move(size); }
     void moveBy(const LayoutPoint& point) { m_rect.moveBy(point); }
 
     bool isEmpty() const { return m_rect.isEmpty(); }
-    bool intersects(const LayoutRect& rect) const { return m_rect.intersects(rect); }
     bool intersects(const HitTestLocation&) const;
 
 private:

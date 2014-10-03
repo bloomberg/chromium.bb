@@ -35,7 +35,6 @@ public:
 
     double position() const { return m_position; }
     double animationProgress() const;
-    double animationStartTime() const { return m_animationStartTime; }
 
     bool isDeterminate() const;
     virtual void updateFromElement() OVERRIDE;

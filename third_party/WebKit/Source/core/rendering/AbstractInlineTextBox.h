@@ -75,7 +75,6 @@ public:
 
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
     LayoutRect bounds() const;
-    unsigned start() const;
     unsigned len() const;
     Direction direction() const;
     void characterWidths(Vector<float>&) const;

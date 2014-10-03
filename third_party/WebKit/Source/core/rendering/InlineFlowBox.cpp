@@ -1111,26 +1111,6 @@ bool InlineFlowBox::boxShadowCanBeAppliedToBackground(const FillLayer& lastBackg
     return (!hasFillImage && !renderer().style()->hasBorderRadius()) || (!prevLineBox() && !nextLineBox()) || !parent();
 }
 
-void InlineFlowBox::constrainToLineTopAndBottomIfNeeded(LayoutRect& rect) const
-{
-    bool noQuirksMode = renderer().document().inNoQuirksMode();
-    if (!noQuirksMode && !hasTextChildren() && !(descendantsHaveSameLineHeightAndBaseline() && hasTextDescendants())) {
-        const RootInlineBox& rootBox = root();
-        LayoutUnit logicalTop = isHorizontal() ? rect.y() : rect.x();
-        LayoutUnit logicalHeight = isHorizontal() ? rect.height() : rect.width();
-        LayoutUnit bottom = std::min(rootBox.lineBottom(), logicalTop + logicalHeight);
-        logicalTop = std::max(rootBox.lineTop(), logicalTop);
-        logicalHeight = bottom - logicalTop;
-        if (isHorizontal()) {
-            rect.setY(logicalTop);
-            rect.setHeight(logicalHeight);
-        } else {
-            rect.setX(logicalTop);
-            rect.setWidth(logicalHeight);
-        }
-    }
-}
-
 InlineBox* InlineFlowBox::firstLeafChild() const
 {
     InlineBox* leaf = 0;

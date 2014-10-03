@@ -113,11 +113,6 @@ public:
     void attachRegion();
     void detachRegion();
 
-    // This method represents the logical height of the entire flow thread portion used by the region or set.
-    // For RenderRegions it matches logicalPaginationHeight(), but for sets it is the height of all the pages
-    // or columns added together.
-    LayoutUnit logicalHeightOfAllFlowThreadContent() const { return logicalHeightInFlowThread(); }
-
     void paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect) const;
 
     // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the

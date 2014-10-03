@@ -50,7 +50,6 @@ public:
     virtual bool errorOccurred() const OVERRIDE { return m_styleImage->errorOccurred(); }
 
     virtual void setContainerSizeForRenderer(const IntSize&) OVERRIDE;
-    virtual bool usesImageContainerSize() const OVERRIDE { return m_styleImage->usesImageContainerSize(); }
     virtual bool imageHasRelativeWidth() const OVERRIDE { return m_styleImage->imageHasRelativeWidth(); }
     virtual bool imageHasRelativeHeight() const OVERRIDE { return m_styleImage->imageHasRelativeHeight(); }
 

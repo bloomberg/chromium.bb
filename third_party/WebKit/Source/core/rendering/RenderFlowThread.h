@@ -125,32 +125,6 @@ protected:
 
     RenderMultiColumnSetList m_multiColumnSetList;
 
-    class RenderMultiColumnSetRange {
-    public:
-        RenderMultiColumnSetRange()
-        {
-            setRange(0, 0);
-        }
-
-        RenderMultiColumnSetRange(RenderMultiColumnSet* start, RenderMultiColumnSet* end)
-        {
-            setRange(start, end);
-        }
-
-        void setRange(RenderMultiColumnSet* start, RenderMultiColumnSet* end)
-        {
-            m_startColumnSet = start;
-            m_endColumnSet = end;
-        }
-
-        RenderMultiColumnSet* startColumnSet() const { return m_startColumnSet; }
-        RenderMultiColumnSet* endColumnSet() const { return m_endColumnSet; }
-
-    private:
-        RenderMultiColumnSet* m_startColumnSet;
-        RenderMultiColumnSet* m_endColumnSet;
-    };
-
     typedef PODInterval<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetInterval;
     typedef PODIntervalTree<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetIntervalTree;
 

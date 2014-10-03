@@ -54,14 +54,12 @@ public:
     bool ignoreClipping() const { return m_requestType & IgnoreClipping; }
     bool svgClipContent() const { return m_requestType & SVGClipContent; }
     bool touchEvent() const { return m_requestType & TouchEvent; }
-    bool mouseEvent() const { return !touchEvent(); }
     bool allowsChildFrameContent() const { return m_requestType & AllowChildFrameContent; }
     bool isChildFrameHitTest() const { return m_requestType & ChildFrameHitTest; }
     bool ignorePointerEventsNone() const { return m_requestType & IgnorePointerEventsNone; }
 
     // Convenience functions
     bool touchMove() const { return move() && touchEvent(); }
-    bool touchRelease() const { return release() && touchEvent(); }
 
     HitTestRequestType type() const { return m_requestType; }
 

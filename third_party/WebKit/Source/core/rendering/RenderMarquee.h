@@ -68,8 +68,6 @@ public:
 
     int computePosition(EMarqueeDirection, bool stopAtClientEdge);
 
-    void setEnd(int end) { m_end = end; }
-
     void start();
     void suspend();
     void stop();

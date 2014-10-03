@@ -178,8 +178,6 @@ public:
 
     bool hasBoxDecorationsOrBackground() const;
     bool hasVisibleBoxDecorations() const;
-    // Returns true if this layer has visible content (ignoring any child layers).
-    bool isVisuallyNonEmpty() const;
     // True if this layer container renderers that paint.
     bool hasNonEmptyChildRenderers() const;
 
@@ -194,8 +192,6 @@ public:
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
     RenderLayer* enclosingPositionedAncestor() const;
-
-    RenderLayer* enclosingOverflowClipLayer(IncludeSelfOrNot = IncludeSelf) const;
 
     bool isPaintInvalidationContainer() const;
 
@@ -546,7 +542,6 @@ private:
 
     bool hasOverflowControls() const;
 
-    void setAncestorChainHasSelfPaintingLayerDescendant();
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
     void updateLayerPositionRecursive();
