@@ -957,6 +957,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
     // Check polymorphic classes that are GC-derived or have a trace method.
     if (info->record()->hasDefinition() && info->record()->isPolymorphic()) {
+      // TODO: Check classes that inherit a trace method.
       CXXMethodDecl* trace = info->GetTraceMethod();
       if (trace || info->IsGCDerived())
         CheckPolymorphicClass(info, trace);

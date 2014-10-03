@@ -4,6 +4,11 @@
 
 // This file defines the names used by GC infrastructure.
 
+// TODO: Restructure the name determination to use fully qualified names (ala,
+// blink::Foo) so that the plugin can be enabled for all of chromium. Doing so
+// would allow us to catch errors with structures outside of blink that might
+// have unsafe pointers to GC allocated blink structures.
+
 #ifndef TOOLS_BLINK_GC_PLUGIN_CONFIG_H_
 #define TOOLS_BLINK_GC_PLUGIN_CONFIG_H_
 
@@ -94,7 +99,7 @@ class Config {
 
   // Following http://crrev.com/369633033 (Blink r177436),
   // ignore blink::ScriptWrappable's destructor.
-  // FIXME: remove when its non-Oilpan destructor is removed.
+  // TODO: remove when its non-Oilpan destructor is removed.
   static bool HasIgnorableDestructor(const std::string& ns,
                                      const std::string& name) {
     return ns == "blink" && name == "ScriptWrappable";
