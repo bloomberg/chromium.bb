@@ -2065,16 +2065,9 @@
             '../components/components.gyp:wifi_test_support',
           ],
         }],
-        ['chromeos == 1', {
+        ['chromeos == 1 or OS=="win" or OS == "mac"', {
           'sources': [
             'browser/extensions/api/networking_private/networking_private_apitest.cc',
-            'browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc',
-          ],
-        }],
-        ['OS=="win" or OS == "mac"', {
-          'sources': [
-            'browser/extensions/api/networking_private/networking_private_apitest.cc',
-            'browser/extensions/api/networking_private/networking_private_service_client_apitest.cc',
           ],
         }],
         ['toolkit_views==1', {

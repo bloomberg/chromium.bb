@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: the expectations in this test are shared by both the Chrome OS and
-// Win/Mac (ServiceClient) implementations. TODO(stevenjb): Set up a way for
-// the test code to specify the correct expectations.
-
 var callbackPass = chrome.test.callbackPass;
 var callbackFail = chrome.test.callbackFail;
 var assertTrue = chrome.test.assertTrue;
