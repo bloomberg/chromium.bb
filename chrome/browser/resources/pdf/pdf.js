@@ -218,6 +218,13 @@ PDFViewer.prototype = {
           this.viewport.position = position;
         }
         return;
+      case 65:  // a key.
+        if (e.ctrlKey || e.metaKey) {
+          this.plugin_.postMessage({
+            type: 'selectAll',
+          });
+        }
+        return;
       case 83:  // s key.
         if (e.ctrlKey || e.metaKey) {
           // Simulate a click on the button so that the <a download ...>

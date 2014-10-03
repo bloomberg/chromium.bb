@@ -127,6 +127,8 @@ const char kJSEmailBody[] = "body";
 // Rotation (Page -> Plugin)
 const char kJSRotateClockwiseType[] = "rotateClockwise";
 const char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
+// Select all text in the document (Page -> Plugin)
+const char kJSSelectAllType[] = "selectAll";
 
 const int kFindResultCooldownMs = 100;
 
@@ -381,6 +383,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
     RotateCounterclockwise();
+  } else if (type == kJSSelectAllType) {
+    engine_->SelectAll();
   } else if (type == kJSResetPrintPreviewModeType &&
              dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
              dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
@@ -487,16 +491,6 @@ bool OutOfProcessInstance::HandleInputEvent(
 
   // TODO(raymes): Implement this scroll behavior in JS:
   // When click+dragging, scroll the document correctly.
-
-  if (event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN &&
-      event.GetModifiers() & kDefaultKeyModifier) {
-    pp::KeyboardInputEvent keyboard_event(event);
-    switch (keyboard_event.GetKeyCode()) {
-      case 'A':
-        engine_->SelectAll();
-        return true;
-    }
-  }
 
   // Return true for unhandled clicks so the plugin takes focus.
   return (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN);
