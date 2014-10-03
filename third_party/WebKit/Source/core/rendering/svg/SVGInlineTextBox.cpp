@@ -28,6 +28,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/paint/InlinePainter.h"
+#include "core/paint/InlineTextBoxPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
@@ -263,7 +264,7 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     RenderStyle* style = parentRenderer.style();
     ASSERT(style);
 
-    paintDocumentMarkers(paintInfo.context, paintOffset, style, textRenderer.scaledFont(), true);
+    InlineTextBoxPainter(*this).paintDocumentMarkers(paintInfo.context, paintOffset, style, textRenderer.scaledFont(), true);
 
     const SVGRenderStyle& svgStyle = style->svgStyle();
 

@@ -1508,6 +1508,8 @@
             'paint/InlineFlowBoxPainter.h',
             'paint/InlinePainter.cpp',
             'paint/InlinePainter.h',
+            'paint/InlineTextBoxPainter.cpp',
+            'paint/InlineTextBoxPainter.h',
             'paint/LayerPainter.cpp',
             'paint/LayerPainter.h',
             'paint/LineBoxListPainter.cpp',

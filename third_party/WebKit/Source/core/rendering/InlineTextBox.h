@@ -90,6 +90,10 @@ public:
     LayoutUnit logicalTopVisualOverflow() const { return logicalOverflowRect().y(); }
     LayoutUnit logicalBottomVisualOverflow() const { return logicalOverflowRect().maxY(); }
 
+    // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
+    TextRun constructTextRun(RenderStyle*, const Font&, StringBuilder* charactersWithHyphen = 0) const;
+    TextRun constructTextRun(RenderStyle*, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
+
 #ifndef NDEBUG
     virtual void showBox(int = 0) const OVERRIDE;
     virtual const char* boxName() const OVERRIDE;
@@ -97,14 +101,6 @@ public:
 
     enum RotationDirection { Counterclockwise, Clockwise };
     static AffineTransform rotation(const FloatRect& boxRect, RotationDirection);
-private:
-    LayoutUnit selectionTop();
-    LayoutUnit selectionBottom();
-    LayoutUnit selectionHeight();
-
-    // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
-    TextRun constructTextRun(RenderStyle*, const Font&, StringBuilder* charactersWithHyphen = 0) const;
-    TextRun constructTextRun(RenderStyle*, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
 
 public:
     TextRun constructTextRunForInspector(RenderStyle*, const Font&) const;
@@ -113,6 +109,10 @@ public:
     virtual LayoutRect localSelectionRect(int startPos, int endPos);
     bool isSelected(int startPos, int endPos) const;
     void selectionStartEnd(int& sPos, int& ePos) const;
+
+    // These functions both paint markers and update the DocumentMarker's renderedRect.
+    virtual void paintDocumentMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&, bool grammar);
+    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
 
 protected:
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
@@ -147,7 +147,6 @@ public:
     virtual int caretMinOffset() const OVERRIDE FINAL;
     virtual int caretMaxOffset() const OVERRIDE FINAL;
 
-private:
     float textPos() const; // returns the x position relative to the left start of the text line.
 
 public:
@@ -169,23 +168,7 @@ private:
     unsigned short m_truncation; // Where to truncate when text overflow is applied.  We use special constants to
                       // denote no truncation (the whole run paints) and full truncation (nothing paints at all).
 
-    unsigned underlinePaintStart(const CompositionUnderline&);
-    unsigned underlinePaintEnd(const CompositionUnderline&);
-
-protected:
-    void paintSingleCompositionBackgroundRun(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, Color backgroundColor, int startPos, int endPos);
-    void paintCompositionBackgrounds(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, bool useCustomUnderlines);
-    void paintDocumentMarkers(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, bool background);
-    void paintCompositionUnderline(GraphicsContext*, const FloatPoint& boxOrigin, const CompositionUnderline&);
-
-    // These functions both paint markers and update the DocumentMarker's renderedRect.
-    virtual void paintDocumentMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&, bool grammar);
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
-
 private:
-    void paintDecoration(GraphicsContext*, const FloatPoint& boxOrigin, TextDecoration);
-    void paintSelection(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, Color textColor);
-
     TextRun::ExpansionBehavior expansionBehavior() const
     {
         return (canHaveLeadingExpansion() ? TextRun::AllowLeadingExpansion : TextRun::ForbidLeadingExpansion)
