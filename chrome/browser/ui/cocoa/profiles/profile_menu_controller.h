@@ -22,7 +22,7 @@ class Observer;
 @interface ProfileMenuController : NSObject {
  @private
   // The controller for the profile submenu.
-  scoped_ptr<AvatarMenu> menu_;
+  scoped_ptr<AvatarMenu> avatarMenu_;
 
   // An observer to be notified when the active browser changes and when the
   // menu model changes.
