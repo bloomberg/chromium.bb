@@ -1021,9 +1021,6 @@ public:
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
-    bool onlyNeededPositionedMovementLayout() const { return m_bitfields.onlyNeededPositionedMovementLayout(); }
-    void setOnlyNeededPositionedMovementLayout(bool b) { m_bitfields.setOnlyNeededPositionedMovementLayout(b); }
-
     virtual void clearPaintInvalidationState(const PaintInvalidationState&);
 
     // layoutDidGetCalled indicates whether this render object was re-laid-out
@@ -1127,7 +1124,7 @@ protected:
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
     {
-        return onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+        return neededLayoutBecauseOfChildren() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 #endif
 
@@ -1204,7 +1201,6 @@ private:
             // use the other layout flags to detect the same cases. crbug.com/370118
             , m_mayNeedPaintInvalidation(false)
             , m_shouldInvalidateSelection(false)
-            , m_onlyNeededPositionedMovementLayout(false)
             , m_neededLayoutBecauseOfChildren(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
@@ -1241,12 +1237,11 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 14 in the second.
+        // 32 bits have been used in the first word, and 13 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
-        ADD_BOOLEAN_BITFIELD(onlyNeededPositionedMovementLayout, OnlyNeededPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
@@ -1417,7 +1412,6 @@ inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior
 
 inline void RenderObject::clearNeedsLayout()
 {
-    setOnlyNeededPositionedMovementLayout(needsPositionedMovementLayoutOnly());
     setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
     setLayoutDidGetCalled(true);
     setSelfNeedsLayout(false);

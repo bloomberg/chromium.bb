@@ -3115,7 +3115,6 @@ void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& pai
     // booleans that are cleared below.
     ASSERT(paintInvalidationState.forceCheckForPaintInvalidation() || paintInvalidationStateIsDirty());
     setShouldDoFullPaintInvalidation(false);
-    setOnlyNeededPositionedMovementLayout(false);
     setNeededLayoutBecauseOfChildren(false);
     setShouldInvalidateOverflowForPaint(false);
     setLayoutDidGetCalled(false);
