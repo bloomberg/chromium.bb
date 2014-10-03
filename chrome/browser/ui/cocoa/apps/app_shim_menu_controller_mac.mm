@@ -242,8 +242,10 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   // -[AppControllerMac adjustCloseWindowMenuItemKeyEquivalent:] sets it to
   // "W" (Cmd+Shift+w) when a tabbed window has focus; it will change it back
   // to Cmd+w when a non-tabbed window has focus.
-  [[[fileMenuItem_ submenu] itemWithTag:IDC_CLOSE_WINDOW]
-      setKeyEquivalent:@"w"];
+  NSMenuItem* closeWindowMenuItem =
+      [[fileMenuItem_ submenu] itemWithTag:IDC_CLOSE_WINDOW];
+  [closeWindowMenuItem setKeyEquivalent:@"w"];
+  [closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
 
   // Edit menu. This copies the menu entirely and removes
   // "Paste and Match Style" and "Find". This is because the last two items,
