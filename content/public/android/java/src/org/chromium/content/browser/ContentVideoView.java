@@ -426,10 +426,8 @@ public class ContentVideoView extends FrameLayout
             return null;
         }
         ContentVideoView videoView = new ContentVideoView(context, nativeContentVideoView, client);
-        if (videoView.getContentVideoViewClient().onShowCustomView(videoView)) {
-            return videoView;
-        }
-        return null;
+        client.enterFullscreenVideo(videoView);
+        return videoView;
     }
 
     private static boolean isActivityContext(Context context) {
@@ -483,7 +481,7 @@ public class ContentVideoView extends FrameLayout
             setVisibility(View.GONE);
 
             // To prevent re-entrance, call this after removeSurfaceView.
-            mClient.onDestroyContentVideoView();
+            mClient.exitFullscreenVideo();
         }
         if (nativeViewDestroyed) {
             mNativeContentVideoView = 0;

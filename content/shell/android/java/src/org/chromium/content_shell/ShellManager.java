@@ -49,15 +49,14 @@ public class ShellManager extends FrameLayout {
             public ContentVideoViewClient getContentVideoViewClient() {
                 return new ActivityContentVideoViewClient((Activity) context) {
                     @Override
-                    public boolean onShowCustomView(View view) {
-                        boolean success = super.onShowCustomView(view);
+                    public void enterFullscreenVideo(View view) {
+                        super.enterFullscreenVideo(view);
                         setOverlayVideoMode(true);
-                        return success;
                     }
 
                     @Override
-                    public void onDestroyContentVideoView() {
-                        super.onDestroyContentVideoView();
+                    public void exitFullscreenVideo() {
+                        super.exitFullscreenVideo();
                         setOverlayVideoMode(false);
                     }
                 };

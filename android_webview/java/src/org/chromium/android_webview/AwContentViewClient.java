@@ -18,54 +18,7 @@ import org.chromium.content.browser.ContentViewClient;
 /**
  * ContentViewClient implementation for WebView
  */
-public class AwContentViewClient extends ContentViewClient {
-
-    private class AwContentVideoViewClient implements ContentVideoViewClient {
-        @Override
-        public boolean onShowCustomView(View view) {
-            final FrameLayout viewGroup = new FrameLayout(mContext);
-            viewGroup.addView(view);
-            viewGroup.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-                @Override
-                public void onViewDetachedFromWindow(View v) {
-                    // Intentional no-op (see onDestroyContentVideoView).
-                }
-
-                @Override
-                public void onViewAttachedToWindow(View v) {
-                    if (mAwContents.isFullScreen()) {
-                        return;
-                    }
-                    View fullscreenView = mAwContents.enterFullScreen();
-                    if (fullscreenView != null) {
-                        viewGroup.addView(fullscreenView);
-                    }
-                }
-            });
-            WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
-                @Override
-                public void onCustomViewHidden() {
-                    ContentVideoView contentVideoView = ContentVideoView.getContentVideoView();
-                    if (contentVideoView != null)
-                        contentVideoView.exitFullscreen(false);
-                }
-            };
-            mAwContentsClient.onShowCustomView(viewGroup, cb);
-            return true;
-        }
-
-        @Override
-        public void onDestroyContentVideoView() {
-            mAwContents.exitFullScreen();
-            mAwContentsClient.onHideCustomView();
-        }
-
-        @Override
-        public View getVideoLoadingProgressView() {
-            return mAwContentsClient.getVideoLoadingProgressView();
-        }
-    }
-
+public class AwContentViewClient extends ContentViewClient implements ContentVideoViewClient {
     private AwContentsClient mAwContentsClient;
     private AwSettings mAwSettings;
     private AwContents mAwContents;
@@ -103,12 +56,55 @@ public class AwContentViewClient extends ContentViewClient {
 
     @Override
     public final ContentVideoViewClient getContentVideoViewClient() {
-        return new AwContentVideoViewClient();
+        return this;
     }
 
     @Override
     public boolean shouldBlockMediaRequest(String url) {
         return mAwSettings != null ?
                 mAwSettings.getBlockNetworkLoads() && URLUtil.isNetworkUrl(url) : true;
+    }
+
+    @Override
+    public void enterFullscreenVideo(View view) {
+        final FrameLayout viewGroup = new FrameLayout(mContext);
+        viewGroup.addView(view);
+        viewGroup.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                // Intentional no-op (see onDestroyContentVideoView).
+            }
+
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                if (mAwContents.isFullScreen()) {
+                    return;
+                }
+                View fullscreenView = mAwContents.enterFullScreen();
+                if (fullscreenView != null) {
+                    viewGroup.addView(fullscreenView);
+                }
+            }
+        });
+        WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
+            @Override
+            public void onCustomViewHidden() {
+                ContentVideoView contentVideoView = ContentVideoView.getContentVideoView();
+                if (contentVideoView != null)
+                    contentVideoView.exitFullscreen(false);
+            }
+        };
+        mAwContentsClient.onShowCustomView(viewGroup, cb);
+    }
+
+    @Override
+    public void exitFullscreenVideo() {
+        mAwContents.exitFullScreen();
+        mAwContentsClient.onHideCustomView();
+    }
+
+    @Override
+    public View getVideoLoadingProgressView() {
+        return mAwContentsClient.getVideoLoadingProgressView();
     }
 }

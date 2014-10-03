@@ -7,28 +7,30 @@ package org.chromium.content.browser;
 import android.view.View;
 
 /**
- *  Main callback class used by ContentVideoView.
+ *  Main callback class used by {@link ContentVideoView}.
  *
- *  This contains the superset of callbacks that must be implemented by the embedder.
+ *  This contains the superset of callbacks that must be implemented by the embedder
+ *  to support fullscreen video.
  *
- *  onShowCustomView and onDestoryContentVideoView must be implemented,
- *  getVideoLoadingProgressView() is optional, and may return null if not required.
+ *  {@link #enterFullscreenVideo(View)} and {@link #exitFullscreenVideo()} must be implemented,
+ *  {@link #getVideoLoadingProgressView()} is optional, and may return null if not required.
  *
  *  The implementer is responsible for displaying the Android view when
- *  {@link #onShowCustomView(View)} is called.
+ *  {@link #enterFullscreenVideo(View)} is called.
  */
 public interface ContentVideoViewClient {
     /**
-     * Called when the video view is ready to be shown. Must be implemented.
-     * @param view The view to show.
-     * @return whether the video is actually shown.
+     * Called when the {@link ContentVideoView}, which contains the fullscreen video,
+     * is ready to be shown. Must be implemented.
+     * @param view The view containing the fullscreen video that embedders must show.
      */
-    public boolean onShowCustomView(View view);
+    public void enterFullscreenVideo(View view);
 
     /**
-     * Called when it's time to destroy the video view. Must be implemented.
+     * Called to exit fullscreen video. Embedders must stop showing the view given in
+     * {@link #enterFullscreenVideo(View)}. Must be implemented.
      */
-    public void onDestroyContentVideoView();
+    public void exitFullscreenVideo();
 
     /**
      * Allows the embedder to replace the view indicating that the video is loading.
