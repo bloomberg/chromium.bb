@@ -696,11 +696,13 @@ def trigger(
   return tasks, task_name
 
 
-def decorate_shard_output(shard_index, result, shard_exit_code):
+def decorate_shard_output(swarming, shard_index, result, shard_exit_code):
   """Returns wrapped output for swarming task shard."""
-  tag_shard = '%d (Bot: %s)' % (shard_index, result['bot_id'])
-  tag_header = 'Shard %s' % tag_shard
-  tag_footer = 'End of shard %s; exit code %d' % (tag_shard, shard_exit_code)
+  url = '%s/user/task/%s' % (swarming, result['id'])
+  duration = sum(i for i in result['durations'] if i)
+  tag_header = 'Shard %d  %s' % (shard_index, url)
+  tag_footer = 'End of shard %d  Duration: %.1fs  Bot: %s  Exit code %d' % (
+      shard_index, duration, result['bot_id'], shard_exit_code)
 
   tag_len = max(len(tag_header), len(tag_footer))
   dash_pad = '+-%s-+\n' % ('-' * tag_len)
@@ -714,7 +716,7 @@ def decorate_shard_output(shard_index, result, shard_exit_code):
 
 
 def collect(
-    url, task_name, task_ids, timeout, decorate, print_status_updates,
+    swarming, task_name, task_ids, timeout, decorate, print_status_updates,
     task_summary_json, task_output_dir):
   """Retrieves results of a Swarming task."""
   # Collect summary JSON and output files (if task_output_dir is not None).
@@ -722,28 +724,24 @@ def collect(
       task_output_dir, task_name, len(task_ids))
 
   seen_shards = set()
-  exit_codes = []
+  exit_code = 0
   try:
     for index, output in yield_results(
-        url, task_ids, timeout, None, print_status_updates, output_collector):
+        swarming, task_ids, timeout, None, print_status_updates,
+        output_collector):
       seen_shards.add(index)
 
       # Grab first non-zero exit code as an overall shard exit code.
-      shard_exit_code = 0
-      for code in output['exit_codes']:
-        if code:
-          shard_exit_code = code
-          break
-      exit_codes.append(shard_exit_code)
+      shard_exit_code = sorted(output['exit_codes'], key=lambda x: not x)[0]
+      if shard_exit_code:
+        exit_code = shard_exit_code
 
       if decorate:
-        print(decorate_shard_output(index, output, shard_exit_code))
+        print(decorate_shard_output(swarming, index, output, shard_exit_code))
         if len(seen_shards) < len(task_ids):
           print('')
       else:
-        print('%s: %s' %
-            (output['bot_id'], ','.join(str(e) for e in output['exit_codes'])))
-        # TODO(maruel): Print the command.
+        print('%s: %s %d' % (output['bot_id'], output['id'], shard_exit_code))
         for output in output['outputs']:
           if not output:
             continue
@@ -761,7 +759,7 @@ def collect(
         ', '.join(map(str, missing_shards)))
     return 1
 
-  return int(bool(any(exit_codes)))
+  return exit_code
 
 
 def add_filter_options(parser):

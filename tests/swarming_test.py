@@ -61,7 +61,7 @@ def get_results(keys, output_collector=None):
 def collect(url, task_name, task_ids):
   """Simplifies the call to swarming.collect()."""
   return swarming.collect(
-    url=url,
+    swarming=url,
     task_name=task_name,
     task_ids=task_ids,
     timeout=10,
@@ -372,51 +372,53 @@ class TestGetResults(TestCase):
 
   def test_collect_nothing(self):
     self.mock(swarming, 'yield_results', lambda *_: [])
-    self.assertEqual(1, collect('url', 'name', ['10100', '10200']))
+    self.assertEqual(
+        1, collect('https://localhost:1', 'name', ['10100', '10200']))
     self._check_output('', 'Results from some shards are missing: 0, 1\n')
 
   def test_collect_success(self):
     data = gen_result_response(outputs=['Foo'])
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(0, collect('url', 'name', ['10100']))
+    self.assertEqual(0, collect('https://localhost:1', 'name', ['10100']))
     self._check_output(
-        '+-------------------------------------------+\n'
-        '| Shard 0 (Bot: swarm6)                     |\n'
-        '+-------------------------------------------+\n'
+        '+----------------------------------------------------------+\n'
+        '| Shard 0  https://localhost:1/user/task/10100             |\n'
+        '+----------------------------------------------------------+\n'
         'Foo\n'
-        '+-------------------------------------------+\n'
-        '| End of shard 0 (Bot: swarm6); exit code 0 |\n'
-        '+-------------------------------------------+\n',
+        '+----------------------------------------------------------+\n'
+        '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code 0 |\n'
+        '+----------------------------------------------------------+\n',
         '')
 
   def test_collect_fail(self):
     data = gen_result_response(outputs=['Foo'], exit_codes=[-9])
     data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(1, collect('url', 'name', ['10100']))
+    self.assertEqual(-9, collect('https://localhost:1', 'name', ['10100']))
     self._check_output(
-        '+--------------------------------------------+\n'
-        '| Shard 0 (Bot: swarm6)                      |\n'
-        '+--------------------------------------------+\n'
+        '+-----------------------------------------------------------+\n'
+        '| Shard 0  https://localhost:1/user/task/10100              |\n'
+        '+-----------------------------------------------------------+\n'
         'Foo\n'
-        '+--------------------------------------------+\n'
-        '| End of shard 0 (Bot: swarm6); exit code -9 |\n'
-        '+--------------------------------------------+\n',
+        '+-----------------------------------------------------------+\n'
+        '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code -9 |\n'
+        '+-----------------------------------------------------------+\n',
         '')
 
   def test_collect_one_missing(self):
     data = gen_result_response(outputs=['Foo'])
     data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(1, collect('url', 'name', ['10100', '10200']))
+    self.assertEqual(
+        1, collect('https://localhost:1', 'name', ['10100', '10200']))
     self._check_output(
-        '+-------------------------------------------+\n'
-        '| Shard 0 (Bot: swarm6)                     |\n'
-        '+-------------------------------------------+\n'
+        '+----------------------------------------------------------+\n'
+        '| Shard 0  https://localhost:1/user/task/10100             |\n'
+        '+----------------------------------------------------------+\n'
         'Foo\n'
-        '+-------------------------------------------+\n'
-        '| End of shard 0 (Bot: swarm6); exit code 0 |\n'
-        '+-------------------------------------------+\n'
+        '+----------------------------------------------------------+\n'
+        '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code 0 |\n'
+        '+----------------------------------------------------------+\n'
         '\n',
         'Results from some shards are missing: 1\n')
 
