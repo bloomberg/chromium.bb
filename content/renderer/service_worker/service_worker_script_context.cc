@@ -227,7 +227,13 @@ void ServiceWorkerScriptContext::OnPostMessage(
     }
   }
 
+  // dispatchMessageEvent is expected to execute onmessage function
+  // synchronously.
+  base::TimeTicks before = base::TimeTicks::Now();
   proxy_->dispatchMessageEvent(message, ports);
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.MessageEventExecutionTime",
+      base::TimeTicks::Now() - before);
 }
 
 void ServiceWorkerScriptContext::OnDidGetClientDocuments(
