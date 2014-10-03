@@ -11,7 +11,6 @@
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/app_window/app_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -19,14 +18,13 @@
 namespace athena {
 
 // TODO(mukai): specifies the same accelerators of WebActivity.
-AppActivity::AppActivity(extensions::AppWindow* app_window,
+AppActivity::AppActivity(const std::string& app_id,
                          views::WebView* web_view)
-    : app_id_(app_window->extension_id()),
+    : app_id_(app_id),
       web_view_(web_view),
       current_state_(ACTIVITY_UNLOADED),
       app_activity_registry_(NULL) {
-  DCHECK_EQ(app_window->web_contents(), web_view->GetWebContents());
-  Observe(app_window->web_contents());
+  Observe(web_view->GetWebContents());
 }
 
 scoped_ptr<ContentProxy> AppActivity::GetContentProxy() {

@@ -12,7 +12,6 @@ include_rules = [
   "+components/renderer_context_menu",
   "+components/web_modal",
   "+content/public",
-  "+extensions/browser/app_window/app_window.h",
   "+net/url_request",
   "+ui/aura",
   "+ui/base",

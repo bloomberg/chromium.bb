@@ -39,7 +39,7 @@ Activity* SampleActivityFactory::CreateWebActivity(
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
-    extensions::AppWindow* app_window,
+    const std::string& app_id,
     views::WebView* web_view) {
   DCHECK(!web_view);
   Activity* activity = new SampleActivity(

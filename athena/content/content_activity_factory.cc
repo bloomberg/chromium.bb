@@ -26,9 +26,9 @@ Activity* ContentActivityFactory::CreateWebActivity(
 }
 
 Activity* ContentActivityFactory::CreateAppActivity(
-    extensions::AppWindow* app_window,
+    const std::string& app_id,
     views::WebView* web_view) {
-  Activity* activity = new AppActivity(app_window, web_view);
+  Activity* activity = new AppActivity(app_id, web_view);
   ActivityManager::Get()->AddActivity(activity);
   return activity;
 }

@@ -22,7 +22,7 @@ extensions::NativeAppWindow* AthenaAppWindowClientBase::CreateNativeAppWindow(
     const extensions::AppWindow::CreateParams& params) {
   AthenaNativeAppWindowViews* native_window = new AthenaNativeAppWindowViews;
   native_window->Init(app_window, params);
-  ActivityFactory::Get()->CreateAppActivity(app_window,
+  ActivityFactory::Get()->CreateAppActivity(app_window->extension_id(),
                                             native_window->GetWebView());
   return native_window;
 }

@@ -5,15 +5,13 @@
 #ifndef ATHENA_ACTIVITY_PUBLIC_ACTIVITY_FACTORY_H_
 #define ATHENA_ACTIVITY_PUBLIC_ACTIVITY_FACTORY_H_
 
+#include <string>
+
 #include "athena/athena_export.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
-}
-
-namespace extensions {
-class AppWindow;
 }
 
 namespace views {
@@ -42,9 +40,9 @@ class ATHENA_EXPORT ActivityFactory {
                                       const base::string16& title,
                                       const GURL& url) = 0;
 
-  // Create an activity of an app with |app_window| for chrome environment and
+  // Create an activity of an app with |app_id| and
   // |web_view| that will host the content.
-  virtual Activity* CreateAppActivity(extensions::AppWindow* app_window,
+  virtual Activity* CreateAppActivity(const std::string& app_id,
                                       views::WebView* web_view) = 0;
 };
 

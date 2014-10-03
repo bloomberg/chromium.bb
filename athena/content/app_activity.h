@@ -11,10 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
-namespace extensions {
-class AppWindow;
-}
-
 namespace views {
 class WebView;
 }
@@ -25,12 +21,11 @@ class AppActivityRegistry;
 class ContentProxy;
 
 // The activity object for a hosted V2 application.
-// TODO(oshima): Move this to athena/extensions
 class AppActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  AppActivity(extensions::AppWindow* app_window, views::WebView* web_view);
+  AppActivity(const std::string& app_id, views::WebView* web_view);
 
   // Gets the content proxy so that the AppActivityProxy can take it over.
   scoped_ptr<ContentProxy> GetContentProxy();
