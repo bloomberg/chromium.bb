@@ -9,6 +9,7 @@
 #include "mojo/apps/js/js_app.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 
 namespace mojo {
 namespace apps {
@@ -35,12 +36,11 @@ class StandaloneApplicationDelegateImpl : public ApplicationDelegateImpl {
   virtual void Initialize(ApplicationImpl* app) override {
     ApplicationDelegateImpl::Initialize(app);
 
-    // TODO(hansmuller): Find the JS source code path in app->args().
-    base::FilePath path(base::FilePath::FromUTF8Unsafe(
-        "/builds/dev/src/mojo/apps/js/main.js"));
-
-    scoped_ptr<JSApp> js_app(new StandaloneJSApp(this, path));
-    StartJSApp(js_app.Pass());
+    for (size_t i = 1; i < app->args().size(); i++) {
+      base::FilePath path(base::FilePath::FromUTF8Unsafe(app->args()[i]));
+      scoped_ptr<JSApp> js_app(new StandaloneJSApp(this, path));
+      StartJSApp(js_app.Pass());
+    }
   }
 };
 

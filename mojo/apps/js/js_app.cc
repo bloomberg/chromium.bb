@@ -72,8 +72,6 @@ void JSApp::Run() {
   std::string file_name;
   Load(&source, &file_name);  // TODO(hansmuller): handle Load() failure.
 
-  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                 gin::ArrayBufferAllocator::SharedInstance());
   isolate_holder_.reset(new gin::IsolateHolder());
   isolate_holder_->AddRunMicrotasksObserver();
 

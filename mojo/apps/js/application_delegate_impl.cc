@@ -4,6 +4,8 @@
 
 #include "mojo/apps/js/application_delegate_impl.h"
 
+#include "gin/array_buffer.h"
+#include "gin/public/isolate_holder.h"
 #include "mojo/apps/js/js_app.h"
 #include "mojo/public/cpp/application/application_impl.h"
 
@@ -16,6 +18,8 @@ ApplicationDelegateImpl::ApplicationDelegateImpl()
 
 void ApplicationDelegateImpl::Initialize(ApplicationImpl* app) {
   application_impl_ = app;
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
 }
 
 ApplicationDelegateImpl::~ApplicationDelegateImpl() {
