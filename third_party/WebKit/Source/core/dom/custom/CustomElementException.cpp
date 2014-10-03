@@ -80,10 +80,6 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The prototype is already in-use as an interface prototype object.");
         return;
 
-    case PrototypeNotAnObject:
-        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The prototype option is not an object.");
-        return;
-
     case TypeAlreadyRegistered:
         exceptionState.throwDOMException(NotSupportedError, preamble(type) + "A type with that name is already registered.");
         return;

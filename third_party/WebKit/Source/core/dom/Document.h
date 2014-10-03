@@ -85,6 +85,7 @@ class DocumentState;
 class DocumentType;
 class Element;
 class ElementDataCache;
+class ElementRegistrationOptions;
 class Event;
 class EventFactoryBase;
 class EventListener;
@@ -953,7 +954,7 @@ public:
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
     ScriptValue registerElement(ScriptState*, const AtomicString& name, ExceptionState&);
-    ScriptValue registerElement(ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
+    ScriptValue registerElement(ScriptState*, const AtomicString& name, const ElementRegistrationOptions&, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
     CustomElementMicrotaskRunQueue* customElementMicrotaskRunQueue();
 

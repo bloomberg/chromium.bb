@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/CustomElementBinding.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Document.h"
@@ -44,6 +43,7 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementRegistrationOptions.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementException.h"
@@ -54,7 +54,7 @@ namespace blink {
 
 static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
-CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* scriptState, const Dictionary* options)
+CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* scriptState, const ElementRegistrationOptions& options)
     : m_scriptState(scriptState)
     , m_options(options)
 {
@@ -72,40 +72,21 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
 
     v8::TryCatch tryCatch;
 
-    ScriptValue prototypeScriptValue;
-    if (DictionaryHelper::get(*m_options, "prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
-        ASSERT(!tryCatch.HasCaught());
-        if (!prototypeScriptValue.isObject()) {
-            CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, exceptionState);
-            tryCatch.ReThrow();
-            return false;
-        }
-        m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
-    } else if (!tryCatch.HasCaught()) {
-        m_prototype = v8::Object::New(m_scriptState->isolate());
-        v8::Local<v8::Object> basePrototype = m_scriptState->perContextData()->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
-        if (!basePrototype.IsEmpty())
-            m_prototype->SetPrototype(basePrototype);
-    }
-
-    if (tryCatch.HasCaught()) {
-        tryCatch.ReThrow();
-        return false;
-    }
-
-    AtomicString extends;
-    bool extendsProvidedAndNonNull = DictionaryHelper::get(*m_options, "extends", extends) && extends != "null";
-
-    if (tryCatch.HasCaught()) {
-        tryCatch.ReThrow();
-        return false;
-    }
-
     if (!m_scriptState->perContextData()) {
         // FIXME: This should generate an InvalidContext exception at a later point.
         CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, exceptionState);
         tryCatch.ReThrow();
         return false;
+    }
+
+    if (m_options.hasPrototype()) {
+        ASSERT(m_options.prototype().isObject());
+        m_prototype = m_options.prototype().v8Value().As<v8::Object>();
+    } else {
+        m_prototype = v8::Object::New(m_scriptState->isolate());
+        v8::Local<v8::Object> basePrototype = m_scriptState->perContextData()->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
+        if (!basePrototype.IsEmpty())
+            m_prototype->SetPrototype(basePrototype);
     }
 
     AtomicString namespaceURI = HTMLNames::xhtmlNamespaceURI;
@@ -116,8 +97,8 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
 
     AtomicString localName;
 
-    if (extendsProvidedAndNonNull) {
-        localName = extends.lower();
+    if (m_options.hasExtends()) {
+        localName = AtomicString(m_options.extends().lower());
 
         if (!Document::isValidName(localName)) {
             CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, exceptionState);

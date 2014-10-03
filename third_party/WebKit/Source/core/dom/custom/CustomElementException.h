@@ -50,7 +50,6 @@ public:
         ExtendsIsCustomElementName,
         InvalidName,
         PrototypeInUse,
-        PrototypeNotAnObject,
         TypeAlreadyRegistered
     };
 

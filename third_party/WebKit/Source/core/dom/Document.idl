@@ -196,7 +196,7 @@ interface Document : Node {
                                              [Default=Undefined] optional float webkitForce);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
-    [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString name, optional Dictionary options);
+    [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString name, optional ElementRegistrationOptions options);
     [CustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, DOMString? typeExtension);
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString? typeExtension);
 

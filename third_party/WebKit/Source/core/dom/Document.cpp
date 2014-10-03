@@ -30,7 +30,6 @@
 
 #include "bindings/core/v8/CustomElementConstructorBuilder.h"
 #include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
@@ -71,6 +70,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDataCache.h"
+#include "core/dom/ElementRegistrationOptions.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -842,17 +842,18 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
 {
-    return registerElement(scriptState, name, Dictionary(), exceptionState);
+    ElementRegistrationOptions* options = ElementRegistrationOptions::create();
+    return registerElement(scriptState, name, *options, exceptionState);
 }
 
-ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
+ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
         return ScriptValue();
     }
 
-    CustomElementConstructorBuilder constructorBuilder(scriptState, &options);
+    CustomElementConstructorBuilder constructorBuilder(scriptState, options);
     registrationContext()->registerElement(this, &constructorBuilder, name, validNames, exceptionState);
     return constructorBuilder.bindingsReturnValue();
 }

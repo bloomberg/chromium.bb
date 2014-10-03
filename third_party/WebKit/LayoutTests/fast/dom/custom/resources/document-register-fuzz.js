@@ -38,7 +38,7 @@ function register(name, options)
             return;
         }
 
-        if (myConstructor.prototype != options.prototype) {
+        if (options.prototype !== undefined && myConstructor.prototype != options.prototype) {
             console.log("FAIL: bad prototype");
             return;
          }

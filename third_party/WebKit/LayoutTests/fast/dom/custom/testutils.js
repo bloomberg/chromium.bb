@@ -34,8 +34,12 @@ if (!isParentFrame()) {
     };
 
     destroyContext = function () {
-        parent.document.querySelector('iframe').remove();
-        log('PASS destroyed context');
+        // This function can be called more than once so we need to check whether the iframe exists.
+        var frame = parent.document.querySelector('iframe');
+        if (frame) {
+            frame.remove();
+            log('PASS destroyed context');
+        }
     };
 }
 

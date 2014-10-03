@@ -3408,6 +3408,7 @@
         'core_dictionary_idl_files': [
           'css/FontFaceDescriptors.idl',
           'dom/DOMPointInit.idl',
+          'dom/ElementRegistrationOptions.idl',
           'dom/MutationObserverInit.idl',
           'frame/ScrollOptions.idl',
           'html/canvas/HitRegionOptions.idl',
@@ -3418,6 +3419,8 @@
           '<(blink_core_output_dir)/css/FontFaceDescriptors.h',
           '<(blink_core_output_dir)/dom/DOMPointInit.cpp',
           '<(blink_core_output_dir)/dom/DOMPointInit.h',
+          '<(blink_core_output_dir)/dom/ElementRegistrationOptions.cpp',
+          '<(blink_core_output_dir)/dom/ElementRegistrationOptions.h',
           '<(blink_core_output_dir)/dom/MutationObserverInit.cpp',
           '<(blink_core_output_dir)/dom/MutationObserverInit.h',
           '<(blink_core_output_dir)/frame/ScrollOptions.cpp',
