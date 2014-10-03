@@ -95,7 +95,7 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels();
 
   gfx::PointF closest_point;
-  int closest_touch_id;
+  int closest_touch_id = 0;
   float closest_distance_squared = std::numeric_limits<float>::infinity();
 
   std::map<GestureConsumer*, GestureProviderAura*>::iterator i;
