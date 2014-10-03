@@ -836,13 +836,6 @@
             # Unit test bundles packaged as an apk.
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
           ],
-          'conditions': [
-            ['"<(libpeer_target_type)"=="static_library"', {
-              'dependencies': [
-                '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection_javalib',
-              ],
-            }],
-          ],
         },  # target_name: android_builder_chromium_webrtc
       ], # targets
     }], # OS="android"
