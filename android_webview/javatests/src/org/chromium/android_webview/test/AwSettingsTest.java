@@ -2695,6 +2695,7 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     /*
+    @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView", "Preferences"})
     http://crbug.com/304549
@@ -2704,6 +2705,7 @@ public class AwSettingsTest extends AwTestBase {
         assertTrue(VideoTestUtil.runVideoTest(this, false, WAIT_TIMEOUT_MS));
     }
 
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testMediaPlaybackWithUserGesture() throws Throwable {

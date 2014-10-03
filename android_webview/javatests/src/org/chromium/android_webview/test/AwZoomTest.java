@@ -268,6 +268,7 @@ public class AwZoomTest extends AwTestBase {
         assertEquals(View.GONE, getVisibilityOnUiThread(zoomControls));
     }
 
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testZoomControlsOnOrientationChange() throws Throwable {

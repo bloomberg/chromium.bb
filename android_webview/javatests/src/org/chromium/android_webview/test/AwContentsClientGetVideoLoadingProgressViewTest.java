@@ -46,6 +46,7 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
     }
 
 
+    @DisableHardwareAccelerationForTest
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testGetVideoLoadingProgressView() throws Throwable {

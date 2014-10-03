@@ -332,9 +332,8 @@ public class AwTestBase
             final AwContentsClient awContentsClient, boolean supportsLegacyQuirks) {
         final TestDependencyFactory testDependencyFactory = createTestDependencyFactory();
 
-        boolean allowHardwareAcceleration = testMethodHasAnnotation(
+        boolean allowHardwareAcceleration = !testMethodHasAnnotation(
                 DisableHardwareAccelerationForTest.class);
-        allowHardwareAcceleration = false;  // TODO(boliu): Turn on hardware acceleration.
         final AwTestContainerView testContainerView =
                 testDependencyFactory.createAwTestContainerView(getActivity(),
                         allowHardwareAcceleration);

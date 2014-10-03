@@ -97,6 +97,7 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
         });
     }
 
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testEnableVideoOverlayForEmbeddedVideo() throws Throwable {
@@ -114,6 +115,7 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
                                  onPositionChangedCallCount, 150.0f, 150.0f);
     }
 
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDisableVideoOverlayForEmbeddedVideo() throws Throwable {

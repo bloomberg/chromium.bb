@@ -139,6 +139,7 @@ public class AwContentsTest extends AwTestBase {
                 new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
     }
 
+    @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testCreateAndGcManyTimes() throws Throwable {
