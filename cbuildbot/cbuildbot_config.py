@@ -2352,6 +2352,7 @@ _release.add_config('quawks-release',
 
 _release.add_config('samus-release',
   boards=['samus'],
+  useflags=_release['useflags'] + ['highdpi'],
   important=True,
 )
 
