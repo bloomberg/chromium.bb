@@ -172,7 +172,7 @@ class SchemaVersionedMySQLConnection(object):
     this database connection instance.
     """
     self._meta = None
-    self._GetEngine().execute('DROP DATABASE %s' % self.db_name)
+    self._Execute('DROP DATABASE %s' % self.db_name)
     self._InvalidateEngine()
 
   def QuerySchemaVersion(self):
@@ -182,9 +182,9 @@ class SchemaVersionedMySQLConnection(object):
       The current schema version from the database's schema version table,
       as an integer, or 0 if the table is empty or nonexistent.
     """
-    tables = self._GetEngine().execute('SHOW TABLES').fetchall()
+    tables = self._Execute('SHOW TABLES').fetchall()
     if (self.SCHEMA_VERSION_TABLE_NAME,) in tables:
-      r = self._GetEngine().execute('SELECT MAX(%s) from %s' %
+      r = self._Execute('SELECT MAX(%s) from %s' %
           (self.SCHEMA_VERSION_COL, self.SCHEMA_VERSION_TABLE_NAME))
       return r.fetchone()[0] or 0
     else:
@@ -243,6 +243,7 @@ class SchemaVersionedMySQLConnection(object):
       script = f.read()
     queries = [q.strip() for q in script.split(';') if q.strip()]
     for q in queries:
+      # This is intentionally not wrapped in retries.
       self._GetEngine().execute(q)
 
   def _ReflectToMetadata(self):
