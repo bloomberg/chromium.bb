@@ -41,6 +41,7 @@
 namespace blink {
 
 class Blob;
+class BlobDataHandle;
 class DOMFormData;
 class Document;
 class DocumentParser;
@@ -153,6 +154,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
+    class BlobLoader;
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
 
     Document* document() const;
@@ -167,6 +169,13 @@ private:
     virtual void didFinishLoading(unsigned long identifier, double finishTime) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void didFailRedirectCheck() OVERRIDE;
+
+    // BlobLoader notifications.
+    void didFinishLoadingInternal();
+    void didFinishLoadingFromBlob();
+    void didFailLoadingFromBlob();
+
+    PassRefPtr<BlobDataHandle> createBlobDataHandleFromResponse();
 
     // DocumentParserClient
     virtual void notifyParserStopped() OVERRIDE;
@@ -281,6 +290,10 @@ private:
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
     RefPtr<SecurityOrigin> m_securityOrigin;
+
+    // This blob loader will be used if |m_downloadingToFile| is true and
+    // |m_responseTypeCode| is NOT ResponseTypeBlob.
+    OwnPtrWillBeMember<BlobLoader> m_blobLoader;
 
     bool m_async;
     bool m_includeCredentials;
