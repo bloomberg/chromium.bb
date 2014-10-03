@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"
 
@@ -57,6 +58,8 @@ private:
         , m_promise(scriptState->isolate(), promise)
         , m_parentPromiseId(0)
         , m_status(0)
+        , m_creationTime(0)
+        , m_settlementTime(0)
 #if !ENABLE(OILPAN)
         , m_weakPtrFactory(this)
 #endif
@@ -71,6 +74,8 @@ private:
     int m_status;
     RefPtrWillBeMember<ScriptCallStack> m_callStack;
     ScopedPersistent<v8::Object> m_parentPromise;
+    double m_creationTime;
+    double m_settlementTime;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<PromiseData> m_weakPtrFactory;
 #endif
@@ -241,11 +246,18 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Hand
         data->m_parentPromiseId = parentData->m_promiseId;
         data->m_parentPromise.set(scriptState->isolate(), handle);
     } else {
+        ASSERT(!data->m_status);
         data->m_status = status;
-        if (!status && !data->m_callStack) {
-            RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(1, true);
-            if (stack && stack->size())
-                data->m_callStack = stack;
+        if (!status) {
+            if (!data->m_creationTime)
+                data->m_creationTime = currentTimeMS();
+            if (!data->m_callStack) {
+                RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(1, true);
+                if (stack && stack->size())
+                    data->m_callStack = stack;
+            }
+        } else if (!data->m_settlementTime) {
+            data->m_settlementTime = currentTimeMS();
         }
     }
 }
@@ -273,6 +285,10 @@ PassRefPtr<Array<PromiseDetails> > PromiseTracker::promises()
                 promiseDetails->setParentId(data->m_parentPromiseId);
             if (data->m_callStack)
                 promiseDetails->setCallFrame(data->m_callStack->at(0).buildInspectorObject());
+            if (data->m_creationTime)
+                promiseDetails->setCreationTime(data->m_creationTime);
+            if (data->m_settlementTime)
+                promiseDetails->setSettlementTime(data->m_settlementTime);
             result->addItem(promiseDetails);
         }
     }

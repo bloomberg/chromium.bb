@@ -44,25 +44,22 @@ var test = function ()
 
         function comparePromiseData(x, y)
         {
-            if (x.id < y.id)
-                return -1;
-            else if (x.id === y.id)
-                return 0;
-            else
-                return 1;
+            var t1 = x.creationTime || 0;
+            var t2 = y.creationTime || 0;
+            return t1 - t2;
         }
 
-        var minPromiseId;
-        if (response.length) {
-            minPromiseId = response[0].id;
-            for (var i = 0; i < response.length; i++)
-                minPromiseId = Math.min(minPromiseId, response[i].id);
-        }
+        InspectorTest.assertEquals(3, response.length, "FAIL: Invalid number of Promises.");
+        var minPromiseId = response[0].id;
+        for (var i = 0; i < response.length; i++)
+            minPromiseId = Math.min(minPromiseId, response[i].id);
         response.sort(comparePromiseData);
 
         var output = [];
         for (var i = 0; i < response.length; i++) {
             var promise = response[i];
+            InspectorTest.assertTrue(promise.creationTime > 0, "FAIL: invalid Promise creation time.");
+            InspectorTest.assertTrue(!promise.settlementTime || (promise.settlementTime >= promise.creationTime), "FAIL: invalid Promise creation or settlement time.");
             var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
             var promiseInfo = "Promise:" +
                               "\n    id: " + (promise.id - minPromiseId) +
@@ -75,6 +72,8 @@ var test = function ()
             }
             output.push(promiseInfo);
         }
+
+        InspectorTest.assertTrue(response[0].settlementTime <= response[1].settlementTime && !response[2].settlementTime, "FAIL: invalid Promise settlement time.");
 
         InspectorTest.addResults(output);
 
