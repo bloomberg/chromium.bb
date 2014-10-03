@@ -85,7 +85,12 @@ class Processor(object):
       match = re.search(self._INCLUDE_REG, current_line[2])
       if match:
         file_dir = os.path.dirname(current_line[0])
-        self._include_file(os.path.join(file_dir, match.group(1)))
+        file_name = os.path.abspath(os.path.join(file_dir, match.group(1)))
+        if file_name in self._included_files:
+          self._lines[self._index] = self._lines[self._index][:2] + ("",)
+          self._index += 1
+        else:
+          self._include_file(file_name)
       else:
         self._index += 1
 

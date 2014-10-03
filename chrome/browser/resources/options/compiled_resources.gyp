@@ -40,7 +40,10 @@
           '../../../../ui/webui/resources/js/util.js',
           '../../../../chrome/browser/resources/chromeos/keyboard/keyboard_utils.js',
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        # options_bundle is included as a complex dependency. Currently there is
+        # no possibility to use gyp variable expansion to it, so we don't use
+        # <(CLOSURE_DIR) in the "externs" line.
+        'externs': ['../../../../third_party/closure_compiler/externs/chrome_send_externs.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     }

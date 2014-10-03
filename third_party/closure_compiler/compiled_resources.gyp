@@ -10,6 +10,7 @@
         '../../chrome/browser/resources/bookmark_manager/js/compiled_resources.gyp:*',
         '../../chrome/browser/resources/downloads/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
+        '../../chrome/browser/resources/help/compiled_resources.gyp:*',
         '../../chrome/browser/resources/history/compiled_resources.gyp:*',
         '../../chrome/browser/resources/options/compiled_resources.gyp:*',
         '../../chrome/browser/resources/ntp4/compiled_resources.gyp:*',

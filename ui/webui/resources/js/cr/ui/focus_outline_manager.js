@@ -77,8 +77,8 @@ cr.define('cr.ui', function() {
   /**
    * Gets a per document sigleton focus outline manager.
    * @param {Document} doc The document to get the |FocusOutlineManager| for.
-   * @return {FocusOutlineManager} The per document singleton focus outline
-   *     manager.
+   * @return {cr.ui.FocusOutlineManager} The per document singleton focus
+   *     outline manager.
    */
   FocusOutlineManager.forDocument = function(doc) {
     for (var i = 0; i < docsToManager.length; i++) {
