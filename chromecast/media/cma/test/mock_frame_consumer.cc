@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/base/mock_frame_consumer.h"
+#include "chromecast/media/cma/test/mock_frame_consumer.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
-#include "chromecast/media/cma/base/frame_generator_for_test.h"
+#include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

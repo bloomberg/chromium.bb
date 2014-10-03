@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BASE_MOCK_FRAME_CONSUMER_H_
-#define CHROMECAST_MEDIA_CMA_BASE_MOCK_FRAME_CONSUMER_H_
+#ifndef CHROMECAST_MEDIA_CMA_TEST_MOCK_FRAME_CONSUMER_H_
+#define CHROMECAST_MEDIA_CMA_TEST_MOCK_FRAME_CONSUMER_H_
 
 #include <vector>
 
@@ -66,4 +66,4 @@ class MockFrameConsumer {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BASE_MOCK_FRAME_CONSUMER_H_
+#endif  // CHROMECAST_MEDIA_CMA_TEST_MOCK_FRAME_CONSUMER_H_

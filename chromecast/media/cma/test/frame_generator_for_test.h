@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BASE_FRAME_GENERATOR_FOR_TEST_H_
-#define CHROMECAST_MEDIA_CMA_BASE_FRAME_GENERATOR_FOR_TEST_H_
+#ifndef CHROMECAST_MEDIA_CMA_TEST_FRAME_GENERATOR_FOR_TEST_H_
+#define CHROMECAST_MEDIA_CMA_TEST_FRAME_GENERATOR_FOR_TEST_H_
 
 #include <vector>
 
@@ -56,4 +56,4 @@ class FrameGeneratorForTest {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BASE_TEST_FRAME_GENERATOR_H_
+#endif  // CHROMECAST_MEDIA_CMA_TEST_TEST_FRAME_GENERATOR_H_
