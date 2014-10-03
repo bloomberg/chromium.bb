@@ -24,6 +24,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -267,14 +269,32 @@ public class AwTestBase
     }
 
     /**
+     * Checks the current test has |clazz| annotation. Note this swallows NoSuchMethodException
+     * and returns false in that case.
+     */
+    private boolean testMethodHasAnnotation(Class<? extends Annotation> clazz) {
+        String testName = getName();
+        Method method = null;
+        try {
+            method = getClass().getMethod(testName);
+        } catch (NoSuchMethodException e) {
+            Log.w(TAG, "Test method name not found.", e);
+            return false;
+        }
+
+        return method.isAnnotationPresent(clazz);
+    }
+
+    /**
      * Factory class used in creation of test AwContents instances.
      *
      * Test cases can provide subclass instances to the createAwTest* methods in order to create an
      * AwContents instance with injected test dependencies.
      */
     public static class TestDependencyFactory extends AwContents.DependencyFactory {
-        public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity) {
-            return new AwTestContainerView(activity, false);
+        public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity,
+                boolean allowHardwareAcceleration) {
+            return new AwTestContainerView(activity, allowHardwareAcceleration);
         }
         public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
             return new AwSettings(context, false, supportsLegacyQuirks);
@@ -311,8 +331,14 @@ public class AwTestBase
     public AwTestContainerView createDetachedAwTestContainerView(
             final AwContentsClient awContentsClient, boolean supportsLegacyQuirks) {
         final TestDependencyFactory testDependencyFactory = createTestDependencyFactory();
+
+        boolean allowHardwareAcceleration = testMethodHasAnnotation(
+                DisableHardwareAccelerationForTest.class);
+        allowHardwareAcceleration = false;  // TODO(boliu): Turn on hardware acceleration.
         final AwTestContainerView testContainerView =
-            testDependencyFactory.createAwTestContainerView(getActivity());
+                testDependencyFactory.createAwTestContainerView(getActivity(),
+                        allowHardwareAcceleration);
+
         AwSettings awSettings = testDependencyFactory.createAwSettings(getActivity(),
                 supportsLegacyQuirks);
         testContainerView.initialize(new AwContents(

@@ -64,8 +64,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         private OverScrollByCallbackHelper mOverScrollByCallbackHelper =
             new OverScrollByCallbackHelper();
 
-        public ScrollTestContainerView(Context context) {
-            super(context, false);
+        public ScrollTestContainerView(Context context, boolean allowHardwareAcceleration) {
+            super(context, allowHardwareAcceleration);
         }
 
         public CallbackHelper getOnScrollToCallbackHelper() {
@@ -121,8 +121,9 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                 };
             }
             @Override
-            public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity) {
-                return new ScrollTestContainerView(activity);
+            public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity,
+                    boolean allowHardwareAcceleration) {
+                return new ScrollTestContainerView(activity, allowHardwareAcceleration);
             }
         };
     }

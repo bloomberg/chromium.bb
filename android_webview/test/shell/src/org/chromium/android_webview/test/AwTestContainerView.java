@@ -227,9 +227,9 @@ public class AwTestContainerView extends FrameLayout {
         return new HardwareView(context);
     }
 
-    public AwTestContainerView(Context context, boolean hardwareAccelerated) {
+    public AwTestContainerView(Context context, boolean allowHardwareAcceleration) {
         super(context);
-        if (hardwareAccelerated) {
+        if (allowHardwareAcceleration) {
             mHardwareView = createHardwareViewOnlyOnce(context);
         }
         if (mHardwareView != null) {
