@@ -4,6 +4,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_browsertests",
+      "app_shell_unittests",
       "aura_unittests",
       {
         "test": "base_unittests",
@@ -108,6 +109,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_browsertests",
+      "app_shell_unittests",
       "aura_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
@@ -165,6 +167,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_browsertests",
+      "app_shell_unittests",
       "aura_unittests",
       {
         "test": "base_unittests",
@@ -267,6 +270,7 @@
   "Linux Clang (dbg)": {
     "gtest_tests": [
       "accessibility_unittests",
+      "app_shell_unittests",
       "base_unittests",
       "components_unittests",
       "content_unittests",

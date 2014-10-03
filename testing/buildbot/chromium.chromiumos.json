@@ -84,6 +84,7 @@
       "nacl_loader_unittests",
       "athena_unittests",
       "app_shell_browsertests",
+      "app_shell_unittests",
       "chromevox_tests"
     ]
   },
@@ -94,6 +95,7 @@
   "Linux ChromiumOS Ozone Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
+      "app_shell_unittests",
       "ash_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
@@ -212,6 +214,7 @@
         }
       },
       "app_shell_browsertests",
+      "app_shell_unittests",
       {
         "test": "content_browsertests",
         "swarming": {

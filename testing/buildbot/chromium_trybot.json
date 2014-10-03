@@ -173,6 +173,10 @@
       "platforms": ["linux"]
     },
     {
+      "test": "app_shell_unittests",
+      "platforms": ["linux", "win"]
+    },
+    {
       "test": "aura_unittests",
       "platforms": ["linux", "win"]
     },

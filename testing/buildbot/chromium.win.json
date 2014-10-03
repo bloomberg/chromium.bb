@@ -41,6 +41,7 @@
   },
   "XP Tests (3)": {
     "gtest_tests": [
+      "app_shell_unittests",
       "chrome_elf_unittests",
       "components_unittests",
       "extensions_unittests",
@@ -99,6 +100,7 @@
   },
   "Vista Tests (3)": {
     "gtest_tests": [
+      "app_shell_unittests",
       "chrome_elf_unittests",
       "components_unittests",
       "extensions_unittests",
@@ -132,6 +134,7 @@
           "can_use_on_swarming_builders": true
         }
       },
+      "app_shell_unittests",
       "aura_unittests",
       {
         "test": "base_unittests",
@@ -249,6 +252,7 @@
         }
       },
       "app_list_unittests",
+      "app_shell_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
@@ -341,6 +345,7 @@
           "can_use_on_swarming_builders": true
         }
       },
+      "app_shell_unittests",
       "aura_unittests",
       {
         "test": "base_unittests",
