@@ -95,6 +95,12 @@ class TransitionBrowserTestObserver
 // This tests that normal navigations don't defer at first response.
 IN_PROC_BROWSER_TEST_F(TransitionBrowserTest,
                        NormalNavigationNotDeferred) {
+  // This test shouldn't run in --site-per-process mode, where normal
+  // navigations are also deferred.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   scoped_ptr<TransitionBrowserTestObserver> observer(
       new TransitionBrowserTestObserver(shell()->web_contents()));
