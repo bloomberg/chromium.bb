@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/leveldatabase/env_chromium_stdio.h"
 #include "third_party/re2/re2/re2.h"
@@ -831,18 +832,18 @@ static std::string GetDirName(const std::string& filename) {
 }
 
 void ChromiumEnv::DidCreateNewFile(const std::string& filename) {
-  base::AutoLock auto_lock(map_lock_);
-  needs_sync_map_[GetDirName(filename)] = true;
+  base::AutoLock auto_lock(directory_sync_lock_);
+  directories_needing_sync_.insert(GetDirName(filename));
 }
 
 bool ChromiumEnv::DoesDirNeedSync(const std::string& filename) {
-  base::AutoLock auto_lock(map_lock_);
-  return needs_sync_map_.find(GetDirName(filename)) != needs_sync_map_.end();
+  base::AutoLock auto_lock(directory_sync_lock_);
+  return ContainsKey(directories_needing_sync_, GetDirName(filename));
 }
 
 void ChromiumEnv::DidSyncDir(const std::string& filename) {
-  base::AutoLock auto_lock(map_lock_);
-  needs_sync_map_.erase(GetDirName(filename));
+  base::AutoLock auto_lock(directory_sync_lock_);
+  directories_needing_sync_.erase(GetDirName(filename));
 }
 
 }  // namespace leveldb_env

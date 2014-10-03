@@ -6,7 +6,6 @@
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
 #include <deque>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -169,8 +168,8 @@ class ChromiumEnv : public leveldb::Env,
     std::set<std::string> locked_files_;
   };
 
-  std::map<std::string, bool> needs_sync_map_;
-  base::Lock map_lock_;
+  std::set<std::string> directories_needing_sync_;
+  base::Lock directory_sync_lock_;
 
   const int kMaxRetryTimeMillis;
   // BGThread() is the body of the background thread
