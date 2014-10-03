@@ -139,8 +139,8 @@ class RemoteMessagePipeTest : public testing::Test {
     MessageInTransit::EndpointId local_id0 = channels_[0]->AttachEndpoint(ep0);
     MessageInTransit::EndpointId local_id1 = channels_[1]->AttachEndpoint(ep1);
 
-    CHECK(channels_[0]->RunMessagePipeEndpoint(local_id0, local_id1));
-    CHECK(channels_[1]->RunMessagePipeEndpoint(local_id1, local_id0));
+    channels_[0]->RunEndpoint(ep0, local_id1);
+    channels_[1]->RunEndpoint(ep1, local_id0);
   }
 
   void BootstrapChannelEndpointOnIOThread(unsigned channel_index,
@@ -155,8 +155,7 @@ class RemoteMessagePipeTest : public testing::Test {
       return;
 
     CHECK_EQ(endpoint_id, Channel::kBootstrapEndpointId);
-    CHECK(channels_[channel_index]->RunMessagePipeEndpoint(
-        Channel::kBootstrapEndpointId, Channel::kBootstrapEndpointId));
+    channels_[channel_index]->RunEndpoint(ep, Channel::kBootstrapEndpointId);
   }
 
   void RestoreInitialStateOnIOThread() {

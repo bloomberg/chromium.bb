@@ -120,36 +120,26 @@ MessageInTransit::EndpointId Channel::AttachEndpoint(
   return local_id;
 }
 
-bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                     MessageInTransit::EndpointId remote_id) {
-  scoped_refptr<ChannelEndpoint> endpoint;
-  ChannelEndpoint::State state;
+// TODO(vtl): This function is currently slightly absurd, but we'll eventually
+// get rid of it and merge it with |AttachEndpoint()|.
+void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
+                          MessageInTransit::EndpointId remote_id) {
   {
     base::AutoLock locker(lock_);
 
     DLOG_IF(WARNING, is_shutting_down_)
         << "RunMessagePipeEndpoint() while shutting down";
 
-    IdToEndpointMap::const_iterator it =
-        local_id_to_endpoint_map_.find(local_id);
-    if (it == local_id_to_endpoint_map_.end())
-      return false;
-    endpoint = it->second;
-    state = it->second->state_;
-  }
-
-  // Assume that this was in response to |kSubtypeChannelRunMessagePipeEndpoint|
-  // and ignore it.
-  if (state != ChannelEndpoint::STATE_NORMAL) {
-    DVLOG(2) << "Ignoring run message pipe endpoint for zombie endpoint "
-                "(local ID " << local_id << ", remote ID " << remote_id << ")";
-    return true;
+    // Absurdity: |endpoint->state_| is protected by our lock.
+    if (endpoint->state_ != ChannelEndpoint::STATE_NORMAL) {
+      DVLOG(2) << "Ignoring run message pipe endpoint for zombie endpoint";
+      return;
+    }
   }
 
   // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
   // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
   endpoint->Run(remote_id);
-  return true;
 }
 
 void Channel::RunRemoteMessagePipeEndpoint(
@@ -382,8 +372,8 @@ void Channel::OnReadMessageForChannel(
       DVLOG(2) << "Handling channel message to run message pipe (local ID "
                << message_view.destination_id() << ", remote ID "
                << message_view.source_id() << ")";
-      if (!RunMessagePipeEndpoint(message_view.destination_id(),
-                                  message_view.source_id())) {
+      if (!OnRunMessagePipeEndpoint(message_view.destination_id(),
+                                    message_view.source_id())) {
         HandleRemoteError(
             "Received invalid channel message to run message pipe");
       }
@@ -412,6 +402,23 @@ void Channel::OnReadMessageForChannel(
       NOTREACHED();
       break;
   }
+}
+
+bool Channel::OnRunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+                                       MessageInTransit::EndpointId remote_id) {
+  scoped_refptr<ChannelEndpoint> endpoint;
+  {
+    base::AutoLock locker(lock_);
+
+    IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
+    if (it == local_id_to_endpoint_map_.end())
+      return false;
+
+    endpoint = it->second;
+  }
+
+  RunEndpoint(endpoint, remote_id);
+  return true;
 }
 
 bool Channel::OnRemoveMessagePipeEndpoint(

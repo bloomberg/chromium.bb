@@ -86,13 +86,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   MessageInTransit::EndpointId AttachEndpoint(
       scoped_refptr<ChannelEndpoint> endpoint);
 
-  // Runs the message pipe with the given |local_id| (previously attached), with
-  // the given |remote_id| (negotiated using some other means, e.g., over an
-  // existing message pipe; see comments above for the bootstrap case). Returns
-  // false on failure, in particular if no message pipe with |local_id| is
-  // attached.
-  bool RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                              MessageInTransit::EndpointId remote_id);
+  // Runs the given endpoint (which must have been attached to this |Channel|,
+  // and not detached), assigning it the specified |remote_id|.
+  void RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
+                   MessageInTransit::EndpointId remote_id);
 
   // Tells the other side of the channel to run a message pipe endpoint (which
   // must already be attached); |local_id| and |remote_id| are relative to this
@@ -143,6 +140,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles);
 
+  // Handles "run message pipe endpoint" messages.
+  bool OnRunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+                                MessageInTransit::EndpointId remote_id);
   // Handles "remove message pipe endpoint" messages.
   bool OnRemoveMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                    MessageInTransit::EndpointId remote_id);

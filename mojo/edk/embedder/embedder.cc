@@ -68,12 +68,7 @@ scoped_refptr<system::Channel> MakeChannel(
   }
   CHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);
 
-  if (!channel->RunMessagePipeEndpoint(system::Channel::kBootstrapEndpointId,
-                                       system::Channel::kBootstrapEndpointId)) {
-    // Currently, there's no reason for this to fail.
-    NOTREACHED() << "Channel::RunMessagePipeEndpoint() failed";
-    return channel;
-  }
+  channel->RunEndpoint(channel_endpoint, system::Channel::kBootstrapEndpointId);
 
   return channel;
 }

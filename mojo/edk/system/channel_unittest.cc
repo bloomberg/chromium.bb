@@ -210,8 +210,7 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
   // called or not. (Then, in the case that it may not be called, this will
   // return false.)
-  EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
-                                                Channel::kBootstrapEndpointId));
+  channel()->RunEndpoint(channel_endpoint, Channel::kBootstrapEndpointId);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,
@@ -247,8 +246,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
   // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
   // called or not. (Then, in the case that it may not be called, we should test
   // a |Shutdown()| without the |Run...()|.)
-  EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
-                                                Channel::kBootstrapEndpointId));
+  channel()->RunEndpoint(channel_endpoint, Channel::kBootstrapEndpointId);
 
   Waiter waiter;
   waiter.Init();
@@ -295,8 +293,7 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
       channel()->AttachEndpoint(channel_endpoint);
   EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
 
-  EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
-                                                Channel::kBootstrapEndpointId));
+  channel()->RunEndpoint(channel_endpoint, Channel::kBootstrapEndpointId);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,
