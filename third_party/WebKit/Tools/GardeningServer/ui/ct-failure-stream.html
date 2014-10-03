@@ -6,6 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-builder-failure-card.html">
 <link rel="import" href="ct-failure-card-buttons.html">
+<link rel="import" href="ct-master-failure-card.html">
 <link rel="import" href="ct-step-failure-card.html">
 <link rel="import" href="ct-trooper-card.html">
 
@@ -76,9 +77,11 @@ found in the LICENSE file.
                   <a href="{{ group.bug }}">{{ group.bugLabel }}</a>
                 </div>
               </template>
-
               <template if="{{ group.data.category == 'step' }}">
                 <ct-step-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}" commitLog="{{ commitLog }}"></ct-step-failure-card>
+              </template>
+              <template if="{{ group.data.category == 'master' }}">
+                <ct-master-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-master-failure-card>
               </template>
               <template if="{{ group.data.category == 'builder' }}">
                 <ct-builder-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-builder-failure-card>

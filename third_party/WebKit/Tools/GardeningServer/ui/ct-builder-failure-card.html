@@ -18,9 +18,7 @@ found in the LICENSE file.
     </style>
     <div>
       <ct-builder builder="{{ group.builder }}"></ct-builder>
-      <template if="{{ group.failure.state }}">
-        {{ group.failure.state == 'building' ? 'running' : group.failure.state }}
-      </template>
+      {{ group.failure.state == 'building' ? 'running' : group.failure.state }}
       for {{ group.failure.hoursSinceLastUpdate }} hours.
     </div>
     <div>

@@ -5,14 +5,11 @@ found in the LICENSE file.
 -->
 
 <script>
-function CTBuilderFailure(tree, masterUrl, builder, state, timeSinceLastUpdate, pendingBuilds) {
+function CTMasterFailure(tree, masterUrl, timeSinceLastUpdate) {
   this.tree = tree;
-  this.key = masterUrl + "::" + builder + "::" + state;
+  this.key = masterUrl;
   this.masterUrl = masterUrl;
-  this.builder = builder;
-  this.state = state;
   this.timeSinceLastUpdate = timeSinceLastUpdate;
-  this.pendingBuilds = pendingBuilds;
   this.hoursSinceLastUpdate = (timeSinceLastUpdate / (60 * 60)).toFixed(2);
 }
 </script>

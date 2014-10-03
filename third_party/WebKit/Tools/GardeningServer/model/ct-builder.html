@@ -13,6 +13,6 @@ function CTBuilder(masterUrl, builder, firstFailingBuild, failingBuildCount) {
   this.buildUrl = "{1}/builders/{2}".assign(
       masterUrl, encodeURIComponent(builder));
   if (firstFailingBuild)
-      this.buildUrl += "/builds/" + firstFailingBuild;
+    this.buildUrl += "/builds/" + firstFailingBuild;
 }
 </script>

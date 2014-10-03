@@ -1,0 +1,45 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-master-failure-card.html">
+
+<link rel="import" href="../../model/ct-failure-group.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-master-failure-card', function() {
+  var group;
+  var card;
+  var failure;
+  var masterUrl = 'https://build.chromium.org/p/chromium.webkit';
+
+  beforeEach(function(done) {
+    card = document.createElement('ct-master-failure-card');
+    group = new CTFailureGroup('', 'blink', new CTMasterFailureGroupData(
+        new CTMasterFailure('blink', masterUrl,
+            7200)));
+    card.group = group.data;
+    setTimeout(done);
+  });
+
+  describe('failure card UI', function() {
+
+    it('should display master with link.', function(done) {
+      var linkText = card.shadowRoot.querySelectorAll('a')[0].textContent;
+
+      assert.equal(linkText, masterUrl);
+      done();
+    });
+
+  });
+
+});
+
+})()
+</script>

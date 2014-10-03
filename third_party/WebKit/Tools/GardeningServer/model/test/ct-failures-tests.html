@@ -225,7 +225,13 @@ describe('ct-failures', function() {
               'last_update_time': 1409697347.089103,
               'pending_builds': 5,
               'tree': 'blink',
-            }
+            },
+            {
+              'last_update_time': 1409697347.089103,
+              'master_url': 'https://build.chromium.org/p/chromium.perf',
+              'master_name': 'chromium.perf',
+              'tree': 'chromium',
+            },
           ],
           range_groups: [
             {
@@ -302,8 +308,9 @@ describe('ct-failures', function() {
         var analyzer = new CTFailures(CTCommitLogMock());
         return analyzer.update().then(function() {
           assert.property(analyzer.failures, 'chromium');
-          assert.lengthOf(analyzer.failures.chromium, 1);
-          var group = analyzer.failures.chromium[0];
+          assert.lengthOf(analyzer.failures.chromium, 2);
+          var masterFailure = analyzer.failures.chromium[0];
+          var group = analyzer.failures.chromium[1];
           assert.equal(group.constructor, CTFailureGroup);
           assert.equal(group.key, 'linux: Linux Tests (dbg)(1)');
           assert.lengthOf(group.data.failures, 1);
@@ -338,7 +345,7 @@ describe('ct-failures', function() {
           netData['sheriff-o-matic.appspot.com/alerts'].alerts[0].last_failing_build = 2490;
 
           return analyzer.update().then(function() {
-            assert.strictEqual(analyzer.failures.chromium[0], group)
+            assert.strictEqual(analyzer.failures.chromium[1], group)
             assert.strictEqual(group.data.failures[0], failure)
             assert.strictEqual(failure.resultNodesByBuilder, resultNodesByBuilder);
             assert.strictEqual(resultNodesByBuilder['Linux Tests (dbg)(1)'], dbgBuilder);

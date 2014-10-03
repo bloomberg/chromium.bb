@@ -1,0 +1,26 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-master-failure-card" attributes="group" noscript>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      div {
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: red;
+      }
+    </style>
+    <div>
+      <a href="{{ group.failure.masterUrl }}">{{ group.failure.masterUrl }}</a>
+      <span id="masterAlert">master data {{ group.failure.hoursSinceLastUpdate }} hours stale.</span>
+    </div>
+  </template>
+</polymer-element>
+
+

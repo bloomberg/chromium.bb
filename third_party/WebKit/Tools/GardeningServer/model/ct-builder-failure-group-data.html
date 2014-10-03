@@ -7,10 +7,9 @@ found in the LICENSE file.
 <link rel="import" href="ct-builder-list.html">
 
 <script>
-function CTBuilderFailureGroupData(failure, bot, url) {
+function CTBuilderFailureGroupData(failure, bot) {
   this.bot = bot;
   this.failure = failure;
-  this.url = url;
   this.builder = new CTBuilder(failure.masterUrl, failure.builder);
   this.category = 'builder';
 };

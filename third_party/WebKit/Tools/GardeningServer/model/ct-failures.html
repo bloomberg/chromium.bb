@@ -10,6 +10,8 @@ found in the LICENSE file.
 <link rel="import" href="ct-step-failure.html">
 <link rel="import" href="ct-failure-group.html">
 <link rel="import" href="ct-builder-failure-group-data.html">
+<link rel="import" href="ct-master-failure.html">
+<link rel="import" href="ct-master-failure-group-data.html">
 <link rel="import" href="ct-step-failure-group-data.html">
 <link rel="import" href="ct-trooper-failure-group-data.html">
 <link rel="import" href="ct-commit-list.html">
@@ -31,6 +33,20 @@ function CTFailures(commitLog) {
 CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
   if (tree === undefined)
     tree = 'chromium';
+
+  // Always bubble master alerts to the top
+  if (a.category =='master') {
+    if (b.category == 'master')
+      return 0;
+    return -1;
+  } else if (b.category == 'master') {
+    return 1;
+  }
+
+  if (!a.data.commitList)
+    return 1;
+  if (!b.data.commitList)
+    return -1;
 
   var rev_a = a.data.commitList.revisions;
   var rev_b = b.data.commitList.revisions;
@@ -107,14 +123,14 @@ CTFailures.prototype.update = function() {
       this._processFailuresForRangeGroup(newFailures, rangeGroup, alertsByKey, annotations);
     }.bind(this));
 
+    sheriff_data.stale_builder_alerts.forEach(function(alert) {
+      this._processBuilderFailure(newFailures, alert);
+    }.bind(this));
+
     // Sort failure groups so that newer failures are shown at the top
     // of the UI.
     Object.keys(newFailures, function (tree, failuresByTree) {
       failuresByTree.sort(this._failureByTreeListComparator.bind(this, tree));
-    }.bind(this));
-
-    sheriff_data.stale_builder_alerts.forEach(function(alert) {
-      this._processBuilderFailure(newFailures, alert);
     }.bind(this));
 
     this.failures = updateUtil.updateLeft(this.failures, newFailures);
@@ -207,13 +223,23 @@ CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, range
 
 CTFailures.prototype._processBuilderFailure = function(newFailures, alert) {
   var timeSinceLastUpdate = (this.lastUpdateDate.valueOf() / 1000) - alert.last_update_time;
-  var failure = new CTBuilderFailure(alert.tree, alert.master_url, alert.builder_name, alert.state,
-      timeSinceLastUpdate, alert.pending_builds);
-  var data = new CTBuilderFailureGroupData(failure, alert.builder_name,
-      alert.master_url + "/builders/" + alert.builder_name);
+
+  var failure;
+  var data;
+  var category;
+  if (alert.hasOwnProperty('builder_name')) {
+    category = 'builder';
+    failure = new CTBuilderFailure(alert.tree, alert.master_url, alert.builder_name, alert.state,
+        timeSinceLastUpdate, alert.pending_builds, alert.hasOwnProperty('isMaster'));
+    data = new CTBuilderFailureGroupData(failure, alert.builder_name);
+  } else {
+    category = 'master';
+    failure = new CTMasterFailure(alert.tree, alert.master_url, timeSinceLastUpdate);
+    data = new CTMasterFailureGroupData(failure);
+  }
   if (!newFailures[alert.tree])
     newFailures[alert.tree] = [];
-  newFailures[alert.tree].push(new CTFailureGroup(failure.key, alert.tree, data, 'builders'));
+  newFailures[alert.tree].push(new CTFailureGroup(failure.key, alert.tree, data, category));
 };
 
 })();
