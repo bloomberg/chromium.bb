@@ -77,6 +77,11 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       const base::CommandLine& command_line,
       int child_process_id,
       content::FileDescriptorInfo* mappings) OVERRIDE;
+#if defined(OS_ANDROID) && defined(VIDEO_HOLE)
+  virtual content::ExternalVideoSurfaceContainer*
+  OverrideCreateExternalVideoSurfaceContainer(
+      content::WebContents* web_contents) OVERRIDE;
+#endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 
  private:
   net::X509Certificate* SelectClientCertificateOnIOThread(

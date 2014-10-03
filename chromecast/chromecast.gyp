@@ -340,10 +340,12 @@
             'android/chromecast_config_android.h',
             'android/platform_jni_loader.h',
             'shell/app/android/cast_jni_loader.cc',
-            'shell/browser/android/cast_window_manager.cc',
-            'shell/browser/android/cast_window_manager.h',
             'shell/browser/android/cast_window_android.cc',
             'shell/browser/android/cast_window_android.h',
+            'shell/browser/android/cast_window_manager.cc',
+            'shell/browser/android/cast_window_manager.h',
+            'shell/browser/android/external_video_surface_container_impl.cc',
+            'shell/browser/android/external_video_surface_container_impl.h',
           ],
           'conditions': [
             ['chromecast_branding=="Chrome"', {
@@ -407,6 +409,7 @@
           'sources': [
             'shell/android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java',
             'shell/android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java',
+            'shell/android/apk/src/org/chromium/chromecast/shell/ExternalVideoSurfaceContainer.java',
           ],
           'direct_dependent_settings': {
             'include_dirs': [

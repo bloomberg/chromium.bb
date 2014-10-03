@@ -26,6 +26,10 @@
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
 
+#if defined(OS_ANDROID)
+#include "chromecast/shell/browser/android/external_video_surface_container_impl.h"
+#endif  // defined(OS_ANDROID)
+
 namespace chromecast {
 namespace shell {
 
@@ -226,6 +230,15 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       base::ScopedFD(pak_with_flags.TakePlatformFile()));
 #endif  // defined(OS_ANDROID)
 }
+
+#if defined(OS_ANDROID) && defined(VIDEO_HOLE)
+content::ExternalVideoSurfaceContainer*
+CastContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
+    content::WebContents* web_contents) {
+  return new ExternalVideoSurfaceContainerImpl(web_contents);
+}
+#endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
+
 
 }  // namespace shell
 }  // namespace chromecast

@@ -8,6 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "chromecast/shell/browser/android/cast_window_android.h"
 #include "chromecast/shell/browser/android/cast_window_manager.h"
+#include "chromecast/shell/browser/android/external_video_surface_container_impl.h"
 
 namespace chromecast {
 namespace android {
@@ -17,6 +18,8 @@ namespace {
 static base::android::RegistrationMethod kMethods[] = {
   { "CastWindowAndroid", shell::CastWindowAndroid::RegisterJni },
   { "CastWindowManager", shell::RegisterCastWindowManager },
+  { "ExternalVideoSurfaceContainer",
+        shell::RegisterExternalVideoSurfaceContainer },
 };
 
 }  // namespace
