@@ -14,7 +14,6 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.chromium.net.ChromiumUrlRequestFactory;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
@@ -38,7 +37,6 @@ public class CronetSampleActivity extends Activity {
     public static final String POST_DATA_KEY = "postData";
     public static final String CONFIG_KEY = "config";
 
-    ChromiumUrlRequestFactory mChromiumRequestFactory;
     HttpUrlRequestFactory mRequestFactory;
 
     String mUrl;
@@ -105,9 +103,6 @@ public class CronetSampleActivity extends Activity {
         }
 
         mRequestFactory = HttpUrlRequestFactory.createFactory(
-                getApplicationContext(), config);
-
-        mChromiumRequestFactory = new ChromiumUrlRequestFactory(
                 getApplicationContext(), config);
 
         String appUrl = getUrlFromIntent(getIntent());
@@ -196,12 +191,12 @@ public class CronetSampleActivity extends Activity {
     }
 
     public void startNetLog() {
-        mChromiumRequestFactory.getRequestContext().startNetLogToFile(
+        mRequestFactory.startNetLogToFile(
                 Environment.getExternalStorageDirectory().getPath() +
                         "/cronet_sample_netlog.json");
     }
 
     public void stopNetLog() {
-        mChromiumRequestFactory.getRequestContext().stopNetLog();
+        mRequestFactory.stopNetLog();
     }
 }

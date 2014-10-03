@@ -68,7 +68,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         HashMap<String, String> headers = new HashMap<String, String>();
         MockHttpUrlRequestListener listener = new MockHttpUrlRequestListener();
 
-        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+        HttpUrlRequest request = activity.mRequestFactory.createRequest(
                 url,
                 HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
                 headers,

@@ -9,7 +9,6 @@ import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.ChromiumUrlRequest;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
@@ -150,7 +149,7 @@ public class CronetUrlTest extends CronetTestBase {
         BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
 
         // Create request with bad listener to trigger an exception.
-        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+        HttpUrlRequest request = activity.mRequestFactory.createRequest(
                 URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.start();
         listener.blockForComplete();
@@ -174,7 +173,7 @@ public class CronetUrlTest extends CronetTestBase {
         BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
 
         // Create request.
-        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+        HttpUrlRequest request = activity.mRequestFactory.createRequest(
                 URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         byte[] uploadData = new byte[] {1, 2, 3};
         try {
@@ -212,8 +211,8 @@ public class CronetUrlTest extends CronetTestBase {
         // Try several times as first request may not use QUIC.
         // TODO(mef): Remove loop after adding http server properties manager.
         for (int i = 0; i < 10; ++i) {
-            ChromiumUrlRequest request =
-                    activity.mChromiumRequestFactory.createRequest(
+            HttpUrlRequest request =
+                    activity.mRequestFactory.createRequest(
                             quicURL,
                             HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
                             headers,
@@ -268,7 +267,7 @@ public class CronetUrlTest extends CronetTestBase {
                 new SimpleHttpUrlRequestListener();
 
         // Create request.
-        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+        HttpUrlRequest request = activity.mRequestFactory.createRequest(
                 URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.setHttpMethod("HEAD");
         request.start();
