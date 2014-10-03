@@ -99,6 +99,7 @@
 #if defined(USE_ATHENA)
 #include "athena/screen/public/screen_manager.h"
 #include "athena/util/container_priorities.h"
+#include "athena/util/fill_layout_manager.h"
 #endif
 
 namespace {
@@ -1066,6 +1067,8 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   login_screen_container_.reset(
       athena::ScreenManager::Get()->CreateContainer(container_params));
   params.parent = login_screen_container_.get();
+  login_screen_container_->SetLayoutManager(
+      new athena::FillLayoutManager(login_screen_container_.get()));
 #else
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
