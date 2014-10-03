@@ -1241,6 +1241,7 @@
             'renderer/scheduler_proxy_task_runner_browsertest.cc',
             'test/accessibility_browser_test_utils.cc',
             'test/accessibility_browser_test_utils.h',
+            'test/browser_test_utils_browsertest.cc',
             'test/content_browser_test_test.cc',
             'test/ppapi/ppapi_browsertest.cc',
             'test/ppapi/ppapi_test.cc',

@@ -35,6 +35,12 @@ namespace gfx {
 class Point;
 }
 
+namespace net {
+namespace test_server {
+class EmbeddedTestServer;
+}
+}
+
 // A collections of functions designed for use with content_browsertests and
 // browser_tests.
 // TO BE CLEAR: any function here must work against both binaries. If it only
@@ -191,6 +197,14 @@ bool SetCookie(BrowserContext* browser_context,
 // Fetch the histograms data from other processes. This should be called after
 // the test code has been executed but before performing assertions.
 void FetchHistogramsFromChildProcesses();
+
+// Registers a request handler which redirects to a different host, based
+// on the request path. The format of the path should be
+// "/cross-site/hostname/rest/of/path" to redirect the request to
+// "<scheme>://hostname:<port>/rest/of/path", where <scheme> and <port>
+// are the values for the instance of EmbeddedTestServer.
+void SetupCrossSiteRedirector(
+    net::test_server::EmbeddedTestServer* embedded_test_server);
 
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.

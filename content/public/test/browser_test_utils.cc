@@ -31,6 +31,9 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/python_utils.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -196,6 +199,39 @@ void SetCookieOnIOThread(const GURL& url,
   cookie_store->SetCookieWithOptionsAsync(
       url, value, net::CookieOptions(),
       base::Bind(&SetCookieCallback, result, event));
+}
+
+scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
+    const GURL& server_base_url,
+    const net::test_server::HttpRequest& request) {
+  std::string prefix("/cross-site/");
+  if (!StartsWithASCII(request.relative_url, prefix, true))
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  std::string params = request.relative_url.substr(prefix.length());
+
+  // A hostname to redirect to must be included in the URL, therefore at least
+  // one '/' character is expected.
+  size_t slash = params.find('/');
+  if (slash == std::string::npos)
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  // Replace the host of the URL with the one passed in the URL.
+  std::string host = params.substr(0, slash);
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(host);
+  GURL redirect_server = server_base_url.ReplaceComponents(replace_host);
+
+  // Append the real part of the path to the new URL.
+  std::string path = params.substr(slash + 1);
+  GURL redirect_target(redirect_server.Resolve(path));
+  DCHECK(redirect_target.is_valid());
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", redirect_target.spec());
+  return http_response.PassAs<net::test_server::HttpResponse>();
 }
 
 }  // namespace
@@ -591,6 +627,13 @@ void FetchHistogramsFromChildProcesses() {
       // be prempted by the normal timeout.
       TestTimeouts::action_max_timeout());
   runner->Run();
+}
+
+void SetupCrossSiteRedirector(
+    net::test_server::EmbeddedTestServer* embedded_test_server) {
+   embedded_test_server->RegisterRequestHandler(
+       base::Bind(&CrossSiteRedirectResponseHandler,
+                  embedded_test_server->base_url()));
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
