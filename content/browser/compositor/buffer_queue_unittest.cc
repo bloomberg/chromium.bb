@@ -36,7 +36,7 @@ class BufferQueueTest : public ::testing::Test {
     scoped_refptr<cc::TestContextProvider> context_provider =
         cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
     context_provider->BindToCurrentThread();
-    output_surface_.reset(new MockBufferQueue(context_provider, GL_RGBA8_OES));
+    output_surface_.reset(new MockBufferQueue(context_provider, GL_RGBA));
     output_surface_->Initialize();
   }
 
@@ -119,7 +119,8 @@ class MockedContext : public cc::TestWebGraphicsContext3D {
   MOCK_METHOD2(bindFramebuffer, void(GLenum, GLuint));
   MOCK_METHOD2(bindTexture, void(GLenum, GLuint));
   MOCK_METHOD2(bindTexImage2DCHROMIUM, void(GLenum, GLint));
-  MOCK_METHOD4(createImageCHROMIUM, GLuint(GLsizei, GLsizei, GLenum, GLenum));
+  MOCK_METHOD4(createGpuMemoryBufferImageCHROMIUM,
+               GLuint(GLsizei, GLsizei, GLenum, GLenum));
   MOCK_METHOD1(destroyImageCHROMIUM, void(GLuint));
   MOCK_METHOD5(framebufferTexture2D,
                void(GLenum, GLenum, GLenum, GLuint, GLint));
@@ -132,7 +133,7 @@ scoped_ptr<BufferQueue> CreateOutputSurfaceWithMock(MockedContext** context) {
           scoped_ptr<cc::TestWebGraphicsContext3D>(*context));
   context_provider->BindToCurrentThread();
   scoped_ptr<BufferQueue> buffer_queue(
-      new BufferQueue(context_provider, GL_RGBA8_OES));
+      new BufferQueue(context_provider, GL_RGBA));
   buffer_queue->Initialize();
   return buffer_queue.Pass();
 }
@@ -155,11 +156,10 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
       CreateOutputSurfaceWithMock(&context);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, Ne(0U)));
   EXPECT_CALL(*context, destroyImageCHROMIUM(1));
-  Expectation image =
-      EXPECT_CALL(
-          *context,
-          createImageCHROMIUM(0, 0, GL_RGBA8_OES, GL_IMAGE_SCANOUT_CHROMIUM))
-          .WillOnce(Return(1));
+  Expectation image = EXPECT_CALL(*context,
+                                  createGpuMemoryBufferImageCHROMIUM(
+                                      0, 0, GL_RGBA, GL_IMAGE_SCANOUT_CHROMIUM))
+                          .WillOnce(Return(1));
   Expectation fb =
       EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
   Expectation tex = EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, Ne(0U)));

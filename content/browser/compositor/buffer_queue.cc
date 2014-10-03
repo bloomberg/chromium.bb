@@ -155,13 +155,13 @@ BufferQueue::AllocatedSurface BufferQueue::GetNextSurface() {
   // We don't want to allow anything more than triple buffering.
   DCHECK_LT(allocated_count_, 4U);
 
-  unsigned int id = gl->CreateImageCHROMIUM(
-      size_.width(),
-      size_.height(),
-      internalformat_,
-      GL_IMAGE_SCANOUT_CHROMIUM);
+  unsigned int id =
+      gl->CreateGpuMemoryBufferImageCHROMIUM(size_.width(),
+                                             size_.height(),
+                                             internalformat_,
+                                             GL_SCANOUT_CHROMIUM);
   if (!id) {
-    LOG(ERROR) << "Failed to allocate backing CreateImageCHROMIUM surface";
+    LOG(ERROR) << "Failed to allocate backing image surface";
     gl->DeleteTextures(1, &texture);
     return AllocatedSurface();
   }
