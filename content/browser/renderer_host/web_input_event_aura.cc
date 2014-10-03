@@ -10,8 +10,8 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
-#if defined(USE_OZONE)
-#include "ui/events/keycodes/keyboard_code_conversion.h"
+#if defined(USE_X11) || defined(USE_OZONE)
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #endif
 
 namespace content {
@@ -50,7 +50,8 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     webkit_event.isSystemKey = true;
 
   webkit_event.windowsKeyCode = event->GetLocatedWindowsKeyboardCode();
-  webkit_event.nativeKeyCode = event->platform_keycode();
+  webkit_event.nativeKeyCode =
+    ui::KeycodeConverter::CodeToNativeKeycode(event->code().c_str());
   webkit_event.unmodifiedText[0] = event->GetUnmodifiedText();
   webkit_event.text[0] = event->GetText();
 
