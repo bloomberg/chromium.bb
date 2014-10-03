@@ -280,7 +280,7 @@ class DepGraphGenerator(object):
     # point our tools at /build/BOARD and to setup cross compiles to the
     # appropriate board as configured in toolchain.conf.
     if self.board:
-      sysroot = cros_build_lib.GetSysroot(board=self.board)
+      sysroot = os.environ.get('SYSROOT', cros_build_lib.GetSysroot(self.board))
       os.environ["PORTAGE_CONFIGROOT"] = sysroot
       os.environ["PORTAGE_SYSROOT"] = sysroot
       os.environ["SYSROOT"] = sysroot
