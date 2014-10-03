@@ -21,7 +21,9 @@
 #include "config.h"
 #include "platform/fonts/FontPlatformData.h"
 
+#include "SkEndian.h"
 #include "SkTypeface.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
@@ -344,5 +346,55 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 
     return m_harfBuzzFace.get();
 }
+
+#if !OS(MACOSX)
+unsigned FontPlatformData::hash() const
+{
+    unsigned h = SkTypeface::UniqueID(m_typeface.get());
+    h ^= 0x01010101 * ((static_cast<int>(m_isHashTableDeletedValue) << 3) | (static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_syntheticBold) << 1) | static_cast<int>(m_syntheticItalic));
+
+    // This memcpy is to avoid a reinterpret_cast that breaks strict-aliasing
+    // rules. Memcpy is generally optimized enough so that performance doesn't
+    // matter here.
+    uint32_t textSizeBytes;
+    memcpy(&textSizeBytes, &m_textSize, sizeof(uint32_t));
+    h ^= textSizeBytes;
+
+    return h;
+}
+
+bool FontPlatformData::fontContainsCharacter(UChar32 character)
+{
+    SkPaint paint;
+    setupPaint(&paint);
+    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
+
+    uint16_t glyph;
+    paint.textToGlyphs(&character, sizeof(character), &glyph);
+    return glyph;
+}
+
+#endif
+
+#if ENABLE(OPENTYPE_VERTICAL)
+PassRefPtr<OpenTypeVerticalData> FontPlatformData::verticalData() const
+{
+    return FontCache::fontCache()->getVerticalData(typeface()->uniqueID(), *this);
+}
+
+PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
+{
+    RefPtr<SharedBuffer> buffer;
+
+    SkFontTableTag tag = SkEndianSwap32(table);
+    const size_t tableSize = m_typeface->getTableSize(tag);
+    if (tableSize) {
+        Vector<char> tableBuffer(tableSize);
+        m_typeface->getTableData(tag, 0, tableSize, &tableBuffer[0]);
+        buffer = SharedBuffer::adoptVector(tableBuffer);
+    }
+    return buffer.release();
+}
+#endif
 
 } // namespace blink
