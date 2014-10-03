@@ -667,14 +667,11 @@ function runTest(enableWatchDogWhileDebugging)
             return;
 
         InspectorTest.wasAlreadyExecuted = true;
-
         // 1. Preload panels.
         var lastLoadedPanel;
-
-        var promises = [];
         for (var i = 0; i < InspectorTest._panelsToPreload.length; ++i) {
             lastLoadedPanel = InspectorTest._panelsToPreload[i];
-            promises.push(WebInspector.inspectorView.panel(lastLoadedPanel));
+            WebInspector.inspectorView._loadPanel(lastLoadedPanel);
         }
 
         var testPath = WebInspector.settings.testPath.get();
@@ -705,20 +702,21 @@ function runTest(enableWatchDogWhileDebugging)
         for (var folder in initialPanelByFolder) {
             if (testPath.indexOf(folder + "/") !== -1) {
                 lastLoadedPanel = initialPanelByFolder[folder];
-                promises.push(WebInspector.inspectorView.panel(lastLoadedPanel));
+                WebInspector.inspectorView._loadPanel(lastLoadedPanel);
                 break;
             }
         }
 
+        if (lastLoadedPanel)
+            WebInspector.inspectorView.showInitialPanelForTest(lastLoadedPanel);
+
         // 3. Run test function.
-        Promise.all(promises).then(function() {
-            if (lastLoadedPanel)
-                WebInspector.inspectorView.showInitialPanelForTest(lastLoadedPanel);
+        try {
             testFunction();
-        }).catch(function(e) {
-            console.error(e);
+        } catch (e) {
+            console.error("Exception during test execution: " + e,  (e.stack ? e.stack : "") );
             InspectorTest.completeTest();
-        });
+        }
     }
 
     var initializationFunctions = [ String(initialize_InspectorTest) ];

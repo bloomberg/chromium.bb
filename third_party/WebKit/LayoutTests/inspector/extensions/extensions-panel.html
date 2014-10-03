@@ -87,7 +87,7 @@ function initialize_extensionsPanelTest()
     InspectorTest.switchToLastPanel = function()
     {
         var lastPanelName = WebInspector.inspectorView._tabbedPane._tabs.peekLast().id;
-        return WebInspector.inspectorView.showPanel(lastPanelName);
+        WebInspector.inspectorView._loadAndShowPanel(lastPanelName);
     }
 }
 
@@ -229,9 +229,7 @@ function extension_testStatusBarButtons(nextTest)
             output("button2 clicked");
             nextTest();
         });
-        // First we click on button2 (that is [1] in array). But it is disabled, so this should be a noop. Then we click on button1.
-        // button1 click updates buttons. and clicks button2.
-        evaluateOnFrontend("InspectorTest.showPanel('extension').then(function() { InspectorTest.clickButton(1); InspectorTest.clickButton(0); })");
+        evaluateOnFrontend("InspectorTest.showPanel('extension'); InspectorTest.clickButton(1); InspectorTest.clickButton(0);", updateButtons);
     }
 
     webInspector.panels.create("Buttons Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
