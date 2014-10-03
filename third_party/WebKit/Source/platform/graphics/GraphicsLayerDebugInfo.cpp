@@ -54,6 +54,7 @@ GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
     toReturn->setCompositingReasons(m_compositingReasons);
     toReturn->setOwnerNodeId(m_ownerNodeId);
     toReturn->m_invalidations = m_invalidations;
+    toReturn->m_previousInvalidations = m_previousInvalidations;
     return toReturn;
 }
 
@@ -77,7 +78,7 @@ void GraphicsLayerDebugInfo::appendLayoutRects(JSONObject* jsonObject) const
 void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(JSONObject* jsonObject) const
 {
     RefPtr<JSONArray> jsonArray = JSONArray::create();
-    for (const auto& annotatedRect : m_invalidations) {
+    for (const auto& annotatedRect : m_previousInvalidations) {
         RefPtr<JSONObject> rectContainer = JSONObject::create();
         RefPtr<JSONArray> rectArray = JSONArray::create();
         const FloatRect& rect = annotatedRect.rect;
@@ -130,7 +131,8 @@ void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect
 
 void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects()
 {
-    m_invalidations.clear();
+    m_previousInvalidations.clear();
+    m_previousInvalidations.swap(m_invalidations);
 }
 
 } // namespace blink

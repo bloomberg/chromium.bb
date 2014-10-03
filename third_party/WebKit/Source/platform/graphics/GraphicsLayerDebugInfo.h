@@ -76,6 +76,7 @@ private:
     int m_ownerNodeId;
     Vector<LayoutRect> m_currentLayoutRects;
     Vector<AnnotatedInvalidationRect> m_invalidations;
+    Vector<AnnotatedInvalidationRect> m_previousInvalidations;
 };
 
 } // namespace blink
