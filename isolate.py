@@ -271,7 +271,7 @@ class SavedState(Flattenable):
     # GYP variables used to generate the .isolated files paths based on path
     # variables. Frequent examples are DEPTH and PRODUCT_DIR.
     'path_variables',
-    # If the generated directory tree should be read-only.
+    # If the generated directory tree should be read-only. Defaults to 1.
     'read_only',
     # Relative cwd to use to start the command.
     'relative_cwd',
@@ -309,6 +309,7 @@ class SavedState(Flattenable):
     self.files = {}
     self.isolate_file = None
     self.path_variables = {}
+    # Defaults to 1 when compiling to .isolated.
     self.read_only = None
     self.relative_cwd = None
     self.root_dir = None
@@ -372,8 +373,7 @@ class SavedState(Flattenable):
     }
     if self.command:
       out['command'] = self.command
-    if self.read_only is not None:
-      out['read_only'] = self.read_only
+    out['read_only'] = self.read_only if self.read_only is not None else 1
     if self.relative_cwd:
       out['relative_cwd'] = self.relative_cwd
     return out

@@ -175,6 +175,26 @@ class IsolateTest(IsolateBase):
     for i in blocked:
       self.assertTrue(blacklist(i), i)
 
+  def test_read_only(self):
+    isolate_file = os.path.join(self.cwd, 'fake.isolate')
+    isolate_content = {
+      'variables': {
+        'read_only': 0,
+      },
+    }
+    tools.write_json(isolate_file, isolate_content, False)
+    expected = {
+      'algo': 'sha-1',
+      'files': {},
+      'read_only': 0,
+      'relative_cwd': '.',
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    complete_state = isolate.CompleteState(None, isolate.SavedState(self.cwd))
+    complete_state.load_isolate(
+        unicode(self.cwd), unicode(isolate_file), {}, {}, {}, False)
+    self.assertEqual(expected, complete_state.saved_state.to_isolated())
+
 
 class IsolateLoad(IsolateBase):
   def setUp(self):
@@ -263,6 +283,7 @@ class IsolateLoad(IsolateBase):
           's': _size('isolate.py'),
         },
       },
+      'read_only': 1,
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -326,6 +347,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
+      'read_only': 1,
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -389,6 +411,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
+      'read_only': 1,
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -472,6 +495,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
+      'read_only': 1,
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -561,6 +585,7 @@ class IsolateLoad(IsolateBase):
           's': _size('tests', 'isolate', 'no_run.isolate'),
         },
       },
+      'read_only': 1,
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
@@ -649,6 +674,7 @@ class IsolateLoad(IsolateBase):
         unicode(hash_file(os.path.join(self.directory, 'foo.0.isolated'))),
         unicode(hash_file(os.path.join(self.directory, 'foo.1.isolated'))),
       ],
+      u'read_only': 1,
       u'relative_cwd': u'.',
       u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
@@ -868,6 +894,7 @@ class IsolateLoad(IsolateBase):
         'algo': 'sha-1',
         'command': command,
         'files': {unicode(f):{} for f in expected_files},
+        'read_only': 1,
         'relative_cwd': relative_cwd,
         'version': isolated_format.ISOLATED_FILE_VERSION,
       }
@@ -1063,6 +1090,7 @@ class IsolateLoad(IsolateBase):
           unicode(os.path.join(cwd_name, config_os, 'path', f)): {}
           for f in expected_files
         },
+        'read_only': 1,
         'relative_cwd': relative_cwd,
         'version': isolated_format.ISOLATED_FILE_VERSION,
       }
@@ -1352,7 +1380,7 @@ class IsolateCommand(IsolateBase):
       actual_isolated = f.read()
     expected_isolated = (
         '{"algo":"sha-1","command":["foo"],"files":{},'
-        '"relative_cwd":".","version":"%s"}'
+        '"read_only":1,"relative_cwd":".","version":"%s"}'
     ) % isolated_format.ISOLATED_FILE_VERSION
     self.assertEqual(expected_isolated, actual_isolated)
     isolated_data = json.loads(actual_isolated)

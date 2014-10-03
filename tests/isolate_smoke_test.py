@@ -247,6 +247,7 @@ class IsolateTempdir(unittest.TestCase):
     expected = {
       u'algo': u'sha-1',
       u'files': self._gen_files(read_only, empty_file, False),
+      u'read_only': 1,
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
