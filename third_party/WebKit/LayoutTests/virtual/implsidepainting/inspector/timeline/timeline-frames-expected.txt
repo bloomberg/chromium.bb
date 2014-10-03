@@ -1,10 +1,13 @@
 Tests reporting and canceling of didBeginFrame events in Timeline
 
+[page] invalidating document
+[page] invalidating document
+[page] invalidating document
 Frame 0
-TimeStamp : FRAME 1
+Timestamp: FRAME 1
 Frame 1
-TimeStamp : FRAME 2
-TimeStamp : FRAME 3
+Timestamp: FRAME 2
+Timestamp: FRAME 3
 Frame 2
-TimeStamp : FRAME 4
+Timestamp: FRAME 4
 

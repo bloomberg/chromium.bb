@@ -1327,7 +1327,6 @@ crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html
 crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] inspector/tracing/timeline-recalculate-styles.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-recalculate-styles.html [ Failure Pass ]
-crbug.com/407915 virtual/implsidepainting/inspector/timeline/timeline-frames.html [ Failure Pass ]
 
 crbug.com/409580 inspector/device-emulation/device-emulation-320-2x.html [ Crash Pass ]
 crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Timeout ]
