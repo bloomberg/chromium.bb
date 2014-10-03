@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/strings/string_split.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/filesystem_utils.h"
@@ -552,8 +553,20 @@ int RunFormat(const std::vector<std::string>& args) {
   if (FormatFileToString(&setup, file, dump_tree, &output_string)) {
     bool in_place =
         base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
-    CHECK(!in_place) << "TODO(scottmg)";
-    printf("%s", output_string.c_str());
+    if (in_place) {
+      base::FilePath to_write = setup.build_settings().GetFullPath(file);
+      printf("Writing formatted to '%s'.\n", to_write.AsUTF8Unsafe().c_str());
+      if (base::WriteFile(to_write,
+                          output_string.data(),
+                          static_cast<int>(output_string.size())) == -1) {
+        Err(Location(),
+            std::string("Failed to write formatted output back to \"") +
+                to_write.AsUTF8Unsafe() + std::string("\".")).PrintToStdout();
+        return 1;
+      }
+    } else {
+      printf("%s", output_string.c_str());
+    }
   }
 
   return 0;
