@@ -222,10 +222,6 @@ void UIDataTypeController::AbortModelLoad() {
     shared_change_processor_ = NULL;
   }
 
-  model_load_callback_.Run(
-      type(),
-      syncer::SyncError(
-          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Aborted", type()));
   // We don't want to continue loading models (e.g OnModelLoaded should never be
   // called after we've decided to abort).
   StopModels();

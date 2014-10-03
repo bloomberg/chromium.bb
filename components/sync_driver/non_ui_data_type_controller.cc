@@ -251,10 +251,6 @@ void NonUIDataTypeController::RecordStartFailure(ConfigureResult result) {
 void NonUIDataTypeController::AbortModelLoad() {
   state_ = NOT_RUNNING;
   StopModels();
-  model_load_callback_.Run(
-      type(),
-      syncer::SyncError(
-          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "ABORTED", type()));
 }
 
 void NonUIDataTypeController::DisableImpl(

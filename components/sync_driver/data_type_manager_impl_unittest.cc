@@ -1384,4 +1384,36 @@ TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeAssociation) {
   EXPECT_EQ(0U, configurer_.activated_types().Size());
 }
 
+TEST_F(SyncDataTypeManagerImplTest, AssociationNeverCompletes) {
+  AddController(BOOKMARKS);
+
+  // Bookmarks times out during association and so it's never started.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK,
+                              BuildStatusTable(ModelTypeSet(),
+                                               ModelTypeSet(BOOKMARKS),
+                                               ModelTypeSet(),
+                                               ModelTypeSet()));
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+
+  GetController(BOOKMARKS)->SetDelayModelLoad();
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
+
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+
+  // Simulate timeout by firing the timer.
+  dtm_->GetModelAssociationManagerForTesting()
+      ->GetTimerForTesting()
+      ->user_task()
+      .Run();
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(0U, configurer_.activated_types().Size());
+}
+
 }  // namespace sync_driver

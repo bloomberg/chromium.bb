@@ -310,7 +310,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
 TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_.get(), StopModels());
-  EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   non_ui_dtc_->LoadModels(
       base::Bind(&ModelLoadCallbackMock::Run,

@@ -163,7 +163,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StopBeforeLoaded) {
-  EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_->LoadModels(
       base::Bind(&sync_driver::ModelLoadCallbackMock::Run,

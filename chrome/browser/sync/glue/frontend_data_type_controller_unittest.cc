@@ -189,7 +189,6 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartFirstRun) {
 TEST_F(SyncFrontendDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
-  EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   frontend_dtc_->LoadModels(
       base::Bind(&ModelLoadCallbackMock::Run,

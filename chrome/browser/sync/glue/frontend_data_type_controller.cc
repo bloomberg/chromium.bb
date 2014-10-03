@@ -251,10 +251,6 @@ void FrontendDataTypeController::AbortModelLoad() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CleanUp();
   state_ = NOT_RUNNING;
-  model_load_callback_.Run(
-      type(),
-      syncer::SyncError(
-          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Aborted", type()));
 }
 
 void FrontendDataTypeController::StartDone(
