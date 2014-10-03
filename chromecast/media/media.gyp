@@ -12,9 +12,14 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../crypto/crypto.gyp:crypto',
         '../../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'sources': [
+        'base/decrypt_context.cc',
+        'base/decrypt_context.h',
+        'base/decrypt_context_clearkey.cc',
+        'base/decrypt_context_clearkey.h',
         'base/key_systems_common.cc',
         'base/key_systems_common.h',
       ],
