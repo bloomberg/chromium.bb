@@ -24,8 +24,7 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_handle) {
   Environment env;
   {
     RunLoop loop;
-    ApplicationImpl app(delegate_,
-        MakeScopedHandle(MessagePipeHandle(shell_handle)));
+    ApplicationImpl app(delegate_, shell_handle);
     loop.Run();
   }
 
