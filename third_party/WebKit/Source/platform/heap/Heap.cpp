@@ -125,6 +125,7 @@ public:
         return m_base <= addr && addr < (m_base + m_size);
     }
 
+
     bool contains(const MemoryRegion& other) const
     {
         return contains(other.m_base) && contains(other.m_base + other.m_size - 1);
@@ -186,64 +187,10 @@ public:
         release();
     }
 
-    void pageDeleted(Address page)
+    void pageRemoved()
     {
-        markPageUnused(page);
-        if (!--m_numPages) {
-            Heap::removePageMemoryRegion(this);
+        if (!--m_numPages)
             delete this;
-        }
-    }
-
-    void markPageUsed(Address page)
-    {
-        ASSERT(!m_inUse[index(page)]);
-        m_inUse[index(page)] = true;
-    }
-
-    void markPageUnused(Address page)
-    {
-        m_inUse[index(page)] = false;
-    }
-
-    static PageMemoryRegion* allocateLargePage(size_t size)
-    {
-        return allocate(size, 1);
-    }
-
-    static PageMemoryRegion* allocateNormalPages()
-    {
-        return allocate(blinkPageSize * blinkPagesPerRegion, blinkPagesPerRegion);
-    }
-
-    BaseHeapPage* pageFromAddress(Address address)
-    {
-        ASSERT(contains(address));
-        if (!m_inUse[index(address)])
-            return 0;
-        if (m_isLargePage)
-            return pageHeaderFromObject(base());
-        return pageHeaderFromObject(address);
-    }
-
-private:
-    PageMemoryRegion(Address base, size_t size, unsigned numPages)
-        : MemoryRegion(base, size)
-        , m_isLargePage(numPages == 1)
-        , m_numPages(numPages)
-    {
-        for (size_t i = 0; i < blinkPagesPerRegion; ++i)
-            m_inUse[i] = false;
-    }
-
-    unsigned index(Address address)
-    {
-        ASSERT(contains(address));
-        if (m_isLargePage)
-            return 0;
-        size_t offset = blinkPageAddress(address) - base();
-        ASSERT(offset % blinkPageSize == 0);
-        return offset / blinkPageSize;
     }
 
     static PageMemoryRegion* allocate(size_t size, unsigned numPages)
@@ -327,8 +274,13 @@ private:
 #endif
     }
 
-    bool m_isLargePage;
-    bool m_inUse[blinkPagesPerRegion];
+private:
+    PageMemoryRegion(Address base, size_t size, unsigned numPages)
+        : MemoryRegion(base, size)
+        , m_numPages(numPages)
+    {
+    }
+
     unsigned m_numPages;
 };
 
@@ -352,24 +304,11 @@ public:
     ~PageMemory()
     {
         __lsan_unregister_root_region(m_writable.base(), m_writable.size());
-        m_reserved->pageDeleted(writableStart());
+        m_reserved->pageRemoved();
     }
 
-    WARN_UNUSED_RETURN bool commit()
-    {
-        m_reserved->markPageUsed(writableStart());
-        return m_writable.commit();
-    }
-
-    void decommit()
-    {
-        m_reserved->markPageUnused(writableStart());
-        m_writable.decommit();
-    }
-
-    void markUnused() { m_reserved->markPageUnused(writableStart()); }
-
-    PageMemoryRegion* region() { return m_reserved; }
+    bool commit() WARN_UNUSED_RETURN { return m_writable.commit(); }
+    void decommit() { m_writable.decommit(); }
 
     Address writableStart() { return m_writable.base(); }
 
@@ -398,7 +337,7 @@ public:
         // Overallocate by 2 times OS page size to have space for a
         // guard page at the beginning and end of blink heap page.
         size_t allocationSize = payloadSize + 2 * osPageSize();
-        PageMemoryRegion* pageMemoryRegion = PageMemoryRegion::allocateLargePage(allocationSize);
+        PageMemoryRegion* pageMemoryRegion = PageMemoryRegion::allocate(allocationSize, 1);
         PageMemory* storage = setupPageMemoryInRegion(pageMemoryRegion, 0, payloadSize);
         RELEASE_ASSERT(storage->commit());
         return storage;
@@ -670,6 +609,7 @@ template<typename Header>
 void ThreadHeap<Header>::cleanupPages()
 {
     clearFreeLists();
+    flushHeapContainsCache();
 
     // Add the ThreadHeap's pages to the orphanedPagePool.
     for (HeapPage<Header>* page = m_firstPage; page; page = page->m_next)
@@ -985,7 +925,6 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
         threadState()->setGCRequested();
     Heap::flushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
-    m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + sizeof(LargeHeapObject<Header>) + headerPadding<Header>();
     memset(headerAddress, 0, size);
@@ -1006,6 +945,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 template<typename Header>
 void ThreadHeap<Header>::freeLargeObject(LargeHeapObject<Header>* object, LargeHeapObject<Header>** previousNext)
 {
+    flushHeapContainsCache();
     object->unlink(previousNext);
     object->finalize();
 
@@ -1083,27 +1023,6 @@ PageMemory* FreePagePool::takeFreePage(int index)
         delete memory;
     }
     return 0;
-}
-
-BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state)
-    : m_storage(storage)
-    , m_gcInfo(gcInfo)
-    , m_threadState(state)
-    , m_terminating(false)
-    , m_tracedAfterOrphaned(false)
-{
-    ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
-}
-
-void BaseHeapPage::markOrphaned()
-{
-    m_threadState = 0;
-    m_gcInfo = 0;
-    m_terminating = false;
-    m_tracedAfterOrphaned = false;
-    // Since we zap the page payload for orphaned pages we need to mark it as
-    // unused so a conservative pointer won't interpret the object headers.
-    storage()->markUnused();
 }
 
 OrphanedPagePool::~OrphanedPagePool()
@@ -1230,6 +1149,7 @@ template <typename Header>
 void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
 {
     MutexLocker locker(m_threadState->sweepMutex());
+    flushHeapContainsCache();
     if (page->terminating()) {
         // The thread is shutting down so this page is being removed as part
         // of a thread local GC. In that case the page could be accessed in the
@@ -1253,33 +1173,24 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
 {
     Heap::flushHeapDoesNotContainCache();
     PageMemory* pageMemory = Heap::freePagePool()->takeFreePage(m_index);
-    // We continue allocating page memory until we succeed in committing one.
+    // We continue allocating page memory until we succeed in getting one.
+    // Since the FreePagePool is global other threads could use all the
+    // newly allocated page memory before this thread calls takeFreePage.
     while (!pageMemory) {
         // Allocate a memory region for blinkPagesPerRegion pages that
         // will each have the following layout.
         //
         //    [ guard os page | ... payload ... | guard os page ]
         //    ^---{ aligned to blink page size }
-        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages();
-        m_threadState->allocatedRegionsSinceLastGC().append(region);
-
+        PageMemoryRegion* region = PageMemoryRegion::allocate(blinkPageSize * blinkPagesPerRegion, blinkPagesPerRegion);
         // Setup the PageMemory object for each of the pages in the
         // region.
         size_t offset = 0;
         for (size_t i = 0; i < blinkPagesPerRegion; i++) {
-            PageMemory* memory = PageMemory::setupPageMemoryInRegion(region, offset, blinkPagePayloadSize());
-            // Take the first possible page ensuring that this thread actually
-            // gets a page and add the rest to the page pool.
-            if (!pageMemory) {
-                if (memory->commit())
-                    pageMemory = memory;
-                else
-                    delete memory;
-            } else {
-                Heap::freePagePool()->addFreePage(m_index, memory);
-            }
+            Heap::freePagePool()->addFreePage(m_index, PageMemory::setupPageMemoryInRegion(region, offset, blinkPagePayloadSize()));
             offset += blinkPageSize;
         }
+        pageMemory = Heap::freePagePool()->takeFreePage(m_index);
     }
     HeapPage<Header>* page = new (pageMemory->writableStart()) HeapPage<Header>(pageMemory, this, gcInfo);
     // Use a separate list for pages allocated during sweeping to make
@@ -1838,16 +1749,18 @@ void LargeHeapObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotI
 }
 #endif
 
-void HeapDoesNotContainCache::flush()
+template<typename Entry>
+void HeapExtentCache<Entry>::flush()
 {
     if (m_hasEntries) {
         for (int i = 0; i < numberOfEntries; i++)
-            m_entries[i] = 0;
+            m_entries[i] = Entry();
         m_hasEntries = false;
     }
 }
 
-size_t HeapDoesNotContainCache::hash(Address address)
+template<typename Entry>
+size_t HeapExtentCache<Entry>::hash(Address address)
 {
     size_t value = (reinterpret_cast<size_t>(address) >> blinkPageSizeLog2);
     value ^= value >> numberOfEntriesLog2;
@@ -1856,26 +1769,41 @@ size_t HeapDoesNotContainCache::hash(Address address)
     return value & ~1; // Returns only even number.
 }
 
-bool HeapDoesNotContainCache::lookup(Address address)
+template<typename Entry>
+typename Entry::LookupResult HeapExtentCache<Entry>::lookup(Address address)
 {
     size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
-    if (m_entries[index] == cachePage)
-        return m_entries[index];
-    if (m_entries[index + 1] == cachePage)
-        return m_entries[index + 1];
+    if (m_entries[index].address() == cachePage)
+        return m_entries[index].result();
+    if (m_entries[index + 1].address() == cachePage)
+        return m_entries[index + 1].result();
     return 0;
 }
 
-void HeapDoesNotContainCache::addEntry(Address address)
+template<typename Entry>
+void HeapExtentCache<Entry>::addEntry(Address address, typename Entry::LookupResult entry)
 {
     m_hasEntries = true;
     size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
     m_entries[index + 1] = m_entries[index];
-    m_entries[index] = cachePage;
+    m_entries[index] = Entry(cachePage, entry);
+}
+
+// These should not be needed, but it seems impossible to persuade clang to
+// instantiate the template functions and export them from a shared library, so
+// we add these in the non-templated subclass, which does not have that issue.
+void HeapContainsCache::addEntry(Address address, BaseHeapPage* page)
+{
+    HeapExtentCache<PositiveEntry>::addEntry(address, page);
+}
+
+BaseHeapPage* HeapContainsCache::lookup(Address address)
+{
+    return HeapExtentCache<PositiveEntry>::lookup(address);
 }
 
 void Heap::flushHeapDoesNotContainCache()
@@ -2178,8 +2106,6 @@ void Heap::doShutdown()
     s_markingStack = 0;
     delete s_ephemeronStack;
     s_ephemeronStack = 0;
-    delete s_regionTree;
-    s_regionTree = 0;
     ThreadState::shutdown();
 }
 
@@ -2211,20 +2137,22 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
         return 0;
 #endif
 
-    if (BaseHeapPage* page = lookup(address)) {
-        ASSERT(page->contains(address));
-        ASSERT(!s_heapDoesNotContainCache->lookup(address));
-        page->checkAndMarkPointer(visitor, address);
-        // FIXME: We only need to set the conservative flag if checkAndMarkPointer actually marked the pointer.
-        s_lastGCWasConservative = true;
-        return address;
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        if ((*it)->checkAndMarkPointer(visitor, address)) {
+            // Pointer was in a page of that thread. If it actually pointed
+            // into an object then that object was found and marked.
+            ASSERT(!s_heapDoesNotContainCache->lookup(address));
+            s_lastGCWasConservative = true;
+            return address;
+        }
     }
 
 #if !ENABLE(ASSERT)
-    s_heapDoesNotContainCache->addEntry(address);
+    s_heapDoesNotContainCache->addEntry(address, true);
 #else
     if (!s_heapDoesNotContainCache->lookup(address))
-        s_heapDoesNotContainCache->addEntry(address);
+        s_heapDoesNotContainCache->addEntry(address, true);
 #endif
     return 0;
 }
@@ -2782,89 +2710,6 @@ void HeapAllocator::backingFree(void* address)
     heap->promptlyFreeObject(header);
 }
 
-BaseHeapPage* Heap::lookup(Address address)
-{
-    if (!s_regionTree)
-        return 0;
-    if (PageMemoryRegion* region = s_regionTree->lookup(address))
-        return region->pageFromAddress(address);
-    return 0;
-}
-
-static Mutex& regionTreeMutex()
-{
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    return mutex;
-}
-
-void Heap::removePageMemoryRegion(PageMemoryRegion* region)
-{
-    // Deletion of large objects (and thus their regions) can happen concurrently
-    // on sweeper threads. Removal can also happen during thread shutdown, but
-    // that case is safe. Regardless, we make all removals mutually exclusive.
-    MutexLocker locker(regionTreeMutex());
-    RegionTree::remove(region, &s_regionTree);
-}
-
-void Heap::addPageMemoryRegion(PageMemoryRegion* region)
-{
-    ASSERT(ThreadState::isAnyThreadInGC());
-    RegionTree::add(new RegionTree(region), &s_regionTree);
-}
-
-PageMemoryRegion* Heap::RegionTree::lookup(Address address)
-{
-    RegionTree* current = s_regionTree;
-    while (current) {
-        Address base = current->m_region->base();
-        if (address < base) {
-            current = current->m_left;
-            continue;
-        }
-        if (address >= base + current->m_region->size()) {
-            current = current->m_right;
-            continue;
-        }
-        ASSERT(current->m_region->contains(address));
-        return current->m_region;
-    }
-    return 0;
-}
-
-void Heap::RegionTree::add(RegionTree* newTree, RegionTree** context)
-{
-    ASSERT(newTree);
-    Address base = newTree->m_region->base();
-    for (RegionTree* current = *context; current; current = *context) {
-        ASSERT(!current->m_region->contains(base));
-        context = (base < current->m_region->base()) ? &current->m_left : &current->m_right;
-    }
-    *context = newTree;
-}
-
-void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
-{
-    ASSERT(region);
-    ASSERT(context);
-    ASSERT(*context);
-    Address base = region->base();
-    RegionTree* current = *context;
-    for ( ; region != current->m_region; current = *context) {
-        context = (base < current->m_region->base()) ? &current->m_left : &current->m_right;
-        ASSERT(*context);
-    }
-    *context = 0;
-    if (current->m_left) {
-        add(current->m_left, context);
-        current->m_left = 0;
-    }
-    if (current->m_right) {
-        add(current->m_right, context);
-        current->m_right = 0;
-    }
-    delete current;
-}
-
 // Force template instantiations for the types that we need.
 template class HeapPage<FinalizedHeapObjectHeader>;
 template class HeapPage<HeapObjectHeader>;
@@ -2882,6 +2727,4 @@ bool Heap::s_shutdownCalled = false;
 bool Heap::s_lastGCWasConservative = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
-Heap::RegionTree* Heap::s_regionTree = 0;
-
 }

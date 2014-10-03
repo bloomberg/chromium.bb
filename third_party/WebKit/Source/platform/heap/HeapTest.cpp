@@ -3321,7 +3321,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
-        Heap::prepareForGC();
+        Heap::makeConsistentForSweeping();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, endAddresses[i]));
