@@ -417,9 +417,8 @@ def get_run_isolated_commands(
     '--isolate-server', isolate_server,
     '--namespace', namespace,
   ]
-  if profile:
-    run_cmd.append('--profile')
-  if verbose:
+  # TODO(maruel): Decide what to do with profile.
+  if verbose or profile:
     run_cmd.append('--verbose')
   # Pass all extra args for run_isolated.py, it will pass them to the command.
   if extra_args:
