@@ -45,7 +45,7 @@ InspectorTest.showPanel = function(panelId)
 {
     if (panelId === "extension")
         panelId = WebInspector.inspectorView._tabbedPane._tabs[WebInspector.inspectorView._tabbedPane._tabs.length - 1].id;
-    WebInspector.inspectorView._loadAndShowPanel(panelId);
+    return WebInspector.inspectorView.showPanel(panelId);
 }
 
 InspectorTest.runExtensionTests = function()
@@ -66,7 +66,7 @@ InspectorTest.runExtensionTests = function()
 
 function extension_showPanel(panelId, callback)
 {
-    evaluateOnFrontend("InspectorTest.showPanel(unescape('" + escape(panelId) + "')); reply();", callback);
+    evaluateOnFrontend("InspectorTest.showPanel(unescape('" + escape(panelId) + "')).then(function() { reply(); });", callback);
 }
 
 var test = function()
