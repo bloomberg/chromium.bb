@@ -1,0 +1,146 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("system_config") {
+  defines = [
+    # Ensures that dependent projects import the core functions on Windows.
+    "MOJO_USE_SYSTEM_IMPL",
+  ]
+}
+
+component("system") {
+  output_name = "mojo_system_impl"
+
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//mojo/embedder",
+  ]
+
+  defines = [
+    "MOJO_SYSTEM_IMPL_IMPLEMENTATION",
+    "MOJO_SYSTEM_IMPLEMENTATION",
+  ]
+
+  all_dependent_configs = [ ":system_config" ]
+
+  sources = [
+    "channel.cc",
+    "channel.h",
+    "channel_endpoint.cc",
+    "channel_endpoint.h",
+    "constants.h",
+    "core.cc",
+    "core.h",
+    "data_pipe.cc",
+    "data_pipe.h",
+    "data_pipe_consumer_dispatcher.cc",
+    "data_pipe_consumer_dispatcher.h",
+    "data_pipe_producer_dispatcher.cc",
+    "data_pipe_producer_dispatcher.h",
+    "dispatcher.cc",
+    "dispatcher.h",
+    "entrypoints.cc",
+    "handle_signals_state.h",
+    "handle_table.cc",
+    "handle_table.h",
+    "local_data_pipe.cc",
+    "local_data_pipe.h",
+    "local_message_pipe_endpoint.cc",
+    "local_message_pipe_endpoint.h",
+    "mapping_table.cc",
+    "mapping_table.h",
+    "memory.cc",
+    "memory.h",
+    "message_in_transit.cc",
+    "message_in_transit.h",
+    "message_in_transit_queue.cc",
+    "message_in_transit_queue.h",
+    "message_pipe.cc",
+    "message_pipe.h",
+    "message_pipe_dispatcher.cc",
+    "message_pipe_dispatcher.h",
+    "message_pipe_endpoint.cc",
+    "message_pipe_endpoint.h",
+    "options_validation.h",
+    "platform_handle_dispatcher.cc",
+    "platform_handle_dispatcher.h",
+    "proxy_message_pipe_endpoint.cc",
+    "proxy_message_pipe_endpoint.h",
+    "raw_channel.cc",
+    "raw_channel.h",
+    "raw_channel_posix.cc",
+    "raw_channel_win.cc",
+    "shared_buffer_dispatcher.cc",
+    "shared_buffer_dispatcher.h",
+    "simple_dispatcher.cc",
+    "simple_dispatcher.h",
+    "transport_data.cc",
+    "transport_data.h",
+    "waiter.cc",
+    "waiter.h",
+    "waiter_list.cc",
+    "waiter_list.h",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_system_unittests
+test("mojo_system_unittests") {
+  deps = [
+    ":system",
+    "//base",
+    "//mojo/common/test:test_support",
+    "//mojo/embedder:embedder_unittests",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "channel_unittest.cc",
+    "core_unittest.cc",
+    "core_test_base.cc",
+    "core_test_base.h",
+    "data_pipe_unittest.cc",
+    "dispatcher_unittest.cc",
+    "local_data_pipe_unittest.cc",
+    "memory_unittest.cc",
+    "message_pipe_dispatcher_unittest.cc",
+    "message_pipe_test_utils.h",
+    "message_pipe_test_utils.cc",
+    "message_pipe_unittest.cc",
+    "multiprocess_message_pipe_unittest.cc",
+    "options_validation_unittest.cc",
+    "platform_handle_dispatcher_unittest.cc",
+    "raw_channel_unittest.cc",
+    "remote_message_pipe_unittest.cc",
+    "run_all_unittests.cc",
+    "shared_buffer_dispatcher_unittest.cc",
+    "simple_dispatcher_unittest.cc",
+    "test_utils.cc",
+    "test_utils.h",
+    "waiter_list_unittest.cc",
+    "waiter_test_utils.cc",
+    "waiter_test_utils.h",
+    "waiter_unittest.cc",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_message_pipe_perftests
+test("mojo_message_pipe_perftests") {
+  deps = [
+    ":system",
+    "//base",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//mojo/common/test:test_support",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "message_pipe_perftest.cc",
+    "message_pipe_test_utils.h",
+    "message_pipe_test_utils.cc",
+    "test_utils.cc",
+    "test_utils.h",
+  ]
+}

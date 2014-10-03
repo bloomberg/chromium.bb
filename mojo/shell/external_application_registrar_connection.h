@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/edk/embedder/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"

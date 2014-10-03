@@ -1,4 +1,4 @@
 include_rules = [
   "+mojo/public",
-  "+mojo/edk/embedder",
+  "+mojo/embedder",
 ]

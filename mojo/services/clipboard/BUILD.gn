@@ -31,10 +31,10 @@ test("mojo_clipboard_unittests") {
     "//mojo/application_manager",
     "//mojo/common",
     "//mojo/common/test:run_all_unittests",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/services/public/interfaces/clipboard:clipboard",
     "//mojo/shell:test_support",
+    "//mojo/system",
     "//testing/gtest",
   ]
 

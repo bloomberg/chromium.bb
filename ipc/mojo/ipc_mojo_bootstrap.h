@@ -9,7 +9,7 @@
 #include "base/process/process_handle.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 
 namespace IPC {
 

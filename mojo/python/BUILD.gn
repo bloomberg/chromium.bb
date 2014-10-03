@@ -19,7 +19,7 @@ python_binary_module("embedder") {
     "system/mojo/embedder.pyx",
   ]
   deps = [
-    "//mojo/edk/system",
+    "//mojo/system",
   ]
   datadeps = [
     "//mojo/public/python:system",

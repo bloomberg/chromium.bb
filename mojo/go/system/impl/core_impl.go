@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package impl
+package impl;
 
 /*
 #include "mojo/public/platform/native/system_thunks.h"
 */
 import "C"
-import "mojo/public/go/mojo/edk/system"
+import "mojo/public/go/mojo/system"
+
 
 type CoreImpl struct {
 }
 
 func (c CoreImpl) GetTimeTicksNow() int64 {
-	return (int64)(C.MojoGetTimeTicksNow())
+	return (int64)(C.MojoGetTimeTicksNow());
 }
 
-var lazyInstance *CoreImpl = nil
+var lazyInstance *CoreImpl = nil;
 
 func GetCore() system.Core {
 	if lazyInstance == nil {
-		lazyInstance = new(CoreImpl)
+		lazyInstance = new(CoreImpl);
 	}
-	return lazyInstance
+	return lazyInstance;
 }

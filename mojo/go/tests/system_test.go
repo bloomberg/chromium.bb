@@ -6,18 +6,18 @@ package tests
 
 import "mojo/go/system/embedder"
 import "mojo/go/system/impl"
-import "mojo/public/go/mojo/edk/system"
+import "mojo/public/go/mojo/system"
 import "testing"
 
 func Init() {
-	embedder.InitializeMojoEmbedder()
+	embedder.InitializeMojoEmbedder();
 }
 
 func TestGetTimeTicksNow(t *testing.T) {
-	Init()
-	var c system.Core = impl.GetCore()
-	x := c.GetTimeTicksNow()
-	if x < 10 {
-		t.Error("Invalid GetTimeTicksNow return value")
+	Init();
+	var c system.Core = impl.GetCore();
+	x := c.GetTimeTicksNow();
+	if (x < 10) {
+		t.Error("Invalid GetTimeTicksNow return value");
 	}
 }

@@ -35,7 +35,7 @@ include_rules = [
   "+mojo/application_manager",
   "+mojo/bindings/js",
   "+mojo/common",
-  "+mojo/edk/embedder",
+  "+mojo/embedder",
   "+mojo/public",
   "+net",
   "+ppapi",

@@ -13,7 +13,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/test/test_extensions_client.h"
-#include "mojo/edk/embedder/test_embedder.h"
+#include "mojo/embedder/test_embedder.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/gl_surface.h"
 

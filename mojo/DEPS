@@ -2,6 +2,6 @@ include_rules = [
   "+base",
   "+build",
   "+mojo",
-  "-mojo/edk/system",
+  "-mojo/system",
   "+testing",
 ]

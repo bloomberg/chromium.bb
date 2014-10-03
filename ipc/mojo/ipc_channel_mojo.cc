@@ -10,7 +10,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/mojo/ipc_channel_mojo_readers.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/embedder/embedder.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
 #include "ipc/file_descriptor_set_posix.h"

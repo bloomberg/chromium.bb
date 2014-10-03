@@ -18,7 +18,7 @@ include_rules = [
   "+gin/public",
   "+grit",  # For generated headers. TODO(thestig): Remove.
   "+media/base",
-  "+mojo/edk/embedder",
+  "+mojo/embedder",
   "+sandbox/win/tests",
   "+win8/test",
 ]

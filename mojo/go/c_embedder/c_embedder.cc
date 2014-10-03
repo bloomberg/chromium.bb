@@ -5,8 +5,8 @@
 #include "mojo/go/c_embedder/c_embedder.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
+#include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 
 #ifdef __cplusplus
 extern "C" {

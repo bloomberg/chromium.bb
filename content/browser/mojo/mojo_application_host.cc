@@ -7,7 +7,7 @@
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/embedder/platform_channel_pair.h"
 
 namespace content {
 namespace {

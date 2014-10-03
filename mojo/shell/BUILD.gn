@@ -34,11 +34,11 @@ source_set("lib") {
     "//mojo/application",
     "//mojo/application_manager",
     "//mojo/common",
-    "//mojo/edk/system",
     "//mojo/gles2",
     "//mojo/public/interfaces/application",
     "//mojo/services/public/interfaces/network",
     "//mojo/spy",
+    "//mojo/system",
   ]
 
   sources = [
@@ -133,10 +133,10 @@ test("mojo_shell_tests") {
     "//net:test_support",
     "//url",
     "//mojo/application_manager",
-    "//mojo/common",
-    "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//mojo/services/test_service:bindings",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/system",
   ]
 
   datadeps = [
@@ -171,7 +171,7 @@ source_set("test_support") {
 
   deps = [
     ":lib",
-    "//mojo/edk/system",
+    "//mojo/system",
   ]
 }
 
@@ -187,8 +187,8 @@ test("mojo_external_application_tests") {
     "//url",
     "//mojo/application_manager",
     "//mojo/common",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
+    "//mojo/system",
   ]
 
   sources = [

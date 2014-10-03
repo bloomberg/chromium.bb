@@ -16,7 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/tracked_objects.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/edk/embedder/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/shell/external_application_registrar.mojom.h"
 #include "mojo/shell/incoming_connection_listener_posix.h"

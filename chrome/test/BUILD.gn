@@ -181,7 +181,7 @@ source_set("test_support_unit") {
     "//chrome:strings",
     "//chrome/browser",
     "//chrome/common",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
+    "//mojo/system",
   ]
 }

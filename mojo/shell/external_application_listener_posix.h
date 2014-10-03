@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/edk/embedder/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/shell/external_application_registrar.mojom.h"
 #include "mojo/shell/incoming_connection_listener_posix.h"

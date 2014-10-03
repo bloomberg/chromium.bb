@@ -14,9 +14,9 @@ executable("message_generator") {
   deps = [
     "//base",
     "//mojo/common",
-    "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
+    "//mojo/environment:chromium",
+    "//mojo/system",
     "//testing/gtest",
   ]
 }

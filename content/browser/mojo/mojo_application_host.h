@@ -7,8 +7,8 @@
 
 #include "base/process/process_handle.h"
 #include "content/common/mojo/service_registry_impl.h"
-#include "mojo/edk/embedder/channel_init.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/channel_init.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 
 namespace IPC {
 class Sender;

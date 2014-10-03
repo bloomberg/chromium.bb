@@ -32,9 +32,9 @@ component("application_manager") {
     "//base/third_party/dynamic_annotations",
     "//net",
     "//url",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/services/public/interfaces/content_handler:content_handler",
+    "//mojo/system",
   ]
 }
 
