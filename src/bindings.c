@@ -261,7 +261,7 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 				  uint32_t time, uint32_t key,
 				  enum wl_keyboard_key_state state)
 {
-	struct weston_binding *b;
+	struct weston_binding *b, *tmp;
 
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
 		return;
@@ -270,7 +270,7 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 	wl_list_for_each(b, &compositor->modifier_binding_list, link)
 		b->key = key;
 
-	wl_list_for_each(b, &compositor->key_binding_list, link) {
+	wl_list_for_each_safe(b, tmp, &compositor->key_binding_list, link) {
 		if (b->key == key && b->modifier == seat->modifier_state) {
 			weston_key_binding_handler_t handler = b->handler;
 			handler(seat, time, key, b->data);
@@ -291,12 +291,12 @@ weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
 				       enum weston_keyboard_modifier modifier,
 				       enum wl_keyboard_key_state state)
 {
-	struct weston_binding *b;
+	struct weston_binding *b, *tmp;
 
 	if (seat->keyboard->grab != &seat->keyboard->default_grab)
 		return;
 
-	wl_list_for_each(b, &compositor->modifier_binding_list, link) {
+	wl_list_for_each_safe(b, tmp, &compositor->modifier_binding_list, link) {
 		weston_modifier_binding_handler_t handler = b->handler;
 
 		if (b->modifier != modifier)
@@ -322,7 +322,7 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 				     uint32_t time, uint32_t button,
 				     enum wl_pointer_button_state state)
 {
-	struct weston_binding *b;
+	struct weston_binding *b, *tmp;
 
 	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
 		return;
@@ -331,7 +331,7 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 	wl_list_for_each(b, &compositor->modifier_binding_list, link)
 		b->key = button;
 
-	wl_list_for_each(b, &compositor->button_binding_list, link) {
+	wl_list_for_each_safe(b, tmp, &compositor->button_binding_list, link) {
 		if (b->button == button && b->modifier == seat->modifier_state) {
 			weston_button_binding_handler_t handler = b->handler;
 			handler(seat, time, button, b->data);
@@ -344,12 +344,12 @@ weston_compositor_run_touch_binding(struct weston_compositor *compositor,
 				    struct weston_seat *seat, uint32_t time,
 				    int touch_type)
 {
-	struct weston_binding *b;
+	struct weston_binding *b, *tmp;
 
 	if (seat->touch->num_tp != 1 || touch_type != WL_TOUCH_DOWN)
 		return;
 
-	wl_list_for_each(b, &compositor->touch_binding_list, link) {
+	wl_list_for_each_safe(b, tmp, &compositor->touch_binding_list, link) {
 		if (b->modifier == seat->modifier_state) {
 			weston_touch_binding_handler_t handler = b->handler;
 			handler(seat, time, b->data);
@@ -363,13 +363,13 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   uint32_t time, uint32_t axis,
 				   wl_fixed_t value)
 {
-	struct weston_binding *b;
+	struct weston_binding *b, *tmp;
 
 	/* Invalidate all active modifier bindings. */
 	wl_list_for_each(b, &compositor->modifier_binding_list, link)
 		b->key = axis;
 
-	wl_list_for_each(b, &compositor->axis_binding_list, link) {
+	wl_list_for_each_safe(b, tmp, &compositor->axis_binding_list, link) {
 		if (b->axis == axis && b->modifier == seat->modifier_state) {
 			weston_axis_binding_handler_t handler = b->handler;
 			handler(seat, time, axis, value, b->data);
@@ -387,10 +387,10 @@ weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 				    enum wl_keyboard_key_state state)
 {
 	weston_key_binding_handler_t handler;
-	struct weston_binding *binding;
+	struct weston_binding *binding, *tmp;
 	int count = 0;
 
-	wl_list_for_each(binding, &compositor->debug_binding_list, link) {
+	wl_list_for_each_safe(binding, tmp, &compositor->debug_binding_list, link) {
 		if (key != binding->key)
 			continue;
 
