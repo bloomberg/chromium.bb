@@ -1740,15 +1740,21 @@ void ChromeLauncherController::SetShelfBehaviorsFromPrefs() {
 #if defined(OS_CHROMEOS)
 void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
   const PrefService* service = profile_->GetPrefs();
+  const bool was_enabled = keyboard::IsKeyboardEnabled();
   if (!service->HasPrefPath(prefs::kTouchVirtualKeyboardEnabled)) {
     keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
   } else {
-    const bool enabled = service->GetBoolean(
+    const bool enable = service->GetBoolean(
         prefs::kTouchVirtualKeyboardEnabled);
     keyboard::SetKeyboardShowOverride(
-        enabled ? keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED
+        enable ? keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED
                 : keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
   }
+  const bool is_enabled = keyboard::IsKeyboardEnabled();
+  if (was_enabled && !is_enabled)
+    ash::Shell::GetInstance()->DeactivateKeyboard();
+  else if (is_enabled && !was_enabled)
+    ash::Shell::GetInstance()->CreateKeyboard();
 }
 #endif //  defined(OS_CHROMEOS)
 
