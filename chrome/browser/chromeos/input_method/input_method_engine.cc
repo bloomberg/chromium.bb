@@ -494,10 +494,19 @@ void InputMethodEngine::HideInputView() {
 }
 
 void InputMethodEngine::EnableInputView() {
+#if defined(USE_ATHENA)
+  // Athena does not currently support an extension-based VK. Blocking the
+  // override forces Athena to use to the system fallback VK, without
+  // interfering with the rest of the IME system.
+  // TODO(shuchen|kevers): Remove override suppression once supported.
+  // See crbug/407579, crbug/414940 and crbug/418078.
+  NOTIMPLEMENTED();
+#else
   keyboard::SetOverrideContentUrl(input_method::InputMethodManager::Get()
                                       ->GetActiveIMEState()
                                       ->GetCurrentInputMethod()
                                       .input_view_url());
+#endif
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
