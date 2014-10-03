@@ -23,6 +23,7 @@ class ExtensionActionHandler : public ManifestHandler {
                         std::vector<InstallWarning>* warnings) const OVERRIDE;
 
  private:
+  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionHandler);

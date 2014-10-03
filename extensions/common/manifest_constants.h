@@ -150,7 +150,7 @@ extern const char kSpellcheckDictionaryPath[];
 extern const char kStorageManagedSchema[];
 extern const char kSubPackagePath[];
 extern const char kSuggestedKey[];
-extern const char kSynthesizeBrowserAction[];
+extern const char kSynthesizeExtensionAction[];
 extern const char kSystemIndicator[];
 extern const char kTheme[];
 extern const char kThemeColors[];
