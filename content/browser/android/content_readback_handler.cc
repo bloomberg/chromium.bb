@@ -31,7 +31,7 @@ void OnFinishCopyOutputRequest(
   }
 
   scoped_ptr<SkBitmap> bitmap = copy_output_result->TakeBitmap();
-  result_callback.Run(true, *bitmap.Pass());
+  result_callback.Run(true, *bitmap);
 }
 
 }  // anonymous namespace

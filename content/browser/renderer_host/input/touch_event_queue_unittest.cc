@@ -51,8 +51,10 @@ class TouchEventQueueTest : public testing::Test,
       const TouchEventWithLatencyInfo& event) OVERRIDE {
     ++sent_event_count_;
     last_sent_event_ = event.event;
-    if (sync_ack_result_)
-      SendTouchEventAck(*sync_ack_result_.Pass());
+    if (sync_ack_result_) {
+      auto sync_ack_result = sync_ack_result_.Pass();
+      SendTouchEventAck(*sync_ack_result);
+    }
   }
 
   virtual void OnTouchEventAck(

@@ -518,7 +518,8 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
     if (pending_async_touchmove_->CanCoalesceWith(touch)) {
       pending_async_touchmove_->CoalesceWith(touch);
       pending_async_touchmove_->event.cancelable = !send_touch_events_async_;
-      touch = *pending_async_touchmove_.Pass();
+      touch = *pending_async_touchmove_;
+      pending_async_touchmove_.reset();
     } else {
       scoped_ptr<TouchEventWithLatencyInfo> async_move =
           pending_async_touchmove_.Pass();

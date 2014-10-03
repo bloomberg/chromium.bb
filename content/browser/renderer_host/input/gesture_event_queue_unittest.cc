@@ -59,8 +59,10 @@ class GestureEventQueueTest : public testing::Test,
       InputEventAckState ack_result) OVERRIDE {
     ++acked_gesture_event_count_;
     last_acked_event_ = event.event;
-    if (sync_followup_event_)
-      SimulateGestureEvent(*sync_followup_event_.Pass());
+    if (sync_followup_event_) {
+      auto sync_followup_event = sync_followup_event_.Pass();
+      SimulateGestureEvent(*sync_followup_event);
+    }
   }
 
   // TouchpadTapSuppressionControllerClient

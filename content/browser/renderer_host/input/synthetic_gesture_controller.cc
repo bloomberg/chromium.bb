@@ -61,9 +61,10 @@ void SyntheticGestureController::OnDidFlushInput() {
     return;
 
   DCHECK(!pending_gesture_queue_.IsEmpty());
+  auto pending_gesture_result = pending_gesture_result_.Pass();
   StopGesture(*pending_gesture_queue_.FrontGesture(),
               pending_gesture_queue_.FrontCallback(),
-              *pending_gesture_result_.Pass());
+              *pending_gesture_result);
   pending_gesture_queue_.Pop();
 
   if (!pending_gesture_queue_.IsEmpty())
