@@ -201,6 +201,17 @@ class UnmockedGetSizeTest(cros_test_lib.TempDirTestCase):
       ctx.Copy(local_file, tempuri)
       self.assertEqual(ctx.GetSize(tempuri), 5)
 
+  def testLocal(self):
+    """Test local files."""
+    ctx = gs.GSContext()
+    f = os.path.join(self.tempdir, 'f')
+
+    osutils.Touch(f)
+    self.assertEqual(ctx.GetSize(f), 0)
+
+    osutils.WriteFile(f, 'f' * 10)
+    self.assertEqual(ctx.GetSize(f), 10)
+
 
 class LSTest(AbstractGSContextTest):
   """Tests LS/List functionality."""
@@ -1077,6 +1088,16 @@ class UnmockedStatTest(cros_test_lib.TempDirTestCase):
     with gs.TemporaryURL('testStat') as url:
       self.assertRaises(gs.GSNoSuchKey, ctx.Stat, url)
       self.assertFalse(ctx.Exists(url))
+
+  def testExists(self):
+    """Test Exists behavior with local files."""
+    ctx = gs.GSContext()
+    f = os.path.join(self.tempdir, 'f')
+
+    self.assertFalse(ctx.Exists(f))
+
+    osutils.Touch(f)
+    self.assertTrue(ctx.Exists(f))
 
 
 class CatTest(cros_test_lib.TempDirTestCase):

@@ -799,8 +799,11 @@ class GSContext(object):
     return ret
 
   def GetSize(self, path, **kwargs):
-    """Returns size of a single object."""
-    return self.Stat(path, **kwargs).content_length
+    """Returns size of a single object (local or GS)."""
+    if not path.startswith(BASE_GS_URL):
+      return os.path.getsize(path)
+    else:
+      return self.Stat(path, **kwargs).content_length
 
   def Move(self, src_path, dest_path, **kwargs):
     """Move/rename to/from GS bucket.
@@ -859,12 +862,15 @@ class GSContext(object):
     """Checks whether the given object exists.
 
     Args:
-      path: Full gs:// url of the path to check.
+      path: Local path or gs:// url to check.
       kwargs: Flags to pass to DoCommand.
 
     Returns:
       True if the path exists; otherwise returns False.
     """
+    if not path.startswith(BASE_GS_URL):
+      return os.path.exists(path)
+
     try:
       self.Stat(path, **kwargs)
     except GSNoSuchKey:
