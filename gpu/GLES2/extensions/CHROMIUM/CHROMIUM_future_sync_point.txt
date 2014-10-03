@@ -34,7 +34,8 @@ New Procedures and Functions
 
         uint InsertFutureSyncPointCHROMIUM()
 
-    creates a sync point, but does not insert it into the stream of commands.
+    creates a sync point, but does neither insert it into nor flush the
+    stream of commands.
     The returned sync point name can be waited on immediately, but will not be
     signalled until a retire command is sent, or until the context is
     destroyed, whichever happens first.

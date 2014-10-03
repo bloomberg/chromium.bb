@@ -3982,7 +3982,6 @@ GLuint GLES2Implementation::InsertFutureSyncPointCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInsertFutureSyncPointCHROMIUM");
   DCHECK(capabilities_.future_sync_points);
-  helper_->CommandBufferHelper::Flush();
   return gpu_control_->InsertFutureSyncPoint();
 }
 
