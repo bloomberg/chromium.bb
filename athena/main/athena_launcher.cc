@@ -127,6 +127,7 @@ void CreateVirtualKeyboardWithContext(content::BrowserContext* context) {
 }
 
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
+  athena::ExtensionsDelegate::CreateExtensionsDelegate(context);
   StartAthenaSession(athena::CreateContentActivityFactory(),
                      new athena::ExtensionAppModelBuilder(context));
   athena::HomeCard::Get()->RegisterSearchProvider(
@@ -155,6 +156,7 @@ void ShutdownAthena() {
     athena::ResourceManager::Shutdown();
     athena::ActivityManager::Shutdown();
     athena::HomeCard::Shutdown();
+    athena::ExtensionsDelegate::Shutdown();
     session_started = false;
   }
   athena::AppRegistry::ShutDown();
@@ -162,7 +164,6 @@ void ShutdownAthena() {
   athena::SystemUI::Shutdown();
   athena::ScreenManager::Shutdown();
   athena::InputManager::Shutdown();
-  athena::ExtensionsDelegate::Shutdown();
   athena::AthenaEnv::Shutdown();
 
   ShutdownAthenaViewsDelegate();

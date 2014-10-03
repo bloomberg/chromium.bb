@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h"
 
 #include "athena/env/public/athena_env.h"
-#include "athena/extensions/public/extensions_delegate.h"
 #include "athena/main/public/athena_launcher.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -54,7 +53,6 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
         g_browser_process->profile_manager()->GetActiveUserProfile();
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kLoginManager)) {
-      athena::ExtensionsDelegate::CreateExtensionsDelegateForChrome(profile);
       athena::CreateVirtualKeyboardWithContext(profile);
       athena::StartAthenaSessionWithContext(profile);
     } else {

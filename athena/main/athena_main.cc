@@ -101,7 +101,6 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
     athena::StartAthenaEnv(content::BrowserThread::GetBlockingPool()->
         GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-    athena::ExtensionsDelegate::CreateExtensionsDelegateForShell(context);
     athena::CreateVirtualKeyboardWithContext(context);
     athena::StartAthenaSessionWithContext(context);
   }

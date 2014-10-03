@@ -53,7 +53,7 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
 }  // namespace
 
 // static
-void ExtensionsDelegate::CreateExtensionsDelegateForShell(
+void ExtensionsDelegate::CreateExtensionsDelegate(
     content::BrowserContext* context) {
   new ShellExtensionsDelegate(context);
 }

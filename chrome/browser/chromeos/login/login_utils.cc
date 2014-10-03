@@ -92,7 +92,6 @@
 #include "url/gurl.h"
 
 #if defined(USE_ATHENA)
-#include "athena/extensions/public/extensions_delegate.h"
 #include "athena/main/public/athena_launcher.h"
 #endif
 
@@ -296,7 +295,6 @@ void LoginUtilsImpl::DoBrowserLaunchInternal(Profile* profile,
   TRACE_EVENT0("login", "LaunchBrowser");
 
 #if defined(USE_ATHENA)
-  athena::ExtensionsDelegate::CreateExtensionsDelegateForChrome(profile);
   athena::StartAthenaSessionWithContext(profile);
 #else
   StartupBrowserCreator browser_creator;

@@ -114,7 +114,7 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
 }  // namespace
 
 // static
-void ExtensionsDelegate::CreateExtensionsDelegateForChrome(
+void ExtensionsDelegate::CreateExtensionsDelegate(
     content::BrowserContext* context) {
   new ChromeExtensionsDelegate(context);
 }

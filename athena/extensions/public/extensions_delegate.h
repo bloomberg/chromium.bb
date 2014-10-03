@@ -25,12 +25,8 @@ class ATHENA_EXPORT ExtensionsDelegate {
  public:
   static ExtensionsDelegate* Get(content::BrowserContext* context);
 
-  // Creates the extension delegate for app shell environment.
-  static void CreateExtensionsDelegateForShell(
-      content::BrowserContext* context);
-
-  // Creates the extension delegate for chrome environment.
-  static void CreateExtensionsDelegateForChrome(
+  // Creates the extension delegate.
+  static void CreateExtensionsDelegate(
       content::BrowserContext* context);
 
   // Creates the extension delegate for test environment.
