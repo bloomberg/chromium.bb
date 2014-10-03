@@ -5,13 +5,14 @@
 'use strict';
 
 /**
- * Worker for requests. Fetches requests from a queue and processes them
+ * Scheduler for requests. Fetches requests from a queue and processes them
  * synchronously, taking into account priorities. The highest priority is 0.
+ * @constructor
  */
-function Worker() {
+function Scheduler() {
   /**
    * List of requests waiting to be checked. If these items are available in
-   * cache, then they are processed immediately after starting the worker.
+   * cache, then they are processed immediately after starting the scheduler.
    * However, if they have to be downloaded, then these requests are moved
    * to pendingRequests_.
    *
@@ -42,7 +43,7 @@ function Worker() {
   this.requests_ = {};
 
   /**
-   * If the worker has been started.
+   * If the scheduler has been started.
    * @type {boolean}
    * @private
    */
@@ -54,16 +55,16 @@ function Worker() {
  * @type {number}
  * @const
  */
-Worker.MAXIMUM_IN_PARALLEL = 5;
+Scheduler.MAXIMUM_IN_PARALLEL = 5;
 
 /**
  * Adds a request to the internal priority queue and executes it when requests
  * with higher priorities are finished. If the result is cached, then it is
- * processed immediately once the worker is started.
+ * processed immediately once the scheduler is started.
  *
  * @param {Request} request Request object.
  */
-Worker.prototype.add = function(request) {
+Scheduler.prototype.add = function(request) {
   if (!this.started_) {
     this.newRequests_.push(request);
     this.requests_[request.getId()] = request;
@@ -78,10 +79,10 @@ Worker.prototype.add = function(request) {
 };
 
 /**
- * Removes a request from the worker (if exists).
+ * Removes a request from the scheduler (if exists).
  * @param {string} requestId Unique ID of the request.
  */
-Worker.prototype.remove = function(requestId) {
+Scheduler.prototype.remove = function(requestId) {
   var request = this.requests_[requestId];
   if (!request)
     return;
@@ -102,10 +103,10 @@ Worker.prototype.remove = function(requestId) {
 /**
  * Starts handling requests.
  */
-Worker.prototype.start = function() {
+Scheduler.prototype.start = function() {
   this.started_ = true;
 
-  // Process tasks added before worker has been started.
+  // Process tasks added before scheduler has been started.
   this.pendingRequests_ = this.newRequests_;
   this.sortPendingRequests_();
   this.newRequests_ = [];
@@ -118,7 +119,7 @@ Worker.prototype.start = function() {
  * Sorts pending requests by priorities.
  * @private
  */
-Worker.prototype.sortPendingRequests_ = function() {
+Scheduler.prototype.sortPendingRequests_ = function() {
   this.pendingRequests_.sort(function(a, b) {
     return a.getPriority() - b.getPriority();
   });
@@ -130,10 +131,10 @@ Worker.prototype.sortPendingRequests_ = function() {
  *
  * @private
  */
-Worker.prototype.continue_ = function() {
+Scheduler.prototype.continue_ = function() {
   // Run only up to MAXIMUM_IN_PARALLEL in the same time.
   while (this.pendingRequests_.length &&
-         this.activeRequests_.length < Worker.MAXIMUM_IN_PARALLEL) {
+         this.activeRequests_.length < Scheduler.MAXIMUM_IN_PARALLEL) {
     var request = this.pendingRequests_.shift();
     this.activeRequests_.push(request);
 
@@ -153,7 +154,7 @@ Worker.prototype.continue_ = function() {
  * @param {Request} request Finished request.
  * @private
  */
-Worker.prototype.finish_ = function(request) {
+Scheduler.prototype.finish_ = function(request) {
   var index = this.activeRequests_.indexOf(request);
   if (index < 0)
     console.warn('Request not found.');

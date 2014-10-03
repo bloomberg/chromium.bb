@@ -16,7 +16,7 @@
     "scripts": [
       "image_loader.js",
       "cache.js",
-      "worker.js",
+      "scheduler.js",
       "request.js",
       "background.js"
     ],

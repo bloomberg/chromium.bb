@@ -9,7 +9,7 @@
         'depends': [
           'image_loader.js',
           'cache.js',
-          'worker.js',
+          'scheduler.js',
           'request.js',
         ],
         'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],

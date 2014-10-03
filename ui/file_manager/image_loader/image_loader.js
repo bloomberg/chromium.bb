@@ -18,13 +18,13 @@ function ImageLoader() {
 
   /**
    * Manages pending requests and runs them in order of priorities.
-   * @type {Worker}
+   * @type {Scheduler}
    * @private
    */
-  this.worker_ = new Worker();
+  this.scheduler_ = new Scheduler();
 
   // Grant permissions to all volumes, initialize the cache and then start the
-  // worker.
+  // scheduler.
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     var initPromises = volumeMetadataList.map(function(volumeMetadata) {
       var requestPromise = new Promise(function(callback) {
@@ -36,8 +36,8 @@ function ImageLoader() {
     });
     initPromises.push(new Promise(this.cache_.initialize.bind(this.cache_)));
 
-    // After all initialization promises are done, start the worker.
-    Promise.all(initPromises).then(this.worker_.start.bind(this.worker_));
+    // After all initialization promises are done, start the scheduler.
+    Promise.all(initPromises).then(this.scheduler_.start.bind(this.scheduler_));
 
     // Listen for mount events, and grant permissions to volumes being mounted.
     chrome.fileManagerPrivate.onMountCompleted.addListener(
@@ -94,12 +94,12 @@ ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
   var requestId = senderId + ':' + request.taskId;
   if (request.cancel) {
     // Cancel a task.
-    this.worker_.remove(requestId);
+    this.scheduler_.remove(requestId);
     return false;  // No callback calls.
   } else {
-    // Create a request task and add it to the worker (queue).
+    // Create a request task and add it to the scheduler (queue).
     var requestTask = new Request(requestId, this.cache_, request, callback);
-    this.worker_.add(requestTask);
+    this.scheduler_.add(requestTask);
     return true;  // Request will call the callback.
   }
 };
