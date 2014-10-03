@@ -38,6 +38,7 @@ group("tests") {
   deps = [
     "//mojo/application_manager:mojo_application_manager_unittests",
     "//mojo/apps/js/test:mojo_apps_js_unittests",
+    "//mojo/bindings/js/tests:mojo_js_unittests",
     "//mojo/common:mojo_common_unittests",
     "//mojo/public/c/system/tests:perftests",
     "//mojo/public/cpp/application/tests:mojo_public_application_unittests",
@@ -45,7 +46,6 @@ group("tests") {
     "//mojo/public/cpp/environment/tests:mojo_public_environment_unittests",
     "//mojo/public/cpp/system/tests:mojo_public_system_unittests",
     "//mojo/public/cpp/utility/tests:mojo_public_utility_unittests",
-    "//mojo/public/js/bindings/tests:mojo_js_unittests",
     "//mojo/services/clipboard:mojo_clipboard_unittests",
     "//mojo/services/public/cpp/surfaces/tests:mojo_surfaces_lib_unittests",
     "//mojo/shell:mojo_external_application_tests",

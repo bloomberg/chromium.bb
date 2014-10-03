@@ -41,6 +41,7 @@
         'mojo_html_viewer',
         'mojo_js_content_handler',
         'mojo_js_standalone',
+        'mojo_js_unittests',
         'mojo_native_viewport_service',
         'mojo_network_service',
         'mojo_pepper_container_app',
@@ -373,6 +374,23 @@
         'cc/output_surface_mojo.h',
       ],
     },
+    {
+      # GN version: //mojo/bindings/js/tests:mojo_js_unittests
+      'target_name': 'mojo_js_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../gin/gin.gyp:gin_test',
+        'mojo_base.gyp:mojo_common_test_support',
+        'mojo_base.gyp:mojo_environment_standalone',
+        'mojo_base.gyp:mojo_js_bindings_lib',
+        'mojo_base.gyp:mojo_public_test_interfaces',
+        'mojo_base.gyp:mojo_run_all_unittests',
+        'mojo_base.gyp:mojo_utility',
+      ],
+      'sources': [
+        'bindings/js/tests/run_js_tests.cc',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"', {
@@ -661,6 +679,23 @@
           ],
           'sources': [
             'mojo_python_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_js_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_js_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_js_unittests.isolate',
           ],
         },
       ],

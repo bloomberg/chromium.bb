@@ -25,7 +25,6 @@
         'mojo_common_unittests',
         'mojo_cpp_bindings',
         'mojo_js_bindings',
-        'mojo_js_unittests',
         'mojo_message_generator',
         'mojo_message_pipe_perftests',
         'mojo_public_application_unittests',
@@ -638,23 +637,6 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
       ]
-    }],
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          'target_name': 'mojo_js_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'mojo_js_unittests',
-          ],
-          'includes': [
-            '../build/isolate.gypi',
-          ],
-          'sources': [
-            'mojo_js_unittests.isolate',
-          ],
-        },
-      ],
     }],
   ]
 }
