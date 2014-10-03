@@ -117,7 +117,6 @@ public:
         , m_currentBufferSize(0)
         , m_decodingSizeOnly(false)
         , m_hasAlpha(false)
-        , m_interlaceBuffer(0)
 #if USE(QCMSLIB)
         , m_transform(0)
         , m_rowBuffer()
@@ -141,8 +140,6 @@ public:
 #if USE(QCMSLIB)
         clearColorTransform();
 #endif
-        delete[] m_interlaceBuffer;
-        m_interlaceBuffer = 0;
         m_readOffset = 0;
     }
 
@@ -178,8 +175,8 @@ public:
     void setHasAlpha(bool hasAlpha) { m_hasAlpha = hasAlpha; }
     bool hasAlpha() const { return m_hasAlpha; }
 
-    png_bytep interlaceBuffer() const { return m_interlaceBuffer; }
-    void createInterlaceBuffer(int size) { m_interlaceBuffer = new png_byte[size]; }
+    png_bytep interlaceBuffer() const { return m_interlaceBuffer.get(); }
+    void createInterlaceBuffer(int size) { m_interlaceBuffer = adoptArrayPtr(new png_byte[size]); }
 #if USE(QCMSLIB)
     png_bytep rowBuffer() const { return m_rowBuffer.get(); }
     void createRowBuffer(int size) { m_rowBuffer = adoptArrayPtr(new png_byte[size]); }
@@ -221,7 +218,7 @@ private:
     unsigned m_currentBufferSize;
     bool m_decodingSizeOnly;
     bool m_hasAlpha;
-    png_bytep m_interlaceBuffer;
+    OwnPtr<png_byte[]> m_interlaceBuffer;
 #if USE(QCMSLIB)
     qcms_transform* m_transform;
     OwnPtr<png_byte[]> m_rowBuffer;
