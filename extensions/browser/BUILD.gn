@@ -152,6 +152,8 @@ source_set("browser") {
       "api/serial/serial_connection.h",
       "api/serial/serial_event_dispatcher.cc",
       "api/serial/serial_event_dispatcher.h",
+      "api/shell_private/shell_private_api.cc",
+      "api/shell_private/shell_private_api.h",
       "api/socket/socket.cc",
       "api/socket/socket.h",
       "api/socket/socket_api.cc",

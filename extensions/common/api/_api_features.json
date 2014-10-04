@@ -170,6 +170,11 @@
     "dependencies": ["permission:serial"],
     "contexts": ["blessed_extension"]
   },
+  "shellPrivate": {
+    "channel": "trunk",
+    "extension_types": ["platform_app"],
+    "contexts": ["blessed_extension"]
+  },
   "socket": {
     "dependencies": ["permission:socket"],
     "contexts": ["blessed_extension"]

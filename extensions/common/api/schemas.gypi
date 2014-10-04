@@ -29,6 +29,7 @@
       'power.idl',
       'runtime.json',
       'serial.idl',
+      'shell_private.idl',
       'socket.idl',
       'sockets_tcp.idl',
       'sockets_tcp_server.idl',
