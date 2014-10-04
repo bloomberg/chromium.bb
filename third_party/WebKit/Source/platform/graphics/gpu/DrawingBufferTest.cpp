@@ -190,7 +190,7 @@ public:
         PreserveDrawingBuffer preserve,
         PassRefPtr<ContextEvictionManager> contextEvictionManager)
         : DrawingBuffer(context, extensionsUtil, false /* multisampleExtensionSupported */,
-            false /* packedDepthStencilExtensionSupported */, preserve, WebGraphicsContext3D::Attributes(), contextEvictionManager)
+            false /* packedDepthStencilExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes(), contextEvictionManager)
         , m_live(0)
     { }
 

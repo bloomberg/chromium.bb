@@ -102,8 +102,11 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
     bool packedDepthStencilSupported = extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil");
     if (packedDepthStencilSupported)
         extensionsUtil->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
+    bool discardFramebufferSupported = extensionsUtil->supportsExtension("GL_EXT_discard_framebuffer");
+    if (discardFramebufferSupported)
+        extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, preserve, requestedAttributes, contextEvictionManager));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, discardFramebufferSupported, preserve, requestedAttributes, contextEvictionManager));
     if (!drawingBuffer->initialize(size)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -115,6 +118,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     PassOwnPtr<Extensions3DUtil> extensionsUtil,
     bool multisampleExtensionSupported,
     bool packedDepthStencilExtensionSupported,
+    bool discardFramebufferSupported,
     PreserveDrawingBuffer preserve,
     WebGraphicsContext3D::Attributes requestedAttributes,
     PassRefPtr<ContextEvictionManager> contextEvictionManager)
@@ -129,6 +133,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_requestedAttributes(requestedAttributes)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_packedDepthStencilExtensionSupported(packedDepthStencilExtensionSupported)
+    , m_discardFramebufferSupported(discardFramebufferSupported)
     , m_fbo(0)
     , m_depthStencilBuffer(0)
     , m_depthBuffer(0)
@@ -264,6 +269,12 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
             m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0, m_sampleCount);
         else
             m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0);
+
+        if (m_discardFramebufferSupported) {
+            // Explicitly discard framebuffer to save GPU memory bandwidth for tile-based GPU arch.
+            const WGC3Denum attachments[3] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+            m_context->discardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
+        }
     } else {
         m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
     }

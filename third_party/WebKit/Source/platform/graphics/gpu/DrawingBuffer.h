@@ -136,6 +136,8 @@ public:
 
     Platform3DObject framebuffer() const;
 
+    bool discardFramebufferSupported() const { return m_discardFramebufferSupported; }
+
     void markContentsChanged();
     void markLayerComposited();
     bool layerComposited() const;
@@ -169,6 +171,7 @@ protected: // For unittests
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
         bool packedDepthStencilExtensionSupported,
+        bool discardFramebufferSupported,
         PreserveDrawingBuffer,
         WebGraphicsContext3D::Attributes requestedAttributes,
         PassRefPtr<ContextEvictionManager>);
@@ -239,6 +242,7 @@ private:
     WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
+    bool m_discardFramebufferSupported;
     Platform3DObject m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     TextureInfo m_colorBuffer;

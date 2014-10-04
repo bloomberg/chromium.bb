@@ -814,7 +814,7 @@ bool WebGLRenderingContextBase::clearIfComposited(GLbitfield mask)
     if (isContextLost())
         return false;
 
-    if (!drawingBuffer()->layerComposited() || m_layerCleared
+    if (!drawingBuffer()->layerComposited() || drawingBuffer()->discardFramebufferSupported() || m_layerCleared
         || m_requestedAttributes->preserveDrawingBuffer() || (mask && m_framebufferBinding))
         return false;
 
