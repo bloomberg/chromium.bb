@@ -113,6 +113,10 @@ def using_blacklist(item):
   the assumption doesn't hold true anymore for a file format, remove it from
   this list. This is simply an optimization.
   """
+  # *.json is ignored below, *.isolated.gen.json is an exception, it is produced
+  # by isolate_driver.py in 'test_isolation_mode==prepare'.
+  if item.endswith('.isolated.gen.json'):
+    return True
   IGNORED = (
     '.a', '.cc', '.css', '.def', '.frag', '.h', '.html', '.js', '.json',
     '.manifest', '.o', '.obj', '.pak', '.png', '.pdb', '.strings', '.test',
