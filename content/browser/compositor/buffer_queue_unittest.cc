@@ -156,10 +156,10 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
       CreateOutputSurfaceWithMock(&context);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, Ne(0U)));
   EXPECT_CALL(*context, destroyImageCHROMIUM(1));
-  Expectation image = EXPECT_CALL(*context,
-                                  createGpuMemoryBufferImageCHROMIUM(
-                                      0, 0, GL_RGBA, GL_IMAGE_SCANOUT_CHROMIUM))
-                          .WillOnce(Return(1));
+  Expectation image =
+      EXPECT_CALL(*context,
+                  createGpuMemoryBufferImageCHROMIUM(
+                      0, 0, GL_RGBA, GL_SCANOUT_CHROMIUM)).WillOnce(Return(1));
   Expectation fb =
       EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
   Expectation tex = EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, Ne(0U)));
