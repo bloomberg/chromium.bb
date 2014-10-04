@@ -7,15 +7,11 @@
 
 #include "platform/EventTracer.h"
 #include "platform/TraceEvent.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 
-class DescendantInvalidationSet;
 class Document;
-class Element;
 class Event;
 class ExecutionContext;
 class FrameView;
@@ -33,7 +29,6 @@ class ResourceResponse;
 class ScriptCallStack;
 class ScriptSourceCode;
 class StyleChangeReasonForTracing;
-class TracedValue;
 class WorkerThread;
 class XMLHttpRequest;
 
@@ -47,38 +42,6 @@ class InspectorStyleRecalcInvalidationTrackingEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
 };
-
-class InspectorStyleInvalidatorInvalidateEvent {
-public:
-    static const char ElementHasPendingInvalidationList[];
-    static const char InvalidateCustomPseudo[];
-    static const char InvalidationSetMatchedAttribute[];
-    static const char InvalidationSetMatchedClass[];
-    static const char InvalidationSetMatchedId[];
-    static const char InvalidationSetMatchedTagName[];
-    static const char PreventStyleSharingForParent[];
-
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Element&, const char* reason);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const String&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const WillBeHeapVector<RefPtrWillBeMember<DescendantInvalidationSet> >&);
-
-private:
-    static PassRefPtr<TracedValue> fillCommonPart(Element&, const char* reason);
-};
-
-#define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \
-    TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-        "StyleInvalidatorInvalidationTracking", \
-        "data", \
-        InspectorStyleInvalidatorInvalidateEvent::data((element), (InspectorStyleInvalidatorInvalidateEvent::reason)))
-
-#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, singleSelectorPart) \
-    TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-        "StyleInvalidatorInvalidationTracking", \
-        "data", \
-        InspectorStyleInvalidatorInvalidateEvent::selectorPart((element), (InspectorStyleInvalidatorInvalidateEvent::reason), (singleSelectorPart)))
 
 class InspectorLayoutInvalidationTrackingEvent {
 public:

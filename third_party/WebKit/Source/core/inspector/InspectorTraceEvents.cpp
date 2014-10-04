@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
@@ -65,45 +64,6 @@ void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const 
         value->setString(nameFieldName, node->debugName());
 }
 
-}
-
-const char InspectorStyleInvalidatorInvalidateEvent::ElementHasPendingInvalidationList[] = "Element has pending invalidation list";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidateCustomPseudo[] = "Invalidate custom pseudo element.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedAttribute[] = "Invalidation set matched attribute.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedClass[] = "Invalidation set matched class.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedId[] = "Invalidation set matched id.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedTagName[] = "Invalidation set matched tagName.";
-const char InspectorStyleInvalidatorInvalidateEvent::PreventStyleSharingForParent[] = "Prevent style sharing for parent.";
-
-PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::fillCommonPart(Element& element, const char* reason)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    value->setString("frame", toHexString(element.document().frame()));
-    setNodeInfo(value.get(), &element, "nodeId", "nodeName");
-    value->setString("reason", reason);
-    return value.release();
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::data(Element& element, const char* reason)
-{
-    return fillCommonPart(element, reason);
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::selectorPart(Element& element, const char* reason, const String& selectorPart)
-{
-    RefPtr<TracedValue> value = fillCommonPart(element, reason);
-    value->setString("selectorPart", selectorPart);
-    return value.release();
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const WillBeHeapVector<RefPtrWillBeMember<DescendantInvalidationSet> >& invalidationList)
-{
-    RefPtr<TracedValue> value = fillCommonPart(element, ElementHasPendingInvalidationList);
-    value->beginArray("invalidationList");
-    for (const auto& invalidationSet : invalidationList)
-        invalidationSet->toTracedValue(value.get());
-    value->endArray();
-    return value.release();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleRecalcInvalidationTrackingEvent::data(Node* node, const StyleChangeReasonForTracing& reason)

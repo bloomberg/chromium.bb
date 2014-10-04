@@ -42,7 +42,6 @@
 namespace blink {
 
 class Element;
-class TracedValue;
 
 // Tracks data to determine which elements of a DOM subtree need to have style
 // recalculated.
@@ -74,8 +73,6 @@ public:
     bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes; }
 
     void trace(Visitor*);
-
-    void toTracedValue(TracedValue*) const;
 
 #ifndef NDEBUG
     void show() const;

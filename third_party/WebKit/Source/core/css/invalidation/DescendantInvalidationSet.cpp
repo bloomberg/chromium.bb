@@ -33,9 +33,6 @@
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/TracedValue.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -51,32 +48,24 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
     if (m_allDescendantsMightBeInvalid)
         return true;
 
-    if (m_tagNames && m_tagNames->contains(element.tagQName().localName())) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, InvalidationSetMatchedTagName, element.tagQName().localName());
+    if (m_tagNames && m_tagNames->contains(element.tagQName().localName()))
         return true;
-    }
 
-    if (element.hasID() && m_ids && m_ids->contains(element.idForStyleResolution())) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, InvalidationSetMatchedId, element.idForStyleResolution());
+    if (element.hasID() && m_ids && m_ids->contains(element.idForStyleResolution()))
         return true;
-    }
 
     if (element.hasClass() && m_classes) {
         const SpaceSplitString& classNames = element.classNames();
         for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it) {
-            if (classNames.contains(*it)) {
-                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, InvalidationSetMatchedClass, *it);
+            if (classNames.contains(*it))
                 return true;
-            }
         }
     }
 
     if (element.hasAttributes() && m_attributes) {
         for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it) {
-            if (element.hasAttribute(*it)) {
-                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, InvalidationSetMatchedAttribute, *it);
+            if (element.hasAttribute(*it))
                 return true;
-            }
         }
     }
 
@@ -204,54 +193,33 @@ void DescendantInvalidationSet::trace(Visitor* visitor)
 #endif
 }
 
-void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
-{
-    value->beginDictionary();
-
-    if (m_allDescendantsMightBeInvalid)
-        value->setBoolean("allDescendantsMightBeInvalid", true);
-    if (m_customPseudoInvalid)
-        value->setBoolean("customPseudoInvalid", true);
-    if (m_treeBoundaryCrossing)
-        value->setBoolean("treeBoundaryCrossing", true);
-
-    if (m_ids) {
-        value->beginArray("ids");
-        for (const auto& id : *m_ids)
-            value->pushString(id);
-        value->endArray();
-    }
-
-    if (m_classes) {
-        value->beginArray("classes");
-        for (const auto& className : *m_classes)
-            value->pushString(className);
-        value->endArray();
-    }
-
-    if (m_tagNames) {
-        value->beginArray("tagNames");
-        for (const auto& tagName : *m_tagNames)
-            value->pushString(tagName);
-        value->endArray();
-    }
-
-    if (m_attributes) {
-        value->beginArray("ids");
-        for (const auto& attribute : *m_attributes)
-            value->pushString(attribute);
-        value->endArray();
-    }
-
-    value->endDictionary();
-}
-
 #ifndef NDEBUG
 void DescendantInvalidationSet::show() const
 {
-    RefPtr<TracedValue> value = TracedValue::create();
-    toTracedValue(value.get());
-    fprintf(stderr, "%s\n", value->asTraceFormat().ascii().data());
+    fprintf(stderr, "DescendantInvalidationSet { ");
+    if (m_allDescendantsMightBeInvalid)
+        fprintf(stderr, "* ");
+    if (m_customPseudoInvalid)
+        fprintf(stderr, "::custom ");
+    if (m_treeBoundaryCrossing)
+        fprintf(stderr, "::shadow/deep/ ");
+    if (m_ids) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_ids->begin(); it != m_ids->end(); ++it)
+            fprintf(stderr, "#%s ", (*it).ascii().data());
+    }
+    if (m_classes) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it)
+            fprintf(stderr, ".%s ", (*it).ascii().data());
+    }
+    if (m_tagNames) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_tagNames->begin(); it != m_tagNames->end(); ++it)
+            fprintf(stderr, "<%s> ", (*it).ascii().data());
+    }
+    if (m_attributes) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it)
+            fprintf(stderr, "[%s] ", (*it).ascii().data());
+    }
+    fprintf(stderr, "}\n");
 }
 #endif // NDEBUG
 

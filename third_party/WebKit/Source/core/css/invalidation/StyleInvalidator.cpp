@@ -13,7 +13,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/inspector/InspectorTraceEvents.h"
 #include "core/rendering/RenderObject.h"
 
 namespace blink {
@@ -87,10 +86,8 @@ bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& el
 {
     ASSERT(!m_wholeSubtreeInvalid);
 
-    if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION(element, InvalidateCustomPseudo);
+    if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom)
         return true;
-    }
 
     for (InvalidationSets::iterator it = m_invalidationSets.begin(); it != m_invalidationSets.end(); ++it) {
         if ((*it)->invalidatesElement(element))
@@ -111,13 +108,9 @@ bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element, Sty
             for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it)
                 recursionData.pushInvalidationSet(**it);
             // FIXME: It's really only necessary to clone the render style for this element, not full style recalc.
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-                "StyleInvalidatorInvalidationTracking",
-                "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(element, *invalidationList));
             return true;
         }
     }
-
     return recursionData.matchesCurrentInvalidationSets(element);
 }
 
@@ -155,12 +148,10 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
         element.setNeedsStyleRecalc(recursionData.wholeSubtreeInvalid() ? SubtreeStyleChange : LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
     } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
         // Clone the RenderStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
-        if (RenderObject* renderer = element.renderer()) {
+        if (RenderObject* renderer = element.renderer())
             renderer->setStyleInternal(RenderStyle::clone(renderer->style()));
-        } else {
-            TRACE_STYLE_INVALIDATOR_INVALIDATION(element, PreventStyleSharingForParent);
+        else
             element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
-        }
     }
 
     element.clearChildNeedsStyleInvalidation();
