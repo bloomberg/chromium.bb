@@ -101,8 +101,23 @@ bool ComputedHashes::Reader::GetHashes(const base::FilePath& relative_path,
                                        std::vector<std::string>* hashes) {
   base::FilePath path = relative_path.NormalizePathSeparatorsTo('/');
   std::map<base::FilePath, HashInfo>::iterator i = data_.find(path);
-  if (i == data_.end())
-    return false;
+  if (i == data_.end()) {
+    // If we didn't find the entry using exact match, it's possible the
+    // developer is using a path with some letters in the incorrect case, which
+    // happens to work on windows/osx. So try doing a linear scan to look for a
+    // case-insensitive match. In practice most extensions don't have that big
+    // a list of files so the performance penalty is probably not too big
+    // here. Also for crbug.com/29941 we plan to start warning developers when
+    // they are making this mistake, since their extension will be broken on
+    // linux/chromeos.
+    for (i = data_.begin(); i != data_.end(); ++i) {
+      const base::FilePath& entry = i->first;
+      if (base::FilePath::CompareEqualIgnoreCase(entry.value(), path.value()))
+        break;
+    }
+    if (i == data_.end())
+      return false;
+  }
   HashInfo& info = i->second;
   *block_size = info.first;
   *hashes = info.second;

@@ -62,6 +62,14 @@ TEST(ComputedHashes, ComputedHashes) {
   EXPECT_EQ(hashes1, read_hashes1);
   EXPECT_EQ(hashes2, read_hashes2);
 
+  // Make sure we can lookup hashes for a file using incorrect case
+  base::FilePath path1_badcase(FILE_PATH_LITERAL("FoO.txt"));
+  std::vector<std::string> read_hashes1_badcase;
+  EXPECT_TRUE(
+      reader.GetHashes(path1_badcase, &block_size, &read_hashes1_badcase));
+  EXPECT_EQ(block_size, 4096);
+  EXPECT_EQ(hashes1, read_hashes1_badcase);
+
   // Finally make sure that we can retrieve the hashes for the subdir
   // path even when that path contains forward slashes (on windows).
   base::FilePath path2_fwd_slashes =
