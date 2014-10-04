@@ -1475,3 +1475,5 @@ crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing/timeline-script-tag-
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-recalculate-styles.html [ Pass Failure Timeout ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-receive-response-event.html [ Pass Failure Timeout ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-script-tag-1.html [ Pass Failure Timeout ]
+
+crbug.com/420307 [ Win ] http/tests/serviceworker/fetch-frame-resource.html [ Pass Timeout ]
