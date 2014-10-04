@@ -193,7 +193,6 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
   // aura::LayoutManager:
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
     EXPECT_TRUE(child->GetProperty(aura::client::kCanMaximizeKey));
-    EXPECT_TRUE(child->GetProperty(aura::client::kCanMinimizeKey));
     EXPECT_TRUE(child->GetProperty(aura::client::kCanResizeKey));
     added_ = true;
   }
@@ -233,8 +232,8 @@ class PropertyTestWidgetDelegate : public views::WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(PropertyTestWidgetDelegate);
 };
 
-// Verifies that the kCanMaximizeKey/kCanMinimizeKey/kCanResizeKey have the
-// correct value when added to the layout manager.
+// Verifies that the kCanMaximizeKey/kCanReizeKey have the correct
+// value when added to the layout manager.
 TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
   PropertyTestLayoutManager* layout_manager = new PropertyTestLayoutManager();

@@ -109,7 +109,8 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
     "FrameCaptionButtonContainerView";
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
-    views::Widget* frame)
+    views::Widget* frame,
+    MinimizeAllowed minimize_allowed)
     : frame_(frame),
       minimize_button_(NULL),
       size_button_(NULL),
@@ -126,7 +127,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
-  minimize_button_->SetVisible(frame_->widget_delegate()->CanMinimize());
+  minimize_button_->SetVisible(minimize_allowed == MINIMIZE_ALLOWED);
   AddChildView(minimize_button_);
 
   size_button_ = new FrameSizeButton(this, frame, this);

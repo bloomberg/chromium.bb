@@ -202,7 +202,12 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
       avatar_icon_(NULL),
       caption_button_container_(NULL),
       fullscreen_visible_fraction_(0) {
-  caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
+  FrameCaptionButtonContainerView::MinimizeAllowed minimize_allowed =
+      frame_->widget_delegate()->CanMinimize() ?
+          FrameCaptionButtonContainerView::MINIMIZE_ALLOWED :
+          FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED;
+  caption_button_container_ = new FrameCaptionButtonContainerView(frame_,
+      minimize_allowed);
   caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 

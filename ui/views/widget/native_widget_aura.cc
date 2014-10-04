@@ -700,8 +700,6 @@ bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 void NativeWidgetAura::OnSizeConstraintsChanged() {
   window_->SetProperty(aura::client::kCanMaximizeKey,
                        GetWidget()->widget_delegate()->CanMaximize());
-  window_->SetProperty(aura::client::kCanMinimizeKey,
-                       GetWidget()->widget_delegate()->CanMinimize());
   window_->SetProperty(aura::client::kCanResizeKey,
                        GetWidget()->widget_delegate()->CanResize());
 }

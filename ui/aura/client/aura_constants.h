@@ -28,9 +28,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 // A property key to store the can-maximize flag.
 AURA_EXPORT extern const WindowProperty<bool>* const kCanMaximizeKey;
 
-// A property key to store the can-minimize flag.
-AURA_EXPORT extern const WindowProperty<bool>* const kCanMinimizeKey;
-
 // A property key to store the can-resize flag.
 AURA_EXPORT extern const WindowProperty<bool>* const kCanResizeKey;
 
