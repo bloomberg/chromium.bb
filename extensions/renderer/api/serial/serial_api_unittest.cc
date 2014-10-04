@@ -407,6 +407,8 @@ class SerialApiTest : public ApiTestBase {
     env()->RegisterModule("device/serial/data_stream_serialization.mojom",
                           IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS);
     env()->RegisterModule("device/serial/serial.mojom", IDR_SERIAL_MOJOM_JS);
+    env()->RegisterModule("device/serial/serial_serialization.mojom",
+                          IDR_SERIAL_SERIALIZATION_MOJOM_JS);
     service_provider()->AddService<device::serial::SerialService>(base::Bind(
         &SerialApiTest::CreateSerialService, base::Unretained(this)));
   }
@@ -465,6 +467,10 @@ TEST_F(SerialApiTest, GetInfo) {
   RunTest("serial_unittest.js", "testGetInfo");
 }
 
+TEST_F(SerialApiTest, GetInfoAfterSerialization) {
+  RunTest("serial_unittest.js", "testGetInfoAfterSerialization");
+}
+
 TEST_F(SerialApiTest, GetInfoFailToGetPortInfo) {
   io_handler_ = new FailToGetInfoTestIoHandler(1);
   RunTest("serial_unittest.js", "testGetInfoFailToGetPortInfo");
@@ -492,6 +498,12 @@ TEST_F(SerialApiTest, Update) {
   EXPECT_EQ(11u, io_handler_->num_calls());
 }
 
+TEST_F(SerialApiTest, UpdateAcrossSerialization) {
+  io_handler_ = new ConfigurePortTestIoHandler;
+  RunTest("serial_unittest.js", "testUpdateAcrossSerialization");
+  EXPECT_EQ(11u, io_handler_->num_calls());
+}
+
 TEST_F(SerialApiTest, UpdateInvalidBitrate) {
   io_handler_ = new ConfigurePortTestIoHandler;
   RunTest("serial_unittest.js", "testUpdateInvalidBitrate");
@@ -512,6 +524,10 @@ TEST_F(SerialApiTest, Echo) {
   RunTest("serial_unittest.js", "testEcho");
 }
 
+TEST_F(SerialApiTest, EchoAfterSerialization) {
+  RunTest("serial_unittest.js", "testEchoAfterSerialization");
+}
+
 TEST_F(SerialApiTest, SendDuringExistingSend) {
   RunTest("serial_unittest.js", "testSendDuringExistingSend");
 }
@@ -528,6 +544,11 @@ TEST_F(SerialApiTest, SendPartialSuccessWithError) {
 TEST_F(SerialApiTest, SendTimeout) {
   io_handler_ = new BlockSendsForeverSendIoHandler();
   RunTest("serial_unittest.js", "testSendTimeout");
+}
+
+TEST_F(SerialApiTest, SendTimeoutAfterSerialization) {
+  io_handler_ = new BlockSendsForeverSendIoHandler();
+  RunTest("serial_unittest.js", "testSendTimeoutAfterSerialization");
 }
 
 TEST_F(SerialApiTest, DisableSendTimeout) {
@@ -548,6 +569,10 @@ TEST_F(SerialApiTest, PausedReceiveError) {
 
 TEST_F(SerialApiTest, ReceiveTimeout) {
   RunTest("serial_unittest.js", "testReceiveTimeout");
+}
+
+TEST_F(SerialApiTest, ReceiveTimeoutAfterSerialization) {
+  RunTest("serial_unittest.js", "testReceiveTimeoutAfterSerialization");
 }
 
 TEST_F(SerialApiTest, DisableReceiveTimeout) {

@@ -22,7 +22,28 @@ var BUFFER_SIZE = 10;
 
 var connectionId = null;
 
-function connect(callback, options) {
+var OPTIONS_VALUES = [
+  {},  // SetPortOptions is called once during connection.
+  {bitrate: 57600},
+  {dataBits: 'seven'},
+  {dataBits: 'eight'},
+  {parityBit: 'no'},
+  {parityBit: 'odd'},
+  {parityBit: 'even'},
+  {stopBits: 'one'},
+  {stopBits: 'two'},
+  {ctsFlowControl: false},
+  {ctsFlowControl: true},
+  {bufferSize: 1},
+  {sendTimeout: 0},
+  {receiveTimeout: 0},
+  {persistent: false},
+  {name: 'name'},
+];
+
+// Create a serial connection. That serial connection will be used by the other
+// helper functions below.
+function connect(options) {
   options = options || {
     name: 'test connection',
     bufferSize: BUFFER_SIZE,
@@ -30,11 +51,117 @@ function connect(callback, options) {
     sendTimeout: 6789,
     persistent: true,
   };
-  serial.connect('device', options, test.callbackPass(function(connectionInfo) {
-    connectionId = connectionInfo.connectionId;
-    if (callback)
-      callback(connectionInfo);
-  }));
+  return utils.promise(serial.connect, 'device', options).then(function(info) {
+    connectionId = info.connectionId;
+    return info;
+  });
+}
+
+// Serialize and deserialize all serial connections, preserving onData and
+// onError event listeners.
+function serializeRoundTrip() {
+  return requireAsync('serial_service').then(function(serialService) {
+    function serializeConnections(connections) {
+      var serializedConnections = [];
+      for (var connection in connections.values()) {
+        serializedConnections.push(serializeConnection(connection));
+      }
+      return Promise.all(serializedConnections);
+    }
+
+    function serializeConnection(connection) {
+      var onData = connection.onData;
+      var onError = connection.onError;
+      return connection.serialize().then(function(serialization) {
+        return {
+          serialization: serialization,
+          onData: onData,
+          onError: onError,
+        };
+      });
+    }
+
+    function deserializeConnections(serializedConnections) {
+      $Array.forEach(serializedConnections, function(serializedConnection) {
+        var connection = serialService.Connection.deserialize(
+            serializedConnection.serialization);
+        connection.onData = serializedConnection.onData;
+        connection.onError = serializedConnection.onError;
+        connection.resumeReceives();
+      });
+    }
+
+    return serialService.getConnections()
+        .then(serializeConnections)
+        .then(deserializeConnections);
+  });
+}
+
+// Returns a promise that will resolve to the connection info for the
+// connection.
+function getInfo() {
+  return utils.promise(serial.getInfo, connectionId);
+}
+
+// Returns a function that checks that the values of keys contained within
+// |expectedInfo| match the values of the same keys contained within |info|.
+function checkInfo(expectedInfo) {
+  return function(info) {
+    for (var key in expectedInfo) {
+      test.assertEq(expectedInfo[key], info[key]);
+    }
+  };
+}
+
+// Returns a function that will update the options of the serial connection with
+// those contained within |values|.
+function update(values) {
+  return function() {
+    return utils.promise(serial.update, connectionId, values);
+  };
+}
+
+// Checks that the previous operation succeeded.
+function expectSuccess(success) {
+  test.assertTrue(success);
+}
+
+// Returns a function that checks that the send result matches |bytesSent| and
+// |error|. If no error is expected, |error| may be omitted.
+function expectSendResult(bytesSent, error) {
+  return function(sendInfo) {
+    test.assertEq(bytesSent, sendInfo.bytesSent);
+    test.assertEq(error, sendInfo.error);
+  };
+}
+
+// Returns a function that checks that the current time is |expectedTime|.
+function expectCurrentTime(expectedTime) {
+  return function() {
+    test.assertEq(expectedTime, timeoutManager.currentTime);
+  }
+}
+
+// Returns a promise that will resolve to the device control signals for the
+// serial connection.
+function getControlSignals() {
+  return utils.promise(serial.getControlSignals, connectionId);
+}
+
+// Returns a function that will set the control signals for the serial
+// connection to |signals|.
+function setControlSignals(signals) {
+  return function() {
+    return utils.promise(serial.setControlSignals, connectionId, signals);
+  };
+}
+
+// Returns a function that will set the paused state of the serial connection to
+// |paused|.
+function setPaused(paused) {
+  return function() {
+    return utils.promise(serial.setPaused, connectionId, paused);
+  }
 }
 
 // Sets a function to be called once when data is received. Returns a promise
@@ -69,11 +196,19 @@ function addReceiveErrorHook(callback) {
   });
 }
 
+function listenOnce(targetEvent) {
+  return new Promise(function(resolve, reject) {
+    targetEvent.addListener(function(result) {
+      resolve(result);
+    });
+  });
+}
+
 function disconnect() {
-  serial.disconnect(connectionId, test.callbackPass(function(success) {
+  return utils.promise(serial.disconnect, connectionId).then(function(success) {
     test.assertTrue(success);
     connectionId = null;
-  }));
+  });
 }
 
 function checkClientConnectionInfo(connectionInfo) {
@@ -96,29 +231,7 @@ function checkServiceConnectionInfo(connectionInfo) {
 function checkConnectionInfo(connectionInfo) {
   checkClientConnectionInfo(connectionInfo);
   checkServiceConnectionInfo(connectionInfo);
-}
-
-function runReceiveErrorTest(expectedError) {
-  connect();
-  test.listenOnce(serial.onReceiveError, function(result) {
-    serial.getInfo(connectionId, test.callbackPass(function(connectionInfo) {
-      disconnect();
-      test.assertTrue(connectionInfo.paused);
-    }));
-    test.assertEq(connectionId, result.connectionId);
-    test.assertEq(expectedError, result.error);
-  });
-}
-
-function runSendErrorTest(expectedError) {
-  connect(function() {
-    var buffer = new ArrayBuffer(1);
-    serial.send(connectionId, buffer, test.callbackPass(function(sendInfo) {
-      disconnect();
-      test.assertEq(0, sendInfo.bytesSent);
-      test.assertEq(expectedError, sendInfo.error);
-    }));
-  });
+  test.assertEq(12, $Object.keys(connectionInfo).length);
 }
 
 function sendData() {
@@ -141,11 +254,40 @@ function checkReceivedData(result) {
   }
 }
 
+function checkReceiveError(expectedError) {
+  return function(result) {
+    test.assertEq(connectionId, result.connectionId);
+    test.assertEq(expectedError, result.error);
+  }
+}
+
+function runReceiveErrorTest(expectedError) {
+  var errorReceived = listenOnce(serial.onReceiveError);
+  Promise.all([
+      connect(),
+      errorReceived
+          .then(checkReceiveError(expectedError)),
+      errorReceived
+          .then(getInfo)
+          .then(checkInfo({paused: true})),
+  ])
+      .then(disconnect)
+      .then(test.succeed, test.fail);
+}
+
+function runSendErrorTest(expectedError) {
+  connect()
+      .then(sendData)
+      .then(expectSendResult(0, expectedError))
+      .then(disconnect)
+      .then(test.succeed, test.fail);
+}
+
 unittestBindings.exportTests([
   // Test that getDevices correctly transforms the data returned by the
   // SerialDeviceEnumerator.
   function testGetDevices() {
-    serial.getDevices(test.callbackPass(function(devices) {
+    utils.promise(serial.getDevices).then(function(devices) {
       test.assertEq(3, devices.length);
       test.assertEq(4, $Object.keys(devices[0]).length);
       test.assertEq('device', devices[0].path);
@@ -156,7 +298,7 @@ unittestBindings.exportTests([
       test.assertEq('another_device', devices[1].path);
       test.assertEq(1, $Object.keys(devices[2]).length);
       test.assertEq('', devices[2].path);
-    }));
+    }).then(test.succeed, test.fail);
   },
 
   // Test that the correct error message is returned when an error occurs in
@@ -183,17 +325,16 @@ unittestBindings.exportTests([
 
   // Test that a successful connect returns the expected connection info.
   function testConnect() {
-    connect(function(connectionInfo) {
-      disconnect();
-      checkConnectionInfo(connectionInfo);
-    });
+    connect()
+        .then(checkConnectionInfo)
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a connection created with no options has the correct default
   // options.
   function testConnectDefaultOptions() {
-    connect(function(connectionInfo) {
-      disconnect();
+    connect({}).then(function(connectionInfo) {
       test.assertEq(9600, connectionInfo.bitrate);
       test.assertEq('eight', connectionInfo.dataBits);
       test.assertEq('no', connectionInfo.parityBit);
@@ -204,104 +345,107 @@ unittestBindings.exportTests([
       test.assertEq(0, connectionInfo.receiveTimeout);
       test.assertEq(0, connectionInfo.sendTimeout);
       test.assertEq(4096, connectionInfo.bufferSize);
-    }, {});
+    })
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a getInfo call correctly converts the service-side info from the
   // Mojo format and returns both it and the client-side configuration.
   function testGetInfo() {
-    connect(function() {
-      serial.getInfo(connectionId,
-                     test.callbackPass(function(connectionInfo) {
-        disconnect();
-        checkConnectionInfo(connectionInfo);
-      }));
-    });
+    connect()
+        .then(getInfo)
+        .then(checkConnectionInfo)
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  // Test that a getInfo call returns the correct info after serialization.
+  function testGetInfoAfterSerialization() {
+    connect()
+        .then(serializeRoundTrip)
+        .then(getInfo)
+        .then(checkConnectionInfo)
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that only client-side options are returned when the service fails a
   // getInfo call. This test uses an IoHandler that fails GetPortInfo calls
   // after the initial call during connect.
   function testGetInfoFailToGetPortInfo() {
-    connect(function() {
-      serial.getInfo(connectionId,
-                     test.callbackPass(function(connectionInfo) {
-        disconnect();
-        checkClientConnectionInfo(connectionInfo);
-        test.assertFalse('bitrate' in connectionInfo);
-        test.assertFalse('dataBits' in connectionInfo);
-        test.assertFalse('parityBit' in connectionInfo);
-        test.assertFalse('stopBit' in connectionInfo);
-        test.assertFalse('ctsFlowControl' in connectionInfo);
-      }));
-    });
+    var info = connect().then(getInfo);
+    Promise.all([
+        info.then(function(connectionInfo) {
+          test.assertFalse('bitrate' in connectionInfo);
+          test.assertFalse('dataBits' in connectionInfo);
+          test.assertFalse('parityBit' in connectionInfo);
+          test.assertFalse('stopBit' in connectionInfo);
+          test.assertFalse('ctsFlowControl' in connectionInfo);
+        }),
+        info.then(checkClientConnectionInfo),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that getConnections returns an array containing the open connection.
   function testGetConnections() {
-    connect(function() {
-      serial.getConnections(test.callbackPass(function(connections) {
-        disconnect();
-        test.assertEq(1, connections.length);
-        checkConnectionInfo(connections[0]);
-      }));
-    });
+    connect().then(function() {
+      return utils.promise(serial.getConnections);
+    }).then(function(connections) {
+      test.assertEq(1, connections.length);
+      checkConnectionInfo(connections[0]);
+    })
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that getControlSignals correctly converts the Mojo format result. This
   // test uses an IoHandler that returns values matching the pattern being
   // tested.
   function testGetControlSignals() {
-    connect(function() {
-      var calls = 0;
-      function checkControlSignals(signals) {
-        if (calls == 15) {
-          disconnect();
-        } else {
-          serial.getControlSignals(
-              connectionId,
-              test.callbackPass(checkControlSignals));
-        }
-        test.assertEq(!!(calls & 1), signals.dcd);
-        test.assertEq(!!(calls & 2), signals.cts);
-        test.assertEq(!!(calls & 4), signals.ri);
-        test.assertEq(!!(calls & 8), signals.dsr);
-        calls++;
-      }
-      serial.getControlSignals(connectionId,
-                               test.callbackPass(checkControlSignals));
-    });
+    function checkControlSignals(expectedBitfield) {
+      return function(signals) {
+        test.assertEq(!!(expectedBitfield & 1), signals.dcd);
+        test.assertEq(!!(expectedBitfield & 2), signals.cts);
+        test.assertEq(!!(expectedBitfield & 4), signals.ri);
+        test.assertEq(!!(expectedBitfield & 8), signals.dsr);
+      };
+    }
+    var promiseChain = connect();
+    for (var i = 0; i < 16; i++) {
+      promiseChain = promiseChain
+          .then(getControlSignals)
+          .then(checkControlSignals(i));
+    }
+    promiseChain
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that setControlSignals correctly converts to the Mojo format result.
   // This test uses an IoHandler that returns values following the same table of
   // values as |signalsValues|.
   function testSetControlSignals() {
-    connect(function() {
-      var signalsValues = [
-        {},
-        {dtr: false},
-        {dtr: true},
-        {rts: false},
-        {dtr: false, rts: false},
-        {dtr: true, rts: false},
-        {rts: true},
-        {dtr: false, rts: true},
-        {dtr: true, rts: true},
-      ];
-      var calls = 0;
-      function setControlSignals(success) {
-        if (calls == signalsValues.length) {
-          disconnect();
-        } else {
-          serial.setControlSignals(connectionId,
-                                   signalsValues[calls++],
-                                   test.callbackPass(setControlSignals));
-        }
-        test.assertTrue(success);
-      }
-      setControlSignals(true);
-    });
+    var signalsValues = [
+      {},
+      {dtr: false},
+      {dtr: true},
+      {rts: false},
+      {dtr: false, rts: false},
+      {dtr: true, rts: false},
+      {rts: true},
+      {dtr: false, rts: true},
+      {dtr: true, rts: true},
+    ];
+    var promiseChain = connect();
+    for (var i = 0; i < signalsValues.length; i++) {
+      promiseChain = promiseChain.then(setControlSignals(signalsValues[i]));
+    }
+    promiseChain
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that update correctly passes values to the service only for
@@ -309,236 +453,239 @@ unittestBindings.exportTests([
   // of getInfo calls. This test uses an IoHandler that expects corresponding
   // ConfigurePort calls.
   function testUpdate() {
-    connect(function() {
-      var optionsValues = [
-        {},  // SetPortOptions is called once during connection.
-        {bitrate: 57600},
-        {dataBits: 'seven'},
-        {dataBits: 'eight'},
-        {parityBit: 'no'},
-        {parityBit: 'odd'},
-        {parityBit: 'even'},
-        {stopBits: 'one'},
-        {stopBits: 'two'},
-        {ctsFlowControl: false},
-        {ctsFlowControl: true},
-        {bufferSize: 1},
-        {sendTimeout: 0},
-        {receiveTimeout: 0},
-        {persistent: false},
-        {name: 'name'},
-      ];
-      var calls = 0;
-      function checkInfo(info) {
-        for (var key in optionsValues[calls]) {
-          test.assertEq(optionsValues[calls][key], info[key]);
-        }
-        setOptions();
-      }
-      function setOptions() {
-        if (++calls == optionsValues.length) {
-          disconnect();
-        } else {
-          serial.update(connectionId,
-                        optionsValues[calls],
-                        test.callbackPass(function(success) {
-            serial.getInfo(connectionId, test.callbackPass(checkInfo));
-            test.assertTrue(success);
-          }));
-        }
-      }
-      setOptions();
-    });
+    var promiseChain = connect()
+        .then(getInfo)
+        .then(checkInfo(OPTIONS_VALUES[i]));
+    for (var i = 1; i < OPTIONS_VALUES.length; i++) {
+      promiseChain = promiseChain
+          .then(update(OPTIONS_VALUES[i]))
+          .then(expectSuccess)
+          .then(getInfo)
+          .then(checkInfo(OPTIONS_VALUES[i]));
+    }
+    promiseChain
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  // Test that options set by update persist after serialization.
+  function testUpdateAcrossSerialization() {
+    var promiseChain = connect()
+        .then(serializeRoundTrip)
+        .then(getInfo)
+        .then(checkInfo(OPTIONS_VALUES[i]));
+    for (var i = 1; i < OPTIONS_VALUES.length; i++) {
+      promiseChain = promiseChain
+          .then(update(OPTIONS_VALUES[i]))
+          .then(expectSuccess)
+          .then(serializeRoundTrip)
+          .then(getInfo)
+          .then(checkInfo(OPTIONS_VALUES[i]));
+    }
+    promiseChain
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that passing an invalid bit-rate reslts in an error.
   function testUpdateInvalidBitrate() {
-    connect(function() {
-      serial.update(connectionId,
-                    {bitrate: -1},
-                    test.callbackPass(function(success) {
-        disconnect();
-        test.assertFalse(success);
-      }));
-    });
+    connect()
+        .then(update({bitrate: -1}))
+        .then(function(success) {
+      test.assertFalse(success);
+    })
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test flush. This test uses an IoHandler that counts the number of flush
   // calls.
   function testFlush() {
-    connect(function() {
-      serial.flush(connectionId, test.callbackPass(function(success) {
-        disconnect();
-        test.assertTrue(success);
-      }));
-    });
+    connect().then(function() {
+      return utils.promise(serial.flush, connectionId);
+    })
+        .then(expectSuccess)
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that setPaused values are reflected by the results returned by getInfo
   // calls.
   function testSetPaused() {
-    connect(function() {
-      serial.setPaused(connectionId, true, test.callbackPass(function() {
-        serial.getInfo(connectionId, test.callbackPass(function(info) {
-          serial.setPaused(connectionId, false, test.callbackPass(function() {
-            serial.getInfo(connectionId, test.callbackPass(function(info) {
-              test.assertFalse(info.paused);
-              disconnect();
-            }));
-          }));
-          test.assertTrue(info.paused);
-        }));
-      }));
-    });
+    connect()
+        .then(setPaused(true))
+        .then(getInfo)
+        .then(checkInfo({paused: true}))
+        .then(setPaused(false))
+        .then(getInfo)
+        .then(checkInfo({paused: false}))
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a send and a receive correctly echoes data. This uses an
   // IoHandler that echoes data sent to it.
   function testEcho() {
-    connect(function() {
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(4, sendInfo.bytesSent);
-        test.assertEq(undefined, sendInfo.error);
-      }));
-      test.listenOnce(serial.onReceive, function(result) {
-        checkReceivedData(result);
-        disconnect();
-      });
-    });
+    Promise.all([
+        connect()
+            .then(sendData)
+            .then(expectSendResult(4)),
+        listenOnce(serial.onReceive)
+            .then(checkReceivedData),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a send while another send is in progress returns a pending error.
   function testSendDuringExistingSend() {
-    connect(function() {
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(4, sendInfo.bytesSent);
-        test.assertEq(undefined, sendInfo.error);
-        disconnect();
-      }));
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(0, sendInfo.bytesSent);
-        test.assertEq('pending', sendInfo.error);
-      }));
-    });
+    var connected = connect();
+    Promise.all([
+        connected
+            .then(sendData)
+            .then(expectSendResult(4)),
+        connected
+            .then(sendData)
+            .then(expectSendResult(0, 'pending')),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a second send after the first finishes is successful. This uses
   // an IoHandler that echoes data sent to it.
   function testSendAfterSuccessfulSend() {
-    connect(function() {
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(4, sendInfo.bytesSent);
-        test.assertEq(undefined, sendInfo.error);
-        return sendData();
-      })).then(test.callbackPass(function(sendInfo) {
-        test.assertEq(4, sendInfo.bytesSent);
-        test.assertEq(undefined, sendInfo.error);
-      }));
-      // Check that the correct data is echoed twice.
-      test.listenOnce(serial.onReceive, function(result) {
-        checkReceivedData(result);
-        test.listenOnce(serial.onReceive, function(result) {
-          checkReceivedData(result);
-          disconnect();
-        });
-      });
-    });
+    connect()
+        .then(sendData)
+        .then(expectSendResult(4))
+        .then(sendData)
+        .then(expectSendResult(4))
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a second send after the first fails is successful. This uses an
   // IoHandler that returns system_error for only the first send.
   function testSendPartialSuccessWithError() {
-    connect(function() {
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(2, sendInfo.bytesSent);
-        test.assertEq('system_error', sendInfo.error);
-        return sendData();
-      })).then(test.callbackPass(function(sendInfo) {
-        test.assertEq(4, sendInfo.bytesSent);
-        test.assertEq(undefined, sendInfo.error);
-        disconnect();
-      }));
-    });
+    connect()
+        .then(sendData)
+        .then(expectSendResult(2, 'system_error'))
+        .then(sendData)
+        .then(expectSendResult(4))
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  // Test that a send and a receive correctly echoes data after serialization.
+  function testEchoAfterSerialization() {
+    Promise.all([
+        connect()
+            .then(serializeRoundTrip)
+            .then(sendData)
+            .then(expectSendResult(4)),
+        listenOnce(serial.onReceive).then(checkReceivedData)
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a timed-out send returns a timeout error and that changing the
   // send timeout during a send does not affect its timeout. This test uses an
   // IoHandle that never completes sends.
   function testSendTimeout() {
-    connect(function() {
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(0, sendInfo.bytesSent);
-        test.assertEq('timeout', sendInfo.error);
-        test.assertEq(5, timeoutManager.currentTime);
-        disconnect();
-      }));
-      serial.update(connectionId, {sendTimeout: 10}, test.callbackPass(
-          timeoutManager.run.bind(timeoutManager, 1)));
-    }, {sendTimeout: 5});
+    var connected = connect({sendTimeout: 5});
+    var sent = connected.then(sendData);
+    Promise.all([
+        sent.then(expectSendResult(0, 'timeout')),
+        sent.then(expectCurrentTime(5)),
+        connected.then(update({sendTimeout: 10}))
+            .then(expectSuccess)
+            .then(timeoutManager.run.bind(timeoutManager, 1)),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  // Test that send timeouts still function correctly after a serialization
+  // round trip.
+  function testSendTimeoutAfterSerialization() {
+    var connected = connect({sendTimeout: 5}).then(serializeRoundTrip);
+    var sent = connected.then(sendData);
+    Promise.all([
+        sent.then(expectSendResult(0, 'timeout')),
+        sent.then(expectCurrentTime(5)),
+        connected.then(update({sendTimeout: 10}))
+            .then(expectSuccess)
+            .then(timeoutManager.run.bind(timeoutManager, 1)),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a timed-out send returns a timeout error and that disabling the
   // send timeout during a send does not affect its timeout. This test uses an
   // IoHandle that never completes sends.
   function testDisableSendTimeout() {
-    connect(function() {
-      sendData().then(test.callbackPass(function(sendInfo) {
-        test.assertEq(0, sendInfo.bytesSent);
-        test.assertEq('timeout', sendInfo.error);
-        test.assertEq(6, timeoutManager.currentTime);
-        disconnect();
-      }));
-      serial.update(connectionId, {sendTimeout: 0}, test.callbackPass(
-          timeoutManager.run.bind(timeoutManager, 1)));
-    }, {sendTimeout: 6});
+    var connected = connect({sendTimeout: 5});
+    var sent = connected.then(sendData);
+    Promise.all([
+        sent.then(expectSendResult(0, 'timeout')),
+        sent.then(expectCurrentTime(5)),
+        connected.then(update({sendTimeout: 0}))
+            .then(expectSuccess)
+            .then(timeoutManager.run.bind(timeoutManager, 1)),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that data received while the connection is paused is queued and
   // dispatched once the connection is unpaused.
   function testPausedReceive() {
-    // Wait until the receive hook is installed, then start the test.
-    addReceiveHook(function() {
-      // Unpause the connection after the connection has queued the received
-      // data to ensure the queued data is dispatched when the connection is
-      // unpaused.
-      serial.setPaused(connectionId, false, test.callbackPass());
-      // Check that setPaused(false) is idempotent.
-      serial.setPaused(connectionId, false, test.callbackPass());
-    }).then(function() {
-      connect(function() {
-        // Check that setPaused(true) is idempotent.
-        serial.setPaused(connectionId, true, test.callbackPass());
-        serial.setPaused(connectionId, true, test.callbackPass());
-      });
-    });
-    test.listenOnce(serial.onReceive, function(result) {
-      checkReceivedData(result);
-      disconnect();
-    });
+    Promise.all([
+        // Wait until the receive hook is installed, then start the test.
+        addReceiveHook(function() {
+          // Unpause the connection after the connection has queued the received
+          // data to ensure the queued data is dispatched when the connection is
+          // unpaused.
+          Promise.all([
+              utils.promise(serial.setPaused, connectionId, false),
+              // Check that setPaused(false) is idempotent.
+              utils.promise(serial.setPaused, connectionId, false),
+          ]).catch(test.fail);
+        })
+            .then(connect)
+            .then(function() {
+          // Check that setPaused(true) is idempotent.
+          return Promise.all([
+              utils.promise(serial.setPaused, connectionId, true),
+              utils.promise(serial.setPaused, connectionId, true),
+          ]);
+        }),
+        listenOnce(serial.onReceive).then(checkReceivedData),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a receive error received while the connection is paused is queued
   // and dispatched once the connection is unpaused.
   function testPausedReceiveError() {
-    addReceiveErrorHook(function() {
-      // Unpause the connection after the connection has queued the receive
-      // error to ensure the queued error is dispatched when the connection is
-      // unpaused.
-      serial.setPaused(connectionId, false, test.callbackPass());
-    }).then(test.callbackPass(function() {
-      connect(function() {
-        serial.setPaused(connectionId, true, test.callbackPass());
-      });
-    }));
-
-    test.listenOnce(serial.onReceiveError, function(result) {
-      serial.getInfo(connectionId, test.callbackPass(function(connectionInfo) {
-        disconnect();
-        test.assertTrue(connectionInfo.paused);
-      }));
-      test.assertEq(connectionId, result.connectionId);
-      test.assertEq('device_lost', result.error);
-    });
+    Promise.all([
+        // Wait until the receive hook is installed, then start the test.
+        addReceiveErrorHook(function() {
+          // Unpause the connection after the connection has queued the received
+          // data to ensure the queued data is dispatched when the connection is
+          // unpaused.
+          utils.promise(serial.setPaused, connectionId, false).catch(test.fail);
+        })
+            .then(connect)
+            .then(setPaused(true)),
+        listenOnce(serial.onReceiveError)
+            .then(checkReceiveError('device_lost')),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
     serial.onReceive.addListener(function() {
       test.fail('unexpected onReceive event');
     });
@@ -547,43 +694,61 @@ unittestBindings.exportTests([
   // Test that receive timeouts trigger after the timeout time elapses and that
   // changing the receive timeout does not affect a wait in progress.
   function testReceiveTimeout() {
-    connect(function() {
-      test.listenOnce(serial.onReceiveError, function(result) {
-        test.assertEq(connectionId, result.connectionId);
-        test.assertEq('timeout', result.error);
-        test.assertEq(20, timeoutManager.currentTime);
-        serial.getInfo(connectionId, test.callbackPass(
-            function(connectionInfo) {
-          test.assertFalse(connectionInfo.paused);
-          disconnect();
-        }));
-      });
-      // Changing the timeout does not take effect until the current timeout
-      // expires or a receive completes.
-      serial.update(connectionId, {receiveTimeout: 10}, test.callbackPass(
-          timeoutManager.run.bind(timeoutManager, 1)));
-    }, {receiveTimeout: 20});
+    var errorReceived = listenOnce(serial.onReceiveError);
+    Promise.all([
+        errorReceived.then(checkReceiveError('timeout')),
+        errorReceived.then(expectCurrentTime(20)),
+        errorReceived
+            .then(getInfo)
+            .then(checkInfo({paused: false})),
+        connect({receiveTimeout: 20})
+            // Changing the timeout does not take effect until the current
+            // timeout expires or a receive completes.
+            .then(update({receiveTimeout: 10}))
+            .then(expectSuccess)
+            .then(timeoutManager.run.bind(timeoutManager, 1)),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
+  },
+
+  // Test that receive timeouts still function correctly after a serialization
+  // round trip.
+  function testReceiveTimeoutAfterSerialization() {
+    var errorReceived = listenOnce(serial.onReceiveError);
+    Promise.all([
+        errorReceived.then(checkReceiveError('timeout')),
+        errorReceived.then(expectCurrentTime(20)),
+        errorReceived
+            .then(getInfo)
+            .then(checkInfo({paused: false})),
+        connect({receiveTimeout: 20})
+            .then(serializeRoundTrip)
+            .then(timeoutManager.run.bind(timeoutManager, 1)),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that receive timeouts trigger after the timeout time elapses and that
   // disabling the receive timeout does not affect a wait in progress.
   function testDisableReceiveTimeout() {
-    connect(function() {
-      test.listenOnce(serial.onReceiveError, function(result) {
-        test.assertEq(connectionId, result.connectionId);
-        test.assertEq('timeout', result.error);
-        test.assertEq(30, timeoutManager.currentTime);
-        serial.getInfo(connectionId, test.callbackPass(
-            function(connectionInfo) {
-          disconnect();
-          test.assertFalse(connectionInfo.paused);
-        }));
-      });
-      // Disabling the timeout does not take effect until the current timeout
-      // expires or a receive completes.
-      serial.update(connectionId, {receiveTimeout: 0}, test.callbackPass(
-          timeoutManager.run.bind(timeoutManager, 1)));
-    }, {receiveTimeout: 30});
+    var errorReceived = listenOnce(serial.onReceiveError);
+    Promise.all([
+        errorReceived.then(checkReceiveError('timeout')),
+        errorReceived.then(expectCurrentTime(20)),
+        errorReceived
+            .then(getInfo)
+            .then(checkInfo({paused: false})),
+        connect({receiveTimeout: 20})
+            // Disabling the timeout does not take effect until the current
+            // timeout expires or a receive completes.
+            .then(update({receiveTimeout: 0}))
+            .then(expectSuccess)
+            .then(timeoutManager.run.bind(timeoutManager, 1)),
+    ])
+        .then(disconnect)
+        .then(test.succeed, test.fail);
   },
 
   // Test that a receive error from the service is correctly dispatched. This
