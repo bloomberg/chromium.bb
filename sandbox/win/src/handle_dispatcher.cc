@@ -20,8 +20,8 @@ namespace sandbox {
 HandleDispatcher::HandleDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall duplicate_handle_proxy = {
-    {IPC_DUPLICATEHANDLEPROXY_TAG, VOIDPTR_TYPE, ULONG_TYPE, ULONG_TYPE,
-     ULONG_TYPE},
+    {IPC_DUPLICATEHANDLEPROXY_TAG, VOIDPTR_TYPE, UINT32_TYPE, UINT32_TYPE,
+     UINT32_TYPE},
     reinterpret_cast<CallbackGeneric>(&HandleDispatcher::DuplicateHandleProxy)
   };
 
@@ -41,9 +41,9 @@ bool HandleDispatcher::SetupService(InterceptionManager* manager,
 
 bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
                                             HANDLE source_handle,
-                                            DWORD target_process_id,
-                                            DWORD desired_access,
-                                            DWORD options) {
+                                            uint32 target_process_id,
+                                            uint32 desired_access,
+                                            uint32 options) {
   static NtQueryObject QueryObject = NULL;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
