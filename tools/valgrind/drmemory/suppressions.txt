@@ -656,8 +656,3 @@ blink_web.dll!blink::RemoteFrameClient::firstChild
 blink_web.dll!blink::WebRemoteFrameImpl::~WebRemoteFrameImpl
 blink_web.dll!blink::WebRemoteFrameImpl::close
 content.dll!content::RenderFrameProxy::~RenderFrameProxy
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/420013
-content.dll!content::RenderFrameImpl::OnSwapOut
-content.dll!FrameMsg_SwapOut::Dispatch<>
