@@ -280,7 +280,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // The split tap slop  is a bit more generous since keeping two
   // fingers in place is a bit harder.
-  const float GetSplitTapTouchSlop();
+  float GetSplitTapTouchSlop();
 
   enum State {
     // No fingers are down and no events are pending.

@@ -1149,7 +1149,7 @@ void TouchExplorationController::InitializeSwipeGestureMaps() {
       BindKeyEventWithFlags(VKEY_BROWSER_REFRESH, ui::EF_NONE);
 }
 
-const float TouchExplorationController::GetSplitTapTouchSlop() {
+float TouchExplorationController::GetSplitTapTouchSlop() {
   return gesture_detector_config_.touch_slop * 3;
 }
 
