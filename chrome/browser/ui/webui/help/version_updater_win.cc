@@ -41,14 +41,14 @@ class VersionUpdaterWin : public VersionUpdater,
   virtual ~VersionUpdaterWin();
 
   // VersionUpdater implementation.
-  virtual void CheckForUpdate(const StatusCallback& callback) OVERRIDE;
-  virtual void RelaunchBrowser() const OVERRIDE;
+  virtual void CheckForUpdate(const StatusCallback& callback) override;
+  virtual void RelaunchBrowser() const override;
 
   // GoogleUpdateStatusListener implementation.
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
                                const base::string16& error_message,
-                               const base::string16& version) OVERRIDE;
+                               const base::string16& version) override;
 
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,

@@ -123,8 +123,8 @@ class ZoomController : public content::WebContentsObserver,
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual void WebContentsDestroyed() override;
 
  protected:
   // Protected for testing.

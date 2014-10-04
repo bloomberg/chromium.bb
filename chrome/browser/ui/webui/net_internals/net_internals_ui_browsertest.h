@@ -23,11 +23,11 @@ class NetInternalsTest : public WebUIBrowserTest {
   class MessageHandler;
 
   // InProcessBrowserTest overrides.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
 
   // WebUIBrowserTest implementation.
-  virtual content::WebUIMessageHandler* GetMockMessageHandler() OVERRIDE;
+  virtual content::WebUIMessageHandler* GetMockMessageHandler() override;
 
   GURL CreatePrerenderLoaderUrl(const GURL& prerender_url);
 

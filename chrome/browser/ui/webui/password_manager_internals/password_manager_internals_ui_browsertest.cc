@@ -20,7 +20,7 @@ class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
   PasswordManagerInternalsWebUIBrowserTest();
   virtual ~PasswordManagerInternalsWebUIBrowserTest();
 
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
  protected:
   content::WebContents* GetWebContents();

@@ -55,7 +55,7 @@ class PermissionBubbleManager
   // Sets the active view for the permission bubble. If this is NULL, it
   // means any existing permission bubble can no longer be shown. Does not
   // take ownership of the view.
-  virtual void SetView(PermissionBubbleView* view) OVERRIDE;
+  virtual void SetView(PermissionBubbleView* view) override;
 
  private:
   friend class PermissionBubbleManagerTest;
@@ -65,22 +65,22 @@ class PermissionBubbleManager
   explicit PermissionBubbleManager(content::WebContents* web_contents);
 
   // WebContentsObserver:
-  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
+  virtual void DocumentOnLoadCompletedInMainFrame() override;
   virtual void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
 
   // If a page on which permissions requests are pending is navigated,
   // they will be finalized as if canceled by the user.
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& details) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+      const content::LoadCommittedDetails& details) override;
+  virtual void WebContentsDestroyed() override;
 
   // PermissionBubbleView::Delegate:
-  virtual void ToggleAccept(int request_index, bool new_value) OVERRIDE;
-  virtual void SetCustomizationMode() OVERRIDE;
-  virtual void Accept() OVERRIDE;
-  virtual void Deny() OVERRIDE;
-  virtual void Closing() OVERRIDE;
+  virtual void ToggleAccept(int request_index, bool new_value) override;
+  virtual void SetCustomizationMode() override;
+  virtual void Accept() override;
+  virtual void Deny() override;
+  virtual void Closing() override;
 
   // Posts a task which will allow the bubble to become visible if it is needed.
   void ScheduleShowBubble();

@@ -31,16 +31,16 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(base::DictionaryValue* localized_strings)
-      OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      override;
+  virtual void RegisterMessages() override;
 
   // SyncStartupTracker::Observer implementation;
-  virtual void SyncStartupCompleted() OVERRIDE;
-  virtual void SyncStartupFailed() OVERRIDE;
+  virtual void SyncStartupCompleted() override;
+  virtual void SyncStartupFailed() override;
 
   // LoginUIService::LoginUI implementation.
-  virtual void FocusUI() OVERRIDE;
-  virtual void CloseUI() OVERRIDE;
+  virtual void FocusUI() override;
+  virtual void CloseUI() override;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,

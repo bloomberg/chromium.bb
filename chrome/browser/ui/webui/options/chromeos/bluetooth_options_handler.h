@@ -34,10 +34,10 @@ class BluetoothOptionsHandler
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void RegisterMessages() override;
+  virtual void InitializeHandler() override;
+  virtual void InitializePage() override;
 
   void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -55,7 +55,7 @@ class BluetoothOptionsHandler
   //
   // PIN Codes are generally required for Bluetooth 2.0 and earlier devices
   // for which there is no automatic pairing or special handling.
-  virtual void RequestPinCode(device::BluetoothDevice* device) OVERRIDE;
+  virtual void RequestPinCode(device::BluetoothDevice* device) override;
 
   // device::BluetoothDevice::PairingDelegate override.
   //
@@ -67,7 +67,7 @@ class BluetoothOptionsHandler
   // Passkeys are generally required for Bluetooth 2.1 and later devices
   // which cannot provide input or display on their own, and don't accept
   // passkey-less pairing.
-  virtual void RequestPasskey(device::BluetoothDevice* device) OVERRIDE;
+  virtual void RequestPasskey(device::BluetoothDevice* device) override;
 
   // device::BluetoothDevice::PairingDelegate override.
   //
@@ -80,7 +80,7 @@ class BluetoothOptionsHandler
   // |pincode| will always be a six-digit numeric in the range 000000-999999
   // for compatibilty with later specifications.
   virtual void DisplayPinCode(device::BluetoothDevice* device,
-                              const std::string& pincode) OVERRIDE;
+                              const std::string& pincode) override;
 
   // device::BluetoothDevice::PairingDelegate override.
   //
@@ -94,7 +94,7 @@ class BluetoothOptionsHandler
   // range 0-999999 and should be always presented zero-padded to six
   // digits.
   virtual void DisplayPasskey(
-      device::BluetoothDevice* device, uint32 passkey) OVERRIDE;
+      device::BluetoothDevice* device, uint32 passkey) override;
 
   // device::BluetoothDevice::PairingDelegate override.
   //
@@ -110,7 +110,7 @@ class BluetoothOptionsHandler
   // A last call with |entered| as the length of the key plus one will indicate
   // that the [enter] key was pressed.
   virtual void KeysEntered(device::BluetoothDevice* device,
-                           uint32 entered) OVERRIDE;
+                           uint32 entered) override;
 
   // device::BluetoothDevice::PairingDelegate override.
   //
@@ -124,10 +124,10 @@ class BluetoothOptionsHandler
   // range 0-999999 and should be always present zero-padded to six
   // digits.
   virtual void ConfirmPasskey(
-      device::BluetoothDevice* device, uint32 passkey) OVERRIDE;
+      device::BluetoothDevice* device, uint32 passkey) override;
 
   // device::BluetoothDevice::PairingDelegate override.
-  virtual void AuthorizePairing(device::BluetoothDevice* device) OVERRIDE;
+  virtual void AuthorizePairing(device::BluetoothDevice* device) override;
 
   // Displays a Bluetooth error.
   // |error| maps to a localized resource for the error message.
@@ -137,17 +137,17 @@ class BluetoothOptionsHandler
 
   // device::BluetoothAdapter::Observer implementation.
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE;
+                                     bool present) override;
   virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                     bool powered) OVERRIDE;
+                                     bool powered) override;
   virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
-                                         bool discovering) OVERRIDE;
+                                         bool discovering) override;
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
-                           device::BluetoothDevice* device) OVERRIDE;
+                           device::BluetoothDevice* device) override;
   virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
 
  private:
   // Displays in the UI a connecting to the device |device| message.

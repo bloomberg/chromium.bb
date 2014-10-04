@@ -25,7 +25,7 @@ class ProxySettingsUI : public ui::WebDialogUI,
 
  private:
   // Overridden from OptionsPageUIHandlerHost:
-  virtual void InitializeHandlers() OVERRIDE;
+  virtual void InitializeHandlers() override;
 
   bool initialized_handlers_;
 

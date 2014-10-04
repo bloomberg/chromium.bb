@@ -67,45 +67,45 @@ class BrowserOptionsHandler
   virtual ~BrowserOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* values) OVERRIDE;
-  virtual void PageLoadStarted() OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
-  virtual void Uninitialize() OVERRIDE;
+  virtual void GetLocalizedValues(base::DictionaryValue* values) override;
+  virtual void PageLoadStarted() override;
+  virtual void InitializeHandler() override;
+  virtual void InitializePage() override;
+  virtual void RegisterMessages() override;
+  virtual void Uninitialize() override;
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // SigninManagerBase::Observer implementation.
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
-  virtual bool IsInteractiveSetDefaultPermitted() OVERRIDE;
+      ShellIntegration::DefaultWebClientUIState state) override;
+  virtual bool IsInteractiveSetDefaultPermitted() override;
 
   // TemplateURLServiceObserver implementation.
-  virtual void OnTemplateURLServiceChanged() OVERRIDE;
+  virtual void OnTemplateURLServiceChanged() override;
 
   // extensions::ExtensionRegistryObserver:
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
   void OnCloudPrintPrefsChanged();
@@ -114,12 +114,12 @@ class BrowserOptionsHandler
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
+                            void* params) override;
 
 #if defined(OS_CHROMEOS)
   // PointerDeviceObserver::Observer implementation.
-  virtual void TouchpadExists(bool exists) OVERRIDE;
-  virtual void MouseExists(bool exists) OVERRIDE;
+  virtual void TouchpadExists(bool exists) override;
+  virtual void MouseExists(bool exists) override;
 
   // Will be called when the policy::key::kUserAvatarImage policy changes.
   void OnUserImagePolicyChanged(const base::Value* previous_policy,
@@ -133,7 +133,7 @@ class BrowserOptionsHandler
   void OnPowerwashDialogShow(const base::ListValue* args);
 
   // ConsumerManagementService::Observer:
-  virtual void OnConsumerManagementStatusChanged() OVERRIDE;
+  virtual void OnConsumerManagementStatusChanged() override;
 #endif
 
   void UpdateSyncState();

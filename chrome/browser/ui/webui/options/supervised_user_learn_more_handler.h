@@ -22,7 +22,7 @@ class SupervisedUserLearnMoreHandler : public OptionsPageUIHandler {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserLearnMoreHandler);

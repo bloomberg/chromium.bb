@@ -37,7 +37,7 @@ class WebUITestHandler : public content::WebUIMessageHandler {
 
   // WebUIMessageHandler overrides.
   // Add test handlers to the current WebUI object.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Receives testResult messages.

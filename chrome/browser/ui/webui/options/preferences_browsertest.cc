@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest,
 class ManagedPreferencesBrowserTest : public PreferencesBrowserTest {
  protected:
   // PreferencesBrowserTest implementation:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     // Set up fake install attributes.
     scoped_ptr<policy::StubEnterpriseInstallAttributes> attributes(
         new policy::StubEnterpriseInstallAttributes());
@@ -813,7 +813,7 @@ const char* kUserProfilePath = "user_profile";
 
 class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     SetupNetworkEnvironment();
     content::RunAllPendingInMessageLoop();
 

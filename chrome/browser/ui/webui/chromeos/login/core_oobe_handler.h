@@ -43,17 +43,17 @@ class CoreOobeHandler : public BaseScreenHandler,
   void SetDelegate(Delegate* delegate);
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void Initialize() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // VersionInfoUpdater::Delegate implementation:
   virtual void OnOSVersionLabelTextUpdated(
-      const std::string& os_version_label_text) OVERRIDE;
+      const std::string& os_version_label_text) override;
   virtual void OnEnterpriseInfoUpdated(
-      const std::string& message_text) OVERRIDE;
+      const std::string& message_text) override;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);
@@ -68,24 +68,24 @@ class CoreOobeHandler : public BaseScreenHandler,
       int login_attempts,
       const std::string& error_text,
       const std::string& help_link_text,
-      HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
-  virtual void ShowTpmError() OVERRIDE;
-  virtual void ShowSignInUI(const std::string& email) OVERRIDE;
-  virtual void ResetSignInUI(bool force_online) OVERRIDE;
-  virtual void ClearUserPodPassword() OVERRIDE;
-  virtual void RefocusCurrentPod() OVERRIDE;
-  virtual void ShowPasswordChangedScreen(bool show_password_error) OVERRIDE;
-  virtual void SetUsageStats(bool checked) OVERRIDE;
-  virtual void SetOemEulaUrl(const std::string& oem_eula_url) OVERRIDE;
-  virtual void SetTpmPassword(const std::string& tmp_password) OVERRIDE;
-  virtual void ClearErrors() OVERRIDE;
-  virtual void ReloadContent(const base::DictionaryValue& dictionary) OVERRIDE;
-  virtual void ShowControlBar(bool show) OVERRIDE;
-  virtual void SetKeyboardState(bool shown, const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetClientAreaSize(int width, int height) OVERRIDE;
-  virtual void ShowDeviceResetScreen() OVERRIDE;
-  virtual void InitDemoModeDetection() OVERRIDE;
-  virtual void StopDemoModeDetection() OVERRIDE;
+      HelpAppLauncher::HelpTopic help_topic_id) override;
+  virtual void ShowTpmError() override;
+  virtual void ShowSignInUI(const std::string& email) override;
+  virtual void ResetSignInUI(bool force_online) override;
+  virtual void ClearUserPodPassword() override;
+  virtual void RefocusCurrentPod() override;
+  virtual void ShowPasswordChangedScreen(bool show_password_error) override;
+  virtual void SetUsageStats(bool checked) override;
+  virtual void SetOemEulaUrl(const std::string& oem_eula_url) override;
+  virtual void SetTpmPassword(const std::string& tmp_password) override;
+  virtual void ClearErrors() override;
+  virtual void ReloadContent(const base::DictionaryValue& dictionary) override;
+  virtual void ShowControlBar(bool show) override;
+  virtual void SetKeyboardState(bool shown, const gfx::Rect& bounds) override;
+  virtual void SetClientAreaSize(int width, int height) override;
+  virtual void ShowDeviceResetScreen() override;
+  virtual void InitDemoModeDetection() override;
+  virtual void StopDemoModeDetection() override;
 
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);

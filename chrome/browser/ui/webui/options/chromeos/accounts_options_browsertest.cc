@@ -41,7 +41,7 @@ class AccountsOptionsTest : public LoginManagerTest {
   virtual ~AccountsOptionsTest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     CrosSettings* settings = CrosSettings::Get();
     device_settings_provider_ = settings->GetProvider(kDeviceOwner);
@@ -49,14 +49,14 @@ class AccountsOptionsTest : public LoginManagerTest {
     settings->AddSettingsProvider(&stub_settings_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     CrosSettings* settings = CrosSettings::Get();
     settings->RemoveSettingsProvider(&stub_settings_provider_);
     settings->AddSettingsProvider(device_settings_provider_);
     LoginManagerTest::TearDownOnMainThread();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
   }
 

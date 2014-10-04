@@ -51,7 +51,7 @@ class StubAccountSettingsProvider : public StubCrosSettingsProvider {
   }
 
   // StubCrosSettingsProvider implementation.
-  virtual bool HandlesSetting(const std::string& path) const OVERRIDE {
+  virtual bool HandlesSetting(const std::string& path) const override {
     const char** end = kKnownSettings + arraysize(kKnownSettings);
     return std::find(kKnownSettings, end, path) != end;
   }
@@ -90,7 +90,7 @@ class SharedOptionsTest : public LoginManagerTest {
   virtual ~SharedOptionsTest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
 
     CrosSettings* settings = CrosSettings::Get();
@@ -103,7 +103,7 @@ class SharedOptionsTest : public LoginManagerTest {
     settings->AddSettingsProvider(device_settings_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     CrosSettings* settings = CrosSettings::Get();
     settings->RemoveSettingsProvider(&stub_settings_provider_);
     LoginManagerTest::TearDownOnMainThread();

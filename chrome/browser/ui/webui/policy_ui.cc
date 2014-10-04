@@ -268,8 +268,8 @@ class CloudPolicyCoreStatusProvider
   virtual ~CloudPolicyCoreStatusProvider();
 
   // policy::CloudPolicyStore::Observer implementation.
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  virtual void OnStoreError(policy::CloudPolicyStore* store) override;
 
  protected:
   // Policy status is read from the CloudPolicyClient, CloudPolicyStore and
@@ -286,7 +286,7 @@ class UserPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
   virtual ~UserPolicyStatusProvider();
 
   // CloudPolicyCoreStatusProvider implementation.
-  virtual void GetStatus(base::DictionaryValue* dict) OVERRIDE;
+  virtual void GetStatus(base::DictionaryValue* dict) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserPolicyStatusProvider);
@@ -301,7 +301,7 @@ class DevicePolicyStatusProvider : public CloudPolicyCoreStatusProvider {
   virtual ~DevicePolicyStatusProvider();
 
   // CloudPolicyCoreStatusProvider implementation.
-  virtual void GetStatus(base::DictionaryValue* dict) OVERRIDE;
+  virtual void GetStatus(base::DictionaryValue* dict) override;
 
  private:
   std::string domain_;
@@ -325,11 +325,11 @@ class DeviceLocalAccountPolicyStatusProvider
   virtual ~DeviceLocalAccountPolicyStatusProvider();
 
   // CloudPolicyStatusProvider implementation.
-  virtual void GetStatus(base::DictionaryValue* dict) OVERRIDE;
+  virtual void GetStatus(base::DictionaryValue* dict) override;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
-  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+  virtual void OnPolicyUpdated(const std::string& user_id) override;
+  virtual void OnDeviceLocalAccountsChanged() override;
 
  private:
   const std::string user_id_;
@@ -350,15 +350,15 @@ class PolicyUIHandler : public content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // policy::PolicyService::Observer implementation.
   virtual void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                const policy::PolicyMap& previous,
-                               const policy::PolicyMap& current) OVERRIDE;
+                               const policy::PolicyMap& current) override;
 
  private:
   // Send a dictionary containing the names of all known policies to the UI.

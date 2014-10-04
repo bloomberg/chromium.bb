@@ -60,7 +60,7 @@ class SlowHandler : public WebUIMessageHandler {
   virtual ~SlowHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void UpdatePage();

@@ -18,14 +18,14 @@ class EasyUnlockHandler : public OptionsPageUIHandler,
   virtual ~EasyUnlockHandler();
 
   // OptionsPageUIHandler
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void GetLocalizedValues(base::DictionaryValue* values) OVERRIDE;
+  virtual void InitializeHandler() override;
+  virtual void GetLocalizedValues(base::DictionaryValue* values) override;
 
   // WebUIMessageHandler
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // EasyUnlockServiceObserver
-  virtual void OnTurnOffOperationStatusChanged() OVERRIDE;
+  virtual void OnTurnOffOperationStatusChanged() override;
 
  private:
   void SendTurnOffOperationStatus();

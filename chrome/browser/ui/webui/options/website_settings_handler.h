@@ -29,20 +29,20 @@ class WebsiteSettingsHandler : public content_settings::Observer,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void InitializeHandler() override;
+  virtual void RegisterMessages() override;
 
   // content_settings::Observer implementation.
   virtual void OnContentSettingChanged(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      std::string resource_identifier) OVERRIDE;
+      std::string resource_identifier) override;
   virtual void OnContentSettingUsed(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type) OVERRIDE;
+      ContentSettingsType content_type) override;
 
  private:
   // Update the page with all origins for a given content setting.

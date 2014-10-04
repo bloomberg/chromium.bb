@@ -38,9 +38,9 @@ class AuthenticatedUserEmailRetriever : public GaiaAuthConsumer {
   virtual ~AuthenticatedUserEmailRetriever();
 
   // GaiaAuthConsumer:
-  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsSuccess(const std::string& data) override;
   virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
  private:
   const AuthenticatedUserEmailCallback callback_;

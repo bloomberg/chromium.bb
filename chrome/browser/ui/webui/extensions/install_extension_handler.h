@@ -25,7 +25,7 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Handles a notification from the JavaScript that a drag has started. This is

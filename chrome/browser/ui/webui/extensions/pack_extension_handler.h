@@ -31,22 +31,22 @@ class PackExtensionHandler : public content::WebUIMessageHandler,
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // ExtensionPackJob::Client implementation.
   virtual void OnPackSuccess(const base::FilePath& crx_file,
-                             const base::FilePath& key_file) OVERRIDE;
+                             const base::FilePath& key_file) override;
 
   virtual void OnPackFailure(const std::string& error,
-                             ExtensionCreator::ErrorType) OVERRIDE;
+                             ExtensionCreator::ErrorType) override;
 
  private:
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
-                            int index, void* params) OVERRIDE;
+                            int index, void* params) override;
   virtual void MultiFilesSelected(
-      const std::vector<base::FilePath>& files, void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE {}
+      const std::vector<base::FilePath>& files, void* params) override;
+  virtual void FileSelectionCanceled(void* params) override {}
 
   // JavaScript callback to start packing an extension.
   void HandlePackMessage(const base::ListValue* args);

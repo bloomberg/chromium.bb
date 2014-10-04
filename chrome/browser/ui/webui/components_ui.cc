@@ -68,7 +68,7 @@ class ComponentsDOMHandler : public WebUIMessageHandler {
   virtual ~ComponentsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callback for the "requestComponentsData" message.
   void HandleRequestComponentsData(const base::ListValue* args);

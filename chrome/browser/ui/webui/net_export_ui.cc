@@ -56,7 +56,7 @@ class NetExportMessageHandler
   virtual ~NetExportMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Messages.
   void OnGetExportNetLogInfo(const base::ListValue* list);

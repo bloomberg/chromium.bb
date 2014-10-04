@@ -39,7 +39,7 @@ class ChargerReplacementHandler : public content::WebUIMessageHandler {
   static void SetChargerStatusPref(SpringChargerStatus status);
 
   // WebUIMessageHandler overrides:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Gets localized strings for web ui.
   static void GetLocalizedValues(base::DictionaryValue* localized_strings);

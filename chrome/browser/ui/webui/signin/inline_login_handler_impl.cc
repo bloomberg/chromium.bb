@@ -62,9 +62,9 @@ class InlineSigninHelper : public SigninOAuthHelper::Consumer {
   virtual void OnSigninOAuthInformationAvailable(
       const std::string& email,
       const std::string& display_email,
-      const std::string& refresh_token) OVERRIDE;
+      const std::string& refresh_token) override;
   virtual void OnSigninOAuthInformationFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   SigninOAuthHelper signin_oauth_helper_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;

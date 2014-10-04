@@ -70,7 +70,7 @@ class FetchRequest : public net::URLFetcherDelegate {
 
  private:
   virtual ~FetchRequest() {}
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   scoped_ptr<net::URLFetcher> fetcher_;
   content::URLDataSource::GotDataCallback callback_;
 };
@@ -131,19 +131,19 @@ class DevToolsDataSource : public content::URLDataSource {
   explicit DevToolsDataSource(net::URLRequestContextGetter* request_context);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE;
+  virtual std::string GetSource() const override;
 
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
 
  private:
   // content::URLDataSource overrides.
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
-  virtual bool ShouldServeMimeTypeAsContentTypeHeader() const OVERRIDE;
+  virtual std::string GetMimeType(const std::string& path) const override;
+  virtual bool ShouldAddContentSecurityPolicy() const override;
+  virtual bool ShouldServeMimeTypeAsContentTypeHeader() const override;
 
   // Serves bundled DevTools frontend from ResourceBundle.
   void StartBundledDataRequest(
@@ -266,7 +266,7 @@ class OpenRemotePageRequest : public DevToolsAndroidBridge::DeviceListListener {
  private:
   // DevToolsAndroidBridge::Listener overrides.
   virtual void DeviceListChanged(
-      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE;
+      const DevToolsAndroidBridge::RemoteDevices& devices) override;
 
   bool OpenInBrowser(DevToolsAndroidBridge::RemoteBrowser* browser);
   void RemotePageOpened(DevToolsAndroidBridge::RemotePage* page);

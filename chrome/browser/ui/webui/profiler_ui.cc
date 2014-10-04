@@ -53,11 +53,11 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
 
  protected:
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE {
+  virtual std::string GetSource() override {
     return chrome::kChromeUIProfilerHost;
   }
 
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+  virtual std::string GetMimeType(const std::string& path) const override {
     if (EndsWith(path, ".js", false))
       return "application/javascript";
     return "text/html";
@@ -66,7 +66,7 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+      const content::URLDataSource::GotDataCallback& callback) override {
     base::FilePath base_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
     base_path = base_path.AppendASCII("chrome");
@@ -117,7 +117,7 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
   ProfilerMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Messages.
   void OnGetData(const base::ListValue* list);

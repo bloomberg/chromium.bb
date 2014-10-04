@@ -62,20 +62,20 @@ class NetworkStateInformer
   void RemoveObserver(NetworkStateInformerObserver* observer);
 
   // NetworkStateHandlerObserver implementation:
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) override;
 
   // NetworkPortalDetector::Observer implementation:
   virtual void OnPortalDetectionCompleted(
       const NetworkState* network,
-      const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
+      const NetworkPortalDetector::CaptivePortalState& state) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // CaptivePortalWindowProxyDelegate implementation:
-  virtual void OnPortalDetected() OVERRIDE;
+  virtual void OnPortalDetected() override;
 
   State state() const { return state_; }
   std::string network_path() const { return network_path_; }

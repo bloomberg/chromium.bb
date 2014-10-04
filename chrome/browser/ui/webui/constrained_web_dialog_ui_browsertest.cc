@@ -33,7 +33,7 @@ class ConstrainedWebDialogBrowserTestObserver
   bool contents_destroyed() { return contents_destroyed_; }
 
  private:
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     contents_destroyed_ = true;
   }
 

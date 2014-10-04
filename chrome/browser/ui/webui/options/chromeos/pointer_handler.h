@@ -24,12 +24,12 @@ class PointerHandler
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
 
  private:
   // PointerDeviceObserver implementation.
-  virtual void TouchpadExists(bool exists) OVERRIDE;
-  virtual void MouseExists(bool exists) OVERRIDE;
+  virtual void TouchpadExists(bool exists) override;
+  virtual void MouseExists(bool exists) override;
 
   // Set the title dynamically based on whether a touchpad and/or mouse is
   // detected.

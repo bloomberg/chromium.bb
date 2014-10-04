@@ -35,19 +35,19 @@ class StartPageHandler : public content::WebUIMessageHandler,
 
  private:
   // content::WebUIMessageHandler overrides:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
   // RecommendedAppsObserver overrdies:
-  virtual void OnRecommendedAppsChanged() OVERRIDE;
+  virtual void OnRecommendedAppsChanged() override;
 
   // Creates a ListValue for the recommended apps and sends it to js side.
   void SendRecommendedApps();

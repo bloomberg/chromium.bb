@@ -18,13 +18,13 @@ class ChromeWebContentsHandler
   virtual content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual void AddNewContents(content::BrowserContext* context,
                               content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsHandler);

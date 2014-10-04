@@ -53,7 +53,7 @@ class NTPUserDataLogger
 
   // content::WebContentsObserver override
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) OVERRIDE;
+      const content::LoadCommittedDetails& load_details) override;
 
  protected:
   explicit NTPUserDataLogger(content::WebContents* contents);

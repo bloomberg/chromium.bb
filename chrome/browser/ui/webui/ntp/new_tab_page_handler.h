@@ -35,7 +35,7 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   virtual ~NewTabPageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callback for "notificationPromoClosed". No arguments.
   void HandleNotificationPromoClosed(const base::ListValue* args);

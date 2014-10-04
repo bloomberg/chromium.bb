@@ -52,21 +52,21 @@ class PrintPreviewHandler
   virtual ~PrintPreviewHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+                            void* params) override;
+  virtual void FileSelectionCanceled(void* params) override;
 
   // PrintViewManagerObserver implementation.
-  virtual void OnPrintDialogShown() OVERRIDE;
+  virtual void OnPrintDialogShown() override;
 
   // MergeSessionHelper::Observer implementation.
   virtual void MergeSessionCompleted(
       const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const base::FilePath& default_path);
@@ -91,17 +91,17 @@ class PrintPreviewHandler
       bool added,
       const std::string& name,
       bool has_local_printing,
-      const local_discovery::DeviceDescription& description) OVERRIDE;
-  virtual void LocalPrinterRemoved(const std::string& name) OVERRIDE;
-  virtual void LocalPrinterCacheFlushed() OVERRIDE;
+      const local_discovery::DeviceDescription& description) override;
+  virtual void LocalPrinterRemoved(const std::string& name) override;
+  virtual void LocalPrinterCacheFlushed() override;
 
   // PrivetLocalPrintOperation::Delegate implementation.
   virtual void OnPrivetPrintingDone(
       const local_discovery::PrivetLocalPrintOperation*
-      print_operation) OVERRIDE;
+      print_operation) override;
   virtual void OnPrivetPrintingError(
       const local_discovery::PrivetLocalPrintOperation* print_operation,
-        int http_code) OVERRIDE;
+        int http_code) override;
 #endif  // ENABLE_SERVICE_DISCOVERY
   int regenerate_preview_request_count() const {
     return regenerate_preview_request_count_;

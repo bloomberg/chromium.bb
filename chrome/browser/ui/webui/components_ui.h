@@ -32,7 +32,7 @@ class ComponentsUI : public content::WebUIController,
       ui::ScaleFactor scale_factor);
 
   // ServiceObserver implementation.
-  virtual void OnEvent(Events event, const std::string& id) OVERRIDE;
+  virtual void OnEvent(Events event, const std::string& id) override;
 
  private:
   static base::string16 ComponentEventToString(Events event);

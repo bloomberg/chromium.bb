@@ -33,10 +33,10 @@ class CreateProfileHandler: public OptionsPageUIHandler {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Represents the final profile creation status. It is used to map

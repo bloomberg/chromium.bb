@@ -10,7 +10,7 @@
 class DownloadsWebUIForSupervisedUsersTest : public DownloadsUIBrowserTest {
  public:
   // InProcessBrowserTest implementation.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UI_SUPERVISED_BROWSERTEST_H_

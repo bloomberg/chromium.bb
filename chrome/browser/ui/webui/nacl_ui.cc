@@ -75,7 +75,7 @@ class NaClDomHandler : public WebUIMessageHandler {
   virtual ~NaClDomHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Callback for the "requestNaClInfo" message.

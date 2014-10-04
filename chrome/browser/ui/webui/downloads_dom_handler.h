@@ -35,18 +35,18 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   void Init();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // AllDownloadItemNotifier::Observer interface
   virtual void OnDownloadCreated(
       content::DownloadManager* manager,
-      content::DownloadItem* download_item) OVERRIDE;
+      content::DownloadItem* download_item) override;
   virtual void OnDownloadUpdated(
       content::DownloadManager* manager,
-      content::DownloadItem* download_item) OVERRIDE;
+      content::DownloadItem* download_item) override;
   virtual void OnDownloadRemoved(
       content::DownloadManager* manager,
-      content::DownloadItem* download_item) OVERRIDE;
+      content::DownloadItem* download_item) override;
 
   // Callback for the "onPageLoaded" message.
   void OnPageLoaded(const base::ListValue* args);

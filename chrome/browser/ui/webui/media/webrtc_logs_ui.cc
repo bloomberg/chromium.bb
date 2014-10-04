@@ -81,10 +81,10 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
   virtual ~WebRtcLogsDOMHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // UploadList::Delegate implemenation.
-  virtual void OnUploadListAvailable() OVERRIDE;
+  virtual void OnUploadListAvailable() override;
 
  private:
   // Asynchronously fetches the list of upload WebRTC logs. Called from JS.

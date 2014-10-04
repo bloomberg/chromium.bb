@@ -22,14 +22,14 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
  public:
   virtual content::WebUI::TypeID GetWebUIType(
       content::BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE;
+      const GURL& url) const override;
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE;
+                              const GURL& url) const override;
   virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE;
+                                      const GURL& url) const override;
   virtual content::WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui,
-      const GURL& url) const OVERRIDE;
+      const GURL& url) const override;
 
   // Get the favicon for |page_url| and run |callback| with result when loaded.
   // Note. |callback| is always run asynchronously.

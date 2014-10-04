@@ -66,7 +66,7 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
   virtual void ConfirmInstall(
       Delegate* delegate,
       const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
+      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIProceed();
   }
 };

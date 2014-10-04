@@ -29,7 +29,7 @@ class ExtensionStatusesHandler : public content::WebUIMessageHandler {
       const base::Callback<void(const base::ListValue&)>& callback);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void GetExtensionStatuses(const base::ListValue* args);

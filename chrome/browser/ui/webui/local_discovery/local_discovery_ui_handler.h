@@ -53,52 +53,52 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   static bool GetHasVisible();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
   // PrivetRegisterOperation::Delegate implementation.
   virtual void OnPrivetRegisterClaimToken(
       PrivetRegisterOperation* operation,
       const std::string& token,
-      const GURL& url) OVERRIDE;
+      const GURL& url) override;
   virtual void OnPrivetRegisterError(
       PrivetRegisterOperation* operation,
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
       int printer_http_code,
-      const base::DictionaryValue* json) OVERRIDE;
+      const base::DictionaryValue* json) override;
   virtual void OnPrivetRegisterDone(
       PrivetRegisterOperation* operation,
-      const std::string& device_id) OVERRIDE;
+      const std::string& device_id) override;
 
   // PrivetV3SetupFlow::Delegate implementation.
-  virtual scoped_ptr<GCDApiFlow> CreateApiFlow() OVERRIDE;
-  virtual void GetWiFiCredentials(const CredentialsCallback& callback) OVERRIDE;
-  virtual void SwitchToSetupWiFi(const ResultCallback& callback) OVERRIDE;
+  virtual scoped_ptr<GCDApiFlow> CreateApiFlow() override;
+  virtual void GetWiFiCredentials(const CredentialsCallback& callback) override;
+  virtual void SwitchToSetupWiFi(const ResultCallback& callback) override;
   virtual void CreatePrivetV3Client(
       const std::string& service_name,
-      const PrivetClientCallback& callback) OVERRIDE;
+      const PrivetClientCallback& callback) override;
   virtual void ConfirmSecurityCode(const std::string& confirmation_code,
-                                   const ResultCallback& callback) OVERRIDE;
-  virtual void RestoreWifi(const ResultCallback& callback) OVERRIDE;
-  virtual void OnSetupDone() OVERRIDE;
-  virtual void OnSetupError() OVERRIDE;
+                                   const ResultCallback& callback) override;
+  virtual void RestoreWifi(const ResultCallback& callback) override;
+  virtual void OnSetupDone() override;
+  virtual void OnSetupError() override;
 
   // PrivetDeviceLister::Delegate implementation.
   virtual void DeviceChanged(bool added,
                              const std::string& name,
-                             const DeviceDescription& description) OVERRIDE;
-  virtual void DeviceRemoved(const std::string& name) OVERRIDE;
-  virtual void DeviceCacheFlushed() OVERRIDE;
+                             const DeviceDescription& description) override;
+  virtual void DeviceRemoved(const std::string& name) override;
+  virtual void DeviceCacheFlushed() override;
 
   // CloudDeviceListDelegate implementation.
-  virtual void OnDeviceListReady(const std::vector<Device>& devices) OVERRIDE;
-  virtual void OnDeviceListUnavailable() OVERRIDE;
+  virtual void OnDeviceListReady(const std::vector<Device>& devices) override;
+  virtual void OnDeviceListUnavailable() override;
 
   // SigninManagerBase::Observer implementation.
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
  private:
   typedef std::map<std::string, DeviceDescription> DeviceDescriptionMap;

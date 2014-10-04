@@ -123,7 +123,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   }
 
   // SiteDataObserver implementation.
-  virtual void OnSiteDataAccessed() OVERRIDE;
+  virtual void OnSiteDataAccessed() override;
 
  private:
   // Initializes the |WebsiteSettings|.

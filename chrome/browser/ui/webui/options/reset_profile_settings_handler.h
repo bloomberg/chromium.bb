@@ -35,13 +35,13 @@ class ResetProfileSettingsHandler
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
-  virtual void Uninitialize() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void InitializeHandler() override;
+  virtual void InitializePage() override;
+  virtual void Uninitialize() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Javascript callback to start clearing data.

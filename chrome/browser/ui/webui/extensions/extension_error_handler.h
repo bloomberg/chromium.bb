@@ -37,7 +37,7 @@ class ExtensionErrorHandler : public content::WebUIMessageHandler {
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   friend class ManifestHighlightUnitTest;

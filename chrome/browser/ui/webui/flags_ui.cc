@@ -116,7 +116,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
             about_flags::FlagAccess access);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callback for the "requestFlagsExperiments" message.
   void HandleRequestFlagsExperiments(const base::ListValue* args);

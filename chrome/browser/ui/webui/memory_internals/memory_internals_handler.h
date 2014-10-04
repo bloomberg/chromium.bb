@@ -24,7 +24,7 @@ class MemoryInternalsHandler : public content::WebUIMessageHandler {
   MemoryInternalsHandler();
   virtual ~MemoryInternalsHandler();
 
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // JavaScript message handlers.
   void OnJSUpdate(const base::ListValue* list);

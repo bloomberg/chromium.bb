@@ -62,7 +62,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
 
  private:
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   void HandleInitUICommand(const base::ListValue* args);
   void HandleInspectCommand(const base::ListValue* args);
@@ -212,9 +212,9 @@ class DevToolsUIBindingsEnabler
 
  private:
   // contents::WebContentsObserver overrides.
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void WebContentsDestroyed() override;
   virtual void AboutToNavigateRenderView(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   DevToolsUIBindings bindings_;
   GURL url_;

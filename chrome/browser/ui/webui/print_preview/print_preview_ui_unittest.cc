@@ -47,7 +47,7 @@ class PrintPreviewUIUnitTest : public PrintPreviewTest {
   virtual ~PrintPreviewUIUnitTest();
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUIUnitTest);
 };

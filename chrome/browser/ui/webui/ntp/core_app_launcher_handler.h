@@ -58,7 +58,7 @@ class CoreAppLauncherHandler : public content::WebUIMessageHandler {
                             extension_misc::AppLaunchBucket bucket);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   DISALLOW_COPY_AND_ASSIGN(CoreAppLauncherHandler);
 };

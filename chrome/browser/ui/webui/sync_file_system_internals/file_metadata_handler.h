@@ -26,7 +26,7 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
   virtual ~FileMetadataHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void GetExtensions(const base::ListValue* args);

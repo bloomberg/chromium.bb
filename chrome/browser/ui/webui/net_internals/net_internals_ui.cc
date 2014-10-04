@@ -226,7 +226,7 @@ class NetInternalsMessageHandler
   virtual ~NetInternalsMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Calls g_browser.receive in the renderer, passing in |command| and |arg|.
   // Takes ownership of |arg|.  If the renderer is displaying a log file, the
@@ -410,16 +410,16 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnSetLogLevel(const base::ListValue* list);
 
   // ChromeNetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   // ConnectionTester::Delegate implementation:
-  virtual void OnStartConnectionTestSuite() OVERRIDE;
+  virtual void OnStartConnectionTestSuite() override;
   virtual void OnStartConnectionTestExperiment(
-      const ConnectionTester::Experiment& experiment) OVERRIDE;
+      const ConnectionTester::Experiment& experiment) override;
   virtual void OnCompletedConnectionTestExperiment(
       const ConnectionTester::Experiment& experiment,
-      int result) OVERRIDE;
-  virtual void OnCompletedConnectionTestSuite() OVERRIDE;
+      int result) override;
+  virtual void OnCompletedConnectionTestSuite() override;
 
   // Helper that calls g_browser.receive in the renderer, passing in |command|
   // and |arg|.  Takes ownership of |arg|.  If the renderer is displaying a log

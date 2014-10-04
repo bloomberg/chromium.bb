@@ -44,11 +44,11 @@ class InternetOptionsHandler
  private:
   // OptionsPageUIHandler
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void InitializePage() override;
 
   // WebUIMessageHandler (from OptionsPageUIHandler)
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callbacks to set network state properties.
   void ShowMorePlanInfoCallback(const base::ListValue* args);
@@ -84,14 +84,14 @@ class InternetOptionsHandler
   void UpdateCarrier();
 
   // NetworkStateHandlerObserver
-  virtual void DeviceListChanged() OVERRIDE;
-  virtual void NetworkListChanged() OVERRIDE;
+  virtual void DeviceListChanged() override;
+  virtual void NetworkListChanged() override;
   virtual void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
   virtual void NetworkPropertiesUpdated(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const chromeos::NetworkState* network) override;
   virtual void DevicePropertiesUpdated(
-      const chromeos::DeviceState* device) OVERRIDE;
+      const chromeos::DeviceState* device) override;
 
   // Updates the logged in user type.
   void UpdateLoggedInUserType();

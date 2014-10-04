@@ -46,7 +46,7 @@ class NewTabUIBrowserTest : public InProcessBrowserTest {
     logging::SetLogMessageHandler(NULL);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     InProcessBrowserTest::TearDown();
     ASSERT_FALSE(had_console_errors);
   }
@@ -154,7 +154,7 @@ class NewTabUIProcessPerTabTest : public NewTabUIBrowserTest {
  public:
    NewTabUIProcessPerTabTest() {}
 
-   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+   virtual void SetUpCommandLine(CommandLine* command_line) override {
      command_line->AppendSwitch(switches::kProcessPerTab);
    }
 };

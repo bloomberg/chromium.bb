@@ -75,8 +75,8 @@ class L10nUtilTest : public testing::Test {
   virtual ~L10nUtilTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void SetInputMethods1();
   void SetInputMethods2();

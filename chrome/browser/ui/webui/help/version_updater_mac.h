@@ -19,9 +19,9 @@ class VersionUpdaterMac : public VersionUpdater {
  public:
   // VersionUpdater implementation.
   virtual void CheckForUpdate(const StatusCallback& status_callback,
-                              const PromoteCallback& promote_callback) OVERRIDE;
-  virtual void PromoteUpdater() const OVERRIDE;
-  virtual void RelaunchBrowser() const OVERRIDE;
+                              const PromoteCallback& promote_callback) override;
+  virtual void PromoteUpdater() const override;
+  virtual void RelaunchBrowser() const override;
 
   // Process status updates received from Keystone. The dictionary will contain
   // an AutoupdateStatus value as an intValue at key kAutoupdateStatusStatus. If

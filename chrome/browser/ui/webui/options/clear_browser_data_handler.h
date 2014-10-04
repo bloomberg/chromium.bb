@@ -20,12 +20,12 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void InitializeHandler() override;
+  virtual void InitializePage() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   void UpdateInfoBannerVisibility();
 
@@ -35,7 +35,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   // BrowsingDataRemover::Observer implementation.
   // Closes the dialog once all requested data has been removed.
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+  virtual void OnBrowsingDataRemoverDone() override;
 
   // Updates UI when the pref to allow clearing history changes.
   virtual void OnBrowsingHistoryPrefChanged();

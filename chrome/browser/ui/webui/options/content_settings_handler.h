@@ -35,29 +35,29 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void InitializeHandler() override;
+  virtual void InitializePage() override;
+  virtual void RegisterMessages() override;
 
   // content_settings::Observer implementation.
   virtual void OnContentSettingChanged(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      std::string resource_identifier) OVERRIDE;
+      std::string resource_identifier) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // PepperFlashSettingsManager::Client implementation.
   virtual void OnGetPermissionSettingsCompleted(
       uint32 request_id,
       bool success,
       PP_Flash_BrowserOperations_Permission default_permission,
-      const ppapi::FlashSiteSettings& sites) OVERRIDE;
+      const ppapi::FlashSiteSettings& sites) override;
 
   // Gets a string identifier for the group name, for use in HTML.
   static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);

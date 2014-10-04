@@ -21,15 +21,15 @@ class KioskEnableScreenHandler : public KioskEnableScreenActor,
   virtual ~KioskEnableScreenHandler();
 
   // KioskEnableScreenActor implementation:
-  virtual void Show() OVERRIDE;
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE;
+  virtual void Show() override;
+  virtual void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // JS messages handlers.

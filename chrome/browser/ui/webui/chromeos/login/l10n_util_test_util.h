@@ -24,7 +24,7 @@ class MockInputMethodManagerWithInputMethods
 
   // input_method::MockInputMethodManager:
   virtual scoped_ptr<input_method::InputMethodDescriptors>
-      GetSupportedInputMethods() const OVERRIDE;
+      GetSupportedInputMethods() const override;
 
   void AddInputMethod(const std::string& id,
                       const std::string& raw_layout,

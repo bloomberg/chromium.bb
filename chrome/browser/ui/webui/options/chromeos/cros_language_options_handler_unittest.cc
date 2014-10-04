@@ -25,7 +25,7 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
   }
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     input_manager_->AddInputMethod("xkb:us::eng", "us", "en-US");
     input_manager_->AddInputMethod("xkb:fr::fra", "fr", "fr");
     input_manager_->AddInputMethod("xkb:be::fra", "be", "fr");

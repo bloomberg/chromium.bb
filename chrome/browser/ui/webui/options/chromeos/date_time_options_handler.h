@@ -21,14 +21,14 @@ class DateTimeOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // OptionsPageUIHandler:
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void InitializeHandler() override;
+  virtual void InitializePage() override;
+  virtual void RegisterMessages() override;
 
  private:
   // SystemClockClient::Observer:
-  virtual void SystemClockCanSetTimeChanged(bool can_set_time) OVERRIDE;
+  virtual void SystemClockCanSetTimeChanged(bool can_set_time) override;
 
   // Callback for the "showSetTime" message to show the set time dialog. No
   // arguments are expected.

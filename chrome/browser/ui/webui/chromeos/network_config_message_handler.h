@@ -28,7 +28,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   virtual ~NetworkConfigMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // WebUI::RegisterMessageCallback callbacks. These callbacks collect the

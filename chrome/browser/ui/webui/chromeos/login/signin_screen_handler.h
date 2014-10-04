@@ -239,8 +239,8 @@ class SigninScreenHandler
   void SetNativeWindowDelegate(NativeWindowDelegate* native_window_delegate);
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
-  virtual void OnNetworkReady() OVERRIDE;
-  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
+  virtual void OnNetworkReady() override;
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) override;
 
   // Required Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -252,7 +252,7 @@ class SigninScreenHandler
 
   // OobeUI::Observer implemetation.
   virtual void OnCurrentScreenChanged(OobeUI::Screen current_screen,
-                                      OobeUI::Screen new_screen) OVERRIDE;
+                                      OobeUI::Screen new_screen) override;
 
   // Returns least used user login input method.
   std::string GetUserLRUInputMethod(const std::string& username) const;
@@ -286,66 +286,66 @@ class SigninScreenHandler
   void ReloadGaia(bool force_reload);
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void Initialize() override;
+  virtual gfx::NativeWindow GetNativeWindow() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // LoginDisplayWebUIHandler implementation:
-  virtual void ClearAndEnablePassword() OVERRIDE;
-  virtual void ClearUserPodPassword() OVERRIDE;
-  virtual void OnUserRemoved(const std::string& username) OVERRIDE;
-  virtual void OnUserImageChanged(const user_manager::User& user) OVERRIDE;
-  virtual void OnPreferencesChanged() OVERRIDE;
-  virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
+  virtual void ClearAndEnablePassword() override;
+  virtual void ClearUserPodPassword() override;
+  virtual void OnUserRemoved(const std::string& username) override;
+  virtual void OnUserImageChanged(const user_manager::User& user) override;
+  virtual void OnPreferencesChanged() override;
+  virtual void ResetSigninScreenHandlerDelegate() override;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
-                         HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
-  virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
-  virtual void ShowSigninUI(const std::string& email) OVERRIDE;
-  virtual void ShowPasswordChangedDialog(bool show_password_error) OVERRIDE;
-  virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
+                         HelpAppLauncher::HelpTopic help_topic_id) override;
+  virtual void ShowGaiaPasswordChanged(const std::string& username) override;
+  virtual void ShowSigninUI(const std::string& email) override;
+  virtual void ShowPasswordChangedDialog(bool show_password_error) override;
+  virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
   virtual void ShowSigninScreenForCreds(const std::string& username,
-                                        const std::string& password) OVERRIDE;
+                                        const std::string& password) override;
   virtual void LoadUsers(const base::ListValue& users_list,
-                         bool show_guest) OVERRIDE;
+                         bool show_guest) override;
   virtual void SetPublicSessionDisplayName(
       const std::string& user_id,
-      const std::string& display_name) OVERRIDE;
+      const std::string& display_name) override;
   virtual void SetPublicSessionLocales(
       const std::string& user_id,
       scoped_ptr<base::ListValue> locales,
       const std::string& default_locale,
-      bool multipleRecommendedLocales) OVERRIDE;
+      bool multipleRecommendedLocales) override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ScreenlockBridge::LockHandler implementation:
-  virtual void ShowBannerMessage(const base::string16& message) OVERRIDE;
+  virtual void ShowBannerMessage(const base::string16& message) override;
   virtual void ShowUserPodCustomIcon(
       const std::string& username,
-      const ScreenlockBridge::UserPodCustomIconOptions& icon) OVERRIDE;
-  virtual void HideUserPodCustomIcon(const std::string& username) OVERRIDE;
-  virtual void EnableInput() OVERRIDE;
+      const ScreenlockBridge::UserPodCustomIconOptions& icon) override;
+  virtual void HideUserPodCustomIcon(const std::string& username) override;
+  virtual void EnableInput() override;
   virtual void SetAuthType(const std::string& username,
                            ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const base::string16& initial_value) OVERRIDE;
+                           const base::string16& initial_value) override;
   virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const OVERRIDE;
-  virtual void Unlock(const std::string& user_email) OVERRIDE;
+      const std::string& username) const override;
+  virtual void Unlock(const std::string& user_email) override;
   virtual void AttemptEasySignin(const std::string& user_email,
                                  const std::string& secret,
-                                 const std::string& key_label) OVERRIDE;
+                                 const std::string& key_label) override;
 
   // TouchViewControllerDelegate::Observer implementation:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
   // Updates authentication extension. Called when device settings that affect
   // sign-in (allow BWSI and allow whitelist) are changed.
@@ -455,7 +455,7 @@ class SigninScreenHandler
   net::Error FrameError() const;
 
   // input_method::ImeKeyboard::Observer implementation:
-  virtual void OnCapsLockChanged(bool enabled) OVERRIDE;
+  virtual void OnCapsLockChanged(bool enabled) override;
 
   // Returns OobeUI object of NULL.
   OobeUI* GetOobeUI() const;

@@ -22,22 +22,22 @@ class CookiesViewHandler : public OptionsPageUIHandler,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void RegisterMessages() override;
 
   // CookiesTreeModel::Observer implementation.
   virtual void TreeNodesAdded(ui::TreeModel* model,
                               ui::TreeModelNode* parent,
                               int start,
-                              int count) OVERRIDE;
+                              int count) override;
   virtual void TreeNodesRemoved(ui::TreeModel* model,
                                 ui::TreeModelNode* parent,
                                 int start,
-                                int count) OVERRIDE;
+                                int count) override;
   virtual void TreeNodeChanged(ui::TreeModel* model,
-                               ui::TreeModelNode* node) OVERRIDE {}
-  virtual void TreeModelBeginBatch(CookiesTreeModel* model) OVERRIDE;
-  virtual void TreeModelEndBatch(CookiesTreeModel* model) OVERRIDE;
+                               ui::TreeModelNode* node) override {}
+  virtual void TreeModelBeginBatch(CookiesTreeModel* model) override;
+  virtual void TreeModelEndBatch(CookiesTreeModel* model) override;
 
  private:
   // Creates the CookiesTreeModel if neccessary.

@@ -345,7 +345,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
   virtual ~LocalDiscoveryUITest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
 
     test_service_discovery_client_ = new TestServiceDiscoveryClient();
@@ -428,7 +428,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     WebUIBrowserTest::SetUpCommandLine(command_line);
   }
 

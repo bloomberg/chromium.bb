@@ -125,7 +125,7 @@ class AboutMemoryHandler : public MemoryDetails {
       : callback_(callback) {
   }
 
-  virtual void OnDetailsAvailable() OVERRIDE;
+  virtual void OnDetailsAvailable() override;
 
  private:
   virtual ~AboutMemoryHandler() {}
@@ -189,7 +189,7 @@ class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
   virtual ~ChromeOSOnlineTermsHandler() {}
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     if (source != eula_fetcher_.get()) {
       NOTREACHED() << "Callback from foreign URL fetcher";
       return;

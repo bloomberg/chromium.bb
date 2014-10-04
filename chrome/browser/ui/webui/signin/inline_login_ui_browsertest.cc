@@ -173,7 +173,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     // EmbeddedTestServer spawns a thread to initialize socket.
@@ -183,7 +183,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     const GURL& base_url = embedded_test_server()->base_url();
     command_line->AppendSwitchASCII(::switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(::switches::kLsoUrl, base_url.spec());
@@ -191,7 +191,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
                                     base_url.spec());
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     embedded_test_server()->RestartThreadAndListen();
 
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
@@ -202,7 +202,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
         GURL(kFooWebUIURL).host(), &foo_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     test_factory_->RemoveFactoryOverride(GURL(kFooWebUIURL).host());
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         test_factory_.get());

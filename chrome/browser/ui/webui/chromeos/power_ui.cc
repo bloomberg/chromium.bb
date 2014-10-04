@@ -43,7 +43,7 @@ class PowerMessageHandler : public content::WebUIMessageHandler {
   virtual ~PowerMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void OnGetBatteryChargeData(const base::ListValue* value);

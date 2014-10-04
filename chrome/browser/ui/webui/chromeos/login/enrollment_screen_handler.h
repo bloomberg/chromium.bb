@@ -41,36 +41,36 @@ class EnrollmentScreenHandler
   virtual ~EnrollmentScreenHandler();
 
   // Implements WebUIMessageHandler:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Implements EnrollmentScreenActor:
   virtual void SetParameters(Controller* controller,
                              EnrollmentMode enrollment_mode,
-                             const std::string& management_domain) OVERRIDE;
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void FetchOAuthToken() OVERRIDE;
-  virtual void ResetAuth(const base::Closure& callback) OVERRIDE;
-  virtual void ShowSigninScreen() OVERRIDE;
-  virtual void ShowEnrollmentSpinnerScreen() OVERRIDE;
-  virtual void ShowLoginSpinnerScreen() OVERRIDE;
-  virtual void ShowAuthError(const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) OVERRIDE;
-  virtual void ShowUIError(UIError error_code) OVERRIDE;
+                             const std::string& management_domain) override;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void FetchOAuthToken() override;
+  virtual void ResetAuth(const base::Closure& callback) override;
+  virtual void ShowSigninScreen() override;
+  virtual void ShowEnrollmentSpinnerScreen() override;
+  virtual void ShowLoginSpinnerScreen() override;
+  virtual void ShowAuthError(const GoogleServiceAuthError& error) override;
+  virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
+  virtual void ShowUIError(UIError error_code) override;
 
   // Implements BaseScreenHandler:
-  virtual void Initialize() OVERRIDE;
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
+  virtual void Initialize() override;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // Implements BrowsingDataRemover::Observer:
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+  virtual void OnBrowsingDataRemoverDone() override;
 
   // Implements NetworkStateInformer::NetworkStateInformerObserver
-  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) override;
 
   // Implements WebUILoginView::FrameObserver
-  virtual void OnFrameError(const std::string& frame_unique_name) OVERRIDE;
+  virtual void OnFrameError(const std::string& frame_unique_name) override;
 
  private:
   // Handlers for WebUI messages.

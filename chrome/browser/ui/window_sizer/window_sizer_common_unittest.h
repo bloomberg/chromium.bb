@@ -66,10 +66,10 @@ class TestStateProvider : public WindowSizer::StateProvider {
   virtual bool GetPersistentState(
       gfx::Rect* bounds,
       gfx::Rect* saved_work_area,
-      ui::WindowShowState* show_state) const OVERRIDE;
+      ui::WindowShowState* show_state) const override;
   virtual bool GetLastActiveWindowState(
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE;
+      ui::WindowShowState* show_state) const override;
 
  private:
   gfx::Rect persistent_bounds_;

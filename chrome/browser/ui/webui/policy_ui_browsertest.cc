@@ -86,7 +86,7 @@ class PolicyUITest : public InProcessBrowserTest {
 
  protected:
   // InProcessBrowserTest implementation.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
 
   void UpdateProviderPolicy(const policy::PolicyMap& policy);
 

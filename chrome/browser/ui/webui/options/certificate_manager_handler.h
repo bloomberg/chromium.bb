@@ -32,17 +32,17 @@ class CertificateManagerHandler
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void RegisterMessages() override;
 
   // CertificateManagerModel::Observer implementation.
-  virtual void CertificatesRefreshed() OVERRIDE;
+  virtual void CertificatesRefreshed() override;
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+                            void* params) override;
+  virtual void FileSelectionCanceled(void* params) override;
 
  private:
   // View certificate.

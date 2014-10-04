@@ -28,7 +28,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   static const int kInvalidId = -1;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   ForeignSessionHandler();
   virtual ~ForeignSessionHandler() {}
@@ -59,7 +59,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   // Determines how ForeignSessionHandler will interact with the new tab page.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns true if tab sync is enabled for this profile, otherwise false.
   bool IsTabSyncEnabled();

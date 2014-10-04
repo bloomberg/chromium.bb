@@ -29,22 +29,22 @@ class SyncFileSystemInternalsHandler
   virtual ~SyncFileSystemInternalsHandler();
 
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // sync_file_system::SyncEventObserver interface implementation.
   virtual void OnSyncStateUpdated(
       const GURL& app_origin,
       sync_file_system::SyncServiceState state,
-      const std::string& description) OVERRIDE;
+      const std::string& description) override;
   virtual void OnFileSynced(const storage::FileSystemURL& url,
                             sync_file_system::SyncFileType file_type,
                             sync_file_system::SyncFileStatus status,
                             sync_file_system::SyncAction action,
-                            sync_file_system::SyncDirection direction) OVERRIDE;
+                            sync_file_system::SyncDirection direction) override;
 
   // sync_file_system::TaskLogger::Observer implementation.
   virtual void OnLogRecorded(
-      const sync_file_system::TaskLogger::TaskLog& task_log) OVERRIDE;
+      const sync_file_system::TaskLogger::TaskLog& task_log) override;
 
  private:
   void GetServiceStatus(const base::ListValue* args);

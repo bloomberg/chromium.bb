@@ -27,7 +27,7 @@ class InspectUITest : public WebUIBrowserTest {
  public:
   InspectUITest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("inspect_ui_test.js")));
   }

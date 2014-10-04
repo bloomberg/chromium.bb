@@ -24,7 +24,7 @@ class ThemeHandler : public content::WebUIMessageHandler,
 
  private:
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Re/set the CSS caches.
   void InitializeCSSCaches();
@@ -32,7 +32,7 @@ class ThemeHandler : public content::WebUIMessageHandler,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   Profile* GetProfile() const;
 

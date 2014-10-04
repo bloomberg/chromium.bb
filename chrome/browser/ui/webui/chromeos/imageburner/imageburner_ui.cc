@@ -96,7 +96,7 @@ class WebUIHandler
   }
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE {
+  virtual void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "getDevices",
         base::Bind(&WebUIHandler::HandleGetDevices, base::Unretained(this)));
@@ -114,12 +114,12 @@ class WebUIHandler
   }
 
   // BurnController::Delegate override.
-  virtual void OnSuccess() OVERRIDE {
+  virtual void OnSuccess() override {
     web_ui()->CallJavascriptFunction("browserBridge.reportSuccess");
   }
 
   // BurnController::Delegate override.
-  virtual void OnFail(int error_message_id) OVERRIDE {
+  virtual void OnFail(int error_message_id) override {
     base::StringValue error_message(
         l10n_util::GetStringUTF16(error_message_id));
     web_ui()->CallJavascriptFunction("browserBridge.reportFail", error_message);
@@ -127,7 +127,7 @@ class WebUIHandler
 
   // BurnController::Delegate override.
   virtual void OnDeviceAdded(const disks::DiskMountManager::Disk& disk)
-      OVERRIDE {
+      override {
     base::DictionaryValue disk_value;
     CreateDiskValue(disk, &disk_value);
     web_ui()->CallJavascriptFunction("browserBridge.deviceAdded", disk_value);
@@ -135,14 +135,14 @@ class WebUIHandler
 
   // BurnController::Delegate override.
   virtual void OnDeviceRemoved(const disks::DiskMountManager::Disk& disk)
-      OVERRIDE {
+      override {
     base::StringValue device_path_value(disk.device_path());
     web_ui()->CallJavascriptFunction("browserBridge.deviceRemoved",
                                      device_path_value);
   }
 
   // BurnController::Delegate override.
-  virtual void OnDeviceTooSmall(int64 device_size) OVERRIDE {
+  virtual void OnDeviceTooSmall(int64 device_size) override {
     base::string16 size;
     GetDataSizeText(device_size, &size);
     base::StringValue device_size_text(size);
@@ -153,7 +153,7 @@ class WebUIHandler
   // BurnController::Delegate override.
   virtual void OnProgress(ProgressType progress_type,
                           int64 amount_finished,
-                          int64 amount_total) OVERRIDE {
+                          int64 amount_total) override {
     const base::string16 time_remaining_text =
         l10n_util::GetStringUTF16(IDS_IMAGEBURN_PROGRESS_TIME_UNKNOWN);
     SendProgressSignal(progress_type, amount_finished, amount_total,
@@ -165,7 +165,7 @@ class WebUIHandler
       ProgressType progress_type,
       int64 amount_finished,
       int64 amount_total,
-      const base::TimeDelta& time_remaining) OVERRIDE {
+      const base::TimeDelta& time_remaining) override {
     const base::string16 time_remaining_text = l10n_util::GetStringFUTF16(
         IDS_IMAGEBURN_DOWNLOAD_TIME_REMAINING,
         ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
@@ -175,12 +175,12 @@ class WebUIHandler
   }
 
   // BurnController::Delegate override.
-  virtual void OnNetworkDetected() OVERRIDE {
+  virtual void OnNetworkDetected() override {
     web_ui()->CallJavascriptFunction("browserBridge.reportNetworkDetected");
   }
 
   // BurnController::Delegate override.
-  virtual void OnNoNetwork() OVERRIDE {
+  virtual void OnNoNetwork() override {
     web_ui()->CallJavascriptFunction("browserBridge.reportNoNetwork");
   }
 

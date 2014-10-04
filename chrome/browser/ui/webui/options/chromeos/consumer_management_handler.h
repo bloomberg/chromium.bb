@@ -26,8 +26,8 @@ class ConsumerManagementHandler : public ::options::OptionsPageUIHandler {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void RegisterMessages() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void RegisterMessages() override;
 
  private:
   // Handles the button click events from the browser options page.

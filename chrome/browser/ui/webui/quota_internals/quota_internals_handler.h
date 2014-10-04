@@ -32,7 +32,7 @@ class QuotaInternalsHandler : public content::WebUIMessageHandler {
  public:
   QuotaInternalsHandler();
   virtual ~QuotaInternalsHandler();
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Called by QuotaInternalsProxy to report information to WebUI page.
   void ReportAvailableSpace(int64 available_space);

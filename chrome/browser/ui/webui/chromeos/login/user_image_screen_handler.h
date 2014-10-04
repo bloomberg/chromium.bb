@@ -26,26 +26,26 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual ~UserImageScreenHandler();
 
   // BaseScreenHandler implementation:
-  virtual void Initialize() OVERRIDE;
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
+  virtual void Initialize() override;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // UserImageScreenActor implementation:
   virtual void SetDelegate(
-      UserImageScreenActor::Delegate* screen) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void PrepareToShow() OVERRIDE;
+      UserImageScreenActor::Delegate* screen) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void PrepareToShow() override;
 
-  virtual void SelectImage(int index) OVERRIDE;
-  virtual void SendProfileImage(const std::string& data_url) OVERRIDE;
-  virtual void OnProfileImageAbsent() OVERRIDE;
+  virtual void SelectImage(int index) override;
+  virtual void SendProfileImage(const std::string& data_url) override;
+  virtual void OnProfileImageAbsent() override;
 
-  virtual void SetCameraPresent(bool enabled) OVERRIDE;
+  virtual void SetCameraPresent(bool enabled) override;
 
-  virtual void HideCurtain() OVERRIDE;
+  virtual void HideCurtain() override;
 
  private:
 

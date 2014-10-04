@@ -25,7 +25,7 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
     return observer_->last_loaded_extension_id();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
   void InstallGoodExtension();
 

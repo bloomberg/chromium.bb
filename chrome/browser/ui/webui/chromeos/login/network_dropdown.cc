@@ -36,7 +36,7 @@ class NetworkMenuWebUI : public NetworkMenu {
   NetworkMenuWebUI(NetworkMenu::Delegate* delegate, content::WebUI* web_ui);
 
   // NetworkMenu override:
-  virtual void UpdateMenu() OVERRIDE;
+  virtual void UpdateMenu() override;
 
   // Called when item with command |id| is chosen.
   void OnItemChosen(int id);

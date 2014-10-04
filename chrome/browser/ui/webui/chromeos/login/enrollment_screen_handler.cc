@@ -68,7 +68,7 @@ class TokenRevoker : public GaiaAuthConsumer {
   }
 
   // GaiaAuthConsumer:
-  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE {
+  virtual void OnOAuth2RevokeTokenCompleted() override {
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 

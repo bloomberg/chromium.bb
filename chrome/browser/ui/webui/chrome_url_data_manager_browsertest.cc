@@ -24,7 +24,7 @@ class NavigationNotificationObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
     got_navigation_ = true;
     http_status_code_ =

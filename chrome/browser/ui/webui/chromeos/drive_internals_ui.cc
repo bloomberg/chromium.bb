@@ -215,7 +215,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
  private:
   // WebUIMessageHandler override.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Returns a DriveIntegrationService.
   drive::DriveIntegrationService* GetIntegrationService();

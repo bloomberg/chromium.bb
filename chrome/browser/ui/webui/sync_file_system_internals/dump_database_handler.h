@@ -18,7 +18,7 @@ class DumpDatabaseHandler : public content::WebUIMessageHandler {
   virtual ~DumpDatabaseHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void GetDatabaseDump(const base::ListValue* args);

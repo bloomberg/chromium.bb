@@ -45,7 +45,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   virtual bool GetPersistentState(
       gfx::Rect* bounds,
       gfx::Rect* work_area,
-      ui::WindowShowState* show_state) const OVERRIDE {
+      ui::WindowShowState* show_state) const override {
     DCHECK(bounds);
     DCHECK(show_state);
 
@@ -87,7 +87,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
   virtual bool GetLastActiveWindowState(
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE {
+      ui::WindowShowState* show_state) const override {
     DCHECK(show_state);
     // Applications are always restored with the same position.
     if (!app_name_.empty())
@@ -145,7 +145,7 @@ class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
 
   virtual gfx::Display GetTargetDisplay(
       const gfx::Screen* screen,
-      const gfx::Rect& bounds) const OVERRIDE {
+      const gfx::Rect& bounds) const override {
 #if defined(USE_ASH)
     bool force_ash = false;
     // On Windows check if the browser is launched to serve ASH. If yes then

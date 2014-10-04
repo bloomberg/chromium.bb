@@ -96,10 +96,10 @@ class ChooseMobileNetworkHandler
   virtual ~ChooseMobileNetworkHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // NetworkStateHandlerObserver implementation.
-  virtual void DeviceListChanged() OVERRIDE;
+  virtual void DeviceListChanged() override;
 
  private:
   // Handlers for JS WebUI messages.

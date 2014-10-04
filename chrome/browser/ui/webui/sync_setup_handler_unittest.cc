@@ -164,13 +164,13 @@ class TestWebUI : public content::WebUI {
   }
 
   virtual void CallJavascriptFunction(const std::string& function_name)
-      OVERRIDE {
+      override {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
   }
 
   virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1) OVERRIDE {
+                                      const base::Value& arg1) override {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
     call_data_.back().arg1 = arg1.DeepCopy();
@@ -178,57 +178,57 @@ class TestWebUI : public content::WebUI {
 
   virtual void CallJavascriptFunction(const std::string& function_name,
                                       const base::Value& arg1,
-                                      const base::Value& arg2) OVERRIDE {
+                                      const base::Value& arg2) override {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
     call_data_.back().arg1 = arg1.DeepCopy();
     call_data_.back().arg2 = arg2.DeepCopy();
   }
 
-  virtual content::WebContents* GetWebContents() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const override {
     return NULL;
   }
-  virtual content::WebUIController* GetController() const OVERRIDE {
+  virtual content::WebUIController* GetController() const override {
     return NULL;
   }
-  virtual void SetController(content::WebUIController* controller) OVERRIDE {}
-  virtual float GetDeviceScaleFactor() const OVERRIDE {
+  virtual void SetController(content::WebUIController* controller) override {}
+  virtual float GetDeviceScaleFactor() const override {
     return 1.0f;
   }
-  virtual const base::string16& GetOverriddenTitle() const OVERRIDE {
+  virtual const base::string16& GetOverriddenTitle() const override {
     return temp_string_;
   }
-  virtual void OverrideTitle(const base::string16& title) OVERRIDE {}
-  virtual ui::PageTransition GetLinkTransitionType() const OVERRIDE {
+  virtual void OverrideTitle(const base::string16& title) override {}
+  virtual ui::PageTransition GetLinkTransitionType() const override {
     return ui::PAGE_TRANSITION_LINK;
   }
-  virtual void SetLinkTransitionType(ui::PageTransition type) OVERRIDE {}
-  virtual int GetBindings() const OVERRIDE {
+  virtual void SetLinkTransitionType(ui::PageTransition type) override {}
+  virtual int GetBindings() const override {
     return 0;
   }
-  virtual void SetBindings(int bindings) OVERRIDE {}
+  virtual void SetBindings(int bindings) override {}
   virtual void OverrideJavaScriptFrame(
-      const std::string& frame_name) OVERRIDE {}
+      const std::string& frame_name) override {}
   virtual void AddMessageHandler(
-      content::WebUIMessageHandler* handler) OVERRIDE {}
+      content::WebUIMessageHandler* handler) override {}
   virtual void RegisterMessageCallback(
       const std::string& message,
-      const MessageCallback& callback) OVERRIDE {}
+      const MessageCallback& callback) override {}
   virtual void ProcessWebUIMessage(const GURL& source_url,
                                    const std::string& message,
-                                   const base::ListValue& args) OVERRIDE {}
+                                   const base::ListValue& args) override {}
   virtual void CallJavascriptFunction(const std::string& function_name,
                                       const base::Value& arg1,
                                       const base::Value& arg2,
-                                      const base::Value& arg3) OVERRIDE {}
+                                      const base::Value& arg3) override {}
   virtual void CallJavascriptFunction(const std::string& function_name,
                                       const base::Value& arg1,
                                       const base::Value& arg2,
                                       const base::Value& arg3,
-                                      const base::Value& arg4) OVERRIDE {}
+                                      const base::Value& arg4) override {}
   virtual void CallJavascriptFunction(
       const std::string& function_name,
-      const std::vector<const base::Value*>& args) OVERRIDE {}
+      const std::vector<const base::Value*>& args) override {}
 
   class CallData {
    public:
@@ -254,15 +254,15 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
     set_web_ui(NULL);
   }
 
-  virtual void FocusUI() OVERRIDE {}
+  virtual void FocusUI() override {}
 
-  virtual Profile* GetProfile() const OVERRIDE { return profile_; }
+  virtual Profile* GetProfile() const override { return profile_; }
 
   using SyncSetupHandler::is_configuring_sync;
 
  private:
 #if !defined(OS_CHROMEOS)
-  virtual void DisplayGaiaLoginInNewTabOrWindow() OVERRIDE {}
+  virtual void DisplayGaiaLoginInNewTabOrWindow() override {}
 #endif
 
   // Weak pointer to parent profile.
@@ -276,7 +276,7 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
 class SyncSetupHandlerTest : public testing::Test {
  public:
   SyncSetupHandlerTest() : error_(GoogleServiceAuthError::NONE) {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     error_ = GoogleServiceAuthError::AuthErrorNone();
 
     TestingProfile::Builder builder;
@@ -387,7 +387,7 @@ class SyncSetupHandlerTest : public testing::Test {
 };
 
 class SyncSetupHandlerFirstSigninTest : public SyncSetupHandlerTest {
-  virtual std::string GetTestUser() OVERRIDE { return std::string(); }
+  virtual std::string GetTestUser() override { return std::string(); }
 };
 
 TEST_F(SyncSetupHandlerTest, Basic) {

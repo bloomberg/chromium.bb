@@ -33,27 +33,27 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual ~NetworkScreenHandler();
 
   // NetworkScreenActor implementation:
-  virtual void SetDelegate(NetworkScreenActor::Delegate* screen) OVERRIDE;
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void ShowError(const base::string16& message) OVERRIDE;
-  virtual void ClearErrors() OVERRIDE;
+  virtual void SetDelegate(NetworkScreenActor::Delegate* screen) override;
+  virtual void PrepareToShow() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void ShowError(const base::string16& message) override;
+  virtual void ClearErrors() override;
   virtual void ShowConnectingStatus(bool connecting,
-                                    const base::string16& network_id) OVERRIDE;
-  virtual void EnableContinue(bool enabled) OVERRIDE;
+                                    const base::string16& network_id) override;
+  virtual void EnableContinue(bool enabled) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void GetAdditionalParameters(base::DictionaryValue* dict) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  virtual void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // InputMethodManager::Observer implementation:
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
-                                  bool show_message) OVERRIDE;
+                                  bool show_message) override;
 
   // Reloads localized contents.
   void ReloadLocalizedContent();

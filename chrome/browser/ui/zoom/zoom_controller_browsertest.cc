@@ -46,7 +46,7 @@ class ZoomChangedWatcher : public ZoomObserver {
   void Wait() { message_loop_runner_->Run(); }
 
   virtual void OnZoomChanged(
-      const ZoomController::ZoomChangedEventData& event_data) OVERRIDE {
+      const ZoomController::ZoomChangedEventData& event_data) override {
     if (event_data == expected_event_data_)
       message_loop_runner_->Quit();
   }

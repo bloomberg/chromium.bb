@@ -31,7 +31,7 @@ class LanguageOptionsWebUITest : public InProcessBrowserTest {
 
   // This method will navigate to the language settings page and show
   // a subset of languages from the list of available languages.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
     auto setting_name = prefs::kLanguagePreferredLanguages;
 #else

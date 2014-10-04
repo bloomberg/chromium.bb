@@ -27,7 +27,7 @@ class PredictorsHandler : public content::WebUIMessageHandler {
   virtual ~PredictorsHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Synchronously fetches the database from AutocompleteActionPredictor and

@@ -18,7 +18,7 @@ class VersionHandlerChromeOS : public VersionHandler {
   virtual ~VersionHandlerChromeOS();
 
   // VersionHandler overrides:
-  virtual void HandleRequestVersionInfo(const base::ListValue* args) OVERRIDE;
+  virtual void HandleRequestVersionInfo(const base::ListValue* args) override;
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(const std::string& version);

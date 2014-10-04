@@ -66,7 +66,7 @@ class OptionsPageUIHandler : public content::WebUIMessageHandler {
   virtual void Uninitialize() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE {}
+  virtual void RegisterMessages() override {}
 
  protected:
   struct OptionsStringResource {
@@ -136,11 +136,11 @@ class OptionsUI : public content::WebUIController,
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
 
   // Overridden from OptionsPageUIHandlerHost:
-  virtual void InitializeHandlers() OVERRIDE;
-  virtual void OnFinishedLoading() OVERRIDE;
+  virtual void InitializeHandlers() override;
+  virtual void OnFinishedLoading() override;
 
  private:
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.

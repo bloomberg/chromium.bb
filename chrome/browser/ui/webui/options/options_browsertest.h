@@ -24,10 +24,10 @@ class OptionsBrowserTest : public WebUIBrowserTest,
 
  private:
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // WebUIBrowserTest implementation.
-  virtual content::WebUIMessageHandler* GetMockMessageHandler() OVERRIDE;
+  virtual content::WebUIMessageHandler* GetMockMessageHandler() override;
 
   // A callback for the 'optionsTestReportHistory' message, this sends the
   // URLs in the "back" tab history, including the current entry, back to the

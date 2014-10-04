@@ -28,16 +28,16 @@ class DisplayOverscanHandler : public ::options::OptionsPageUIHandler,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // gfx::DisplayObserver implementation.
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
  private:
   // Handlers of JS messages.

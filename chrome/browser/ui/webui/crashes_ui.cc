@@ -75,10 +75,10 @@ class CrashesDOMHandler : public WebUIMessageHandler,
   virtual ~CrashesDOMHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // CrashUploadList::Delegate implemenation.
-  virtual void OnUploadListAvailable() OVERRIDE;
+  virtual void OnUploadListAvailable() override;
 
  private:
   // Asynchronously fetches the list of crashes. Called from JS.

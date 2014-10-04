@@ -33,20 +33,20 @@ class InvalidationsMessageHandler
 
   // Implementation of InvalidationLoggerObserver.
   virtual void OnRegistrationChange(
-      const std::multiset<std::string>& registered_handlers) OVERRIDE;
+      const std::multiset<std::string>& registered_handlers) override;
   virtual void OnStateChange(const syncer::InvalidatorState& new_state,
                              const base::Time& last_change_timestamp)
-      OVERRIDE;
+      override;
   virtual void OnUpdateIds(const std::string& handler_name,
-                           const syncer::ObjectIdCountMap& ids_set) OVERRIDE;
-  virtual void OnDebugMessage(const base::DictionaryValue& details) OVERRIDE;
+                           const syncer::ObjectIdCountMap& ids_set) override;
+  virtual void OnDebugMessage(const base::DictionaryValue& details) override;
   virtual void OnInvalidation(
-      const syncer::ObjectIdInvalidationMap& new_invalidations) OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& new_invalidations) override;
   virtual void OnDetailedStatus(const base::DictionaryValue& network_details)
-      OVERRIDE;
+      override;
 
   // Implementation of WebUIMessageHandler.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Triggers the logger to send the current state and objects ids.
   void UpdateContent(const base::ListValue* args);

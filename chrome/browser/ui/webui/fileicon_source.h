@@ -23,13 +23,13 @@ class FileIconSource : public content::URLDataSource {
   explicit FileIconSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE;
+  virtual std::string GetSource() const override;
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
-  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
+  virtual std::string GetMimeType(const std::string&) const override;
 
  protected:
   virtual ~FileIconSource();

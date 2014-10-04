@@ -22,15 +22,15 @@ class AboutUIHTMLSource : public content::URLDataSource {
   AboutUIHTMLSource(const std::string& source_name, Profile* profile);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE;
+  virtual std::string GetSource() const override;
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
-  virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
+  virtual std::string GetMimeType(const std::string& path) const override;
+  virtual bool ShouldAddContentSecurityPolicy() const override;
+  virtual bool ShouldDenyXFrameOptions() const override;
 
   // Send the response data.
   void FinishDataRequest(

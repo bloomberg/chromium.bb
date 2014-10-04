@@ -29,7 +29,7 @@ class MojoWebUIControllerBase : public content::WebUIController {
 
   // WebUIController overrides:
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
  protected:
   // Invoke to register mapping between binding file and resource id (IDR_...).
@@ -56,7 +56,7 @@ class MojoWebUIController : public MojoWebUIControllerBase {
       : MojoWebUIControllerBase(contents), weak_factory_(this) {}
   virtual ~MojoWebUIController() {}
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE {
+      content::RenderViewHost* render_view_host) override {
     MojoWebUIControllerBase::RenderViewCreated(render_view_host);
     render_view_host->GetMainFrame()->GetServiceRegistry()->
         AddService<Interface>(

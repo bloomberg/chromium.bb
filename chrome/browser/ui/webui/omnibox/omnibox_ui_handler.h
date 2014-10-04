@@ -30,10 +30,10 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   virtual ~OmniboxUIHandler();
 
   // AutocompleteControllerDelegate overrides:
-  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
+  virtual void OnResultChanged(bool default_match_changed) override;
 
   // ErrorHandler overrides:
-  virtual void OnConnectionError() OVERRIDE {
+  virtual void OnConnectionError() override {
     // TODO(darin): How should we handle connection error?
   }
 
@@ -42,7 +42,7 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
                                  int32_t cursor_position,
                                  bool prevent_inline_autocomplete,
                                  bool prefer_keyword,
-                                 int32_t page_classification) OVERRIDE;
+                                 int32_t page_classification) override;
 
  private:
   // Looks up whether the hostname is a typed host (i.e., has received

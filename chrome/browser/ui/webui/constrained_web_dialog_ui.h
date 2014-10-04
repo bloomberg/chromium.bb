@@ -58,7 +58,7 @@ class ConstrainedWebDialogUI : public content::WebUIController {
 
   // WebUIController implementation:
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   // Sets the delegate on the WebContents.
   static void SetConstrainedDelegate(content::WebContents* web_contents,

@@ -89,7 +89,7 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
   explicit MessageHandler(NetInternalsTest* net_internals_test);
 
  private:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Runs NetInternalsTest.callback with the given value.
   void RunJavascriptCallback(base::Value* value);

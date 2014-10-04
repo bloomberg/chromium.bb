@@ -45,7 +45,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 
   virtual ~VersionUpdaterCrosTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     fake_update_engine_client_ = new FakeUpdateEngineClient();
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
@@ -70,7 +70,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
     loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     NetworkHandler::Shutdown();
 
     CrosSettings::Shutdown();

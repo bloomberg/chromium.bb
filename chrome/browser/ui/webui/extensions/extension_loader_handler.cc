@@ -61,9 +61,9 @@ class ExtensionLoaderHandler::FileHelper
   // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
+                            void* params) override;
   virtual void MultiFilesSelected(
-      const std::vector<base::FilePath>& files, void* params) OVERRIDE;
+      const std::vector<base::FilePath>& files, void* params) override;
 
   // The associated ExtensionLoaderHandler. Weak, but guaranteed to be alive,
   // as it owns this object.

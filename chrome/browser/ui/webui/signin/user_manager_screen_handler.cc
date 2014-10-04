@@ -172,13 +172,13 @@ class UserManagerScreenHandler::ProfileUpdateObserver
   // ProfileInfoCacheObserver implementation:
   // If any change has been made to a profile, propagate it to all the
   // visible user manager screens.
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE {
+  virtual void OnProfileAdded(const base::FilePath& profile_path) override {
     user_manager_handler_->SendUserList();
   }
 
   virtual void OnProfileWasRemoved(
       const base::FilePath& profile_path,
-      const base::string16& profile_name) OVERRIDE {
+      const base::string16& profile_name) override {
     // TODO(noms): Change 'SendUserList' to 'removeUser' JS-call when
     // UserManager is able to find pod belonging to removed user.
     user_manager_handler_->SendUserList();
@@ -186,17 +186,17 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const base::string16& old_profile_name) OVERRIDE {
+      const base::string16& old_profile_name) override {
     user_manager_handler_->SendUserList();
   }
 
   virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) OVERRIDE {
+      const base::FilePath& profile_path) override {
     user_manager_handler_->SendUserList();
   }
 
   virtual void OnProfileSigninRequiredChanged(
-      const base::FilePath& profile_path) OVERRIDE {
+      const base::FilePath& profile_path) override {
     user_manager_handler_->SendUserList();
   }
 

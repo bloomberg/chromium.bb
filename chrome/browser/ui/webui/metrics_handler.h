@@ -28,7 +28,7 @@ class MetricsHandler : public content::WebUIMessageHandler {
   virtual ~MetricsHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callback for the "metricsHandler:recordAction" message. This records a
   // user action.

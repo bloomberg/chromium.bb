@@ -42,7 +42,7 @@ class SigninPrepareUserListTest
   virtual ~SigninPrepareUserListTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -59,13 +59,13 @@ class SigninPrepareUserListTest
     fake_user_manager_->set_owner_email(kOwner);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     profile_manager_.reset();
   }
 
   // MultiProfileUserControllerDelegate overrides:
-  virtual void OnUserNotAllowed(const std::string& user_email) OVERRIDE {
+  virtual void OnUserNotAllowed(const std::string& user_email) override {
   }
 
   FakeUserManager* fake_user_manager_;

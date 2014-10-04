@@ -42,7 +42,7 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   class FileHelper;
@@ -65,12 +65,12 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   // ExtensionErrorReporter::Observer:
   virtual void OnLoadFailure(content::BrowserContext* browser_context,
                              const base::FilePath& file_path,
-                             const std::string& error) OVERRIDE;
+                             const std::string& error) override;
 
   // content::WebContentsObserver:
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) override;
 
   // Add a failure to |failures_|. If it was a manifest error, |manifest| will
   // hold the manifest contents, and |line_number| will point to the line at

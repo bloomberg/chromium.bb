@@ -27,17 +27,17 @@ class LanguageOptionsHandlerCommon
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void Uninitialize() OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
+  virtual void Uninitialize() override;
 
   // DOMMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
-  virtual void OnHunspellDictionaryInitialized() OVERRIDE;
-  virtual void OnHunspellDictionaryDownloadBegin() OVERRIDE;
-  virtual void OnHunspellDictionaryDownloadSuccess() OVERRIDE;
-  virtual void OnHunspellDictionaryDownloadFailure() OVERRIDE;
+  virtual void OnHunspellDictionaryInitialized() override;
+  virtual void OnHunspellDictionaryDownloadBegin() override;
+  virtual void OnHunspellDictionaryDownloadSuccess() override;
+  virtual void OnHunspellDictionaryDownloadFailure() override;
 
   // The following static methods are public for ease of testing.
 

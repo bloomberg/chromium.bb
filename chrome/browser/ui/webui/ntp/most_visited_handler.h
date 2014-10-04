@@ -40,7 +40,7 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   virtual ~MostVisitedHandler();
 
   // WebUIMessageHandler override and implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callback for the "getMostVisited" message.
   void HandleGetMostVisited(const base::ListValue* args);
@@ -63,7 +63,7 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   const std::vector<GURL>& most_visited_urls() const {
     return most_visited_urls_;

@@ -29,12 +29,12 @@ class SuggestionsSourceTopSites : public SuggestionsSource {
 
  protected:
   // SuggestionsSource overrides:
-  virtual void SetDebug(bool enable) OVERRIDE;
-  virtual int GetWeight() OVERRIDE;
-  virtual int GetItemCount() OVERRIDE;
-  virtual base::DictionaryValue* PopItem() OVERRIDE;
-  virtual void FetchItems(Profile* profile) OVERRIDE;
-  virtual void SetCombiner(SuggestionsCombiner* combiner) OVERRIDE;
+  virtual void SetDebug(bool enable) override;
+  virtual int GetWeight() override;
+  virtual int GetItemCount() override;
+  virtual base::DictionaryValue* PopItem() override;
+  virtual void FetchItems(Profile* profile) override;
+  virtual void SetCombiner(SuggestionsCombiner* combiner) override;
 
   void OnSuggestionsUrlsAvailable(const history::FilteredURLList* data);
 

@@ -52,7 +52,7 @@ class ExtensionIconColorManager : public ExtensionIconManager {
   virtual ~ExtensionIconColorManager() {}
 
   virtual void OnImageLoaded(const std::string& extension_id,
-                             const gfx::Image& image) OVERRIDE {
+                             const gfx::Image& image) override {
     ExtensionIconManager::OnImageLoaded(extension_id, image);
     handler_->NotifyAppIconReady(extension_id);
   }

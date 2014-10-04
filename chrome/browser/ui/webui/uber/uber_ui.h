@@ -27,13 +27,13 @@ class UberUI : public content::WebUIController {
   // WebUIController implementation.
   virtual bool OverrideHandleWebUIMessage(const GURL& source_url,
                                           const std::string& message,
-                                          const base::ListValue& args) OVERRIDE;
+                                          const base::ListValue& args) override;
 
   // We forward these to |sub_uis_|.
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   virtual void RenderViewReused(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
  private:
   // A map from URL origin to WebUI instance.
@@ -59,7 +59,7 @@ class UberFrameUI : public content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

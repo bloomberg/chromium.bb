@@ -31,7 +31,7 @@ class NetworkUIMessageHandler : public content::WebUIMessageHandler {
   virtual ~NetworkUIMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE {
+  virtual void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "NetworkUI.getNetworkLog",
         base::Bind(&NetworkUIMessageHandler::GetNetworkLog,

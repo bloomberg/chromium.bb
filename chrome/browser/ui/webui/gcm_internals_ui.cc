@@ -113,7 +113,7 @@ class GcmInternalsUIMessageHandler : public content::WebUIMessageHandler {
   virtual ~GcmInternalsUIMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // Return all of the GCM related infos to the gcm-internals page by calling

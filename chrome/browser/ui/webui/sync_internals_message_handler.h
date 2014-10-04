@@ -31,7 +31,7 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   SyncInternalsMessageHandler();
   virtual ~SyncInternalsMessageHandler();
 
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Sets up observers to receive events and forward them to the UI.
   void HandleRegisterForEvents(const base::ListValue* args);
@@ -51,27 +51,27 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // syncer::JsEventHandler implementation.
   virtual void HandleJsEvent(
       const std::string& name,
-      const syncer::JsEventDetails& details) OVERRIDE;
+      const syncer::JsEventDetails& details) override;
 
   // Callback used in GetAllNodes.
   void OnReceivedAllNodes(int request_id, scoped_ptr<base::ListValue> nodes);
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // ProtocolEventObserver implementation.
-  virtual void OnProtocolEvent(const syncer::ProtocolEvent& e) OVERRIDE;
+  virtual void OnProtocolEvent(const syncer::ProtocolEvent& e) override;
 
   // TypeDebugInfoObserver implementation.
   virtual void OnCommitCountersUpdated(
       syncer::ModelType type,
-      const syncer::CommitCounters& counters) OVERRIDE;
+      const syncer::CommitCounters& counters) override;
   virtual void OnUpdateCountersUpdated(
       syncer::ModelType type,
-      const syncer::UpdateCounters& counters) OVERRIDE;
+      const syncer::UpdateCounters& counters) override;
   virtual void OnStatusCountersUpdated(
       syncer::ModelType type,
-      const syncer::StatusCounters& counters) OVERRIDE;
+      const syncer::StatusCounters& counters) override;
 
   // Helper to emit counter updates.
   //

@@ -22,7 +22,7 @@ class InlineLoginHandlerChromeOS : public ::InlineLoginHandler {
   class InlineLoginUIOAuth2Delegate;
 
   // InlineLoginHandler overrides:
-  virtual void CompleteLogin(const base::ListValue* args) OVERRIDE;
+  virtual void CompleteLogin(const base::ListValue* args) override;
 
   scoped_ptr<InlineLoginUIOAuth2Delegate> oauth2_delegate_;
   scoped_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;

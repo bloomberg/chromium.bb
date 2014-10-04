@@ -54,7 +54,7 @@ class InstantUIMessageHandler
   virtual ~InstantUIMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void GetPreferenceValue(const base::ListValue* args);

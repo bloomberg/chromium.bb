@@ -14,7 +14,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   virtual ~InlineLoginHandler();
 
   // content::WebUIMessageHandler overrides:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  protected:
   // Enum for gaia auth mode, must match AuthMode defined in

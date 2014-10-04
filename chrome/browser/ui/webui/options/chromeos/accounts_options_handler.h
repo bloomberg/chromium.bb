@@ -18,11 +18,11 @@ class AccountsOptionsHandler : public ::options::OptionsPageUIHandler {
   virtual ~AccountsOptionsHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
 
  private:
   // Javascript callbacks to whitelist/unwhitelist user.

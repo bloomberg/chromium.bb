@@ -18,10 +18,10 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+      base::DictionaryValue* localized_strings) override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // The following static method is public for ease of testing.
 
@@ -33,8 +33,8 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
 
  private:
   // LanguageOptionsHandlerCommon implementation.
-  virtual base::string16 GetProductName() OVERRIDE;
-  virtual void SetApplicationLocale(const std::string& language_code) OVERRIDE;
+  virtual base::string16 GetProductName() override;
+  virtual void SetApplicationLocale(const std::string& language_code) override;
 
   // Called when the restart button is clicked.
   void RestartCallback(const base::ListValue* args);

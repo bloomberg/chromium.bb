@@ -38,8 +38,8 @@ class TouchViewControllerDelegate : public ash::ShellObserver {
 
  private:
   // ash::ShellObserver implementation:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
   // Mode state change observers.
   ObserverList<Observer> observers_;

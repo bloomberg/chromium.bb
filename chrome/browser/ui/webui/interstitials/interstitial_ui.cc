@@ -30,14 +30,14 @@ class InterstitialHTMLSource : public content::URLDataSource {
   virtual ~InterstitialHTMLSource();
 
   // content::URLDataSource:
-  virtual std::string GetMimeType(const std::string& mime_type) const OVERRIDE;
-  virtual std::string GetSource() const OVERRIDE;
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
+  virtual std::string GetMimeType(const std::string& mime_type) const override;
+  virtual std::string GetSource() const override;
+  virtual bool ShouldAddContentSecurityPolicy() const override;
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
 
  private:
   Profile* profile_;

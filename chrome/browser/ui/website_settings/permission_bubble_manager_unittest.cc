@@ -29,28 +29,28 @@ class MockView : public PermissionBubbleView {
   }
 
   // PermissionBubbleView:
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE {
+  virtual void SetDelegate(Delegate* delegate) override {
     delegate_ = delegate;
   }
 
   virtual void Show(
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
-      bool customization_state_) OVERRIDE {
+      bool customization_state_) override {
     shown_ = true;
     permission_requests_ = requests;
     permission_states_ = accept_state;
   }
 
-  virtual void Hide() OVERRIDE {
+  virtual void Hide() override {
     shown_ = false;
   }
 
-  virtual bool CanAcceptRequestUpdate() OVERRIDE {
+  virtual bool CanAcceptRequestUpdate() override {
     return can_accept_updates_;
   }
 
-  virtual bool IsVisible() OVERRIDE {
+  virtual bool IsVisible() override {
     return shown_;
   }
 
@@ -75,7 +75,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
                                      GURL("http://www.youtube.com")) {}
   virtual ~PermissionBubbleManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
     NavigateAndCommit(GURL("http://www.google.com"));
@@ -83,7 +83,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
     manager_.reset(new PermissionBubbleManager(web_contents()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }

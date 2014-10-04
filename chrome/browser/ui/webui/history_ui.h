@@ -92,7 +92,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   virtual ~BrowsingHistoryHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Handler for the "queryHistory" message.
   void HandleQueryHistory(const base::ListValue* args);
@@ -109,7 +109,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Merges duplicate entries from the query results, only retaining the most
   // recent visit to a URL on a particular day. That visit contains the

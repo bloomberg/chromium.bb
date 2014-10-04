@@ -22,28 +22,28 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual ~UpdateScreenHandler();
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void Initialize() override;
 
   // UpdateScreenActor implementation:
-  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void ShowManualRebootInfo() OVERRIDE;
-  virtual void SetProgress(int progress) OVERRIDE;
-  virtual void ShowEstimatedTimeLeft(bool visible) OVERRIDE;
-  virtual void SetEstimatedTimeLeft(const base::TimeDelta& time) OVERRIDE;
-  virtual void ShowProgressMessage(bool visible) OVERRIDE;
-  virtual void SetProgressMessage(ProgressMessage message) OVERRIDE;
-  virtual void ShowCurtain(bool visible) OVERRIDE;
+  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void PrepareToShow() override;
+  virtual void ShowManualRebootInfo() override;
+  virtual void SetProgress(int progress) override;
+  virtual void ShowEstimatedTimeLeft(bool visible) override;
+  virtual void SetEstimatedTimeLeft(const base::TimeDelta& time) override;
+  virtual void ShowProgressMessage(bool visible) override;
+  virtual void SetProgressMessage(ProgressMessage message) override;
+  virtual void ShowCurtain(bool visible) override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // NetworkDropdownHandler::Observer implementation:
-  virtual void OnConnectToNetworkRequested() OVERRIDE;
+  virtual void OnConnectToNetworkRequested() override;
 
 #if !defined(OFFICIAL_BUILD)
   // Called when user presses Escape to cancel update.

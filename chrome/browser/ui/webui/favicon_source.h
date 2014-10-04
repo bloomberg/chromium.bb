@@ -71,16 +71,16 @@ class FaviconSource : public content::URLDataSource {
   virtual ~FaviconSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE;
+  virtual std::string GetSource() const override;
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
-  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
-  virtual bool ShouldReplaceExistingSource() const OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
+  virtual std::string GetMimeType(const std::string&) const override;
+  virtual bool ShouldReplaceExistingSource() const override;
   virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const OVERRIDE;
+      const net::URLRequest* request) const override;
 
  protected:
   struct IconRequest {

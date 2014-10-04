@@ -28,26 +28,26 @@ class AppLaunchSplashScreenHandler
   virtual ~AppLaunchSplashScreenHandler();
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // AppLaunchSplashScreenActor implementation:
-  virtual void Show(const std::string& app_id) OVERRIDE;
-  virtual void PrepareToShow() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void ToggleNetworkConfig(bool visible) OVERRIDE;
-  virtual void UpdateAppLaunchState(AppLaunchState state) OVERRIDE;
+  virtual void Show(const std::string& app_id) override;
+  virtual void PrepareToShow() override;
+  virtual void Hide() override;
+  virtual void ToggleNetworkConfig(bool visible) override;
+  virtual void UpdateAppLaunchState(AppLaunchState state) override;
   virtual void SetDelegate(
-      AppLaunchSplashScreenHandler::Delegate* delegate) OVERRIDE;
-  virtual void ShowNetworkConfigureUI() OVERRIDE;
-  virtual bool IsNetworkReady() OVERRIDE;
+      AppLaunchSplashScreenHandler::Delegate* delegate) override;
+  virtual void ShowNetworkConfigureUI() override;
+  virtual bool IsNetworkReady() override;
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
-  virtual void OnNetworkReady() OVERRIDE;
-  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
+  virtual void OnNetworkReady() override;
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) override;
 
  private:
   void PopulateAppInfo(base::DictionaryValue* out_info);

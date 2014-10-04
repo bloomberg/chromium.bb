@@ -30,15 +30,15 @@ class NetworkDropdownHandler : public BaseScreenHandler,
   void RemoveObserver(Observer* observer);
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   // NetworkDropdown::Actor implementation:
-  virtual void OnConnectToNetworkRequested() OVERRIDE;
+  virtual void OnConnectToNetworkRequested() override;
 
   // Handles choosing of the network menu item.
   void HandleNetworkItemChosen(double id);

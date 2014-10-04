@@ -22,14 +22,14 @@ class SignInInternalsUI : public content::WebUIController,
   // content::WebUIController implementation.
   virtual bool OverrideHandleWebUIMessage(const GURL& source_url,
                                           const std::string& name,
-                                          const base::ListValue& args) OVERRIDE;
+                                          const base::ListValue& args) override;
 
   // AboutSigninInternals::Observer::OnSigninStateChanged implementation.
-  virtual void OnSigninStateChanged(const base::DictionaryValue* info) OVERRIDE;
+  virtual void OnSigninStateChanged(const base::DictionaryValue* info) override;
 
   // Notification that the cookie accounts are ready to be displayed.
   virtual void OnCookieAccountsFetched(
-      const base::DictionaryValue* info) OVERRIDE;
+      const base::DictionaryValue* info) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignInInternalsUI);
