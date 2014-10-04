@@ -78,7 +78,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user.h"
@@ -421,16 +420,6 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
                                  StartupUtils::IsOobeCompleted(),
                                  browser_command_line,
                                  &command_line);
-
-  // This makes sure that Chrome restarts with no per-session flags. The guest
-  // profile will always have empty set of per-session flags. If this is not
-  // done and device owner has some per-session flags, when Chrome is relaunched
-  // the guest profile session flags will not match the current command line and
-  // another restart will be attempted in order to reset the user flags for the
-  // guest user.
-  DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-      chromeos::login::kGuestUserName,
-      CommandLine::StringVector());
 
   RestartChrome(cmd_line_str);
 }
