@@ -34,11 +34,7 @@
 
 namespace blink {
 
-class AXTableCell;
-class AXTableHeaderContainer;
-
 class AXARIAGrid final : public AXTable {
-
 private:
     explicit AXARIAGrid(RenderObject*);
 public:

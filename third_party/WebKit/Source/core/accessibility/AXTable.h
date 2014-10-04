@@ -35,7 +35,6 @@
 namespace blink {
 
 class AXTableCell;
-class RenderTableSection;
 
 class AXTable : public AXRenderObject {
 

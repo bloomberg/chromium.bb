@@ -42,18 +42,11 @@ namespace blink {
 class AXObject;
 class AXObjectCache;
 class Element;
-class LocalFrame;
 class FrameView;
-class HTMLAnchorElement;
-class HTMLAreaElement;
 class IntPoint;
-class IntSize;
 class Node;
-class Range;
 class RenderObject;
-class RenderListItem;
 class ScrollableArea;
-class VisibleSelection;
 class Widget;
 
 typedef unsigned AXID;

@@ -30,10 +30,8 @@
 
 namespace blink {
 
-class AXMenuList;
 class AXMenuListOption;
 class HTMLElement;
-class HTMLSelectElement;
 
 class AXMenuListPopup final : public AXMockObject {
 public:

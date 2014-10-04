@@ -30,30 +30,14 @@
 #define AXNodeObject_h
 
 #include "core/accessibility/AXObject.h"
-#include "platform/geometry/LayoutRect.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class AXObjectCache;
 class Element;
-class LocalFrame;
-class FrameView;
-class HitTestResult;
-class HTMLAnchorElement;
-class HTMLAreaElement;
-class HTMLElement;
 class HTMLLabelElement;
-class HTMLMapElement;
-class HTMLSelectElement;
-class IntPoint;
-class IntSize;
+class LayoutRect;
 class Node;
-class RenderListBox;
-class RenderTextControl;
-class RenderView;
-class VisibleSelection;
-class Widget;
 
 class AXNodeObject : public AXObject {
 protected:

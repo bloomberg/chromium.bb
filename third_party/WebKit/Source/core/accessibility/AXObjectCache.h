@@ -37,14 +37,8 @@
 namespace blink {
 
 class AbstractInlineTextBox;
-class Document;
 class HTMLAreaElement;
-class Node;
-class Page;
-class RenderObject;
 class ScrollView;
-class Settings;
-class VisiblePosition;
 class Widget;
 
 struct TextMarkerData {

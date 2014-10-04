@@ -35,9 +35,6 @@
 
 namespace blink {
 
-class AXListBox;
-class Element;
-class HTMLElement;
 class HTMLSelectElement;
 
 class AXListBoxOption final : public AXRenderObject {

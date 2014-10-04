@@ -30,9 +30,6 @@
 
 namespace blink {
 
-class AXMenuList;
-class AXMenuListPopup;
-class HTMLOptionElement;
 class RenderMenuList;
 
 class AXMenuList final : public AXRenderObject {
