@@ -93,8 +93,8 @@ binding.registerCustomHook(function(bindingsAPI) {
       return serialService.getConnections();
     }).then(function(connections) {
       var promises = [];
-      for (var connection of connections.values()) {
-        promises.push(connection.getInfo());
+      for (var id in connections) {
+        promises.push(connections[id].getInfo());
       }
       return Promise.all(promises);
     });

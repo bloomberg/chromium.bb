@@ -7,14 +7,12 @@ define('serial_service', [
     'data_receiver',
     'data_sender',
     'device/serial/serial.mojom',
-    'device/serial/serial_serialization.mojom',
     'mojo/public/js/bindings/core',
     'mojo/public/js/bindings/router',
 ], function(serviceProvider,
             dataReceiver,
             dataSender,
             serialMojom,
-            serialization,
             core,
             routerModule) {
   /**
@@ -43,6 +41,14 @@ define('serial_service', [
       });
     });
   }
+
+  var DEFAULT_CLIENT_OPTIONS = {
+    persistent: false,
+    name: '',
+    receiveTimeout: 0,
+    sendTimeout: 0,
+    bufferSize: 4096,
+  };
 
   var DATA_BITS_TO_MOJO = {
     undefined: serialMojom.DataBits.NONE,
@@ -120,66 +126,39 @@ define('serial_service', [
     };
   }
 
-  // Update client-side options |clientOptions| from the user-provided
-  // |options|.
-  function updateClientOptions(clientOptions, options) {
-    if ('name' in options)
-      clientOptions.name = options.name;
-    if ('receiveTimeout' in options)
-      clientOptions.receiveTimeout = options.receiveTimeout;
-    if ('sendTimeout' in options)
-      clientOptions.sendTimeout = options.sendTimeout;
-    if ('bufferSize' in options)
-      clientOptions.bufferSize = options.bufferSize;
-  };
+  function Connection(
+      remoteConnection, router, receivePipe, sendPipe, id, options) {
+    this.remoteConnection_ = remoteConnection;
+    this.router_ = router;
+    this.options_ = {};
+    for (var key in DEFAULT_CLIENT_OPTIONS) {
+      this.options_[key] = DEFAULT_CLIENT_OPTIONS[key];
+    }
+    this.setClientOptions_(options);
+    this.receivePipe_ =
+        new dataReceiver.DataReceiver(receivePipe,
+                                      this.options_.bufferSize,
+                                      serialMojom.ReceiveError.DISCONNECTED);
+    this.sendPipe_ = new dataSender.DataSender(
+        sendPipe, this.options_.bufferSize, serialMojom.SendError.DISCONNECTED);
+    this.id_ = id;
+    getConnections().then(function(connections) {
+      connections[this.id_] = this;
+    }.bind(this));
+    this.paused_ = false;
+    this.sendInProgress_ = false;
 
-  function Connection(connection, router, receivePipe, sendPipe, id, options) {
-    var state = new serialization.ConnectionState();
-    state.connectionId = id;
-    updateClientOptions(state, options);
-    var receiver = new dataReceiver.DataReceiver(
-        receivePipe, state.bufferSize, serialMojom.ReceiveError.DISCONNECTED);
-    var sender = new dataSender.DataSender(
-        sendPipe, state.bufferSize, serialMojom.SendError.DISCONNECTED);
-    this.init_(state,
-               connection,
-               router,
-               receiver,
-               sender,
-               null,
-               serialMojom.ReceiveError.NONE);
-    connections_.set(id, this);
-    this.startReceive_();
-  }
-
-  // Initializes this Connection from the provided args.
-  Connection.prototype.init_ = function(state,
-                                        connection,
-                                        router,
-                                        receiver,
-                                        sender,
-                                        queuedReceiveData,
-                                        queuedReceiveError) {
-    this.state_ = state;
-
-    // queuedReceiveData_ or queuedReceiveError_ will store the receive result
-    // or error, respectively, if a receive completes or fails while this
+    // queuedReceiveData_ or queuedReceiveError will store the receive result or
+    // error, respectively, if a receive completes or fails while this
     // connection is paused. At most one of the the two may be non-null: a
     // receive completed while paused will only set one of them, no further
     // receives will be performed while paused and a queued result is dispatched
     // before any further receives are initiated when unpausing.
-    if (queuedReceiveError != serialMojom.ReceiveError.NONE)
-      this.queuedReceiveError_ = {error: queuedReceiveError};
-    if (queuedReceiveData) {
-      this.queuedReceiveData_ = new ArrayBuffer(queuedReceiveData.length);
-      new Int8Array(this.queuedReceiveData_).set(queuedReceiveData);
-    }
-    this.router_ = router;
-    this.remoteConnection_ = connection;
-    this.receivePipe_ = receiver;
-    this.sendPipe_ = sender;
-    this.sendInProgress_ = false;
-  };
+    this.queuedReceiveData_ = null;
+    this.queuedReceiveError = null;
+
+    this.startReceive_();
+  }
 
   Connection.create = function(path, options) {
     options = options || {};
@@ -227,20 +206,21 @@ define('serial_service', [
     this.sendPipe_.close();
     clearTimeout(this.receiveTimeoutId_);
     clearTimeout(this.sendTimeoutId_);
-    connections_.delete(this.state_.connectionId);
-    return true;
+    return getConnections().then(function(connections) {
+      delete connections[this.id_];
+      return true;
+    }.bind(this));
   };
 
   Connection.prototype.getClientInfo_ = function() {
-    return {
-      connectionId: this.state_.connectionId,
-      paused: this.state_.paused,
-      persistent: this.state_.persistent,
-      name: this.state_.name,
-      receiveTimeout: this.state_.receiveTimeout,
-      sendTimeout: this.state_.sendTimeout,
-      bufferSize: this.state_.bufferSize,
+    var info = {
+      connectionId: this.id_,
+      paused: this.paused_,
     };
+    for (var key in this.options_) {
+      info[key] = this.options_[key];
+    }
+    return info;
   };
 
   Connection.prototype.getInfo = function() {
@@ -256,8 +236,19 @@ define('serial_service', [
     });
   };
 
+  Connection.prototype.setClientOptions_ = function(options) {
+    if ('name' in options)
+      this.options_.name = options.name;
+    if ('receiveTimeout' in options)
+      this.options_.receiveTimeout = options.receiveTimeout;
+    if ('sendTimeout' in options)
+      this.options_.sendTimeout = options.sendTimeout;
+    if ('bufferSize' in options)
+      this.options_.bufferSize = options.bufferSize;
+  };
+
   Connection.prototype.setOptions = function(options) {
-    updateClientOptions(this.state_, options);
+    this.setClientOptions_(options);
     var serviceOptions = getServiceOptions(options);
     if ($Object.keys(serviceOptions).length == 0)
       return true;
@@ -306,7 +297,7 @@ define('serial_service', [
   };
 
   Connection.prototype.setPaused = function(paused) {
-    this.state_.paused = paused;
+    this.paused_ = paused;
     if (paused) {
       clearTimeout(this.receiveTimeoutId_);
       this.receiveTimeoutId_ = null;
@@ -319,10 +310,10 @@ define('serial_service', [
     if (this.sendInProgress_)
       return Promise.resolve({bytesSent: 0, error: 'pending'});
 
-    if (this.state_.sendTimeout) {
+    if (this.options_.sendTimeout) {
       this.sendTimeoutId_ = setTimeout(function() {
         this.sendPipe_.cancel(serialMojom.SendError.TIMEOUT);
-      }.bind(this), this.state_.sendTimeout);
+      }.bind(this), this.options_.sendTimeout);
     }
     this.sendInProgress_ = true;
     return this.sendPipe_.send(data).then(function(bytesSent) {
@@ -349,9 +340,9 @@ define('serial_service', [
     if (this.queuedReceiveData_) {
       receivePromise = Promise.resolve(this.queuedReceiveData_);
       this.queuedReceiveData_ = null;
-    } else if (this.queuedReceiveError_) {
-      receivePromise = Promise.reject(this.queuedReceiveError_);
-      this.queuedReceiveError_ = null;
+    } else if (this.queuedReceiveError) {
+      receivePromise = Promise.reject(this.queuedReceiveError);
+      this.queuedReceiveError = null;
     } else {
       receivePromise = this.receivePipe_.receive();
     }
@@ -363,14 +354,14 @@ define('serial_service', [
   Connection.prototype.onDataReceived_ = function(data) {
     this.startReceiveTimeoutTimer_();
     this.receiveInProgress_ = false;
-    if (this.state_.paused) {
+    if (this.paused_) {
       this.queuedReceiveData_ = data;
       return;
     }
     if (this.onData) {
       this.onData(data);
     }
-    if (!this.state_.paused) {
+    if (!this.paused_) {
       this.startReceive_();
     }
   };
@@ -378,21 +369,21 @@ define('serial_service', [
   Connection.prototype.onReceiveError_ = function(e) {
     clearTimeout(this.receiveTimeoutId_);
     this.receiveInProgress_ = false;
-    if (this.state_.paused) {
-      this.queuedReceiveError_ = e;
+    if (this.paused_) {
+      this.queuedReceiveError = e;
       return;
     }
     var error = e.error;
-    this.state_.paused = true;
+    this.paused_ = true;
     if (this.onError)
       this.onError(RECEIVE_ERROR_FROM_MOJO[error]);
   };
 
   Connection.prototype.startReceiveTimeoutTimer_ = function() {
     clearTimeout(this.receiveTimeoutId_);
-    if (this.state_.receiveTimeout && !this.state_.paused) {
+    if (this.options_.receiveTimeout && !this.paused_) {
       this.receiveTimeoutId_ = setTimeout(this.onReceiveTimeout_.bind(this),
-                                          this.state_.receiveTimeout);
+                                          this.options_.receiveTimeout);
     }
   };
 
@@ -402,105 +393,26 @@ define('serial_service', [
     this.startReceiveTimeoutTimer_();
   };
 
-  Connection.prototype.serialize = function() {
-    connections_.delete(this.state_.connectionId);
-    this.onData = null;
-    this.onError = null;
-    var handle = this.router_.connector_.handle_;
-    this.router_.connector_.handle_ = null;
-    this.router_.close();
-    clearTimeout(this.receiveTimeoutId_);
-    clearTimeout(this.sendTimeoutId_);
-
-    // Serializing receivePipe_ will cancel an in-progress receive, which would
-    // pause the connection, so save it ahead of time.
-    var paused = this.state_.paused;
-    return Promise.all([
-        this.receivePipe_.serialize(),
-        this.sendPipe_.serialize(),
-    ]).then(function(serializedComponents) {
-      var queuedReceiveError = serialMojom.ReceiveError.NONE;
-      if (this.queuedReceiveError_)
-        queuedReceiveError = this.queuedReceiveError_.error;
-      this.state_.paused = paused;
-      var serialized = new serialization.SerializedConnection();
-      serialized.state = this.state_;
-      serialized.queuedReceiveError = queuedReceiveError;
-      serialized.queuedReceiveData =
-          this.queuedReceiveData_ ? new Int8Array(this.queuedReceiveData_) :
-                                    null;
-      serialized.connection = handle;
-      serialized.receiver = serializedComponents[0];
-      serialized.sender = serializedComponents[1];
-      return serialized;
-    }.bind(this));
-  };
-
-  Connection.deserialize = function(serialized) {
-    var serialConnection = $Object.create(Connection.prototype);
-    var router = new routerModule.Router(serialized.connection);
-    var connection = new serialMojom.ConnectionProxy(router);
-    var receiver = dataReceiver.DataReceiver.deserialize(serialized.receiver);
-    var sender = dataSender.DataSender.deserialize(serialized.sender);
-
-    // Ensure that paused and persistent are booleans.
-    serialized.state.paused = !!serialized.state.paused;
-    serialized.state.persistent = !!serialized.state.persistent;
-    serialConnection.init_(serialized.state,
-                           connection,
-                           router,
-                           receiver,
-                           sender,
-                           serialized.queuedReceiveData,
-                           serialized.queuedReceiveError);
-    serialConnection.awaitingResume_ = true;
-    var connectionId = serialized.state.connectionId;
-    connections_.set(connectionId, serialConnection);
-    if (connectionId >= nextConnectionId_)
-      nextConnectionId_ = connectionId + 1;
-    return serialConnection;
-  };
-
-  // Resume receives on a deserialized connection.
-  Connection.prototype.resumeReceives = function() {
-    if (!this.awaitingResume_)
-      return;
-    this.awaitingResume_ = false;
-    if (!this.state_.paused)
-      this.startReceive_();
-  };
-
-  // All accesses to connections_ and nextConnectionId_ other than those
-  // involved in deserialization should ensure that
-  // connectionDeserializationComplete_ has resolved first.
-  // Note: this will not immediately resolve once serial connection stashing and
-  // restoring is implemented.
-  var connectionDeserializationComplete_ = Promise.resolve();
-
-  // The map of connection ID to connection object.
-  var connections_ = new Map();
-
-  // The next connection ID to be allocated.
+  var connections_ = {};
   var nextConnectionId_ = 0;
 
+  // Wrap all access to |connections_| through getConnections to avoid adding
+  // any synchronous dependencies on it. This will likely be important when
+  // supporting persistent connections by stashing them.
   function getConnections() {
-    return connectionDeserializationComplete_.then(function() {
-      return new Map(connections_);
-    });
+    return Promise.resolve(connections_);
   }
 
   function getConnection(id) {
     return getConnections().then(function(connections) {
-      if (!connections.has(id))
+      if (!connections[id])
         throw new Error('Serial connection not found.');
-      return connections.get(id);
+      return connections[id];
     });
   }
 
   function allocateConnectionId() {
-    return connectionDeserializationComplete_.then(function() {
-      return nextConnectionId_++;
-    });
+    return Promise.resolve(nextConnectionId_++);
   }
 
   return {

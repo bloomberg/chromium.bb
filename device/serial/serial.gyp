@@ -21,7 +21,6 @@
         'data_stream.mojom',
         'data_stream_serialization.mojom',
         'serial.mojom',
-        'serial_serialization.mojom',
       ],
     },
     {
@@ -56,8 +55,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/data_stream_serialization.mojom.h',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.cc',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.h',
-        '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial_serialization.mojom.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial_serialization.mojom.h',
         'async_waiter.cc',
         'async_waiter.h',
         'buffer.cc',
