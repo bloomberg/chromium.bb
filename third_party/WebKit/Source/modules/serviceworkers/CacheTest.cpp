@@ -534,14 +534,8 @@ TEST_F(ServiceWorkerCacheTest, MatchAllAndBatchResponseTest)
 
     result = cache->deleteFunction(scriptState(), "http://some.url/", *options);
     scriptValue = getResolveValue(result);
-    responses = toImplArray<v8::Handle<v8::Value> >(scriptValue.v8Value(), 0, isolate(), exceptionState);
-    EXPECT_EQ(expectedUrls.size(), responses.size());
-    for (int i = 0, minsize = std::min(expectedUrls.size(), responses.size()); i < minsize; ++i) {
-        Response* response = V8Response::toImplWithTypeCheck(isolate(), responses[i]);
-        EXPECT_TRUE(response);
-        if (response)
-            EXPECT_EQ(expectedUrls[i], response->url());
-    }
+    EXPECT_TRUE(scriptValue.v8Value()->IsBoolean());
+    EXPECT_EQ(true, scriptValue.v8Value()->BooleanValue());
 }
 
 } // namespace

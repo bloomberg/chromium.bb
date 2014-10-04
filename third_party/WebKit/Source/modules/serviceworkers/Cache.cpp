@@ -73,6 +73,47 @@ public:
         m_resolver.clear();
     }
 
+protected:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+};
+
+// FIXME: Consider using CallbackPromiseAdapter.
+class CacheWithOneResponseCallbacks : public CacheWithResponsesCallbacks {
+    WTF_MAKE_NONCOPYABLE(CacheWithOneResponseCallbacks);
+public:
+    CacheWithOneResponseCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
+        : CacheWithResponsesCallbacks(resolver) { }
+
+    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) OVERRIDE
+    {
+        ASSERT(webResponses->size() == 1);
+        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), (*webResponses)[0]));
+        m_resolver.clear();
+    }
+};
+
+// FIXME: Consider using CallbackPromiseAdapter.
+class CacheDeleteCallback : public WebServiceWorkerCache::CacheWithResponsesCallbacks {
+    WTF_MAKE_NONCOPYABLE(CacheDeleteCallback);
+public:
+    CacheDeleteCallback(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
+
+    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) OVERRIDE
+    {
+        m_resolver->resolve(true);
+        m_resolver.clear();
+    }
+
+    virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
+    {
+        if (*reason == WebServiceWorkerCacheErrorNotFound)
+            m_resolver->resolve(false);
+        else
+            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+        m_resolver.clear();
+    }
+
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
@@ -324,7 +365,7 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, Request* request, cons
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchBatch(new CacheWithResponsesCallbacks(resolver), batchOperations);
+    m_webCache->dispatchBatch(new CacheDeleteCallback(resolver), batchOperations);
     return promise;
 }
 
@@ -337,7 +378,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchBatch(new CacheWithResponsesCallbacks(resolver), batchOperations);
+    m_webCache->dispatchBatch(new CacheWithOneResponseCallbacks(resolver), batchOperations);
     return promise;
 }
 
