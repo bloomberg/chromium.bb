@@ -179,6 +179,12 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://code.google.com/p/chromedriver/issues/detail?id=604
     'I18nTest.*',
+
+    # https://code.google.com/p/chromium/issues/detail?id=418590
+    'ClearTest.testContentEditableAreaShouldClear',
+    'ClickScrollingTest.testClickingOnAnchorScrollsPage',
+    'JavascriptEnabledDriverTest.testChangeEventIsFiredAppropriatelyWhenFocusIsLost',
+    'TypingTest.testShouldBeAbleToTypeIntoEmptyContentEditableElement',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'])
