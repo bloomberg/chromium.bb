@@ -647,6 +647,22 @@ class TextSizeAnimation(KeySilkCasesPage):
     action_runner.Wait(4)
 
 
+class SilkFinance(KeySilkCasesPage):
+
+  """ Why: Some effects repaint the page, possibly including plenty of text. """
+
+  def __init__(self, page_set):
+    super(SilkFinance, self).__init__(
+      url='file://key_silk_cases/silk_finance.html',
+      page_set=page_set)
+
+  def RunSmoothness(self, action_runner):
+    interaction = action_runner.BeginInteraction('animation_interaction',
+        is_smooth=True)
+    action_runner.Wait(10) # animation runs automatically
+    interaction.End()
+
+
 class KeySilkCasesPageSet(page_set_module.PageSet):
 
   """ Pages hand-picked for project Silk. """
@@ -690,3 +706,4 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddPage(SVGIconRaster(self))
     self.AddPage(UpdateHistoryState(self))
     self.AddPage(TextSizeAnimation(self))
+    self.AddPage(SilkFinance(self))
