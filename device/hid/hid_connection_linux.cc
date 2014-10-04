@@ -110,7 +110,7 @@ void HidConnectionLinux::PlatformGetFeatureReport(
   // and is overwritten by the feature report.
   DCHECK_GT(device_info().max_feature_report_size, 0);
   scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(device_info().max_feature_report_size));
+      new net::IOBufferWithSize(device_info().max_feature_report_size + 1));
   buffer->data()[0] = report_id;
 
   int result = ioctl(device_file_.GetPlatformFile(),
@@ -119,6 +119,14 @@ void HidConnectionLinux::PlatformGetFeatureReport(
   if (result < 0) {
     VPLOG(1) << "Failed to get feature report";
     callback.Run(false, NULL, 0);
+  } else if (result == 0) {
+    VLOG(1) << "Get feature result too short.";
+    callback.Run(false, NULL, 0);
+  } else if (report_id == 0) {
+    // Linux adds a 0 to the beginning of the data received from the device.
+    scoped_refptr<net::IOBuffer> copied_buffer(new net::IOBuffer(result - 1));
+    memcpy(copied_buffer->data(), buffer->data() + 1, result - 1);
+    callback.Run(true, copied_buffer, result - 1);
   } else {
     callback.Run(true, buffer, result);
   }

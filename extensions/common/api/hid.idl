@@ -67,10 +67,11 @@ namespace hid {
   callback DisconnectCallback = void ();
 
   // |reportId|: The report ID or <code>0</code> if none.
-  // |data|: The content of the report.
+  // |data|: The report data, the report ID prefix (if present) is removed.
   callback ReceiveCallback = void (long reportId, ArrayBuffer data);
 
-  // |data|: The content of the report.
+  // |data|: The report data, including a report ID prefix if one is sent by the
+  // device.
   callback ReceiveFeatureReportCallback = void (ArrayBuffer data);
 
   callback SendCallback = void();
@@ -98,6 +99,9 @@ namespace hid {
                         ReceiveCallback callback);
 
     // Send an output report to the device.
+    //
+    // <em>Note:</em> Do not include a report ID prefix in <code>data</code>.
+    // It will be added if necessary.
     // |connectionId|: The <code>connectionId</code> returned by $(ref:connect).
     // |reportId|: The report ID to use, or <code>0</code> if none.
     // |data|: The report data.
@@ -114,6 +118,9 @@ namespace hid {
                                      ReceiveFeatureReportCallback callback);
 
     // Send a feature report to the device.
+    //
+    // <em>Note:</em> Do not include a report ID prefix in <code>data</code>.
+    // It will be added if necessary.
     // |connectionId|: The <code>connectionId</code> returned by $(ref:connect).
     // |reportId|: The report ID to use, or <code>0</code> if none.
     // |data|: The report data.

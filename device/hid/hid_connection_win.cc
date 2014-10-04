@@ -235,10 +235,7 @@ void HidConnectionWin::OnReadFeatureComplete(
   DWORD bytes_transferred;
   if (GetOverlappedResult(
           file_.Get(), transfer->GetOverlapped(), &bytes_transferred, FALSE)) {
-    scoped_refptr<net::IOBuffer> new_buffer(
-        new net::IOBuffer(bytes_transferred - 1));
-    memcpy(new_buffer->data(), buffer->data() + 1, bytes_transferred - 1);
-    CompleteRead(new_buffer, bytes_transferred, callback);
+    callback.Run(true, buffer, bytes_transferred);
   } else {
     VPLOG(1) << "HID read failed";
     callback.Run(false, NULL, 0);

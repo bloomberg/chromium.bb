@@ -41,7 +41,9 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
              size_t size,
              const WriteCallback& callback);
 
-  // The report ID is not returned in the buffer.
+  // The buffer will contain whatever report data was received from the device.
+  // This may include the report ID. The report ID is not stripped because a
+  // device may respond with other data in place of the report ID.
   void GetFeatureReport(uint8_t report_id, const ReadCallback& callback);
 
   // The report ID (or 0 if report IDs are not supported by the device) is
