@@ -404,6 +404,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
 
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42E01E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42E01E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42801E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42C01E\"'"));
+
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.42E11E\"'"));
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.42101E\"'"));
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.42701E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42F01E\"'"));
+
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kPropProbably,
             CanPlay("'video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"'"));
@@ -430,6 +438,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
 
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc1.42E01E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42E01E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42801E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42C01E\"'"));
+
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/x-m4v; codecs=\"avc1.42E11E\"'"));
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/x-m4v; codecs=\"avc1.42101E\"'"));
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/x-m4v; codecs=\"avc1.42701E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc1.42F01E\"'"));
+
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kPropProbably,
             CanPlay("'video/x-m4v; codecs=\"avc1.42E01E, mp4a.40.2\"'"));
@@ -502,6 +518,20 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
   EXPECT_EQ(probablyCanPlayHLS,
             CanPlay("'application/x-mpegurl; codecs=\"avc3.42E01E\"'"));
   EXPECT_EQ(probablyCanPlayHLS,
+            CanPlay("'application/x-mpegurl; codecs=\"avc3.42801E\"'"));
+  EXPECT_EQ(probablyCanPlayHLS,
+            CanPlay("'application/x-mpegurl; codecs=\"avc3.42C01E\"'"));
+
+  EXPECT_EQ(maybeCanPlayHLS,
+            CanPlay("'application/x-mpegurl; codecs=\"avc1.42E11E\"'"));
+  EXPECT_EQ(maybeCanPlayHLS,
+            CanPlay("'application/x-mpegurl; codecs=\"avc1.42101E\"'"));
+  EXPECT_EQ(maybeCanPlayHLS,
+            CanPlay("'application/x-mpegurl; codecs=\"avc1.42701E\"'"));
+  EXPECT_EQ(probablyCanPlayHLS,
+            CanPlay("'application/x-mpegurl; codecs=\"avc1.42F01E\"'"));
+
+  EXPECT_EQ(probablyCanPlayHLS,
             CanPlay("'application/x-mpegurl; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(probablyCanPlayHLS,
       CanPlay("'application/x-mpegurl; codecs=\"avc1.42E01E, mp4a.40.2\"'"));
@@ -536,6 +566,20 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
             CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc1.42E01E\"'"));
   EXPECT_EQ(probablyCanPlayHLS,
             CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc3.42E01E\"'"));
+  EXPECT_EQ(probablyCanPlayHLS,
+            CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc3.42801E\"'"));
+  EXPECT_EQ(probablyCanPlayHLS,
+            CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc3.42C01E\"'"));
+
+  EXPECT_EQ(maybeCanPlayHLS,
+            CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc1.42E11E\"'"));
+  EXPECT_EQ(maybeCanPlayHLS,
+            CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc1.42101E\"'"));
+  EXPECT_EQ(maybeCanPlayHLS,
+            CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc1.42701E\"'"));
+  EXPECT_EQ(probablyCanPlayHLS,
+            CanPlay("'application/vnd.apple.mpegurl; codecs=\"avc1.42F01E\"'"));
+
   EXPECT_EQ(probablyCanPlayHLS,
             CanPlay("'application/vnd.apple.mpegurl; codecs=\"mp4a.40.2\"'"));
 
