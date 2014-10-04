@@ -28,14 +28,14 @@ class ExtensionMessagePort : public MessageService::MessagePort {
       const std::string& source_extension_id,
       const std::string& target_extension_id,
       const GURL& source_url,
-      const std::string& tls_channel_id) OVERRIDE;
+      const std::string& tls_channel_id) override;
   virtual void DispatchOnDisconnect(int source_port_id,
-                                    const std::string& error_message) OVERRIDE;
+                                    const std::string& error_message) override;
   virtual void DispatchOnMessage(const Message& message,
-                                 int target_port_id) OVERRIDE;
-  virtual void IncrementLazyKeepaliveCount() OVERRIDE;
-  virtual void DecrementLazyKeepaliveCount() OVERRIDE;
-  virtual content::RenderProcessHost* GetRenderProcessHost() OVERRIDE;
+                                 int target_port_id) override;
+  virtual void IncrementLazyKeepaliveCount() override;
+  virtual void DecrementLazyKeepaliveCount() override;
+  virtual content::RenderProcessHost* GetRenderProcessHost() override;
 
  private:
   content::RenderProcessHost* process_;

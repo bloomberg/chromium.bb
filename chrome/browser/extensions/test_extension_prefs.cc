@@ -47,7 +47,7 @@ class IncrementalTimeProvider : public ExtensionPrefs::TimeProvider {
   virtual ~IncrementalTimeProvider() {
   }
 
-  virtual base::Time GetCurrentTime() const OVERRIDE {
+  virtual base::Time GetCurrentTime() const override {
     current_time_ += base::TimeDelta::FromSeconds(10);
     return current_time_;
   }

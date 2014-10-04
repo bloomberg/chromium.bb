@@ -49,7 +49,7 @@ class ScopedActiveInstall : public InstallObserver {
   void Init();
 
   // InstallObserver implementation.
-  virtual void OnShutdown() OVERRIDE;
+  virtual void OnShutdown() override;
 
   InstallTracker* tracker_;
   ScopedObserver<InstallTracker, InstallObserver> tracker_observer_;

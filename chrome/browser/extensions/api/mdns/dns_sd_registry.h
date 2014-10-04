@@ -91,10 +91,10 @@ class DnsSdRegistry : public DnsSdDelegate {
   // DnsSdDelegate implementation:
   virtual void ServiceChanged(const std::string& service_type,
                               bool added,
-                              const DnsSdService& service) OVERRIDE;
+                              const DnsSdService& service) override;
   virtual void ServiceRemoved(const std::string& service_type,
-                              const std::string& service_name) OVERRIDE;
-  virtual void ServicesFlushed(const std::string& service_type) OVERRIDE;
+                              const std::string& service_name) override;
+  virtual void ServicesFlushed(const std::string& service_type) override;
 
   DnsSdServiceTypeDataMap service_data_map_;
 

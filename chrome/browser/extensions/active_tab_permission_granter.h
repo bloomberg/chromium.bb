@@ -44,14 +44,14 @@ class ActiveTabPermissionGranter
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual void WebContentsDestroyed() override;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionInfo::Reason reason)
-      OVERRIDE;
+      override;
 
   // Clears any tab-specific permissions for all extensions on |tab_id_| and
   // notifies renderers.

@@ -73,7 +73,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // The WebApplicationInfo that the bookmark app is being created for.
   WebApplicationInfo web_app_info_;

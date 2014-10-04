@@ -42,7 +42,7 @@ class GetAttentionImageSource : public gfx::ImageSkiaSource {
       : icon_(icon) {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
     gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale);
     color_utils::HSL shift = {-1, 0, 0.5};
     return gfx::ImageSkiaRep(

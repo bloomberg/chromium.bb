@@ -88,7 +88,7 @@ class TestListener : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& /* source */,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     const std::string& message = *content::Details<std::string>(details).ptr();
     if (message == message_)
       callback_.Run();
@@ -113,21 +113,21 @@ class CryptoVerifyStub
     : public extensions::NetworkingPrivateServiceClient::CryptoVerify {
   virtual void VerifyDestination(const Credentials& verification_properties,
                                  bool* verified,
-                                 std::string* error) OVERRIDE {
+                                 std::string* error) override {
     *verified = true;
   }
 
   virtual void VerifyAndEncryptCredentials(
       const std::string& network_guid,
       const Credentials& credentials,
-      const VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
+      const VerifyAndEncryptCredentialsCallback& callback) override {
     callback.Run("encrypted_credentials", "");
   }
 
   virtual void VerifyAndEncryptData(const Credentials& verification_properties,
                                     const std::string& data,
                                     std::string* base64_encoded_ciphertext,
-                                    std::string* error) OVERRIDE {
+                                    std::string* error) override {
     *base64_encoded_ciphertext = "encrypted_data";
   }
 };
@@ -152,7 +152,7 @@ class ExtensionNetworkingPrivateApiTest
         kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
 #if defined(OS_CHROMEOS)
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
@@ -170,7 +170,7 @@ class ExtensionNetworkingPrivateApiTest
     *out = result;
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
@@ -243,7 +243,7 @@ class ExtensionNetworkingPrivateApiTest
         type, state, true /* add_to_visible */);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     detector_ = new NetworkPortalDetectorTestImpl();
     NetworkPortalDetector::InitializeForTesting(detector_);
 
@@ -369,7 +369,7 @@ class ExtensionNetworkingPrivateApiTest
     content::RunAllPendingInMessageLoop();
   }
 #else  // !defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
@@ -383,7 +383,7 @@ class ExtensionNetworkingPrivateApiTest
         new wifi::FakeWiFiService(), new CryptoVerifyStub());
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
     NetworkingPrivateServiceClientFactory::GetInstance()->SetTestingFactory(

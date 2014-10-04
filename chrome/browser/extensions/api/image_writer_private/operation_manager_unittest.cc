@@ -29,7 +29,7 @@ class FakeEventRouter : public extensions::EventRouter {
 
   virtual void DispatchEventToExtension(
       const std::string& extension_id,
-      scoped_ptr<extensions::Event> event) OVERRIDE {
+      scoped_ptr<extensions::Event> event) override {
     // Do nothing with the event as no tests currently care.
   }
 };
@@ -42,7 +42,7 @@ class FakeExtensionSystem : public extensions::TestExtensionSystem {
     fake_event_router_.reset(new FakeEventRouter(profile));
   }
 
-  virtual EventRouter* event_router() OVERRIDE {
+  virtual EventRouter* event_router() override {
     return fake_event_router_.get();
   }
 
@@ -77,7 +77,7 @@ class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
         start_success_(false) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ImageWriterUnitTestBase::SetUp();
     extension_system_ = static_cast<FakeExtensionSystem*>(
         ExtensionSystemFactory::GetInstance()->

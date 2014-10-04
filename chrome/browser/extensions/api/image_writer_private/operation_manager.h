@@ -49,7 +49,7 @@ class OperationManager : public BrowserContextKeyedAPI,
   explicit OperationManager(content::BrowserContext* context);
   virtual ~OperationManager();
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Starts a WriteFromUrl operation.
   void StartWriteFromUrl(const ExtensionId& extension_id,
@@ -99,13 +99,13 @@ class OperationManager : public BrowserContextKeyedAPI,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   Operation* GetOperation(const ExtensionId& extension_id);
   void DeleteOperation(const ExtensionId& extension_id);

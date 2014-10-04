@@ -196,12 +196,12 @@ class WebstoreInstaller : public content::NotificationObserver,
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver.
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
                                     const Extension* extension,
-                                    bool is_update) OVERRIDE;
+                                    bool is_update) override;
 
   // Removes the reference to the delegate passed in the constructor. Used when
   // the delegate object must be deleted before this object.
@@ -227,8 +227,8 @@ class WebstoreInstaller : public content::NotificationObserver,
                          content::DownloadInterruptReason interrupt_reason);
 
   // DownloadItem::Observer implementation:
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   // Downloads next pending module in |pending_modules_|.
   void DownloadNextPendingModule();

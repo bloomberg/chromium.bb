@@ -59,12 +59,12 @@ class GcdPrivateGetCloudDeviceListFunction
   virtual ~GcdPrivateGetCloudDeviceListFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // CloudDeviceListDelegate implementation
-  virtual void OnDeviceListReady(const DeviceList& devices) OVERRIDE;
-  virtual void OnDeviceListUnavailable() OVERRIDE;
+  virtual void OnDeviceListReady(const DeviceList& devices) override;
+  virtual void OnDeviceListUnavailable() override;
 
   void CheckListingDone();
 
@@ -88,7 +88,7 @@ class GcdPrivateQueryForNewLocalDevicesFunction
   virtual ~GcdPrivateQueryForNewLocalDevicesFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class GcdPrivatePrefetchWifiPasswordFunction
@@ -103,7 +103,7 @@ class GcdPrivatePrefetchWifiPasswordFunction
   virtual ~GcdPrivatePrefetchWifiPasswordFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void OnResponse(bool response);
 };
@@ -120,7 +120,7 @@ class GcdPrivateGetPrefetchedWifiNameListFunction
   virtual ~GcdPrivateGetPrefetchedWifiNameListFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
@@ -134,7 +134,7 @@ class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateEstablishSessionFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnConfirmCodeCallback(
@@ -154,7 +154,7 @@ class GcdPrivateConfirmCodeFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateConfirmCodeFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnSessionEstablishedCallback(api::gcd_private::Status status);
@@ -170,7 +170,7 @@ class GcdPrivateSendMessageFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateSendMessageFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnMessageSentCallback(api::gcd_private::Status status,
@@ -188,7 +188,7 @@ class GcdPrivateTerminateSessionFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateTerminateSessionFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class GcdPrivateGetCommandDefinitionsFunction
@@ -203,7 +203,7 @@ class GcdPrivateGetCommandDefinitionsFunction
   virtual ~GcdPrivateGetCommandDefinitionsFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
 };
@@ -219,7 +219,7 @@ class GcdPrivateInsertCommandFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateInsertCommandFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
 };
@@ -234,7 +234,7 @@ class GcdPrivateGetCommandFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateGetCommandFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
 };
@@ -250,7 +250,7 @@ class GcdPrivateCancelCommandFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateCancelCommandFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
 };
@@ -266,7 +266,7 @@ class GcdPrivateGetCommandsListFunction : public ChromeAsyncExtensionFunction {
   virtual ~GcdPrivateGetCommandsListFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
 };

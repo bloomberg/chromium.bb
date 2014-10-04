@@ -29,7 +29,7 @@ class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   net::TestURLRequestContext context;

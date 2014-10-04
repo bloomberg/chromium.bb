@@ -77,7 +77,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
       : enumeration_event_(false, false) {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     AudioWaitingExtensionTest::SetUpOnMainThread();
     // Needs to happen after chrome's schemes are added.
     source_url_ = GURL("chrome-extension://fakeid012345678/fakepage.html");
@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {
 
 class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Make sure the Hangout Services component extension gets loaded.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
     AudioWaitingExtensionTest::SetUp();

@@ -129,16 +129,16 @@ class ErrorConsole : public content::NotificationObserver,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
                                     const Extension* extension,
-                                    bool is_update) OVERRIDE;
+                                    bool is_update) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // Add manifest errors from an extension's install warnings.
   void AddManifestErrorsForExtension(const Extension* extension);
@@ -146,7 +146,7 @@ class ErrorConsole : public content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns the applicable bit mask of reporting preferences for the extension.
   int GetMaskForExtension(const std::string& extension_id) const;

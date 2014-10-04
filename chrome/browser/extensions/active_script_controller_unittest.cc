@@ -71,7 +71,7 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Increment the number of executions for the given |extension_id|.
   void IncrementExecutionCount(const std::string& extension_id);
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Since ActiveScriptController's behavior is behind a flag, override the
   // feature switch.

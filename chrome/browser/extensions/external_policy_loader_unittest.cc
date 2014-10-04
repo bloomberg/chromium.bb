@@ -74,7 +74,7 @@ class MockExternalPolicyProviderVisitor
                                             const base::FilePath& path,
                                             Manifest::Location unused,
                                             int unused2,
-                                            bool unused3) OVERRIDE {
+                                            bool unused3) override {
     ADD_FAILURE() << "There should be no external extensions from files.";
     return false;
   }
@@ -85,7 +85,7 @@ class MockExternalPolicyProviderVisitor
       const GURL& update_url,
       Manifest::Location location,
       int unused1,
-      bool unused2) OVERRIDE {
+      bool unused2) override {
     // Extension has the correct location.
     EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, location);
 
@@ -102,7 +102,7 @@ class MockExternalPolicyProviderVisitor
   }
 
   virtual void OnExternalProviderReady(
-      const ExternalProviderInterface* provider) OVERRIDE {
+      const ExternalProviderInterface* provider) override {
     EXPECT_EQ(provider, provider_.get());
     EXPECT_TRUE(provider->IsReady());
   }

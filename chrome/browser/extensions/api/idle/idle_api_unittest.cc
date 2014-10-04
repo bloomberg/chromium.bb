@@ -44,9 +44,9 @@ class TestIdleProvider : public IdleManager::IdleTimeProvider {
   TestIdleProvider();
   virtual ~TestIdleProvider();
   virtual void CalculateIdleState(int idle_threshold,
-                                  IdleCallback notify) OVERRIDE;
-  virtual void CalculateIdleTime(IdleTimeCallback notify) OVERRIDE;
-  virtual bool CheckIdleStateIsLocked() OVERRIDE;
+                                  IdleCallback notify) override;
+  virtual void CalculateIdleTime(IdleTimeCallback notify) override;
+  virtual bool CheckIdleStateIsLocked() override;
 
   void set_idle_time(int idle_time);
   void set_locked(bool locked);
@@ -126,7 +126,7 @@ KeyedService* IdleManagerTestFactory(content::BrowserContext* profile) {
 
 class IdleTest : public ExtensionApiUnittest {
  public:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   IdleManager* idle_manager_;

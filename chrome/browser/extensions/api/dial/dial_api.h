@@ -40,16 +40,16 @@ class DialAPI : public RefcountedBrowserContextKeyedService,
   virtual ~DialAPI();
 
   // RefcountedBrowserContextKeyedService:
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void ShutdownOnUIThread() override;
 
   // EventRouter::Observer:
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // DialRegistry::Observer:
   virtual void OnDialDeviceEvent(
-      const DialRegistry::DeviceList& devices) OVERRIDE;
-  virtual void OnDialError(DialRegistry::DialErrorCode type) OVERRIDE;
+      const DialRegistry::DeviceList& devices) override;
+  virtual void OnDialError(DialRegistry::DialErrorCode type) override;
 
   // Methods to notify the DialRegistry on the correct thread of new/removed
   // listeners.
@@ -78,9 +78,9 @@ class DialDiscoverNowFunction : public AsyncApiFunction {
   virtual ~DialDiscoverNowFunction() {}
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
+  virtual bool Respond() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("dial.discoverNow", DIAL_DISCOVERNOW)

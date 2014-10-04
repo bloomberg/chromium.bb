@@ -60,7 +60,7 @@ class NotificationObserver : public message_center::MessageCenterObserver {
  private:
   // MessageCenterObserver implementation:
   virtual void OnNotificationAdded(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     received_notifications_.insert(notification_id);
 
     if (waiting_ && HasReceivedNotification())
@@ -81,7 +81,7 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
 
  protected:
   // ExtensionBrowserTest overrides:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     InitStorageMonitor();

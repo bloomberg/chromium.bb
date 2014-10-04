@@ -15,10 +15,10 @@ namespace braille_display_private {
 class StubBrailleController : public BrailleController {
  public:
   StubBrailleController();
-  virtual scoped_ptr<DisplayState> GetDisplayState() OVERRIDE;
-  virtual void WriteDots(const std::string& cells) OVERRIDE;
-  virtual void AddObserver(BrailleObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(BrailleObserver* observer) OVERRIDE;
+  virtual scoped_ptr<DisplayState> GetDisplayState() override;
+  virtual void WriteDots(const std::string& cells) override;
+  virtual void AddObserver(BrailleObserver* observer) override;
+  virtual void RemoveObserver(BrailleObserver* observer) override;
 };
 
 }  // namespace braille_display_private

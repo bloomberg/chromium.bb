@@ -45,7 +45,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
   PrefService& local_state() { return local_state_; }
   const base::FilePath& cache_dir() { return cache_dir_.path(); }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     chrome::RegisterLocalState(local_state_.registry());
 
@@ -76,7 +76,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
         GetFakeUserManager()->GetActiveUser(), profile_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 

@@ -9,7 +9,7 @@
 
 class ExtensionApiTestWithSwitch : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kSilentDebuggerExtensionAPI);
     command_line->AppendSwitch(extensions::switches::kExtensionsOnChromeURLs);

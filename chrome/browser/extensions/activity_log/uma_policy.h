@@ -56,8 +56,8 @@ class UmaPolicy : public ActivityLogPolicy,
   explicit UmaPolicy(Profile* profile);
 
   // ActivityLogPolicy implementation.
-  virtual void ProcessAction(scoped_refptr<Action> action) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void ProcessAction(scoped_refptr<Action> action) override;
+  virtual void Close() override;
 
   // Gets the histogram name associated with each PageStatus.
   static const char* GetHistogramName(PageStatus status);
@@ -77,19 +77,19 @@ class UmaPolicy : public ActivityLogPolicy,
   typedef std::map<std::string, ExtensionMap> SiteMap;
 
   // BrowserListObserver
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override;
+  virtual void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver
   // Fired when a page loads, either as a new tab or replacing the contents of
   // an older tab.
   virtual void TabChangedAt(content::WebContents* contents,
                             int index,
-                            TabChangeType change_type) OVERRIDE;
+                            TabChangeType change_type) override;
   // Fired when a tab closes.
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             content::WebContents* contents,
-                            int index) OVERRIDE;
+                            int index) override;
 
   // Assign a status bitmask based on the action's properties.
   int MatchActionToStatus(scoped_refptr<Action> action);

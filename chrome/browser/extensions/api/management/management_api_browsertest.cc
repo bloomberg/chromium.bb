@@ -215,7 +215,7 @@ class ExtensionManagementApiEscalationTest :
   // The id of the permissions escalation test extension we use.
   static const char kId[];
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath pem_path = test_data_dir_.
         AppendASCII("permissions_increase").AppendASCII("permissions.pem");

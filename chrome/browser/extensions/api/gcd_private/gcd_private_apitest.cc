@@ -177,7 +177,7 @@ class FakeGCDApiFlowFactory
     extensions::GcdPrivateAPI::SetGCDApiFlowFactoryForTests(NULL);
   }
 
-  virtual scoped_ptr<local_discovery::GCDApiFlow> CreateGCDApiFlow() OVERRIDE {
+  virtual scoped_ptr<local_discovery::GCDApiFlow> CreateGCDApiFlow() override {
     return scoped_ptr<local_discovery::GCDApiFlow>(new FakeGCDApiFlow(this));
   }
 
@@ -193,7 +193,7 @@ class FakeGCDApiFlowFactory
 
     virtual ~FakeGCDApiFlow() {}
 
-    virtual void Start(scoped_ptr<Request> request) OVERRIDE {
+    virtual void Start(scoped_ptr<Request> request) override {
       std::string response_str = factory_->responses_[request->GetURL()];
 
       if (response_str == kResponseValueFailure) {
@@ -228,7 +228,7 @@ class GcdPrivateAPITest : public ExtensionApiTest {
 #endif  // ENABLE_MDNS
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,

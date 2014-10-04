@@ -104,7 +104,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
   virtual ~ImeObserver() {}
 
-  virtual void OnActivate(const std::string& component_id) OVERRIDE {
+  virtual void OnActivate(const std::string& component_id) override {
     if (extension_id_.empty())
       return;
 
@@ -116,7 +116,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnActivate::kEventName, args.Pass());
   }
 
-  virtual void OnDeactivated(const std::string& component_id) OVERRIDE {
+  virtual void OnDeactivated(const std::string& component_id) override {
     if (extension_id_.empty())
       return;
 
@@ -128,7 +128,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   virtual void OnFocus(
-      const InputMethodEngineInterface::InputContext& context) OVERRIDE {
+      const InputMethodEngineInterface::InputContext& context) override {
     if (extension_id_.empty())
       return;
 
@@ -142,7 +142,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnFocus::kEventName, args.Pass());
   }
 
-  virtual void OnBlur(int context_id) OVERRIDE {
+  virtual void OnBlur(int context_id) override {
     if (extension_id_.empty())
       return;
 
@@ -153,7 +153,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   virtual void OnInputContextUpdate(
-      const InputMethodEngineInterface::InputContext& context) OVERRIDE {
+      const InputMethodEngineInterface::InputContext& context) override {
     if (extension_id_.empty())
       return;
 
@@ -172,7 +172,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   virtual void OnKeyEvent(
       const std::string& component_id,
       const InputMethodEngineInterface::KeyboardEvent& event,
-      chromeos::input_method::KeyEventHandle* key_data) OVERRIDE {
+      chromeos::input_method::KeyEventHandle* key_data) override {
     if (extension_id_.empty())
       return;
 
@@ -213,7 +213,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   virtual void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
-      InputMethodEngineInterface::MouseButtonEvent button) OVERRIDE {
+      InputMethodEngineInterface::MouseButtonEvent button) override {
     if (extension_id_.empty())
       return;
 
@@ -243,7 +243,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   virtual void OnMenuItemActivated(const std::string& component_id,
-                                   const std::string& menu_id) OVERRIDE {
+                                   const std::string& menu_id) override {
     if (extension_id_.empty())
       return;
 
@@ -257,7 +257,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   virtual void OnSurroundingTextChanged(const std::string& component_id,
                                         const std::string& text,
                                         int cursor_pos,
-                                        int anchor_pos) OVERRIDE {
+                                        int anchor_pos) override {
     if (extension_id_.empty())
       return;
 
@@ -273,7 +273,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
-  virtual void OnReset(const std::string& component_id) OVERRIDE {
+  virtual void OnReset(const std::string& component_id) override {
     if (extension_id_.empty())
       return;
 

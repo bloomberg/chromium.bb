@@ -39,7 +39,7 @@ class AutomationInternalEnableTabFunction
  protected:
   virtual ~AutomationInternalEnableTabFunction() {}
 
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 class AutomationInternalPerformActionFunction
@@ -49,7 +49,7 @@ class AutomationInternalPerformActionFunction
  protected:
   virtual ~AutomationInternalPerformActionFunction() {}
 
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 
  private:
   // Helper function to route an action to an action adapter.
@@ -65,7 +65,7 @@ class AutomationInternalEnableDesktopFunction
  protected:
   virtual ~AutomationInternalEnableDesktopFunction() {}
 
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 };
 
 }  // namespace extensions

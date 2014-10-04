@@ -58,7 +58,7 @@ class CloudPrintPrivateSetupConnectorFunction
   virtual ~CloudPrintPrivateSetupConnectorFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class CloudPrintPrivateGetHostNameFunction
@@ -73,7 +73,7 @@ class CloudPrintPrivateGetHostNameFunction
   virtual ~CloudPrintPrivateGetHostNameFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class CloudPrintPrivateGetPrintersFunction
@@ -91,7 +91,7 @@ class CloudPrintPrivateGetPrintersFunction
   void SendResults(const std::vector<std::string>& printers);
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class CloudPrintPrivateGetClientIdFunction
@@ -106,7 +106,7 @@ class CloudPrintPrivateGetClientIdFunction
   virtual ~CloudPrintPrivateGetClientIdFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 }  // namespace extensions

@@ -40,13 +40,13 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
-                               const SkBitmap& install_icon) OVERRIDE {
+                               const SkBitmap& install_icon) override {
     temp_dir_ = temp_dir;
     quit_closure_.Run();
 
   }
 
-  virtual void OnUnpackFailure(const base::string16& error) OVERRIDE {
+  virtual void OnUnpackFailure(const base::string16& error) override {
     ASSERT_TRUE(false);
   }
 

@@ -79,7 +79,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   }
 
   // ExtensionServiceTestBase overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     test_server_.reset(new EmbeddedTestServer());
 
@@ -107,7 +107,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 #endif
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
 #if defined(OS_CHROMEOS)
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);

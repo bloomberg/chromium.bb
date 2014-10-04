@@ -36,7 +36,7 @@ class MockExtensionService : public TestExtensionService {
   MockExtensionService() : ready_(false), unloaded_count_(0) {
   }
 
-  virtual void AddComponentExtension(const Extension* extension) OVERRIDE {
+  virtual void AddComponentExtension(const Extension* extension) override {
     EXPECT_FALSE(extension_set_.Contains(extension->id()));
     // ExtensionService must become the owner of the extension object.
     extension_set_.Insert(extension);
@@ -44,7 +44,7 @@ class MockExtensionService : public TestExtensionService {
 
   virtual void UnloadExtension(
       const std::string& extension_id,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE {
+      UnloadedExtensionInfo::Reason reason) override {
     ASSERT_TRUE(extension_set_.Contains(extension_id));
     // Remove the extension with the matching id.
     extension_set_.Remove(extension_id);
@@ -52,15 +52,15 @@ class MockExtensionService : public TestExtensionService {
   }
 
   virtual void RemoveComponentExtension(const std::string & extension_id)
-      OVERRIDE {
+      override {
     UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_DISABLE);
   }
 
-  virtual bool is_ready() OVERRIDE {
+  virtual bool is_ready() override {
     return ready_;
   }
 
-  virtual const ExtensionSet* extensions() const OVERRIDE {
+  virtual const ExtensionSet* extensions() const override {
     return &extension_set_;
   }
 
@@ -90,7 +90,7 @@ class ComponentLoaderTest : public testing::Test {
                           &profile_) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")

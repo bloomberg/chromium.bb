@@ -19,19 +19,19 @@ class BrowserExtensionWindowController : public extensions::WindowController {
   virtual ~BrowserExtensionWindowController();
 
   // extensions::WindowController implementation.
-  virtual int GetWindowId() const OVERRIDE;
-  virtual std::string GetWindowTypeText() const OVERRIDE;
-  virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
+  virtual int GetWindowId() const override;
+  virtual std::string GetWindowTypeText() const override;
+  virtual base::DictionaryValue* CreateWindowValue() const override;
   virtual base::DictionaryValue* CreateWindowValueWithTabs(
-      const extensions::Extension* extension) const OVERRIDE;
+      const extensions::Extension* extension) const override;
   virtual base::DictionaryValue* CreateTabValue(
-      const extensions::Extension* extension, int tab_index) const OVERRIDE;
-  virtual bool CanClose(Reason* reason) const OVERRIDE;
+      const extensions::Extension* extension, int tab_index) const override;
+  virtual bool CanClose(Reason* reason) const override;
   virtual void SetFullscreenMode(bool is_fullscreen,
-                                 const GURL& extension_url) const OVERRIDE;
-  virtual Browser* GetBrowser() const OVERRIDE;
+                                 const GURL& extension_url) const override;
+  virtual Browser* GetBrowser() const override;
   virtual bool IsVisibleToExtension(
-      const extensions::Extension* extension) const OVERRIDE;
+      const extensions::Extension* extension) const override;
 
  private:
   Browser* browser_;

@@ -69,7 +69,7 @@ class MockBrlapiConnection : public BrlapiConnection {
   explicit MockBrlapiConnection(MockBrlapiConnectionData* data)
       : data_(data) {}
   virtual ConnectResult Connect(const OnDataReadyCallback& on_data_ready)
-      OVERRIDE {
+      override {
     data_->connected = true;
     on_data_ready_ = on_data_ready;
     if (!data_->pending_keys.empty()) {
@@ -80,7 +80,7 @@ class MockBrlapiConnection : public BrlapiConnection {
     return CONNECT_SUCCESS;
   }
 
-  virtual void Disconnect() OVERRIDE {
+  virtual void Disconnect() override {
     data_->connected = false;
     if (data_->reappear_on_disconnect) {
       data_->display_size *= 2;
@@ -91,31 +91,31 @@ class MockBrlapiConnection : public BrlapiConnection {
     }
   }
 
-  virtual bool Connected() OVERRIDE {
+  virtual bool Connected() override {
     return data_->connected;
   }
 
-  virtual brlapi_error_t* BrlapiError() OVERRIDE {
+  virtual brlapi_error_t* BrlapiError() override {
     return &data_->error;
   }
 
-  virtual std::string BrlapiStrError() OVERRIDE {
+  virtual std::string BrlapiStrError() override {
     return data_->error.brlerrno != BRLAPI_ERROR_SUCCESS ? "Error" : "Success";
   }
 
-  virtual bool GetDisplaySize(size_t* size) OVERRIDE {
+  virtual bool GetDisplaySize(size_t* size) override {
     *size = data_->display_size;
     return true;
   }
 
-  virtual bool WriteDots(const unsigned char* cells) OVERRIDE {
+  virtual bool WriteDots(const unsigned char* cells) override {
     std::string written(reinterpret_cast<const char*>(cells),
                         data_->display_size);
     data_->written_content.push_back(written);
     return true;
   }
 
-  virtual int ReadKey(brlapi_keyCode_t* key_code) OVERRIDE {
+  virtual int ReadKey(brlapi_keyCode_t* key_code) override {
     if (!data_->pending_keys.empty()) {
       brlapi_keyCode_t queued_key_code = data_->pending_keys.front();
       data_->pending_keys.pop_front();
@@ -147,7 +147,7 @@ class MockBrlapiConnection : public BrlapiConnection {
 
 class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     connection_data_.connected = false;
     connection_data_.display_size = 0;
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DisplayStateChanges) {
 
 class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
@@ -280,10 +280,10 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
 
     int GetEventCount() { return event_count_; }
 
-    virtual void BroadcastEvent(scoped_ptr<Event> event) OVERRIDE {
+    virtual void BroadcastEvent(scoped_ptr<Event> event) override {
       ++event_count_;
     }
-    virtual bool HasListener() OVERRIDE { return true; }
+    virtual bool HasListener() override { return true; }
 
    private:
     int event_count_;
@@ -318,7 +318,7 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
   }
 
  protected:
-  virtual void DisableAccessibilityManagerBraille() OVERRIDE {
+  virtual void DisableAccessibilityManagerBraille() override {
     // Let the accessibility manager behave as usual for these tests.
   }
 };

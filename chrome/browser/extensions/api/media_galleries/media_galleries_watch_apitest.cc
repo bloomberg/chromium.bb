@@ -83,12 +83,12 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
 
  protected:
   // ExtensionApiTest overrides.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
   }
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
     extension_ = LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
@@ -96,7 +96,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
     CreateTestGallery();
     FetchMediaGalleriesList();
   }
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     extension_ = NULL;
     background_host_ = NULL;
     ensure_media_directories_exists_.reset();

@@ -26,7 +26,7 @@ class MockHotwordService : public HotwordService {
       : HotwordService(profile), service_available_(true) {};
   virtual ~MockHotwordService() {}
 
-  virtual bool IsServiceAvailable() OVERRIDE {
+  virtual bool IsServiceAvailable() override {
     return service_available_;
   }
 
@@ -38,7 +38,7 @@ class MockHotwordService : public HotwordService {
     return new MockHotwordService(static_cast<Profile*>(profile));
   }
 
-  virtual LaunchMode GetHotwordAudioVerificationLaunchMode() OVERRIDE {
+  virtual LaunchMode GetHotwordAudioVerificationLaunchMode() override {
     return launch_mode_;
   }
 
@@ -63,12 +63,12 @@ class MockHotwordClient : public HotwordClient {
 
   virtual ~MockHotwordClient() {}
 
-  virtual void OnHotwordStateChanged(bool enabled) OVERRIDE {
+  virtual void OnHotwordStateChanged(bool enabled) override {
     last_enabled_ = enabled;
     state_changed_count_++;
   }
 
-  virtual void OnHotwordRecognized() OVERRIDE {
+  virtual void OnHotwordRecognized() override {
     recognized_count_++;
   }
 
@@ -89,7 +89,7 @@ class HotwordPrivateApiTest : public ExtensionApiTest {
   HotwordPrivateApiTest() {}
   virtual ~HotwordPrivateApiTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
     // Whitelist the test extensions (which all share a common ID) to use
@@ -98,7 +98,7 @@ class HotwordPrivateApiTest : public ExtensionApiTest {
         extensions::switches::kWhitelistedExtensionID, kHotwordTestExtensionId);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
     test_data_dir_ = test_data_dir_.AppendASCII("hotword_private");

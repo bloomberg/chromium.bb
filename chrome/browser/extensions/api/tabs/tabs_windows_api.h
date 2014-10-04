@@ -27,14 +27,14 @@ class TabsWindowsAPI : public BrowserContextKeyedAPI,
   WindowsEventRouter* windows_event_router();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<TabsWindowsAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+      override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<TabsWindowsAPI>;

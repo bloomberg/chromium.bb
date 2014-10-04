@@ -29,7 +29,7 @@ class ExternalComponentLoader : public ExternalLoader {
   static bool IsModifiable(const extensions::Extension* extension);
 
  protected:
-  virtual void StartLoading() OVERRIDE;
+  virtual void StartLoading() override;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;

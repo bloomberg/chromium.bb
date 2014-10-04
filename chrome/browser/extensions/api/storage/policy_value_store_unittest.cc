@@ -50,24 +50,24 @@ class MutablePolicyValueStore : public PolicyValueStore {
   virtual WriteResult Set(
       WriteOptions options,
       const std::string& key,
-      const base::Value& value) OVERRIDE {
+      const base::Value& value) override {
     return delegate()->Set(options, key, value);
   }
 
   virtual WriteResult Set(
-      WriteOptions options, const base::DictionaryValue& values) OVERRIDE {
+      WriteOptions options, const base::DictionaryValue& values) override {
     return delegate()->Set(options, values);
   }
 
-  virtual WriteResult Remove(const std::string& key) OVERRIDE {
+  virtual WriteResult Remove(const std::string& key) override {
     return delegate()->Remove(key);
   }
 
-  virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE {
+  virtual WriteResult Remove(const std::vector<std::string>& keys) override {
     return delegate()->Remove(keys);
   }
 
-  virtual WriteResult Clear() OVERRIDE {
+  virtual WriteResult Clear() override {
     return delegate()->Clear();
   }
 
@@ -92,7 +92,7 @@ class PolicyValueStoreTest : public testing::Test {
       : file_thread_(content::BrowserThread::FILE, &loop_) {}
   virtual ~PolicyValueStoreTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     observers_ = new SettingsObserverList();
     observers_->AddObserver(&observer_);
@@ -103,7 +103,7 @@ class PolicyValueStoreTest : public testing::Test {
             new LeveldbValueStore(scoped_temp_dir_.path()))));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     observers_->RemoveObserver(&observer_);
     store_.reset();
   }

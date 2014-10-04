@@ -38,21 +38,21 @@ class BrlapiConnectionImpl : public BrlapiConnection,
   }
 
   virtual ConnectResult Connect(const OnDataReadyCallback& on_data_ready)
-      OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual bool Connected() OVERRIDE { return handle_; }
-  virtual brlapi_error_t* BrlapiError() OVERRIDE;
-  virtual std::string BrlapiStrError() OVERRIDE;
-  virtual bool GetDisplaySize(size_t* size) OVERRIDE;
-  virtual bool WriteDots(const unsigned char* cells) OVERRIDE;
-  virtual int ReadKey(brlapi_keyCode_t* keyCode) OVERRIDE;
+      override;
+  virtual void Disconnect() override;
+  virtual bool Connected() override { return handle_; }
+  virtual brlapi_error_t* BrlapiError() override;
+  virtual std::string BrlapiStrError() override;
+  virtual bool GetDisplaySize(size_t* size) override;
+  virtual bool WriteDots(const unsigned char* cells) override;
+  virtual int ReadKey(brlapi_keyCode_t* keyCode) override;
 
   // MessageLoopForIO::Watcher
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanReadWithoutBlocking(int fd) override {
     on_data_ready_.Run();
   }
 
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {}
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
 
  private:
   bool CheckConnected();

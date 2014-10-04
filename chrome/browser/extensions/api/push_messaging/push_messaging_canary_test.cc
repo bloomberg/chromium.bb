@@ -40,7 +40,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
   virtual ~PushMessagingCanaryTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
 
     ASSERT_TRUE(command_line->HasSwitch(kPasswordFileForTest));
@@ -74,7 +74,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
   // InProcessBrowserTest override. Destroys the sync client and sync
   // profile created by the test.  We must clean up ProfileSyncServiceHarness
   // now before the profile is cleaned up.
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     sync_setup_helper_.reset();
   }
 
@@ -85,13 +85,13 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
  protected:
   // Override InProcessBrowserTest. Change behavior of the default host
   // resolver to avoid DNS lookup errors, so we can make network calls.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     // The resolver object lifetime is managed by sync_test_setup, not here.
     EnableDNSLookupForThisTest(
         new net::RuleBasedHostResolverProc(host_resolver()));
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     DisableDNSLookupForThisTest();
   }
 

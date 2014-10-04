@@ -40,16 +40,16 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
 
   // PushMessagingInvalidationMapper implementation.
   virtual void SuppressInitialInvalidationsForExtension(
-      const std::string& extension_id) OVERRIDE;
-  virtual void RegisterExtension(const std::string& extension_id) OVERRIDE;
-  virtual void UnregisterExtension(const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
+  virtual void RegisterExtension(const std::string& extension_id) override;
+  virtual void UnregisterExtension(const std::string& extension_id) override;
 
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
+      syncer::InvalidatorState state) override;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
   const std::set<std::string>& GetRegisteredExtensionsForTest() const {
     return registered_extensions_;

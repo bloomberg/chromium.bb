@@ -119,11 +119,11 @@ class TestNavigationListener
     }
 
     // content::ResourceThrottle implementation.
-    virtual void WillStartRequest(bool* defer) OVERRIDE {
+    virtual void WillStartRequest(bool* defer) override {
       *defer = true;
     }
 
-    virtual const char* GetNameForLogging() const OVERRIDE {
+    virtual const char* GetNameForLogging() const override {
       return "TestNavigationListener::Throttle";
     }
   };
@@ -167,7 +167,7 @@ class DelayLoadStartAndExecuteJavascript
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     if (type != chrome::NOTIFICATION_TAB_ADDED) {
       NOTREACHED();
       return;
@@ -181,7 +181,7 @@ class DelayLoadStartAndExecuteJavascript
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE {
+      bool is_iframe_srcdoc) override {
     if (validated_url != delay_url_ || !rvh_)
       return;
 
@@ -192,7 +192,7 @@ class DelayLoadStartAndExecuteJavascript
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) override {
     if (script_was_executed_ && EndsWith(url.spec(), until_url_suffix_, true)) {
       content::WebContentsObserver::Observe(NULL);
       test_navigation_listener_->ResumeAll();
@@ -231,7 +231,7 @@ class TestResourceDispatcherHostDelegate
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
+      ScopedVector<content::ResourceThrottle>* throttles) override {
     ChromeResourceDispatcherHostDelegate::RequestBeginning(
         request,
         resource_context,
@@ -258,7 +258,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
   WebNavigationApiTest() {}
   virtual ~WebNavigationApiTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     FrameNavigationState::set_allow_extension_scheme(true);
@@ -269,7 +269,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     test_navigation_listener_ = new TestNavigationListener();
     resource_dispatcher_host_delegate_.reset(

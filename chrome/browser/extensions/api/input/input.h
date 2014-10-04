@@ -24,7 +24,7 @@ class VirtualKeyboardPrivateInsertTextFunction : public SyncExtensionFunction {
   virtual ~VirtualKeyboardPrivateInsertTextFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
@@ -36,7 +36,7 @@ class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
   virtual ~VirtualKeyboardPrivateMoveCursorFunction() {}
 
   // ExtensionFunction.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateSendKeyEventFunction
@@ -50,7 +50,7 @@ class VirtualKeyboardPrivateSendKeyEventFunction
   virtual ~VirtualKeyboardPrivateSendKeyEventFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateHideKeyboardFunction
@@ -64,7 +64,7 @@ class VirtualKeyboardPrivateHideKeyboardFunction
   virtual ~VirtualKeyboardPrivateHideKeyboardFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateLockKeyboardFunction
@@ -78,7 +78,7 @@ class VirtualKeyboardPrivateLockKeyboardFunction
   virtual ~VirtualKeyboardPrivateLockKeyboardFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateKeyboardLoadedFunction
@@ -92,7 +92,7 @@ class VirtualKeyboardPrivateKeyboardLoadedFunction
   virtual ~VirtualKeyboardPrivateKeyboardLoadedFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateGetKeyboardConfigFunction
@@ -106,7 +106,7 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
   virtual ~VirtualKeyboardPrivateGetKeyboardConfigFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateOpenSettingsFunction
@@ -119,7 +119,7 @@ class VirtualKeyboardPrivateOpenSettingsFunction
   virtual ~VirtualKeyboardPrivateOpenSettingsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 

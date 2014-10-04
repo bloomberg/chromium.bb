@@ -20,12 +20,12 @@ class FeedbackServiceImpl
   FeedbackServiceImpl();
   virtual ~FeedbackServiceImpl();
 
-  virtual std::string GetUserEmail() OVERRIDE;
-  virtual void GetHistograms(std::string* histograms) OVERRIDE;
+  virtual std::string GetUserEmail() override;
+  virtual void GetHistograms(std::string* histograms) override;
 
  private:
   // Overridden from FeedbackService:
-  virtual base::WeakPtr<FeedbackService> GetWeakPtr() OVERRIDE;
+  virtual base::WeakPtr<FeedbackService> GetWeakPtr() override;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackServiceImpl);
 };

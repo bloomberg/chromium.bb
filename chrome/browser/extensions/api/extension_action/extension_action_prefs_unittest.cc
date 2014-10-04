@@ -16,7 +16,7 @@ namespace extensions {
 // Tests force hiding browser actions.
 class ExtensionPrefsHidingBrowserActions : public ExtensionPrefsTest {
  public:
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     // Install 5 extensions.
     for (int i = 0; i < 5; i++) {
       std::string name = "test" + base::IntToString(i);
@@ -35,7 +35,7 @@ class ExtensionPrefsHidingBrowserActions : public ExtensionPrefsTest {
         prefs(), extensions_[1]->id(), true);
   }
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     // Make sure the one we hid is hidden.
     EXPECT_FALSE(ExtensionActionAPI::GetBrowserActionVisibility(
         prefs(), extensions_[0]->id()));

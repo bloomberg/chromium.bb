@@ -99,7 +99,7 @@ class PreferenceAPI : public PreferenceAPIBase,
   virtual ~PreferenceAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<PreferenceAPI>* GetFactoryInstance();
@@ -108,22 +108,22 @@ class PreferenceAPI : public PreferenceAPIBase,
   static PreferenceAPI* Get(content::BrowserContext* context);
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PreferenceAPI>;
 
   // ContentSettingsStore::Observer implementation.
   virtual void OnContentSettingChanged(const std::string& extension_id,
-                                       bool incognito) OVERRIDE;
+                                       bool incognito) override;
 
   // Clears incognito session-only content settings for all extensions.
   void ClearIncognitoSessionOnlyContentSettings();
 
   // PreferenceAPIBase implementation.
-  virtual ExtensionPrefs* extension_prefs() OVERRIDE;
-  virtual ExtensionPrefValueMap* extension_pref_value_map() OVERRIDE;
-  virtual scoped_refptr<ContentSettingsStore> content_settings_store() OVERRIDE;
+  virtual ExtensionPrefs* extension_prefs() override;
+  virtual ExtensionPrefValueMap* extension_pref_value_map() override;
+  virtual scoped_refptr<ContentSettingsStore> content_settings_store() override;
 
   Profile* profile_;
 
@@ -189,7 +189,7 @@ class GetPreferenceFunction : public PreferenceFunction {
   virtual ~GetPreferenceFunction();
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class SetPreferenceFunction : public PreferenceFunction {
@@ -200,7 +200,7 @@ class SetPreferenceFunction : public PreferenceFunction {
   virtual ~SetPreferenceFunction();
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class ClearPreferenceFunction : public PreferenceFunction {
@@ -212,7 +212,7 @@ class ClearPreferenceFunction : public PreferenceFunction {
   virtual ~ClearPreferenceFunction();
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

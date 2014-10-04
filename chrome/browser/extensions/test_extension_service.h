@@ -23,42 +23,42 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual ~TestExtensionService();
 
   // ExtensionServiceInterface implementation.
-  virtual const extensions::ExtensionSet* extensions() const OVERRIDE;
+  virtual const extensions::ExtensionSet* extensions() const override;
   virtual extensions::PendingExtensionManager*
-      pending_extension_manager() OVERRIDE;
+      pending_extension_manager() override;
 
   virtual bool UpdateExtension(
       const std::string& id,
       const base::FilePath& path,
       bool file_ownership_passed,
-      extensions::CrxInstaller** out_crx_installer) OVERRIDE;
+      extensions::CrxInstaller** out_crx_installer) override;
   virtual const extensions::Extension* GetExtensionById(
-      const std::string& id, bool include_disabled) const OVERRIDE;
+      const std::string& id, bool include_disabled) const override;
   virtual const extensions::Extension* GetInstalledExtension(
-      const std::string& id) const OVERRIDE;
+      const std::string& id) const override;
   virtual const extensions::Extension* GetPendingExtensionUpdate(
-      const std::string& extension_id) const OVERRIDE;
+      const std::string& extension_id) const override;
   virtual void FinishDelayedInstallation(
-      const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
   virtual bool IsExtensionEnabled(
-      const std::string& extension_id) const OVERRIDE;
+      const std::string& extension_id) const override;
 
-  virtual void CheckManagementPolicy() OVERRIDE;
-  virtual void CheckForUpdatesSoon() OVERRIDE;
+  virtual void CheckManagementPolicy() override;
+  virtual void CheckForUpdatesSoon() override;
 
-  virtual bool is_ready() OVERRIDE;
+  virtual bool is_ready() override;
 
-  virtual base::SequencedTaskRunner* GetFileTaskRunner() OVERRIDE;
+  virtual base::SequencedTaskRunner* GetFileTaskRunner() override;
 
-  virtual void AddExtension(const extensions::Extension* extension) OVERRIDE;
+  virtual void AddExtension(const extensions::Extension* extension) override;
   virtual void AddComponentExtension(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
 
   virtual void UnloadExtension(
       const std::string& extension_id,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
   virtual void RemoveComponentExtension(const std::string & extension_id)
-      OVERRIDE;
+      override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SERVICE_H_

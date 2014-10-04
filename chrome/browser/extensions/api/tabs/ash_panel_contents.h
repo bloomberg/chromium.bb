@@ -41,21 +41,21 @@ class AshPanelContents
 
   // extensions::AppWindowContents
   virtual void Initialize(content::BrowserContext* context,
-                          const GURL& url) OVERRIDE;
-  virtual void LoadContents(int32 creator_process_id) OVERRIDE;
+                          const GURL& url) override;
+  virtual void LoadContents(int32 creator_process_id) override;
   virtual void NativeWindowChanged(
-      extensions::NativeAppWindow* native_app_window) OVERRIDE;
-  virtual void NativeWindowClosed() OVERRIDE;
-  virtual void DispatchWindowShownForTests() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+      extensions::NativeAppWindow* native_app_window) override;
+  virtual void NativeWindowClosed() override;
+  virtual void DispatchWindowShownForTests() const override;
+  virtual content::WebContents* GetWebContents() const override;
 
   // LauncherFaviconLoader::Delegate overrides:
-  virtual void FaviconUpdated() OVERRIDE;
+  virtual void FaviconUpdated() override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate
   virtual extensions::WindowController* GetExtensionWindowController() const
-      OVERRIDE;
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+      override;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
 
   LauncherFaviconLoader* launcher_favicon_loader_for_test() {
     return launcher_favicon_loader_.get();
@@ -63,7 +63,7 @@ class AshPanelContents
 
  private:
   // content::WebContentsObserver
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 

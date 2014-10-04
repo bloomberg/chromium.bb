@@ -28,7 +28,7 @@ class SuspiciousExtensionBubbleController
   bool ShouldShow();
 
   // ExtensionMessageBubbleController methods.
-  virtual void Show(ExtensionMessageBubble* bubble) OVERRIDE;
+  virtual void Show(ExtensionMessageBubble* bubble) override;
 
  private:
   // A weak pointer to the profile we are associated with. Not owned by us.

@@ -65,8 +65,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
  protected:
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void TearDownInProcessBrowserTestFixture() override;
 
   // Load |extension_name| and wait for pass / fail notification.
   // |extension_name| is a directory in "test/data/extensions/api_test".
@@ -149,7 +149,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   const extensions::Extension* GetSingleLoadedExtension();
 
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // If it failed, what was the error message?
   std::string message_;

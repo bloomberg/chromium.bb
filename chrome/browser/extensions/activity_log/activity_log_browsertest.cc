@@ -29,7 +29,7 @@ namespace extensions {
 class ActivityLogPrerenderTest : public ExtensionApiTest {
  protected:
   // Make sure the activity log is turned on.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
     command_line->AppendSwitchASCII(switches::kPrerenderMode,

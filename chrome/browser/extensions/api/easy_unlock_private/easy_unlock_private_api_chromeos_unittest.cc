@@ -54,14 +54,14 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
   virtual ~EasyUnlockPrivateApiTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     client_ = chromeos::DBusThreadManager::Get()->GetEasyUnlockClient();
 
     extensions::ExtensionApiUnittest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     extensions::ExtensionApiUnittest::TearDown();
 
     chromeos::DBusThreadManager::Shutdown();

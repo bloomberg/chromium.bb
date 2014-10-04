@@ -17,7 +17,7 @@ class NativeMessagePort : public MessageService::MessagePort {
   explicit NativeMessagePort(NativeMessageProcessHost* native_process);
   virtual ~NativeMessagePort();
   virtual void DispatchOnMessage(const Message& message,
-                                 int target_port_id) OVERRIDE;
+                                 int target_port_id) override;
 
  private:
   NativeMessageProcessHost* native_process_;

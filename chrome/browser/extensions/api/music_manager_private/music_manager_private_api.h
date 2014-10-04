@@ -21,7 +21,7 @@ class MusicManagerPrivateGetDeviceIdFunction : public AsyncExtensionFunction {
   virtual ~MusicManagerPrivateGetDeviceIdFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void DeviceIdCallback(const std::string& device_id);
 };

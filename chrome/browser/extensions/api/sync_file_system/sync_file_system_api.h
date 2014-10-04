@@ -31,7 +31,7 @@ class SyncFileSystemDeleteFileSystemFunction
 
  protected:
   virtual ~SyncFileSystemDeleteFileSystemFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void DidDeleteFileSystem(base::File::Error error);
@@ -45,7 +45,7 @@ class SyncFileSystemGetFileStatusFunction
 
  protected:
   virtual ~SyncFileSystemGetFileStatusFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void DidGetFileStatus(
@@ -62,7 +62,7 @@ class SyncFileSystemGetFileStatusesFunction
 
  protected:
   virtual ~SyncFileSystemGetFileStatusesFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   typedef std::pair<sync_file_system::SyncStatusCode,
@@ -88,7 +88,7 @@ class SyncFileSystemGetUsageAndQuotaFunction
 
  protected:
   virtual ~SyncFileSystemGetUsageAndQuotaFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void DidGetUsageAndQuota(storage::QuotaStatusCode status,
@@ -104,7 +104,7 @@ class SyncFileSystemRequestFileSystemFunction
 
  protected:
   virtual ~SyncFileSystemRequestFileSystemFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   typedef SyncFileSystemRequestFileSystemFunction self;
@@ -125,7 +125,7 @@ class SyncFileSystemSetConflictResolutionPolicyFunction
 
  protected:
   virtual ~SyncFileSystemSetConflictResolutionPolicyFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class SyncFileSystemGetConflictResolutionPolicyFunction
@@ -136,7 +136,7 @@ class SyncFileSystemGetConflictResolutionPolicyFunction
 
  protected:
   virtual ~SyncFileSystemGetConflictResolutionPolicyFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class SyncFileSystemGetServiceStatusFunction
@@ -147,7 +147,7 @@ class SyncFileSystemGetServiceStatusFunction
 
  protected:
   virtual ~SyncFileSystemGetServiceStatusFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

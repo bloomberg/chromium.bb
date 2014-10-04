@@ -47,14 +47,14 @@ class BookmarkAppHelperExtensionServiceTest
   BookmarkAppHelperExtensionServiceTest() {}
   virtual ~BookmarkAppHelperExtensionServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
     service_->Init();
     EXPECT_EQ(0u, service_->extensions()->size());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ExtensionServiceTestBase::TearDown();
     for (content::RenderProcessHost::iterator i(
              content::RenderProcessHost::AllHostsIterator());

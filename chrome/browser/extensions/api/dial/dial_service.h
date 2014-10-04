@@ -105,10 +105,10 @@ class DialServiceImpl : public DialService,
   virtual ~DialServiceImpl();
 
   // DialService implementation
-  virtual bool Discover() OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool HasObserver(Observer* observer) OVERRIDE;
+  virtual bool Discover() override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual bool HasObserver(Observer* observer) override;
 
  private:
   // Represents a socket binding to a single network interface.

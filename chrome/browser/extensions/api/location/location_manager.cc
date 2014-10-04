@@ -58,7 +58,7 @@ class DistanceBasedUpdatePolicy : public UpdatePolicy {
 
   // UpdatePolicy Implementation
   virtual bool ShouldSendUpdate(const content::Geoposition& position) const
-      OVERRIDE {
+      override {
     return !last_updated_position_.Validate() ||
         Distance(position.latitude,
                  position.longitude,
@@ -68,7 +68,7 @@ class DistanceBasedUpdatePolicy : public UpdatePolicy {
   }
 
   virtual void OnPositionReported(const content::Geoposition& position)
-      OVERRIDE {
+      override {
     last_updated_position_ = position;
   }
 
@@ -117,12 +117,12 @@ class TimeBasedUpdatePolicy : public UpdatePolicy {
   {}
 
   // UpdatePolicy Implementation
-  virtual bool ShouldSendUpdate(const content::Geoposition&) const OVERRIDE {
+  virtual bool ShouldSendUpdate(const content::Geoposition&) const override {
     return (base::Time::Now() - last_update_time_).InMilliseconds() >
         time_between_updates_ms_;
   }
 
-  virtual void OnPositionReported(const content::Geoposition&) OVERRIDE {
+  virtual void OnPositionReported(const content::Geoposition&) override {
     last_update_time_ = base::Time::Now();
   }
 

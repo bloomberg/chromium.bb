@@ -15,7 +15,7 @@ class ExternalRegistryLoader : public ExternalLoader {
   ExternalRegistryLoader() {}
 
  protected:
-  virtual void StartLoading() OVERRIDE;
+  virtual void StartLoading() override;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;

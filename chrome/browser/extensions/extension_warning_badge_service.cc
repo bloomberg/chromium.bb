@@ -27,15 +27,15 @@ class ErrorBadge : public GlobalError {
   virtual ~ErrorBadge();
 
   // Implementation for GlobalError:
-  virtual bool HasMenuItem() OVERRIDE;
-  virtual int MenuItemCommandID() OVERRIDE;
-  virtual base::string16 MenuItemLabel() OVERRIDE;
-  virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
+  virtual bool HasMenuItem() override;
+  virtual int MenuItemCommandID() override;
+  virtual base::string16 MenuItemLabel() override;
+  virtual void ExecuteMenuItem(Browser* browser) override;
 
-  virtual bool HasBubbleView() OVERRIDE;
-  virtual bool HasShownBubbleView() OVERRIDE;
-  virtual void ShowBubbleView(Browser* browser) OVERRIDE;
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() OVERRIDE;
+  virtual bool HasBubbleView() override;
+  virtual bool HasShownBubbleView() override;
+  virtual void ShowBubbleView(Browser* browser) override;
+  virtual GlobalErrorBubbleViewBase* GetBubbleView() override;
 
   static int GetMenuItemCommandID();
 

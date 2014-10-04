@@ -37,9 +37,9 @@ class MockExtensionErrorUI : public ExtensionErrorUI {
 
  private:
   // ExtensionErrorUI implementation.
-  virtual bool ShowErrorInBubbleView() OVERRIDE;
-  virtual void ShowExtensions() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual bool ShowErrorInBubbleView() override;
+  virtual void ShowExtensions() override;
+  virtual void Close() override;
 
   // Keep a copy of the delegate around for ourselves.
   ExtensionErrorUI::Delegate* delegate_;
@@ -104,7 +104,7 @@ scoped_refptr<const Extension> BuildExtension() {
 
 class ExtensionErrorControllerUnitTest : public ExtensionServiceTestBase {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Add an extension to chrome, and mark it as blacklisted in the prefs.
   testing::AssertionResult AddBlacklistedExtension(const Extension* extension);

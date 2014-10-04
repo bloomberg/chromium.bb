@@ -38,7 +38,7 @@ class FileResource : public ApiResource {
   virtual ~FileResource();
 
   // ApiResource overrides.
-  virtual bool IsPersistent() const OVERRIDE;
+  virtual bool IsPersistent() const override;
 
   static const char kSequenceToken[];
   static const base::SequencedWorkerPool::WorkerShutdown kShutdownBehavior =
@@ -81,10 +81,10 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // ChromeNetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   void PostPendingEntries();
   void AddEntriesOnUI(scoped_ptr<base::ListValue> value);
@@ -134,7 +134,7 @@ class LogPrivateGetHistoricalFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~LogPrivateGetHistoricalFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnSystemLogsLoaded(scoped_ptr<system_logs::SystemLogsResponse> sys_info);
@@ -152,7 +152,7 @@ class LogPrivateStartEventRecorderFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~LogPrivateStartEventRecorderFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnEventRecorderStarted();
@@ -170,7 +170,7 @@ class LogPrivateStopEventRecorderFunction : public AsyncExtensionFunction {
   virtual ~LogPrivateStopEventRecorderFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnEventRecorderStopped();
@@ -187,7 +187,7 @@ class LogPrivateDumpLogsFunction : public AsyncExtensionFunction {
   virtual ~LogPrivateDumpLogsFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Callback for DebugLogWriter::StoreLogs() call.

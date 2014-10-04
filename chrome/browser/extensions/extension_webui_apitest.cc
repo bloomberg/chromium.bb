@@ -127,7 +127,7 @@ class ExtensionWebUITest : public ExtensionApiTest {
     return frame_host;
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     FeatureSwitch::ScopedOverride enable_options(
         FeatureSwitch::embedded_extension_options(), true);
     // Need to add a command line flag as well as a FeatureSwitch because the

@@ -55,7 +55,7 @@ class MenuManagerTest : public testing::Test {
         prefs_(message_loop_.message_loop_proxy().get()),
         next_id_(1) {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     prefs_.pref_service()->CommitPendingWrite();
     message_loop_.RunUntilIdle();
   }
@@ -488,7 +488,7 @@ class MockExtensionSystem : public TestExtensionSystem {
   explicit MockExtensionSystem(Profile* profile)
       : TestExtensionSystem(profile) {}
 
-  virtual EventRouter* event_router() OVERRIDE {
+  virtual EventRouter* event_router() override {
     if (!mock_event_router_)
       mock_event_router_.reset(new MockEventRouter(profile_));
     return mock_event_router_.get();

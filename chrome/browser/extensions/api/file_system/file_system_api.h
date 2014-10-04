@@ -41,7 +41,7 @@ class FileSystemGetDisplayPathFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemGetDisplayPathFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class FileSystemEntryFunction : public ChromeAsyncExtensionFunction {
@@ -89,7 +89,7 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
 
  protected:
   virtual ~FileSystemGetWritableEntryFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void CheckPermissionAndSendResponse();
@@ -106,7 +106,7 @@ class FileSystemIsWritableEntryFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemIsWritableEntryFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
@@ -146,7 +146,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   class FilePicker;
 
   virtual ~FileSystemChooseEntryFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
   void ShowPicker(const ui::SelectFileDialog::FileTypeInfo& file_type_info,
                   ui::SelectFileDialog::Type picker_type);
 
@@ -178,7 +178,7 @@ class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~FileSystemRetainEntryFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Retains the file entry referenced by |entry_id| in apps::SavedFilesService.
@@ -200,7 +200,7 @@ class FileSystemIsRestorableFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemIsRestorableFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
@@ -209,7 +209,7 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
 
  protected:
   virtual ~FileSystemRestoreEntryFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class FileSystemObserveDirectoryFunction : public ChromeSyncExtensionFunction {
@@ -219,7 +219,7 @@ class FileSystemObserveDirectoryFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemObserveDirectoryFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class FileSystemUnobserveEntryFunction : public ChromeSyncExtensionFunction {
@@ -229,7 +229,7 @@ class FileSystemUnobserveEntryFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemUnobserveEntryFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class FileSystemGetObservedEntriesFunction
@@ -240,7 +240,7 @@ class FileSystemGetObservedEntriesFunction
 
  protected:
   virtual ~FileSystemGetObservedEntriesFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

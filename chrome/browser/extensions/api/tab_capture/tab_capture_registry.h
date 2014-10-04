@@ -82,14 +82,14 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // MediaCaptureDevicesDispatcher::Observer implementation.
   virtual void OnRequestUpdate(
       int original_target_render_process_id,
       int original_target_render_frame_id,
       content::MediaStreamType stream_type,
-      const content::MediaRequestState state) OVERRIDE;
+      const content::MediaRequestState state) override;
 
   // Send a StatusChanged event containing the current state of |request|.
   void DispatchStatusChangeEvent(const LiveRequest* request) const;

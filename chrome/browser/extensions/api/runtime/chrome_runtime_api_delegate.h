@@ -39,23 +39,23 @@ class ChromeRuntimeAPIDelegate : public extensions::RuntimeAPIDelegate,
   friend class extensions::RuntimeAPI;
 
   // extensions::RuntimeAPIDelegate implementation.
-  virtual void AddUpdateObserver(extensions::UpdateObserver* observer) OVERRIDE;
+  virtual void AddUpdateObserver(extensions::UpdateObserver* observer) override;
   virtual void RemoveUpdateObserver(
-      extensions::UpdateObserver* observer) OVERRIDE;
+      extensions::UpdateObserver* observer) override;
   virtual base::Version GetPreviousExtensionVersion(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void ReloadExtension(const std::string& extension_id) OVERRIDE;
+      const extensions::Extension* extension) override;
+  virtual void ReloadExtension(const std::string& extension_id) override;
   virtual bool CheckForUpdates(const std::string& extension_id,
-                               const UpdateCheckCallback& callback) OVERRIDE;
-  virtual void OpenURL(const GURL& uninstall_url) OVERRIDE;
+                               const UpdateCheckCallback& callback) override;
+  virtual void OpenURL(const GURL& uninstall_url) override;
   virtual bool GetPlatformInfo(
-      extensions::core_api::runtime::PlatformInfo* info) OVERRIDE;
-  virtual bool RestartDevice(std::string* error_message) OVERRIDE;
+      extensions::core_api::runtime::PlatformInfo* info) override;
+  virtual bool RestartDevice(std::string* error_message) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void UpdateCheckComplete(const std::string& extension_id);
   void CallUpdateCallbacks(const std::string& extension_id,

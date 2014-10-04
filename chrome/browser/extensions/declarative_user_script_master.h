@@ -46,7 +46,7 @@ class DeclarativeUserScriptMaster : public ExtensionRegistryObserver {
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // ID of extension that owns scripts that this component manages.
   ExtensionId extension_id_;

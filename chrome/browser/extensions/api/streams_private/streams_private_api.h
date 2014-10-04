@@ -58,7 +58,7 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -87,7 +87,7 @@ class StreamsPrivateAbortFunction : public UIThreadExtensionFunction {
   virtual ~StreamsPrivateAbortFunction() {}
 
   // ExtensionFunction:
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 
  private:
   void OnClose();

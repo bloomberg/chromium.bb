@@ -24,7 +24,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 class ExperimentalApiTest : public ExtensionApiTest {
 public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }

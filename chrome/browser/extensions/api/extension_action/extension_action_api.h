@@ -124,7 +124,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                content::WebContents* web_contents);
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
   static const char* service_name() { return "ExtensionActionAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
 
@@ -149,7 +149,7 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
  protected:
   ExtensionActionFunction();
   virtual ~ExtensionActionFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   virtual bool RunExtensionAction() = 0;
 
   bool ExtractDataFromArguments();
@@ -182,42 +182,42 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
 class ExtensionActionShowFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionShowFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // hide
 class ExtensionActionHideFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionHideFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // setIcon
 class ExtensionActionSetIconFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionSetIconFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // setTitle
 class ExtensionActionSetTitleFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionSetTitleFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // setPopup
 class ExtensionActionSetPopupFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionSetPopupFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // setBadgeText
 class ExtensionActionSetBadgeTextFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionSetBadgeTextFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // setBadgeBackgroundColor
@@ -225,28 +225,28 @@ class ExtensionActionSetBadgeBackgroundColorFunction
     : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionSetBadgeBackgroundColorFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // getTitle
 class ExtensionActionGetTitleFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionGetTitleFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // getPopup
 class ExtensionActionGetPopupFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionGetPopupFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // getBadgeText
 class ExtensionActionGetBadgeTextFunction : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionGetBadgeTextFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 // getBadgeBackgroundColor
@@ -254,7 +254,7 @@ class ExtensionActionGetBadgeBackgroundColorFunction
     : public ExtensionActionFunction {
  protected:
   virtual ~ExtensionActionGetBadgeBackgroundColorFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
+  virtual bool RunExtensionAction() override;
 };
 
 //
@@ -368,11 +368,11 @@ class BrowserActionOpenPopupFunction : public ChromeAsyncExtensionFunction,
   virtual ~BrowserActionOpenPopupFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
   void OpenPopupTimedOut();
 
   content::NotificationRegistrar registrar_;

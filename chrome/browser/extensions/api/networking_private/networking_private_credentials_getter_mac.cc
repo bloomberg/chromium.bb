@@ -26,7 +26,7 @@ class NetworkingPrivateCredentialsGetterMac
       const std::string& network_guid,
       const std::string& public_key,
       const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-          VerifyAndEncryptCredentialsCallback& callback) OVERRIDE;
+          VerifyAndEncryptCredentialsCallback& callback) override;
 
  private:
   virtual ~NetworkingPrivateCredentialsGetterMac();

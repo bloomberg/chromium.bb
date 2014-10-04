@@ -26,7 +26,7 @@ class SyslogParser : public LogParser {
       const std::string& input,
       std::vector<linked_ptr<api::log_private::LogEntry> >* output,
       FilterHandler* filter_handler) const
-      OVERRIDE;
+      override;
 
  private:
   // Parses time token and get time in milliseconds.

@@ -47,7 +47,7 @@ struct MockExtensionRegistryObserver : public ExtensionRegistryObserver {
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE {
+      const std::string& old_name) override {
     last_extension_installed = extension->id();
     quit_closure_.Run();
   }

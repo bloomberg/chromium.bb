@@ -25,16 +25,16 @@ class AudioServiceImpl : public AudioService {
 
  private:
   // Called by listeners to this service to add/remove themselves as observers.
-  virtual void AddObserver(AudioService::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(AudioService::Observer* observer) OVERRIDE;
+  virtual void AddObserver(AudioService::Observer* observer) override;
+  virtual void RemoveObserver(AudioService::Observer* observer) override;
 
   // Start to query audio device information.
-  virtual void StartGetInfo(const GetInfoCallback& callback) OVERRIDE;
-  virtual void SetActiveDevices(const DeviceIdList& device_list) OVERRIDE;
+  virtual void StartGetInfo(const GetInfoCallback& callback) override;
+  virtual void SetActiveDevices(const DeviceIdList& device_list) override;
   virtual bool SetDeviceProperties(const std::string& device_id,
                                    bool muted,
                                    int volume,
-                                   int gain) OVERRIDE;
+                                   int gain) override;
 
   // List of observers.
   ObserverList<AudioService::Observer> observer_list_;

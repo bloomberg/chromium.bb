@@ -53,14 +53,14 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // TaskManagerModelObserver methods.
-  virtual void OnItemsAdded(int start, int length) OVERRIDE;
-  virtual void OnModelChanged() OVERRIDE {}
-  virtual void OnItemsChanged(int start, int length) OVERRIDE;
-  virtual void OnItemsRemoved(int start, int length) OVERRIDE {}
-  virtual void OnItemsToBeRemoved(int start, int length) OVERRIDE;
+  virtual void OnItemsAdded(int start, int length) override;
+  virtual void OnModelChanged() override {}
+  virtual void OnItemsChanged(int start, int length) override;
+  virtual void OnItemsRemoved(int start, int length) override {}
+  virtual void OnItemsToBeRemoved(int start, int length) override;
 
   // Internal helpers for processing notifications.
   void ProcessHangEvent(content::RenderWidgetHost* widget);
@@ -101,7 +101,7 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
   virtual ~ProcessesAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ProcessesAPI>* GetFactoryInstance();
@@ -112,8 +112,8 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
   ProcessesEventRouter* processes_event_router();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ProcessesAPI>;
@@ -139,7 +139,7 @@ class GetProcessIdForTabFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~GetProcessIdForTabFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void GetProcessIdForTab();
 
@@ -161,7 +161,7 @@ class TerminateFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~TerminateFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void TerminateProcess();
 
@@ -180,7 +180,7 @@ class GetProcessInfoFunction : public ChromeAsyncExtensionFunction {
 
  private:
   virtual ~GetProcessInfoFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void GatherProcessInfo();
 

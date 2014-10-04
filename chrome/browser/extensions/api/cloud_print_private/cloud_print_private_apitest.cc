@@ -23,7 +23,7 @@ using ::testing::_;
 // A base class for tests below.
 class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kCloudPrintURL,
@@ -31,7 +31,7 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
         "cloud_print_private");
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     // Start up the test server and get us ready for calling the install
     // API functions.
     host_resolver()->AddRule("www.cloudprintapp.com", "127.0.0.1");

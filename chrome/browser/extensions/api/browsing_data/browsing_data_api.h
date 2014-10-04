@@ -57,7 +57,7 @@ class BrowsingDataSettingsFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("browsingData.settings", BROWSINGDATA_SETTINGS)
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  protected:
   virtual ~BrowsingDataSettingsFunction() {}
@@ -84,10 +84,10 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
                                     public BrowsingDataRemover::Observer {
  public:
   // BrowsingDataRemover::Observer interface method.
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+  virtual void OnBrowsingDataRemoverDone() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  protected:
   virtual ~BrowsingDataRemoverFunction() {}
@@ -123,7 +123,7 @@ class BrowsingDataRemoveAppcacheFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveAppcacheFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveFunction : public BrowsingDataRemoverFunction {
@@ -134,7 +134,7 @@ class BrowsingDataRemoveFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveCacheFunction : public BrowsingDataRemoverFunction {
@@ -146,7 +146,7 @@ class BrowsingDataRemoveCacheFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveCacheFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveCookiesFunction : public BrowsingDataRemoverFunction {
@@ -158,7 +158,7 @@ class BrowsingDataRemoveCookiesFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveCookiesFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveDownloadsFunction : public BrowsingDataRemoverFunction {
@@ -170,7 +170,7 @@ class BrowsingDataRemoveDownloadsFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveDownloadsFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveFileSystemsFunction
@@ -183,7 +183,7 @@ class BrowsingDataRemoveFileSystemsFunction
   virtual ~BrowsingDataRemoveFileSystemsFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveFormDataFunction : public BrowsingDataRemoverFunction {
@@ -195,7 +195,7 @@ class BrowsingDataRemoveFormDataFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveFormDataFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveHistoryFunction : public BrowsingDataRemoverFunction {
@@ -207,7 +207,7 @@ class BrowsingDataRemoveHistoryFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveHistoryFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveIndexedDBFunction : public BrowsingDataRemoverFunction {
@@ -219,7 +219,7 @@ class BrowsingDataRemoveIndexedDBFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveIndexedDBFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveLocalStorageFunction
@@ -232,7 +232,7 @@ class BrowsingDataRemoveLocalStorageFunction
   virtual ~BrowsingDataRemoveLocalStorageFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemovePluginDataFunction
@@ -245,7 +245,7 @@ class BrowsingDataRemovePluginDataFunction
   virtual ~BrowsingDataRemovePluginDataFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemovePasswordsFunction : public BrowsingDataRemoverFunction {
@@ -257,7 +257,7 @@ class BrowsingDataRemovePasswordsFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemovePasswordsFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveServiceWorkersFunction
@@ -270,7 +270,7 @@ class BrowsingDataRemoveServiceWorkersFunction
   virtual ~BrowsingDataRemoveServiceWorkersFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 class BrowsingDataRemoveWebSQLFunction : public BrowsingDataRemoverFunction {
@@ -282,7 +282,7 @@ class BrowsingDataRemoveWebSQLFunction : public BrowsingDataRemoverFunction {
   virtual ~BrowsingDataRemoveWebSQLFunction() {}
 
   // BrowsingDataRemoverFunction:
-  virtual int GetRemovalMask() OVERRIDE;
+  virtual int GetRemovalMask() override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_

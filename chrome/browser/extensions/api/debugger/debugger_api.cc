@@ -99,10 +99,10 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   // DevToolsAgentHostClient interface.
   virtual void AgentHostClosed(
       DevToolsAgentHost* agent_host,
-      bool replaced_with_another_client) OVERRIDE;
+      bool replaced_with_another_client) override;
   virtual void DispatchProtocolMessage(
       DevToolsAgentHost* agent_host,
-      const std::string& message) OVERRIDE;
+      const std::string& message) override;
 
  private:
   void SendDetachedEvent();
@@ -110,13 +110,13 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   Profile* profile_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
@@ -174,13 +174,13 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ExtensionDevToolsInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual void InfoBarDismissed() override;
+  virtual Type GetInfoBarType() const override;
   virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+      const NavigationDetails& details) const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual int GetButtons() const override;
+  virtual bool Cancel() override;
 
   std::string client_name_;
   ExtensionDevToolsClientHost* client_host_;

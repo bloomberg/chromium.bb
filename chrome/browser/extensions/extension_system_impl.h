@@ -32,43 +32,43 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ~ExtensionSystemImpl();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
-  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
+  virtual void InitForRegularProfile(bool extensions_enabled) override;
 
-  virtual ExtensionService* extension_service() OVERRIDE;  // shared
-  virtual RuntimeData* runtime_data() OVERRIDE;  // shared
-  virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
+  virtual ExtensionService* extension_service() override;  // shared
+  virtual RuntimeData* runtime_data() override;  // shared
+  virtual ManagementPolicy* management_policy() override;  // shared
   // shared
-  virtual SharedUserScriptMaster* shared_user_script_master() OVERRIDE;
-  virtual ProcessManager* process_manager() OVERRIDE;
-  virtual StateStore* state_store() OVERRIDE;  // shared
-  virtual StateStore* rules_store() OVERRIDE;  // shared
+  virtual SharedUserScriptMaster* shared_user_script_master() override;
+  virtual ProcessManager* process_manager() override;
+  virtual StateStore* state_store() override;  // shared
+  virtual StateStore* rules_store() override;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
-      OVERRIDE;  // shared
-  virtual InfoMap* info_map() OVERRIDE; // shared
-  virtual EventRouter* event_router() OVERRIDE;  // shared
-  virtual WarningService* warning_service() OVERRIDE;
-  virtual Blacklist* blacklist() OVERRIDE;  // shared
-  virtual ErrorConsole* error_console() OVERRIDE;
-  virtual InstallVerifier* install_verifier() OVERRIDE;
-  virtual QuotaService* quota_service() OVERRIDE;  // shared
+      override;  // shared
+  virtual InfoMap* info_map() override; // shared
+  virtual EventRouter* event_router() override;  // shared
+  virtual WarningService* warning_service() override;
+  virtual Blacklist* blacklist() override;  // shared
+  virtual ErrorConsole* error_console() override;
+  virtual InstallVerifier* install_verifier() override;
+  virtual QuotaService* quota_service() override;  // shared
 
   virtual void RegisterExtensionWithRequestContexts(
-      const Extension* extension) OVERRIDE;
+      const Extension* extension) override;
 
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      const UnloadedExtensionInfo::Reason reason) override;
 
-  virtual const OneShotEvent& ready() const OVERRIDE;
-  virtual ContentVerifier* content_verifier() OVERRIDE;  // shared
+  virtual const OneShotEvent& ready() const override;
+  virtual ContentVerifier* content_verifier() override;  // shared
   virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
-      const Extension* extension) OVERRIDE;
+      const Extension* extension) override;
 
   virtual DeclarativeUserScriptMaster*
       GetDeclarativeUserScriptMasterByExtension(
-          const ExtensionId& extension_id) OVERRIDE;  // shared
+          const ExtensionId& extension_id) override;  // shared
 
  private:
   friend class ExtensionSystemSharedFactory;
@@ -87,7 +87,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     void Init(bool extensions_enabled);
 
     // KeyedService implementation.
-    virtual void Shutdown() OVERRIDE;
+    virtual void Shutdown() override;
 
     StateStore* state_store();
     StateStore* rules_store();

@@ -142,22 +142,22 @@ class TabHelper : public content::WebContentsObserver,
 
   // content::WebContentsObserver overrides.
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual void DidCloneToNewWebContents(
       content::WebContents* old_web_contents,
-      content::WebContents* new_web_contents) OVERRIDE;
+      content::WebContents* new_web_contents) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate overrides.
   virtual extensions::WindowController* GetExtensionWindowController()
-      const OVERRIDE;
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+      const override;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
 
   // Message handlers.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& info);
@@ -199,7 +199,7 @@ class TabHelper : public content::WebContentsObserver,
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetApplicationInfo when

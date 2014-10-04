@@ -122,19 +122,19 @@ class RequestContentScript : public ContentAction {
                              ScriptData* script_data);
 
   // Implementation of ContentAction:
-  virtual Type GetType() const OVERRIDE;
+  virtual Type GetType() const override;
 
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
-                     ApplyInfo* apply_info) const OVERRIDE;
+                     ApplyInfo* apply_info) const override;
 
   virtual void Reapply(const std::string& extension_id,
                        const base::Time& extension_install_time,
-                       ApplyInfo* apply_info) const OVERRIDE;
+                       ApplyInfo* apply_info) const override;
 
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
-                      ApplyInfo* apply_info) const OVERRIDE;
+                      ApplyInfo* apply_info) const override;
 
  private:
   void InitScript(const Extension* extension, const ScriptData& script_data);

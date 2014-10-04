@@ -23,7 +23,7 @@ class SettingsApiBubbleController : public ExtensionMessageBubbleController {
   bool ShouldShow(const std::string& extension_id);
 
   // ExtensionMessageBubbleController:
-  virtual bool CloseOnDeactivate() OVERRIDE;
+  virtual bool CloseOnDeactivate() override;
 
  private:
   // A weak pointer to the profile we are associated with. Not owned by us.

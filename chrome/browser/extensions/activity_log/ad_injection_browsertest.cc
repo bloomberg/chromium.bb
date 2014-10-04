@@ -93,7 +93,7 @@ class ActivityLogObserver : public ActivityLog::Observer {
   bool found_multiple_injections() const { return found_multiple_injections_; }
 
  private:
-  virtual void OnExtensionActivity(scoped_refptr<Action> action) OVERRIDE;
+  virtual void OnExtensionActivity(scoped_refptr<Action> action) override;
 
   ScopedObserver<ActivityLog, ActivityLog::Observer> scoped_observer_;
 
@@ -142,7 +142,7 @@ class TestAdNetworkDatabase : public AdNetworkDatabase {
   virtual ~TestAdNetworkDatabase();
 
  private:
-  virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
+  virtual bool IsAdNetwork(const GURL& url) const override;
 
   GURL ad_network_url1_;
   GURL ad_network_url2_;
@@ -173,8 +173,8 @@ class AdInjectionBrowserTest : public ExtensionBrowserTest {
   AdInjectionBrowserTest();
   virtual ~AdInjectionBrowserTest();
 
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   // Handle the "Reset Begin" stage of the test.
   testing::AssertionResult HandleResetBeginStage();

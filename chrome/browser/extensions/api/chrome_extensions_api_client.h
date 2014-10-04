@@ -22,23 +22,23 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       const scoped_refptr<SettingsStorageFactory>& factory,
       const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches)
-      OVERRIDE;
-  virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const OVERRIDE;
+      override;
+  virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
   virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
-      ExtensionOptionsGuest* guest) const OVERRIDE;
+      ExtensionOptionsGuest* guest) const override;
   virtual scoped_ptr<MimeHandlerViewGuestDelegate>
       CreateMimeHandlerViewGuestDelegate(
-          MimeHandlerViewGuest* guest) const OVERRIDE;
+          MimeHandlerViewGuest* guest) const override;
   virtual WebViewGuestDelegate* CreateWebViewGuestDelegate(
-      WebViewGuest* web_view_guest) const OVERRIDE;
+      WebViewGuest* web_view_guest) const override;
   virtual WebViewPermissionHelperDelegate*
       CreateWebViewPermissionHelperDelegate(
-          WebViewPermissionHelper* web_view_permission_helper) const OVERRIDE;
+          WebViewPermissionHelper* web_view_permission_helper) const override;
   virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
-      const OVERRIDE;
+      const override;
   virtual scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
       content::BrowserContext* browser_context,
-      RulesCacheDelegate* cache_delegate) const OVERRIDE;
+      RulesCacheDelegate* cache_delegate) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);

@@ -23,7 +23,7 @@ class HashedAdNetworkDatabase : public AdNetworkDatabase {
 
  private:
   // AdNetworkDatabase implementation.
-  virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
+  virtual bool IsAdNetwork(const GURL& url) const override;
 
   // Points to the array of hash entries. In practice, this is always set to
   // kHashedAdNetworks, but is exposed via set_entries_for_testing().

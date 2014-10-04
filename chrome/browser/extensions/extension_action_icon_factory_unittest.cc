@@ -129,7 +129,7 @@ class ExtensionActionIconFactoryTest
   }
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     file_thread_.Start();
     io_thread_.Start();
     profile_.reset(new TestingProfile);
@@ -139,13 +139,13 @@ class ExtensionActionIconFactoryTest
         CreateExtensionService(&command_line, base::FilePath(), false);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     profile_.reset();  // Get all DeleteSoon calls sent to ui_loop_.
     ui_loop_.RunUntilIdle();
   }
 
   // ExtensionActionIconFactory::Observer overrides:
-  virtual void OnIconUpdated() OVERRIDE {
+  virtual void OnIconUpdated() override {
     if (quit_in_icon_updated_)
       base::MessageLoop::current()->Quit();
   }

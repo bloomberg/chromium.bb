@@ -20,7 +20,7 @@ class TerminalPrivateFunction : public ChromeAsyncExtensionFunction {
   virtual ~TerminalPrivateFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   // Override with actual extension function implementation.
   virtual bool RunTerminalFunction() = 0;
@@ -39,7 +39,7 @@ class TerminalPrivateOpenTerminalProcessFunction
   virtual ~TerminalPrivateOpenTerminalProcessFunction();
 
   // TerminalPrivateFunction:
-  virtual bool RunTerminalFunction() OVERRIDE;
+  virtual bool RunTerminalFunction() override;
 
  private:
   void OpenOnFileThread();
@@ -58,7 +58,7 @@ class TerminalPrivateSendInputFunction : public TerminalPrivateFunction {
   virtual ~TerminalPrivateSendInputFunction();
 
   // TerminalPrivateFunction:
-  virtual bool RunTerminalFunction() OVERRIDE;
+  virtual bool RunTerminalFunction() override;
 
  private:
   void SendInputOnFileThread(pid_t pid, const std::string& input);
@@ -75,7 +75,7 @@ class TerminalPrivateCloseTerminalProcessFunction
  protected:
   virtual ~TerminalPrivateCloseTerminalProcessFunction();
 
-  virtual bool RunTerminalFunction() OVERRIDE;
+  virtual bool RunTerminalFunction() override;
 
  private:
   void CloseOnFileThread(pid_t pid);
@@ -91,7 +91,7 @@ class TerminalPrivateOnTerminalResizeFunction : public TerminalPrivateFunction {
  protected:
   virtual ~TerminalPrivateOnTerminalResizeFunction();
 
-  virtual bool RunTerminalFunction() OVERRIDE;
+  virtual bool RunTerminalFunction() override;
 
  private:
   void OnResizeOnFileThread(pid_t pid, int width, int height);

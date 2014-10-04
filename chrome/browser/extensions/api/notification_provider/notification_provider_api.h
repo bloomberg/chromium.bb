@@ -70,7 +70,7 @@ class NotificationProviderNotifyOnClearedFunction
                              NOTIFICATIONPROVIDER_NOTIFYONCLEARED);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 // Implememtation of NotifyOnClicked function of the API. It will inform the
@@ -89,7 +89,7 @@ class NotificationProviderNotifyOnClickedFunction
                              NOTIFICATIONPROVIDER_NOTIFYONCLICKED);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 // Implememtation of NotifyOnButtonClicked function of the API. It will inform
@@ -109,7 +109,7 @@ class NotificationProviderNotifyOnButtonClickedFunction
                              NOTIFICATIONPROVIDER_NOTIFYONBUTTONCLICKED);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 // Implememtation of NotifyOnPermissionLevelChanged function of the API. It will
@@ -129,7 +129,7 @@ class NotificationProviderNotifyOnPermissionLevelChangedFunction
       NOTIFICATIONPROVIDER_NOTIFYONPERMISSIONLEVELCHANGED);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 // Implememtation of NotifyOnShowSettings function of the API. It will inform
@@ -147,7 +147,7 @@ class NotificationProviderNotifyOnShowSettingsFunction
                              NOTIFICATIONPROVIDER_NOTIFYONSHOWSETTINGS);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 // Implememtation of GetNotifier function of the API. It will get the notifier
@@ -165,7 +165,7 @@ class NotificationProviderGetNotifierFunction
                              NOTIFICATIONPROVIDER_GETNOTIFIER);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 // Implememtation of GetAllNotifiers function of the API. It will get all the
@@ -183,7 +183,7 @@ class NotificationProviderGetAllNotifiersFunction
                              NOTIFICATIONPROVIDER_GETALLNOTIFIERS);
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

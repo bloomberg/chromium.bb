@@ -61,8 +61,8 @@ class EntryWatcherService : public KeyedService,
       const std::string& extension_id);
 
   // storage::WatcherManager::Observer overrides.
-  virtual void OnEntryChanged(const storage::FileSystemURL& url) OVERRIDE;
-  virtual void OnEntryRemoved(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnEntryChanged(const storage::FileSystemURL& url) override;
+  virtual void OnEntryRemoved(const storage::FileSystemURL& url) override;
 
   // Sets a custom dispatcher for tests in order to be able to verify dispatched
   // events.

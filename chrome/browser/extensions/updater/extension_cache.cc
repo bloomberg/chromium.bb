@@ -24,27 +24,27 @@ class ExtensionCacheNullImpl : public ExtensionCache {
   }
 
   // Implementation of ExtensionCache.
-  virtual void Start(const base::Closure& callback) OVERRIDE {
+  virtual void Start(const base::Closure& callback) override {
     callback.Run();
   }
 
-  virtual void Shutdown(const base::Closure& callback) OVERRIDE {
+  virtual void Shutdown(const base::Closure& callback) override {
     callback.Run();
   }
 
-  virtual void AllowCaching(const std::string& id) OVERRIDE {
+  virtual void AllowCaching(const std::string& id) override {
   }
 
   virtual bool GetExtension(const std::string& id,
                             base::FilePath* file_path,
-                            std::string* version) OVERRIDE {
+                            std::string* version) override {
     return false;
   }
 
   virtual void PutExtension(const std::string& id,
                             const base::FilePath& file_path,
                             const std::string& version,
-                            const PutExtensionCallback& callback) OVERRIDE {
+                            const PutExtensionCallback& callback) override {
     callback.Run(file_path, true);
   }
 

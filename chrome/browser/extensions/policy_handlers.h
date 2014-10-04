@@ -27,9 +27,9 @@ class ExtensionListPolicyHandler
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) OVERRIDE;
+                                   policy::PolicyErrorMap* errors) override;
   virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  protected:
   const char* pref_path() const;
@@ -54,9 +54,9 @@ class ExtensionInstallForcelistPolicyHandler
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) OVERRIDE;
+                                   policy::PolicyErrorMap* errors) override;
   virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   // Parses the data in |policy_value| and writes them to |extension_dict|.
@@ -78,9 +78,9 @@ class ExtensionURLPatternListPolicyHandler
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) OVERRIDE;
+                                   policy::PolicyErrorMap* errors) override;
   virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   const char* pref_path_;

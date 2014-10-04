@@ -35,12 +35,12 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
  public:
   ExtensionContentSettingsApiTest() : profile_(NULL) {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
     // The browser might get closed later (and therefore be destroyed), so we
@@ -53,7 +53,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     g_browser_process->AddRefModule();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // ReleaseBrowserProcessModule() needs to be called in a message loop, so we
     // post a task to do it, then run the message loop.
     base::MessageLoop::current()->PostTask(

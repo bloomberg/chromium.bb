@@ -26,7 +26,7 @@ class ChromeAppSortingTest : public ExtensionPrefsTest {
 
 class ChromeAppSortingAppLocation : public ChromeAppSortingTest {
  public:
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     extension_ = prefs_.AddExtension("not_an_app");
     // Non-apps should not have any app launch ordinal or page ordinal.
     prefs()->OnExtensionInstalled(extension_.get(),
@@ -35,7 +35,7 @@ class ChromeAppSortingAppLocation : public ChromeAppSortingTest {
                                   std::string());
   }
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     EXPECT_FALSE(
         app_sorting()->GetAppLaunchOrdinal(extension_->id()).IsValid());
     EXPECT_FALSE(
@@ -49,7 +49,7 @@ TEST_F(ChromeAppSortingAppLocation, ChromeAppSortingAppLocation) {}
 
 class ChromeAppSortingAppLaunchOrdinal : public ChromeAppSortingTest {
  public:
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     // No extensions yet.
     syncer::StringOrdinal page = syncer::StringOrdinal::CreateInitialOrdinal();
     EXPECT_TRUE(syncer::StringOrdinal::CreateInitialOrdinal().Equals(
@@ -63,7 +63,7 @@ class ChromeAppSortingAppLaunchOrdinal : public ChromeAppSortingTest {
                                   std::string());
   }
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     syncer::StringOrdinal launch_ordinal =
         app_sorting()->GetAppLaunchOrdinal(extension_->id());
     syncer::StringOrdinal page_ordinal =
@@ -105,7 +105,7 @@ TEST_F(ChromeAppSortingAppLaunchOrdinal, ChromeAppSortingAppLaunchOrdinal) {}
 
 class ChromeAppSortingPageOrdinal : public ChromeAppSortingTest {
  public:
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     extension_ = prefs_.AddApp("page_ordinal");
     // Install with a page preference.
     first_page_ = syncer::StringOrdinal::CreateInitialOrdinal();
@@ -126,7 +126,7 @@ class ChromeAppSortingPageOrdinal : public ChromeAppSortingTest {
     EXPECT_TRUE(first_page_.Equals(
         app_sorting()->GetPageOrdinal(extension2->id())));
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     // Set the page ordinal.
     syncer::StringOrdinal new_page = first_page_.CreateAfter();
     app_sorting()->SetPageOrdinal(extension_->id(), new_page);
@@ -153,7 +153,7 @@ class ChromeAppSortingInitialize : public PrefsPrepopulatedTestBase {
   ChromeAppSortingInitialize() {}
   virtual ~ChromeAppSortingInitialize() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     // A preference determining the order of which the apps appear on the NTP.
     const char kPrefAppLaunchIndexDeprecated[] = "app_launcher_index";
     // A preference determining the page on which an app appears in the NTP.
@@ -192,7 +192,7 @@ class ChromeAppSortingInitialize : public PrefsPrepopulatedTestBase {
 
     prefs()->app_sorting()->Initialize(ids);
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     syncer::StringOrdinal first_ordinal =
         syncer::StringOrdinal::CreateInitialOrdinal();
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -221,7 +221,7 @@ class ChromeAppSortingInitializeWithNoApps : public PrefsPrepopulatedTestBase {
   ChromeAppSortingInitializeWithNoApps() {}
   virtual ~ChromeAppSortingInitializeWithNoApps() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     // Make sure that the web store has valid ordinals.
@@ -235,7 +235,7 @@ class ChromeAppSortingInitializeWithNoApps : public PrefsPrepopulatedTestBase {
     ExtensionIdList ids;
     app_sorting->Initialize(ids);
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     ChromeAppSorting* app_sorting =
         static_cast<ChromeAppSorting*>(prefs()->app_sorting());
 
@@ -269,7 +269,7 @@ class ChromeAppSortingMigrateAppIndexInvalid
   ChromeAppSortingMigrateAppIndexInvalid() {}
   virtual ~ChromeAppSortingMigrateAppIndexInvalid() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     // A preference determining the order of which the apps appear on the NTP.
     const char kPrefAppLaunchIndexDeprecated[] = "app_launcher_index";
     // A preference determining the page on which an app appears in the NTP.
@@ -290,7 +290,7 @@ class ChromeAppSortingMigrateAppIndexInvalid
 
     prefs()->app_sorting()->Initialize(ids);
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     // Make sure that the invalid page_index wasn't converted over.
     EXPECT_FALSE(prefs()->app_sorting()->GetAppLaunchOrdinal(
         extension1()->id()).IsValid());
@@ -305,7 +305,7 @@ class ChromeAppSortingFixNTPCollisionsAllCollide
   ChromeAppSortingFixNTPCollisionsAllCollide() {}
   virtual ~ChromeAppSortingFixNTPCollisionsAllCollide() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     repeated_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
 
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -322,7 +322,7 @@ class ChromeAppSortingFixNTPCollisionsAllCollide
 
     app_sorting->FixNTPOrdinalCollisions();
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
     syncer::StringOrdinal extension1_app_launch =
         app_sorting->GetAppLaunchOrdinal(extension1()->id());
@@ -361,7 +361,7 @@ class ChromeAppSortingFixNTPCollisionsSomeCollideAtStart
   ChromeAppSortingFixNTPCollisionsSomeCollideAtStart() {}
   virtual ~ChromeAppSortingFixNTPCollisionsSomeCollideAtStart() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     first_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
     syncer::StringOrdinal second_ordinal = first_ordinal_.CreateAfter();
 
@@ -381,7 +381,7 @@ class ChromeAppSortingFixNTPCollisionsSomeCollideAtStart
 
     app_sorting->FixNTPOrdinalCollisions();
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
     syncer::StringOrdinal extension1_app_launch =
         app_sorting->GetAppLaunchOrdinal(extension1()->id());
@@ -419,7 +419,7 @@ class ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd
   ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd() {}
   virtual ~ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     first_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
     syncer::StringOrdinal second_ordinal = first_ordinal_.CreateAfter();
 
@@ -439,7 +439,7 @@ class ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd
 
     app_sorting->FixNTPOrdinalCollisions();
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
     syncer::StringOrdinal extension1_app_launch =
         app_sorting->GetAppLaunchOrdinal(extension1()->id());
@@ -477,7 +477,7 @@ class ChromeAppSortingFixNTPCollisionsTwoCollisions
   ChromeAppSortingFixNTPCollisionsTwoCollisions() {}
   virtual ~ChromeAppSortingFixNTPCollisionsTwoCollisions() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     first_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
     syncer::StringOrdinal second_ordinal = first_ordinal_.CreateAfter();
 
@@ -498,7 +498,7 @@ class ChromeAppSortingFixNTPCollisionsTwoCollisions
 
     app_sorting->FixNTPOrdinalCollisions();
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
     syncer::StringOrdinal extension1_app_launch =
         app_sorting->GetAppLaunchOrdinal(extension1()->id());
@@ -545,8 +545,8 @@ class ChromeAppSortingEnsureValidOrdinals
   ChromeAppSortingEnsureValidOrdinals() {}
   virtual ~ChromeAppSortingEnsureValidOrdinals() {}
 
-  virtual void Initialize() OVERRIDE {}
-  virtual void Verify() OVERRIDE {
+  virtual void Initialize() override {}
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     // Give ext1 invalid ordinals and then check that EnsureValidOrdinals fixes
@@ -570,8 +570,8 @@ class ChromeAppSortingPageOrdinalMapping : public PrefsPrepopulatedTestBase {
   ChromeAppSortingPageOrdinalMapping() {}
   virtual ~ChromeAppSortingPageOrdinalMapping() {}
 
-  virtual void Initialize() OVERRIDE {}
-  virtual void Verify() OVERRIDE {
+  virtual void Initialize() override {}
+  virtual void Verify() override {
     std::string ext_1 = "ext_1";
     std::string ext_2 = "ext_2";
 
@@ -668,8 +668,8 @@ class ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage
   ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
   virtual ~ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
 
-  virtual void Initialize() OVERRIDE {}
-  virtual void Verify() OVERRIDE {
+  virtual void Initialize() override {}
+  virtual void Verify() override {
     syncer::StringOrdinal page = syncer::StringOrdinal::CreateInitialOrdinal();
     ChromeAppSorting* app_sorting =
         static_cast<ChromeAppSorting*>(prefs()->app_sorting());
@@ -713,7 +713,7 @@ class ChromeAppSortingKeepEmptyStringOrdinalPages
   ChromeAppSortingKeepEmptyStringOrdinalPages() {}
   virtual ~ChromeAppSortingKeepEmptyStringOrdinalPages() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     syncer::StringOrdinal first_page =
@@ -729,7 +729,7 @@ class ChromeAppSortingKeepEmptyStringOrdinalPages
     app_sorting->SetPageOrdinal(app2_->id(), first_page);
     EXPECT_EQ(0, app_sorting->PageStringOrdinalAsInteger(first_page));
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     // Move the second app to a new empty page at the end, skipping over
@@ -752,7 +752,7 @@ class ChromeAppSortingMakesFillerOrdinals
   ChromeAppSortingMakesFillerOrdinals() {}
   virtual ~ChromeAppSortingMakesFillerOrdinals() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     syncer::StringOrdinal first_page =
@@ -760,7 +760,7 @@ class ChromeAppSortingMakesFillerOrdinals
     app_sorting->SetPageOrdinal(app1_->id(), first_page);
     EXPECT_EQ(0, app_sorting->PageStringOrdinalAsInteger(first_page));
   }
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     // Because the UI can add an unlimited number of empty pages without an app
@@ -785,7 +785,7 @@ class ChromeAppSortingDefaultOrdinalsBase : public ChromeAppSortingTest {
   ChromeAppSortingDefaultOrdinalsBase() {}
   virtual ~ChromeAppSortingDefaultOrdinalsBase() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     app_ = CreateApp("app");
 
     InitDefaultOrdinals();
@@ -846,7 +846,7 @@ class ChromeAppSortingDefaultOrdinals
   ChromeAppSortingDefaultOrdinals() {}
   virtual ~ChromeAppSortingDefaultOrdinals() {}
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
     EXPECT_TRUE(app_sorting->GetPageOrdinal(app_->id()).Equals(
         default_page_ordinal_));
@@ -864,7 +864,7 @@ class ChromeAppSortingDefaultOrdinalOverriddenByInstallPage
   ChromeAppSortingDefaultOrdinalOverriddenByInstallPage() {}
   virtual ~ChromeAppSortingDefaultOrdinalOverriddenByInstallPage() {}
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     EXPECT_FALSE(app_sorting->GetPageOrdinal(app_->id()).Equals(
@@ -873,7 +873,7 @@ class ChromeAppSortingDefaultOrdinalOverriddenByInstallPage
   }
 
  protected:
-  virtual void InstallApps() OVERRIDE {
+  virtual void InstallApps() override {
     install_page_ = default_page_ordinal_.CreateAfter();
     prefs()->OnExtensionInstalled(app_.get(),
                                   Extension::ENABLED,
@@ -894,7 +894,7 @@ class ChromeAppSortingDefaultOrdinalOverriddenByUserValue
   ChromeAppSortingDefaultOrdinalOverriddenByUserValue() {}
   virtual ~ChromeAppSortingDefaultOrdinalOverriddenByUserValue() {}
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     EXPECT_TRUE(app_sorting->GetPageOrdinal(app_->id()).Equals(
@@ -904,7 +904,7 @@ class ChromeAppSortingDefaultOrdinalOverriddenByUserValue
   }
 
  protected:
-  virtual void SetupUserOrdinals() OVERRIDE {
+  virtual void SetupUserOrdinals() override {
     user_page_ordinal_ = default_page_ordinal_.CreateAfter();
     user_app_launch_ordinal_ = default_app_launch_ordinal_.CreateBefore();
 
@@ -927,7 +927,7 @@ class ChromeAppSortingDefaultOrdinalNoCollision
   ChromeAppSortingDefaultOrdinalNoCollision() {}
   virtual ~ChromeAppSortingDefaultOrdinalNoCollision() {}
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
 
     // Use the default page.
@@ -939,7 +939,7 @@ class ChromeAppSortingDefaultOrdinalNoCollision
   }
 
  protected:
-  virtual void SetupUserOrdinals() OVERRIDE {
+  virtual void SetupUserOrdinals() override {
     other_app_ = prefs_.AddApp("other_app");
     // Creates a collision.
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -966,12 +966,12 @@ class ChromeAppSortingSetExtensionVisible : public ChromeAppSortingTest {
   ChromeAppSortingSetExtensionVisible() {}
   virtual ~ChromeAppSortingSetExtensionVisible() {}
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     first_app_ = prefs_.AddApp("first_app");
     second_app_ = prefs_.AddApp("second_app");
   }
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     ChromeAppSorting* sorting = app_sorting();
     syncer::StringOrdinal page1 = sorting->GetPageOrdinal(first_app_->id());
     syncer::StringOrdinal page2 = sorting->GetPageOrdinal(second_app_->id());

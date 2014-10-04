@@ -48,16 +48,16 @@ class ThrottleController : public base::SupportsUserData::Data,
   }
 
   // ResourceController implementation:
-  virtual void Resume() OVERRIDE {
+  virtual void Resume() override {
     request_->Start();
   }
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     NOTREACHED();
   }
-  virtual void CancelAndIgnore() OVERRIDE {
+  virtual void CancelAndIgnore() override {
     NOTREACHED();
   }
-  virtual void CancelWithError(int error_code) OVERRIDE {
+  virtual void CancelWithError(int error_code) override {
     NOTREACHED();
   }
 
@@ -114,7 +114,7 @@ class SimpleTestJobURLRequestInterceptor
   // net::URLRequestJobFactory::ProtocolHandler
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     return new SimpleTestJob(request, network_delegate);
   }
 
@@ -144,7 +144,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
                                                                 "example.com");
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ExtensionServiceTestBase::SetUp();
 
     InitializeEmptyExtensionService();
@@ -154,7 +154,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
     listener_ = new UserScriptListener();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     listener_ = NULL;
     base::MessageLoop::current()->RunUntilIdle();
     ExtensionServiceTestBase::TearDown();

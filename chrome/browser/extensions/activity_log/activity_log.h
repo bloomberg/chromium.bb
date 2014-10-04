@@ -87,25 +87,25 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // We keep track of whether the whitelisted extension is installed; if it is,
   // we want to recompute whether to have logging enabled.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // ApiActivityMonitor.
   virtual void OnApiEventDispatched(
       const std::string& extension_id,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args) OVERRIDE;
+      scoped_ptr<base::ListValue> event_args) override;
   virtual void OnApiFunctionCalled(
       const std::string& extension_id,
       const std::string& api_name,
-      scoped_ptr<base::ListValue> event_args) OVERRIDE;
+      scoped_ptr<base::ListValue> event_args) override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -152,7 +152,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& extension_ids,
-      const GURL& on_url) OVERRIDE;
+      const GURL& on_url) override;
 
   // At the moment, ActivityLog will use only one policy for summarization.
   // These methods are used to choose and set the most appropriate policy.

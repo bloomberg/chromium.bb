@@ -69,7 +69,7 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_CONST_METHOD0(GetUnverifiedServerCertificateChain,
                      scoped_refptr<net::X509Certificate>());
   MOCK_CONST_METHOD0(GetChannelIDService, net::ChannelIDService*());
-  virtual bool IsConnected() const OVERRIDE { return true; }
+  virtual bool IsConnected() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
@@ -91,7 +91,7 @@ class MockTCPSocket : public net::TCPClientSocket {
   MOCK_METHOD2(SetKeepAlive, bool(bool enable, int delay));
   MOCK_METHOD1(SetNoDelay, bool(bool no_delay));
 
-  virtual bool IsConnected() const OVERRIDE { return true; }
+  virtual bool IsConnected() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);

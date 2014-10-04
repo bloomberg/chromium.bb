@@ -47,7 +47,7 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
   void OnJsonParseFailure(const std::string& error);
 
   // net::URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   WebstoreDataFetcherDelegate* delegate_;
   net::URLRequestContextGetter* request_context_;

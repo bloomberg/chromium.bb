@@ -32,10 +32,10 @@ class ChromeExtensionWebContentsObserver
 
   // content::WebContentsObserver overrides.
   virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
-      OVERRIDE;
+      override;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
 
   // Adds a message to the extensions ErrorConsole.
   void OnDetailedConsoleMessageAdded(const base::string16& message,

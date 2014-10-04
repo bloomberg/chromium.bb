@@ -302,7 +302,7 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
   virtual bool ExtractIconURLForPath(const base::FilePath& path,
                                      float scale,
                                      IconLoader::IconSize icon_size,
-                                     IconURLCallback callback) OVERRIDE;
+                                     IconURLCallback callback) override;
  private:
   void OnIconLoadComplete(
       float scale, const IconURLCallback& callback, gfx::Image* icon);
@@ -893,7 +893,7 @@ class ManagerDestructionObserver : public DownloadManager::Observer {
     manager_->RemoveObserver(this);
   }
 
-  virtual void ManagerGoingDown(DownloadManager* manager) OVERRIDE {
+  virtual void ManagerGoingDown(DownloadManager* manager) override {
     manager_file_existence_last_checked_->erase(manager);
     if (manager_file_existence_last_checked_->size() == 0) {
       delete manager_file_existence_last_checked_;

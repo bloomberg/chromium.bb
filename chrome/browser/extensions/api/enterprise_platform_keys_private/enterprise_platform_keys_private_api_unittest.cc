@@ -182,7 +182,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
         AddSettingsProvider(device_settings_provider_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     // Set the user preferences.
@@ -353,7 +353,7 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
     func_->set_extension(extension_.get());
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EPKPChallengeKeyTestBase::SetUp();
 
     // Set the user preferences.

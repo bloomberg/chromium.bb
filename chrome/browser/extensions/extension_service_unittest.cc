@@ -255,7 +255,7 @@ class MockExtensionProvider : public extensions::ExternalProviderInterface {
   }
 
   // ExternalProvider implementation:
-  virtual void VisitRegisteredExtension() OVERRIDE {
+  virtual void VisitRegisteredExtension() override {
     visit_count_++;
     for (DataMap::const_iterator i = extension_map_.begin();
          i != extension_map_.end(); ++i) {
@@ -268,14 +268,14 @@ class MockExtensionProvider : public extensions::ExternalProviderInterface {
     visitor_->OnExternalProviderReady(this);
   }
 
-  virtual bool HasExtension(const std::string& id) const OVERRIDE {
+  virtual bool HasExtension(const std::string& id) const override {
     return extension_map_.find(id) != extension_map_.end();
   }
 
   virtual bool GetExtensionDetails(
       const std::string& id,
       Manifest::Location* location,
-      scoped_ptr<Version>* version) const OVERRIDE {
+      scoped_ptr<Version>* version) const override {
     DataMap::const_iterator it = extension_map_.find(id);
     if (it == extension_map_.end())
       return false;
@@ -289,11 +289,11 @@ class MockExtensionProvider : public extensions::ExternalProviderInterface {
     return true;
   }
 
-  virtual bool IsReady() const OVERRIDE {
+  virtual bool IsReady() const override {
     return true;
   }
 
-  virtual void ServiceShutdown() OVERRIDE {
+  virtual void ServiceShutdown() override {
   }
 
   int visit_count() const { return visit_count_; }
@@ -374,7 +374,7 @@ class MockProviderVisitor
                                             const base::FilePath& path,
                                             Manifest::Location unused,
                                             int creation_flags,
-                                            bool mark_acknowledged) OVERRIDE {
+                                            bool mark_acknowledged) override {
     EXPECT_EQ(expected_creation_flags_, creation_flags);
 
     ++ids_found_;
@@ -418,7 +418,7 @@ class MockProviderVisitor
       const GURL& update_url,
       Manifest::Location location,
       int creation_flags,
-      bool mark_acknowledged) OVERRIDE {
+      bool mark_acknowledged) override {
     ++ids_found_;
     base::DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
@@ -449,7 +449,7 @@ class MockProviderVisitor
   }
 
   virtual void OnExternalProviderReady(
-      const extensions::ExternalProviderInterface* provider) OVERRIDE {
+      const extensions::ExternalProviderInterface* provider) override {
     EXPECT_EQ(provider, provider_.get());
     EXPECT_TRUE(provider->IsReady());
   }
@@ -490,7 +490,7 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
         const Extension* extension =
@@ -1155,9 +1155,9 @@ class PackExtensionTestClient : public extensions::PackExtensionJob::Client {
   PackExtensionTestClient(const base::FilePath& expected_crx_path,
                           const base::FilePath& expected_private_key_path);
   virtual void OnPackSuccess(const base::FilePath& crx_path,
-                             const base::FilePath& private_key_path) OVERRIDE;
+                             const base::FilePath& private_key_path) override;
   virtual void OnPackFailure(const std::string& error_message,
-                             ExtensionCreator::ErrorType type) OVERRIDE;
+                             ExtensionCreator::ErrorType type) override;
 
  private:
   const base::FilePath expected_crx_path_;
@@ -1466,14 +1466,14 @@ struct MockExtensionRegistryObserver
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE {
+      const std::string& old_name) override {
     last_extension_installed = extension->id();
   }
 
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE {
+      extensions::UninstallReason reason) override {
     last_extension_uninstalled = extension->id();
   }
 
@@ -5134,7 +5134,7 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
         ready_ = true;

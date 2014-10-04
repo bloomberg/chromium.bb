@@ -92,31 +92,31 @@ class WebAuthFlow : public content::NotificationObserver,
   friend class ::WebAuthFlowTest;
 
   // ::AppWindowRegistry::Observer implementation.
-  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowAdded(AppWindow* app_window) override;
+  virtual void OnAppWindowRemoved(AppWindow* app_window) override;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // WebContentsObserver implementation.
   virtual void DidStopLoading(content::RenderViewHost* render_view_host)
-      OVERRIDE;
+      override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) OVERRIDE;
+      const base::string16& error_description) override;
 
   void BeforeUrlLoaded(const GURL& url);
   void AfterUrlLoaded();

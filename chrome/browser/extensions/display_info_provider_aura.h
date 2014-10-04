@@ -17,11 +17,11 @@ class DisplayInfoProviderAura : public DisplayInfoProvider {
   // DisplayInfoProvider implementation.
   virtual bool SetInfo(const std::string& display_id,
                        const core_api::system_display::DisplayProperties& info,
-                       std::string* error) OVERRIDE;
+                       std::string* error) override;
   virtual void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      core_api::system_display::DisplayUnitInfo* unit) OVERRIDE;
-  virtual gfx::Screen* GetActiveScreen() OVERRIDE;
+      core_api::system_display::DisplayUnitInfo* unit) override;
+  virtual gfx::Screen* GetActiveScreen() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderAura);

@@ -28,7 +28,7 @@ class TokenCacheServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // Inherited from BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 
    DISALLOW_COPY_AND_ASSIGN(TokenCacheServiceFactory);
 };

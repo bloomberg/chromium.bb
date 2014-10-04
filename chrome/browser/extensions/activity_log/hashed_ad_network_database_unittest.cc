@@ -30,7 +30,7 @@ const size_t kNumAdNetworkHosts = arraysize(kAdNetworkHosts);
 
 class HashedAdNetworkDatabaseUnitTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   AdNetworkDatabase* database() { return database_.get(); }
 

@@ -68,7 +68,7 @@ class InstallTracker : public KeyedService,
   //                ExtensionRegistryObserver.
 
   // Overriddes for KeyedService.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   void OnAppsReordered();
@@ -76,12 +76,12 @@ class InstallTracker : public KeyedService,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
                                     const Extension* extension,
-                                    bool is_update) OVERRIDE;
+                                    bool is_update) override;
 
   // Maps extension id to the details of an active install.
   typedef std::map<std::string, ActiveInstallData> ActiveInstallsMap;

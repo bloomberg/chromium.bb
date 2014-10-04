@@ -19,7 +19,7 @@ class AutotestPrivateLogoutFunction : public ChromeSyncExtensionFunction {
 
  private:
   virtual ~AutotestPrivateLogoutFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AutotestPrivateRestartFunction : public ChromeSyncExtensionFunction {
@@ -28,7 +28,7 @@ class AutotestPrivateRestartFunction : public ChromeSyncExtensionFunction {
 
  private:
   virtual ~AutotestPrivateRestartFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AutotestPrivateShutdownFunction : public ChromeSyncExtensionFunction {
@@ -38,7 +38,7 @@ class AutotestPrivateShutdownFunction : public ChromeSyncExtensionFunction {
 
  private:
   virtual ~AutotestPrivateShutdownFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AutotestPrivateLoginStatusFunction : public ChromeSyncExtensionFunction {
@@ -48,7 +48,7 @@ class AutotestPrivateLoginStatusFunction : public ChromeSyncExtensionFunction {
 
  private:
   virtual ~AutotestPrivateLoginStatusFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AutotestPrivateLockScreenFunction : public ChromeSyncExtensionFunction {
@@ -58,7 +58,7 @@ class AutotestPrivateLockScreenFunction : public ChromeSyncExtensionFunction {
 
  private:
   virtual ~AutotestPrivateLockScreenFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AutotestPrivateGetExtensionsInfoFunction
@@ -69,7 +69,7 @@ class AutotestPrivateGetExtensionsInfoFunction
 
  private:
   virtual ~AutotestPrivateGetExtensionsInfoFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AutotestPrivateSimulateAsanMemoryBugFunction
@@ -80,7 +80,7 @@ class AutotestPrivateSimulateAsanMemoryBugFunction
 
  private:
   virtual ~AutotestPrivateSimulateAsanMemoryBugFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 // Don't kill the browser when we're in a browser test.

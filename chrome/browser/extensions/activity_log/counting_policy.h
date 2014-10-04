@@ -25,7 +25,7 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   explicit CountingPolicy(Profile* profile);
   virtual ~CountingPolicy();
 
-  virtual void ProcessAction(scoped_refptr<Action> action) OVERRIDE;
+  virtual void ProcessAction(scoped_refptr<Action> action) override;
 
   virtual void ReadFilteredData(
       const std::string& extension_id,
@@ -35,9 +35,9 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
       const std::string& arg_url,
       const int days_ago,
       const base::Callback
-          <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
+          <void(scoped_ptr<Action::ActionVector>)>& callback) override;
 
-  virtual void Close() OVERRIDE;
+  virtual void Close() override;
 
   // Gets or sets the amount of time that old records are kept in the database.
   const base::TimeDelta& retention_time() const { return retention_time_; }
@@ -46,16 +46,16 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   }
 
   // Remove actions (rows) which IDs are specified in the action_ids array.
-  virtual void RemoveActions(const std::vector<int64>& action_ids) OVERRIDE;
+  virtual void RemoveActions(const std::vector<int64>& action_ids) override;
 
   // Clean the URL data stored for this policy.
-  virtual void RemoveURLs(const std::vector<GURL>&) OVERRIDE;
+  virtual void RemoveURLs(const std::vector<GURL>&) override;
 
   // Clean the data related to this extension for this policy.
-  virtual void RemoveExtensionData(const std::string& extension_id) OVERRIDE;
+  virtual void RemoveExtensionData(const std::string& extension_id) override;
 
   // Delete everything in the database.
-  virtual void DeleteDatabase() OVERRIDE;
+  virtual void DeleteDatabase() override;
 
   // The main database table, and the name for a read-only view that
   // decompresses string values for easier parsing.
@@ -65,10 +65,10 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
  protected:
   // The ActivityDatabase::Delegate interface.  These are always called from
   // the database thread.
-  virtual bool InitDatabase(sql::Connection* db) OVERRIDE;
-  virtual bool FlushDatabase(sql::Connection* db) OVERRIDE;
-  virtual void OnDatabaseFailure() OVERRIDE;
-  virtual void OnDatabaseClose() OVERRIDE;
+  virtual bool InitDatabase(sql::Connection* db) override;
+  virtual bool FlushDatabase(sql::Connection* db) override;
+  virtual void OnDatabaseFailure() override;
+  virtual void OnDatabaseClose() override;
 
  private:
   // A type used to track pending writes to the database.  The key is an action

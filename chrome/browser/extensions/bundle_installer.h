@@ -149,27 +149,27 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   virtual void OnWebstoreParseSuccess(
       const std::string& id,
       const SkBitmap& icon,
-      base::DictionaryValue* parsed_manifest) OVERRIDE;
+      base::DictionaryValue* parsed_manifest) override;
   virtual void OnWebstoreParseFailure(
       const std::string& id,
       InstallHelperResultCode result_code,
-      const std::string& error_message) OVERRIDE;
+      const std::string& error_message) override;
 
   // ExtensionInstallPrompt::Delegate implementation:
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   // WebstoreInstaller::Delegate implementation:
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallSuccess(const std::string& id) override;
   virtual void OnExtensionInstallFailure(
       const std::string& id,
       const std::string& error,
-      WebstoreInstaller::FailureReason reason) OVERRIDE;
+      WebstoreInstaller::FailureReason reason) override;
 
   // chrome::BrowserListObserver implementation:
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
-  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override;
+  virtual void OnBrowserRemoved(Browser* browser) override;
+  virtual void OnBrowserSetLastActive(Browser* browser) override;
 
   // Holds the Extensions used to generate the permission warnings.
   ExtensionList dummy_extensions_;

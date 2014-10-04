@@ -18,7 +18,7 @@ class BrowserOpenTabFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~BrowserOpenTabFunction();
 
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace api

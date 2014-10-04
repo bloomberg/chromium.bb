@@ -40,12 +40,12 @@ class ExtensionActionManagerFactory : public BrowserContextKeyedServiceFactory {
   }
 
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE {
+      content::BrowserContext* profile) const override {
     return new ExtensionActionManager(static_cast<Profile*>(profile));
   }
 
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE {
+      content::BrowserContext* context) const override {
     return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
   }
 };

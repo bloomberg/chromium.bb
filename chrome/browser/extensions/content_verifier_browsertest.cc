@@ -36,7 +36,7 @@ class UnloadObserver : public ExtensionRegistryObserver {
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE {
+      UnloadedExtensionInfo::Reason reason) override {
     observed_.insert(extension->id());
     if (awaited_id_ == extension->id())
       loop_runner_->Quit();
@@ -62,7 +62,7 @@ class JobDelegate : public ContentVerifyJob::TestDelegate {
 
   virtual ContentVerifyJob::FailureReason BytesRead(const ExtensionId& id,
                                                     int count,
-                                                    const char* data) OVERRIDE {
+                                                    const char* data) override {
     if (id == id_ && fail_next_read_) {
       fail_next_read_ = false;
       return ContentVerifyJob::HASH_MISMATCH;
@@ -71,7 +71,7 @@ class JobDelegate : public ContentVerifyJob::TestDelegate {
   }
 
   virtual ContentVerifyJob::FailureReason DoneReading(
-      const ExtensionId& id) OVERRIDE {
+      const ExtensionId& id) override {
     if (id == id_ && fail_next_done_) {
       fail_next_done_ = false;
       return ContentVerifyJob::HASH_MISMATCH;
@@ -94,7 +94,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   ContentVerifierTest() {}
   virtual ~ContentVerifierTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kExtensionContentVerification,
@@ -102,7 +102,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 
   // Setup our unload observer and JobDelegate, and install a test extension.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
     unload_observer_.reset(
         new UnloadObserver(ExtensionRegistry::Get(profile())));
@@ -115,7 +115,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     ContentVerifyJob::SetDelegateForTests(&delegate_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     ContentVerifyJob::SetDelegateForTests(NULL);
     ExtensionBrowserTest::TearDownOnMainThread();
   }

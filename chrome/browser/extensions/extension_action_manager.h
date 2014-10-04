@@ -59,7 +59,7 @@ class ExtensionActionManager : public KeyedService,
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionInfo::Reason reason)
-      OVERRIDE;
+      override;
 
   Profile* profile_;
 

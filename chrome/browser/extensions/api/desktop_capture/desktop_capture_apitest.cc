@@ -53,7 +53,7 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
                     const base::string16& app_name,
                     const base::string16& target_name,
                     scoped_ptr<DesktopMediaList> model,
-                    const DoneCallback& done_callback) OVERRIDE {
+                    const DoneCallback& done_callback) override {
     if (!expectation_->cancelled) {
       // Post a task to call the callback asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -95,7 +95,7 @@ class FakeDesktopMediaPickerFactory :
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
   virtual scoped_ptr<DesktopMediaList> CreateModel(
       bool show_screens,
-      bool show_windows) OVERRIDE {
+      bool show_windows) override {
     EXPECT_LE(current_test_, tests_count_);
     if (current_test_ >= tests_count_)
       return scoped_ptr<DesktopMediaList>();
@@ -104,7 +104,7 @@ class FakeDesktopMediaPickerFactory :
     return scoped_ptr<DesktopMediaList>(new FakeDesktopMediaList());
   }
 
-  virtual scoped_ptr<DesktopMediaPicker> CreatePicker() OVERRIDE {
+  virtual scoped_ptr<DesktopMediaPicker> CreatePicker() override {
     EXPECT_LE(current_test_, tests_count_);
     if (current_test_ >= tests_count_)
       return scoped_ptr<DesktopMediaPicker>();

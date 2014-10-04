@@ -18,7 +18,7 @@ class WebcamPrivateSetFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~WebcamPrivateSetFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateSetFunction);
@@ -31,7 +31,7 @@ class WebcamPrivateGetFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~WebcamPrivateGetFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateGetFunction);
@@ -44,7 +44,7 @@ class WebcamPrivateResetFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~WebcamPrivateResetFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateResetFunction);

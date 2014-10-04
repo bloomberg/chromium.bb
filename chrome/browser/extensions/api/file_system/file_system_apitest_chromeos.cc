@@ -28,7 +28,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
   // Sets up fake Drive service for tests (this has to be injected before the
   // real DriveIntegrationService instance is created.)
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
@@ -44,7 +44,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
   // Ensure the fake service's data is fetch in the local file system. This is
   // necessary because the fetch starts lazily upon the first read operation.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
 
     scoped_ptr<drive::ResourceEntry> entry;
@@ -56,7 +56,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     ASSERT_EQ(drive::FILE_ERROR_OK, error);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
     PlatformAppBrowserTest::TearDown();
   };

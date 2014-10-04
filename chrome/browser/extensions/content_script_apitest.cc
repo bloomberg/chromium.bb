@@ -162,7 +162,7 @@ class ContentScriptCssInjectionTest : public ExtensionApiTest {
  protected:
   // TODO(rdevlin.cronin): Make a testing switch that looks like FeatureSwitch,
   // but takes in an optional value so that we don't have to do this.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // We change the Webstore URL to be http://cws.com. We need to do this so
     // we can check that css injection is not allowed on the webstore (which

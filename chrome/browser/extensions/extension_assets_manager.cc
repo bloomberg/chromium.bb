@@ -26,7 +26,7 @@ class ExtensionAssetsManagerImpl :  public ExtensionAssetsManager {
                                 const base::FilePath& unpacked_extension_root,
                                 const base::FilePath& local_install_dir,
                                 Profile* profile,
-                                InstallExtensionCallback callback) OVERRIDE {
+                                InstallExtensionCallback callback) override {
     callback.Run(file_util::InstallExtension(
         unpacked_extension_root,
         extension->id(),
@@ -38,7 +38,7 @@ class ExtensionAssetsManagerImpl :  public ExtensionAssetsManager {
       const std::string& id,
       Profile* profile,
       const base::FilePath& local_install_dir,
-      const base::FilePath& extension_root) OVERRIDE {
+      const base::FilePath& extension_root) override {
     file_util::UninstallExtension(local_install_dir, id);
   }
 

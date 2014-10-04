@@ -43,7 +43,7 @@ Browser* FindOtherBrowser(Browser* browser) {
 
 class ExtensionManagementApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchType) {
 class ExtensionManagementApiStreamlinedAppsTest
     : public ExtensionManagementApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionManagementApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableStreamlinedHostedApps);
   }

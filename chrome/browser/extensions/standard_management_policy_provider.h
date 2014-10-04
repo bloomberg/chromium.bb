@@ -23,13 +23,13 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
   virtual ~StandardManagementPolicyProvider();
 
   // ManagementPolicy::Provider implementation.
-  virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
+  virtual std::string GetDebugPolicyProviderName() const override;
   virtual bool UserMayLoad(const Extension* extension,
-                           base::string16* error) const OVERRIDE;
+                           base::string16* error) const override;
   virtual bool UserMayModifySettings(const Extension* extension,
-                                     base::string16* error) const OVERRIDE;
+                                     base::string16* error) const override;
   virtual bool MustRemainEnabled(const Extension* extension,
-                                 base::string16* error) const OVERRIDE;
+                                 base::string16* error) const override;
 
  private:
   const ExtensionManagement* settings_;

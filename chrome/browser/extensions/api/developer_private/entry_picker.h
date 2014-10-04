@@ -45,9 +45,9 @@ class EntryPicker : public ui::SelectFileDialog::Listener {
   // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
+                            void* params) override;
 
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) override;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   EntryPickerClient* client_;

@@ -40,7 +40,7 @@ class BlobReader : public net::URLFetcherDelegate {
 
  private:
   // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   BlobReadCallback callback_;
   scoped_ptr<net::URLFetcher> fetcher_;

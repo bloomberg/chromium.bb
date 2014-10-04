@@ -76,7 +76,7 @@ class MockCopresenceManager : public CopresenceManager {
   virtual void ExecuteReportRequest(
       ReportRequest request,
       const std::string& app_id,
-      const copresence::StatusCallback& status_callback) OVERRIDE {
+      const copresence::StatusCallback& status_callback) override {
     request_ = request;
     app_id_ = app_id;
     status_callback.Run(copresence::SUCCESS);
@@ -93,7 +93,7 @@ class CopresenceApiUnittest : public ExtensionApiUnittest {
   CopresenceApiUnittest() {}
   virtual ~CopresenceApiUnittest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     CopresenceService* service =

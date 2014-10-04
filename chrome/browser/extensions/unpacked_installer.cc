@@ -54,8 +54,8 @@ class SimpleExtensionLoadPrompt : public ExtensionInstallPrompt::Delegate {
   void ShowPrompt();
 
   // ExtensionInstallUI::Delegate
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
  private:
   scoped_ptr<ExtensionInstallPrompt> install_ui_;

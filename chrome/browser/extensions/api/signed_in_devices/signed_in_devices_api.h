@@ -42,7 +42,7 @@ class SignedInDevicesGetFunction : public ChromeSyncExtensionFunction {
   virtual ~SignedInDevicesGetFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("signedInDevices.get", SIGNED_IN_DEVICES_GET)
 };
 

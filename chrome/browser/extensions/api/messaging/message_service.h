@@ -147,7 +147,7 @@ class MessageService : public BrowserContextKeyedAPI,
   // Closes the message channel associated with the given port, and notifies
   // the other side.
   virtual void CloseChannel(int port_id,
-                            const std::string& error_message) OVERRIDE;
+                            const std::string& error_message) override;
 
   // Enqueues a message on a pending channel, or sends a message to the given
   // port if the channel isn't pending.
@@ -156,7 +156,7 @@ class MessageService : public BrowserContextKeyedAPI,
   // NativeMessageProcessHost::Client
   virtual void PostMessageFromNativeProcess(
       int port_id,
-      const std::string& message) OVERRIDE;
+      const std::string& message) override;
 
  private:
   friend class MockMessageService;
@@ -195,7 +195,7 @@ class MessageService : public BrowserContextKeyedAPI,
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // A process that might be in our list of channels has closed.
   void OnProcessClosed(content::RenderProcessHost* process);

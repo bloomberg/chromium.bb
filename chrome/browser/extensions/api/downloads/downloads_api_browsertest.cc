@@ -176,7 +176,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT: {
           DownloadsNotificationSource* dns =
@@ -312,7 +312,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   Browser* current_browser() { return current_browser_; }
 
   // InProcessBrowserTest
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -622,7 +622,7 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
   virtual bool ExtractIconURLForPath(const base::FilePath& path,
                                      float scale,
                                      IconLoader::IconSize icon_size,
-                                     IconURLCallback callback) OVERRIDE {
+                                     IconURLCallback callback) override {
     EXPECT_STREQ(expected_path_.value().c_str(), path.value().c_str());
     EXPECT_EQ(expected_icon_size_, icon_size);
     if (expected_path_ == path &&
@@ -761,7 +761,7 @@ class JustInProgressDownloadObserver
   virtual ~JustInProgressDownloadObserver() {}
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* item) OVERRIDE {
+  virtual bool IsDownloadInFinalState(DownloadItem* item) override {
     return item->GetState() == DownloadItem::IN_PROGRESS;
   }
 

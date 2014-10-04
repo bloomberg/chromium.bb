@@ -42,7 +42,7 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   virtual ~DefaultAlarmDelegate() {}
 
   virtual void OnAlarm(const std::string& extension_id,
-                       const Alarm& alarm) OVERRIDE {
+                       const Alarm& alarm) override {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
     scoped_ptr<Event> event(new Event(alarms::OnAlarm::kEventName,

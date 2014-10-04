@@ -80,10 +80,10 @@ class AppSyncBundle : public SyncBundle {
 
   // Overrides for SyncBundle.
   // Returns true if SetupSync has been called, false otherwise.
-  virtual bool IsSyncing() const OVERRIDE;
+  virtual bool IsSyncing() const override;
 
   // Sync a newly-installed application or change an existing one.
-  virtual void SyncChangeIfNeeded(const Extension& extension) OVERRIDE;
+  virtual void SyncChangeIfNeeded(const Extension& extension) override;
 
  private:
   // Add a synced app.

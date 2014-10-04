@@ -36,7 +36,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     }
 
     virtual void OnGranted(const GURL& origin,
-                           int change_flags) OVERRIDE {
+                           int change_flags) override {
       EXPECT_EQ(expected_type_, NOTIFICATION_TYPE_GRANT);
       EXPECT_EQ(expected_origin_, origin);
       EXPECT_EQ(expected_change_flags_, change_flags);
@@ -44,14 +44,14 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     }
 
     virtual void OnRevoked(const GURL& origin,
-                           int change_flags) OVERRIDE {
+                           int change_flags) override {
       EXPECT_EQ(expected_type_, NOTIFICATION_TYPE_REVOKE);
       EXPECT_EQ(expected_origin_, origin);
       EXPECT_EQ(expected_change_flags_, change_flags);
       expected_type_ = NOTIFICATION_TYPE_NONE;
     }
 
-    virtual void OnCleared() OVERRIDE {
+    virtual void OnCleared() override {
       EXPECT_EQ(expected_type_, NOTIFICATION_TYPE_CLEAR);
       expected_type_ = NOTIFICATION_TYPE_NONE;
     }
@@ -92,7 +92,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(PolicyChangeObserver);
   };
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     policy_ = new ExtensionSpecialStoragePolicy(NULL);
   }
 

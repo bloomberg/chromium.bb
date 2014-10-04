@@ -60,23 +60,23 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
   }
 
  protected:
-  virtual void CheckRequirements() OVERRIDE {
+  virtual void CheckRequirements() override {
     requirements_check_called_ = true;
     MockCheckRequirements(current_sequence_number());
   }
 
-  virtual void CheckManagementPolicy() OVERRIDE {
+  virtual void CheckManagementPolicy() override {
     policy_check_called_ = true;
     OnManagementPolicyCheckDone(policy_check_error_.empty(),
                                 policy_check_error_);
   }
 
-  virtual void CheckBlacklistState() OVERRIDE {
+  virtual void CheckBlacklistState() override {
     blacklist_check_called_ = true;
     MockCheckBlacklistState(current_sequence_number());
   }
 
-  virtual void ResetResults() OVERRIDE {
+  virtual void ResetResults() override {
     ExtensionInstallChecker::ResetResults();
 
     requirements_check_called_ = false;
@@ -98,7 +98,7 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
 // checks.
 class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
  protected:
-  virtual void CheckRequirements() OVERRIDE {
+  virtual void CheckRequirements() override {
     requirements_check_called_ = true;
 
     base::MessageLoop::current()->PostTask(
@@ -108,7 +108,7 @@ class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
                    current_sequence_number()));
   }
 
-  virtual void CheckBlacklistState() OVERRIDE {
+  virtual void CheckBlacklistState() override {
     blacklist_check_called_ = true;
 
     base::MessageLoop::current()->PostTask(

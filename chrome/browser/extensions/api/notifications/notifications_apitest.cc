@@ -60,7 +60,7 @@ class UserGestureCatcher : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     results_.push_back(
         static_cast<content::Source<extensions::TestSendMessageFunction> >(
             source)

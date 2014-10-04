@@ -61,8 +61,8 @@ class GcmApiTest : public ExtensionApiTest {
   GcmApiTest() : fake_gcm_profile_service_(NULL) {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
 
   void StartCollecting();
 

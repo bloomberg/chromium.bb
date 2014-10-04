@@ -39,20 +39,20 @@ class NetworkingPrivateEventRouterImpl
 
  protected:
   // KeyedService overrides:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // NetworkStateHandlerObserver overrides:
-  virtual void NetworkListChanged() OVERRIDE;
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
+  virtual void NetworkListChanged() override;
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // NetworkPortalDetector::Observer overrides:
   virtual void OnPortalDetectionCompleted(
       const NetworkState* network,
-      const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
+      const NetworkPortalDetector::CaptivePortalState& state) override;
 
  private:
   // Decide if we should listen for network changes or not. If there are any

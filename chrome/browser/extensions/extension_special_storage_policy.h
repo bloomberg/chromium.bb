@@ -32,13 +32,13 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
 
   // storage::SpecialStoragePolicy methods used by storage subsystems and the
   // browsing data remover. These methods are safe to call on any thread.
-  virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
-  virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
-  virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
-  virtual bool CanQueryDiskSize(const GURL& origin) OVERRIDE;
-  virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
-  virtual bool HasIsolatedStorage(const GURL& origin) OVERRIDE;
-  virtual bool HasSessionOnlyOrigins() OVERRIDE;
+  virtual bool IsStorageProtected(const GURL& origin) override;
+  virtual bool IsStorageUnlimited(const GURL& origin) override;
+  virtual bool IsStorageSessionOnly(const GURL& origin) override;
+  virtual bool CanQueryDiskSize(const GURL& origin) override;
+  virtual bool IsFileHandler(const std::string& extension_id) override;
+  virtual bool HasIsolatedStorage(const GURL& origin) override;
+  virtual bool HasSessionOnlyOrigins() override;
 
   // Methods used by the ExtensionService to populate this class.
   void GrantRightsForExtension(const extensions::Extension* extension,

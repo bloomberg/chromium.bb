@@ -58,14 +58,14 @@ class GalleryWatchStateTracker
   // |extension_id|.
   virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
                                  const std::string& extension_id,
-                                 MediaGalleryPrefId gallery_id) OVERRIDE;
+                                 MediaGalleryPrefId gallery_id) override;
 
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
-                                   MediaGalleryPrefId gallery_id) OVERRIDE;
+                                   MediaGalleryPrefId gallery_id) override;
 
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId gallery_id) OVERRIDE;
+                                MediaGalleryPrefId gallery_id) override;
 
   // Returns a set of watched gallery identifiers for the extension specified
   // by the |extension_id|.
@@ -91,11 +91,11 @@ class GalleryWatchStateTracker
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionInfo::Reason reason)
-      OVERRIDE;
+      override;
 
   // Syncs media gallery watch data for the given extension to/from the state
   // storage.

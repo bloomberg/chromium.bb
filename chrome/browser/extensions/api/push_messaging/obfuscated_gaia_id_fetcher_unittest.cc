@@ -21,11 +21,11 @@ static const char kNonDictionaryJsonData[] = "{ 0.5 }";
 class TestDelegate : public extensions::ObfuscatedGaiaIdFetcher::Delegate {
  public:
   virtual void OnObfuscatedGaiaIdFetchSuccess(
-      const std::string& obfuscated_id) OVERRIDE {
+      const std::string& obfuscated_id) override {
     succeeded_ = true;
   }
   virtual void OnObfuscatedGaiaIdFetchFailure(
-      const GoogleServiceAuthError& error) OVERRIDE {
+      const GoogleServiceAuthError& error) override {
     failed_ = true;
   }
   TestDelegate() : succeeded_(false), failed_(false) {}

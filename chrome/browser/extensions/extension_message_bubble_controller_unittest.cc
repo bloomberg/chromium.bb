@@ -79,17 +79,17 @@ class TestSuspiciousExtensionBubbleController
       : SuspiciousExtensionBubbleController(profile) {
   }
 
-  virtual void OnBubbleAction() OVERRIDE {
+  virtual void OnBubbleAction() override {
     ++action_button_callback_count_;
     SuspiciousExtensionBubbleController::OnBubbleAction();
   }
 
-  virtual void OnBubbleDismiss() OVERRIDE {
+  virtual void OnBubbleDismiss() override {
     ++dismiss_button_callback_count_;
     SuspiciousExtensionBubbleController::OnBubbleDismiss();
   }
 
-  virtual void OnLinkClicked() OVERRIDE {
+  virtual void OnLinkClicked() override {
     ++link_click_callback_count_;
     SuspiciousExtensionBubbleController::OnLinkClicked();
   }
@@ -104,17 +104,17 @@ class TestDevModeBubbleController
       : DevModeBubbleController(profile) {
   }
 
-  virtual void OnBubbleAction() OVERRIDE {
+  virtual void OnBubbleAction() override {
     ++action_button_callback_count_;
     DevModeBubbleController::OnBubbleAction();
   }
 
-  virtual void OnBubbleDismiss() OVERRIDE {
+  virtual void OnBubbleDismiss() override {
     ++dismiss_button_callback_count_;
     DevModeBubbleController::OnBubbleDismiss();
   }
 
-  virtual void OnLinkClicked() OVERRIDE {
+  virtual void OnLinkClicked() override {
     ++link_click_callback_count_;
     DevModeBubbleController::OnLinkClicked();
   }
@@ -128,17 +128,17 @@ class TestSettingsApiBubbleController : public SettingsApiBubbleController,
                                   SettingsApiOverrideType type)
       : SettingsApiBubbleController(profile, type) {}
 
-  virtual void OnBubbleAction() OVERRIDE {
+  virtual void OnBubbleAction() override {
     ++action_button_callback_count_;
     SettingsApiBubbleController::OnBubbleAction();
   }
 
-  virtual void OnBubbleDismiss() OVERRIDE {
+  virtual void OnBubbleDismiss() override {
     ++dismiss_button_callback_count_;
     SettingsApiBubbleController::OnBubbleDismiss();
   }
 
-  virtual void OnLinkClicked() OVERRIDE {
+  virtual void OnLinkClicked() override {
     ++link_click_callback_count_;
     SettingsApiBubbleController::OnLinkClicked();
   }
@@ -153,17 +153,17 @@ class TestNtpOverriddenBubbleController
       : NtpOverriddenBubbleController(profile) {
   }
 
-  virtual void OnBubbleAction() OVERRIDE {
+  virtual void OnBubbleAction() override {
     ++action_button_callback_count_;
     NtpOverriddenBubbleController::OnBubbleAction();
   }
 
-  virtual void OnBubbleDismiss() OVERRIDE {
+  virtual void OnBubbleDismiss() override {
     ++dismiss_button_callback_count_;
     NtpOverriddenBubbleController::OnBubbleDismiss();
   }
 
-  virtual void OnLinkClicked() OVERRIDE {
+  virtual void OnLinkClicked() override {
     ++link_click_callback_count_;
     NtpOverriddenBubbleController::OnLinkClicked();
   }
@@ -178,17 +178,17 @@ class TestProxyOverriddenBubbleController
       : ProxyOverriddenBubbleController(profile) {
   }
 
-  virtual void OnBubbleAction() OVERRIDE {
+  virtual void OnBubbleAction() override {
     ++action_button_callback_count_;
     ProxyOverriddenBubbleController::OnBubbleAction();
   }
 
-  virtual void OnBubbleDismiss() OVERRIDE {
+  virtual void OnBubbleDismiss() override {
     ++dismiss_button_callback_count_;
     ProxyOverriddenBubbleController::OnBubbleDismiss();
   }
 
-  virtual void OnLinkClicked() OVERRIDE {
+  virtual void OnLinkClicked() override {
     ++link_click_callback_count_;
     ProxyOverriddenBubbleController::OnLinkClicked();
   }
@@ -211,7 +211,7 @@ class FakeExtensionMessageBubble : public ExtensionMessageBubble {
     action_ = action;
   }
 
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     if (action_ == BUBBLE_ACTION_CLICK_ACTION_BUTTON)
       action_callback_.Run();
     else if (action_ == BUBBLE_ACTION_CLICK_DISMISS_BUTTON)
@@ -220,15 +220,15 @@ class FakeExtensionMessageBubble : public ExtensionMessageBubble {
       link_callback_.Run();
   }
 
-  virtual void OnActionButtonClicked(const base::Closure& callback) OVERRIDE {
+  virtual void OnActionButtonClicked(const base::Closure& callback) override {
     action_callback_ = callback;
   }
 
-  virtual void OnDismissButtonClicked(const base::Closure& callback) OVERRIDE {
+  virtual void OnDismissButtonClicked(const base::Closure& callback) override {
     dismiss_callback_ = callback;
   }
 
-  virtual void OnLinkClicked(const base::Closure& callback) OVERRIDE {
+  virtual void OnLinkClicked(const base::Closure& callback) override {
     link_callback_ = callback;
   }
 

@@ -98,12 +98,12 @@ class TabCapturePerformanceTest
     return suffix;
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EnablePixelOutput();
     ExtensionApiTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     if (!ScalingMethod().empty()) {
       command_line->AppendSwitchASCII(switches::kTabCaptureUpscaleQuality,
                                       ScalingMethod());

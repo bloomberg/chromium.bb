@@ -61,7 +61,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     *data = rb.GetRawDataResource(resource_id_).as_string();
 
@@ -90,7 +90,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     return net::ERR_IO_PENDING;
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override {
     *info = response_info_;
   }
 

@@ -45,7 +45,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
   WebstoreInstallListener()
       : received_failure_(false), received_success_(false), waiting_(false) {}
 
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
+  virtual void OnExtensionInstallSuccess(const std::string& id) override {
     received_success_ = true;
     id_ = id;
 
@@ -58,7 +58,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
   virtual void OnExtensionInstallFailure(
       const std::string& id,
       const std::string& error,
-      WebstoreInstaller::FailureReason reason) OVERRIDE {
+      WebstoreInstaller::FailureReason reason) override {
     received_failure_ = true;
     id_ = id;
     error_ = error;
@@ -95,14 +95,14 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   ExtensionWebstorePrivateApiTest() {}
   virtual ~ExtensionWebstorePrivateApiTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryURL,
         "http://www.example.com/files/extensions/api_test");
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     // Start up the test server and get us ready for calling the install
@@ -112,7 +112,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     ExtensionInstallUI::set_disable_failure_ui_for_tests();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
     ExtensionInstallPrompt::g_auto_confirm_for_tests =
@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
 class EphemeralAppWebstorePrivateApiTest
     : public ExtensionWebstorePrivateApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
 
     net::HostPortPair host_port = test_server()->host_port_pair();
@@ -410,7 +410,7 @@ class EphemeralAppWebstorePrivateApiTest
         switches::kAppsGalleryURL, test_gallery_url);
   }
 
-  virtual GURL GetTestServerURL(const std::string& path) OVERRIDE {
+  virtual GURL GetTestServerURL(const std::string& path) override {
     return DoGetTestServerURL(
         std::string("files/extensions/platform_apps/ephemeral_launcher/") +
         path);

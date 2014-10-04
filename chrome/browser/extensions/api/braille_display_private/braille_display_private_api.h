@@ -30,7 +30,7 @@ class BrailleDisplayPrivateAPI : public BrowserContextKeyedAPI,
   virtual ~BrailleDisplayPrivateAPI();
 
   // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI>*
@@ -38,13 +38,13 @@ class BrailleDisplayPrivateAPI : public BrowserContextKeyedAPI,
 
   // BrailleObserver implementation.
   virtual void OnBrailleDisplayStateChanged(
-      const api::braille_display_private::DisplayState& display_state) OVERRIDE;
+      const api::braille_display_private::DisplayState& display_state) override;
   virtual void OnBrailleKeyEvent(
-      const api::braille_display_private::KeyEvent& keyEvent) OVERRIDE;
+      const api::braille_display_private::KeyEvent& keyEvent) override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
 
  private:
@@ -86,9 +86,9 @@ class BrailleDisplayPrivateGetDisplayStateFunction : public AsyncApiFunction {
                              BRAILLEDISPLAYPRIVATE_GETDISPLAYSTATE)
  protected:
   virtual ~BrailleDisplayPrivateGetDisplayStateFunction() {}
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
+  virtual bool Respond() override;
 };
 
 class BrailleDisplayPrivateWriteDotsFunction : public AsyncApiFunction {
@@ -99,9 +99,9 @@ class BrailleDisplayPrivateWriteDotsFunction : public AsyncApiFunction {
 
  protected:
   virtual ~BrailleDisplayPrivateWriteDotsFunction();
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual bool Prepare() override;
+  virtual void Work() override;
+  virtual bool Respond() override;
 
  private:
   scoped_ptr<braille_display_private::WriteDots::Params> params_;

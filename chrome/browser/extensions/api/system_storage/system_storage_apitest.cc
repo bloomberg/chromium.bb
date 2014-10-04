@@ -40,7 +40,7 @@ class TestStorageInfoProvider : public extensions::StorageInfoProvider {
 
   // StorageInfoProvider implementations.
   virtual double GetStorageFreeSpaceFromTransientIdOnFileThread(
-      const std::string& transient_id) OVERRIDE;
+      const std::string& transient_id) override;
 
   std::vector<struct TestStorageUnitInfo> testing_data_;
 };
@@ -71,11 +71,11 @@ class SystemStorageApiTest : public ExtensionApiTest {
   SystemStorageApiTest() {}
   virtual ~SystemStorageApiTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     TestStorageMonitor::CreateForBrowserTests();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     message_loop_.reset(new base::MessageLoopForUI);
   }

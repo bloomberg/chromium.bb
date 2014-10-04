@@ -32,7 +32,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   virtual ~ScreenlockPrivateApiTest() {}
 
   // ExtensionApiTest
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
@@ -43,7 +43,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
 #endif
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     SigninManagerFactory::GetForProfile(profile())
         ->SetAuthenticatedUsername(kTestUser);
     ExtensionApiTest::SetUpOnMainThread();
@@ -51,7 +51,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
 
  protected:
   // ExtensionApiTest override:
-  virtual void RunTestOnMainThreadLoop() OVERRIDE {
+  virtual void RunTestOnMainThreadLoop() override {
     registrar_.Add(this,
                    extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
@@ -62,7 +62,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   // content::NotificationObserver override:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     const std::string& content = *content::Details<std::string>(details).ptr();
     if (content == kAttemptClickAuthMessage) {
       ScreenlockBridge::Get()->lock_handler()->SetAuthType(

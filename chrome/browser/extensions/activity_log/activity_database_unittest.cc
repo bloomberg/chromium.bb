@@ -53,10 +53,10 @@ class ActivityDatabaseTestPolicy : public ActivityDatabase::Delegate {
   virtual void Record(ActivityDatabase* db, scoped_refptr<Action> action);
 
  protected:
-  virtual bool InitDatabase(sql::Connection* db) OVERRIDE;
-  virtual bool FlushDatabase(sql::Connection*) OVERRIDE;
-  virtual void OnDatabaseFailure() OVERRIDE {}
-  virtual void OnDatabaseClose() OVERRIDE { delete this; }
+  virtual bool InitDatabase(sql::Connection* db) override;
+  virtual bool FlushDatabase(sql::Connection*) override;
+  virtual void OnDatabaseFailure() override {}
+  virtual void OnDatabaseClose() override { delete this; }
 
   std::vector<scoped_refptr<Action> > queue_;
 };
@@ -107,7 +107,7 @@ void ActivityDatabaseTestPolicy::Record(ActivityDatabase* db,
 
 class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
@@ -117,7 +117,7 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
         switches::kEnableExtensionActivityLogTesting);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
 #if defined OS_CHROMEOS
     test_user_manager_.reset();
 #endif

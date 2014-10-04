@@ -42,12 +42,12 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
                                 const base::FilePath& unpacked_extension_root,
                                 const base::FilePath& local_install_dir,
                                 Profile* profile,
-                                InstallExtensionCallback callback) OVERRIDE;
+                                InstallExtensionCallback callback) override;
   virtual void UninstallExtension(
       const std::string& id,
       Profile* profile,
       const base::FilePath& local_install_dir,
-      const base::FilePath& extension_root) OVERRIDE;
+      const base::FilePath& extension_root) override;
 
   // Return shared install dir.
   static base::FilePath GetSharedInstallDir();

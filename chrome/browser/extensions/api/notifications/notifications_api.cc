@@ -85,11 +85,11 @@ class NotificationsApiDelegate : public NotificationDelegate {
     DCHECK(api_function_.get());
   }
 
-  virtual void Display() OVERRIDE { }
+  virtual void Display() override { }
 
-  virtual void Error() OVERRIDE {}
+  virtual void Error() override {}
 
-  virtual void Close(bool by_user) OVERRIDE {
+  virtual void Close(bool by_user) override {
     EventRouter::UserGestureState gesture =
         by_user ? EventRouter::USER_GESTURE_ENABLED
                 : EventRouter::USER_GESTURE_NOT_ENABLED;
@@ -98,19 +98,19 @@ class NotificationsApiDelegate : public NotificationDelegate {
     SendEvent(notifications::OnClosed::kEventName, gesture, args.Pass());
   }
 
-  virtual void Click() OVERRIDE {
+  virtual void Click() override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     SendEvent(notifications::OnClicked::kEventName,
               EventRouter::USER_GESTURE_ENABLED,
               args.Pass());
   }
 
-  virtual bool HasClickedListener() OVERRIDE {
+  virtual bool HasClickedListener() override {
     return EventRouter::Get(profile_)->HasEventListener(
         notifications::OnClicked::kEventName);
   }
 
-  virtual void ButtonClick(int index) OVERRIDE {
+  virtual void ButtonClick(int index) override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(index));
     SendEvent(notifications::OnButtonClicked::kEventName,
@@ -118,11 +118,11 @@ class NotificationsApiDelegate : public NotificationDelegate {
               args.Pass());
   }
 
-  virtual std::string id() const OVERRIDE {
+  virtual std::string id() const override {
     return scoped_id_;
   }
 
-  virtual content::WebContents* GetWebContents() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const override {
     // We're holding a reference to api_function_, so we know it'll be valid
     // until ReleaseRVH is called, and api_function_ (as a
     // AsyncExtensionFunction) will zero out its copy of render_view_host
@@ -135,7 +135,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
     return content::WebContents::FromRenderViewHost(rvh);
   }
 
-  virtual void ReleaseRenderViewHost() OVERRIDE {
+  virtual void ReleaseRenderViewHost() override {
     api_function_ = NULL;
   }
 

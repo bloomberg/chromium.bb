@@ -43,7 +43,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
   virtual void Launch(const GURL& origin,
                       const std::string& native_host_name,
-                      LaunchedCallback callback) const OVERRIDE;
+                      LaunchedCallback callback) const override;
 
  private:
   class Core : public base::RefCountedThreadSafe<Core> {

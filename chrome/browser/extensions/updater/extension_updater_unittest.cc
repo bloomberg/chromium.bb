@@ -238,7 +238,7 @@ class NotificationsObserver : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     if (!quit_closure_.is_null())
       quit_closure_.Run();
     for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
@@ -294,7 +294,7 @@ class MockService : public TestExtensionService {
 
   virtual ~MockService() {}
 
-  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
+  virtual PendingExtensionManager* pending_extension_manager() override {
     ADD_FAILURE() << "Subclass should override this if it will "
                   << "be accessed by a test.";
     return &pending_extension_manager_;
@@ -441,27 +441,27 @@ class ServiceForManifestTests : public MockService {
   virtual ~ServiceForManifestTests() {}
 
   virtual const Extension* GetExtensionById(
-      const std::string& id, bool include_disabled) const OVERRIDE {
+      const std::string& id, bool include_disabled) const override {
     const Extension* result = registry_->enabled_extensions().GetByID(id);
     if (result || !include_disabled)
       return result;
     return registry_->disabled_extensions().GetByID(id);
   }
 
-  virtual const ExtensionSet* extensions() const OVERRIDE {
+  virtual const ExtensionSet* extensions() const override {
     return &registry_->enabled_extensions();
   }
 
-  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
+  virtual PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;
   }
 
   virtual const Extension* GetPendingExtensionUpdate(
-      const std::string& id) const OVERRIDE {
+      const std::string& id) const override {
     return NULL;
   }
 
-  virtual bool IsExtensionEnabled(const std::string& id) const OVERRIDE {
+  virtual bool IsExtensionEnabled(const std::string& id) const override {
     return !registry_->disabled_extensions().Contains(id);
   }
 
@@ -498,7 +498,7 @@ class ServiceForDownloadTests : public MockService {
       const std::string& id,
       const base::FilePath& extension_path,
       bool file_ownership_passed,
-      CrxInstaller** out_crx_installer) OVERRIDE {
+      CrxInstaller** out_crx_installer) override {
     extension_id_ = id;
     install_path_ = extension_path;
 
@@ -510,12 +510,12 @@ class ServiceForDownloadTests : public MockService {
     return false;
   }
 
-  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
+  virtual PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;
   }
 
   virtual const Extension* GetExtensionById(
-      const std::string& id, bool) const OVERRIDE {
+      const std::string& id, bool) const override {
     last_inquired_extension_id_ = id;
     return NULL;
   }
@@ -594,11 +594,11 @@ class ExtensionUpdaterTest : public testing::Test {
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Some tests create URLRequestContextGetters, whose destruction must run
     // on the IO thread. Make sure the IO loop spins before shutdown so that
     // those objects are released.

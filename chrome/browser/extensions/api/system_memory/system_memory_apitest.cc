@@ -14,7 +14,7 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:
   MockMemoryInfoProviderImpl() {}
 
-  virtual bool QueryInfo() OVERRIDE {
+  virtual bool QueryInfo() override {
     info_.capacity = 4096;
     info_.available_capacity = 1024;
     return true;
@@ -28,7 +28,7 @@ class SystemMemoryApiTest: public ExtensionApiTest {
   SystemMemoryApiTest() {}
   virtual ~SystemMemoryApiTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     message_loop_.reset(new base::MessageLoopForUI);
   }

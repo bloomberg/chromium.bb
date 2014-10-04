@@ -37,12 +37,12 @@ class BookmarkManagerPrivateEventRouter : public BaseBookmarkModelObserver {
   virtual ~BookmarkManagerPrivateEventRouter();
 
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkModelChanged() override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   virtual void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
-                                            const BookmarkNode* node) OVERRIDE;
+                                            const BookmarkNode* node) override;
   virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
-                                       const BookmarkNode* node) OVERRIDE;
+                                       const BookmarkNode* node) override;
 
  private:
   // Helper to actually dispatch an event to extension listeners.
@@ -63,14 +63,14 @@ class BookmarkManagerPrivateAPI : public BrowserContextKeyedAPI,
   virtual ~BookmarkManagerPrivateAPI();
 
   // BrowserContextKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>*
       GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>;
@@ -95,10 +95,10 @@ class BookmarkManagerPrivateDragEventRouter
   virtual ~BookmarkManagerPrivateDragEventRouter();
 
   // BookmarkTabHelper::BookmarkDrag interface
-  virtual void OnDragEnter(const bookmarks::BookmarkNodeData& data) OVERRIDE;
-  virtual void OnDragOver(const bookmarks::BookmarkNodeData& data) OVERRIDE;
-  virtual void OnDragLeave(const bookmarks::BookmarkNodeData& data) OVERRIDE;
-  virtual void OnDrop(const bookmarks::BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDragEnter(const bookmarks::BookmarkNodeData& data) override;
+  virtual void OnDragOver(const bookmarks::BookmarkNodeData& data) override;
+  virtual void OnDragLeave(const bookmarks::BookmarkNodeData& data) override;
+  virtual void OnDrop(const bookmarks::BookmarkNodeData& data) override;
 
   // The bookmark drag and drop data. This gets set after a drop was done on
   // the page. This returns NULL if no data is available.
@@ -136,7 +136,7 @@ class BookmarkManagerPrivateCopyFunction
   virtual ~BookmarkManagerPrivateCopyFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCutFunction
@@ -149,7 +149,7 @@ class BookmarkManagerPrivateCutFunction
   virtual ~BookmarkManagerPrivateCutFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivatePasteFunction
@@ -162,7 +162,7 @@ class BookmarkManagerPrivatePasteFunction
   virtual ~BookmarkManagerPrivatePasteFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCanPasteFunction
@@ -175,7 +175,7 @@ class BookmarkManagerPrivateCanPasteFunction
   virtual ~BookmarkManagerPrivateCanPasteFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateSortChildrenFunction
@@ -188,7 +188,7 @@ class BookmarkManagerPrivateSortChildrenFunction
   virtual ~BookmarkManagerPrivateSortChildrenFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateGetStringsFunction : public AsyncExtensionFunction {
@@ -200,7 +200,7 @@ class BookmarkManagerPrivateGetStringsFunction : public AsyncExtensionFunction {
   virtual ~BookmarkManagerPrivateGetStringsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class BookmarkManagerPrivateStartDragFunction
@@ -213,7 +213,7 @@ class BookmarkManagerPrivateStartDragFunction
   virtual ~BookmarkManagerPrivateStartDragFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateDropFunction
@@ -226,7 +226,7 @@ class BookmarkManagerPrivateDropFunction
   virtual ~BookmarkManagerPrivateDropFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateGetSubtreeFunction
@@ -239,7 +239,7 @@ class BookmarkManagerPrivateGetSubtreeFunction
   virtual ~BookmarkManagerPrivateGetSubtreeFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCanEditFunction
@@ -252,7 +252,7 @@ class BookmarkManagerPrivateCanEditFunction
   virtual ~BookmarkManagerPrivateCanEditFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateRecordLaunchFunction
@@ -265,7 +265,7 @@ class BookmarkManagerPrivateRecordLaunchFunction
   virtual ~BookmarkManagerPrivateRecordLaunchFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCreateWithMetaInfoFunction
@@ -278,7 +278,7 @@ class BookmarkManagerPrivateCreateWithMetaInfoFunction
   virtual ~BookmarkManagerPrivateCreateWithMetaInfoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateGetMetaInfoFunction
@@ -291,7 +291,7 @@ class BookmarkManagerPrivateGetMetaInfoFunction
   virtual ~BookmarkManagerPrivateGetMetaInfoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateSetMetaInfoFunction
@@ -304,7 +304,7 @@ class BookmarkManagerPrivateSetMetaInfoFunction
   virtual ~BookmarkManagerPrivateSetMetaInfoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateUpdateMetaInfoFunction
@@ -317,7 +317,7 @@ class BookmarkManagerPrivateUpdateMetaInfoFunction
   virtual ~BookmarkManagerPrivateUpdateMetaInfoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCanOpenNewWindowsFunction
@@ -330,7 +330,7 @@ class BookmarkManagerPrivateCanOpenNewWindowsFunction
   virtual ~BookmarkManagerPrivateCanOpenNewWindowsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateRemoveTreesFunction
@@ -343,7 +343,7 @@ class BookmarkManagerPrivateRemoveTreesFunction
   virtual ~BookmarkManagerPrivateRemoveTreesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateUndoFunction
@@ -356,7 +356,7 @@ class BookmarkManagerPrivateUndoFunction
   virtual ~BookmarkManagerPrivateUndoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateRedoFunction
@@ -369,7 +369,7 @@ class BookmarkManagerPrivateRedoFunction
   virtual ~BookmarkManagerPrivateRedoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateGetUndoInfoFunction
@@ -382,7 +382,7 @@ class BookmarkManagerPrivateGetUndoInfoFunction
   virtual ~BookmarkManagerPrivateGetUndoInfoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarkManagerPrivateGetRedoInfoFunction
@@ -395,7 +395,7 @@ class BookmarkManagerPrivateGetRedoInfoFunction
   virtual ~BookmarkManagerPrivateGetRedoInfoFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 }  // namespace extensions

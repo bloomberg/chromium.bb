@@ -181,7 +181,7 @@ class StorageEventObserver
   }
 
   // storage::StorageObserver implementation.
-  virtual void OnStorageEvent(const Event& event) OVERRIDE {
+  virtual void OnStorageEvent(const Event& event) override {
     OriginStorageStateMap::iterator state =
         origin_state_map_.find(event.filter.origin);
     if (state == origin_state_map_.end())

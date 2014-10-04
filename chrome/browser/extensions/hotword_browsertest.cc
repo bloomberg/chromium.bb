@@ -29,7 +29,7 @@ class HotwordBrowserTest : public ExtensionBrowserTest {
   virtual ~HotwordBrowserTest() { }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Force the VoiceTrigger field trial on to enable the hotword_helper
@@ -46,7 +46,7 @@ class HotwordBrowserTest : public ExtensionBrowserTest {
         FeatureSwitch::OVERRIDE_ENABLED);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     // Errors are only kept if we have Developer Mode enabled.

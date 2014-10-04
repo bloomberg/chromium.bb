@@ -54,15 +54,15 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   virtual void SetPrefs(base::DictionaryValue* prefs);
 
   // ExternalProvider implementation:
-  virtual void ServiceShutdown() OVERRIDE;
-  virtual void VisitRegisteredExtension() OVERRIDE;
-  virtual bool HasExtension(const std::string& id) const OVERRIDE;
+  virtual void ServiceShutdown() override;
+  virtual void VisitRegisteredExtension() override;
+  virtual bool HasExtension(const std::string& id) const override;
   virtual bool GetExtensionDetails(
       const std::string& id,
       Manifest::Location* location,
-      scoped_ptr<base::Version>* version) const OVERRIDE;
+      scoped_ptr<base::Version>* version) const override;
 
-  virtual bool IsReady() const OVERRIDE;
+  virtual bool IsReady() const override;
 
   static const char kExternalCrx[];
   static const char kExternalVersion[];

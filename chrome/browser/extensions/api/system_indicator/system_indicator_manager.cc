@@ -36,10 +36,10 @@ class ExtensionIndicatorIcon : public StatusIconObserver,
   virtual ~ExtensionIndicatorIcon();
 
   // StatusIconObserver implementation.
-  virtual void OnStatusIconClicked() OVERRIDE;
+  virtual void OnStatusIconClicked() override;
 
   // ExtensionActionIconFactory::Observer implementation.
-  virtual void OnIconUpdated() OVERRIDE;
+  virtual void OnIconUpdated() override;
 
  private:
   ExtensionIndicatorIcon(const Extension* extension,

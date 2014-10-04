@@ -31,7 +31,7 @@ class CopresenceService : public BrowserContextKeyedAPI,
   virtual ~CopresenceService();
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // These accessors will always return an object (except during shutdown).
   // If the object doesn't exist, they will create one first.
@@ -59,11 +59,11 @@ class CopresenceService : public BrowserContextKeyedAPI,
   virtual void HandleMessages(
       const std::string& app_id,
       const std::string& subscription_id,
-      const std::vector<copresence::Message>& message) OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContext() const OVERRIDE;
-  virtual const std::string GetPlatformVersionString() const OVERRIDE;
-  virtual const std::string GetAPIKey() const OVERRIDE;
-  virtual copresence::WhispernetClient* GetWhispernetClient() OVERRIDE;
+      const std::vector<copresence::Message>& message) override;
+  virtual net::URLRequestContextGetter* GetRequestContext() const override;
+  virtual const std::string GetPlatformVersionString() const override;
+  virtual const std::string GetAPIKey() const override;
+  virtual copresence::WhispernetClient* GetWhispernetClient() override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "CopresenceService"; }
@@ -90,7 +90,7 @@ class CopresenceExecuteFunction : public ChromeUIThreadExtensionFunction {
 
  protected:
   virtual ~CopresenceExecuteFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 
  private:
   void SendResult(copresence::CopresenceStatus status);
@@ -102,7 +102,7 @@ class CopresenceSetApiKeyFunction : public ChromeUIThreadExtensionFunction {
 
  protected:
   virtual ~CopresenceSetApiKeyFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

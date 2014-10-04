@@ -88,16 +88,16 @@ class DialRegistry : public DialService::Observer,
   typedef std::map<std::string, linked_ptr<DialDeviceData> > DeviceByLabelMap;
 
   // DialService::Observer:
-  virtual void OnDiscoveryRequest(DialService* service) OVERRIDE;
+  virtual void OnDiscoveryRequest(DialService* service) override;
   virtual void OnDeviceDiscovered(DialService* service,
-                                  const DialDeviceData& device) OVERRIDE;
-  virtual void OnDiscoveryFinished(DialService* service) OVERRIDE;
+                                  const DialDeviceData& device) override;
+  virtual void OnDiscoveryFinished(DialService* service) override;
   virtual void OnError(DialService* service,
-                       const DialService::DialServiceErrorCode& code) OVERRIDE;
+                       const DialService::DialServiceErrorCode& code) override;
 
   // net::NetworkChangeObserver:
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Starts and stops periodic discovery.  Periodic discovery is done when there
   // are registered event listeners.

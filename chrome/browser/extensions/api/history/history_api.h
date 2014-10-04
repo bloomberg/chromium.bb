@@ -35,7 +35,7 @@ class HistoryEventRouter : public content::NotificationObserver {
   // content::NotificationObserver::Observe.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void HistoryUrlVisited(Profile* profile,
                          const history::URLVisitedDetails* details);
@@ -59,13 +59,13 @@ class HistoryAPI : public BrowserContextKeyedAPI, public EventRouter::Observer {
   virtual ~HistoryAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<HistoryAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<HistoryAPI>;
@@ -105,7 +105,7 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   virtual ~HistoryFunctionWithCallback();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   // Return true if the async call was completed, false otherwise.
   virtual bool RunAsyncImpl() = 0;
@@ -131,7 +131,7 @@ class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
   virtual ~HistoryGetVisitsFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunAsyncImpl() OVERRIDE;
+  virtual bool RunAsyncImpl() override;
 
   // Callback for the history function to provide results.
   void QueryComplete(bool success,
@@ -147,7 +147,7 @@ class HistorySearchFunction : public HistoryFunctionWithCallback {
   virtual ~HistorySearchFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunAsyncImpl() OVERRIDE;
+  virtual bool RunAsyncImpl() override;
 
   // Callback for the history function to provide results.
   void SearchComplete(history::QueryResults* results);
@@ -161,7 +161,7 @@ class HistoryAddUrlFunction : public HistoryFunction {
   virtual ~HistoryAddUrlFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class HistoryDeleteAllFunction : public HistoryFunctionWithCallback {
@@ -172,7 +172,7 @@ class HistoryDeleteAllFunction : public HistoryFunctionWithCallback {
   virtual ~HistoryDeleteAllFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunAsyncImpl() OVERRIDE;
+  virtual bool RunAsyncImpl() override;
 
   // Callback for the history service to acknowledge deletion.
   void DeleteComplete();
@@ -187,7 +187,7 @@ class HistoryDeleteUrlFunction : public HistoryFunction {
   virtual ~HistoryDeleteUrlFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class HistoryDeleteRangeFunction : public HistoryFunctionWithCallback {
@@ -198,7 +198,7 @@ class HistoryDeleteRangeFunction : public HistoryFunctionWithCallback {
   virtual ~HistoryDeleteRangeFunction() {}
 
   // HistoryFunctionWithCallback:
-  virtual bool RunAsyncImpl() OVERRIDE;
+  virtual bool RunAsyncImpl() override;
 
   // Callback for the history service to acknowledge deletion.
   void DeleteComplete();

@@ -40,7 +40,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
         real_minimum_preserved_space_(0),
         real_default_quota_(0) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     real_minimum_preserved_space_ =
@@ -54,7 +54,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     storage::QuotaManager::kSyncableStorageDefaultHostQuota = 123456;
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     storage::QuotaManager::kMinimumPreserveForSystem =
         real_minimum_preserved_space_;
     storage::QuotaManager::kSyncableStorageDefaultHostQuota =
@@ -62,7 +62,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Must happen after the browser process is created because instantiating
     // the factory will instantiate ExtensionSystemFactory which depends on
     // ExtensionsBrowserClient setup in BrowserProcessImpl.

@@ -41,8 +41,8 @@ class SyncValueStoreCache : public ValueStoreCache {
   // ValueStoreCache implementation:
   virtual void RunWithValueStoreForExtension(
       const StorageCallback& callback,
-      scoped_refptr<const Extension> extension) OVERRIDE;
-  virtual void DeleteStorageSoon(const std::string& extension_id) OVERRIDE;
+      scoped_refptr<const Extension> extension) override;
+  virtual void DeleteStorageSoon(const std::string& extension_id) override;
 
  private:
   void InitOnFileThread(const scoped_refptr<SettingsStorageFactory>& factory,

@@ -379,7 +379,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
     host->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeManifestJSONParser, message)
       IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,

@@ -14,7 +14,7 @@ using extensions::PageCaptureSaveAsMHTMLFunction;
 
 class ExtensionPageCaptureApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
@@ -32,7 +32,7 @@ class PageCaptureSaveAsMHTMLDelegate
   }
 
   virtual void OnTemporaryFileCreated(
-      const base::FilePath& temp_file) OVERRIDE {
+      const base::FilePath& temp_file) override {
     temp_file_ = temp_file;
   }
 

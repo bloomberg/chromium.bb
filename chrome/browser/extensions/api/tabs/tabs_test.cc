@@ -599,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
 // Tester class for the tabs.zoom* api functions.
 class ExtensionTabsZoomTest : public ExtensionTabsTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
   // Runs chrome.tabs.setZoom().
   bool RunSetZoom(int tab_id, double zoom_factor);

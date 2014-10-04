@@ -196,7 +196,7 @@ class ExtensionDownloader
   void CreateManifestFetcher();
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Handles the result of a manifest fetch.
   void OnManifestFetchComplete(const GURL& url,
@@ -258,9 +258,9 @@ class ExtensionDownloader
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   ManifestFetchData* CreateManifestFetchData(const GURL& update_url,
                                              int request_id);

@@ -97,7 +97,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   // syncer::SyncChangeProcessor implementation.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
+      const syncer::SyncChangeList& change_list) override {
     if (fail_all_requests_) {
       return syncer::SyncError(
           FROM_HERE,
@@ -113,7 +113,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   }
 
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
+      override {
     return syncer::SyncDataList();
   }
 
@@ -172,7 +172,7 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
 
   // SettingsStorageFactory implementation.
   virtual ValueStore* Create(const base::FilePath& base_path,
-                             const std::string& extension_id) OVERRIDE {
+                             const std::string& extension_id) override {
     TestingValueStore* new_storage = new TestingValueStore();
     DCHECK(!created_.count(extension_id));
     created_[extension_id] = new_storage;
@@ -183,7 +183,7 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
   // any files.
   virtual void DeleteDatabaseIfExists(
       const base::FilePath& base_path,
-      const std::string& extension_id) OVERRIDE {}
+      const std::string& extension_id) override {}
 
  private:
   // SettingsStorageFactory is refcounted.
@@ -206,7 +206,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
         sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
             sync_processor_.get())) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new TestingProfile(temp_dir_.path()));
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
@@ -219,7 +219,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
             profile_.get(), &util::MockExtensionSystemWithEventRouter::Build);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     frontend_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.

@@ -36,7 +36,7 @@ class EntryWatcherServiceTest : public testing::Test {
   EntryWatcherServiceTest() {}
   virtual ~EntryWatcherServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_.reset(new TestingProfile);
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
@@ -53,7 +53,7 @@ class EntryWatcherServiceTest : public testing::Test {
         base::FilePath::FromUTF8Unsafe("/x/y/z"));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     dispatch_event_log_targets_.clear();
     dispatch_event_log_events_.clear();
   }

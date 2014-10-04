@@ -40,7 +40,7 @@ class CookiesEventRouter : public content::NotificationObserver {
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Handler for the COOKIE_CHANGED event. The method takes the details of such
   // an event and constructs a suitable JSON formatted extension event from it.
@@ -71,7 +71,7 @@ class CookiesGetFunction : public ChromeAsyncExtensionFunction {
   virtual ~CookiesGetFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void GetCookieOnIOThread();
@@ -94,7 +94,7 @@ class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
   virtual ~CookiesGetAllFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void GetAllCookiesOnIOThread();
@@ -115,7 +115,7 @@ class CookiesSetFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~CookiesSetFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void SetCookieOnIOThread();
@@ -140,7 +140,7 @@ class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
   virtual ~CookiesRemoveFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void RemoveCookieOnIOThread();
@@ -162,7 +162,7 @@ class CookiesGetAllCookieStoresFunction : public ChromeSyncExtensionFunction {
   virtual ~CookiesGetAllCookieStoresFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class CookiesAPI : public BrowserContextKeyedAPI,
@@ -172,14 +172,14 @@ class CookiesAPI : public BrowserContextKeyedAPI,
   virtual ~CookiesAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CookiesAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+      override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<CookiesAPI>;

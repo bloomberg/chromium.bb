@@ -41,7 +41,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 class TabCaptureApiPixelTest : public TabCaptureApiTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EnablePixelOutput();
     TabCaptureApiTest::SetUp();
   }

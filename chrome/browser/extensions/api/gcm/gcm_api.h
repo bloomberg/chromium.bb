@@ -26,7 +26,7 @@ class GcmApiFunction : public AsyncExtensionFunction {
   virtual ~GcmApiFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE FINAL;
+  virtual bool RunAsync() override final;
 
   // Actual implementation of specific functions.
   virtual bool DoWork() = 0;
@@ -47,7 +47,7 @@ class GcmRegisterFunction : public GcmApiFunction {
   virtual ~GcmRegisterFunction();
 
   // Register function implementation.
-  virtual bool DoWork() OVERRIDE FINAL;
+  virtual bool DoWork() override final;
 
  private:
   void CompleteFunctionWithResult(const std::string& registration_id,
@@ -64,7 +64,7 @@ class GcmUnregisterFunction : public GcmApiFunction {
   virtual ~GcmUnregisterFunction();
 
   // Register function implementation.
-  virtual bool DoWork() OVERRIDE FINAL;
+  virtual bool DoWork() override final;
 
  private:
   void CompleteFunctionWithResult(gcm::GCMClient::Result result);
@@ -80,7 +80,7 @@ class GcmSendFunction : public GcmApiFunction {
   virtual ~GcmSendFunction();
 
   // Send function implementation.
-  virtual bool DoWork() OVERRIDE FINAL;
+  virtual bool DoWork() override final;
 
  private:
   void CompleteFunctionWithResult(const std::string& message_id,

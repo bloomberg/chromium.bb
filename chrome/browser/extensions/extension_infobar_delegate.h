@@ -69,21 +69,21 @@ class ExtensionInfoBarDelegate : public infobars::InfoBarDelegate,
 
   // InfoBarDelegate.
   virtual bool EqualsDelegate(
-      infobars::InfoBarDelegate* delegate) const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() OVERRIDE;
+      infobars::InfoBarDelegate* delegate) const override;
+  virtual void InfoBarDismissed() override;
+  virtual Type GetInfoBarType() const override;
+  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() override;
 
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
 #if defined(TOOLKIT_VIEWS)
   Browser* browser_;  // We pass this to the ExtensionInfoBar.

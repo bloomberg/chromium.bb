@@ -154,7 +154,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
     }
 
     // ErrorConsole::Observer implementation.
-    virtual void OnErrorAdded(const ExtensionError* error) OVERRIDE {
+    virtual void OnErrorAdded(const ExtensionError* error) override {
       ++errors_observed_;
       if (errors_observed_ >= errors_expected_) {
         if (waiting_)
@@ -162,7 +162,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
       }
     }
 
-    virtual void OnErrorConsoleDestroyed() OVERRIDE {
+    virtual void OnErrorConsoleDestroyed() override {
       error_console_ = NULL;
     }
 
@@ -199,7 +199,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
     ACTION_NONE
   };
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // We need to enable the ErrorConsole FeatureSwitch in order to collect
@@ -209,7 +209,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
         FeatureSwitch::OVERRIDE_ENABLED);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     // Errors are only kept if we have Developer Mode enabled.

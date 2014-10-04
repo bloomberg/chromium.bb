@@ -346,16 +346,16 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   virtual void ConfirmInstall(
       Delegate* delegate,
       const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
+      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIAbort(true);
     base::MessageLoopForUI::current()->Quit();
   }
 
   virtual void OnInstallSuccess(const Extension* extension,
-                                SkBitmap* icon) OVERRIDE {}
+                                SkBitmap* icon) override {}
 
   virtual void OnInstallFailure(
-      const extensions::CrxInstallerError& error) OVERRIDE {}
+      const extensions::CrxInstallerError& error) override {}
 };
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
@@ -368,7 +368,7 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
   virtual void ConfirmInstall(
       Delegate* delegate,
       const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
+      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIProceed();
   }
 };

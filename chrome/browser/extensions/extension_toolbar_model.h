@@ -149,28 +149,28 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Callback when extensions are ready.
   void OnReady();
 
   // ExtensionRegistryObserver:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // ExtensionActionAPI::Observer:
   virtual void OnExtensionActionUpdated(
       ExtensionAction* extension_action,
       content::WebContents* web_contents,
-      content::BrowserContext* browser_context) OVERRIDE;
+      content::BrowserContext* browser_context) override;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service

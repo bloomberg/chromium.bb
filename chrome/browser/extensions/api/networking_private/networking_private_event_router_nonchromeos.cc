@@ -23,17 +23,17 @@ class NetworkingPrivateEventRouterImpl
 
  protected:
   // KeyedService overrides:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // NetworkingPrivateServiceClient::Observer overrides:
   virtual void OnNetworksChangedEvent(
-      const std::vector<std::string>& network_guids) OVERRIDE;
+      const std::vector<std::string>& network_guids) override;
   virtual void OnNetworkListChangedEvent(
-      const std::vector<std::string>& network_guids) OVERRIDE;
+      const std::vector<std::string>& network_guids) override;
 
  private:
   // Decide if we should listen for network changes or not. If there are any

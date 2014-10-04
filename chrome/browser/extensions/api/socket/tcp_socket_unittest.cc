@@ -33,7 +33,7 @@ class MockTCPSocket : public net::TCPClientSocket {
                           const net::CompletionCallback& callback));
   MOCK_METHOD2(SetKeepAlive, bool(bool enable, int delay));
   MOCK_METHOD1(SetNoDelay, bool(bool no_delay));
-  virtual bool IsConnected() const OVERRIDE {
+  virtual bool IsConnected() const override {
     return true;
   }
 

@@ -83,7 +83,7 @@ class InputImeSetCompositionFunction : public SyncExtensionFunction {
   virtual ~InputImeSetCompositionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeClearCompositionFunction : public SyncExtensionFunction {
@@ -95,7 +95,7 @@ class InputImeClearCompositionFunction : public SyncExtensionFunction {
   virtual ~InputImeClearCompositionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeCommitTextFunction : public SyncExtensionFunction {
@@ -106,7 +106,7 @@ class InputImeCommitTextFunction : public SyncExtensionFunction {
   virtual ~InputImeCommitTextFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeSetCandidateWindowPropertiesFunction
@@ -119,7 +119,7 @@ class InputImeSetCandidateWindowPropertiesFunction
   virtual ~InputImeSetCandidateWindowPropertiesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeSetCandidatesFunction : public SyncExtensionFunction {
@@ -130,7 +130,7 @@ class InputImeSetCandidatesFunction : public SyncExtensionFunction {
   virtual ~InputImeSetCandidatesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
@@ -142,7 +142,7 @@ class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
   virtual ~InputImeSetCursorPositionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
@@ -153,7 +153,7 @@ class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
   virtual ~InputImeSetMenuItemsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
@@ -165,7 +165,7 @@ class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
   virtual ~InputImeUpdateMenuItemsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
@@ -176,7 +176,7 @@ class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
   virtual ~InputImeDeleteSurroundingTextFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
@@ -188,7 +188,7 @@ class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
   virtual ~InputImeKeyEventHandledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
@@ -200,7 +200,7 @@ class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
   virtual ~InputImeSendKeyEventsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class InputImeHideInputViewFunction : public AsyncExtensionFunction {
@@ -212,7 +212,7 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
   virtual ~InputImeHideInputViewFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 };
 
 class InputImeAPI : public BrowserContextKeyedAPI,
@@ -227,14 +227,14 @@ class InputImeAPI : public BrowserContextKeyedAPI,
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<InputImeAPI>;

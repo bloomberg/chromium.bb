@@ -40,7 +40,7 @@ class IdentitySigninFlow : public OAuth2TokenService::Observer {
   void Start();
 
   // OAuth2TokenService::Observer implementation:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
 
  private:
   Delegate* delegate_;

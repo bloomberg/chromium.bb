@@ -56,63 +56,63 @@ class ExtensionViewHost
       const content::NativeWebKeyboardEvent& event);
 
   // ExtensionHost
-  virtual void OnDidStopLoading() OVERRIDE;
-  virtual void OnDocumentAvailable() OVERRIDE;
-  virtual void LoadInitialURL() OVERRIDE;
-  virtual bool IsBackgroundPage() const OVERRIDE;
+  virtual void OnDidStopLoading() override;
+  virtual void OnDocumentAvailable() override;
+  virtual void LoadInitialURL() override;
+  virtual bool IsBackgroundPage() const override;
 
   // content::WebContentsDelegate
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual bool PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
+      bool* is_keyboard_shortcut) override;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
   virtual bool PreHandleGestureEvent(
       content::WebContents* source,
-      const blink::WebGestureEvent& event) OVERRIDE;
+      const blink::WebGestureEvent& event) override;
   virtual content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
+      const std::vector<content::ColorSuggestion>& suggestions) override;
   virtual void RunFileChooser(
       content::WebContents* tab,
-      const content::FileChooserParams& params) OVERRIDE;
+      const content::FileChooserParams& params) override;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
-                                     const gfx::Size& new_size) OVERRIDE;
+                                     const gfx::Size& new_size) override;
 
   // content::WebContentsObserver
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   // web_modal::WebContentsModalDialogManagerDelegate
   virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() OVERRIDE;
+      GetWebContentsModalDialogHost() override;
   virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) OVERRIDE;
+      content::WebContents* web_contents) override;
 
   // web_modal::WebContentsModalDialogHost
-  virtual gfx::NativeView GetHostView() const OVERRIDE;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
-  virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
+  virtual gfx::NativeView GetHostView() const override;
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  virtual gfx::Size GetMaximumDialogSize() override;
   virtual void AddObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) override;
   virtual void RemoveObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate
-  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
-  virtual content::WebContents* GetVisibleWebContents() const OVERRIDE;
+  virtual WindowController* GetExtensionWindowController() const override;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
+  virtual content::WebContents* GetVisibleWebContents() const override;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   // Implemented per-platform. Create the platform-specific ExtensionView.

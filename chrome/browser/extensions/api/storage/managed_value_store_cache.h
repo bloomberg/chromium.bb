@@ -56,17 +56,17 @@ class ManagedValueStoreCache : public ValueStoreCache,
       PolicyValueStoreMap;
 
   // ValueStoreCache implementation:
-  virtual void ShutdownOnUI() OVERRIDE;
+  virtual void ShutdownOnUI() override;
   virtual void RunWithValueStoreForExtension(
       const StorageCallback& callback,
-      scoped_refptr<const Extension> extension) OVERRIDE;
-  virtual void DeleteStorageSoon(const std::string& extension_id) OVERRIDE;
+      scoped_refptr<const Extension> extension) override;
+  virtual void DeleteStorageSoon(const std::string& extension_id) override;
 
   // PolicyService::Observer implementation:
-  virtual void OnPolicyServiceInitialized(policy::PolicyDomain domain) OVERRIDE;
+  virtual void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
   virtual void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                const policy::PolicyMap& previous,
-                               const policy::PolicyMap& current) OVERRIDE;
+                               const policy::PolicyMap& current) override;
 
   // Posted by OnPolicyUpdated() to update a PolicyValueStore on the FILE
   // thread.

@@ -22,9 +22,9 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
   virtual ~ExtensionErrorUIDefault();
 
   // ExtensionErrorUI implementation:
-  virtual bool ShowErrorInBubbleView() OVERRIDE;
-  virtual void ShowExtensions() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual bool ShowErrorInBubbleView() override;
+  virtual void ShowExtensions() override;
+  virtual void Close() override;
 
  private:
   class ExtensionGlobalError : public GlobalErrorWithStandardBubble {
@@ -33,17 +33,17 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
 
    private:
     // GlobalError methods.
-    virtual bool HasMenuItem() OVERRIDE;
-    virtual int MenuItemCommandID() OVERRIDE;
-    virtual base::string16 MenuItemLabel() OVERRIDE;
-    virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
-    virtual base::string16 GetBubbleViewTitle() OVERRIDE;
-    virtual std::vector<base::string16> GetBubbleViewMessages() OVERRIDE;
-    virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
-    virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-    virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
-    virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
-    virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
+    virtual bool HasMenuItem() override;
+    virtual int MenuItemCommandID() override;
+    virtual base::string16 MenuItemLabel() override;
+    virtual void ExecuteMenuItem(Browser* browser) override;
+    virtual base::string16 GetBubbleViewTitle() override;
+    virtual std::vector<base::string16> GetBubbleViewMessages() override;
+    virtual base::string16 GetBubbleViewAcceptButtonLabel() override;
+    virtual base::string16 GetBubbleViewCancelButtonLabel() override;
+    virtual void OnBubbleViewDidClose(Browser* browser) override;
+    virtual void BubbleViewAcceptButtonPressed(Browser* browser) override;
+    virtual void BubbleViewCancelButtonPressed(Browser* browser) override;
 
     // The ExtensionErrorUIDefault who owns us.
     ExtensionErrorUIDefault* error_ui_;

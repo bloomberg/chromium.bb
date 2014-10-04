@@ -192,7 +192,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
       const std::string& id,
       Error error,
       const PingResult& ping,
-      const std::set<int>& request_ids) OVERRIDE;
+      const std::set<int>& request_ids) override;
   virtual void OnExtensionDownloadFinished(
       const std::string& id,
       const base::FilePath& path,
@@ -200,16 +200,16 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
       const GURL& download_url,
       const std::string& version,
       const PingResult& ping,
-      const std::set<int>& request_id) OVERRIDE;
+      const std::set<int>& request_id) override;
   virtual bool GetPingDataForExtension(
       const std::string& id,
-      ManifestFetchData::PingData* ping_data) OVERRIDE;
-  virtual std::string GetUpdateUrlData(const std::string& id) OVERRIDE;
-  virtual bool IsExtensionPending(const std::string& id) OVERRIDE;
+      ManifestFetchData::PingData* ping_data) override;
+  virtual std::string GetUpdateUrlData(const std::string& id) override;
+  virtual bool IsExtensionPending(const std::string& id) override;
   virtual bool GetExtensionExistingVersion(const std::string& id,
-                                           std::string* version) OVERRIDE;
+                                           std::string* version) override;
   virtual bool ShouldForceUpdate(const std::string& extension_id,
-                                 std::string* source) OVERRIDE;
+                                 std::string* source) override;
 
   void UpdatePingData(const std::string& id, const PingResult& ping_result);
 
@@ -219,7 +219,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Implementation of ExtensionRegistryObserver.
   virtual void OnExtensionWillBeInstalled(
@@ -227,7 +227,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
 
   // Send a notification that update checks are starting.
   void NotifyStarted();

@@ -16,7 +16,7 @@ class CommandLinePrivateHasSwitchFunction : public SyncExtensionFunction {
   virtual ~CommandLinePrivateHasSwitchFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

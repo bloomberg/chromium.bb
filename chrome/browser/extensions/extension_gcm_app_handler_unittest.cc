@@ -145,24 +145,24 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
 
   virtual void OnMessage(
       const std::string& app_id,
-      const gcm::GCMClient::IncomingMessage& message) OVERRIDE {
+      const gcm::GCMClient::IncomingMessage& message) override {
   }
 
-  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE {
+  virtual void OnMessagesDeleted(const std::string& app_id) override {
   }
 
   virtual void OnSendError(
       const std::string& app_id,
-      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE {
+      const gcm::GCMClient::SendErrorDetails& send_error_details) override {
   }
 
   virtual void OnUnregisterCompleted(const std::string& app_id,
-                                     gcm::GCMClient::Result result) OVERRIDE {
+                                     gcm::GCMClient::Result result) override {
     unregistration_result_ = result;
     waiter_->SignalCompleted();
   }
 
-  virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE{
+  virtual void RemoveAppHandler(const std::string& app_id) override{
     ExtensionGCMAppHandler::RemoveAppHandler(app_id);
     if (!GetGCMDriver()->app_handlers().size())
       app_handler_count_drop_to_zero_ = true;
@@ -207,7 +207,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   // Overridden from test::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Make BrowserThread work in unittest.
@@ -258,7 +258,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     gcm_app_handler_.reset(new FakeExtensionGCMAppHandler(profile(), &waiter_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
 #if defined(OS_CHROMEOS)
     test_user_manager_.reset();
 #endif

@@ -59,36 +59,36 @@ class ExtensionToolbarModelTestObserver
  private:
   // ExtensionToolbarModel::Observer:
   virtual void ToolbarExtensionAdded(const Extension* extension,
-                                     int index) OVERRIDE {
+                                     int index) override {
     ++inserted_count_;
   }
 
-  virtual void ToolbarExtensionRemoved(const Extension* extension) OVERRIDE {
+  virtual void ToolbarExtensionRemoved(const Extension* extension) override {
     ++removed_count_;
   }
 
   virtual void ToolbarExtensionMoved(const Extension* extension,
-                                     int index) OVERRIDE {
+                                     int index) override {
     ++moved_count_;
   }
 
-  virtual void ToolbarExtensionUpdated(const Extension* extension) OVERRIDE {
+  virtual void ToolbarExtensionUpdated(const Extension* extension) override {
   }
 
   virtual bool ShowExtensionActionPopup(const Extension* extension,
-                                        bool grant_active_tab) OVERRIDE {
+                                        bool grant_active_tab) override {
     return false;
   }
 
-  virtual void ToolbarVisibleCountChanged() OVERRIDE {
+  virtual void ToolbarVisibleCountChanged() override {
   }
 
-  virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE {
+  virtual void ToolbarHighlightModeChanged(bool is_highlighting) override {
     // Add one if highlighting, subtract one if not.
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }
 
-  virtual Browser* GetBrowser() OVERRIDE {
+  virtual Browser* GetBrowser() override {
     return NULL;
   }
 

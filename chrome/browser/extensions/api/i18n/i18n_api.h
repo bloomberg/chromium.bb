@@ -14,7 +14,7 @@ namespace extensions {
 
 class I18nGetAcceptLanguagesFunction : public ChromeSyncExtensionFunction {
   virtual ~I18nGetAcceptLanguagesFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("i18n.getAcceptLanguages", I18N_GETACCEPTLANGUAGES)
 };
 

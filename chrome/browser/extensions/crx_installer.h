@@ -108,8 +108,8 @@ class CrxInstaller
   void InstallWebApp(const WebApplicationInfo& web_app);
 
   // Overridden from ExtensionInstallPrompt::Delegate:
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   int creation_flags() const { return creation_flags_; }
   void set_creation_flags(int val) { creation_flags_ = val; }
@@ -222,12 +222,12 @@ class CrxInstaller
   CrxInstallerError AllowInstall(const Extension* extension);
 
   // SandboxedUnpackerClient
-  virtual void OnUnpackFailure(const base::string16& error_message) OVERRIDE;
+  virtual void OnUnpackFailure(const base::string16& error_message) override;
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
-                               const SkBitmap& install_icon) OVERRIDE;
+                               const SkBitmap& install_icon) override;
 
   // Called on the UI thread to start the requirements, policy and blacklist
   // checks on the extension.

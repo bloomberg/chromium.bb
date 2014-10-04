@@ -26,14 +26,14 @@ class ChromeDirectSettingAPI : public BrowserContextKeyedAPI,
   virtual ~ChromeDirectSettingAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ChromeDirectSettingAPI>*
       GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
 
   // Returns true if the preference is on the whitelist.
   bool IsPreferenceOnWhitelist(const std::string& pref_key);

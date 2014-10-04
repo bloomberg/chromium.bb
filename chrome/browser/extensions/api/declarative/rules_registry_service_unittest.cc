@@ -43,7 +43,7 @@ class RulesRegistryServiceTest : public testing::Test {
 
   virtual ~RulesRegistryServiceTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Make sure that deletion traits of all registries are executed.
     message_loop_.RunUntilIdle();
   }

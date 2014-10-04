@@ -56,7 +56,7 @@ std::string BuildForceInstallPolicyValue(const char* extension_id,
 
 class ExtensionManagementTest : public ExtensionBrowserTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
@@ -233,7 +233,7 @@ class NotificationListener : public content::NotificationObserver {
   // Implements content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED: {
         EXPECT_FALSE(started_);

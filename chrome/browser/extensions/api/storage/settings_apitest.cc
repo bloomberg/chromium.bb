@@ -74,7 +74,7 @@ class MockSchemaRegistryObserver : public policy::SchemaRegistry::Observer {
 
 class ExtensionSettingsApiTest : public ExtensionApiTest {
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

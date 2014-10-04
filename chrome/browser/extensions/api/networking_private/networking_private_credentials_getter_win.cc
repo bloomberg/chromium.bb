@@ -26,9 +26,9 @@ class CredentialsGetterHostClient : public content::UtilityProcessHostClient {
   virtual ~CredentialsGetterHostClient();
 
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual void OnProcessLaunchFailed() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual void OnProcessLaunchFailed() override;
 
   // IPC message handlers.
   void OnGotCredentials(const std::string& key_data, bool success);
@@ -119,7 +119,7 @@ class NetworkingPrivateCredentialsGetterWin
       const std::string& network_guid,
       const std::string& public_key,
       const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-          VerifyAndEncryptCredentialsCallback& callback) OVERRIDE;
+          VerifyAndEncryptCredentialsCallback& callback) override;
 
  private:
   virtual ~NetworkingPrivateCredentialsGetterWin();

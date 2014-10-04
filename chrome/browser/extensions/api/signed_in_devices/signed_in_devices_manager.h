@@ -44,7 +44,7 @@ class SignedInDevicesChangeObserver
                                 Profile* profile);
   virtual ~SignedInDevicesChangeObserver();
 
-  virtual void OnDeviceInfoChange() OVERRIDE;
+  virtual void OnDeviceInfoChange() override;
 
   const std::string& extension_id() {
     return extension_id_;
@@ -73,11 +73,11 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // EventRouter::Observer:
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<SignedInDevicesManager>;

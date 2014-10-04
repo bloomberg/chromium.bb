@@ -72,28 +72,28 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
   // page navigation, for now) from the renderer.
   virtual void Apply(
       content::WebContents* contents,
-      const std::vector<std::string>& matching_css_selectors) OVERRIDE;
+      const std::vector<std::string>& matching_css_selectors) override;
 
   // Applies all content rules given that a tab was just navigated.
   virtual void DidNavigateMainFrame(
       content::WebContents* tab,
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   // Implementation of RulesRegistry:
   virtual std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
+      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) override;
   virtual std::string RemoveRulesImpl(
       const std::string& extension_id,
-      const std::vector<std::string>& rule_identifiers) OVERRIDE;
+      const std::vector<std::string>& rule_identifiers) override;
   virtual std::string RemoveAllRulesImpl(
-      const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;

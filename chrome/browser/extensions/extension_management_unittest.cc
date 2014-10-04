@@ -61,7 +61,7 @@ class ExtensionManagementServiceTest : public testing::Test {
   virtual ~ExtensionManagementServiceTest() {}
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InitPrefService();
   }
 

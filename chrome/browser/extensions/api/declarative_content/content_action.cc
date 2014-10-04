@@ -74,10 +74,10 @@ class ShowPageAction : public ContentAction {
   }
 
   // Implementation of ContentAction:
-  virtual Type GetType() const OVERRIDE { return ACTION_SHOW_PAGE_ACTION; }
+  virtual Type GetType() const override { return ACTION_SHOW_PAGE_ACTION; }
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
-                     ApplyInfo* apply_info) const OVERRIDE {
+                     ApplyInfo* apply_info) const override {
     ExtensionAction* action =
         GetPageAction(apply_info->browser_context, extension_id);
     action->DeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
@@ -87,10 +87,10 @@ class ShowPageAction : public ContentAction {
   // The page action is already showing, so nothing needs to be done here.
   virtual void Reapply(const std::string& extension_id,
                        const base::Time& extension_install_time,
-                       ApplyInfo* apply_info) const OVERRIDE {}
+                       ApplyInfo* apply_info) const override {}
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
-                      ApplyInfo* apply_info) const OVERRIDE {
+                      ApplyInfo* apply_info) const override {
     if (ExtensionAction* action =
             GetPageAction(apply_info->browser_context, extension_id)) {
       action->UndoDeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
@@ -130,10 +130,10 @@ class SetIcon : public ContentAction {
       bool* bad_message);
 
   // Implementation of ContentAction:
-  virtual Type GetType() const OVERRIDE { return ACTION_SET_ICON; }
+  virtual Type GetType() const override { return ACTION_SET_ICON; }
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
-                     ApplyInfo* apply_info) const OVERRIDE {
+                     ApplyInfo* apply_info) const override {
     Profile* profile = Profile::FromBrowserContext(apply_info->browser_context);
     ExtensionAction* action = GetExtensionAction(profile, extension_id);
     if (action) {
@@ -147,11 +147,11 @@ class SetIcon : public ContentAction {
 
   virtual void Reapply(const std::string& extension_id,
                        const base::Time& extension_install_time,
-                       ApplyInfo* apply_info) const OVERRIDE {}
+                       ApplyInfo* apply_info) const override {}
 
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
-                      ApplyInfo* apply_info) const OVERRIDE {
+                      ApplyInfo* apply_info) const override {
     Profile* profile = Profile::FromBrowserContext(apply_info->browser_context);
     ExtensionAction* action = GetExtensionAction(profile, extension_id);
     if (action) {

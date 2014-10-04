@@ -32,7 +32,7 @@ class ErrorConsoleUnitTest : public testing::Test {
   ErrorConsoleUnitTest() : error_console_(NULL) { }
   virtual ~ErrorConsoleUnitTest() { }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
 
     // Errors are only kept if we have the FeatureSwitch and have Developer Mode

@@ -134,7 +134,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
   virtual ~StreamsPrivateApiTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Init test server.
     test_server_.reset(new EmbeddedTestServer);
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
@@ -143,7 +143,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // Tear down the test server.
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();

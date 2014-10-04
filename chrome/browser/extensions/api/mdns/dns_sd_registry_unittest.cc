@@ -15,7 +15,7 @@ class MockDnsSdDeviceLister : public DnsSdDeviceLister {
   MockDnsSdDeviceLister() : DnsSdDeviceLister(NULL, NULL, "") {}
   virtual ~MockDnsSdDeviceLister() {}
 
-  virtual void Discover(bool force_update) OVERRIDE {}
+  virtual void Discover(bool force_update) override {}
 };
 
 class TestDnsSdRegistry : public DnsSdRegistry {
@@ -43,7 +43,7 @@ class TestDnsSdRegistry : public DnsSdRegistry {
       DnsSdDelegate* delegate,
       const std::string& service_type,
       local_discovery::ServiceDiscoverySharedClient* discovery_client)
-          OVERRIDE {
+          override {
     delegate_ = delegate;
     MockDnsSdDeviceLister* lister = new MockDnsSdDeviceLister();
     listers_[service_type] = lister;
@@ -67,7 +67,7 @@ class DnsSdRegistryTest : public testing::Test {
   DnsSdRegistryTest() {}
   virtual ~DnsSdRegistryTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     registry_.reset(new TestDnsSdRegistry());
     registry_->AddObserver(&observer_);
   }

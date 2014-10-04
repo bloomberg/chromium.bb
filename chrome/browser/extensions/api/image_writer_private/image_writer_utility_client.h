@@ -61,9 +61,9 @@ class ImageWriterUtilityClient : public content::UtilityProcessHostClient {
   void StartHost();
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual void OnProcessLaunchFailed() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual void OnProcessLaunchFailed() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual bool Send(IPC::Message* msg);
 
   // IPC message handlers.

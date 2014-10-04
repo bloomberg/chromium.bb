@@ -36,11 +36,11 @@ class TestFunctionDispatcherDelegate
 
  private:
   virtual extensions::WindowController* GetExtensionWindowController()
-      const OVERRIDE {
+      const override {
     return browser_->extension_window_controller();
   }
 
-  virtual WebContents* GetAssociatedWebContents() const OVERRIDE {
+  virtual WebContents* GetAssociatedWebContents() const override {
     return NULL;
   }
 
@@ -211,7 +211,7 @@ class SendResponseDelegate
 
   virtual void OnSendResponse(UIThreadExtensionFunction* function,
                               bool success,
-                              bool bad_message) OVERRIDE {
+                              bool bad_message) override {
     ASSERT_FALSE(bad_message);
     ASSERT_FALSE(HasResponse());
     response_.reset(new bool);

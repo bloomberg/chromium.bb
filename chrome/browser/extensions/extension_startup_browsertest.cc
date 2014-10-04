@@ -50,7 +50,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
  protected:
   // InProcessBrowserTest
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     if (load_extensions_.empty()) {
       // If no |load_extensions_| were specified, allow unauthenticated
       // extension settings to be loaded from Preferences as if they had been
@@ -74,7 +74,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     }
   }
 
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     base::FilePath profile_dir;
     PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);

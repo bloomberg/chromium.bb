@@ -70,13 +70,13 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
   virtual void Start();
 
   // UbertokenConsumer implementation:
-  virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnUbertokenSuccess(const std::string& token) override;
+  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
 
   // WebAuthFlow::Delegate implementation.
-  virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) OVERRIDE;
-  virtual void OnAuthFlowURLChange(const GURL& redirect_url) OVERRIDE;
-  virtual void OnAuthFlowTitleChange(const std::string& title) OVERRIDE;
+  virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) override;
+  virtual void OnAuthFlowURLChange(const GURL& redirect_url) override;
+  virtual void OnAuthFlowTitleChange(const std::string& title) override;
 
  private:
   // Creates a WebAuthFlow, which will navigate to |url|. Can override

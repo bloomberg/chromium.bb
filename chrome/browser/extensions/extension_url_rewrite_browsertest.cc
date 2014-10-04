@@ -26,7 +26,7 @@ using content::NavigationEntry;
 
 class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
     ExtensionBrowserTest::SetUp();
   }

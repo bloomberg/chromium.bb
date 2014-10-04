@@ -36,13 +36,13 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
   // ExtensionPrefsObserver implementation.
   virtual void OnExtensionRegistered(const std::string& extension_id,
                                      const base::Time& install_time,
-                                     bool is_enabled) OVERRIDE;
+                                     bool is_enabled) override;
   virtual void OnExtensionPrefsLoaded(const std::string& extension_id,
-                                      const ExtensionPrefs* prefs) OVERRIDE;
+                                      const ExtensionPrefs* prefs) override;
   virtual void OnExtensionPrefsDeleted(const std::string& extension_id)
-      OVERRIDE;
+      override;
   virtual void OnExtensionStateChanged(const std::string& extension_id,
-                                       bool state) OVERRIDE;
+                                       bool state) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ContentSettingsService>;

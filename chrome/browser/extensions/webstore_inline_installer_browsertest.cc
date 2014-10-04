@@ -55,7 +55,7 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
       Delegate* delegate,
       const Extension* extension,
       SkBitmap* icon,
-      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) OVERRIDE {
+      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) override {
     delegate_ = delegate;
   }
 
@@ -93,7 +93,7 @@ class WebstoreInlineInstallerForTest : public WebstoreInlineInstaller {
         programmable_prompt_(NULL) {
   }
 
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE {
+  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override {
     programmable_prompt_ = new ProgrammableInstallPrompt(web_contents());
     return make_scoped_ptr(programmable_prompt_).
         PassAs<ExtensionInstallPrompt>();
@@ -119,7 +119,7 @@ class WebstoreInlineInstallerForTestFactory :
       WebContents* contents,
       const std::string& webstore_item_id,
       const GURL& requestor_url,
-      const WebstoreStandaloneInstaller::Callback& callback) OVERRIDE {
+      const WebstoreStandaloneInstaller::Callback& callback) override {
     return new WebstoreInlineInstallerForTest(
         contents, webstore_item_id, requestor_url, callback);
   }

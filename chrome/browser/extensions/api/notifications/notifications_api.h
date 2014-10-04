@@ -45,7 +45,7 @@ class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunNotificationsApi() = 0;
 
   // UITHreadExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   message_center::NotificationType MapApiTemplateTypeToType(
       api::notifications::TemplateType type);
@@ -56,7 +56,7 @@ class NotificationsCreateFunction : public NotificationsApiFunction {
   NotificationsCreateFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() OVERRIDE;
+  virtual bool RunNotificationsApi() override;
 
  protected:
   virtual ~NotificationsCreateFunction();
@@ -72,7 +72,7 @@ class NotificationsUpdateFunction : public NotificationsApiFunction {
   NotificationsUpdateFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() OVERRIDE;
+  virtual bool RunNotificationsApi() override;
 
  protected:
   virtual ~NotificationsUpdateFunction();
@@ -88,7 +88,7 @@ class NotificationsClearFunction : public NotificationsApiFunction {
   NotificationsClearFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() OVERRIDE;
+  virtual bool RunNotificationsApi() override;
 
  protected:
   virtual ~NotificationsClearFunction();
@@ -104,7 +104,7 @@ class NotificationsGetAllFunction : public NotificationsApiFunction {
   NotificationsGetAllFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() OVERRIDE;
+  virtual bool RunNotificationsApi() override;
 
  protected:
   virtual ~NotificationsGetAllFunction();
@@ -119,8 +119,8 @@ class NotificationsGetPermissionLevelFunction
   NotificationsGetPermissionLevelFunction();
 
   // NotificationsApiFunction:
-  virtual bool CanRunWhileDisabled() const OVERRIDE;
-  virtual bool RunNotificationsApi() OVERRIDE;
+  virtual bool CanRunWhileDisabled() const override;
+  virtual bool RunNotificationsApi() override;
 
  protected:
   virtual ~NotificationsGetPermissionLevelFunction();

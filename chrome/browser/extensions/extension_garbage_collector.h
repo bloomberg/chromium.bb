@@ -35,12 +35,12 @@ class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
   void GarbageCollectExtensionsForTest();
 
   // Overriddes for KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Overriddes for InstallObserver
-  virtual void OnBeginCrxInstall(const std::string& extension_id) OVERRIDE;
+  virtual void OnBeginCrxInstall(const std::string& extension_id) override;
   virtual void OnFinishCrxInstall(const std::string& extension_id,
-                                  bool success) OVERRIDE;
+                                  bool success) override;
 
  protected:
   // Cleans up the extension install directory. It can end up with garbage in it

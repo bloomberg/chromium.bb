@@ -64,7 +64,7 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 };
@@ -322,7 +322,7 @@ class FakeAutomationInternalEnableTabFunction
  public:
   FakeAutomationInternalEnableTabFunction() {}
 
-  ExtensionFunction::ResponseAction Run() OVERRIDE {
+  ExtensionFunction::ResponseAction Run() override {
     using api::automation_internal::EnableTab::Params;
     scoped_ptr<Params> params(Params::Create(*args_));
     EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -423,7 +423,7 @@ class FakeAutomationInternalPerformActionFunction
  public:
   FakeAutomationInternalPerformActionFunction() {}
 
-  ExtensionFunction::ResponseAction Run() OVERRIDE {
+  ExtensionFunction::ResponseAction Run() override {
     if (state.destroy_tree0) {
       // Step 4.f: tell the extension to destroy the tree and re-request it.
       state.SendTreeDestroyedEvent(kTab0Rid, browser_context());

@@ -53,12 +53,12 @@ class TestFaviconDownloader : public FaviconDownloader {
   }
   virtual ~TestFaviconDownloader() {}
 
-  virtual int DownloadImage(const GURL& url) OVERRIDE {
+  virtual int DownloadImage(const GURL& url) override {
     return id_counter_++;
   }
 
   virtual std::vector<content::FaviconURL> GetFaviconURLsFromWebContents()
-      OVERRIDE {
+      override {
     return initial_favicon_urls_;
   }
 

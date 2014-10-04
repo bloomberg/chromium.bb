@@ -26,7 +26,7 @@ class CopresencePrivateSendFoundFunction : public CopresencePrivateFunction {
 
  protected:
   virtual ~CopresencePrivateSendFoundFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 class CopresencePrivateSendSamplesFunction : public CopresencePrivateFunction {
@@ -36,7 +36,7 @@ class CopresencePrivateSendSamplesFunction : public CopresencePrivateFunction {
 
  protected:
   virtual ~CopresencePrivateSendSamplesFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 class CopresencePrivateSendDetectFunction : public CopresencePrivateFunction {
@@ -46,7 +46,7 @@ class CopresencePrivateSendDetectFunction : public CopresencePrivateFunction {
 
  protected:
   virtual ~CopresencePrivateSendDetectFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 class CopresencePrivateSendInitializedFunction
@@ -57,7 +57,7 @@ class CopresencePrivateSendInitializedFunction
 
  protected:
   virtual ~CopresencePrivateSendInitializedFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

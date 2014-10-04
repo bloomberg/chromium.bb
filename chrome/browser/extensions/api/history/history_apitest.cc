@@ -14,7 +14,7 @@ namespace extensions {
 
 class HistoryApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     host_resolver()->AddRule("www.a.com", "127.0.0.1");

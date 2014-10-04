@@ -30,7 +30,7 @@ class ExtensionGarbageCollectorChromeOS : public ExtensionGarbageCollector {
 
  private:
   // Overriddes for ExtensionGarbageCollector:
-  virtual void GarbageCollectExtensions() OVERRIDE;
+  virtual void GarbageCollectExtensions() override;
 
   // Return true if there is no extension installation for all active profiles.
   bool CanGarbageCollectSharedExtensions();

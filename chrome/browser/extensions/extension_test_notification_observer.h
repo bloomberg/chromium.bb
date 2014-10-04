@@ -80,7 +80,7 @@ class ExtensionTestNotificationObserver
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   class NotificationSet;
@@ -100,7 +100,7 @@ class ExtensionTestNotificationObserver
   void MaybeQuit();
 
   // extensions::ExtensionActionAPI::Observer:
-  virtual void OnPageActionsUpdated(content::WebContents* contents) OVERRIDE;
+  virtual void OnPageActionsUpdated(content::WebContents* contents) override;
 
   Browser* browser_;
   Profile* profile_;

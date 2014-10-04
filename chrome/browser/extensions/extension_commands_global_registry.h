@@ -72,14 +72,14 @@ class ExtensionCommandsGlobalRegistry
   // Overridden from ExtensionKeybindingRegistry:
   virtual void AddExtensionKeybinding(
       const Extension* extension,
-      const std::string& command_name) OVERRIDE;
+      const std::string& command_name) override;
   virtual void RemoveExtensionKeybindingImpl(
       const ui::Accelerator& accelerator,
-      const std::string& command_name) OVERRIDE;
+      const std::string& command_name) override;
 
   // Called by the GlobalShortcutListener object when a shortcut this class has
   // registered for has been pressed.
-  virtual void OnKeyPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void OnKeyPressed(const ui::Accelerator& accelerator) override;
 
   // Weak pointer to our browser context. Not owned by us.
   content::BrowserContext* browser_context_;

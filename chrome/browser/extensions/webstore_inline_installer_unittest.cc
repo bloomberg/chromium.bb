@@ -52,8 +52,8 @@ TestWebstoreInlineInstaller::~TestWebstoreInlineInstaller() {}
 class WebstoreInlineInstallerTest : public ChromeRenderViewHostTestHarness {
  public:
   // testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   bool TestSingleVerifiedSite(const std::string& requestor_url,
                               const std::string& verified_site);

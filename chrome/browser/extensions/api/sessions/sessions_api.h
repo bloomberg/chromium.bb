@@ -29,7 +29,7 @@ class SessionId;
 class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SessionsGetRecentlyClosedFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("sessions.getRecentlyClosed",
                              SESSIONS_GETRECENTLYCLOSED)
 
@@ -47,7 +47,7 @@ class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
 class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SessionsGetDevicesFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("sessions.getDevices", SESSIONS_GETDEVICES)
 
  private:
@@ -68,7 +68,7 @@ class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
 class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SessionsRestoreFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("sessions.restore", SESSIONS_RESTORE)
 
  private:
@@ -89,11 +89,11 @@ class SessionsEventRouter : public TabRestoreServiceObserver {
   // Observer callback for TabRestoreServiceObserver. Sends data on
   // recently closed tabs to the javascript side of this page to
   // display to the user.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
 
   // Observer callback to notice when our associated TabRestoreService
   // is destroyed.
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
  private:
   Profile* profile_;
@@ -111,14 +111,14 @@ class SessionsAPI : public BrowserContextKeyedAPI,
   virtual ~SessionsAPI();
 
   // BrowserContextKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<SessionsAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+      override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<SessionsAPI>;

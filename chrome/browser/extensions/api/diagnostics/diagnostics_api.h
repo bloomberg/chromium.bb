@@ -37,10 +37,10 @@ class DiagnosticsSendPacketFunction : public AsyncApiFunction {
   virtual ~DiagnosticsSendPacketFunction();
 
   // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
+  virtual bool Prepare() override;
   // This methods will be implemented differently on different platforms.
-  virtual void AsyncWorkStart() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual void AsyncWorkStart() override;
+  virtual bool Respond() override;
 
  private:
   void SendPingPacket();

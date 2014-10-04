@@ -49,7 +49,7 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
                                   public extensions::EventRouter::Observer {
  public:
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
@@ -62,13 +62,13 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   bool ExtensionHasScanProgressListener(const std::string& extension_id) const;
 
   // MediaScanManagerObserver implementation.
-  virtual void OnScanStarted(const std::string& extension_id) OVERRIDE;
-  virtual void OnScanCancelled(const std::string& extension_id) OVERRIDE;
+  virtual void OnScanStarted(const std::string& extension_id) override;
+  virtual void OnScanCancelled(const std::string& extension_id) override;
   virtual void OnScanFinished(
       const std::string& extension_id,
       int gallery_count,
-      const MediaGalleryScanResult& file_counts) OVERRIDE;
-  virtual void OnScanError(const std::string& extension_id) OVERRIDE;
+      const MediaGalleryScanResult& file_counts) override;
+  virtual void OnScanError(const std::string& extension_id) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>;
@@ -88,12 +88,12 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
 
   // GalleryWatchManagerObserver
   virtual void OnGalleryChanged(const std::string& extension_id,
-                                MediaGalleryPrefId gallery_id) OVERRIDE;
+                                MediaGalleryPrefId gallery_id) override;
   virtual void OnGalleryWatchDropped(const std::string& extension_id,
-                                     MediaGalleryPrefId gallery_id) OVERRIDE;
+                                     MediaGalleryPrefId gallery_id) override;
 
   // extensions::EventRouter::Observer implementation.
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // Current profile.
   Profile* profile_;
@@ -111,7 +111,7 @@ class MediaGalleriesGetMediaFileSystemsFunction
 
  protected:
   virtual ~MediaGalleriesGetMediaFileSystemsFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -148,7 +148,7 @@ class MediaGalleriesGetAllMediaFileSystemMetadataFunction
 
  protected:
   virtual ~MediaGalleriesGetAllMediaFileSystemMetadataFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -170,7 +170,7 @@ class MediaGalleriesAddUserSelectedFolderFunction
 
  protected:
   virtual ~MediaGalleriesAddUserSelectedFolderFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -203,7 +203,7 @@ class MediaGalleriesDropPermissionForMediaFileSystemFunction
 
  protected:
   virtual ~MediaGalleriesDropPermissionForMediaFileSystemFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -218,7 +218,7 @@ class MediaGalleriesStartMediaScanFunction
 
  protected:
   virtual ~MediaGalleriesStartMediaScanFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -233,7 +233,7 @@ class MediaGalleriesCancelMediaScanFunction
 
  protected:
   virtual ~MediaGalleriesCancelMediaScanFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -248,7 +248,7 @@ class MediaGalleriesAddScanResultsFunction
 
  protected:
   virtual ~MediaGalleriesAddScanResultsFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   // Pulled out for testing.
   virtual MediaGalleriesScanResultController* MakeDialog(
@@ -275,7 +275,7 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~MediaGalleriesGetMetadataFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -306,7 +306,7 @@ class MediaGalleriesAddGalleryWatchFunction
 
  protected:
   virtual ~MediaGalleriesAddGalleryWatchFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -323,7 +323,7 @@ class MediaGalleriesRemoveGalleryWatchFunction
 
  protected:
   virtual ~MediaGalleriesRemoveGalleryWatchFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -337,7 +337,7 @@ class MediaGalleriesGetAllGalleryWatchFunction
 
  protected:
   virtual ~MediaGalleriesGetAllGalleryWatchFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit();
@@ -351,7 +351,7 @@ class MediaGalleriesRemoveAllGalleryWatchFunction
 
  protected:
   virtual ~MediaGalleriesRemoveAllGalleryWatchFunction();
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit();

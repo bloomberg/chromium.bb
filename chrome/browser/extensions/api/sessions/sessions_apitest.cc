@@ -84,8 +84,8 @@ void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
 
 class ExtensionSessionsTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
  protected:
   static KeyedService* BuildProfileSyncService(
       content::BrowserContext* profile);

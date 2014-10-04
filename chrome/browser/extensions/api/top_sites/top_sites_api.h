@@ -21,7 +21,7 @@ class TopSitesGetFunction : public ChromeAsyncExtensionFunction {
   virtual ~TopSitesGetFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);

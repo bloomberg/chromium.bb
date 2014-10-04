@@ -26,7 +26,7 @@ class ChromeWebViewInternalContextMenusCreateFunction
   virtual ~ChromeWebViewInternalContextMenusCreateFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalContextMenusCreateFunction);
@@ -43,7 +43,7 @@ class ChromeWebViewInternalContextMenusUpdateFunction
   virtual ~ChromeWebViewInternalContextMenusUpdateFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalContextMenusUpdateFunction);
@@ -60,7 +60,7 @@ class ChromeWebViewInternalContextMenusRemoveFunction
   virtual ~ChromeWebViewInternalContextMenusRemoveFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalContextMenusRemoveFunction);
@@ -77,7 +77,7 @@ class ChromeWebViewInternalContextMenusRemoveAllFunction
   virtual ~ChromeWebViewInternalContextMenusRemoveAllFunction() {}
 
   // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalContextMenusRemoveAllFunction);
@@ -96,7 +96,7 @@ class ChromeWebViewInternalShowContextMenuFunction
 
  private:
   // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+  virtual bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalShowContextMenuFunction);
 };

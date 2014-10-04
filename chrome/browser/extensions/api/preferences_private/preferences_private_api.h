@@ -26,10 +26,10 @@ class PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction
 
  private:
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   DISALLOW_COPY_AND_ASSIGN(
       PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction);

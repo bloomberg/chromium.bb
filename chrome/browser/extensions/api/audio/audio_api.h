@@ -24,7 +24,7 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
   static BrowserContextKeyedAPIFactory<AudioAPI>* GetFactoryInstance();
 
   // AudioService::Observer implementation.
-  virtual void OnDeviceChanged() OVERRIDE;
+  virtual void OnDeviceChanged() override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<AudioAPI>;
@@ -45,7 +45,7 @@ class AudioGetInfoFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~AudioGetInfoFunction() {}
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnGetInfoCompleted(const OutputInfo& output_info,
@@ -60,7 +60,7 @@ class AudioSetActiveDevicesFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~AudioSetActiveDevicesFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
@@ -70,7 +70,7 @@ class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~AudioSetPropertiesFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 

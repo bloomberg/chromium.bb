@@ -61,11 +61,11 @@ class SharedModuleService : public ExtensionRegistryObserver {
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
                                     const Extension* extension,
-                                    bool is_update) OVERRIDE;
+                                    bool is_update) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

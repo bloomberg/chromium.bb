@@ -152,8 +152,8 @@ class WebstoreStandaloneInstaller
   virtual scoped_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
   // ExtensionInstallPrompt::Delegate interface implementation.
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   // Accessors to be used by subclasses.
   bool show_user_count() const { return show_user_count_; }
@@ -193,30 +193,30 @@ class WebstoreStandaloneInstaller
   // informs our delegate of success/failure.
 
   // WebstoreDataFetcherDelegate interface implementation.
-  virtual void OnWebstoreRequestFailure() OVERRIDE;
+  virtual void OnWebstoreRequestFailure() override;
 
   virtual void OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> webstore_data) override;
 
   virtual void OnWebstoreResponseParseFailure(
-      const std::string& error) OVERRIDE;
+      const std::string& error) override;
 
   // WebstoreInstallHelper::Delegate interface implementation.
   virtual void OnWebstoreParseSuccess(
       const std::string& id,
       const SkBitmap& icon,
-      base::DictionaryValue* parsed_manifest) OVERRIDE;
+      base::DictionaryValue* parsed_manifest) override;
   virtual void OnWebstoreParseFailure(
       const std::string& id,
       InstallHelperResultCode result_code,
-      const std::string& error_message) OVERRIDE;
+      const std::string& error_message) override;
 
   // WebstoreInstaller::Delegate interface implementation.
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallSuccess(const std::string& id) override;
   virtual void OnExtensionInstallFailure(
       const std::string& id,
       const std::string& error,
-      WebstoreInstaller::FailureReason reason) OVERRIDE;
+      WebstoreInstaller::FailureReason reason) override;
 
   void ShowInstallUI();
   void OnWebStoreDataFetcherDone();

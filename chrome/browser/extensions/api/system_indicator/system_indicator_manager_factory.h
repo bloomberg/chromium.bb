@@ -28,7 +28,7 @@ class SystemIndicatorManagerFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedBaseFactory implementation.
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 };
 
 }  // namespace extensions

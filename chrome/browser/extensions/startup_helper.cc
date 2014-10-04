@@ -144,7 +144,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
-                               const SkBitmap& install_icon) OVERRIDE {
+                               const SkBitmap& install_icon) override {
     finished_ = true;
     success_ = true;
     BrowserThread::PostTask(BrowserThread::UI,
@@ -153,7 +153,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                                        this));
   }
 
-  virtual void OnUnpackFailure(const base::string16& error) OVERRIDE {
+  virtual void OnUnpackFailure(const base::string16& error) override {
     finished_ = true;
     success_ = false;
     error_ = error;

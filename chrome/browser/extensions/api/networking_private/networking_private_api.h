@@ -35,7 +35,7 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateGetPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::DictionaryValue> result);
@@ -56,7 +56,7 @@ class NetworkingPrivateGetManagedPropertiesFunction
   virtual ~NetworkingPrivateGetManagedPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::DictionaryValue> result);
@@ -76,7 +76,7 @@ class NetworkingPrivateGetStateFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateGetStateFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::DictionaryValue> result);
@@ -96,7 +96,7 @@ class NetworkingPrivateSetPropertiesFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateSetPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success();
@@ -116,7 +116,7 @@ class NetworkingPrivateCreateNetworkFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateCreateNetworkFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success(const std::string& guid);
@@ -136,7 +136,7 @@ class NetworkingPrivateGetNetworksFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateGetNetworksFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::ListValue> network_list);
@@ -157,7 +157,7 @@ class NetworkingPrivateGetVisibleNetworksFunction
   virtual ~NetworkingPrivateGetVisibleNetworksFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::ListValue> network_list);
@@ -178,7 +178,7 @@ class NetworkingPrivateGetEnabledNetworkTypesFunction
   virtual ~NetworkingPrivateGetEnabledNetworkTypesFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetEnabledNetworkTypesFunction);
@@ -196,7 +196,7 @@ class NetworkingPrivateEnableNetworkTypeFunction
   virtual ~NetworkingPrivateEnableNetworkTypeFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEnableNetworkTypeFunction);
@@ -214,7 +214,7 @@ class NetworkingPrivateDisableNetworkTypeFunction
   virtual ~NetworkingPrivateDisableNetworkTypeFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDisableNetworkTypeFunction);
@@ -232,7 +232,7 @@ class NetworkingPrivateRequestNetworkScanFunction
   virtual ~NetworkingPrivateRequestNetworkScanFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateRequestNetworkScanFunction);
@@ -250,7 +250,7 @@ class NetworkingPrivateStartConnectFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateStartConnectFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success();
@@ -270,7 +270,7 @@ class NetworkingPrivateStartDisconnectFunction : public AsyncExtensionFunction {
   virtual ~NetworkingPrivateStartDisconnectFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void Success();
@@ -291,7 +291,7 @@ class NetworkingPrivateVerifyDestinationFunction
   virtual ~NetworkingPrivateVerifyDestinationFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void Success(bool result);
   void Failure(const std::string& error);
@@ -312,7 +312,7 @@ class NetworkingPrivateVerifyAndEncryptCredentialsFunction
   virtual ~NetworkingPrivateVerifyAndEncryptCredentialsFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -334,7 +334,7 @@ class NetworkingPrivateVerifyAndEncryptDataFunction
   virtual ~NetworkingPrivateVerifyAndEncryptDataFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -355,7 +355,7 @@ class NetworkingPrivateSetWifiTDLSEnabledStateFunction
   virtual ~NetworkingPrivateSetWifiTDLSEnabledStateFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -376,7 +376,7 @@ class NetworkingPrivateGetWifiTDLSStatusFunction
   virtual ~NetworkingPrivateGetWifiTDLSStatusFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -393,7 +393,7 @@ class NetworkingPrivateGetCaptivePortalStatusFunction
                              NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS);
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  protected:
   virtual ~NetworkingPrivateGetCaptivePortalStatusFunction();

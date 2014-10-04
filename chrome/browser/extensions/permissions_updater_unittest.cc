@@ -129,7 +129,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     received_notification_ = true;
     UpdatedExtensionPermissionsInfo* info =
         content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();

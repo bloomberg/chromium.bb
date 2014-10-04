@@ -37,7 +37,7 @@ class MockUsbDevice : public UsbDevice {
   MOCK_METHOD1(GetManufacturer, bool(base::string16*));
   MOCK_METHOD1(GetProduct, bool(base::string16*));
 
-  virtual bool GetSerialNumber(base::string16* serial_number) OVERRIDE {
+  virtual bool GetSerialNumber(base::string16* serial_number) override {
     if (serial_number_.empty()) {
       return false;
     }
@@ -58,7 +58,7 @@ class MockUsbDevice : public UsbDevice {
 
 class DevicePermissionsManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     env_.GetExtensionPrefs();  // Force creation before adding extensions.
     extension_ = env_.MakeExtension(*base::test::ParseJson(

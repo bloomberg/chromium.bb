@@ -84,10 +84,10 @@ class InstallVerifier : public ManagementPolicy::Provider {
   bool AllowedByEnterprisePolicy(const std::string& id) const;
 
   // ManagementPolicy::Provider interface.
-  virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
+  virtual std::string GetDebugPolicyProviderName() const override;
   virtual bool MustRemainDisabled(const Extension* extension,
                                   Extension::DisableReason* reason,
-                                  base::string16* error) const OVERRIDE;
+                                  base::string16* error) const override;
 
  private:
   // We keep a list of operations to the current set of extensions.

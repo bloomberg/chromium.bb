@@ -22,7 +22,7 @@ class MockExternalLoader : public ExternalLoader {
  public:
   MockExternalLoader() {}
 
-  virtual void StartLoading() OVERRIDE {}
+  virtual void StartLoading() override {}
  private:
   virtual ~MockExternalLoader() {}
 };
@@ -74,7 +74,7 @@ TEST_F(DefaultAppsTest, Install) {
 
   class DefaultTestingProfile : public TestingProfile {
     virtual  bool WasCreatedByVersionOrLater(
-        const std::string& version) OVERRIDE {
+        const std::string& version) override {
       return false;
     }
   };

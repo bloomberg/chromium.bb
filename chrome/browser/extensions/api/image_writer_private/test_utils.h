@@ -64,7 +64,7 @@ class FakeDiskMountManager : public chromeos::disks::MockDiskMountManager {
 
   virtual void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE;
+      const UnmountDeviceRecursivelyCallbackType& callback) override;
 
  private:
   DiskMap disks_;
@@ -79,17 +79,17 @@ class FakeImageWriterClient : public ImageWriterUtilityClient {
                      const SuccessCallback& success_callback,
                      const ErrorCallback& error_callback,
                      const base::FilePath& source,
-                     const base::FilePath& target) OVERRIDE;
+                     const base::FilePath& target) override;
 
   virtual void Verify(const ProgressCallback& progress_callback,
                       const SuccessCallback& success_callback,
                       const ErrorCallback& error_callback,
                       const base::FilePath& source,
-                      const base::FilePath& target) OVERRIDE;
+                      const base::FilePath& target) override;
 
-  virtual void Cancel(const CancelCallback& cancel_callback) OVERRIDE;
+  virtual void Cancel(const CancelCallback& cancel_callback) override;
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Sets a callback for when a Write call is made.
   void SetWriteCallback(const base::Closure& write_callback);
@@ -169,8 +169,8 @@ class ImageWriterUnitTestBase : public testing::Test {
   ImageWriterUnitTestBase();
   virtual ~ImageWriterUnitTestBase();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   ImageWriterTestUtils test_utils_;
 

@@ -431,7 +431,7 @@ class FileSystemChooseEntryFunction::FilePicker
   // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE {
+                            void* params) override {
     std::vector<base::FilePath> paths;
     paths.push_back(path);
     MultiFilesSelected(paths, params);
@@ -439,7 +439,7 @@ class FileSystemChooseEntryFunction::FilePicker
 
   virtual void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
                                          int index,
-                                         void* params) OVERRIDE {
+                                         void* params) override {
     // Normally, file.local_path is used because it is a native path to the
     // local read-only cached file in the case of remote file system like
     // Chrome OS's Google Drive integration. Here, however, |file.file_path| is
@@ -452,14 +452,14 @@ class FileSystemChooseEntryFunction::FilePicker
   }
 
   virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                                  void* params) OVERRIDE {
+                                  void* params) override {
     function_->FilesSelected(files);
     delete this;
   }
 
   virtual void MultiFilesSelectedWithExtraInfo(
       const std::vector<ui::SelectedFileInfo>& files,
-      void* params) OVERRIDE {
+      void* params) override {
     std::vector<base::FilePath> paths;
     for (std::vector<ui::SelectedFileInfo>::const_iterator it = files.begin();
          it != files.end(); ++it) {
@@ -468,7 +468,7 @@ class FileSystemChooseEntryFunction::FilePicker
     MultiFilesSelected(paths, params);
   }
 
-  virtual void FileSelectionCanceled(void* params) OVERRIDE {
+  virtual void FileSelectionCanceled(void* params) override {
     function_->FileSelectionCanceled();
     delete this;
   }

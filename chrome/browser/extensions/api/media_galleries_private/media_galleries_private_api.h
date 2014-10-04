@@ -36,7 +36,7 @@ class MediaGalleriesPrivateAPI : public BrowserContextKeyedAPI,
   virtual ~MediaGalleriesPrivateAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<MediaGalleriesPrivateAPI>*
@@ -46,7 +46,7 @@ class MediaGalleriesPrivateAPI : public BrowserContextKeyedAPI,
   static MediaGalleriesPrivateAPI* Get(content::BrowserContext* context);
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
 
   MediaGalleriesPrivateEventRouter* GetEventRouter();
   GalleryWatchStateTracker* GetGalleryWatchStateTracker();
@@ -88,7 +88,7 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
   virtual ~MediaGalleriesPrivateAddGalleryWatchFunction();
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -108,7 +108,7 @@ class MediaGalleriesPrivateRemoveGalleryWatchFunction
   virtual ~MediaGalleriesPrivateRemoveGalleryWatchFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -124,7 +124,7 @@ class MediaGalleriesPrivateGetAllGalleryWatchFunction
   virtual ~MediaGalleriesPrivateGetAllGalleryWatchFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit();
@@ -140,7 +140,7 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
   virtual ~MediaGalleriesPrivateRemoveAllGalleryWatchFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   void OnPreferencesInit();

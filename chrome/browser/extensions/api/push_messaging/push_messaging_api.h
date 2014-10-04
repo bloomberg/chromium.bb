@@ -45,7 +45,7 @@ class PushMessagingEventRouter
   // InvalidationHandlerDelegate implementation.
   virtual void OnMessage(const std::string& extension_id,
                          int subchannel,
-                         const std::string& payload) OVERRIDE;
+                         const std::string& payload) override;
 
   content::BrowserContext* const browser_context_;
 
@@ -64,7 +64,7 @@ class PushMessagingGetChannelIdFunction
   virtual ~PushMessagingGetChannelIdFunction();
 
   // ExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
   DECLARE_EXTENSION_FUNCTION("pushMessaging.getChannelId",
                              PUSHMESSAGING_GETCHANNELID)
 
@@ -82,22 +82,22 @@ class PushMessagingGetChannelIdFunction
   void StartAccessTokenFetch();
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
-      const base::Time& expiration_time) OVERRIDE;
+      const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // ObfuscatedGiaiaIdFetcher::Delegate implementation.
   virtual void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id)
-      OVERRIDE;
+      override;
   virtual void OnObfuscatedGaiaIdFetchFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
   bool interactive_;
@@ -116,7 +116,7 @@ class PushMessagingAPI : public BrowserContextKeyedAPI,
   static PushMessagingAPI* Get(content::BrowserContext* context);
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<PushMessagingAPI>* GetFactoryInstance();
@@ -141,17 +141,17 @@ class PushMessagingAPI : public BrowserContextKeyedAPI,
 
   // Overridden from ExtensionRegistryObserver.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionWillBeInstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
 
   // Initialize |event_router_| and |handler_|.
   bool InitEventRouterAndHandler();

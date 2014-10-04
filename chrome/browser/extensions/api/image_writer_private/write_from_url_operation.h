@@ -28,7 +28,7 @@ class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
                         GURL url,
                         const std::string& hash,
                         const std::string& storage_unit_id);
-  virtual void StartImpl() OVERRIDE;
+  virtual void StartImpl() override;
 
  protected:
   virtual ~WriteFromUrlOperation();
@@ -51,13 +51,13 @@ class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
   void DestroyUrlFetcher();
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
-                                          int64 total) OVERRIDE;
+                                          int64 total) override;
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
                                         int64 current,
-                                        int64 total) OVERRIDE;
+                                        int64 total) override;
 
   void VerifyDownloadCompare(const base::Closure& continuation,
                              const std::string& download_hash);

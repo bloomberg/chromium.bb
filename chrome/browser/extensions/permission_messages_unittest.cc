@@ -42,7 +42,7 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
   virtual ~PermissionMessagesUnittest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     InitializeExtensionService(CreateDefaultInitParams());
     InitializeProcessManager();

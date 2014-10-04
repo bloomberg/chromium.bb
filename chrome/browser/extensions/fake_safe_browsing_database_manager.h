@@ -24,7 +24,7 @@ class FakeSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   // IDs taken from |unsafe_ids_| are passed to to |client| on the current
   // message loop.
   virtual bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
-                                 Client* client) OVERRIDE;
+                                 Client* client) override;
 
   // Return |this| to chain together SetUnsafe(...).NotifyUpdate() conveniently.
   FakeSafeBrowsingDatabaseManager& Enable();

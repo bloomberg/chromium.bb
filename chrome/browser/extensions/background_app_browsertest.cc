@@ -18,7 +18,7 @@ class TestBackgroundModeManager : public BackgroundModeManager {
   virtual ~TestBackgroundModeManager() {}
 
   virtual void DisplayAppInstalledNotification(
-      const extensions::Extension* extension) OVERRIDE {
+      const extensions::Extension* extension) override {
     showed_background_app_installed_notification_for_test_ = true;
   }
 

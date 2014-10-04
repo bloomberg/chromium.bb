@@ -30,28 +30,28 @@ class NtpOverriddenBubbleDelegate
   virtual ~NtpOverriddenBubbleDelegate();
 
   // ExtensionMessageBubbleController::Delegate methods.
-  virtual bool ShouldIncludeExtension(const std::string& extension_id) OVERRIDE;
+  virtual bool ShouldIncludeExtension(const std::string& extension_id) override;
   virtual void AcknowledgeExtension(
       const std::string& extension_id,
       extensions::ExtensionMessageBubbleController::BubbleAction
-          user_action) OVERRIDE;
-  virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
-  virtual base::string16 GetTitle() const OVERRIDE;
+          user_action) override;
+  virtual void PerformAction(const extensions::ExtensionIdList& list) override;
+  virtual base::string16 GetTitle() const override;
   virtual base::string16 GetMessageBody(
-      bool anchored_to_browser_action) const OVERRIDE;
+      bool anchored_to_browser_action) const override;
   virtual base::string16 GetOverflowText(
-      const base::string16& overflow_count) const OVERRIDE;
-  virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
-  virtual GURL GetLearnMoreUrl() const OVERRIDE;
-  virtual base::string16 GetActionButtonLabel() const OVERRIDE;
-  virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
-  virtual bool ShouldShowExtensionList() const OVERRIDE;
+      const base::string16& overflow_count) const override;
+  virtual base::string16 GetLearnMoreLabel() const override;
+  virtual GURL GetLearnMoreUrl() const override;
+  virtual base::string16 GetActionButtonLabel() const override;
+  virtual base::string16 GetDismissButtonLabel() const override;
+  virtual bool ShouldShowExtensionList() const override;
   virtual void RestrictToSingleExtension(
-      const std::string& extension_id) OVERRIDE;
-  virtual void LogExtensionCount(size_t count) OVERRIDE;
+      const std::string& extension_id) override;
+  virtual void LogExtensionCount(size_t count) override;
   virtual void LogAction(
       extensions::ExtensionMessageBubbleController::BubbleAction
-          action) OVERRIDE;
+          action) override;
 
  private:
   // Our extension service. Weak, not owned by us.

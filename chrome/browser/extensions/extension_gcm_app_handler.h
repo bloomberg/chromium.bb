@@ -46,16 +46,16 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   GetFactoryInstance();
 
   // gcm::GCMAppHandler implementation.
-  virtual void ShutdownHandler() OVERRIDE;
+  virtual void ShutdownHandler() override;
   virtual void OnMessage(
       const std::string& app_id,
-      const gcm::GCMClient::IncomingMessage& message) OVERRIDE;
-  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+      const gcm::GCMClient::IncomingMessage& message) override;
+  virtual void OnMessagesDeleted(const std::string& app_id) override;
   virtual void OnSendError(
       const std::string& app_id,
-      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+      const gcm::GCMClient::SendErrorDetails& send_error_details) override;
   virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) OVERRIDE;
+                                  const std::string& message_id) override;
 
  protected:
   // Could be overridden by testing purpose.
@@ -71,15 +71,15 @@ private:
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   void AddDummyAppHandler();
   void RemoveDummyAppHandler();

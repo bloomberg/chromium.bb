@@ -67,7 +67,7 @@ MockInvalidationHandlerDelegate::~MockInvalidationHandlerDelegate() {}
 
 class PushMessagingInvalidationHandlerTest : public ::testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     syncer::InvalidationHandler* handler = NULL;
     EXPECT_CALL(service_, RegisterInvalidationHandler(NotNull()))
         .WillOnce(SaveArg<0>(&handler));
@@ -75,7 +75,7 @@ class PushMessagingInvalidationHandlerTest : public ::testing::Test {
         &service_, &delegate_));
     EXPECT_EQ(handler_.get(), handler);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     EXPECT_CALL(service_, UnregisterInvalidationHandler(handler_.get()));
     handler_.reset();
   }

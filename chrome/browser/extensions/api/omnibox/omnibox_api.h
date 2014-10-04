@@ -80,7 +80,7 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
   virtual ~OmniboxSendSuggestionsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class OmniboxAPI : public BrowserContextKeyedAPI,
@@ -96,7 +96,7 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
   static OmniboxAPI* Get(content::BrowserContext* context);
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns the icon to display in the omnibox for the given extension.
   gfx::Image GetOmniboxIcon(const std::string& extension_id);
@@ -114,11 +114,11 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
+                                 const Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -159,7 +159,7 @@ class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
   virtual ~OmniboxSetDefaultSuggestionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 // If the extension has set a custom default suggestion via

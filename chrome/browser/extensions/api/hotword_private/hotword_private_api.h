@@ -23,7 +23,7 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
   virtual ~HotwordPrivateEventService();
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
   static BrowserContextKeyedAPIFactory<HotwordPrivateEventService>*
       GetFactoryInstance();
   static const char* service_name();
@@ -53,7 +53,7 @@ class HotwordPrivateSetEnabledFunction : public ChromeSyncExtensionFunction {
   virtual ~HotwordPrivateSetEnabledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class HotwordPrivateSetAudioLoggingEnabledFunction
@@ -66,7 +66,7 @@ class HotwordPrivateSetAudioLoggingEnabledFunction
   virtual ~HotwordPrivateSetAudioLoggingEnabledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
@@ -79,7 +79,7 @@ class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
   virtual ~HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
@@ -91,7 +91,7 @@ class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
   virtual ~HotwordPrivateGetStatusFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class HotwordPrivateSetHotwordSessionStateFunction
@@ -104,7 +104,7 @@ class HotwordPrivateSetHotwordSessionStateFunction
   virtual ~HotwordPrivateSetHotwordSessionStateFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class HotwordPrivateNotifyHotwordRecognitionFunction
@@ -117,7 +117,7 @@ class HotwordPrivateNotifyHotwordRecognitionFunction
   virtual ~HotwordPrivateNotifyHotwordRecognitionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class HotwordPrivateGetLaunchStateFunction :
@@ -130,7 +130,7 @@ class HotwordPrivateGetLaunchStateFunction :
   virtual ~HotwordPrivateGetLaunchStateFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 }  // namespace extensions

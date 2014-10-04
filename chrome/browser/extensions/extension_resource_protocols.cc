@@ -33,7 +33,7 @@ class ExtensionResourcesJob : public net::URLRequestFileJob {
                     base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         weak_ptr_factory_(this) {}
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
  protected:
   virtual ~ExtensionResourcesJob() {}
@@ -72,7 +72,7 @@ class ExtensionResourceProtocolHandler
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionResourceProtocolHandler);

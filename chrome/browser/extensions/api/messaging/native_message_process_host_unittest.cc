@@ -81,7 +81,7 @@ class FakeLauncher : public NativeProcessLauncher {
 
   virtual void Launch(const GURL& origin,
                       const std::string& native_host_name,
-                      LaunchedCallback callback) const OVERRIDE {
+                      LaunchedCallback callback) const override {
     callback.Run(NativeProcessLauncher::RESULT_SUCCESS,
                  base::kNullProcessHandle,
                  read_file_.Pass(), write_file_.Pass());
@@ -101,11 +101,11 @@ class NativeMessagingTest : public ::testing::Test,
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         channel_closed_(false) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (native_message_process_host_.get()) {
       BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                                 native_message_process_host_.release());
@@ -115,7 +115,7 @@ class NativeMessagingTest : public ::testing::Test,
 
   virtual void PostMessageFromNativeProcess(
       int port_id,
-      const std::string& message) OVERRIDE  {
+      const std::string& message) override  {
     last_message_ = message;
 
     // Parse the message.
@@ -134,7 +134,7 @@ class NativeMessagingTest : public ::testing::Test,
   }
 
   virtual void CloseChannel(int port_id,
-                            const std::string& error_message) OVERRIDE {
+                            const std::string& error_message) override {
     channel_closed_ = true;
     if (run_loop_)
       run_loop_->Quit();

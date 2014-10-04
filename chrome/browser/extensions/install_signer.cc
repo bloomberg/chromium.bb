@@ -277,7 +277,7 @@ class InstallSigner::FetcherDelegate : public net::URLFetcherDelegate {
   virtual ~FetcherDelegate() {
   }
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     callback_.Run();
   }
 

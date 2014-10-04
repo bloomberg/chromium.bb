@@ -69,7 +69,7 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
     // The browser might get closed later (and therefore be destroyed), so we
@@ -82,7 +82,7 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     g_browser_process->AddRefModule();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // ReleaseBrowserProcessModule() needs to be called in a message loop, so we
     // post a task to do it, then run the message loop.
     base::MessageLoop::current()->PostTask(

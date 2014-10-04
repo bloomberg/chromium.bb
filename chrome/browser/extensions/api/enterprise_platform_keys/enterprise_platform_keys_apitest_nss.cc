@@ -168,7 +168,7 @@ class EnterprisePlatformKeysTest
  public:
   EnterprisePlatformKeysTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
     // Enable the WebCrypto API.
@@ -185,7 +185,7 @@ class EnterprisePlatformKeysTest
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser, user_email);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     if (GetParam().device_status_ == DEVICE_STATUS_ENROLLED) {
@@ -203,7 +203,7 @@ class EnterprisePlatformKeysTest
         &policy_provider_);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
       base::RunLoop loop;
       content::BrowserThread::PostTask(
@@ -238,7 +238,7 @@ class EnterprisePlatformKeysTest
     SetPolicy();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     ExtensionApiTest::TearDownOnMainThread();
 
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {

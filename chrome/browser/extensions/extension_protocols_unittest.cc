@@ -101,7 +101,7 @@ class ExtensionProtocolTest : public testing::Test {
         old_factory_(NULL),
         resource_context_(&test_url_request_context_) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     extension_info_map_ = new InfoMap();
     net::URLRequestContext* request_context =

@@ -60,7 +60,7 @@ class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
 
   // Gets the "current" web contents if any. If there is no associated web
   // contents then defaults to the foremost one.
-  virtual content::WebContents* GetAssociatedWebContents() OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() override;
 
  protected:
   virtual ~ChromeUIThreadExtensionFunction();
@@ -87,7 +87,7 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   static bool ValidationFailure(ChromeAsyncExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 };
 
 // A chrome specific analog to SyncExtensionFunction. This has access to a
@@ -111,7 +111,7 @@ class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   static bool ValidationFailure(ChromeSyncExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() OVERRIDE;
+  virtual ResponseAction Run() override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_

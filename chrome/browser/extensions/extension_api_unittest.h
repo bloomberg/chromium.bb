@@ -52,7 +52,7 @@ class ExtensionApiUnittest : public BrowserWithTestWindowTest {
 
  protected:
   // SetUp creates and loads an empty, unpacked Extension.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Creates a background page for |extension_|, and sets it for the WebContents
   // to be used in API calls.

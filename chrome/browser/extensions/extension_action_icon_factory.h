@@ -39,7 +39,7 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
 
   // extensions::IconImage override.
   virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) OVERRIDE;
+      extensions::IconImage* image) override;
 
   // Gets the extension action icon for the tab.
   // If there is an icon set using |SetIcon|, that icon is returned.

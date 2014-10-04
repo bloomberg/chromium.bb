@@ -15,7 +15,7 @@ class ExperienceSamplingPrivateGetBrowserInfoFunction
   virtual ~ExperienceSamplingPrivateGetBrowserInfoFunction() {}
 
   // ExtensionFuction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("experienceSamplingPrivate.getBrowserInfo",

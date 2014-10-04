@@ -52,7 +52,7 @@ class FileHandlersMimeUtilTest : public testing::Test {
   FileHandlersMimeUtilTest() {}
   virtual ~FileHandlersMimeUtilTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
         content::CreateFileSystemContextForTesting(NULL, data_dir_.path());

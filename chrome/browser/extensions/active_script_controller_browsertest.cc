@@ -71,8 +71,8 @@ class ActiveScriptControllerBrowserTest : public ExtensionBrowserTest {
  public:
   ActiveScriptControllerBrowserTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void TearDownOnMainThread() override;
 
   // Returns an extension with the given |host_type| and |injection_type|. If
   // one already exists, the existing extension will be returned. Othewrwise,
@@ -408,7 +408,7 @@ class FlagOffActiveScriptControllerBrowserTest
     : public ActiveScriptControllerBrowserTest {
  private:
   // Simply don't append the flag.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
   }
 };

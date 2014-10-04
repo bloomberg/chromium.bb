@@ -31,12 +31,12 @@ namespace extensions {
 
 class FeedbackTest : public ExtensionBrowserTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kEnableUserMediaScreenCapturing);
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }

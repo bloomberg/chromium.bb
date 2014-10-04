@@ -30,9 +30,9 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory implementation:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemSharedFactory);
 };
@@ -43,7 +43,7 @@ class ExtensionSystemFactory : public ExtensionSystemProvider {
  public:
   // ExtensionSystem provider implementation:
   virtual ExtensionSystem* GetForBrowserContext(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context) override;
 
   static ExtensionSystemFactory* GetInstance();
 
@@ -55,10 +55,10 @@ class ExtensionSystemFactory : public ExtensionSystemProvider {
 
   // BrowserContextKeyedServiceFactory implementation:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemFactory);
 };

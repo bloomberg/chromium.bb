@@ -42,7 +42,7 @@ using extensions::Extension;
 
 class AppBackgroundPageApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
     command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);
@@ -129,7 +129,7 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
   virtual ~AppBackgroundPageNaClTest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     AppBackgroundPageApiTest::SetUpOnMainThread();
 #if !defined(DISABLE_NACL)
     nacl::NaClProcessHost::SetPpapiKeepAliveThrottleForTesting(50);

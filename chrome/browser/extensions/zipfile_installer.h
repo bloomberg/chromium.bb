@@ -35,7 +35,7 @@ class ZipFileInstaller : public content::UtilityProcessHostClient {
   void set_be_noisy_on_failure(bool value) { be_noisy_on_failure_ = value; }
 
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit ZipFileInstaller(ExtensionService* extension_service);

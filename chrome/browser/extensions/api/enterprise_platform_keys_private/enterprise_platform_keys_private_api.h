@@ -158,7 +158,7 @@ class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
       policy::EnterpriseInstallAttributes* install_attributes);
 
  protected:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   static const char kKeyName[];
@@ -195,7 +195,7 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  private:
   static const char kKeyName[];

@@ -64,15 +64,15 @@ class MockDialRegistry : public DialRegistry {
   Time time_;
 
  protected:
-  virtual base::Time Now() const OVERRIDE {
+  virtual base::Time Now() const override {
     return time_;
   }
 
-  virtual DialService* CreateDialService() OVERRIDE {
+  virtual DialService* CreateDialService() override {
     return &mock_service_;
   }
 
-  virtual void ClearDialService() OVERRIDE {
+  virtual void ClearDialService() override {
     // Release the pointer but don't delete the object because the test owns it.
     CHECK_EQ(&mock_service_, dial_.release());
   }

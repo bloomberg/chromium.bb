@@ -21,7 +21,7 @@ class BrowserPermissionsPolicyDelegate
                                       const GURL& top_document_url,
                                       int tab_id,
                                       int process_id,
-                                      std::string* error) OVERRIDE;
+                                      std::string* error) override;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPermissionsPolicyDelegate);
 };

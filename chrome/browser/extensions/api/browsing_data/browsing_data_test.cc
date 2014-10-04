@@ -58,7 +58,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
   }
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
                    content::Source<Profile>(browser()->profile()));
@@ -67,7 +67,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(type, chrome::NOTIFICATION_BROWSING_DATA_REMOVED);
 
     // We're not taking ownership of the details object, but storing a copy of

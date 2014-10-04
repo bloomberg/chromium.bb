@@ -184,11 +184,11 @@ class CommandService : public BrowserContextKeyedAPI,
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // Updates keybindings for a given |extension|'s page action, browser action
   // and named commands. Assigns new keybindings and removes relinquished

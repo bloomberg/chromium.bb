@@ -149,16 +149,16 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
       PasswordMap;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // local_discovery::PrivetDeviceLister implementation.
   virtual void DeviceChanged(
       bool added,
       const std::string& name,
-      const local_discovery::DeviceDescription& description) OVERRIDE;
-  virtual void DeviceRemoved(const std::string& name) OVERRIDE;
-  virtual void DeviceCacheFlushed() OVERRIDE;
+      const local_discovery::DeviceDescription& description) override;
+  virtual void DeviceRemoved(const std::string& name) override;
+  virtual void DeviceCacheFlushed() override;
 
   void SendMessageInternal(int session_id,
                            const std::string& api,
@@ -199,12 +199,12 @@ class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
   virtual ~GcdPrivateRequest();
 
   // local_discovery::PrivetV3Session::Request implementation.
-  virtual std::string GetName() OVERRIDE;
-  virtual const base::DictionaryValue& GetInput() OVERRIDE;
+  virtual std::string GetName() override;
+  virtual const base::DictionaryValue& GetInput() override;
   virtual void OnError(
-      local_discovery::PrivetURLFetcher::ErrorType error) OVERRIDE;
+      local_discovery::PrivetURLFetcher::ErrorType error) override;
   virtual void OnParsedJson(const base::DictionaryValue& value,
-                            bool has_error) OVERRIDE;
+                            bool has_error) override;
 
  private:
   std::string api_;
@@ -242,8 +242,8 @@ class GcdPrivateSessionHolder
   // local_discovery::PrivetV3Session::Delegate implementation.
   virtual void OnSetupConfirmationNeeded(
       const std::string& confirmation_code,
-      api::gcd_private::ConfirmationType confirmation_type) OVERRIDE;
-  virtual void OnSessionStatus(api::gcd_private::Status status) OVERRIDE;
+      api::gcd_private::ConfirmationType confirmation_type) override;
+  virtual void OnSessionStatus(api::gcd_private::Status status) override;
 
   scoped_ptr<local_discovery::PrivetHTTPClient> http_client_;
   scoped_ptr<local_discovery::PrivetV3Session> privet_session_;

@@ -39,7 +39,7 @@ class UserScriptListener::Throttle
   }
 
   // ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) OVERRIDE {
+  virtual void WillStartRequest(bool* defer) override {
     // Only defer requests if Resume has not yet been called.
     if (should_defer_) {
       *defer = true;
@@ -47,7 +47,7 @@ class UserScriptListener::Throttle
     }
   }
 
-  virtual const char* GetNameForLogging() const OVERRIDE {
+  virtual const char* GetNameForLogging() const override {
     return "UserScriptListener::Throttle";
   }
 

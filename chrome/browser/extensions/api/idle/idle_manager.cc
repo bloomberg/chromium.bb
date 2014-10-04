@@ -31,9 +31,9 @@ class DefaultEventDelegate : public IdleManager::EventDelegate {
   virtual ~DefaultEventDelegate();
 
   virtual void OnStateChanged(const std::string& extension_id,
-                              IdleState new_state) OVERRIDE;
-  virtual void RegisterObserver(EventRouter::Observer* observer) OVERRIDE;
-  virtual void UnregisterObserver(EventRouter::Observer* observer) OVERRIDE;
+                              IdleState new_state) override;
+  virtual void RegisterObserver(EventRouter::Observer* observer) override;
+  virtual void UnregisterObserver(EventRouter::Observer* observer) override;
 
  private:
   Profile* profile_;
@@ -73,9 +73,9 @@ class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
   virtual ~DefaultIdleProvider();
 
   virtual void CalculateIdleState(int idle_threshold,
-                                  IdleCallback notify) OVERRIDE;
-  virtual void CalculateIdleTime(IdleTimeCallback notify) OVERRIDE;
-  virtual bool CheckIdleStateIsLocked() OVERRIDE;
+                                  IdleCallback notify) override;
+  virtual void CalculateIdleTime(IdleTimeCallback notify) override;
+  virtual bool CheckIdleStateIsLocked() override;
 };
 
 DefaultIdleProvider::DefaultIdleProvider() {

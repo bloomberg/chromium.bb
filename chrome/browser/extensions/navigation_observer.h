@@ -34,7 +34,7 @@ class NavigationObserver : public ExtensionInstallPrompt::Delegate,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
  private:
   // Registers for the NOTIFICATION_NAV_ENTRY_COMMITTED notification.
   void RegisterForNotifications();
@@ -46,8 +46,8 @@ class NavigationObserver : public ExtensionInstallPrompt::Delegate,
       content::NavigationController* nav_controller);
 
   // ExtensionInstallPrompt::Delegate callbacks used for the permissions prompt.
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   content::NotificationRegistrar registrar_;
 

@@ -35,12 +35,12 @@ class ExternalPrefLoader : public ExternalLoader {
   // extension files are resolved relative to this path.
   ExternalPrefLoader(int base_path_id, Options options);
 
-  virtual const base::FilePath GetBaseCrxFilePath() OVERRIDE;
+  virtual const base::FilePath GetBaseCrxFilePath() override;
 
  protected:
   virtual ~ExternalPrefLoader() {}
 
-  virtual void StartLoading() OVERRIDE;
+  virtual void StartLoading() override;
   bool IsOptionSet(Options option) {
     return (options_ & option) != 0;
   }
@@ -86,10 +86,10 @@ class ExternalTestingLoader : public ExternalLoader {
   ExternalTestingLoader(const std::string& json_data,
                         const base::FilePath& fake_base_path);
 
-  virtual const base::FilePath GetBaseCrxFilePath() OVERRIDE;
+  virtual const base::FilePath GetBaseCrxFilePath() override;
 
  protected:
-  virtual void StartLoading() OVERRIDE;
+  virtual void StartLoading() override;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;

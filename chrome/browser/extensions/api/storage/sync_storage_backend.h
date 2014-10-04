@@ -52,16 +52,16 @@ class SyncStorageBackend : public syncer::SyncableService {
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE;
+      const override;
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
 
  private:
   // Gets a weak reference to the storage area for a given extension,

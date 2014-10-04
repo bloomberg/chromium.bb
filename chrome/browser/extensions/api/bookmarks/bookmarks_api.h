@@ -46,32 +46,32 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 
   // BookmarkModelObserver:
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+                                   bool ids_reassigned) override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE;
+                                 int new_index) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE;
+                                   const BookmarkNode* node) override;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE;
+                                          const BookmarkNode* node) override;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) OVERRIDE;
-  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
+                                             const BookmarkNode* node) override;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
 
  private:
   // Helper to actually dispatch an event to extension listeners.
@@ -92,14 +92,14 @@ class BookmarksAPI : public BrowserContextKeyedAPI,
   virtual ~BookmarksAPI();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<BookmarksAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(
-      const EventListenerInfo& details) OVERRIDE;
+      const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<BookmarksAPI>;
@@ -120,7 +120,7 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
                           public BaseBookmarkModelObserver {
  public:
   // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
+  virtual bool RunAsync() override;
 
  protected:
   virtual ~BookmarksFunction() {}
@@ -163,9 +163,9 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
 
  private:
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
+                                   bool ids_reassigned) override;
 };
 
 class BookmarksGetFunction : public BookmarksFunction {
@@ -176,7 +176,7 @@ class BookmarksGetFunction : public BookmarksFunction {
   virtual ~BookmarksGetFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksGetChildrenFunction : public BookmarksFunction {
@@ -187,7 +187,7 @@ class BookmarksGetChildrenFunction : public BookmarksFunction {
   virtual ~BookmarksGetChildrenFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksGetRecentFunction : public BookmarksFunction {
@@ -198,7 +198,7 @@ class BookmarksGetRecentFunction : public BookmarksFunction {
   virtual ~BookmarksGetRecentFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksGetTreeFunction : public BookmarksFunction {
@@ -209,7 +209,7 @@ class BookmarksGetTreeFunction : public BookmarksFunction {
   virtual ~BookmarksGetTreeFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksGetSubTreeFunction : public BookmarksFunction {
@@ -220,7 +220,7 @@ class BookmarksGetSubTreeFunction : public BookmarksFunction {
   virtual ~BookmarksGetSubTreeFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksSearchFunction : public BookmarksFunction {
@@ -231,7 +231,7 @@ class BookmarksSearchFunction : public BookmarksFunction {
   virtual ~BookmarksSearchFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksRemoveFunction : public BookmarksFunction {
@@ -248,7 +248,7 @@ class BookmarksRemoveFunction : public BookmarksFunction {
   virtual ~BookmarksRemoveFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksRemoveTreeFunction : public BookmarksRemoveFunction {
@@ -267,7 +267,7 @@ class BookmarksCreateFunction : public BookmarksFunction {
   virtual ~BookmarksCreateFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksMoveFunction : public BookmarksFunction {
@@ -282,7 +282,7 @@ class BookmarksMoveFunction : public BookmarksFunction {
   virtual ~BookmarksMoveFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksUpdateFunction : public BookmarksFunction {
@@ -297,7 +297,7 @@ class BookmarksUpdateFunction : public BookmarksFunction {
   virtual ~BookmarksUpdateFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksIOFunction : public BookmarksFunction,
@@ -309,8 +309,8 @@ class BookmarksIOFunction : public BookmarksFunction,
 
   // ui::SelectFileDialog::Listener:
   virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                                  void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+                                  void* params) override;
+  virtual void FileSelectionCanceled(void* params) override;
 
   void SelectFile(ui::SelectFileDialog::Type type);
 
@@ -333,13 +333,13 @@ class BookmarksImportFunction : public BookmarksIOFunction {
   // BookmarkManagerIOFunction:
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
+                            void* params) override;
 
  private:
   virtual ~BookmarksImportFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 class BookmarksExportFunction : public BookmarksIOFunction {
@@ -349,13 +349,13 @@ class BookmarksExportFunction : public BookmarksIOFunction {
   // BookmarkManagerIOFunction:
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
+                            void* params) override;
 
  private:
   virtual ~BookmarksExportFunction() {}
 
   // BookmarksFunction:
-  virtual bool RunOnReady() OVERRIDE;
+  virtual bool RunOnReady() override;
 };
 
 }  // namespace extensions

@@ -28,7 +28,7 @@ class ActivityLogApiTest : public ExtensionApiTest {
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     saved_cmdline_ = *CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);

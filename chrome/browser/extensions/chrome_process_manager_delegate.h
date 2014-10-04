@@ -26,14 +26,14 @@ class ChromeProcessManagerDelegate : public ProcessManagerDelegate,
 
   // ProcessManagerDelegate implementation:
   virtual bool IsBackgroundPageAllowed(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual bool DeferCreatingStartupBackgroundHosts(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   // Notification handlers.

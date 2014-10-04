@@ -31,13 +31,13 @@ const char kUnknownUSBDiskModel[] = "USB Drive";
 
 class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     disk_mount_manager_mock_ = new MockDiskMountManager();
     DiskMountManager::InitializeForTesting(disk_mount_manager_mock_);
     disk_mount_manager_mock_->SetupDefaultReplies();
   }
 
-  virtual void TearDown() OVERRIDE { DiskMountManager::Shutdown(); }
+  virtual void TearDown() override { DiskMountManager::Shutdown(); }
 
   void DevicesCallback(scoped_refptr<StorageDeviceList> devices, bool success) {
     devices_ = devices;

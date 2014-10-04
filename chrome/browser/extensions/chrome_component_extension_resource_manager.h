@@ -25,7 +25,7 @@ class ChromeComponentExtensionResourceManager
   virtual bool IsComponentExtensionResource(
     const base::FilePath& extension_path,
     const base::FilePath& resource_path,
-    int* resource_id) OVERRIDE;
+    int* resource_id) override;
 
  private:
   void AddComponentResourceEntries(const GritResourceMap* entries, size_t size);

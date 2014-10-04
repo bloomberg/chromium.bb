@@ -87,7 +87,7 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
         base::Bind(&content::FrameIsChildOfMainFrame));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kAppsCheckoutURL,
                                     "http://checkout.com:");

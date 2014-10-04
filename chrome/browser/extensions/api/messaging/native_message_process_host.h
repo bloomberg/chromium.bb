@@ -86,8 +86,8 @@ class NativeMessageProcessHost
 
 #if defined(OS_POSIX)
   // MessageLoopForIO::Watcher interface
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 #endif  // !defined(OS_POSIX)
 
   // Try and read a single message from |read_file_|. This should only be called

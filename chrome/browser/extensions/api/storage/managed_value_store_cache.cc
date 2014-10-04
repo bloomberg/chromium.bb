@@ -77,11 +77,11 @@ class ManagedValueStoreCache::ExtensionTracker
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // Handler for the signal from ExtensionSystem::ready().
   void OnExtensionsReady();

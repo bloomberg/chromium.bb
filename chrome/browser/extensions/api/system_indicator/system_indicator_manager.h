@@ -37,7 +37,7 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   virtual ~SystemIndicatorManager();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(::SystemIndicatorApiTest, SystemIndicator);
@@ -46,13 +46,13 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      UnloadedExtensionInfo::Reason reason) override;
 
   // ExtensionActionAPI::Observer implementation.
   virtual void OnExtensionActionUpdated(
       ExtensionAction* extension_action,
       content::WebContents* web_contents,
-      content::BrowserContext* browser_context) OVERRIDE;
+      content::BrowserContext* browser_context) override;
 
   // Causes a call to OnStatusIconClicked for the specified extension_id.
   // Returns false if no ExtensionIndicatorIcon is found for the extension.

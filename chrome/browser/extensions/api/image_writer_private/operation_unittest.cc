@@ -37,7 +37,7 @@ class OperationForTest : public Operation {
                    const std::string& device_path)
       : Operation(manager_, extension_id, device_path) {}
 
-  virtual void StartImpl() OVERRIDE {}
+  virtual void StartImpl() override {}
 
   // Expose internal stages for testing.
   void Unzip(const base::Closure& continuation) {
@@ -67,7 +67,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
  protected:
   ImageWriterOperationTest()
       : profile_(new TestingProfile), manager_(profile_.get()) {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ImageWriterUnitTestBase::SetUp();
 
     // Create the zip file.
@@ -88,7 +88,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
     operation_->SetImagePath(test_utils_.GetImagePath());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Ensure all callbacks have been destroyed and cleanup occurs.
     operation_->Cancel();
 

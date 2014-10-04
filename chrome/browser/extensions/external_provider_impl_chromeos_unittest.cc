@@ -60,7 +60,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   }
 
   // ExtensionServiceTestBase overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ExtensionServiceTestBase::SetUp();
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
@@ -76,7 +76,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
         .WillRepeatedly(Return(false));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     chromeos::KioskAppManager::Shutdown();
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);

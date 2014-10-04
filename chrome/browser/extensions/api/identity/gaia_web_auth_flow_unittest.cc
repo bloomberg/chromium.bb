@@ -22,7 +22,7 @@ class FakeWebAuthFlow : public WebAuthFlow {
                     GURL(),
                     WebAuthFlow::INTERACTIVE) {}
 
-  virtual void Start() OVERRIDE {}
+  virtual void Start() override {}
 };
 
 class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
@@ -34,7 +34,7 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
       : GaiaWebAuthFlow(delegate, NULL, token_key, oauth2_client_id, "en-us"),
         ubertoken_error_(ubertoken_error_state) {}
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     if (ubertoken_error_.state() == GoogleServiceAuthError::NONE)
       OnUbertokenSuccess("fake_ubertoken");
     else
@@ -42,7 +42,7 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
   }
 
  private:
-  virtual scoped_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url) OVERRIDE {
+  virtual scoped_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url) override {
     return scoped_ptr<WebAuthFlow>(new FakeWebAuthFlow(this));
   }
 

@@ -78,7 +78,7 @@ class DoNothingMediaFolderFinder : public MediaFolderFinder {
     return new DoNothingMediaFolderFinder(callback);
   }
 
-  virtual void StartScan() OVERRIDE {}
+  virtual void StartScan() override {}
 
  private:
 };
@@ -99,7 +99,7 @@ class TestMediaGalleriesAddScanResultsFunction
   virtual MediaGalleriesScanResultController* MakeDialog(
       content::WebContents* web_contents,
       const extensions::Extension& extension,
-      const base::Closure& on_finish) OVERRIDE {
+      const base::Closure& on_finish) override {
     MediaGalleriesScanResultController* controller =
         extensions::MediaGalleriesAddScanResultsFunction::MakeDialog(
             web_contents, extension, on_finish);
@@ -114,7 +114,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   MediaGalleriesPlatformAppBrowserTest() : test_jpg_size_(0) {}
   virtual ~MediaGalleriesPlatformAppBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
     ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
 
@@ -124,7 +124,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     test_jpg_size_ = base::checked_cast<int>(file_size);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     ensure_media_directories_exists_.reset();
     PlatformAppBrowserTest::TearDownOnMainThread();
   }
@@ -438,12 +438,12 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 class MediaGalleriesPlatformAppPpapiTest
     : public MediaGalleriesPlatformAppBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     MediaGalleriesPlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePepperTesting);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     MediaGalleriesPlatformAppBrowserTest::SetUpOnMainThread();
 
     ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));

@@ -58,7 +58,7 @@ class ExtensionServiceTestBase : public testing::Test {
   virtual ~ExtensionServiceTestBase();
 
   // testing::Test implementation.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
   static void SetUpTestCase();  // faux-verride (static override).
 
   // Create a set of InitParams to install an ExtensionService into |temp_dir_|.

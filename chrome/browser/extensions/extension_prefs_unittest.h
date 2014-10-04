@@ -39,9 +39,9 @@ class ExtensionPrefsTest : public testing::Test {
   // This function is called to Register preference default values.
   virtual void RegisterPreferences(user_prefs::PrefRegistrySyncable* registry);
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
  protected:
   ExtensionPrefs* prefs() { return prefs_.prefs(); }

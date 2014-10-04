@@ -24,66 +24,66 @@ class NetworkingPrivateChromeOS : public KeyedService,
   // NetworkingPrivateApi
   virtual void GetProperties(const std::string& guid,
                              const DictionaryCallback& success_callback,
-                             const FailureCallback& failure_callback) OVERRIDE;
+                             const FailureCallback& failure_callback) override;
   virtual void GetManagedProperties(
       const std::string& guid,
       const DictionaryCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void GetState(const std::string& guid,
                         const DictionaryCallback& success_callback,
-                        const FailureCallback& failure_callback) OVERRIDE;
+                        const FailureCallback& failure_callback) override;
   virtual void SetProperties(const std::string& guid,
                              scoped_ptr<base::DictionaryValue> properties,
                              const VoidCallback& success_callback,
-                             const FailureCallback& failure_callback) OVERRIDE;
+                             const FailureCallback& failure_callback) override;
   virtual void CreateNetwork(bool shared,
                              scoped_ptr<base::DictionaryValue> properties,
                              const StringCallback& success_callback,
-                             const FailureCallback& failure_callback) OVERRIDE;
+                             const FailureCallback& failure_callback) override;
   virtual void GetNetworks(const std::string& network_type,
                            bool configured_only,
                            bool visible_only,
                            int limit,
                            const NetworkListCallback& success_callback,
-                           const FailureCallback& failure_callback) OVERRIDE;
+                           const FailureCallback& failure_callback) override;
   virtual void StartConnect(const std::string& guid,
                             const VoidCallback& success_callback,
-                            const FailureCallback& failure_callback) OVERRIDE;
+                            const FailureCallback& failure_callback) override;
   virtual void StartDisconnect(
       const std::string& guid,
       const VoidCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void VerifyDestination(
       const VerificationProperties& verification_properties,
       const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void VerifyAndEncryptCredentials(
       const std::string& guid,
       const VerificationProperties& verification_properties,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void VerifyAndEncryptData(
       const VerificationProperties& verification_properties,
       const std::string& data,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void GetWifiTDLSStatus(
       const std::string& ip_or_mac_address,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
+      const FailureCallback& failure_callback) override;
   virtual void GetCaptivePortalStatus(
       const std::string& guid,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE;
-  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() OVERRIDE;
-  virtual bool EnableNetworkType(const std::string& type) OVERRIDE;
-  virtual bool DisableNetworkType(const std::string& type) OVERRIDE;
-  virtual bool RequestScan() OVERRIDE;
+      const FailureCallback& failure_callback) override;
+  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  virtual bool EnableNetworkType(const std::string& type) override;
+  virtual bool DisableNetworkType(const std::string& type) override;
+  virtual bool RequestScan() override;
 
  private:
   virtual ~NetworkingPrivateChromeOS();

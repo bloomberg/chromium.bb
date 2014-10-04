@@ -16,7 +16,7 @@
 
 class SystemIndicatorApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     // Set shorter delays to prevent test timeouts in tests that need to wait
     // for the event page to unload.
