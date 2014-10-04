@@ -22,7 +22,9 @@ LIBCXX_DIR="${LLVM_DIR}/projects/libcxx"
 LIBCXXABI_DIR="${LLVM_DIR}/projects/libcxxabi"
 ANDROID_NDK_DIR="${THIS_DIR}/../../../third_party/android_tools/ndk"
 STAMP_FILE="${LLVM_DIR}/../llvm-build/cr_build_revision"
+CHROMIUM_TOOLS_DIR="${THIS_DIR}/.."
 
+ABS_CHROMIUM_TOOLS_DIR="${PWD}/${CHROMIUM_TOOLS_DIR}"
 ABS_LIBCXX_DIR="${PWD}/${LIBCXX_DIR}"
 ABS_LIBCXXABI_DIR="${PWD}/${LIBCXXABI_DIR}"
 ABS_LLVM_DIR="${PWD}/${LLVM_DIR}"
@@ -430,6 +432,22 @@ if [ "${OS}" = "Darwin" ]; then
   LDFLAGS+="-stdlib=libc++ -L${PWD}/libcxxbuild"
 fi
 
+# Hook the Chromium tools into the LLVM build. Several Chromium tools have
+# dependencies on LLVM/Clang libraries. The LLVM build detects implicit tools
+# in the tools subdirectory, so install a shim CMakeLists.txt that forwards to
+# the real directory for the Chromium tools.
+# Note that the shim directory name intentionally has no _ or _. The implicit
+# tool detection logic munges them in a weird way.
+CHROME_TOOLS_SHIM_DIR=${ABS_LLVM_DIR}/tools/chrometools
+rm -rfv ${CHROME_TOOLS_SHIM_DIR}
+mkdir -v ${CHROME_TOOLS_SHIM_DIR}
+cat > ${CHROME_TOOLS_SHIM_DIR}/CMakeLists.txt << EOF
+# Since tools/clang isn't actually a subdirectory, use the two argument version
+# to specify where build artifacts go. CMake doesn't allow reusing the same
+# binary dir for multiple source dirs, so the build artifacts have to go into a
+# subdirectory...
+add_subdirectory(\${CHROMIUM_TOOLS_SRC} \${CMAKE_CURRENT_BINARY_DIR}/a)
+EOF
 rm -fv CMakeCache.txt
 MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
@@ -442,6 +460,9 @@ MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
     -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
     -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_INSTALL_PREFIX="${ABS_LLVM_BUILD_DIR}" \
+    -DCHROMIUM_TOOLS_SRC="${ABS_CHROMIUM_TOOLS_DIR}" \
+    -DCHROMIUM_TOOLS="${chrome_tools}" \
     "${ABS_LLVM_DIR}"
 env
 
@@ -452,6 +473,10 @@ if [[ -n "${gcc_toolchain}" ]]; then
 fi
 
 ninja
+# If any Chromium tools were built, install those now.
+if [[ -n "${chrome_tools}" ]]; then
+  ninja cr-install
+fi
 
 STRIP_FLAGS=
 if [ "${OS}" = "Darwin" ]; then
@@ -528,34 +553,9 @@ if [[ -n "${with_android}" ]]; then
   popd
 fi
 
-# Build Chrome-specific clang tools. Paths in this list should be relative to
-# tools/clang.
-TOOL_SRC_DIR="${PWD}/${THIS_DIR}/../"
-TOOL_BUILD_DIR="${ABS_LLVM_BUILD_DIR}/tools/clang/tools/chrome-extras"
-
-rm -rf "${TOOL_BUILD_DIR}"
-mkdir -p "${TOOL_BUILD_DIR}"
-pushd "${TOOL_BUILD_DIR}"
-rm -fv CMakeCache.txt
-MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja  \
-    -DLLVM_BUILD_DIR="${ABS_LLVM_BUILD_DIR}" \
-    -DLLVM_SRC_DIR="${ABS_LLVM_DIR}" \
-    -DCMAKE_C_COMPILER="${CC}" \
-    -DCMAKE_CXX_COMPILER="${CXX}" \
-    -DCMAKE_C_FLAGS="${CFLAGS}" \
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
-    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
-    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}" \
-    -DCMAKE_INSTALL_PREFIX="${ABS_LLVM_BUILD_DIR}" \
-    -DCHROMIUM_TOOLS="${chrome_tools}" \
-    "${TOOL_SRC_DIR}"
-popd
-ninja -C "${TOOL_BUILD_DIR}" install
-
 if [[ -n "$run_tests" ]]; then
   # Run Chrome tool tests.
-  ninja -C "${TOOL_BUILD_DIR}" check-all
+  ninja -C "${LLVM_BUILD_DIR}" cr-check-all
   # Run the LLVM and Clang tests.
   ninja -C "${LLVM_BUILD_DIR}" check-all
 fi

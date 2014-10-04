@@ -8,10 +8,10 @@ add_llvm_loadable_module("lib${LIBRARYNAME}"
                          RecordInfo.cpp
                         )
 
-install(TARGETS "lib${LIBRARYNAME}" LIBRARY DESTINATION lib)
+cr_install(TARGETS "lib${LIBRARYNAME}" LIBRARY DESTINATION lib)
 
 cr_add_test(blink_gc_plugin_test
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.sh
-  ${LLVM_BUILD_DIR}/bin/clang
+  ${CMAKE_BINARY_DIR}/bin/clang
   $<TARGET_FILE:lib${LIBRARYNAME}>
   )

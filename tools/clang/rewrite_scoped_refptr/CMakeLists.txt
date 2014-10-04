@@ -23,4 +23,4 @@ target_link_libraries(rewrite_scoped_refptr
   clangTooling
   )
 
-install(TARGETS rewrite_scoped_refptr RUNTIME DESTINATION bin)
+cr_install(TARGETS rewrite_scoped_refptr RUNTIME DESTINATION bin)

@@ -23,4 +23,4 @@ target_link_libraries(empty_string
   clangTooling
   )
 
-install(TARGETS empty_string RUNTIME DESTINATION bin)
+cr_install(TARGETS empty_string RUNTIME DESTINATION bin)
