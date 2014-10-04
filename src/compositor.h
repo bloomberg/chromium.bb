@@ -247,6 +247,8 @@ struct weston_pointer_grab_interface {
 		       wl_fixed_t x, wl_fixed_t y);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
+	void (*axis)(struct weston_pointer_grab *grab,
+		     uint32_t time, uint32_t axis, wl_fixed_t value);
 	void (*cancel)(struct weston_pointer_grab *grab);
 };
 
@@ -368,6 +370,9 @@ struct weston_pointer *
 weston_pointer_create(struct weston_seat *seat);
 void
 weston_pointer_destroy(struct weston_pointer *pointer);
+void
+weston_pointer_send_axis(struct weston_pointer *pointer,
+			 uint32_t time, uint32_t axis, wl_fixed_t value);
 void
 weston_pointer_set_focus(struct weston_pointer *pointer,
 			 struct weston_view *view,

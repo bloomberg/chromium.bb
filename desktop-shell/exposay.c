@@ -386,6 +386,12 @@ exposay_button(struct weston_pointer_grab *grab, uint32_t time, uint32_t button,
 }
 
 static void
+exposay_axis(struct weston_pointer_grab *grab,
+	     uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+}
+
+static void
 exposay_pointer_grab_cancel(struct weston_pointer_grab *grab)
 {
 	struct desktop_shell *shell =
@@ -398,6 +404,7 @@ static const struct weston_pointer_grab_interface exposay_ptr_grab = {
 	exposay_focus,
 	exposay_motion,
 	exposay_button,
+	exposay_axis,
 	exposay_pointer_grab_cancel,
 };
 

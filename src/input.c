@@ -221,6 +221,36 @@ default_grab_pointer_button(struct weston_pointer_grab *grab,
 	}
 }
 
+/** Send wl_pointer.axis events to focused resources.
+ *
+ * \param pointer The pointer where the axis events originates from.
+ * \param time The timestamp of the event
+ * \param axis The axis enum value of the event
+ * \param value The axis value of the event
+ *
+ * For every resource that is currently in focus, send a wl_pointer.axis event
+ * with the passed parameters. The focused resources are the wl_pointer
+ * resources of the client which currently has the surface with pointer focus.
+ */
+WL_EXPORT void
+weston_pointer_send_axis(struct weston_pointer *pointer,
+			 uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
+
+	resource_list = &pointer->focus_resource_list;
+	wl_resource_for_each(resource, resource_list)
+		wl_pointer_send_axis(resource, time, axis, value);
+}
+
+static void
+default_grab_pointer_axis(struct weston_pointer_grab *grab,
+			  uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+	weston_pointer_send_axis(grab->pointer, time, axis, value);
+}
+
 static void
 default_grab_pointer_cancel(struct weston_pointer_grab *grab)
 {
@@ -231,6 +261,7 @@ static const struct weston_pointer_grab_interface
 	default_grab_pointer_focus,
 	default_grab_pointer_motion,
 	default_grab_pointer_button,
+	default_grab_pointer_axis,
 	default_grab_pointer_cancel,
 };
 
@@ -1084,8 +1115,6 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
-	struct wl_resource *resource;
-	struct wl_list *resource_list;
 
 	weston_compositor_wake(compositor);
 
@@ -1096,10 +1125,7 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 					       time, axis, value))
 		return;
 
-	resource_list = &pointer->focus_resource_list;
-	wl_resource_for_each(resource, resource_list)
-		wl_pointer_send_axis(resource, time, axis,
-				     value);
+	pointer->grab->interface->axis(pointer->grab, time, axis, value);
 }
 
 WL_EXPORT int
