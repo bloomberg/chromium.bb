@@ -1214,8 +1214,8 @@ weston_wm_pick_seat_for_window(struct weston_wm_window *window)
 
 	seat = NULL;
 	wl_list_for_each(s, &wm->server->compositor->seat_list, link) {
-		if (s->pointer != NULL &&
-		    s->pointer->focus == window->view &&
+		if (s->pointer != NULL && s->pointer->focus &&
+		    s->pointer->focus->surface == window->surface &&
 		    s->pointer->button_count > 0 &&
 		    (seat == NULL ||
 		     s->pointer->grab_serial -
@@ -1248,7 +1248,8 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 		&wm->server->compositor->shell_interface;
 
 	if (seat == NULL || seat->pointer->button_count != 1
-	    || !window->view || seat->pointer->focus != window->view)
+	    || !seat->pointer->focus
+	    || seat->pointer->focus->surface != window->surface)
 		return;
 
 	detail = client_message->data.data32[2];
