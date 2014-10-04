@@ -51,20 +51,20 @@ class TabScrubber : public ui::EventHandler,
   virtual ~TabScrubber();
 
   // ui::EventHandler overrides:
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // TabStripObserver overrides.
-  virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index) OVERRIDE;
+  virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index) override;
   virtual void TabStripMovedTab(TabStrip* tab_strip,
                                 int from_index,
-                                int to_index) OVERRIDE;
-  virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index) OVERRIDE;
-  virtual void TabStripDeleted(TabStrip* tab_strip) OVERRIDE;
+                                int to_index) override;
+  virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override;
+  virtual void TabStripDeleted(TabStrip* tab_strip) override;
 
   Browser* GetActiveBrowser();
   void FinishScrub(bool activate);

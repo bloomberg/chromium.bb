@@ -34,20 +34,20 @@ class UninstallView : public views::ButtonListener,
 
   // Overridden form views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::DialogDelegateView:
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
+      ui::DialogButton button) const override;
 
   // Overridden from views::WidgetDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
 
  private:
   typedef std::map<base::string16, base::string16> BrowsersMap;

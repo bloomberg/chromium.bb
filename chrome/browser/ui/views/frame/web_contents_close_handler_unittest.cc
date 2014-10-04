@@ -28,10 +28,10 @@ class MockWebContentsCloseHandlerDelegate
   void clear_got_destroy() { got_destroy_ = false; }
 
   // WebContentsCloseHandlerDelegate:
-  virtual void CloneWebContentsLayer() OVERRIDE {
+  virtual void CloneWebContentsLayer() override {
     got_clone_ = true;
   }
-  virtual void DestroyClonedLayer() OVERRIDE {
+  virtual void DestroyClonedLayer() override {
     got_destroy_ = true;
   }
 

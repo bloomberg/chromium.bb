@@ -26,11 +26,11 @@ class DialogContents : public DialogDelegateView {
   }
 
   // Overriden from DialogDelegateView:
-  virtual View* GetContentsView() OVERRIDE { return this; }
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual View* GetContentsView() override { return this; }
+  virtual gfx::Size GetPreferredSize() const override {
     return preferred_size_;
   }
-  virtual gfx::Size GetMinimumSize() const OVERRIDE { return gfx::Size(); }
+  virtual gfx::Size GetMinimumSize() const override { return gfx::Size(); }
 
  private:
   gfx::Size preferred_size_;
@@ -43,7 +43,7 @@ class ConstrainedWindowViewsTest : public ViewsTestBase {
   ConstrainedWindowViewsTest() : contents_(NULL) {}
   virtual ~ConstrainedWindowViewsTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewsTestBase::SetUp();
     contents_ = new DialogContents;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -62,7 +62,7 @@ class ConstrainedWindowViewsTest : public ViewsTestBase {
     contents()->set_preferred_size(preferred_size);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ViewsTestBase::TearDown();
     contents_ = NULL;
     dialog_host_.reset();

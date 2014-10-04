@@ -62,30 +62,30 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ExtensionViewViews::Container overrides.
-  virtual void OnExtensionSizeChanged(ExtensionViewViews* view) OVERRIDE;
+  virtual void OnExtensionSizeChanged(ExtensionViewViews* view) override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
   // views::WidgetObserver overrides.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
   virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
+                                         bool active) override;
 
   // aura::client::ActivationChangeObserver overrides.
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   // TabStripModelObserver overrides.
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                int reason) OVERRIDE;
+                                int reason) override;
 
   // The min/max height of popups.
   static const int kMinWidth;

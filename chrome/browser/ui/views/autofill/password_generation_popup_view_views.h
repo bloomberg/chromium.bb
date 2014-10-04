@@ -28,12 +28,12 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
       views::Widget* observing_widget);
 
   // PasswordGenerationPopupView implementation
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual gfx::Size GetPreferredSizeOfPasswordView() OVERRIDE;
-  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
-  virtual void PasswordSelectionUpdated() OVERRIDE;
-  virtual bool IsPointInPasswordBounds(const gfx::Point& point) OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual gfx::Size GetPreferredSizeOfPasswordView() override;
+  virtual void UpdateBoundsAndRedrawPopup() override;
+  virtual void PasswordSelectionUpdated() override;
+  virtual bool IsPointInPasswordBounds(const gfx::Point& point) override;
 
  private:
   // Helper class to do layout of the password portion of the popup.
@@ -45,12 +45,12 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
   void CreatePasswordView();
 
   // views:Views implementation.
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // views::StyledLabelListener implementation
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) OVERRIDE;
+                                      int event_flags) override;
 
   // Sub views. Used to change bounds when updating. Weak references.
   PasswordBox* password_view_;

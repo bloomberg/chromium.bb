@@ -109,7 +109,7 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
   }
 
   // Overridden from chrome::BrowserListObserver.
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {
+  virtual void OnBrowserRemoved(Browser* browser) override {
     if (browser == browser_)
       browser_ = NULL;
   }

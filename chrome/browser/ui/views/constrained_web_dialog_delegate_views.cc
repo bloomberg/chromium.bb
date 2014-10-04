@@ -34,13 +34,13 @@ class WebDialogWebContentsDelegateViews
   virtual ~WebDialogWebContentsDelegateViews() {}
 
   // ui::WebDialogWebContentsDelegate:
-  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE {
+  virtual void WebContentsFocused(content::WebContents* contents) override {
     // Ensure the WebView is focused when its WebContents is focused.
     web_view_->RequestFocus();
   }
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE {
+      const content::NativeWebKeyboardEvent& event) override {
     // Forward shortcut keys in dialog to the browser. http://crbug.com/104586
     // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
@@ -72,20 +72,20 @@ class ConstrainedWebDialogDelegateViews
   virtual ~ConstrainedWebDialogDelegateViews() {}
 
   // ui::WebDialogWebContentsDelegate:
-  virtual void CloseContents(content::WebContents* source) OVERRIDE {
+  virtual void CloseContents(content::WebContents* source) override {
     view_->GetWidget()->Close();
   }
 
   // contents::WebContentsDelegate:
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE {
+      const content::NativeWebKeyboardEvent& event) override {
     unhandled_keyboard_event_handler_.HandleKeyboardEvent(
         event, view_->GetFocusManager());
   }
 
   // ConstrainedWebDialogDelegate:
-  virtual web_modal::NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
+  virtual web_modal::NativeWebContentsModalDialog GetNativeDialog() override {
     return view_->GetWidget()->GetNativeView();
   }
 
@@ -116,72 +116,72 @@ class ConstrainedWebDialogDelegateViewViews
   virtual ~ConstrainedWebDialogDelegateViewViews() {}
 
   // ConstrainedWebDialogDelegate:
-  virtual const ui::WebDialogDelegate* GetWebDialogDelegate() const OVERRIDE {
+  virtual const ui::WebDialogDelegate* GetWebDialogDelegate() const override {
     return impl_->GetWebDialogDelegate();
   }
-  virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE {
+  virtual ui::WebDialogDelegate* GetWebDialogDelegate() override {
     return impl_->GetWebDialogDelegate();
   }
-  virtual void OnDialogCloseFromWebUI() OVERRIDE {
+  virtual void OnDialogCloseFromWebUI() override {
     return impl_->OnDialogCloseFromWebUI();
   }
-  virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
+  virtual void ReleaseWebContentsOnDialogClose() override {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual web_modal::NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
+  virtual web_modal::NativeWebContentsModalDialog GetNativeDialog() override {
     return impl_->GetNativeDialog();
   }
-  virtual content::WebContents* GetWebContents() OVERRIDE {
+  virtual content::WebContents* GetWebContents() override {
     return impl_->GetWebContents();
   }
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE {
+  virtual views::View* GetInitiallyFocusedView() override {
     return this;
   }
-  virtual void WindowClosing() OVERRIDE {
+  virtual void WindowClosing() override {
     if (!impl_->closed_via_webui())
       GetWebDialogDelegate()->OnDialogClosed(std::string());
   }
-  virtual views::Widget* GetWidget() OVERRIDE {
+  virtual views::Widget* GetWidget() override {
     return View::GetWidget();
   }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
+  virtual const views::Widget* GetWidget() const override {
     return View::GetWidget();
   }
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const override {
     return impl_->closed_via_webui() ? base::string16() :
         GetWebDialogDelegate()->GetDialogTitle();
   }
-  virtual views::View* GetContentsView() OVERRIDE {
+  virtual views::View* GetContentsView() override {
     return this;
   }
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      views::Widget* widget) override {
     return views::DialogDelegate::CreateDialogFrameView(widget);
   }
-  virtual bool ShouldShowCloseButton() const OVERRIDE {
+  virtual bool ShouldShowCloseButton() const override {
     // No close button if the dialog doesn't want a title bar.
     return impl_->GetWebDialogDelegate()->ShouldShowDialogTitle();
   }
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_CHILD;
   }
 
   // views::WebView:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     // Pressing ESC closes the dialog.
     DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
     GetWidget()->Close();
     return true;
   }
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     gfx::Size size;
     if (!impl_->closed_via_webui())
       GetWebDialogDelegate()->GetDialogSize(&size);
     return size;
   }
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     // Return an empty size so that we can be made smaller.
     return gfx::Size();
   }

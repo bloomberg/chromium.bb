@@ -39,19 +39,19 @@ class EditSearchEngineDialog : public views::TextfieldController,
                    Profile* profile);
 
   // views::DialogDelegate:
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
 
   // views::TextfieldController:
   // Updates whether the user can accept the dialog as well as updating image
   // views showing whether value is valid.
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
  private:
   void Init();
 

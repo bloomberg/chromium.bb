@@ -34,8 +34,8 @@ class TabIconView : public views::MenuButton {
   void set_is_light(bool is_light) { is_light_ = is_light; }
 
   // Overridden from View
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual gfx::Size GetPreferredSize() const override;
 
  private:
   void PaintThrobber(gfx::Canvas* canvas);

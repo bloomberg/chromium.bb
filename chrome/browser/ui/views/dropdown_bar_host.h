@@ -80,17 +80,17 @@ class DropdownBarHost : public ui::AcceleratorTarget,
 
   // Overridden from views::FocusChangeListener:
   virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) OVERRIDE;
+                                 views::View* focused_now) override;
   virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) OVERRIDE;
+                                views::View* focused_now) override;
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) = 0;
   virtual bool CanHandleAccelerators() const = 0;
 
   // gfx::AnimationDelegate implementation:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   // During testing we can disable animations by setting this flag to true,
   // so that opening and closing the dropdown bar is shown instantly, instead of

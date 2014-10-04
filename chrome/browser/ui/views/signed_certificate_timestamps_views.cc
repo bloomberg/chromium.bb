@@ -59,8 +59,8 @@ class SCTListModel : public ui::ComboboxModel {
   virtual ~SCTListModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
 
  private:
   net::SignedCertificateTimestampAndStatusList sct_list_;

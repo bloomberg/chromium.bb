@@ -32,7 +32,7 @@ class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
   ManagePasswordsBubbleViewTest() {}
   virtual ~ManagePasswordsBubbleViewTest() {}
 
-  virtual ManagePasswordsIcon* view() OVERRIDE {
+  virtual ManagePasswordsIcon* view() override {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     return browser_view->GetToolbarView()
         ->location_bar()

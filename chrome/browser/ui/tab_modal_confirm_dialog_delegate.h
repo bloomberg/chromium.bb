@@ -101,7 +101,7 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

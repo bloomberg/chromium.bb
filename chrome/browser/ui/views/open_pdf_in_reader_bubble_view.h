@@ -27,14 +27,14 @@ class OpenPDFInReaderBubbleView : public views::BubbleDelegateView,
 
  protected:
   // views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
   // Weak pointer; owned by the PDFWebContentsHelper of the currently active

@@ -101,7 +101,7 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   // SingleWebContentsDialogManager overrides
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
     scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
@@ -124,7 +124,7 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
-  virtual void Hide() OVERRIDE {
+  virtual void Hide() override {
     views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
     scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
@@ -134,11 +134,11 @@ class NativeWebContentsModalDialogManagerViews
     widget->Hide();
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     GetWidget(dialog())->Close();
   }
 
-  virtual void Focus() OVERRIDE {
+  virtual void Focus() override {
     views::Widget* widget = GetWidget(dialog());
     if (widget->widget_delegate() &&
         widget->widget_delegate()->GetInitiallyFocusedView())
@@ -150,11 +150,11 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
-  virtual void Pulse() OVERRIDE {
+  virtual void Pulse() override {
   }
 
   // WebContentsModalDialogHostObserver overrides
-  virtual void OnPositionRequiresUpdate() OVERRIDE {
+  virtual void OnPositionRequiresUpdate() override {
     DCHECK(host_);
 
     for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
@@ -164,7 +164,7 @@ class NativeWebContentsModalDialogManagerViews
     }
   }
 
-  virtual void OnHostDestroying() OVERRIDE {
+  virtual void OnHostDestroying() override {
     host_->RemoveObserver(this);
     host_ = NULL;
   }
@@ -179,16 +179,16 @@ class NativeWebContentsModalDialogManagerViews
   // widget is implicitly destroyed due to its parent being closed. This
   // situation occurs with app windows.  WidgetClosing removes the observer, so
   // only one of these two functions is ever invoked for a given widget.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetClosing(views::Widget* widget) override {
     WidgetClosing(widget);
   }
 
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) override {
     WidgetClosing(widget);
   }
 
   virtual void HostChanged(
-      web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {
+      web_modal::WebContentsModalDialogHost* new_host) override {
     if (host_)
       host_->RemoveObserver(this);
 
@@ -209,7 +209,7 @@ class NativeWebContentsModalDialogManagerViews
     }
   }
 
-  virtual NativeWebContentsModalDialog dialog() OVERRIDE {
+  virtual NativeWebContentsModalDialog dialog() override {
     return dialog_;
   }
 

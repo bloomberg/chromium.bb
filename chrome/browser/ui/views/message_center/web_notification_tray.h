@@ -56,18 +56,18 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   message_center::MessageCenter* message_center();
 
   // MessageCenterTrayDelegate implementation.
-  virtual bool ShowPopups() OVERRIDE;
-  virtual void HidePopups() OVERRIDE;
-  virtual bool ShowMessageCenter() OVERRIDE;
-  virtual void HideMessageCenter() OVERRIDE;
-  virtual void OnMessageCenterTrayChanged() OVERRIDE;
-  virtual bool ShowNotifierSettings() OVERRIDE;
-  virtual bool IsContextMenuEnabled() const OVERRIDE;
+  virtual bool ShowPopups() override;
+  virtual void HidePopups() override;
+  virtual bool ShowMessageCenter() override;
+  virtual void HideMessageCenter() override;
+  virtual void OnMessageCenterTrayChanged() override;
+  virtual bool ShowNotifierSettings() override;
+  virtual bool IsContextMenuEnabled() const override;
 
   // StatusIconObserver implementation.
-  virtual void OnStatusIconClicked() OVERRIDE;
+  virtual void OnStatusIconClicked() override;
 #if defined(OS_WIN)
-  virtual void OnBalloonClicked() OVERRIDE;
+  virtual void OnBalloonClicked() override;
 
   // This shows a platform-specific balloon informing the user of the existence
   // of the message center in the status tray area.
@@ -77,7 +77,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 #endif
 
   // StatusIconMenuModel::Delegate implementation.
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
   // Changes the icon and hovertext based on number of unread notifications.
   void UpdateStatusIcon();
@@ -86,7 +86,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   // Gets the point where the status icon was clicked.
   gfx::Point mouse_click_point() { return mouse_click_point_; }
-  virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE;
+  virtual MessageCenterTray* GetMessageCenterTray() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);

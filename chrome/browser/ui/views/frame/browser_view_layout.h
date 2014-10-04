@@ -83,8 +83,8 @@ class BrowserViewLayout : public views::LayoutManager {
   int NonClientHitTest(const gfx::Point& point);
 
   // views::LayoutManager overrides:
-  virtual void Layout(views::View* host) OVERRIDE;
-  virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE;
+  virtual void Layout(views::View* host) override;
+  virtual gfx::Size GetPreferredSize(const views::View* host) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, BrowserViewLayout);

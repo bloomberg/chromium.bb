@@ -48,7 +48,7 @@ class ButtonView : public views::View {
   virtual ~ButtonView();
 
   // Returns an empty size when the view is not visible.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   views::LabelButton* accept_button() const { return accept_button_; }
   views::LabelButton* deny_button() const { return deny_button_; }
@@ -100,10 +100,10 @@ class FullscreenExitBubbleViews::FullscreenExitView
 
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
 

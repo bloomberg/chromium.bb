@@ -46,19 +46,19 @@ class DecoratedTextfield : public views::Textfield,
   void SetTooltipIcon(const base::string16& text);
 
   // views::Textfield implementation.
-  virtual base::string16 GetPlaceholderText() const OVERRIDE;
+  virtual base::string16 GetPlaceholderText() const override;
 
   // views::View implementation.
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DecoratedTextfieldTest, HeightMatchesButton);
 
   // views::ViewTargeterDelegate:
   virtual views::View* TargetForRect(views::View* root,
-                                     const gfx::Rect& rect) OVERRIDE;
+                                     const gfx::Rect& rect) override;
 
   // Updates the background after its color may have changed.
   void UpdateBackground();

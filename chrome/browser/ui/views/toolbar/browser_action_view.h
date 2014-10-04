@@ -109,30 +109,30 @@ class BrowserActionView : public views::MenuButton,
   bool IsPopup();
 
   // Overridden from views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // MenuButton behavior overrides.  These methods all default to LabelButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
   // behavior.  MenuButton has the notion of a child popup being shown where the
   // button will stay in the pushed state until the "menu" (a popup in this
   // case) is dismissed.
-  virtual bool Activate() OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual bool Activate() override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
   virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      OVERRIDE;
+      override;
 
   // Whether the browser action is enabled on this tab. Note that we cannot use
   // the built-in views enabled/SetEnabled because disabled views do not
@@ -148,26 +148,26 @@ class BrowserActionView : public views::MenuButton,
  private:
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual void OnDragDone() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual void OnDragDone() override;
+  virtual gfx::Size GetPreferredSize() const override;
   virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
+                             const views::CullSet& cull_set) override;
 
   // ExtensionActionViewDelegate:
-  virtual views::View* GetAsView() OVERRIDE;
-  virtual bool IsShownInMenu() OVERRIDE;
-  virtual views::FocusManager* GetFocusManagerForAccelerator() OVERRIDE;
-  virtual views::Widget* GetParentForContextMenu() OVERRIDE;
+  virtual views::View* GetAsView() override;
+  virtual bool IsShownInMenu() override;
+  virtual views::FocusManager* GetFocusManagerForAccelerator() override;
+  virtual views::Widget* GetParentForContextMenu() override;
   virtual ExtensionActionViewController* GetPreferredPopupViewController()
-      OVERRIDE;
-  virtual views::View* GetReferenceViewForPopup() OVERRIDE;
-  virtual views::MenuButton* GetContextMenuButton() OVERRIDE;
-  virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
-  virtual void HideActivePopup() OVERRIDE;
-  virtual void OnIconUpdated() OVERRIDE;
-  virtual void OnPopupShown(bool grant_tab_permissions) OVERRIDE;
-  virtual void CleanupPopup() OVERRIDE;
+      override;
+  virtual views::View* GetReferenceViewForPopup() override;
+  virtual views::MenuButton* GetContextMenuButton() override;
+  virtual content::WebContents* GetCurrentWebContents() override;
+  virtual void HideActivePopup() override;
+  virtual void OnIconUpdated() override;
+  virtual void OnPopupShown(bool grant_tab_permissions) override;
+  virtual void CleanupPopup() override;
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   // This needs to be destroyed after |view_controller_|, because

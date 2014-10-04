@@ -42,22 +42,22 @@ class ConflictingModuleView : public views::BubbleDelegateView,
   void DismissBubble();
 
   // views::BubbleDelegateView implementation:
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::View implementation.
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(
     int type,
     const content::NotificationSource& source,
-    const content::NotificationDetails& details) OVERRIDE;
+    const content::NotificationDetails& details) override;
 
   Browser* browser_;
 

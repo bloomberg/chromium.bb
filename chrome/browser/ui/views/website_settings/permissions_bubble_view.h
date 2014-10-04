@@ -21,13 +21,13 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   virtual ~PermissionBubbleViewViews();
 
   // PermissionBubbleView:
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE;
+  virtual void SetDelegate(Delegate* delegate) override;
   virtual void Show(const std::vector<PermissionBubbleRequest*>& requests,
                     const std::vector<bool>& accept_state,
-                    bool customization_mode) OVERRIDE;
-  virtual bool CanAcceptRequestUpdate() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual bool IsVisible() OVERRIDE;
+                    bool customization_mode) override;
+  virtual bool CanAcceptRequestUpdate() override;
+  virtual void Hide() override;
+  virtual bool IsVisible() override;
 
   void Closing();
   void Toggle(int index, bool value);

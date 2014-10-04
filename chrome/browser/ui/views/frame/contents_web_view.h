@@ -32,19 +32,19 @@ class ContentsWebView
   void SetStatusBubble(StatusBubbleViews* status_bubble);
 
   // WebView overrides:
-  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
-  virtual void OnVisibleBoundsChanged() OVERRIDE;
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  virtual void OnVisibleBoundsChanged() override;
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
+      override;
+  virtual void OnThemeChanged() override;
 
   // ui::LayerOwnerDelegate overrides:
   virtual void OnLayerRecreated(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE;
+                                ui::Layer* new_layer) override;
 
   // WebContentsCloseHandlerDelegate overrides:
-  virtual void CloneWebContentsLayer() OVERRIDE;
-  virtual void DestroyClonedLayer() OVERRIDE;
+  virtual void CloneWebContentsLayer() override;
+  virtual void DestroyClonedLayer() override;
 
  private:
   StatusBubbleViews* status_bubble_;

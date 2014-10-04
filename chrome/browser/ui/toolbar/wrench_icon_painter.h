@@ -63,7 +63,7 @@ class WrenchIconPainter : gfx::AnimationDelegate {
   FRIEND_TEST_ALL_PREFIXES(WrenchIconPainterTest, PaintCallback);
 
   // AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Gets the image ID used to draw bars for the current severity level.
   int GetCurrentSeverityImageID() const;

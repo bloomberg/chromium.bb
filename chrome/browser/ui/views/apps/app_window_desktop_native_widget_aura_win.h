@@ -29,7 +29,7 @@ class AppWindowDesktopNativeWidgetAuraWin
 
   // Overridden from views::DesktopNativeWidgetAura:
   virtual void InitNativeWidget(
-      const views::Widget::InitParams& params) OVERRIDE;
+      const views::Widget::InitParams& params) override;
 
  private:
   // Ownership managed by the views system.

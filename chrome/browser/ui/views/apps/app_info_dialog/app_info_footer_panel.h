@@ -49,11 +49,11 @@ class AppInfoFooterPanel
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted() OVERRIDE;
-  virtual void ExtensionUninstallCanceled() OVERRIDE;
+  virtual void ExtensionUninstallAccepted() override;
+  virtual void ExtensionUninstallCanceled() override;
 
   // Create Shortcuts for the app. Must only be called if CanCreateShortcuts()
   // returns true.

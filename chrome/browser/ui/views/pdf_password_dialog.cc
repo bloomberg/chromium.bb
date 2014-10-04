@@ -24,19 +24,19 @@ class PDFPasswordDialogViews : public views::DialogDelegate {
   virtual ~PDFPasswordDialogViews();
 
   // views::DialogDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() override;
+  virtual views::View* GetContentsView() override;
+  virtual views::Widget* GetWidget() override;
+  virtual const views::Widget* GetWidget() const override;
+  virtual void DeleteDelegate() override;
+  virtual ui::ModalType GetModalType() const override;
 
  private:
   // The message box view whose commands we handle.

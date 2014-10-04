@@ -49,7 +49,7 @@ const int kWin8SplitPoint = 200;
 
 class AppListWinUnitTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     display_.set_bounds(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
     display_.set_work_area(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
     cursor_ = gfx::Point();

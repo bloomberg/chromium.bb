@@ -44,17 +44,17 @@ class MediaIndicatorButton : public views::ImageButton,
 
  protected:
   // views::View:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ViewTargeterDelegate
   virtual bool DoesIntersectRect(const View* target,
-                                 const gfx::Rect& rect) const OVERRIDE;
+                                 const gfx::Rect& rect) const override;
 
   // views::Button:
-  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
+  virtual void NotifyClick(const ui::Event& event) override;
 
  private:
   class FadeAnimationDelegate;

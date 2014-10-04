@@ -59,16 +59,16 @@ class ExpandingTextfield : public views::View,
   void SetTooltipIcon(const base::string16& text);
 
   // View implementation.
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual const char* GetClassName() const override;
   using views::View::needs_layout;
 
   // TextfieldController implementation.
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
   virtual bool HandleMouseEvent(views::Textfield* sender,
-                                const ui::MouseEvent& mouse_event) OVERRIDE;
+                                const ui::MouseEvent& mouse_event) override;
 
  private:
   // Calls a given function on every textfield.

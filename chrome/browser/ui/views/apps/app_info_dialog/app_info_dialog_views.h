@@ -41,8 +41,8 @@ class AppInfoDialog : public views::View,
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
+      extensions::UninstallReason reason) override;
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // UI elements of the dialog.
   views::View* dialog_header_;

@@ -48,21 +48,21 @@ class DownloadFeedbackDialogView : public views::DialogDelegate,
   bool OnButtonClicked(bool accepted);
 
   // views::DialogDelegate:
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual void DeleteDelegate() override;
+  virtual views::Widget* GetWidget() override;
+  virtual const views::Widget* GetWidget() const override;
+  virtual views::View* GetContentsView() override;
+  virtual int GetDefaultDialogButton() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual views::View* CreateExtraView() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
+  virtual views::View* CreateExtraView() override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   Profile* profile_;
   content::PageNavigator* navigator_;

@@ -29,7 +29,7 @@ class ValidationMessageBubbleImpl
 
   virtual void SetPositionRelativeToAnchor(
       content::RenderWidgetHost* widget_host,
-      const gfx::Rect& anchor_in_root_view) OVERRIDE {
+      const gfx::Rect& anchor_in_root_view) override {
     if (!delegate_)
       return;
     delegate_->SetPositionRelativeToAnchor(anchor_in_root_view +
@@ -37,7 +37,7 @@ class ValidationMessageBubbleImpl
   }
 
   // ValidationMessageBubbleDelegate::Observer override:
-  virtual void WindowClosing() OVERRIDE {
+  virtual void WindowClosing() override {
     delegate_ = NULL;
   }
 

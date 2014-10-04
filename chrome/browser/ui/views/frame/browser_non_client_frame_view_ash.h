@@ -40,45 +40,45 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void Init();
 
   // BrowserNonClientFrameView:
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual int GetTopInset() const OVERRIDE;
-  virtual int GetThemeBackgroundXInset() const OVERRIDE;
-  virtual void UpdateThrobber(bool running) OVERRIDE;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
+  virtual int GetTopInset() const override;
+  virtual int GetThemeBackgroundXInset() const override;
+  virtual void UpdateThrobber(bool running) override;
 
   // views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForClientView() const override;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE;
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+      const gfx::Rect& client_bounds) const override;
+  virtual int NonClientHitTest(const gfx::Point& point) override;
   virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) OVERRIDE;
-  virtual void ResetWindowControls() OVERRIDE;
-  virtual void UpdateWindowIcon() OVERRIDE;
-  virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void SizeConstraintsChanged() OVERRIDE;
+                             gfx::Path* window_mask) override;
+  virtual void ResetWindowControls() override;
+  virtual void UpdateWindowIcon() override;
+  virtual void UpdateWindowTitle() override;
+  virtual void SizeConstraintsChanged() override;
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void Layout() override;
+  virtual const char* GetClassName() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
 
   // ash::ShellObserver:
-  virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
+  virtual void OnMaximizeModeStarted() override;
+  virtual void OnMaximizeModeEnded() override;
 
   // chrome::TabIconViewModel:
-  virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
-  virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
+  virtual bool ShouldTabIconViewAnimate() const override;
+  virtual gfx::ImageSkia GetFaviconForTabIconView() override;
 
   // CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);
@@ -91,7 +91,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // views::NonClientFrameView:
   virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const OVERRIDE;
+                                 const gfx::Rect& rect) const override;
 
   // Distance between the left edge of the NonClientFrameView and the tab strip.
   int GetTabStripLeftInset() const;

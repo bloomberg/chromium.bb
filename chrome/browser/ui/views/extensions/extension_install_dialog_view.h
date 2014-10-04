@@ -42,7 +42,7 @@ class CustomScrollableView : public views::View {
   virtual ~CustomScrollableView();
 
  private:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   DISALLOW_COPY_AND_ASSIGN(CustomScrollableView);
 };
@@ -67,25 +67,25 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
  private:
   // views::DialogDelegateView:
-  virtual int GetDialogButtons() const OVERRIDE;
+  virtual int GetDialogButtons() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual int GetDefaultDialogButton() const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Experimental: Toggles inline permission explanations with an animation.
   void ToggleInlineExplanations();
@@ -205,18 +205,18 @@ class ExpandableContainerView : public views::View,
   virtual ~ExpandableContainerView();
 
   // views::View:
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   // Expand/Collapse the detail section for this ExpandableContainerView.
   void ToggleDetailLevel();
@@ -234,7 +234,7 @@ class ExpandableContainerView : public views::View,
     virtual ~DetailsView() {}
 
     // views::View:
-    virtual gfx::Size GetPreferredSize() const OVERRIDE;
+    virtual gfx::Size GetPreferredSize() const override;
 
     void AddDetail(const base::string16& detail);
 

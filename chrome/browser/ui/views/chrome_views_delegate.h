@@ -20,44 +20,44 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) OVERRIDE;
+                                   ui::WindowShowState show_state) override;
   virtual bool GetSavedWindowPlacement(
       const views::Widget* widget,
       const std::string& window_name,
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE;
+      ui::WindowShowState* show_state) const override;
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AXEvent event_type) OVERRIDE;
+      views::View* view, ui::AXEvent event_type) override;
   virtual void NotifyMenuItemFocused(const base::string16& menu_name,
                                      const base::string16& menu_item_name,
                                      int item_index,
                                      int item_count,
-                                     bool has_submenu) OVERRIDE;
+                                     bool has_submenu) override;
 #if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE;
-  virtual bool IsWindowInMetro(gfx::NativeWindow window) const OVERRIDE;
+  virtual HICON GetDefaultWindowIcon() const override;
+  virtual bool IsWindowInMetro(gfx::NativeWindow window) const override;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  virtual gfx::ImageSkia* GetDefaultWindowIcon() const OVERRIDE;
+  virtual gfx::ImageSkia* GetDefaultWindowIcon() const override;
 #endif
 
 #if defined(USE_ASH)
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
+      views::Widget* widget) override;
 #endif
-  virtual void AddRef() OVERRIDE;
-  virtual void ReleaseRef() OVERRIDE;
+  virtual void AddRef() override;
+  virtual void ReleaseRef() override;
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
+      views::internal::NativeWidgetDelegate* delegate) override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  virtual bool WindowManagerProvidesTitleBar(bool maximized) OVERRIDE;
+  virtual bool WindowManagerProvidesTitleBar(bool maximized) override;
 #endif
 #if defined(USE_AURA)
-  virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
+  virtual ui::ContextFactory* GetContextFactory() override;
 #endif
 #if defined(OS_WIN)
   virtual int GetAppbarAutohideEdges(HMONITOR monitor,
-                                     const base::Closure& callback) OVERRIDE;
+                                     const base::Closure& callback) override;
 #endif
 
  private:

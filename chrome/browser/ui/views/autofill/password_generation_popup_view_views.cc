@@ -61,7 +61,7 @@ class PasswordTextBox : public views::View {
   }
 
   // views::View:
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+  virtual bool CanProcessEventsWithinSubtree() const override {
     // Send events to the parent view for handling.
     return false;
   }
@@ -106,7 +106,7 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
   }
 
   // views::View:
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+  virtual bool CanProcessEventsWithinSubtree() const override {
     // Send events to the parent view for handling.
     return false;
   }

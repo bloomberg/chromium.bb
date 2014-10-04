@@ -81,10 +81,10 @@ class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
 
  private:
   // gfx::LinearAnimation:
-  virtual void AnimateToState(double state) OVERRIDE;
+  virtual void AnimateToState(double state) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationEnded(const Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const Animation* animation) override;
 
   StatusView* status_view_;
 
@@ -166,7 +166,7 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartShowing();
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   BubbleState state_;
   BubbleStyle style_;
@@ -491,8 +491,8 @@ class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
   // Animation functions.
   int GetCurrentBubbleWidth();
   void SetBubbleWidth(int width);
-  virtual void AnimateToState(double state) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimateToState(double state) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   // Manager that owns us.
   StatusBubbleViews* status_bubble_;

@@ -19,12 +19,12 @@ class LocationIconView : public views::ImageView {
   virtual ~LocationIconView();
 
   // views::ImageView:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Whether we should show the tooltip for this icon or not.
   void ShowTooltip(bool show);

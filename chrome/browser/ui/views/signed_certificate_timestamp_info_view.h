@@ -49,7 +49,7 @@ class SignedCertificateTimestampInfoView : public views::View {
  private:
   // views::View implementation
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      OVERRIDE;
+      override;
 
   // Layout helper routines.
   void AddLabelRow(int layout_id,

@@ -19,7 +19,7 @@ class BookmarkSyncPromoViewTest : public BookmarkBubbleDelegate,
 
  protected:
   // BookmarkBubbleDelegate:
-  virtual void OnSignInLinkClicked() OVERRIDE {
+  virtual void OnSignInLinkClicked() override {
     ++sign_in_clicked_count_;
   }
 

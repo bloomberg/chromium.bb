@@ -115,7 +115,7 @@ class ManagePasswordItemView::ManageView : public views::View,
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   views::ImageButton* delete_button_;
   ManagePasswordItemView* parent_;
@@ -164,7 +164,7 @@ class ManagePasswordItemView::UndoView : public views::View,
   virtual ~UndoView();
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   views::Link* undo_link_;
   ManagePasswordItemView* parent_;

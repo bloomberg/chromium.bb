@@ -203,49 +203,49 @@ class BrowserActionsContainer
   void RemoveObserver(BrowserActionsContainerObserver* observer);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Layout() override;
   virtual bool GetDropFormats(int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired() OVERRIDE;
-  virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired() override;
+  virtual bool CanDrop(const ui::OSExchangeData& data) override;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  virtual void OnDragExited() override;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from views::DragController:
   virtual void WriteDragDataForView(View* sender,
                                     const gfx::Point& press_pt,
-                                    ui::OSExchangeData* data) OVERRIDE;
+                                    ui::OSExchangeData* data) override;
   virtual int GetDragOperationsForView(View* sender,
-                                       const gfx::Point& p) OVERRIDE;
+                                       const gfx::Point& p) override;
   virtual bool CanStartDragForView(View* sender,
                                    const gfx::Point& press_pt,
-                                   const gfx::Point& p) OVERRIDE;
+                                   const gfx::Point& p) override;
 
   // Overridden from views::ResizeAreaDelegate:
-  virtual void OnResize(int resize_amount, bool done_resizing) OVERRIDE;
+  virtual void OnResize(int resize_amount, bool done_resizing) override;
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   // Overridden from BrowserActionView::Delegate:
-  virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
-  virtual bool ShownInsideMenu() const OVERRIDE;
-  virtual void OnBrowserActionViewDragDone() OVERRIDE;
-  virtual views::MenuButton* GetOverflowReferenceView() OVERRIDE;
-  virtual void SetPopupOwner(BrowserActionView* popup_owner) OVERRIDE;
-  virtual void HideActivePopup() OVERRIDE;
+  virtual content::WebContents* GetCurrentWebContents() override;
+  virtual bool ShownInsideMenu() const override;
+  virtual void OnBrowserActionViewDragDone() override;
+  virtual views::MenuButton* GetOverflowReferenceView() override;
+  virtual void SetPopupOwner(BrowserActionView* popup_owner) override;
+  virtual void HideActivePopup() override;
   virtual BrowserActionView* GetMainViewForExtension(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
-      GetActiveTabPermissionGranter() OVERRIDE;
+      GetActiveTabPermissionGranter() override;
 
   // Retrieve the current popup.  This should only be used by unit tests.
   ExtensionPopup* TestGetPopup();
@@ -268,9 +268,9 @@ class BrowserActionsContainer
  protected:
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnThemeChanged() override;
 
  private:
   // A struct representing the position at which an action will be dropped.
@@ -280,19 +280,19 @@ class BrowserActionsContainer
 
   // extensions::ExtensionToolbarModel::Observer implementation.
   virtual void ToolbarExtensionAdded(const extensions::Extension* extension,
-                                     int index) OVERRIDE;
+                                     int index) override;
   virtual void ToolbarExtensionRemoved(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void ToolbarExtensionMoved(const extensions::Extension* extension,
-                                     int index) OVERRIDE;
+                                     int index) override;
   virtual void ToolbarExtensionUpdated(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual bool ShowExtensionActionPopup(
       const extensions::Extension* extension,
-      bool grant_active_tab) OVERRIDE;
-  virtual void ToolbarVisibleCountChanged() OVERRIDE;
-  virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE;
-  virtual Browser* GetBrowser() OVERRIDE;
+      bool grant_active_tab) override;
+  virtual void ToolbarVisibleCountChanged() override;
+  virtual void ToolbarHighlightModeChanged(bool is_highlighting) override;
+  virtual Browser* GetBrowser() override;
 
   void LoadImages();
 

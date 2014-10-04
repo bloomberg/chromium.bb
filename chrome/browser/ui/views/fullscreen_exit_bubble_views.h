@@ -63,25 +63,25 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
   views::View* GetBrowserRootView() const;
 
   // FullScreenExitBubble overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const OVERRIDE;
-  virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
-  virtual bool WindowContainsPoint(gfx::Point pos) OVERRIDE;
-  virtual bool IsWindowActive() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual bool IsAnimating() OVERRIDE;
-  virtual bool CanMouseTriggerSlideIn() const OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const override;
+  virtual gfx::Point GetCursorScreenPoint() override;
+  virtual bool WindowContainsPoint(gfx::Point pos) override;
+  virtual bool IsWindowActive() override;
+  virtual void Hide() override;
+  virtual void Show() override;
+  virtual bool IsAnimating() override;
+  virtual bool CanMouseTriggerSlideIn() const override;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // views::WidgetObserver override:
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE;
+                                         bool visible) override;
 
   BrowserView* browser_view_;
 

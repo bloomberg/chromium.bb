@@ -122,17 +122,17 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdChecked(int command_id) const override {
     return false;
   }
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int command_id) const override {
     return controller_->IsCommandEnabledForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
+      ui::Accelerator* accelerator) override {
     int browser_cmd;
     return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
                                                              &browser_cmd) ?
@@ -140,12 +140,12 @@ class BrowserTabStripController::TabContextMenuContents
                                                             accelerator) :
         false;
   }
-  virtual void CommandIdHighlighted(int command_id) OVERRIDE {
+  virtual void CommandIdHighlighted(int command_id) override {
     controller_->StopHighlightTabsForCommand(last_command_, tab_);
     last_command_ = static_cast<TabStripModel::ContextMenuCommand>(command_id);
     controller_->StartHighlightTabsForCommand(last_command_, tab_);
   }
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) override {
     // Executing the command destroys |this|, and can also end up destroying
     // |controller_|. So stop the highlights before executing the command.
     controller_->tabstrip_->StopAllHighlighting();
@@ -154,7 +154,7 @@ class BrowserTabStripController::TabContextMenuContents
         tab_);
   }
 
-  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) OVERRIDE {
+  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) override {
     if (controller_)
       controller_->tabstrip_->StopAllHighlighting();
   }

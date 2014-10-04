@@ -26,9 +26,9 @@ class SelectedKeywordView : public IconLabelBubbleView {
                       Profile* profile);
   virtual ~SelectedKeywordView();
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Layout() override;
 
   // The current keyword, or an empty string if no keyword is displayed.
   void SetKeyword(const base::string16& keyword);

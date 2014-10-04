@@ -122,26 +122,26 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   static void DeleteHistoryItem(void* void_item);
 
   // Overridden from AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
+  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
   // Overridden from chrome::BrowserListObserver:
-  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(Browser* browser) override;
 
   // Overridden from CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) override;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
   // Overridden from views::DesktopWindowTreeHostObserverX11:
-  virtual void OnWindowMapped(unsigned long xid) OVERRIDE;
-  virtual void OnWindowUnmapped(unsigned long xid) OVERRIDE;
+  virtual void OnWindowMapped(unsigned long xid) override;
+  virtual void OnWindowUnmapped(unsigned long xid) override;
 
   CHROMEG_CALLBACK_1(GlobalMenuBarX11, void, OnItemActivated, DbusmenuMenuitem*,
                      unsigned int);

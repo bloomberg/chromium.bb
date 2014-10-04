@@ -30,9 +30,9 @@ class BackButton : public ToolbarButton {
   void SetLeadingMargin(int margin);
 
  protected:
-  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
+  virtual gfx::Rect GetThemePaintRect() const override;
   virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      OVERRIDE;
+      override;
 
  private:
   // Any leading margin to be applied. Used when the back button is in

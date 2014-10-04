@@ -49,16 +49,16 @@ class BrowserModalDialogHostObserverViews
   }
 
   // WidgetObserver overrides
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetClosing(views::Widget* widget) override {
     delete this;
   }
 
   // WebContentsModalDialogHostObserver overrides
-  virtual void OnPositionRequiresUpdate() OVERRIDE {
+  virtual void OnPositionRequiresUpdate() override {
     UpdateBrowserModalDialogPosition(target_widget_, host_);
   }
 
-  virtual void OnHostDestroying() OVERRIDE {
+  virtual void OnHostDestroying() override {
     host_->RemoveObserver(this);
     host_ = NULL;
   }

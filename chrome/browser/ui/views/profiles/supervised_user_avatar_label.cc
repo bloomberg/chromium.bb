@@ -25,9 +25,9 @@ class SupervisedUserAvatarLabelBorder : public views::Border {
   explicit SupervisedUserAvatarLabelBorder(bool label_on_right);
 
   // views::Border:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) override;
+  virtual gfx::Insets GetInsets() const override;
+  virtual gfx::Size GetMinimumSize() const override;
 
  private:
   scoped_ptr<views::Painter> painter_;

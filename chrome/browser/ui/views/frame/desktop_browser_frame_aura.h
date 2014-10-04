@@ -37,19 +37,19 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   virtual ~DesktopBrowserFrameAura();
 
   // Overridden from views::DesktopNativeWidgetAura:
-  virtual void OnHostClosed() OVERRIDE;
+  virtual void OnHostClosed() override;
   virtual void InitNativeWidget(
-      const views::Widget::InitParams& params) OVERRIDE;
+      const views::Widget::InitParams& params) override;
 
   // Overridden from NativeBrowserFrame:
-  virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
-  virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
-  virtual bool UsesNativeSystemMenu() const OVERRIDE;
-  virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual bool ShouldSaveWindowPlacement() const OVERRIDE;
+  virtual views::NativeWidget* AsNativeWidget() override;
+  virtual const views::NativeWidget* AsNativeWidget() const override;
+  virtual bool UsesNativeSystemMenu() const override;
+  virtual int GetMinimizeButtonOffset() const override;
+  virtual bool ShouldSaveWindowPlacement() const override;
   virtual void GetWindowPlacement(
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE;
+      ui::WindowShowState* show_state) const override;
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.

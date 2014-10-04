@@ -48,7 +48,7 @@ class TestListener : public ui::SelectFileDialog::Listener {
   // ui::SelectFileDialog::Listener implementation
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE {
+                            void* params) override {
     selected_ = true;
     file_index_ = index;
   }
@@ -78,7 +78,7 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
   // ui::SelectFileDialog::Listener implementation
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE {
+                            void* params) override {
     delete this;
   }
 

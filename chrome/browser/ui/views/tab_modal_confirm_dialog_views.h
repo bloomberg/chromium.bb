@@ -34,32 +34,32 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
                              content::WebContents* web_contents);
 
   // views::DialogDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Close() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
+  virtual bool Close() override;
 
   // views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual views::View* GetContentsView() override;
+  virtual views::Widget* GetWidget() override;
+  virtual const views::Widget* GetWidget() const override;
+  virtual void DeleteDelegate() override;
+  virtual ui::ModalType GetModalType() const override;
 
  private:
   virtual ~TabModalConfirmDialogViews();
 
   // TabModalConfirmDialog:
-  virtual void AcceptTabModalDialog() OVERRIDE;
-  virtual void CancelTabModalDialog() OVERRIDE;
+  virtual void AcceptTabModalDialog() override;
+  virtual void CancelTabModalDialog() override;
 
   // TabModalConfirmDialogCloseDelegate:
-  virtual void CloseDialog() OVERRIDE;
+  virtual void CloseDialog() override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 

@@ -65,22 +65,22 @@ class FindBarView : public DropdownBarView,
   void ClearMatchCount();
 
   // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
+  virtual void SetFocusAndSelection(bool select_all) override;
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
-  virtual void OnAfterUserAction(views::Textfield* sender) OVERRIDE;
-  virtual void OnAfterPaste() OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
+  virtual void OnAfterUserAction(views::Textfield* sender) override;
+  virtual void OnAfterPaste() override;
 
  private:
   // Starts finding |search_text|.  If the text is empty, stops finding.
@@ -90,7 +90,7 @@ class FindBarView : public DropdownBarView,
   void UpdateMatchCountAppearance(bool no_match);
 
   // views::View:
-  virtual void OnThemeChanged() OVERRIDE;
+  virtual void OnThemeChanged() override;
 
   // We use a hidden view to grab mouse clicks and bring focus to the find
   // text box. This is because although the find text box may look like it
@@ -105,7 +105,7 @@ class FindBarView : public DropdownBarView,
       : view_to_focus_on_mousedown_(view_to_focus_on_mousedown) {}
 
    private:
-    virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+    virtual bool OnMousePressed(const ui::MouseEvent& event) override;
 
     views::Textfield* view_to_focus_on_mousedown_;
 

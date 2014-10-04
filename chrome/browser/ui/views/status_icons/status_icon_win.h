@@ -46,16 +46,16 @@ class StatusIconWin : public StatusIcon {
   UINT message_id() const { return message_id_; }
 
   // Overridden from StatusIcon:
-  virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
-  virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE;
+  virtual void SetImage(const gfx::ImageSkia& image) override;
+  virtual void SetToolTip(const base::string16& tool_tip) override;
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const base::string16& title,
-                              const base::string16& contents) OVERRIDE;
-  virtual void ForceVisible() OVERRIDE;
+                              const base::string16& contents) override;
+  virtual void ForceVisible() override;
 
  protected:
   // Overridden from StatusIcon:
-  virtual void UpdatePlatformContextMenu(StatusIconMenuModel* menu) OVERRIDE;
+  virtual void UpdatePlatformContextMenu(StatusIconMenuModel* menu) override;
 
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);

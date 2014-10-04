@@ -30,17 +30,17 @@ class TooltipIcon : public views::ImageView,
   virtual ~TooltipIcon();
 
   // views::ImageView:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::MouseWatcherListener:
-  virtual void MouseMovedOutOfHost() OVERRIDE;
+  virtual void MouseMovedOutOfHost() override;
 
   // views::WidgetObserver:
-  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroyed(views::Widget* widget) override;
 
  private:
   // Changes this view's image to the resource indicated by |idr|.

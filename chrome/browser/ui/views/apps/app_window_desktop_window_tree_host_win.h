@@ -26,11 +26,11 @@ class AppWindowDesktopWindowTreeHostWin
 
  private:
   // Overridden from DesktopWindowTreeHostWin:
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
-  virtual void HandleFrameChanged() OVERRIDE;
+  virtual bool GetClientAreaInsets(gfx::Insets* insets) const override;
+  virtual void HandleFrameChanged() override;
   virtual void PostHandleMSG(UINT message,
                              WPARAM w_param,
-                             LPARAM l_param) OVERRIDE;
+                             LPARAM l_param) override;
 
   // Updates the glass frame area by calling the DwmExtendFrameIntoClientArea
   // Windows function.

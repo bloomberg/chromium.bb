@@ -48,7 +48,7 @@ class AccessibilityViewsDelegate : public views::TestViewsDelegate {
 
   // Overridden from views::TestViewsDelegate:
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AXEvent event_type) OVERRIDE {
+      views::View* view, ui::AXEvent event_type) override {
     AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
         view, event_type);
   }
@@ -63,12 +63,12 @@ class AccessibilityWindowDelegate : public views::WidgetDelegate {
       : contents_(contents) { }
 
   // Overridden from views::WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE { delete this; }
-  virtual views::View* GetContentsView() OVERRIDE { return contents_; }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
+  virtual void DeleteDelegate() override { delete this; }
+  virtual views::View* GetContentsView() override { return contents_; }
+  virtual const views::Widget* GetWidget() const override {
     return contents_->GetWidget();
   }
-  virtual views::Widget* GetWidget() OVERRIDE { return contents_->GetWidget(); }
+  virtual views::Widget* GetWidget() override { return contents_->GetWidget(); }
 
  private:
   views::View* contents_;
@@ -84,7 +84,7 @@ class ViewWithNameAndRole : public views::View {
         role_(role) {
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) override {
     views::View::GetAccessibleState(state);
     state->name = name_;
     state->role = role_;
@@ -479,25 +479,25 @@ class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
     return menu_view;
   }
 
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdChecked(int command_id) const override {
     return false;
   }
 
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int command_id) const override {
     return true;
   }
 
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdVisible(int command_id) const override {
     return command_id != IDC_MENU_INVISIBLE;
   }
 
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
+      ui::Accelerator* accelerator) override {
     return false;
   }
 
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) override {
   }
 
  private:

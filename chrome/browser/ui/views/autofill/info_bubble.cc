@@ -36,7 +36,7 @@ class InfoBubbleFrame : public views::BubbleFrameView {
       : views::BubbleFrameView(content_margins) {}
   virtual ~InfoBubbleFrame() {}
 
-  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) OVERRIDE {
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
     return available_bounds_;
   }
 

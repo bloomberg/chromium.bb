@@ -22,7 +22,7 @@ class MenuItemViewTestBasic : public MenuTestBase {
   }
 
   // MenuTestBase implementation
-  virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
+  virtual void BuildMenu(views::MenuItemView* menu) override {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
     menu->AppendSeparator();
@@ -30,7 +30,7 @@ class MenuItemViewTestBasic : public MenuTestBase {
   }
 
   // Click on item INDEX.
-  virtual void DoTestWithMenuOpen() OVERRIDE {
+  virtual void DoTestWithMenuOpen() override {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
@@ -72,13 +72,13 @@ class MenuItemViewTestInsert : public MenuTestBase {
   }
 
   // MenuTestBase implementation
-  virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
+  virtual void BuildMenu(views::MenuItemView* menu) override {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
   }
 
   // Insert item at INSERT_INDEX and click item at SELECT_INDEX.
-  virtual void DoTestWithMenuOpen() OVERRIDE {
+  virtual void DoTestWithMenuOpen() override {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
@@ -154,7 +154,7 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
   }
 
   // MenuTestBase implementation
-  virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
+  virtual void BuildMenu(views::MenuItemView* menu) override {
     submenu_ = menu->AppendSubMenu(1, ASCIIToUTF16("My Submenu"));
     submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 1"));
     submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 2"));
@@ -162,7 +162,7 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
   }
 
   // Post submenu.
-  virtual void DoTestWithMenuOpen() OVERRIDE {
+  virtual void DoTestWithMenuOpen() override {
     Click(submenu_,
           CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step2));
   }
@@ -213,14 +213,14 @@ class MenuItemViewTestRemove : public MenuTestBase {
   }
 
   // MenuTestBase implementation
-  virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
+  virtual void BuildMenu(views::MenuItemView* menu) override {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
     menu->AppendMenuItemWithLabel(3, ASCIIToUTF16("item 3"));
   }
 
   // Remove item at REMOVE_INDEX and click item at SELECT_INDEX.
-  virtual void DoTestWithMenuOpen() OVERRIDE {
+  virtual void DoTestWithMenuOpen() override {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
@@ -279,7 +279,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
   }
 
   // MenuTestBase implementation
-  virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
+  virtual void BuildMenu(views::MenuItemView* menu) override {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     submenu_ = menu->AppendSubMenu(2, ASCIIToUTF16("My Submenu"));
     submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 1"));
@@ -287,7 +287,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
   }
 
   // Post submenu.
-  virtual void DoTestWithMenuOpen() OVERRIDE {
+  virtual void DoTestWithMenuOpen() override {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());

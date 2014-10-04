@@ -18,7 +18,7 @@ class FirstRunBubbleTest : public views::ViewsTestBase {
   virtual ~FirstRunBubbleTest();
 
   // Overrides from views::ViewsTestBase:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   TestingProfile* profile() { return &profile_; }

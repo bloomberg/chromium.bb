@@ -136,7 +136,7 @@ class TabAnimationDelegate : public gfx::AnimationDelegate {
   TabAnimationDelegate(TabStrip* tab_strip, Tab* tab);
   virtual ~TabAnimationDelegate();
 
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
  protected:
   TabStrip* tab_strip() { return tab_strip_; }
@@ -169,8 +169,8 @@ class ResetDraggingStateDelegate : public TabAnimationDelegate {
   ResetDraggingStateDelegate(TabStrip* tab_strip, Tab* tab);
   virtual ~ResetDraggingStateDelegate();
 
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationCanceled(const gfx::Animation* animation) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
@@ -247,16 +247,16 @@ class NewTabButton : public views::ImageButton,
  protected:
   // views::View:
 #if defined(OS_WIN)
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
 #endif
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // views::MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+  virtual bool GetHitTestMask(gfx::Path* mask) const override;
 
   bool ShouldWindowContentsBeTransparent() const;
   gfx::ImageSkia GetBackgroundImage(views::CustomButton::ButtonState state,
@@ -476,8 +476,8 @@ class TabStrip::RemoveTabDelegate : public TabAnimationDelegate {
  public:
   RemoveTabDelegate(TabStrip* tab_strip, Tab* tab);
 
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationCanceled(const gfx::Animation* animation) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);

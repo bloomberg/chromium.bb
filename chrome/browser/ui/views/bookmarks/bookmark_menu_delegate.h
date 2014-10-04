@@ -122,14 +122,14 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   int GetMaxWidthForMenu(views::MenuItemView* menu);
 
   // BookmarkModelObserver methods.
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE;
+                                          const BookmarkNode* node) override;
 
   // BookmarkContextMenu::Observer methods.
   virtual void WillRemoveBookmarks(
-      const std::vector<const BookmarkNode*>& bookmarks) OVERRIDE;
-  virtual void DidRemoveBookmarks() OVERRIDE;
+      const std::vector<const BookmarkNode*>& bookmarks) override;
+  virtual void DidRemoveBookmarks() override;
 
  private:
   typedef std::map<int, const BookmarkNode*> MenuIDToNodeMap;

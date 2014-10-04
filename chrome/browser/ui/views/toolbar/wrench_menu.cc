@@ -106,7 +106,7 @@ class FullscreenButton : public ImageButton {
       : ImageButton(listener) { }
 
   // Overridden from ImageButton.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     gfx::Size pref = ImageButton::GetPreferredSize();
     if (border()) {
       gfx::Insets insets = border()->GetInsets();
@@ -148,7 +148,7 @@ class InMenuButtonBackground : public views::Background {
   }
 
   // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas, View* view) const override {
     CustomButton* button = CustomButton::AsCustomButton(view);
     views::Button::ButtonState state =
         button ? button->state() : views::Button::STATE_NORMAL;
@@ -276,7 +276,7 @@ class InMenuButton : public LabelButton {
   }
 
   // views::LabelButton
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     const MenuConfig& menu_config = MenuConfig::instance(theme);
     SetBorder(views::Border::CreateEmptyBorder(
         0, kHorizontalPadding, 0, kHorizontalPadding));
@@ -325,7 +325,7 @@ class WrenchMenuView : public views::View,
   }
 
   // Overridden from views::View.
-  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE {
+  virtual void SchedulePaintInRect(const gfx::Rect& r) override {
     // Normally when the mouse enters/exits a button the buttons invokes
     // SchedulePaint. As part of the button border (InMenuButtonBackground) is
     // rendered by the button to the left/right of it SchedulePaint on the the
@@ -364,7 +364,7 @@ class WrenchMenuView : public views::View,
   }
 
   // Overridden from WrenchMenuObserver:
-  virtual void WrenchMenuDestroyed() OVERRIDE {
+  virtual void WrenchMenuDestroyed() override {
     menu_->RemoveObserver(this);
     menu_ = NULL;
     menu_model_ = NULL;
@@ -395,7 +395,7 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
   }
   virtual ~HoveredImageSource() {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
     const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
     SkBitmap bitmap = rep.sk_bitmap();
     SkBitmap white;
@@ -444,13 +444,13 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
   }
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
     return gfx::Size(GetMaxChildViewPreferredWidth() * child_count(), 0);
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     // All buttons are given the same width.
     int width = GetMaxChildViewPreferredWidth();
     for (int i = 0; i < child_count(); ++i)
@@ -459,7 +459,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     menu()->CancelAndEvaluate(menu_model(), sender->tag());
   }
 
@@ -556,7 +556,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   virtual ~ZoomView() {}
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     // The increment/decrement button are forced to the same width.
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
@@ -569,7 +569,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
                      fullscreen_width, 0);
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     int x = 0;
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
@@ -594,7 +594,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     WrenchMenuView::OnNativeThemeChanged(theme);
 
     const MenuConfig& menu_config = MenuConfig::instance(theme);
@@ -623,7 +623,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     if (sender->tag() == fullscreen_index_) {
       menu()->CancelAndEvaluate(menu_model(), sender->tag());
     } else {
@@ -633,7 +633,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   }
 
   // Overridden from WrenchMenuObserver.
-  virtual void WrenchMenuDestroyed() OVERRIDE {
+  virtual void WrenchMenuDestroyed() override {
     WrenchMenuView::WrenchMenuDestroyed();
   }
 
@@ -749,7 +749,7 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
   // ui::MenuModelDelegate implementation:
 
-  virtual void OnIconChanged(int index) OVERRIDE {
+  virtual void OnIconChanged(int index) override {
     int command_id = model_->GetCommandIdAt(index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
@@ -758,7 +758,7 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     item->SetIcon(*icon.ToImageSkia());
   }
 
-  virtual void OnMenuStructureChanged() OVERRIDE {
+  virtual void OnMenuStructureChanged() override {
     if (menu_item_->HasSubmenu()) {
       // Remove all menu items from submenu.
       views::SubmenuView* submenu = menu_item_->GetSubmenu();

@@ -56,7 +56,7 @@ class MenuImageSource: public gfx::CanvasImageSource {
   }
 
   // Overridden from gfx::CanvasImageSource
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     int image_size = extension_misc::EXTENSION_ICON_BITTY;
     canvas->DrawImageInt(icon_, 0, 0, icon_.width(), icon_.height(), 0, 0,
                          image_size, image_size, false);

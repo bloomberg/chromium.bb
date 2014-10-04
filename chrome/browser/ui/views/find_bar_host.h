@@ -45,40 +45,40 @@ class FindBarHost : public DropdownBarHost,
   bool MaybeForwardKeyEventToWebpage(const ui::KeyEvent& key_event);
 
   // FindBar implementation:
-  virtual FindBarController* GetFindBarController() const OVERRIDE;
+  virtual FindBarController* GetFindBarController() const override;
   virtual void SetFindBarController(
-      FindBarController* find_bar_controller) OVERRIDE;
-  virtual void Show(bool animate) OVERRIDE;
-  virtual void Hide(bool animate) OVERRIDE;
-  virtual void SetFocusAndSelection() OVERRIDE;
-  virtual void ClearResults(const FindNotificationDetails& results) OVERRIDE;
-  virtual void StopAnimation() OVERRIDE;
+      FindBarController* find_bar_controller) override;
+  virtual void Show(bool animate) override;
+  virtual void Hide(bool animate) override;
+  virtual void SetFocusAndSelection() override;
+  virtual void ClearResults(const FindNotificationDetails& results) override;
+  virtual void StopAnimation() override;
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                     bool no_redraw) OVERRIDE;
+                                     bool no_redraw) override;
   virtual void SetFindTextAndSelectedRange(
       const base::string16& find_text,
-      const gfx::Range& selected_range) OVERRIDE;
-  virtual base::string16 GetFindText() OVERRIDE;
-  virtual gfx::Range GetSelectedRange() OVERRIDE;
+      const gfx::Range& selected_range) override;
+  virtual base::string16 GetFindText() override;
+  virtual gfx::Range GetSelectedRange() override;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const base::string16& find_text) OVERRIDE;
-  virtual void AudibleAlert() OVERRIDE;
-  virtual bool IsFindBarVisible() OVERRIDE;
-  virtual void RestoreSavedFocus() OVERRIDE;
-  virtual bool HasGlobalFindPasteboard() OVERRIDE;
-  virtual void UpdateFindBarForChangedWebContents() OVERRIDE;
-  virtual FindBarTesting* GetFindBarTesting() OVERRIDE;
+                                     const base::string16& find_text) override;
+  virtual void AudibleAlert() override;
+  virtual bool IsFindBarVisible() override;
+  virtual void RestoreSavedFocus() override;
+  virtual bool HasGlobalFindPasteboard() override;
+  virtual void UpdateFindBarForChangedWebContents() override;
+  virtual FindBarTesting* GetFindBarTesting() override;
 
   // Overridden from ui::AcceleratorTarget in DropdownBarHost class:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual bool CanHandleAccelerators() const override;
 
   // FindBarTesting implementation:
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
-                                    bool* fully_visible) OVERRIDE;
-  virtual base::string16 GetFindSelectedText() OVERRIDE;
-  virtual base::string16 GetMatchCountText() OVERRIDE;
-  virtual int GetWidth() OVERRIDE;
+                                    bool* fully_visible) override;
+  virtual base::string16 GetFindSelectedText() override;
+  virtual base::string16 GetMatchCountText() override;
+  virtual int GetWidth() override;
 
   // Overridden from DropdownBarHost:
   // Returns the rectangle representing where to position the find bar. It uses
@@ -93,14 +93,14 @@ class FindBarHost : public DropdownBarHost,
   // the top of the browser window, when comparing against the dialog
   // coordinates). The returned value is relative to the browser window.
   virtual gfx::Rect GetDialogPosition(
-      gfx::Rect avoid_overlapping_rect) OVERRIDE;
+      gfx::Rect avoid_overlapping_rect) override;
   // Moves the dialog window to the provided location, moves it to top in the
   // z-order (HWND_TOP, not HWND_TOPMOST) and shows the window (if hidden).
   // It then calls UpdateWindowEdges to make sure we don't overwrite the Chrome
   // window border. If |no_redraw| is set, the window is getting moved but not
   // sized, and should not be redrawn to reduce update flicker.
   virtual void SetDialogPosition(const gfx::Rect& new_pos,
-                                 bool no_redraw) OVERRIDE;
+                                 bool no_redraw) override;
 
   // Retrieves the boundaries that the find bar widget has to work with
   // within the Chrome frame window. The resulting rectangle will be a
@@ -113,15 +113,15 @@ class FindBarHost : public DropdownBarHost,
   // window. If the function fails to determine the browser
   // window/client area rectangle or the rectangle for the page area
   // then |bounds| will be an empty rectangle.
-  virtual void GetWidgetBounds(gfx::Rect* bounds) OVERRIDE;
+  virtual void GetWidgetBounds(gfx::Rect* bounds) override;
 
   // Additional accelerator handling (on top of what DropDownBarHost does).
-  virtual void RegisterAccelerators() OVERRIDE;
-  virtual void UnregisterAccelerators() OVERRIDE;
+  virtual void RegisterAccelerators() override;
+  virtual void UnregisterAccelerators() override;
 
  protected:
   // Overridden from DropdownBarHost:
-  virtual void OnVisibilityChanged() OVERRIDE;
+  virtual void OnVisibilityChanged() override;
 
  private:
   // Allows implementation to tweak widget position.

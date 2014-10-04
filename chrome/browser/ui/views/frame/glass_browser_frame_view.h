@@ -23,37 +23,37 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual ~GlassBrowserFrameView();
 
   // BrowserNonClientFrameView:
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual int GetTopInset() const OVERRIDE;
-  virtual int GetThemeBackgroundXInset() const OVERRIDE;
-  virtual void UpdateThrobber(bool running) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
+  virtual int GetTopInset() const override;
+  virtual int GetThemeBackgroundXInset() const override;
+  virtual void UpdateThrobber(bool running) override;
+  virtual gfx::Size GetMinimumSize() const override;
 
   // views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForClientView() const override;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE;
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+      const gfx::Rect& client_bounds) const override;
+  virtual int NonClientHitTest(const gfx::Point& point) override;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
-      OVERRIDE {}
-  virtual void ResetWindowControls() OVERRIDE {}
-  virtual void UpdateWindowIcon() OVERRIDE {}
-  virtual void UpdateWindowTitle() OVERRIDE {}
-  virtual void SizeConstraintsChanged() OVERRIDE {}
+      override {}
+  virtual void ResetWindowControls() override {}
+  virtual void UpdateWindowIcon() override {}
+  virtual void UpdateWindowTitle() override {}
+  virtual void SizeConstraintsChanged() override {}
 
  protected:
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void Layout() override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
  private:
   // views::NonClientFrameView:
   virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const OVERRIDE;
+                                 const gfx::Rect& rect) const override;
 
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.
@@ -92,7 +92,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // The layout rect of the avatar icon, if visible.
   gfx::Rect avatar_bounds_;

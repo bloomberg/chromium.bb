@@ -45,27 +45,27 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   explicit CollectedCookiesViews(content::WebContents* web_contents);
 
   // views::DialogDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual int GetDialogButtons() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual ui::ModalType GetModalType() const override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::TabbedPaneListener:
-  virtual void TabSelectedAt(int index) OVERRIDE;
+  virtual void TabSelectedAt(int index) override;
 
   // views::TreeViewController:
-  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;
+  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) override;
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
  private:
   virtual ~CollectedCookiesViews();
@@ -88,7 +88,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

@@ -22,9 +22,9 @@ class LanguageComboboxModel : public ui::ComboboxModel {
   virtual ~LanguageComboboxModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
-  virtual int GetDefaultIndex() const OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
+  virtual int GetDefaultIndex() const override;
 
  private:
   const int default_index_;

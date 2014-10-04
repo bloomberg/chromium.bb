@@ -57,14 +57,14 @@ class CoreTabHelper : public content::WebContentsObserver,
 
   // content::WebContentsObserver overrides:
   virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WasShown() OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
-  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) OVERRIDE;
-  virtual void BeforeUnloadDialogCancelled() OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
+  virtual void WasShown() override;
+  virtual void WebContentsDestroyed() override;
+  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
+  virtual void BeforeUnloadDialogCancelled() override;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
 
   void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap,
                                            const gfx::Size& original_size);

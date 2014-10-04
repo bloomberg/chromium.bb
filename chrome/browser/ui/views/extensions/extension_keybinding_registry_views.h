@@ -38,17 +38,17 @@ class ExtensionKeybindingRegistryViews
   virtual ~ExtensionKeybindingRegistryViews();
 
   // Overridden from ui::AcceleratorTarget.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual bool CanHandleAccelerators() const override;
 
  private:
   // Overridden from ExtensionKeybindingRegistry:
   virtual void AddExtensionKeybinding(
       const extensions::Extension* extension,
-      const std::string& command_name) OVERRIDE;
+      const std::string& command_name) override;
   virtual void RemoveExtensionKeybindingImpl(
       const ui::Accelerator& accelerator,
-      const std::string& command_name) OVERRIDE;
+      const std::string& command_name) override;
 
   // Weak pointer to the our profile. Not owned by us.
   Profile* profile_;

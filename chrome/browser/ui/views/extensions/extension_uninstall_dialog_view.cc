@@ -48,7 +48,7 @@ class ExtensionUninstallDialogViews
   void ExtensionUninstallCanceled();
 
  private:
-  virtual void Show() OVERRIDE;
+  virtual void Show() override;
 
   ExtensionUninstallDialogDelegateView* view_;
 
@@ -72,25 +72,25 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
  private:
   // views::DialogDelegate:
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE {
+      ui::DialogButton button) const override;
+  virtual int GetDefaultDialogButton() const override {
     // Default to accept when triggered via chrome://extensions page.
     return triggered_by_extension_ ?
         ui::DIALOG_BUTTON_CANCEL : ui::DIALOG_BUTTON_OK;
   }
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
 
   // views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_WINDOW;
   }
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   ExtensionUninstallDialogViews* dialog_;
 

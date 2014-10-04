@@ -53,40 +53,40 @@ class ChromeNativeAppWindowViews
   apps::AppWindowFrameView* CreateNonStandardAppFrame();
 
   // ui::BaseWindow implementation.
-  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
-  virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
-  virtual bool IsAlwaysOnTop() const OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const override;
+  virtual ui::WindowShowState GetRestoredState() const override;
+  virtual bool IsAlwaysOnTop() const override;
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& p,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   // WidgetDelegate implementation.
-  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() override;
+  virtual gfx::ImageSkia GetWindowIcon() override;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
-  virtual bool WidgetHasHitTestMask() const OVERRIDE;
-  virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
+      views::Widget* widget) override;
+  virtual bool WidgetHasHitTestMask() const override;
+  virtual void GetWidgetHitTestMask(gfx::Path* mask) const override;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // NativeAppWindow implementation.
-  virtual void SetFullscreen(int fullscreen_types) OVERRIDE;
-  virtual bool IsFullscreenOrPending() const OVERRIDE;
-  virtual void UpdateBadgeIcon() OVERRIDE;
-  virtual void UpdateShape(scoped_ptr<SkRegion> region) OVERRIDE;
-  virtual bool HasFrameColor() const OVERRIDE;
-  virtual SkColor ActiveFrameColor() const OVERRIDE;
-  virtual SkColor InactiveFrameColor() const OVERRIDE;
+  virtual void SetFullscreen(int fullscreen_types) override;
+  virtual bool IsFullscreenOrPending() const override;
+  virtual void UpdateBadgeIcon() override;
+  virtual void UpdateShape(scoped_ptr<SkRegion> region) override;
+  virtual bool HasFrameColor() const override;
+  virtual SkColor ActiveFrameColor() const override;
+  virtual SkColor InactiveFrameColor() const override;
 
   // NativeAppWindowViews implementation.
   virtual void InitializeWindow(
       extensions::AppWindow* app_window,
-      const extensions::AppWindow::CreateParams& create_params) OVERRIDE;
+      const extensions::AppWindow::CreateParams& create_params) override;
 
   // True if the window is fullscreen or fullscreen is pending.
   bool is_fullscreen_;

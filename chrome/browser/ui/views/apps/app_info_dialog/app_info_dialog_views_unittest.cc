@@ -40,7 +40,7 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
   virtual ~AppInfoDialogViewsTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ash::test::AshTestBase::SetUp();
 
     widget_ = views::DialogDelegate::CreateDialogWidget(
@@ -61,7 +61,7 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
     widget_->GetContentsView()->AddChildView(dialog_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (!widget_destroyed_)
       widget_->CloseNow();
     widget_ = NULL;
@@ -71,7 +71,7 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
 
  protected:
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroyed(views::Widget* widget) override {
     widget_destroyed_ = true;
     widget_->RemoveObserver(this);
     widget_ = NULL;

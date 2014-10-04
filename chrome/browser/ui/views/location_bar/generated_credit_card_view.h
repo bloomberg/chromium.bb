@@ -34,8 +34,8 @@ class GeneratedCreditCardView : public LocationBarDecorationView {
 
  protected:
   // LocationBarDecorationView:
-  virtual bool CanHandleClick() const OVERRIDE;
-  virtual void OnClick() OVERRIDE;
+  virtual bool CanHandleClick() const override;
+  virtual void OnClick() override;
 
  private:
   // Helper to get the GeneratedCreditCardBubbleController associated with the

@@ -31,18 +31,18 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
 
   // views::DialogDelegate implementation.
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual views::View* CreateExtraView() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  virtual views::View* CreateExtraView() override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
 
   // views::WidgetDelegate implementation.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
 
   // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
   // The model to customize this bubble view.

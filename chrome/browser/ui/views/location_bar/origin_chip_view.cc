@@ -54,7 +54,7 @@ class OriginChipExtensionIcon : public extensions::IconImage::Observer {
 
   // IconImage::Observer:
   virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) OVERRIDE;
+      extensions::IconImage* image) override;
 
  private:
   LocationIconView* icon_view_;

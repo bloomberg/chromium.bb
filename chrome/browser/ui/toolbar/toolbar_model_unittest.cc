@@ -145,7 +145,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   virtual ~ToolbarModelTest();
 
   // BrowserWithTestWindowTest:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   void EnableOriginChipFieldTrial();

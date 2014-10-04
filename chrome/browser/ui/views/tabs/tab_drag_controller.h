@@ -210,14 +210,14 @@ class TabDragController : public content::NotificationObserver,
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Overriden from views::WidgetObserver:
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   // Overriden from TabStripModelObserver:
-  virtual void TabStripEmpty() OVERRIDE;
+  virtual void TabStripEmpty() override;
 
   // Initialize the offset used to calculate the position to create windows
   // in |GetWindowCreatePoint|. This should only be invoked from |Init|.

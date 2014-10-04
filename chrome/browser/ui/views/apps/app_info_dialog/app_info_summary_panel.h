@@ -43,7 +43,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   void LayoutDetailsControl();
 
   // Overridden from views::ComboboxListener:
-  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) override;
 
   // Called asynchronously to calculate and update the size of the app displayed
   // in the dialog.

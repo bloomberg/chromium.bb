@@ -28,15 +28,15 @@ class BubbleIconView : public views::ImageView {
   virtual void OnExecuting(ExecuteSource execute_source) = 0;
 
   // views::ImageView:
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
   virtual bool GetTooltipText(const gfx::Point& p, base::string16* tooltip)
-      const OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+      const override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // The CommandUpdater for the Browser object that owns the location bar.

@@ -42,7 +42,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
         selector_(NULL) {
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     base::FilePath certs_dir = net::GetTestCertsDirectory();
 
     mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
@@ -60,7 +60,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
     cert_request_info_->client_certs.push_back(foaf_me_chromium_test_cert_);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     url_request_context_getter_ = browser()->profile()->GetRequestContext();
 
     BrowserThread::PostTask(
@@ -94,7 +94,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
   // Have to release our reference to the auth handler during the test to allow
   // it to be destroyed while the Browser and its IO thread still exist.
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SSLClientCertificateSelectorTest::CleanUpOnIOThread, this));
@@ -133,7 +133,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 class SSLClientCertificateSelectorMultiTabTest
     : public SSLClientCertificateSelectorTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
     cert_request_info_1_ = new net::SSLCertRequestInfo;
@@ -147,7 +147,7 @@ class SSLClientCertificateSelectorMultiTabTest
     cert_request_info_2_->client_certs.push_back(foaf_me_chromium_test_cert_);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Also calls SetUpOnIOThread.
     SSLClientCertificateSelectorTest::SetUpOnMainThread();
 
@@ -179,7 +179,7 @@ class SSLClientCertificateSelectorMultiTabTest
     EXPECT_EQ(mit_davidben_cert_.get(), selector_2_->GetSelectedCert());
   }
 
-  virtual void SetUpOnIOThread() OVERRIDE {
+  virtual void SetUpOnIOThread() override {
     url_request_1_ =
         MakeURLRequest(url_request_context_getter_.get()).release();
     url_request_2_ =
@@ -195,13 +195,13 @@ class SSLClientCertificateSelectorMultiTabTest
     SSLClientCertificateSelectorTest::SetUpOnIOThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     auth_requestor_2_ = NULL;
     auth_requestor_1_ = NULL;
     SSLClientCertificateSelectorTest::TearDownOnMainThread();
   }
 
-  virtual void CleanUpOnIOThread() OVERRIDE {
+  virtual void CleanUpOnIOThread() override {
     delete url_request_1_;
     delete url_request_2_;
     SSLClientCertificateSelectorTest::CleanUpOnIOThread();
@@ -221,7 +221,7 @@ class SSLClientCertificateSelectorMultiTabTest
 class SSLClientCertificateSelectorMultiProfileTest
     : public SSLClientCertificateSelectorTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
     cert_request_info_1_ = new net::SSLCertRequestInfo;
@@ -230,7 +230,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     cert_request_info_1_->client_certs.push_back(foaf_me_chromium_test_cert_);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     browser_1_ = CreateIncognitoBrowser();
     url_request_context_getter_1_ = browser_1_->profile()->GetRequestContext();
 
@@ -248,7 +248,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     EXPECT_EQ(mit_davidben_cert_.get(), selector_1_->GetSelectedCert());
   }
 
-  virtual void SetUpOnIOThread() OVERRIDE {
+  virtual void SetUpOnIOThread() override {
     url_request_1_ =
         MakeURLRequest(url_request_context_getter_1_.get()).release();
 
@@ -259,12 +259,12 @@ class SSLClientCertificateSelectorMultiProfileTest
     SSLClientCertificateSelectorTest::SetUpOnIOThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     auth_requestor_1_ = NULL;
     SSLClientCertificateSelectorTest::TearDownOnMainThread();
   }
 
-  virtual void CleanUpOnIOThread() OVERRIDE {
+  virtual void CleanUpOnIOThread() override {
     delete url_request_1_;
     SSLClientCertificateSelectorTest::CleanUpOnIOThread();
   }

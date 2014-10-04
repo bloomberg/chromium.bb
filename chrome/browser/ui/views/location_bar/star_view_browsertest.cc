@@ -72,7 +72,7 @@ class StarViewTestNoDWM : public InProcessBrowserTest {
  public:
   StarViewTestNoDWM() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableDwmComposition);
   }
 };

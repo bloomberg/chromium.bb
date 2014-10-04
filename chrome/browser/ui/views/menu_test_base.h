@@ -65,18 +65,18 @@ class MenuTestBase : public ViewEventTestBase,
   virtual int GetMenuRunnerFlags();
 
   // ViewEventTestBase implementation.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-  virtual views::View* CreateContentsView() OVERRIDE;
-  virtual void DoTestOnMessageLoop() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
+  virtual views::View* CreateContentsView() override;
+  virtual void DoTestOnMessageLoop() override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // views::MenuButtonListener implementation
   virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
+                                   const gfx::Point& point) override;
 
   // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual void ExecuteCommand(int id) override;
 
  private:
   views::MenuButton* button_;

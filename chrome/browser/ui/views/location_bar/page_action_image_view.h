@@ -41,12 +41,12 @@ class PageActionImageView : public ExtensionActionViewDelegate,
   }
 
   // Overridden from views::View:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Called to notify the PageAction that it should determine whether to be
   // visible or hidden. |contents| is the WebContents that is active.
@@ -57,20 +57,20 @@ class PageActionImageView : public ExtensionActionViewDelegate,
 
   // Overridden from View.
   virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
+                             const views::CullSet& cull_set) override;
 
   // Overridden from ExtensionActionViewDelegate:
-  virtual void OnIconUpdated() OVERRIDE;
-  virtual views::View* GetAsView() OVERRIDE;
-  virtual bool IsShownInMenu() OVERRIDE;
-  virtual views::FocusManager* GetFocusManagerForAccelerator() OVERRIDE;
-  virtual views::Widget* GetParentForContextMenu() OVERRIDE;
+  virtual void OnIconUpdated() override;
+  virtual views::View* GetAsView() override;
+  virtual bool IsShownInMenu() override;
+  virtual views::FocusManager* GetFocusManagerForAccelerator() override;
+  virtual views::Widget* GetParentForContextMenu() override;
   virtual ExtensionActionViewController* GetPreferredPopupViewController()
-      OVERRIDE;
-  virtual views::View* GetReferenceViewForPopup() OVERRIDE;
-  virtual views::MenuButton* GetContextMenuButton() OVERRIDE;
-  virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
-  virtual void HideActivePopup() OVERRIDE;
+      override;
+  virtual views::View* GetReferenceViewForPopup() override;
+  virtual views::MenuButton* GetContextMenuButton() override;
+  virtual content::WebContents* GetCurrentWebContents() override;
+  virtual void HideActivePopup() override;
 
   // The controller for this ExtensionAction view.
   scoped_ptr<ExtensionActionViewController> view_controller_;

@@ -41,61 +41,61 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual ~OpaqueBrowserFrameView();
 
   // BrowserNonClientFrameView:
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual int GetTopInset() const OVERRIDE;
-  virtual int GetThemeBackgroundXInset() const OVERRIDE;
-  virtual void UpdateThrobber(bool running) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
+  virtual int GetTopInset() const override;
+  virtual int GetThemeBackgroundXInset() const override;
+  virtual void UpdateThrobber(bool running) override;
+  virtual gfx::Size GetMinimumSize() const override;
 
   // views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForClientView() const override;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE;
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+      const gfx::Rect& client_bounds) const override;
+  virtual int NonClientHitTest(const gfx::Point& point) override;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
-      OVERRIDE;
-  virtual void ResetWindowControls() OVERRIDE;
-  virtual void UpdateWindowIcon() OVERRIDE;
-  virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void SizeConstraintsChanged() OVERRIDE;
+      override;
+  virtual void ResetWindowControls() override;
+  virtual void UpdateWindowIcon() override;
+  virtual void UpdateWindowTitle() override;
+  virtual void SizeConstraintsChanged() override;
 
   // views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
-      OVERRIDE;
+      override;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source, const gfx::Point& point)
-      OVERRIDE;
+      override;
 
   // chrome::TabIconViewModel:
-  virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
-  virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
+  virtual bool ShouldTabIconViewAnimate() const override;
+  virtual gfx::ImageSkia GetFaviconForTabIconView() override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // OpaqueBrowserFrameViewLayoutDelegate implementation:
-  virtual bool ShouldShowWindowIcon() const OVERRIDE;
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual int GetIconSize() const OVERRIDE;
-  virtual bool ShouldLeaveOffsetNearTopBorder() const OVERRIDE;
-  virtual gfx::Size GetBrowserViewMinimumSize() const OVERRIDE;
-  virtual bool ShouldShowCaptionButtons() const OVERRIDE;
-  virtual bool ShouldShowAvatar() const OVERRIDE;
-  virtual bool IsRegularOrGuestSession() const OVERRIDE;
-  virtual gfx::ImageSkia GetOTRAvatarIcon() const OVERRIDE;
-  virtual bool IsMaximized() const OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
-  virtual bool IsFullscreen() const OVERRIDE;
-  virtual bool IsTabStripVisible() const OVERRIDE;
-  virtual int GetTabStripHeight() const OVERRIDE;
-  virtual gfx::Size GetTabstripPreferredSize() const OVERRIDE;
+  virtual bool ShouldShowWindowIcon() const override;
+  virtual bool ShouldShowWindowTitle() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual int GetIconSize() const override;
+  virtual bool ShouldLeaveOffsetNearTopBorder() const override;
+  virtual gfx::Size GetBrowserViewMinimumSize() const override;
+  virtual bool ShouldShowCaptionButtons() const override;
+  virtual bool ShouldShowAvatar() const override;
+  virtual bool IsRegularOrGuestSession() const override;
+  virtual gfx::ImageSkia GetOTRAvatarIcon() const override;
+  virtual bool IsMaximized() const override;
+  virtual bool IsMinimized() const override;
+  virtual bool IsFullscreen() const override;
+  virtual bool IsTabStripVisible() const override;
+  virtual int GetTabStripHeight() const override;
+  virtual gfx::Size GetTabstripPreferredSize() const override;
 
  protected:
   views::ImageButton* minimize_button() const { return minimize_button_; }
@@ -104,12 +104,12 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   views::ImageButton* close_button() const { return close_button_; }
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   // views::NonClientFrameView:
   virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const OVERRIDE;
+                                 const gfx::Rect& rect) const override;
 
   // Creates, adds and returns a new image button with |this| as its listener.
   // Memory is owned by the caller.

@@ -31,20 +31,20 @@ class BookmarkBarInstructionsView : public views::View,
       BookmarkBarInstructionsDelegate* delegate);
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual void OnThemeChanged() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::LinkListener overrides.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   void UpdateColors();
 

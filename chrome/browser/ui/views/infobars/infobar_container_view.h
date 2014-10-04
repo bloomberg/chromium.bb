@@ -19,16 +19,16 @@ class InfoBarContainerView : public views::AccessiblePaneView,
 
  private:
   // AccessiblePaneView:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
+  virtual void Layout() override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // InfobarContainer:
   virtual void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
-                                          size_t position) OVERRIDE;
+                                          size_t position) override;
   virtual void PlatformSpecificRemoveInfoBar(
-      infobars::InfoBar* infobar) OVERRIDE;
+      infobars::InfoBar* infobar) override;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerView);
 };

@@ -39,7 +39,7 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   void LayoutControls();
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // Load the app icon asynchronously. For the response, check OnAppImageLoaded.
   void LoadAppImageAsync();

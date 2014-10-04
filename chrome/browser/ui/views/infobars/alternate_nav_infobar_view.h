@@ -31,13 +31,13 @@ class AlternateNavInfoBarView : public InfoBarView,
   static void ElideLabels(Labels* labels, int available_width);
 
   // InfoBarView:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual int ContentMinimumWidth() const OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual int ContentMinimumWidth() const override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   AlternateNavInfoBarDelegate* GetDelegate();
 

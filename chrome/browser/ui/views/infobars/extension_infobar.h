@@ -28,14 +28,14 @@ class ExtensionInfoBar : public InfoBarView,
   virtual ~ExtensionInfoBar();
 
   // InfoBarView:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual int ContentMinimumWidth() const OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual int ContentMinimumWidth() const override;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
+                                   const gfx::Point& point) override;
 
   void OnImageLoaded(const gfx::Image& image);
   ExtensionInfoBarDelegate* GetDelegate();

@@ -30,19 +30,19 @@ class ChevronMenuButton : public views::MenuButton,
 
   // views::MenuButton:
   virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      OVERRIDE;
+      override;
   virtual bool GetDropFormats(int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired() OVERRIDE;
-  virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired() override;
+  virtual bool CanDrop(const ui::OSExchangeData& data) override;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) override;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  virtual void OnDragExited() override;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(View* source, const gfx::Point& point)
-      OVERRIDE;
+      override;
 
   // Shows the overflow menu.
   void ShowOverflowMenu(bool for_drop);

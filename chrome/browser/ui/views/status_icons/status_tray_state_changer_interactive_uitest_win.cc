@@ -18,7 +18,7 @@ class StatusTrayStateChangerWinTest : public testing::Test {
  public:
   StatusTrayStateChangerWinTest() {}
 
-  void SetUp() OVERRIDE {
+  void SetUp() override {
     testing::Test::SetUp();
     com_.reset(new base::win::ScopedCOMInitializer());
     status_tray_.reset(new StatusTrayWin());
@@ -35,7 +35,7 @@ class StatusTrayStateChangerWinTest : public testing::Test {
                                                   status_icon_win_->window());
   }
 
-  void TearDown() OVERRIDE {
+  void TearDown() override {
     tray_watcher_ = NULL;
     status_tray_.reset();
     com_.reset();

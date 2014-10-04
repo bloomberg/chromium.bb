@@ -39,11 +39,11 @@ class HomePageUndoBubble : public views::BubbleDelegateView,
   virtual ~HomePageUndoBubble();
 
   // views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
+  virtual void Init() override;
+  virtual void WindowClosing() override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   static HomePageUndoBubble* home_page_undo_bubble_;
 

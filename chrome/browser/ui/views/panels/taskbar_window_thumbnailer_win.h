@@ -52,7 +52,7 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
                              UINT message,
                              WPARAM w_param,
                              LPARAM l_param,
-                             LRESULT* l_result) OVERRIDE;
+                             LRESULT* l_result) override;
 
   // Message handlers.
   bool OnDwmSendIconicThumbnail(int width, int height, LRESULT* l_result);

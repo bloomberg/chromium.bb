@@ -16,7 +16,7 @@ class BrowserCommandHandlerX11 : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
 
   Browser* browser_;
 

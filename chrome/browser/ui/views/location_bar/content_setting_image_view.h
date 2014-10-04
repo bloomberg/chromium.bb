@@ -63,20 +63,20 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
   static int GetBubbleOuterPadding(bool by_icon);
 
   // gfx::AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationCanceled(const gfx::Animation* animation) override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   bool background_showing() const {
     return slide_animator_.is_animating() || pause_animation_;

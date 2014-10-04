@@ -41,7 +41,7 @@ class AppListOverlayBackground : public views::Background {
   virtual ~AppListOverlayBackground() {}
 
   // Overridden from views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(app_list::kContentsBackgroundColor);

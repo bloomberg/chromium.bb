@@ -39,7 +39,7 @@ class TabRecordingIndicatorAnimation : public gfx::MultiAnimation {
   virtual ~TabRecordingIndicatorAnimation() {}
 
   // Overridden to provide alternating "towards in" and "towards out" behavior.
-  virtual double GetCurrentValue() const OVERRIDE;
+  virtual double GetCurrentValue() const override;
 
   static scoped_ptr<TabRecordingIndicatorAnimation> Create();
 

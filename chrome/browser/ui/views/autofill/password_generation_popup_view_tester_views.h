@@ -18,7 +18,7 @@ class PasswordGenerationPopupViewTesterViews :
       PasswordGenerationPopupViewViews* view);
   virtual ~PasswordGenerationPopupViewTesterViews();
 
-  virtual void SimulateMouseMovementAt(const gfx::Point& point) OVERRIDE;
+  virtual void SimulateMouseMovementAt(const gfx::Point& point) override;
 
  private:
   // Weak reference

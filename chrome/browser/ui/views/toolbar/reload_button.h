@@ -47,26 +47,26 @@ class ReloadButton : public ToolbarButton,
   void LoadImages();
 
   // ToolbarButton:
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual bool ShouldShowMenu() OVERRIDE;
-  virtual void ShowDropDownMenu(ui::MenuSourceType source_type) OVERRIDE;
+                              base::string16* tooltip) const override;
+  virtual const char* GetClassName() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual bool ShouldShowMenu() override;
+  virtual void ShowDropDownMenu(ui::MenuSourceType source_type) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* /* button */,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
+  virtual bool IsCommandIdVisible(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   friend class ReloadButtonTest;

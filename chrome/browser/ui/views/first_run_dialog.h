@@ -31,13 +31,13 @@ class FirstRunDialog : public views::DialogDelegateView,
   void Done();
 
   // views::DialogDelegate:
-  virtual views::View* CreateExtraView() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
+  virtual views::View* CreateExtraView() override;
+  virtual void OnClosed() override;
+  virtual bool Accept() override;
+  virtual int GetDialogButtons() const override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   Profile* profile_;
   views::Checkbox* make_default_;

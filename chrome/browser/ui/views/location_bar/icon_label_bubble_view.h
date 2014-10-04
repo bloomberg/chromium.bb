@@ -48,10 +48,10 @@ class IconLabelBubbleView : public views::View {
 
  protected:
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 
@@ -66,7 +66,7 @@ class IconLabelBubbleView : public views::View {
   static int GetBubbleOuterPadding(bool by_icon);
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   int GetPreLabelWidth() const;
 

@@ -29,25 +29,25 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
       translate::TranslateStep step);
 
   // TranslateBubbleModel methods.
-  virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE;
+  virtual TranslateBubbleModel::ViewState GetViewState() const override;
   virtual void SetViewState(TranslateBubbleModel::ViewState view_state)
-      OVERRIDE;
-  virtual void ShowError(translate::TranslateErrors::Type error_type) OVERRIDE;
-  virtual void GoBackFromAdvanced() OVERRIDE;
-  virtual int GetNumberOfLanguages() const OVERRIDE;
-  virtual base::string16 GetLanguageNameAt(int index) const OVERRIDE;
-  virtual int GetOriginalLanguageIndex() const OVERRIDE;
-  virtual void UpdateOriginalLanguageIndex(int index) OVERRIDE;
-  virtual int GetTargetLanguageIndex() const OVERRIDE;
-  virtual void UpdateTargetLanguageIndex(int index) OVERRIDE;
-  virtual void SetNeverTranslateLanguage(bool value) OVERRIDE;
-  virtual void SetNeverTranslateSite(bool value) OVERRIDE;
-  virtual bool ShouldAlwaysTranslate() const OVERRIDE;
-  virtual void SetAlwaysTranslate(bool value) OVERRIDE;
-  virtual void Translate() OVERRIDE;
-  virtual void RevertTranslation() OVERRIDE;
-  virtual void TranslationDeclined(bool explicitly_closed) OVERRIDE;
-  virtual bool IsPageTranslatedInCurrentLanguages() const OVERRIDE;
+      override;
+  virtual void ShowError(translate::TranslateErrors::Type error_type) override;
+  virtual void GoBackFromAdvanced() override;
+  virtual int GetNumberOfLanguages() const override;
+  virtual base::string16 GetLanguageNameAt(int index) const override;
+  virtual int GetOriginalLanguageIndex() const override;
+  virtual void UpdateOriginalLanguageIndex(int index) override;
+  virtual int GetTargetLanguageIndex() const override;
+  virtual void UpdateTargetLanguageIndex(int index) override;
+  virtual void SetNeverTranslateLanguage(bool value) override;
+  virtual void SetNeverTranslateSite(bool value) override;
+  virtual bool ShouldAlwaysTranslate() const override;
+  virtual void SetAlwaysTranslate(bool value) override;
+  virtual void Translate() override;
+  virtual void RevertTranslation() override;
+  virtual void TranslationDeclined(bool explicitly_closed) override;
+  virtual bool IsPageTranslatedInCurrentLanguages() const override;
 
  private:
   scoped_ptr<translate::TranslateUIDelegate> ui_delegate_;

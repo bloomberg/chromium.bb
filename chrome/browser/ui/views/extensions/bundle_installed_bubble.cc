@@ -141,7 +141,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     GetWidget()->Close();
   }
 

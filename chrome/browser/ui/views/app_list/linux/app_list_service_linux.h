@@ -20,19 +20,19 @@ class AppListServiceLinux : public AppListServiceViews,
   static AppListServiceLinux* GetInstance();
 
   // AppListService overrides:
-  virtual void CreateShortcut() OVERRIDE;
+  virtual void CreateShortcut() override;
 
   // app_list::AppListViewObserver overrides:
-  virtual void OnActivationChanged(views::Widget* widget, bool active) OVERRIDE;
+  virtual void OnActivationChanged(views::Widget* widget, bool active) override;
 
  private:
   friend struct DefaultSingletonTraits<AppListServiceLinux>;
 
   // AppListShowerDelegate overrides:
-  virtual void OnViewCreated() OVERRIDE;
-  virtual void OnViewBeingDestroyed() OVERRIDE;
-  virtual void OnViewDismissed() OVERRIDE;
-  virtual void MoveNearCursor(app_list::AppListView* view) OVERRIDE;
+  virtual void OnViewCreated() override;
+  virtual void OnViewBeingDestroyed() override;
+  virtual void OnViewDismissed() override;
+  virtual void MoveNearCursor(app_list::AppListView* view) override;
 
   AppListServiceLinux();
 

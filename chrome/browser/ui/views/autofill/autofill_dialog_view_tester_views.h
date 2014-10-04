@@ -18,19 +18,19 @@ class AutofillDialogViewTesterViews : public AutofillDialogViewTester {
   virtual ~AutofillDialogViewTesterViews();
 
   // TestableAutofillDialogView implementation:
-  virtual void SubmitForTesting() OVERRIDE;
-  virtual void CancelForTesting() OVERRIDE;
-  virtual base::string16 GetTextContentsOfInput(ServerFieldType type) OVERRIDE;
+  virtual void SubmitForTesting() override;
+  virtual void CancelForTesting() override;
+  virtual base::string16 GetTextContentsOfInput(ServerFieldType type) override;
   virtual void SetTextContentsOfInput(ServerFieldType type,
-                                      const base::string16& contents) OVERRIDE;
+                                      const base::string16& contents) override;
   virtual void SetTextContentsOfSuggestionInput(
       DialogSection section,
-      const base::string16& text) OVERRIDE;
-  virtual void ActivateInput(ServerFieldType type) OVERRIDE;
-  virtual gfx::Size GetSize() const OVERRIDE;
-  virtual content::WebContents* GetSignInWebContents() OVERRIDE;
-  virtual bool IsShowingOverlay() const OVERRIDE;
-  virtual bool IsShowingSection(DialogSection section) const OVERRIDE;
+      const base::string16& text) override;
+  virtual void ActivateInput(ServerFieldType type) override;
+  virtual gfx::Size GetSize() const override;
+  virtual content::WebContents* GetSignInWebContents() override;
+  virtual bool IsShowingOverlay() const override;
+  virtual bool IsShowingSection(DialogSection section) const override;
 
  private:
   AutofillDialogViews* view_;

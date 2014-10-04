@@ -56,17 +56,17 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
   virtual ~BrowserActionsContainerTest() {}
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     BrowserActionsContainer::disable_animations_during_testing_ = true;
     ExtensionBrowserTest::SetUpCommandLine(command_line);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
     browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     BrowserActionsContainer::disable_animations_during_testing_ = false;
     ExtensionBrowserTest::TearDownOnMainThread();
   }
@@ -453,9 +453,9 @@ class BrowserActionsContainerOverflowTest : public BrowserActionsContainerTest {
   extensions::ExtensionToolbarModel* model() { return model_; }
 
  private:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   // The main BrowserActionsContainer (owned by the browser view).
   BrowserActionsContainer* main_bar_;

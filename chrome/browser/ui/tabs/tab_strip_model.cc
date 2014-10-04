@@ -71,7 +71,7 @@ class CloseTracker {
 
    private:
     // WebContentsObserver:
-    virtual void WebContentsDestroyed() OVERRIDE {
+    virtual void WebContentsDestroyed() override {
       parent_->OnWebContentsDestroyed(this);
     }
 
@@ -159,7 +159,7 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
  private:
   // Make sure that if someone deletes this WebContents out from under us, it
   // is properly removed from the tab strip.
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void WebContentsDestroyed() override;
 
   // The WebContents being tracked by this WebContentsData. The
   // WebContentsObserver does keep a reference, but when the WebContents is

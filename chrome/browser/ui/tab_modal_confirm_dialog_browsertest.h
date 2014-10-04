@@ -26,12 +26,12 @@ class MockTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
                                     Delegate* delegate);
   virtual ~MockTabModalConfirmDialogDelegate();
 
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetDialogMessage() OVERRIDE;
+  virtual base::string16 GetTitle() override;
+  virtual base::string16 GetDialogMessage() override;
 
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
+  virtual void OnAccepted() override;
+  virtual void OnCanceled() override;
+  virtual void OnClosed() override;
 
  private:
   Delegate* delegate_;
@@ -45,13 +45,13 @@ class TabModalConfirmDialogTest
  public:
   TabModalConfirmDialogTest();
 
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   // MockTabModalConfirmDialogDelegate::Delegate:
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
+  virtual void OnAccepted() override;
+  virtual void OnCanceled() override;
+  virtual void OnClosed() override;
 
  protected:
   // Owned by |dialog_|.

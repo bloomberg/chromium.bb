@@ -14,7 +14,7 @@ class ScrollEndEffectControllerAsh : public ScrollEndEffectController {
   virtual ~ScrollEndEffectControllerAsh();
 
   // ScrollEndEffectController overides:
-  virtual void OverscrollUpdate(int delta_y) OVERRIDE;
+  virtual void OverscrollUpdate(int delta_y) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollEndEffectControllerAsh);

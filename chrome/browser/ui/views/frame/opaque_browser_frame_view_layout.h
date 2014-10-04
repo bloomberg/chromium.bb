@@ -142,10 +142,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void SetView(int id, views::View* view);
 
   // Overriden from views::LayoutManager:
-  virtual void Layout(views::View* host) OVERRIDE;
-  virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE;
-  virtual void ViewAdded(views::View* host, views::View* view) OVERRIDE;
-  virtual void ViewRemoved(views::View* host, views::View* view) OVERRIDE;
+  virtual void Layout(views::View* host) override;
+  virtual gfx::Size GetPreferredSize(const views::View* host) const override;
+  virtual void ViewAdded(views::View* host, views::View* view) override;
+  virtual void ViewRemoved(views::View* host, views::View* view) override;
 
   OpaqueBrowserFrameViewLayoutDelegate* delegate_;
 

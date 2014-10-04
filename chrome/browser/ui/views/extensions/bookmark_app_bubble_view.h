@@ -52,24 +52,24 @@ class BookmarkAppBubbleView : public views::BubbleDelegateView,
                         const std::string& extension_id);
 
   // Overriden from views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual void Init() override;
+  virtual views::View* GetInitiallyFocusedView() override;
 
   // Overridden from views::WidgetDelegate:
-  virtual void WindowClosing() OVERRIDE;
+  virtual void WindowClosing() override;
 
   // Overridden from views::View:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual gfx::Size GetMinimumSize() const override;
 
   // Overridden from views::ButtonListener:
   // Closes the bubble or opens the edit dialog.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from extensions::AppIconLoader::Delegate:
   virtual void SetAppImage(const std::string& id,
-                           const gfx::ImageSkia& image) OVERRIDE;
+                           const gfx::ImageSkia& image) override;
 
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);

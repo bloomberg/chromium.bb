@@ -73,21 +73,21 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogLearnMoreLink);
 
   // Overridden from views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::View:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // Overridden from views::WidgetDelegate:
-  virtual void WindowClosing() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual void WindowClosing() override;
+  virtual ui::ModalType GetModalType() const override;
 
   // Builds a popup bubble anchored under the wrench menu
   void InitBubbleContent(views::GridLayout* layout);

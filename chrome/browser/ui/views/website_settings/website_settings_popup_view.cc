@@ -149,7 +149,7 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
   virtual ~InternalPageInfoPopupView();
 
   // views::BubbleDelegateView:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);

@@ -58,37 +58,37 @@ class SessionCrashedBubbleView
                           bool uma_opted_in_already);
 
   // WidgetDelegateView methods.
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual bool ShouldShowCloseButton() const OVERRIDE;
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool ShouldShowWindowTitle() const override;
+  virtual bool ShouldShowCloseButton() const override;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::BubbleDelegateView methods.
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   // views::ButtonListener methods.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::StyledLabelListener methods.
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) OVERRIDE;
+                                      int event_flags) override;
 
   // content::WebContentsObserver methods.
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) override;
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE;
-  virtual void WasShown() OVERRIDE;
-  virtual void WasHidden() OVERRIDE;
+                             const GURL& validated_url) override;
+  virtual void WasShown() override;
+  virtual void WasHidden() override;
 
   // content::NotificationObserver methods.
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
+      const content::NotificationDetails& details) override;
 
   // TabStripModelObserver methods.
   // When the tab with current bubble is being dragged and dropped to a new
@@ -96,7 +96,7 @@ class SessionCrashedBubbleView
   // chose not to restore the previous session.
   virtual void TabDetachedAt(
       content::WebContents* contents,
-      int index) OVERRIDE;
+      int index) override;
 
   // Create the view for the user to opt in to UMA.
   views::View* CreateUMAOptinView();

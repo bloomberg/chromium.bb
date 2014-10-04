@@ -28,15 +28,15 @@ class ImportLockDialogView : public views::DialogDelegateView {
   virtual ~ImportLockDialogView();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
   // views::DialogDelegate:
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
 
  private:
   views::Label* description_label_;

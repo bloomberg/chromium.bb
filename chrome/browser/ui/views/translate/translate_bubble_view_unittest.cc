@@ -32,79 +32,79 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         original_language_index_on_translation_(-1),
         target_language_index_on_translation_(-1) {}
 
-  virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE {
+  virtual TranslateBubbleModel::ViewState GetViewState() const override {
     return view_state_transition_.view_state();
   }
 
   virtual void SetViewState(TranslateBubbleModel::ViewState view_state)
-      OVERRIDE {
+      override {
     view_state_transition_.SetViewState(view_state);
   }
 
-  virtual void ShowError(translate::TranslateErrors::Type error_type) OVERRIDE {
+  virtual void ShowError(translate::TranslateErrors::Type error_type) override {
     error_type_ = error_type;
   }
 
-  virtual void GoBackFromAdvanced() OVERRIDE {
+  virtual void GoBackFromAdvanced() override {
     view_state_transition_.GoBackFromAdvanced();
   }
 
-  virtual int GetNumberOfLanguages() const OVERRIDE {
+  virtual int GetNumberOfLanguages() const override {
     return 1000;
   }
 
-  virtual base::string16 GetLanguageNameAt(int index) const OVERRIDE {
+  virtual base::string16 GetLanguageNameAt(int index) const override {
     return base::string16();
   }
 
-  virtual int GetOriginalLanguageIndex() const OVERRIDE {
+  virtual int GetOriginalLanguageIndex() const override {
     return original_language_index_;
   }
 
-  virtual void UpdateOriginalLanguageIndex(int index) OVERRIDE {
+  virtual void UpdateOriginalLanguageIndex(int index) override {
     original_language_index_ = index;
   }
 
-  virtual int GetTargetLanguageIndex() const OVERRIDE {
+  virtual int GetTargetLanguageIndex() const override {
     return target_language_index_;
   }
 
-  virtual void UpdateTargetLanguageIndex(int index) OVERRIDE {
+  virtual void UpdateTargetLanguageIndex(int index) override {
     target_language_index_ = index;
   }
 
-  virtual void SetNeverTranslateLanguage(bool value) OVERRIDE {
+  virtual void SetNeverTranslateLanguage(bool value) override {
     never_translate_language_ = value;
   }
 
-  virtual void SetNeverTranslateSite(bool value) OVERRIDE {
+  virtual void SetNeverTranslateSite(bool value) override {
     never_translate_site_ = value;
   }
 
-  virtual bool ShouldAlwaysTranslate() const OVERRIDE {
+  virtual bool ShouldAlwaysTranslate() const override {
     return should_always_translate_;
   }
 
-  virtual void SetAlwaysTranslate(bool value) OVERRIDE {
+  virtual void SetAlwaysTranslate(bool value) override {
     should_always_translate_ = value;
     set_always_translate_called_count_++;
   }
 
-  virtual void Translate() OVERRIDE {
+  virtual void Translate() override {
     translate_called_ = true;
     original_language_index_on_translation_ = original_language_index_;
     target_language_index_on_translation_ = target_language_index_;
   }
 
-  virtual void RevertTranslation() OVERRIDE {
+  virtual void RevertTranslation() override {
     revert_translation_called_ = true;
   }
 
-  virtual void TranslationDeclined(bool explicitly_closed) OVERRIDE {
+  virtual void TranslationDeclined(bool explicitly_closed) override {
     translation_declined_called_ = true;
   }
 
-  virtual bool IsPageTranslatedInCurrentLanguages() const OVERRIDE {
+  virtual bool IsPageTranslatedInCurrentLanguages() const override {
     return original_language_index_on_translation_ ==
         original_language_index_ &&
         target_language_index_on_translation_ == target_language_index_;
@@ -133,7 +133,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     // The bubble needs the parent as an anchor.
@@ -155,7 +155,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
     views::BubbleDelegateView::CreateBubble(bubble_)->Show();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     bubble_->GetWidget()->CloseNow();
     anchor_widget_.reset();
 

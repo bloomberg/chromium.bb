@@ -41,7 +41,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   virtual ~ImmersiveModeControllerAshTest() {}
 
   // TestWithBrowserView override:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestWithBrowserView::SetUp();
 
     browser()->window()->Show();

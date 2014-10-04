@@ -165,99 +165,99 @@ class BookmarkBarView : public DetachableToolbarView,
                                               Profile* profile);
 
   // DetachableToolbarView methods:
-  virtual bool IsDetached() const OVERRIDE;
-  virtual double GetAnimationValue() const OVERRIDE;
-  virtual int GetToolbarOverlap() const OVERRIDE;
+  virtual bool IsDetached() const override;
+  virtual double GetAnimationValue() const override;
+  virtual int GetToolbarOverlap() const override;
 
   // View methods:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual bool CanProcessEventsWithinSubtree() const override;
+  virtual void Layout() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
   virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
+                             const views::CullSet& cull_set) override;
   virtual bool GetDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired() OVERRIDE;
-  virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void SetVisible(bool visible) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired() override;
+  virtual bool CanDrop(const ui::OSExchangeData& data) override;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) override;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  virtual void OnDragExited() override;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  virtual void OnThemeChanged() override;
+  virtual const char* GetClassName() const override;
+  virtual void SetVisible(bool visible) override;
 
   // AccessiblePaneView:
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   // BookmarkMenuControllerObserver:
   virtual void BookmarkMenuControllerDeleted(
-      BookmarkMenuController* controller) OVERRIDE;
+      BookmarkMenuController* controller) override;
 
   // BookmarkBarInstructionsDelegate:
-  virtual void ShowImportDialog() OVERRIDE;
+  virtual void ShowImportDialog() override;
 
   // BookmarkBubbleViewObserver:
-  virtual void OnBookmarkBubbleShown(const GURL& url) OVERRIDE;
-  virtual void OnBookmarkBubbleHidden() OVERRIDE;
+  virtual void OnBookmarkBubbleShown(const GURL& url) override;
+  virtual void OnBookmarkBubbleHidden() override;
 
   // BookmarkModelObserver:
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+                                   bool ids_reassigned) override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE;
+                                 int new_index) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE;
+                                   const BookmarkNode* node) override;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) OVERRIDE;
+                                             const BookmarkNode* node) override;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE;
+                                          const BookmarkNode* node) override;
 
   // views::DragController:
   virtual void WriteDragDataForView(views::View* sender,
                                     const gfx::Point& press_pt,
-                                    ui::OSExchangeData* data) OVERRIDE;
+                                    ui::OSExchangeData* data) override;
   virtual int GetDragOperationsForView(views::View* sender,
-                                       const gfx::Point& p) OVERRIDE;
+                                       const gfx::Point& p) override;
   virtual bool CanStartDragForView(views::View* sender,
                                    const gfx::Point& press_pt,
-                                   const gfx::Point& p) OVERRIDE;
+                                   const gfx::Point& p) override;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* view,
-                                   const gfx::Point& point) OVERRIDE;
+                                   const gfx::Point& point) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
  private:
   class ButtonSeparatorView;

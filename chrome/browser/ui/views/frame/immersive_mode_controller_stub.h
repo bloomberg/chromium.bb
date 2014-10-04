@@ -18,19 +18,19 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
   virtual ~ImmersiveModeControllerStub();
 
   // ImmersiveModeController overrides:
-  virtual void Init(BrowserView* browser_view) OVERRIDE;
-  virtual void SetEnabled(bool enabled) OVERRIDE;
-  virtual bool IsEnabled() const OVERRIDE;
-  virtual bool ShouldHideTabIndicators() const OVERRIDE;
-  virtual bool ShouldHideTopViews() const OVERRIDE;
-  virtual bool IsRevealed() const OVERRIDE;
+  virtual void Init(BrowserView* browser_view) override;
+  virtual void SetEnabled(bool enabled) override;
+  virtual bool IsEnabled() const override;
+  virtual bool ShouldHideTabIndicators() const override;
+  virtual bool ShouldHideTopViews() const override;
+  virtual bool IsRevealed() const override;
   virtual int GetTopContainerVerticalOffset(
-      const gfx::Size& top_container_size) const OVERRIDE;
+      const gfx::Size& top_container_size) const override;
   virtual ImmersiveRevealedLock* GetRevealedLock(
-      AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
+      AnimateReveal animate_reveal) override WARN_UNUSED_RESULT;
   virtual void OnFindBarVisibleBoundsChanged(
-      const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
-  virtual void SetupForTest() OVERRIDE;
+      const gfx::Rect& new_visible_bounds_in_screen) override;
+  virtual void SetupForTest() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerStub);

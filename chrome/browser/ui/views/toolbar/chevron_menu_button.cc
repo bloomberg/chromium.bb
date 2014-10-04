@@ -47,7 +47,7 @@ class IconUpdater : public BrowserActionView::IconObserver {
   }
 
   // BrowserActionView::IconObserver:
-  virtual void OnIconUpdated(const gfx::ImageSkia& icon) OVERRIDE {
+  virtual void OnIconUpdated(const gfx::ImageSkia& icon) override {
     menu_item_view_->SetIcon(icon);
   }
 
@@ -80,34 +80,34 @@ class ChevronMenuButton::MenuController : public views::MenuDelegate {
 
  private:
   // views::MenuDelegate:
-  virtual bool IsCommandEnabled(int id) const OVERRIDE;
-  virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const override;
+  virtual void ExecuteCommand(int id) override;
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               ui::MenuSourceType source_type) OVERRIDE;
-  virtual void DropMenuClosed(views::MenuItemView* menu) OVERRIDE;
+                               ui::MenuSourceType source_type) override;
+  virtual void DropMenuClosed(views::MenuItemView* menu) override;
   // These drag functions offer support for dragging icons into the overflow
   // menu.
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired(views::MenuItemView* menu) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu) override;
   virtual bool CanDrop(views::MenuItemView* menu,
-                       const ui::OSExchangeData& data) OVERRIDE;
+                       const ui::OSExchangeData& data) override;
   virtual int GetDropOperation(views::MenuItemView* item,
                                const ui::DropTargetEvent& event,
-                               DropPosition* position) OVERRIDE;
+                               DropPosition* position) override;
   virtual int OnPerformDrop(views::MenuItemView* menu,
                             DropPosition position,
-                            const ui::DropTargetEvent& event) OVERRIDE;
+                            const ui::DropTargetEvent& event) override;
   // These three drag functions offer support for dragging icons out of the
   // overflow menu.
-  virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
+  virtual bool CanDrag(views::MenuItemView* menu) override;
   virtual void WriteDragData(views::MenuItemView* sender,
-                             ui::OSExchangeData* data) OVERRIDE;
-  virtual int GetDragOperations(views::MenuItemView* sender) OVERRIDE;
+                             ui::OSExchangeData* data) override;
+  virtual int GetDragOperations(views::MenuItemView* sender) override;
 
   // Returns the offset into |views_| for the given |id|.
   size_t IndexForId(int id) const;

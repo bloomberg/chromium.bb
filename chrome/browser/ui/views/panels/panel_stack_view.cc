@@ -37,15 +37,15 @@ class PanelStackWindow : public views::WidgetObserver,
   virtual ~PanelStackWindow();
 
   // Overridden from views::WidgetDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual gfx::ImageSkia GetWindowAppIcon() override;
+  virtual gfx::ImageSkia GetWindowIcon() override;
+  virtual views::Widget* GetWidget() override;
+  virtual const views::Widget* GetWidget() const override;
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) override;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   views::Widget* window_;  // Weak pointer, own us.

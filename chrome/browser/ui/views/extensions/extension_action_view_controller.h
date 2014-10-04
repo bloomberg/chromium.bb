@@ -58,7 +58,7 @@ class ExtensionActionViewController
   virtual ~ExtensionActionViewController();
 
   // ExtensionContextMenuModel::PopupDelegate:
-  virtual void InspectPopup() OVERRIDE;
+  virtual void InspectPopup() override;
 
   // Executes the default extension action (typically showing the popup), and
   // attributes the action to a user (thus, only use this for actions that
@@ -99,19 +99,19 @@ class ExtensionActionViewController
 
  private:
   // ExtensionActionIconFactory::Observer:
-  virtual void OnIconUpdated() OVERRIDE;
+  virtual void OnIconUpdated() override;
 
   // ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual bool CanHandleAccelerators() const override;
 
   // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   // Shows the context menu for extension action.
   void DoShowContextMenu(ui::MenuSourceType source_type);

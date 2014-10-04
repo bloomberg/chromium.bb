@@ -122,7 +122,7 @@ void OffsetX(int x_offset, std::vector<gfx::Rect>* rects) {
 class WindowPositionManagedUpdater : public views::WidgetObserver {
  public:
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     SetWindowPositionManaged(widget->GetNativeView(), false);
   }
 };
@@ -142,7 +142,7 @@ class EscapeTracker : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* key) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* key) override {
     if (key->type() == ui::ET_KEY_PRESSED &&
         key->key_code() == ui::VKEY_ESCAPE) {
       escape_callback_.Run();

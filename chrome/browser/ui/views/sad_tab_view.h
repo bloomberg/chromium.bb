@@ -38,23 +38,23 @@ class SadTabView : public chrome::SadTab,
   virtual ~SadTabView();
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* source,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
  protected:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   // Overridden from chrome::SadTab:
-  virtual void Show() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Show() override;
+  virtual void Close() override;
 
   views::Label* CreateLabel(const base::string16& text);
   views::Link* CreateLink(const base::string16& text);

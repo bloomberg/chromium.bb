@@ -26,13 +26,13 @@ class GlobalErrorBubbleView : public views::ButtonListener,
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::WidgetDelegate implementation.
-  virtual void WindowClosing() OVERRIDE;
+  virtual void WindowClosing() override;
 
   // GlobalErrorBubbleViewBase implementation.
-  virtual void CloseBubbleView() OVERRIDE;
+  virtual void CloseBubbleView() override;
 
  private:
   Browser* browser_;

@@ -44,13 +44,13 @@ class ExtensionInstalledBubbleView
   virtual ~ExtensionInstalledBubbleView();
 
   // ExtensionInstalledBubble::Delegate:
-  virtual bool MaybeShowNow() OVERRIDE;
+  virtual bool MaybeShowNow() override;
 
   // views::WidgetDelegate:
-  virtual void WindowClosing() OVERRIDE;
+  virtual void WindowClosing() override;
 
   // views::BubbleDelegate:
-  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() const override;
 
   ExtensionInstalledBubble bubble_;
 

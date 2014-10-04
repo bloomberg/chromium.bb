@@ -33,7 +33,7 @@ class MediaGalleryCheckboxView : public views::View {
   virtual ~MediaGalleryCheckboxView();
 
   // Overrides from views::View.
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   views::Checkbox* checkbox() { return checkbox_; }
   views::ImageButton* folder_viewer_button() { return folder_viewer_button_; }

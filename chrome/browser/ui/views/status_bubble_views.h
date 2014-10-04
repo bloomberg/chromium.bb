@@ -54,12 +54,12 @@ class StatusBubbleViews : public StatusBubble {
   void SetBubbleWidth(int width);
 
   // Overridden from StatusBubble:
-  virtual void SetStatus(const base::string16& status) OVERRIDE;
-  virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+  virtual void SetStatus(const base::string16& status) override;
+  virtual void SetURL(const GURL& url, const std::string& languages) override;
+  virtual void Hide() override;
   virtual void MouseMoved(const gfx::Point& location,
-                          bool left_content) OVERRIDE;
-  virtual void UpdateDownloadShelfVisibility(bool visible) OVERRIDE;
+                          bool left_content) override;
+  virtual void UpdateDownloadShelfVisibility(bool visible) override;
 
   views::Widget* GetPopupForTest() { return popup(); }
 

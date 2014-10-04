@@ -37,14 +37,14 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
 
  private:
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void PreProfileInit() OVERRIDE {
+  virtual void PreProfileInit() override {
     athena::StartAthenaEnv(content::BrowserThread::GetBlockingPool()->
         GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
     ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
   }
-  virtual void PostProfileInit() OVERRIDE {
+  virtual void PostProfileInit() override {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableZeroBrowsersOpenForTests)) {
       chrome::IncrementKeepAliveCount();
@@ -61,12 +61,12 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
       athena::CreateVirtualKeyboardWithContext(profile);
     }
   }
-  virtual void PostMainMessageLoopRun() OVERRIDE { athena::ShutdownAthena(); }
+  virtual void PostMainMessageLoopRun() override { athena::ShutdownAthena(); }
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_APP_TERMINATING:
         athena::AthenaEnv::Get()->OnTerminating();

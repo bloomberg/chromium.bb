@@ -43,12 +43,12 @@ class SelectFileDialogExtension
       ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation.
-  virtual bool IsRunning(gfx::NativeWindow owner_window) const OVERRIDE;
-  virtual void ListenerDestroyed() OVERRIDE;
+  virtual bool IsRunning(gfx::NativeWindow owner_window) const override;
+  virtual void ListenerDestroyed() override;
 
   // ExtensionDialog::Observer implementation.
-  virtual void ExtensionDialogClosing(ExtensionDialog* dialog) OVERRIDE;
-  virtual void ExtensionTerminated(ExtensionDialog* dialog) OVERRIDE;
+  virtual void ExtensionDialogClosing(ExtensionDialog* dialog) override;
+  virtual void ExtensionTerminated(ExtensionDialog* dialog) override;
 
   // Routes callback to appropriate SelectFileDialog::Listener based on the
   // owning |web_contents|.
@@ -73,7 +73,7 @@ class SelectFileDialogExtension
       int file_type_index,
       const base::FilePath::StringType& default_extension,
       gfx::NativeWindow owning_window,
-      void* params) OVERRIDE;
+      void* params) override;
 
  private:
   friend class SelectFileDialogExtensionBrowserTest;
@@ -94,7 +94,7 @@ class SelectFileDialogExtension
   static bool PendingExists(RoutingID routing_id);
 
   // Returns true if the dialog has multiple file type choices.
-  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
+  virtual bool HasMultipleFileTypeChoicesImpl() override;
 
   bool has_multiple_file_type_choices_;
 

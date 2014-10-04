@@ -62,51 +62,51 @@ class WrenchMenu : public views::MenuDelegate,
   void RemoveObserver(WrenchMenuObserver* observer);
 
   // MenuDelegate overrides:
-  virtual const gfx::FontList* GetLabelFontList(int command_id) const OVERRIDE;
+  virtual const gfx::FontList* GetLabelFontList(int command_id) const override;
   virtual bool GetShouldUseDisabledEmphasizedForegroundColor(
-      int command_id) const OVERRIDE;
+      int command_id) const override;
   virtual base::string16 GetTooltipText(int command_id,
-                                        const gfx::Point& p) const OVERRIDE;
+                                        const gfx::Point& p) const override;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,
-                                  const ui::Event& e) OVERRIDE;
+                                  const ui::Event& e) override;
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired(views::MenuItemView* menu) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu) override;
   virtual bool CanDrop(views::MenuItemView* menu,
-                       const ui::OSExchangeData& data) OVERRIDE;
+                       const ui::OSExchangeData& data) override;
   virtual int GetDropOperation(views::MenuItemView* item,
                                const ui::DropTargetEvent& event,
-                               DropPosition* position) OVERRIDE;
+                               DropPosition* position) override;
   virtual int OnPerformDrop(views::MenuItemView* menu,
                             DropPosition position,
-                            const ui::DropTargetEvent& event) OVERRIDE;
+                            const ui::DropTargetEvent& event) override;
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int command_id,
                                const gfx::Point& p,
-                               ui::MenuSourceType source_type) OVERRIDE;
-  virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
+                               ui::MenuSourceType source_type) override;
+  virtual bool CanDrag(views::MenuItemView* menu) override;
   virtual void WriteDragData(views::MenuItemView* sender,
-                             ui::OSExchangeData* data) OVERRIDE;
-  virtual int GetDragOperations(views::MenuItemView* sender) OVERRIDE;
-  virtual int GetMaxWidthForMenu(views::MenuItemView* menu) OVERRIDE;
-  virtual bool IsItemChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int mouse_event_flags) OVERRIDE;
+                             ui::OSExchangeData* data) override;
+  virtual int GetDragOperations(views::MenuItemView* sender) override;
+  virtual int GetMaxWidthForMenu(views::MenuItemView* menu) override;
+  virtual bool IsItemChecked(int command_id) const override;
+  virtual bool IsCommandEnabled(int command_id) const override;
+  virtual void ExecuteCommand(int command_id, int mouse_event_flags) override;
   virtual bool GetAccelerator(int command_id,
-                              ui::Accelerator* accelerator) const OVERRIDE;
-  virtual void WillShowMenu(views::MenuItemView* menu) OVERRIDE;
-  virtual void WillHideMenu(views::MenuItemView* menu) OVERRIDE;
-  virtual bool ShouldCloseOnDragComplete() OVERRIDE;
+                              ui::Accelerator* accelerator) const override;
+  virtual void WillShowMenu(views::MenuItemView* menu) override;
+  virtual void WillHideMenu(views::MenuItemView* menu) override;
+  virtual bool ShouldCloseOnDragComplete() override;
 
   // BaseBookmarkModelObserver overrides:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   class CutCopyPasteView;

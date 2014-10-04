@@ -54,7 +54,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
       views::BubbleBorder::Arrow arrow);
   virtual ~ContentSettingBubbleContents();
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Callback to allow ContentSettingMediaMenuModel to update the menu label.
   void UpdateMenuLabel(content::MediaStreamType type,
@@ -62,7 +62,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
  protected:
   // views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
  private:
   class Favicon;
@@ -74,21 +74,21 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   // views::View:
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
+                                   const gfx::Point& point) override;
 
   // Helper to get the preferred width of the media menu.
   void UpdateMenuButtonSizes(const ui::NativeTheme* theme);

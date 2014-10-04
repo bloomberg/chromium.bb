@@ -24,18 +24,18 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
   virtual ~UpdateRecommendedMessageBox();
 
   // Overridden from views::DialogDelegate:
-  virtual bool Accept() OVERRIDE;
+  virtual bool Accept() override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
+      ui::DialogButton button) const override;
 
   // Overridden from views::WidgetDelegate:
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual void DeleteDelegate() override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual views::View* GetContentsView() override;
+  virtual views::Widget* GetWidget() override;
+  virtual const views::Widget* GetWidget() const override;
 
   views::MessageBoxView* message_box_view_;
 

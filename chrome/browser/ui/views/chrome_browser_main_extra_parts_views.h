@@ -21,7 +21,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   virtual ~ChromeBrowserMainExtraPartsViews();
 
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void ToolkitInitialized() OVERRIDE;
+  virtual void ToolkitInitialized() override;
 
  private:
 #if defined(USE_AURA)

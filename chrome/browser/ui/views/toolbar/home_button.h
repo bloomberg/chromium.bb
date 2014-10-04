@@ -19,14 +19,14 @@ class HomeButton : public ToolbarButton {
   // ToolbarButton:
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
+      std::set<OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool CanDrop(const OSExchangeData& data) override;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
  private:
   // ToolbarButton:
-  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
+  virtual void NotifyClick(const ui::Event& event) override;
 
   Browser* browser_;
 

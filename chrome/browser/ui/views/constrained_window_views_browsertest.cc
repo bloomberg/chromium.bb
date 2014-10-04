@@ -34,11 +34,11 @@ class TestDialog : public views::DialogDelegateView {
   TestDialog() { SetFocusable(true); }
   virtual ~TestDialog() {}
 
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE { return this; }
+  virtual views::View* GetInitiallyFocusedView() override { return this; }
   // Don't delete the delegate yet. Keep it around for inspection later.
-  virtual void DeleteDelegate() OVERRIDE {}
+  virtual void DeleteDelegate() override {}
 
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
 #if defined(USE_ASH)
     return ui::MODAL_TYPE_CHILD;
 #else

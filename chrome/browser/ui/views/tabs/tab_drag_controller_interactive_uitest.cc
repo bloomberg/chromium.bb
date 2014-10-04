@@ -87,7 +87,7 @@ class QuitDraggingObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE, type);
     base::MessageLoopForUI::current()->Quit();
     delete this;
@@ -222,12 +222,12 @@ class ScreenEventGeneratorDelegate
 
   // EventGeneratorDelegateAura overrides:
   virtual aura::WindowTreeHost* GetHostAt(
-      const gfx::Point& point) const OVERRIDE {
+      const gfx::Point& point) const override {
     return root_window_->GetHost();
   }
 
   virtual aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const OVERRIDE {
+      const aura::Window* window) const override {
     return aura::client::GetScreenPositionClient(root_window_);
   }
 
@@ -260,7 +260,7 @@ class TestDesktopBrowserFrameAura : public DesktopBrowserFrameAura {
     release_capture_ = true;
   }
 
-  virtual void ClearNativeFocus() OVERRIDE {
+  virtual void ClearNativeFocus() override {
     views::DesktopNativeWidgetAura::ClearNativeFocus();
     if (release_capture_) {
       release_capture_ = false;
@@ -283,7 +283,7 @@ class TestNativeBrowserFrameFactory : public NativeBrowserFrameFactory {
 
   virtual NativeBrowserFrame* Create(
       BrowserFrame* browser_frame,
-      BrowserView* browser_view) OVERRIDE {
+      BrowserView* browser_view) override {
     return new TestDesktopBrowserFrameAura(browser_frame, browser_view);
   }
 
@@ -358,7 +358,7 @@ class DetachToBrowserTabDragControllerTest
  public:
   DetachToBrowserTabDragControllerTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
     event_generator_.reset(
         new ui::test::EventGenerator(ash::Shell::GetPrimaryRootWindow()));
@@ -1442,7 +1442,7 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
   DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
   virtual ~DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     // Make screens sufficiently wide to host 2 browsers side by side.
     command_line->AppendSwitchASCII("ash-host-window-bounds",
@@ -1820,7 +1820,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
   virtual ~DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "400x400,0+400-800x800*2");
@@ -1919,7 +1919,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
  public:
   DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     TabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "0+0-250x250,251+0-250x250");

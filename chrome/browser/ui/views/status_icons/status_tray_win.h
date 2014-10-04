@@ -41,7 +41,7 @@ class StatusTrayWin : public StatusTray {
   virtual StatusIcon* CreatePlatformStatusIcon(StatusIconType type,
                                                const gfx::ImageSkia& image,
                                                const base::string16& tool_tip)
-      OVERRIDE;
+      override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StatusTrayWinTest, EnsureVisibleTest);

@@ -42,10 +42,10 @@ class InvertBubbleView : public views::BubbleDelegateView,
 
  private:
   // Overridden from views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   void OpenLink(const std::string& url, int event_flags);
 

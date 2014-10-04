@@ -67,31 +67,31 @@ class WebsiteSettingsPopupView
 
   // PermissionSelectorViewObserver implementation.
   virtual void OnPermissionChanged(
-      const WebsiteSettingsUI::PermissionInfo& permission) OVERRIDE;
+      const WebsiteSettingsUI::PermissionInfo& permission) override;
 
   // views::BubbleDelegateView implementation.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* button,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::TabbedPaneListener implementations.
-  virtual void TabSelectedAt(int index) OVERRIDE;
+  virtual void TabSelectedAt(int index) override;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // WebsiteSettingsUI implementations.
-  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) OVERRIDE;
+  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
   virtual void SetPermissionInfo(
-      const PermissionInfoList& permission_info_list) OVERRIDE;
-  virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
-  virtual void SetFirstVisit(const base::string16& first_visit) OVERRIDE;
-  virtual void SetSelectedTab(TabId tab_id) OVERRIDE;
+      const PermissionInfoList& permission_info_list) override;
+  virtual void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  virtual void SetFirstVisit(const base::string16& first_visit) override;
+  virtual void SetSelectedTab(TabId tab_id) override;
 
   // Creates the contents of the "Permissions" tab. The ownership of the
   // returned view is transferred to the caller.

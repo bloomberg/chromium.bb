@@ -34,7 +34,7 @@ class DropdownBackground : public views::Background {
   virtual ~DropdownBackground() {}
 
   // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
  private:
   BrowserView* browser_view_;

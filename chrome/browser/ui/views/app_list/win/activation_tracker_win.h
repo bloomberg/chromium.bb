@@ -18,7 +18,7 @@ class ActivationTrackerWin : public app_list::AppListViewObserver {
   ~ActivationTrackerWin();
 
   // app_list::AppListViewObserver:
-  virtual void OnActivationChanged(views::Widget* widget, bool active) OVERRIDE;
+  virtual void OnActivationChanged(views::Widget* widget, bool active) override;
 
   void OnViewHidden();
 

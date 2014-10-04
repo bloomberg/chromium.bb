@@ -31,10 +31,10 @@ class TestWithBrowserView : public BrowserWithTestWindowTest {
   virtual ~TestWithBrowserView();
 
   // BrowserWithTestWindowTest overrides:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-  virtual TestingProfile* CreateProfile() OVERRIDE;
-  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
+  virtual TestingProfile* CreateProfile() override;
+  virtual BrowserWindow* CreateBrowserWindow() override;
 
   BrowserView* browser_view() { return browser_view_; }
 

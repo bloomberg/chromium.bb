@@ -73,9 +73,9 @@ class ContentSettingBubbleContents::Favicon : public views::ImageView {
 
  private:
   // views::View overrides:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
 
   ContentSettingBubbleContents* parent_;
   views::Link* link_;

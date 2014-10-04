@@ -242,11 +242,11 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   virtual ~BrowserViewLayoutDelegateImpl() {}
 
   // BrowserViewLayoutDelegate overrides:
-  virtual views::View* GetContentsWebView() const OVERRIDE {
+  virtual views::View* GetContentsWebView() const override {
     return browser_view_->contents_web_view_;
   }
 
-  virtual bool DownloadShelfNeedsLayout() const OVERRIDE {
+  virtual bool DownloadShelfNeedsLayout() const override {
     DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
     // Re-layout the shelf either if it is visible or if its close animation
     // is currently running.
@@ -254,11 +254,11 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
            (download_shelf->IsShowing() || download_shelf->IsClosing());
   }
 
-  virtual bool IsTabStripVisible() const OVERRIDE {
+  virtual bool IsTabStripVisible() const override {
     return browser_view_->IsTabStripVisible();
   }
 
-  virtual gfx::Rect GetBoundsForTabStripInBrowserView() const OVERRIDE {
+  virtual gfx::Rect GetBoundsForTabStripInBrowserView() const override {
     gfx::RectF bounds_f(browser_view_->frame()->GetBoundsForTabStrip(
         browser_view_->tabstrip()));
     views::View::ConvertRectToTarget(browser_view_->parent(), browser_view_,
@@ -266,26 +266,26 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return gfx::ToEnclosingRect(bounds_f);
   }
 
-  virtual int GetTopInsetInBrowserView() const OVERRIDE {
+  virtual int GetTopInsetInBrowserView() const override {
     return browser_view_->frame()->GetTopInset() -
         browser_view_->y();
   }
 
-  virtual int GetThemeBackgroundXInset() const OVERRIDE {
+  virtual int GetThemeBackgroundXInset() const override {
     // TODO(pkotwicz): Return the inset with respect to the left edge of the
     // BrowserView.
     return browser_view_->frame()->GetThemeBackgroundXInset();
   }
 
-  virtual bool IsToolbarVisible() const OVERRIDE {
+  virtual bool IsToolbarVisible() const override {
     return browser_view_->IsToolbarVisible();
   }
 
-  virtual bool IsBookmarkBarVisible() const OVERRIDE {
+  virtual bool IsBookmarkBarVisible() const override {
     return browser_view_->IsBookmarkBarVisible();
   }
 
-  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const OVERRIDE {
+  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const override {
     return browser_view_->fullscreen_exit_bubble();
   }
 
@@ -306,7 +306,7 @@ class BookmarkExtensionBackground : public views::Background {
                               Browser* browser);
 
   // View methods overridden from views:Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
  private:
   BrowserView* browser_view_;

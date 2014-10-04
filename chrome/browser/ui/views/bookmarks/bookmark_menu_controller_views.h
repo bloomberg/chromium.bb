@@ -76,45 +76,45 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // views::MenuDelegate:
   virtual base::string16 GetTooltipText(int id,
-                                        const gfx::Point& p) const OVERRIDE;
+                                        const gfx::Point& p) const override;
   virtual bool IsTriggerableEvent(views::MenuItemView* view,
-                                  const ui::Event& e) OVERRIDE;
-  virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
+                                  const ui::Event& e) override;
+  virtual void ExecuteCommand(int id, int mouse_event_flags) override;
   virtual bool ShouldExecuteCommandWithoutClosingMenu(
       int id,
-      const ui::Event& e) OVERRIDE;
+      const ui::Event& e) override;
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired(views::MenuItemView* menu) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu) override;
   virtual bool CanDrop(views::MenuItemView* menu,
-                       const ui::OSExchangeData& data) OVERRIDE;
+                       const ui::OSExchangeData& data) override;
   virtual int GetDropOperation(views::MenuItemView* item,
                                const ui::DropTargetEvent& event,
-                               DropPosition* position) OVERRIDE;
+                               DropPosition* position) override;
   virtual int OnPerformDrop(views::MenuItemView* menu,
                             DropPosition position,
-                            const ui::DropTargetEvent& event) OVERRIDE;
+                            const ui::DropTargetEvent& event) override;
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               ui::MenuSourceType source_type) OVERRIDE;
-  virtual void DropMenuClosed(views::MenuItemView* menu) OVERRIDE;
-  virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
+                               ui::MenuSourceType source_type) override;
+  virtual void DropMenuClosed(views::MenuItemView* menu) override;
+  virtual bool CanDrag(views::MenuItemView* menu) override;
   virtual void WriteDragData(views::MenuItemView* sender,
-                             ui::OSExchangeData* data) OVERRIDE;
-  virtual int GetDragOperations(views::MenuItemView* sender) OVERRIDE;
+                             ui::OSExchangeData* data) override;
+  virtual int GetDragOperations(views::MenuItemView* sender) override;
   virtual views::MenuItemView* GetSiblingMenu(
       views::MenuItemView* menu,
       const gfx::Point& screen_point,
       views::MenuAnchorPosition* anchor,
       bool* has_mnemonics,
-      views::MenuButton** button) OVERRIDE;
-  virtual int GetMaxWidthForMenu(views::MenuItemView* view) OVERRIDE;
+      views::MenuButton** button) override;
+  virtual int GetMaxWidthForMenu(views::MenuItemView* view) override;
 
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
 
  private:
   // BookmarkMenuController deletes itself as necessary.

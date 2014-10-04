@@ -24,52 +24,52 @@ class ToolbarButtonDragTest : public ViewEventTestBase,
   }
 
   // ViewEventTestBase implementation.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     button_ = new ToolbarButton(NULL, new ui::SimpleMenuModel(this));
 
     ViewEventTestBase::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ViewEventTestBase::TearDown();
   }
 
-  virtual views::View* CreateContentsView() OVERRIDE {
+  virtual views::View* CreateContentsView() override {
     return button_;
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return button_->GetPreferredSize();
   }
 
   // ui::SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int id) const OVERRIDE {
+  virtual bool IsCommandIdChecked(int id) const override {
     return false;
   }
 
-  virtual bool IsCommandIdEnabled(int id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int id) const override {
     return true;
   }
 
   virtual bool GetAcceleratorForCommandId(
       int id,
-      ui::Accelerator* accelerator) OVERRIDE {
+      ui::Accelerator* accelerator) override {
     return false;
   }
 
-  virtual void ExecuteCommand(int id, int event_flags) OVERRIDE {
+  virtual void ExecuteCommand(int id, int event_flags) override {
   }
 
-  virtual void MenuWillShow(ui::SimpleMenuModel* /*source*/) OVERRIDE {
+  virtual void MenuWillShow(ui::SimpleMenuModel* /*source*/) override {
     menu_shown_ = true;
   }
 
-  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) OVERRIDE {
+  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) override {
     menu_closed_ = true;
   }
 
   // ViewEventTestBase implementation.
-  virtual void DoTestOnMessageLoop() OVERRIDE {
+  virtual void DoTestOnMessageLoop() override {
     // Click on the ToolbarButton.
     ui_test_utils::MoveMouseToCenterAndPress(
         button_,

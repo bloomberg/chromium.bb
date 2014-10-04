@@ -34,21 +34,21 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   FRIEND_TEST_ALL_PREFIXES(CryptoModulePasswordDialogViewTest, TestAccept);
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
 
   // views::DialogDelegate:
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool Cancel() override;
+  virtual bool Accept() override;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& keystroke) OVERRIDE;
+                              const ui::KeyEvent& keystroke) override;
 
   // Initialize views and layout.
   void Init(const std::string& server,

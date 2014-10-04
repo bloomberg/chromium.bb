@@ -41,58 +41,58 @@ class CommonMenuModel : public ui::MenuModel {
 
  protected:
   // ui::MenuModel implementation.
-  virtual bool HasIcons() const OVERRIDE {
+  virtual bool HasIcons() const override {
     return false;
   }
 
-  virtual bool IsItemDynamicAt(int index) const OVERRIDE {
+  virtual bool IsItemDynamicAt(int index) const override {
     return false;
   }
 
   virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const OVERRIDE {
+                                ui::Accelerator* accelerator) const override {
     return false;
   }
 
-  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE {
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override {
     return ui::NORMAL_SEPARATOR;
   }
 
-  virtual bool IsItemCheckedAt(int index) const OVERRIDE {
+  virtual bool IsItemCheckedAt(int index) const override {
     return false;
   }
 
-  virtual int GetGroupIdAt(int index) const OVERRIDE {
+  virtual int GetGroupIdAt(int index) const override {
     return 0;
   }
 
-  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE {
+  virtual bool GetIconAt(int index, gfx::Image* icon) override {
     return false;
   }
 
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
-      int index) const OVERRIDE {
+      int index) const override {
     return NULL;
   }
 
-  virtual bool IsEnabledAt(int index) const OVERRIDE {
+  virtual bool IsEnabledAt(int index) const override {
     return true;
   }
 
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const OVERRIDE {
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const override {
     return NULL;
   }
 
-  virtual void HighlightChangedTo(int index) OVERRIDE {
+  virtual void HighlightChangedTo(int index) override {
   }
 
-  virtual void ActivatedAt(int index) OVERRIDE {
+  virtual void ActivatedAt(int index) override {
   }
 
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE {
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {
   }
 
-  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE {
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const override {
     return NULL;
   }
 
@@ -115,28 +115,28 @@ class SubMenuModel : public CommonMenuModel {
 
  private:
   // ui::MenuModel implementation.
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() const override {
     return 1;
   }
 
-  virtual ItemType GetTypeAt(int index) const OVERRIDE {
+  virtual ItemType GetTypeAt(int index) const override {
     return TYPE_COMMAND;
   }
 
-  virtual int GetCommandIdAt(int index) const OVERRIDE {
+  virtual int GetCommandIdAt(int index) const override {
     return index + kSubMenuBaseId;
   }
 
-  virtual base::string16 GetLabelAt(int index) const OVERRIDE {
+  virtual base::string16 GetLabelAt(int index) const override {
     return base::ASCIIToUTF16("Item");
   }
 
-  virtual void MenuWillShow() OVERRIDE {
+  virtual void MenuWillShow() override {
     showing_ = true;
   }
 
   // Called when the menu has been closed.
-  virtual void MenuClosed() OVERRIDE {
+  virtual void MenuClosed() override {
     showing_ = false;
   }
 
@@ -159,23 +159,23 @@ class TopMenuModel : public CommonMenuModel {
 
  private:
   // ui::MenuModel implementation.
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() const override {
     return 1;
   }
 
-  virtual ItemType GetTypeAt(int index) const OVERRIDE {
+  virtual ItemType GetTypeAt(int index) const override {
     return TYPE_SUBMENU;
   }
 
-  virtual int GetCommandIdAt(int index) const OVERRIDE {
+  virtual int GetCommandIdAt(int index) const override {
     return index + kTopMenuBaseId;
   }
 
-  virtual base::string16 GetLabelAt(int index) const OVERRIDE {
+  virtual base::string16 GetLabelAt(int index) const override {
     return base::ASCIIToUTF16("submenu");
   }
 
-  virtual MenuModel* GetSubmenuModelAt(int index) const OVERRIDE {
+  virtual MenuModel* GetSubmenuModelAt(int index) const override {
     return &sub_menu_model_;
   }
 
@@ -201,7 +201,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
   // ViewEventTestBase implementation.
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     button_ = new views::MenuButton(
         NULL, base::ASCIIToUTF16("Menu Adapter Test"), this, true);
 
@@ -212,23 +212,23 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     ViewEventTestBase::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     menu_runner_.reset(NULL);
     menu_ = NULL;
     ViewEventTestBase::TearDown();
   }
 
-  virtual views::View* CreateContentsView() OVERRIDE {
+  virtual views::View* CreateContentsView() override {
     return button_;
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return button_->GetPreferredSize();
   }
 
   // views::MenuButtonListener implementation.
   virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE {
+                                   const gfx::Point& point) override {
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());
@@ -240,7 +240,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   }
 
   // ViewEventTestBase implementation
-  virtual void DoTestOnMessageLoop() OVERRIDE {
+  virtual void DoTestOnMessageLoop() override {
     Click(button_, CreateEventTask(this, &MenuModelAdapterTest::Step1));
   }
 

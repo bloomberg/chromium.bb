@@ -39,7 +39,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   WebNotificationTrayTest() {}
   virtual ~WebNotificationTrayTest() {}
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     message_center::MessageCenter::Get()->RemoveAllNotifications(false);
   }
 
@@ -47,12 +47,12 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   class TestNotificationDelegate : public ::NotificationDelegate {
    public:
     explicit TestNotificationDelegate(std::string id) : id_(id) {}
-    virtual void Display() OVERRIDE {}
-    virtual void Error() OVERRIDE {}
-    virtual void Close(bool by_user) OVERRIDE {}
-    virtual void Click() OVERRIDE {}
-    virtual std::string id() const OVERRIDE { return id_; }
-    virtual content::WebContents* GetWebContents() const OVERRIDE {
+    virtual void Display() override {}
+    virtual void Error() override {}
+    virtual void Close(bool by_user) override {}
+    virtual void Click() override {}
+    virtual std::string id() const override { return id_; }
+    virtual content::WebContents* GetWebContents() const override {
       return NULL;
     }
 

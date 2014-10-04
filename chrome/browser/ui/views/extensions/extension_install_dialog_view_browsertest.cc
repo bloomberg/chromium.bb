@@ -33,8 +33,8 @@ class MockExtensionInstallPromptDelegate
         abort_count_(0) {}
 
   // ExtensionInstallPrompt::Delegate overrides.
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   int proceed_count() { return proceed_count_; }
   int abort_count() { return abort_count_; }
@@ -76,7 +76,7 @@ class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
       ExtensionInstallPrompt::PromptType prompt_type);
   virtual ~ExtensionInstallDialogViewTestBase() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
   ExtensionInstallPrompt::Prompt* prompt() { return prompt_.get(); }
   content::WebContents* web_contents() { return web_contents_; }

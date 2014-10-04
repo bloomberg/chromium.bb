@@ -30,12 +30,12 @@ class LinkDisambiguationPopup::ZoomBubbleView
 
  private:
   // views::View overrides
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
 
   // WidgetObserver overrides
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) override;
 
   const float scale_;
   const aura::Window* content_;

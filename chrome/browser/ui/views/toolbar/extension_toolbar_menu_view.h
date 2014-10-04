@@ -31,13 +31,13 @@ class ExtensionToolbarMenuView : public views::View,
   bool ShouldShow();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void Layout() override;
 
  private:
   // BrowserActionsContainerObserver:
-  virtual void OnBrowserActionDragDone() OVERRIDE;
+  virtual void OnBrowserActionDragDone() override;
 
   // Closes the |wrench_menu_|.
   void CloseWrenchMenu();

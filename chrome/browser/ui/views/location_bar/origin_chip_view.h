@@ -68,8 +68,8 @@ class OriginChipView : public views::LabelButton,
   int WidthFromStartOfLabels() const;
 
   // views::LabelButton:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
  private:
   // Returns the X coordinate the first label should be placed at.
@@ -79,20 +79,20 @@ class OriginChipView : public views::LabelButton,
   void SetBorderImages(const int images[3][9]);
 
   // views::LabelButton:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void StateChanged() OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void OnPaintBorder(gfx::Canvas* canvas) override;
+  virtual void StateChanged() override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // SafeBrowsingUIManager::Observer:
   virtual void OnSafeBrowsingHit(
-      const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
+      const SafeBrowsingUIManager::UnsafeResource& resource) override;
   virtual void OnSafeBrowsingMatch(
-      const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
+      const SafeBrowsingUIManager::UnsafeResource& resource) override;
 
   LocationBarView* location_bar_view_;
   Profile* profile_;

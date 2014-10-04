@@ -22,7 +22,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
  public:
   BookmarkMenuDelegateTest() : model_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     profile()->CreateBookmarkModel(true);
@@ -33,7 +33,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
     AddTestData();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (bookmark_menu_delegate_.get()) {
       // Since we never show the menu we need to pass the MenuItemView to
       // MenuRunner so that the MenuItemView is destroyed.

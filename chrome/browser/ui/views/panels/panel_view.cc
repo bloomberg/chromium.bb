@@ -105,23 +105,23 @@ class NativePanelTestingViews : public NativePanelTesting {
 
  private:
   virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location, panel::ClickModifier modifier) OVERRIDE;
+      const gfx::Point& mouse_location, panel::ClickModifier modifier) override;
   virtual void ReleaseMouseButtonTitlebar(
-      panel::ClickModifier modifier) OVERRIDE;
-  virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
-  virtual void CancelDragTitlebar() OVERRIDE;
-  virtual void FinishDragTitlebar() OVERRIDE;
-  virtual bool VerifyDrawingAttention() const OVERRIDE;
-  virtual bool VerifyActiveState(bool is_active) OVERRIDE;
-  virtual bool VerifyAppIcon() const OVERRIDE;
-  virtual bool VerifySystemMinimizeState() const OVERRIDE;
-  virtual bool IsWindowVisible() const OVERRIDE;
-  virtual bool IsWindowSizeKnown() const OVERRIDE;
-  virtual bool IsAnimatingBounds() const OVERRIDE;
+      panel::ClickModifier modifier) override;
+  virtual void DragTitlebar(const gfx::Point& mouse_location) override;
+  virtual void CancelDragTitlebar() override;
+  virtual void FinishDragTitlebar() override;
+  virtual bool VerifyDrawingAttention() const override;
+  virtual bool VerifyActiveState(bool is_active) override;
+  virtual bool VerifyAppIcon() const override;
+  virtual bool VerifySystemMinimizeState() const override;
+  virtual bool IsWindowVisible() const override;
+  virtual bool IsWindowSizeKnown() const override;
+  virtual bool IsAnimatingBounds() const override;
   virtual bool IsButtonVisible(
-      panel::TitlebarButtonType button_type) const OVERRIDE;
-  virtual panel::CornerStyle GetWindowCornerStyle() const OVERRIDE;
-  virtual bool EnsureApplicationRunOnForeground() OVERRIDE;
+      panel::TitlebarButtonType button_type) const override;
+  virtual panel::CornerStyle GetWindowCornerStyle() const override;
+  virtual bool EnsureApplicationRunOnForeground() override;
 
   PanelView* panel_view_;
 };

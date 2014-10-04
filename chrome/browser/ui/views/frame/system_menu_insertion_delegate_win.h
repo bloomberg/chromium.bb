@@ -18,7 +18,7 @@ class SystemMenuInsertionDelegateWin : public views::MenuInsertionDelegateWin {
   virtual ~SystemMenuInsertionDelegateWin() {}
 
   // Overridden from views::MenuInsertionDelegateWin:
-  virtual int GetInsertionIndex(HMENU native_menu) OVERRIDE;
+  virtual int GetInsertionIndex(HMENU native_menu) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemMenuInsertionDelegateWin);

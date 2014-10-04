@@ -21,9 +21,9 @@ class TranslateIconView : public BubbleIconView {
 
  protected:
   // BubbleIconView:
-  virtual bool IsBubbleShowing() const OVERRIDE;
+  virtual bool IsBubbleShowing() const override;
   virtual void OnExecuting(
-      BubbleIconView::ExecuteSource execute_source) OVERRIDE;
+      BubbleIconView::ExecuteSource execute_source) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateIconView);

@@ -161,7 +161,7 @@ class SectionRowView : public views::View {
   virtual ~SectionRowView() {}
 
   // views::View implementation:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     int height = 0;
     int width = 0;
     for (int i = 0; i < child_count(); ++i) {
@@ -179,7 +179,7 @@ class SectionRowView : public views::View {
     return gfx::Size(width + insets.width(), height + insets.height());
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     const gfx::Rect bounds = GetContentsBounds();
 
     // Icon is left aligned.
@@ -222,10 +222,10 @@ class LayoutPropagationView : public views::View {
   virtual ~LayoutPropagationView() {}
 
  protected:
-  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
+  virtual void ChildVisibilityChanged(views::View* child) override {
     PreferredSizeChanged();
   }
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+  virtual void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
   }
 
@@ -305,7 +305,7 @@ class NotificationView : public views::View,
   }
 
   // views::View implementation.
-  virtual gfx::Insets GetInsets() const OVERRIDE {
+  virtual gfx::Insets GetInsets() const override {
     int vertical_padding = kNotificationPadding;
     if (checkbox_)
       vertical_padding -= 3;
@@ -313,7 +313,7 @@ class NotificationView : public views::View,
                        vertical_padding, kDialogEdgePadding);
   }
 
-  virtual int GetHeightForWidth(int width) const OVERRIDE {
+  virtual int GetHeightForWidth(int width) const override {
     int label_width = width - GetInsets().width();
     if (child_count() > 1) {
       const views::View* tooltip_icon = child_at(1);
@@ -324,7 +324,7 @@ class NotificationView : public views::View,
     return child_at(0)->GetHeightForWidth(label_width) + GetInsets().height();
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     // Surprisingly, GetContentsBounds() doesn't consult GetInsets().
     gfx::Rect bounds = GetLocalBounds();
     bounds.Inset(GetInsets());
@@ -348,7 +348,7 @@ class NotificationView : public views::View,
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     DCHECK_EQ(sender, checkbox_);
     delegate_->NotificationCheckboxStateChanged(data_.type(),
                                                 checkbox_->checked());
@@ -356,7 +356,7 @@ class NotificationView : public views::View,
 
   // views::StyledLabelListener implementation.
   virtual void StyledLabelLinkClicked(const gfx::Range& range, int event_flags)
-      OVERRIDE {
+      override {
     delegate_->LinkClicked(data_.link_url());
   }
 
@@ -399,7 +399,7 @@ class LoadingAnimationView : public views::View,
   virtual ~LoadingAnimationView() {}
 
   // views::View implementation.
-  virtual void SetVisible(bool visible) OVERRIDE {
+  virtual void SetVisible(bool visible) override {
     if (visible)
       animation_->Start();
     else
@@ -408,7 +408,7 @@ class LoadingAnimationView : public views::View,
     views::View::SetVisible(visible);
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     gfx::Size container_size = container_->GetPreferredSize();
     gfx::Rect container_bounds((width() - container_size.width()) / 2,
                                (height() - container_size.height()) / 2,
@@ -423,13 +423,13 @@ class LoadingAnimationView : public views::View,
     }
   }
 
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     set_background(views::Background::CreateSolidBackground(
         theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
   }
 
   // gfx::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK_EQ(animation, animation_.get());
     Layout();
   }
@@ -459,7 +459,7 @@ class MousePressedHandler : public ui::EventHandler {
       : delegate_(delegate) {}
 
   // ui::EventHandler implementation.
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED && !event->handled())
       delegate_->FocusMoved();
   }

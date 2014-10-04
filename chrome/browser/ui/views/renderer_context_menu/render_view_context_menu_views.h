@@ -29,7 +29,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
                  const gfx::Point& point,
                  ui::MenuSourceType type);
 
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
  protected:
   RenderViewContextMenuViews(content::RenderFrameHost* render_frame_host,
@@ -38,12 +38,12 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   // RenderViewContextMenu implementation.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
+      ui::Accelerator* accelerator) override;
 
  private:
-  virtual void AppendPlatformEditableItems() OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual void AppendPlatformEditableItems() override;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
 
   // Model for the BiDi input submenu.
   ui::SimpleMenuModel bidi_submenu_model_;

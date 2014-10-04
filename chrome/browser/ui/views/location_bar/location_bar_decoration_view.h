@@ -23,10 +23,10 @@ class LocationBarDecorationView : public views::ImageView {
   virtual ~LocationBarDecorationView();
 
   // views::ImageView:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
   // Whether this icon should currently be able to process a mouse click. Called

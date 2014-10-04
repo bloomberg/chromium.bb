@@ -40,17 +40,17 @@ class UserManagerView : public views::DialogDelegateView {
             const GURL& url);
 
   // views::View:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // views::DialogDelegateView:
-  virtual bool CanResize() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual bool CanMinimize() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
-  virtual bool UseNewStyleForThisDialog() const OVERRIDE;
+  virtual bool CanResize() const override;
+  virtual bool CanMaximize() const override;
+  virtual bool CanMinimize() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual int GetDialogButtons() const override;
+  virtual void WindowClosing() override;
+  virtual bool UseNewStyleForThisDialog() const override;
 
   views::WebView* web_view_;
 

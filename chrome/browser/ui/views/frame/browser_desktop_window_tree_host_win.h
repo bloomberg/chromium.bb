@@ -35,25 +35,25 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   views::NativeMenuWin* GetSystemMenu();
 
   // Overridden from BrowserDesktopWindowTreeHost:
-  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() OVERRIDE;
-  virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual bool UsesNativeSystemMenu() const OVERRIDE;
+  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
+  virtual int GetMinimizeButtonOffset() const override;
+  virtual bool UsesNativeSystemMenu() const override;
 
   // Overridden from DesktopWindowTreeHostWin:
-  virtual int GetInitialShowState() const OVERRIDE;
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
-  virtual void HandleCreate() OVERRIDE;
-  virtual void HandleFrameChanged() OVERRIDE;
+  virtual int GetInitialShowState() const override;
+  virtual bool GetClientAreaInsets(gfx::Insets* insets) const override;
+  virtual void HandleCreate() override;
+  virtual void HandleFrameChanged() override;
   virtual bool PreHandleMSG(UINT message,
                             WPARAM w_param,
                             LPARAM l_param,
-                            LRESULT* result) OVERRIDE;
+                            LRESULT* result) override;
   virtual void PostHandleMSG(UINT message,
                              WPARAM w_param,
-                             LPARAM l_param) OVERRIDE;
-  virtual bool IsUsingCustomFrame() const OVERRIDE;
-  virtual bool ShouldUseNativeFrame() const OVERRIDE;
-  virtual void FrameTypeChanged() OVERRIDE;
+                             LPARAM l_param) override;
+  virtual bool IsUsingCustomFrame() const override;
+  virtual bool ShouldUseNativeFrame() const override;
+  virtual void FrameTypeChanged() override;
 
   void UpdateDWMFrame();
 

@@ -24,32 +24,32 @@ class DesktopThemeProvider : public ui::ThemeProvider {
       : delegate_(delegate) {
   }
 
-  virtual bool UsingSystemTheme() const OVERRIDE {
+  virtual bool UsingSystemTheme() const override {
     return delegate_->UsingSystemTheme();
   }
-  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
+  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const override {
     if (delegate_->UsingSystemTheme())
       return delegate_->GetImageSkiaNamed(id);
 
     return delegate_->GetImageSkiaNamed(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
   }
-  virtual SkColor GetColor(int id) const OVERRIDE {
+  virtual SkColor GetColor(int id) const override {
     return delegate_->GetColor(id);
   }
-  virtual int GetDisplayProperty(int id) const OVERRIDE {
+  virtual int GetDisplayProperty(int id) const override {
     return delegate_->GetDisplayProperty(id);
   }
-  virtual bool ShouldUseNativeFrame() const OVERRIDE {
+  virtual bool ShouldUseNativeFrame() const override {
     return delegate_->ShouldUseNativeFrame();
   }
-  virtual bool HasCustomImage(int id) const OVERRIDE {
+  virtual bool HasCustomImage(int id) const override {
     return delegate_->HasCustomImage(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
   }
   virtual base::RefCountedMemory* GetRawData(
       int id,
-      ui::ScaleFactor scale_factor) const OVERRIDE {
+      ui::ScaleFactor scale_factor) const override {
     return delegate_->GetRawData(id, scale_factor);
   }
 

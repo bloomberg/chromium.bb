@@ -152,7 +152,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
 
  private:
   // views::LabelButton:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     if ((state() == STATE_PRESSED) ||
         (state() == STATE_HOVERED) ||
         HasFocus()) {
@@ -173,7 +173,7 @@ class SizedContainer : public views::View {
   explicit SizedContainer(const gfx::Size& preferred_size)
       : preferred_size_(preferred_size) {}
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return preferred_size_;
   }
 
@@ -194,7 +194,7 @@ class RightAlignedIconLabelButton : public views::LabelButton {
   }
 
  protected:
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     // This layout trick keeps the text left-aligned and the icon right-aligned.
     SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     views::LabelButton::Layout();
@@ -248,14 +248,14 @@ class EditableProfilePhoto : public views::LabelButton {
     AddChildView(photo_overlay_);
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     // Display the profile picture as a circle.
     canvas->ClipPath(circular_mask_, true);
     views::LabelButton::OnPaint(canvas);
   }
 
   virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE {
+                             const views::CullSet& cull_set) override {
     // Display any children (the "change photo" overlay) as a circle.
     canvas->ClipPath(circular_mask_, true);
     View::PaintChildren(canvas, cull_set);
@@ -263,20 +263,20 @@ class EditableProfilePhoto : public views::LabelButton {
 
  private:
   // views::CustomButton:
-  virtual void StateChanged() OVERRIDE {
+  virtual void StateChanged() override {
     bool show_overlay =
         (state() == STATE_PRESSED || state() == STATE_HOVERED || HasFocus());
     if (photo_overlay_)
       photo_overlay_->SetVisible(show_overlay);
   }
 
-  virtual void OnFocus() OVERRIDE {
+  virtual void OnFocus() override {
     views::LabelButton::OnFocus();
     if (photo_overlay_)
       photo_overlay_->SetVisible(true);
   }
 
-  virtual void OnBlur() OVERRIDE {
+  virtual void OnBlur() override {
     views::LabelButton::OnBlur();
     // Don't hide the overlay if it's being shown as a result of a mouseover.
     if (photo_overlay_ && state() != STATE_HOVERED)
@@ -353,7 +353,7 @@ class EditableProfileName : public RightAlignedIconLabelButton,
  private:
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                            const ui::Event& event) OVERRIDE {
+                            const ui::Event& event) override {
     if (profile_name_textfield_) {
       profile_name_textfield_->SetVisible(true);
       profile_name_textfield_->SetText(GetText());
@@ -363,25 +363,25 @@ class EditableProfileName : public RightAlignedIconLabelButton,
   }
 
   // views::LabelButton:
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) override {
     // Override CustomButton's implementation, which presses the button when
     // you press space and clicks it when you release space, as the space can be
     // part of the new profile name typed in the textfield.
     return false;
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     if (profile_name_textfield_)
       profile_name_textfield_->SetBounds(0, 0, width(), height());
     RightAlignedIconLabelButton::Layout();
   }
 
-  virtual void OnFocus() OVERRIDE {
+  virtual void OnFocus() override {
     RightAlignedIconLabelButton::OnFocus();
     SetState(STATE_HOVERED);
   }
 
-  virtual void OnBlur() OVERRIDE {
+  virtual void OnBlur() override {
     RightAlignedIconLabelButton::OnBlur();
     SetState(STATE_NORMAL);
   }
@@ -456,7 +456,7 @@ class TitleCard : public views::View {
   }
 
  private:
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     int back_button_width = back_button_->GetPreferredSize().width();
     back_button_->SetBounds(0, 0, back_button_width, height());
     int label_padding = back_button_width + views::kButtonHEdgeMarginNew;
@@ -465,7 +465,7 @@ class TitleCard : public views::View {
     title_label_->SetBounds(label_padding, 0, label_width, height());
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     int height = std::max(title_label_->GetPreferredSize().height(),
         back_button_->GetPreferredSize().height());
     return gfx::Size(width(), height);

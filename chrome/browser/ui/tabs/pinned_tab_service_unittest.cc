@@ -33,7 +33,7 @@ class PinnedTabServiceTest : public BrowserWithTestWindowTest {
   PinnedTabServiceTest() : pinned_tab_service_(NULL) {}
 
  protected:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
+  virtual TestingProfile* CreateProfile() override {
     TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
     pinned_tab_service_ = BuildForProfile(profile);
     return profile;

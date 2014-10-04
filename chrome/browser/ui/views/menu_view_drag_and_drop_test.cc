@@ -35,9 +35,9 @@ class TestDragView : public views::View {
 
  private:
   // views::View:
-  virtual int GetDragOperations(const gfx::Point& point) OVERRIDE;
+  virtual int GetDragOperations(const gfx::Point& point) override;
   virtual void WriteDragData(const gfx::Point& point,
-                             ui::OSExchangeData* data) OVERRIDE;
+                             ui::OSExchangeData* data) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragView);
 };
@@ -73,13 +73,13 @@ class TestTargetView : public views::View {
   // views::View:
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired() OVERRIDE;
-  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void OnDragExited() OVERRIDE;
+      std::set<OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired() override;
+  virtual bool CanDrop(const OSExchangeData& data) override;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) override;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  virtual void OnDragExited() override;
 
   // Whether or not we are currently dragging.
   bool dragging_;
@@ -158,27 +158,27 @@ class MenuViewDragAndDropTest : public MenuTestBase {
 
  private:
   // MenuTestBase:
-  virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE;
+  virtual void BuildMenu(views::MenuItemView* menu) override;
 
   // views::MenuDelegate:
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool AreDropTypesRequired(views::MenuItemView* menu) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu) override;
   virtual bool CanDrop(views::MenuItemView* menu,
-                       const ui::OSExchangeData& data) OVERRIDE;
+                       const ui::OSExchangeData& data) override;
   virtual int GetDropOperation(views::MenuItemView* item,
                                const ui::DropTargetEvent& event,
-                               DropPosition* position) OVERRIDE;
+                               DropPosition* position) override;
   virtual int OnPerformDrop(views::MenuItemView* menu,
                             DropPosition position,
-                            const ui::DropTargetEvent& event) OVERRIDE;
-  virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
+                            const ui::DropTargetEvent& event) override;
+  virtual bool CanDrag(views::MenuItemView* menu) override;
   virtual void WriteDragData(views::MenuItemView* sender,
-                             ui::OSExchangeData* data) OVERRIDE;
-  virtual int GetDragOperations(views::MenuItemView* sender) OVERRIDE;
-  virtual bool ShouldCloseOnDragComplete() OVERRIDE;
+                             ui::OSExchangeData* data) override;
+  virtual int GetDragOperations(views::MenuItemView* sender) override;
+  virtual bool ShouldCloseOnDragComplete() override;
 
   // The special view in the menu, which supports its own drag and drop.
   TestTargetView* target_view_;
@@ -274,7 +274,7 @@ class MenuViewDragAndDropTestTestInMenuDrag : public MenuViewDragAndDropTest {
 
  private:
   // MenuViewDragAndDropTest:
-  virtual void DoTestWithMenuOpen() OVERRIDE;
+  virtual void DoTestWithMenuOpen() override;
 
   void Step2();
   void Step3();
@@ -359,7 +359,7 @@ class MenuViewDragAndDropTestNestedDrag : public MenuViewDragAndDropTest {
 
  private:
   // MenuViewDragAndDropTest:
-  virtual void DoTestWithMenuOpen() OVERRIDE;
+  virtual void DoTestWithMenuOpen() override;
 
   void Step2();
   void Step3();
@@ -460,8 +460,8 @@ class MenuViewDragAndDropForDropStayOpen : public MenuViewDragAndDropTest {
 
  private:
   // MenuViewDragAndDropTest:
-  virtual int GetMenuRunnerFlags() OVERRIDE;
-  virtual void DoTestWithMenuOpen() OVERRIDE;
+  virtual int GetMenuRunnerFlags() override;
+  virtual void DoTestWithMenuOpen() override;
 };
 
 int MenuViewDragAndDropForDropStayOpen::GetMenuRunnerFlags() {
@@ -493,8 +493,8 @@ class MenuViewDragAndDropForDropCancel : public MenuViewDragAndDropTest {
 
  private:
   // MenuViewDragAndDropTest:
-  virtual int GetMenuRunnerFlags() OVERRIDE;
-  virtual void DoTestWithMenuOpen() OVERRIDE;
+  virtual int GetMenuRunnerFlags() override;
+  virtual void DoTestWithMenuOpen() override;
 };
 
 int MenuViewDragAndDropForDropCancel::GetMenuRunnerFlags() {

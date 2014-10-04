@@ -24,23 +24,23 @@ class AppListDialogContainer : public views::DialogDelegateView,
   virtual ~AppListDialogContainer();
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() override;
+  virtual views::View* GetContentsView() override;
+  virtual views::ClientView* CreateClientView(views::Widget* widget) override;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
+      views::Widget* widget) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
  protected:
   // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual void WindowClosing() override;
 
  private:
   views::View* dialog_body_;  // Owned by this class via the views hierarchy.

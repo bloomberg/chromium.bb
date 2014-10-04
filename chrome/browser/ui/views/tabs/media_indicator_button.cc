@@ -25,16 +25,16 @@ class MediaIndicatorButton::FadeAnimationDelegate
 
  private:
   // gfx::AnimationDelegate
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) override {
     button_->SchedulePaint();
   }
 
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) override {
     button_->showing_media_state_ = button_->media_state_;
     button_->SchedulePaint();
   }
 
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) override {
     button_->showing_media_state_ = button_->media_state_;
     button_->SchedulePaint();
   }

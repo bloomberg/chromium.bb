@@ -60,25 +60,25 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   virtual ~AvatarMenuBubbleView();
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // BubbleDelegate implementation.
-  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
-  virtual void Init() OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() const override;
+  virtual void Init() override;
+  virtual void WindowClosing() override;
 
   // AvatarMenuObserver implementation.
   virtual void OnAvatarMenuChanged(
-      AvatarMenu* avatar_menu) OVERRIDE;
+      AvatarMenu* avatar_menu) override;
 
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.

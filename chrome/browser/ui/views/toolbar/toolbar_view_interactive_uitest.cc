@@ -46,9 +46,9 @@ class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
   void FinishDragAndDrop(const base::Closure& quit_closure);
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   ToolbarView* toolbar_view_;
 

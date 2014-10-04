@@ -52,7 +52,7 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
   virtual ~AutofillDialogViewsTest() {}
 
   // TestWithBrowserView:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestWithBrowserView::SetUp();
 
     view_delegate_.SetProfile(profile());
@@ -78,7 +78,7 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
     dialog_->Show();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     dialog_->GetWidget()->CloseNow();
     dialog_.reset();
 

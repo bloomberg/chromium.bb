@@ -30,8 +30,8 @@ class NewAvatarMenuButtonTest : public InProcessBrowserTest {
   virtual ~NewAvatarMenuButtonTest();
 
  protected:
-  virtual void SetUp() OVERRIDE;
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUp() override;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
   void CreateTestingProfile();
   void StartAvatarMenu();
 

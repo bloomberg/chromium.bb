@@ -18,7 +18,7 @@ class InfoBarBackground : public views::Background {
 
  private:
   // views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
   SkColor separator_color_;
   SkColor top_color_;

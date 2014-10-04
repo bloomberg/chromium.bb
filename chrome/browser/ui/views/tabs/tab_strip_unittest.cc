@@ -59,22 +59,22 @@ class TestTabStripObserver : public TabStripObserver {
 
  private:
   // TabStripObserver overrides.
-  virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index) OVERRIDE {
+  virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index) override {
     last_tab_added_ = index;
   }
 
   virtual void TabStripMovedTab(TabStrip* tab_strip,
                                 int from_index,
-                                int to_index) OVERRIDE {
+                                int to_index) override {
     last_tab_moved_from_ = from_index;
     last_tab_moved_to_ = to_index;
   }
 
-  virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index) OVERRIDE {
+  virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override {
     last_tab_removed_ = index;
   }
 
-  virtual void TabStripDeleted(TabStrip* tab_strip) OVERRIDE {
+  virtual void TabStripDeleted(TabStrip* tab_strip) override {
     tabstrip_deleted_ = true;
     tab_strip_ = NULL;
   }
@@ -98,7 +98,7 @@ class TabStripTest : public views::ViewsTestBase {
 
   virtual ~TabStripTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
@@ -118,7 +118,7 @@ class TabStripTest : public views::ViewsTestBase {
     widget_->SetContentsView(&parent_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     widget_.reset();
     views::ViewsTestBase::TearDown();
   }

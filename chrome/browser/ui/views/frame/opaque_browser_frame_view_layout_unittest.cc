@@ -65,45 +65,45 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 
   // OpaqueBrowserFrameViewLayoutDelegate overrides:
 
-  virtual bool ShouldShowWindowIcon() const OVERRIDE {
+  virtual bool ShouldShowWindowIcon() const override {
     return !window_title_.empty();
   }
 
-  virtual bool ShouldShowWindowTitle() const OVERRIDE {
+  virtual bool ShouldShowWindowTitle() const override {
     return !window_title_.empty();
   }
 
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const override {
     return window_title_;
   }
 
-  virtual int GetIconSize() const OVERRIDE {
+  virtual int GetIconSize() const override {
     // The value on linux_aura and non-aura windows.
     return 17;
   }
 
-  virtual bool ShouldLeaveOffsetNearTopBorder() const OVERRIDE {
+  virtual bool ShouldLeaveOffsetNearTopBorder() const override {
     return !IsMaximized();
   }
 
-  virtual gfx::Size GetBrowserViewMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetBrowserViewMinimumSize() const override {
     // Taken from a calculation in BrowserViewLayout.
     return gfx::Size(168, 64);
   }
 
-  virtual bool ShouldShowCaptionButtons() const OVERRIDE {
+  virtual bool ShouldShowCaptionButtons() const override {
     return show_caption_buttons_;
   }
 
-  virtual bool ShouldShowAvatar() const OVERRIDE {
+  virtual bool ShouldShowAvatar() const override {
     return show_avatar_;
   }
 
-  virtual bool IsRegularOrGuestSession() const OVERRIDE {
+  virtual bool IsRegularOrGuestSession() const override {
     return true;
   }
 
-  virtual gfx::ImageSkia GetOTRAvatarIcon() const OVERRIDE {
+  virtual gfx::ImageSkia GetOTRAvatarIcon() const override {
     // The calculations depend on the size of the OTR resource, and chromeos
     // uses a different sized image, so hard code the size of the current
     // windows/linux one.
@@ -112,27 +112,27 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return image;
   }
 
-  virtual bool IsMaximized() const OVERRIDE {
+  virtual bool IsMaximized() const override {
     return window_state_ == STATE_MAXIMIZED;
   }
 
-  virtual bool IsMinimized() const OVERRIDE {
+  virtual bool IsMinimized() const override {
     return window_state_ == STATE_MINIMIZED;
   }
 
-  virtual bool IsFullscreen() const OVERRIDE {
+  virtual bool IsFullscreen() const override {
     return window_state_ == STATE_FULLSCREEN;
   }
 
-  virtual bool IsTabStripVisible() const OVERRIDE {
+  virtual bool IsTabStripVisible() const override {
     return window_title_.empty();
   }
 
-  virtual int GetTabStripHeight() const OVERRIDE {
+  virtual int GetTabStripHeight() const override {
     return IsTabStripVisible() ? Tab::GetMinimumUnselectedSize().height() : 0;
   }
 
-  virtual gfx::Size GetTabstripPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetTabstripPreferredSize() const override {
     // Measured from Tabstrip::GetPreferredSize().
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size(0, 0);
   }
@@ -153,7 +153,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   OpaqueBrowserFrameViewLayoutTest() {}
   virtual ~OpaqueBrowserFrameViewLayoutTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     delegate_.reset(new TestLayoutDelegate);
@@ -183,7 +183,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
         VIEW_ID_CLOSE_BUTTON, gfx::Size(43, 18));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     widget_->CloseNow();
 
     views::ViewsTestBase::TearDown();

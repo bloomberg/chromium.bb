@@ -35,17 +35,17 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
 
   // Overridden from ChromeNativeAppWindowViews:
   virtual void OnBeforeWidgetInit(views::Widget::InitParams* init_params,
-                                  views::Widget* widget) OVERRIDE;
+                                  views::Widget* widget) override;
   virtual void InitializeDefaultWindow(
-      const extensions::AppWindow::CreateParams& create_params) OVERRIDE;
-  virtual views::NonClientFrameView* CreateStandardDesktopAppFrame() OVERRIDE;
+      const extensions::AppWindow::CreateParams& create_params) override;
+  virtual views::NonClientFrameView* CreateStandardDesktopAppFrame() override;
 
   // Overridden from ui::BaseWindow:
-  virtual void Show() OVERRIDE;
-  virtual void Activate() OVERRIDE;
+  virtual void Show() override;
+  virtual void Activate() override;
 
   // Overridden from extensions::NativeAppWindow:
-  virtual void UpdateShelfMenu() OVERRIDE;
+  virtual void UpdateShelfMenu() override;
 
   // Populated if there is a glass frame, which provides special information
   // to the native widget implementation. This will be NULL if there is no

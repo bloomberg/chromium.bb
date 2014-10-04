@@ -22,7 +22,7 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   ManagePasswordsIconViewTest() {}
   virtual ~ManagePasswordsIconViewTest() {}
 
-  virtual ManagePasswordsIconView* view() OVERRIDE {
+  virtual ManagePasswordsIconView* view() override {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     return static_cast<ManagePasswordsIconView*>(
         browser_view->GetToolbarView()

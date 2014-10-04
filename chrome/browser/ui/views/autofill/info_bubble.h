@@ -32,11 +32,11 @@ class InfoBubble : public views::BubbleDelegateView {
 
   // views::BubbleDelegateView:
   virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE;
+      views::Widget* widget) override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnWidgetDestroyed(views::Widget* widget) override;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   views::View* anchor() { return anchor_; }
   const views::View* anchor() const { return anchor_; }

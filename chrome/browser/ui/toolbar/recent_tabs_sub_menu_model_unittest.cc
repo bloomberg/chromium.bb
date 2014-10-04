@@ -52,14 +52,14 @@ class TestRecentTabsSubMenuModel : public RecentTabsSubMenuModel {
   }
 
   // Testing overrides to ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int command_id) const override {
     bool val = RecentTabsSubMenuModel::IsCommandIdEnabled(command_id);
     if (val)
       ++enable_count_;
     return val;
   }
 
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) override {
     ++execute_count_;
   }
 
@@ -87,10 +87,10 @@ class TestRecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
   // ui::MenuModelDelegate implementation:
 
-  virtual void OnIconChanged(int index) OVERRIDE {
+  virtual void OnIconChanged(int index) override {
   }
 
-  virtual void OnMenuStructureChanged() OVERRIDE {
+  virtual void OnMenuStructureChanged() override {
     got_changes_ = true;
   }
 
@@ -107,8 +107,8 @@ class DummyRouter : public browser_sync::LocalSessionEventRouter {
  public:
   virtual ~DummyRouter() {}
   virtual void StartRoutingTo(
-      browser_sync::LocalSessionEventHandler* handler) OVERRIDE {}
-  virtual void Stop() OVERRIDE {}
+      browser_sync::LocalSessionEventHandler* handler) override {}
+  virtual void Stop() override {}
 };
 
 }  // namespace

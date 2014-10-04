@@ -64,7 +64,7 @@ class OmniboxResultView : public views::View,
   void Invalidate();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   ResultViewState GetState() const;
 
@@ -134,12 +134,12 @@ class OmniboxResultView : public views::View,
   void InitContentsRenderTextIfNecessary() const;
 
   // views::View:
-  virtual void Layout() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Returns the offset at which the contents of the |match| should be displayed
   // within the text bounds. The directionality of UI and match contents is used

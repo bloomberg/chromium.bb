@@ -36,13 +36,13 @@ class SignedCertificateTimestampsViews : public views::DialogDelegateView,
   virtual ~SignedCertificateTimestampsViews();
 
   // views::DialogDelegate:
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual int GetDialogButtons() const override;
+  virtual ui::ModalType GetModalType() const override;
 
   // views::View:
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      OVERRIDE;
+      override;
 
  private:
   void Init();
@@ -50,12 +50,12 @@ class SignedCertificateTimestampsViews : public views::DialogDelegateView,
   void ShowSCTInfo(int sct_index);
 
   // views::ComboboxListener:
-  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   SignedCertificateTimestampInfoView* sct_info_view_;
 

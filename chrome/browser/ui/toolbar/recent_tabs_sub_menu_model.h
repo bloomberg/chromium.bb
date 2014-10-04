@@ -59,13 +59,13 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   virtual ~RecentTabsSubMenuModel();
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual const gfx::FontList* GetLabelFontListAt(int index) const OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const override;
 
   int GetMaxWidthForItemAtIndex(int item_index) const;
   bool GetURLAndTitleForItemAtIndex(int index,
@@ -131,8 +131,8 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   browser_sync::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
   Browser* browser_;  // Weak.
 

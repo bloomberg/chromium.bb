@@ -64,7 +64,7 @@ class BookmarkEditorView : public BookmarkEditor,
         : ui::TreeNodeModel<EditorNode>(root) {}
 
     virtual void SetTitle(ui::TreeModelNode* node,
-                          const base::string16& title) OVERRIDE;
+                          const base::string16& title) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(EditorTreeModel);
@@ -79,40 +79,40 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // views::DialogDelegateView:
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual views::View* CreateExtraView() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual bool CanResize() const  OVERRIDE;
-  virtual base::string16 GetWindowTitle() const  OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  virtual views::View* CreateExtraView() override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual bool CanResize() const  override;
+  virtual base::string16 GetWindowTitle() const  override;
+  virtual bool Accept() override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::TreeViewController:
-  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;
+  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) override;
   virtual bool CanEdit(views::TreeView* tree_view,
-                       ui::TreeModelNode* node) OVERRIDE;
+                       ui::TreeModelNode* node) override;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
   // Creates a Window and adds the BookmarkEditorView to it. When the window is
   // closed the BookmarkEditorView is deleted.
@@ -121,7 +121,7 @@ class BookmarkEditorView : public BookmarkEditor,
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
  private:
   friend class BookmarkEditorViewTest;
@@ -133,29 +133,29 @@ class BookmarkEditorView : public BookmarkEditor,
   // BookmarkModel observer methods. Any structural change results in
   // resetting the tree model.
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE {}
+                                   bool ids_reassigned) override {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE;
+                                 int new_index) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE {}
+                                   const BookmarkNode* node) override {}
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) OVERRIDE;
+                                             const BookmarkNode* node) override;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE {}
+                                          const BookmarkNode* node) override {}
 
   // Resets the model of the tree and updates the various buttons appropriately.
   void Reset();

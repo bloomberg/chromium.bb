@@ -38,18 +38,18 @@ class ToolbarModelImpl : public ToolbarModel {
 
  private:
   // ToolbarModel:
-  virtual base::string16 GetText() const OVERRIDE;
-  virtual base::string16 GetFormattedURL(size_t* prefix_end) const OVERRIDE;
-  virtual base::string16 GetCorpusNameForMobile() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
+  virtual base::string16 GetText() const override;
+  virtual base::string16 GetFormattedURL(size_t* prefix_end) const override;
+  virtual base::string16 GetCorpusNameForMobile() const override;
+  virtual GURL GetURL() const override;
   virtual bool WouldPerformSearchTermReplacement(
-      bool ignore_editing) const OVERRIDE;
-  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const OVERRIDE;
-  virtual int GetIcon() const OVERRIDE;
-  virtual int GetIconForSecurityLevel(SecurityLevel level) const OVERRIDE;
-  virtual base::string16 GetEVCertName() const OVERRIDE;
-  virtual bool ShouldDisplayURL() const OVERRIDE;
-  virtual bool WouldOmitURLDueToOriginChip() const OVERRIDE;
+      bool ignore_editing) const override;
+  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const override;
+  virtual int GetIcon() const override;
+  virtual int GetIconForSecurityLevel(SecurityLevel level) const override;
+  virtual base::string16 GetEVCertName() const override;
+  virtual bool ShouldDisplayURL() const override;
+  virtual bool WouldOmitURLDueToOriginChip() const override;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved.

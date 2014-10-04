@@ -29,15 +29,15 @@ class BrowserDesktopWindowTreeHostX11
 
  private:
   // Overridden from BrowserDesktopWindowTreeHost:
-  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() OVERRIDE;
-  virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual bool UsesNativeSystemMenu() const OVERRIDE;
+  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
+  virtual int GetMinimizeButtonOffset() const override;
+  virtual bool UsesNativeSystemMenu() const override;
 
   // Overridden from views::DesktopWindowTreeHostX11:
   virtual void Init(
       aura::Window* content_window,
-      const views::Widget::InitParams& params) OVERRIDE;
-  virtual void CloseNow() OVERRIDE;
+      const views::Widget::InitParams& params) override;
+  virtual void CloseNow() override;
 
   BrowserView* browser_view_;
 

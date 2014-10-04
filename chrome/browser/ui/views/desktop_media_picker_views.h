@@ -39,17 +39,17 @@ class DesktopMediaListView : public views::View,
   DesktopMediaSourceView* GetSelection();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
 
  private:
   // DesktopMediaList::Observer interface
-  virtual void OnSourceAdded(int index) OVERRIDE;
-  virtual void OnSourceRemoved(int index) OVERRIDE;
-  virtual void OnSourceMoved(int old_index, int new_index) OVERRIDE;
-  virtual void OnSourceNameChanged(int index) OVERRIDE;
-  virtual void OnSourceThumbnailChanged(int index) OVERRIDE;
+  virtual void OnSourceAdded(int index) override;
+  virtual void OnSourceRemoved(int index) override;
+  virtual void OnSourceMoved(int old_index, int new_index) override;
+  virtual void OnSourceNameChanged(int index) override;
+  virtual void OnSourceThumbnailChanged(int index) override;
 
   // Accepts whatever happens to be selected right now.
   void AcceptSelection();
@@ -80,15 +80,15 @@ class DesktopMediaSourceView : public views::View {
   bool is_selected() const { return selected_; }
 
   // views::View interface.
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual views::View* GetSelectedViewForGroup(int group) OVERRIDE;
-  virtual bool IsGroupFocusTraversable() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual void Layout() override;
+  virtual views::View* GetSelectedViewForGroup(int group) override;
+  virtual bool IsGroupFocusTraversable() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Updates selection state of the element. If |selected| is true then also
@@ -126,17 +126,17 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   void OnDoubleClick();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
   // views::DialogDelegateView overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool Accept() override;
+  virtual void DeleteDelegate() override;
 
   void OnMediaListRowsChanged();
 
@@ -168,7 +168,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
                     const base::string16& app_name,
                     const base::string16& target_name,
                     scoped_ptr<DesktopMediaList> media_list,
-                    const DoneCallback& done_callback) OVERRIDE;
+                    const DoneCallback& done_callback) override;
 
   DesktopMediaPickerDialogView* GetDialogViewForTesting() const {
     return dialog_;

@@ -15,9 +15,9 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   virtual ~ChromeBrowserMainExtraPartsAsh();
 
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void PreProfileInit() OVERRIDE;
-  virtual void PostProfileInit() OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PreProfileInit() override;
+  virtual void PostProfileInit() override;
+  virtual void PostMainMessageLoopRun() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);

@@ -40,7 +40,7 @@ class PermissionSelectorView : public views::View {
 
  protected:
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) override;
 
  private:
   virtual ~PermissionSelectorView();

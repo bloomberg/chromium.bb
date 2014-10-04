@@ -25,10 +25,10 @@ class ContentsLayoutManager : public views::LayoutManager {
       const DevToolsContentsResizingStrategy& strategy);
 
   // views::LayoutManager overrides:
-  virtual void Layout(views::View* host) OVERRIDE;
-  virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE;
-  virtual void Installed(views::View* host) OVERRIDE;
-  virtual void Uninstalled(views::View* host) OVERRIDE;
+  virtual void Layout(views::View* host) override;
+  virtual gfx::Size GetPreferredSize(const views::View* host) const override;
+  virtual void Installed(views::View* host) override;
+  virtual void Uninstalled(views::View* host) override;
 
  private:
   views::View* devtools_view_;

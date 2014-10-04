@@ -18,7 +18,7 @@ class ShapedAppWindowTargeter : public wm::MaskedWindowTargeter {
  private:
   // wm::MaskedWindowTargeter:
   virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const OVERRIDE;
+                              gfx::Path* mask) const override;
 
   ChromeNativeAppWindowViews* app_window_;
 

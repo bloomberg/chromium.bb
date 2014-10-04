@@ -51,38 +51,38 @@ class BackForwardMenuModel : public ui::MenuModel {
   virtual ~BackForwardMenuModel();
 
   // MenuModel implementation.
-  virtual bool HasIcons() const OVERRIDE;
+  virtual bool HasIcons() const override;
   // Returns how many items the menu should show, including history items,
   // chapter-stops, separators and the Show Full History link. This function
   // uses GetHistoryItemCount() and GetChapterStopCount() internally to figure
   // out the total number of items to show.
-  virtual int GetItemCount() const OVERRIDE;
-  virtual ItemType GetTypeAt(int index) const OVERRIDE;
-  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
-  virtual int GetCommandIdAt(int index) const OVERRIDE;
-  virtual base::string16 GetLabelAt(int index) const OVERRIDE;
-  virtual bool IsItemDynamicAt(int index) const OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual ItemType GetTypeAt(int index) const override;
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override;
+  virtual int GetCommandIdAt(int index) const override;
+  virtual base::string16 GetLabelAt(int index) const override;
+  virtual bool IsItemDynamicAt(int index) const override;
   virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const OVERRIDE;
-  virtual bool IsItemCheckedAt(int index) const OVERRIDE;
-  virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE;
+                                ui::Accelerator* accelerator) const override;
+  virtual bool IsItemCheckedAt(int index) const override;
+  virtual int GetGroupIdAt(int index) const override;
+  virtual bool GetIconAt(int index, gfx::Image* icon) override;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
-      int index) const OVERRIDE;
-  virtual bool IsEnabledAt(int index) const OVERRIDE;
-  virtual MenuModel* GetSubmenuModelAt(int index) const OVERRIDE;
-  virtual void HighlightChangedTo(int index) OVERRIDE;
-  virtual void ActivatedAt(int index) OVERRIDE;
-  virtual void ActivatedAt(int index, int event_flags) OVERRIDE;
-  virtual void MenuWillShow() OVERRIDE;
+      int index) const override;
+  virtual bool IsEnabledAt(int index) const override;
+  virtual MenuModel* GetSubmenuModelAt(int index) const override;
+  virtual void HighlightChangedTo(int index) override;
+  virtual void ActivatedAt(int index) override;
+  virtual void ActivatedAt(int index, int event_flags) override;
+  virtual void MenuWillShow() override;
 
   // Is the item at |index| a separator?
   bool IsSeparator(int index) const;
 
   // Set the delegate for triggering OnIconChanged.
   virtual void SetMenuModelDelegate(
-      ui::MenuModelDelegate* menu_model_delegate) OVERRIDE;
-  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE;
+      ui::MenuModelDelegate* menu_model_delegate) override;
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const override;
 
  protected:
    ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }

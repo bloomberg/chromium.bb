@@ -65,7 +65,7 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   const std::vector<base::string16> GetActivePermissionMessages() const;
   const std::vector<base::string16> GetRetainedFilePaths() const;

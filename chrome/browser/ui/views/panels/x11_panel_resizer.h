@@ -51,7 +51,7 @@ class X11PanelResizer : public ui::EventHandler {
   void StopResizing(ui::MouseEvent* event, bool canceled);
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
 
   // The panel being resized.
   Panel* panel_;

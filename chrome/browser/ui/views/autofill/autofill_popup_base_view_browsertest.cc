@@ -41,7 +41,7 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   AutofillPopupBaseViewTest() {}
   virtual ~AutofillPopupBaseViewTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     gfx::NativeView native_view =
         browser()->tab_strip_model()->GetActiveWebContents()->GetNativeView();
     EXPECT_CALL(mock_delegate_, container_view())

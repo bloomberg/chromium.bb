@@ -86,31 +86,31 @@ class ProfileChooserView : public views::BubbleDelegateView,
   virtual ~ProfileChooserView();
 
   // views::BubbleDelegateView:
-  virtual void Init() OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void Init() override;
+  virtual void WindowClosing() override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* sender, int event_flags) override;
 
   // views::StyledLabelListener:
   virtual void StyledLabelLinkClicked(
-      const gfx::Range& range, int event_flags) OVERRIDE;
+      const gfx::Range& range, int event_flags) override;
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
 
   // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
+  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
   // OAuth2TokenService::Observer overrides.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_for_testing_;

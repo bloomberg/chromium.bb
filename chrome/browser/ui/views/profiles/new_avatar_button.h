@@ -28,8 +28,8 @@ class NewAvatarButton : public views::LabelButton,
   virtual ~NewAvatarButton();
 
   // Views::LabelButton
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
 
  private:
   friend class NewAvatarMenuButtonTest;
@@ -38,20 +38,20 @@ class NewAvatarButton : public views::LabelButton,
   FRIEND_TEST_ALL_PREFIXES(ProfileChooserViewBrowserTest, ViewProfileUMA);
 
   // ProfileInfoCacheObserver:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
   virtual void OnProfileWasRemoved(
       const base::FilePath& profile_path,
-      const base::string16& profile_name) OVERRIDE;
+      const base::string16& profile_name) override;
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const base::string16& old_profile_name) OVERRIDE;
+      const base::string16& old_profile_name) override;
   virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
   virtual void OnProfileSupervisedUserIdChanged(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
 
   // SigninErrorController::Observer:
-  virtual void OnErrorChanged() OVERRIDE;
+  virtual void OnErrorChanged() override;
 
   // Called when the profile info cache has changed, which means we might
   // have to update the icon/text of the button.

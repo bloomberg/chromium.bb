@@ -41,28 +41,28 @@ class ChromeWebContentsViewDelegateViews
   virtual ~ChromeWebContentsViewDelegateViews();
 
   // Overridden from WebContentsViewDelegate:
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
-  virtual void StoreFocus() OVERRIDE;
-  virtual void RestoreFocus() OVERRIDE;
-  virtual bool Focus() OVERRIDE;
-  virtual void TakeFocus(bool reverse) OVERRIDE;
+  virtual content::WebDragDestDelegate* GetDragDestDelegate() override;
+  virtual void StoreFocus() override;
+  virtual void RestoreFocus() override;
+  virtual bool Focus() override;
+  virtual void TakeFocus(bool reverse) override;
   virtual void ShowContextMenu(
       content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) OVERRIDE;
-  virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
+      const content::ContextMenuParams& params) override;
+  virtual void SizeChanged(const gfx::Size& size) override;
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap,
       const gfx::NativeView content,
       const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) OVERRIDE;
-  virtual void HideDisambiguationPopup() OVERRIDE;
+      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) override;
+  virtual void HideDisambiguationPopup() override;
 
   // Overridden from ContextMenuDelegate.
   virtual scoped_ptr<RenderViewContextMenu> BuildMenu(
       content::WebContents* web_contents,
-      const content::ContextMenuParams& params) OVERRIDE;
-  virtual void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) OVERRIDE;
+      const content::ContextMenuParams& params) override;
+  virtual void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) override;
 
  private:
   aura::Window* GetActiveNativeView();
