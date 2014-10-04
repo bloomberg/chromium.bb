@@ -35,7 +35,6 @@
 #include "bindings/core/v8/V8CustomElementLifecycleCallbacks.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -45,11 +44,9 @@ namespace blink {
 
 class CustomElementDefinition;
 class Document;
-class Element;
 class ElementRegistrationOptions;
 class ExceptionState;
 class QualifiedName;
-class V8PerContextData;
 struct WrapperTypeInfo;
 
 // Handles the scripting-specific parts of the Custom Elements element

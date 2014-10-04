@@ -43,7 +43,6 @@ namespace blink {
 
 class CustomElementLifecycleCallbacks;
 class Element;
-class ExecutionContext;
 class V8PerContextData;
 
 class V8CustomElementLifecycleCallbacks FINAL : public CustomElementLifecycleCallbacks, ContextLifecycleObserver {

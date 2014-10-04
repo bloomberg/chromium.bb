@@ -34,19 +34,15 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
 namespace blink {
 
-class LocalDOMWindow;
 class LocalFrame;
 class HTMLDocument;
 class SecurityOrigin;

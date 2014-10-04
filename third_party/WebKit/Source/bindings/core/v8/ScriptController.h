@@ -31,11 +31,9 @@
 #ifndef ScriptController_h
 #define ScriptController_h
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SharedPersistent.h"
 
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -48,7 +46,6 @@ namespace blink {
 
 class DOMWrapperWorld;
 class ExecutionContext;
-class Event;
 class HTMLDocument;
 class HTMLPlugInElement;
 class KURL;

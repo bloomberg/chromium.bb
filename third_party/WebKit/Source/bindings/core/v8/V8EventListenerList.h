@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class LocalFrame;
-
 enum ListenerLookupType {
     ListenerFindOnly,
     ListenerFindOrCreate,

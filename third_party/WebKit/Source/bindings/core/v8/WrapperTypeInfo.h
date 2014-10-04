@@ -40,7 +40,6 @@ namespace blink {
 
 class ActiveDOMObject;
 class EventTarget;
-class Node;
 class ScriptWrappableBase;
 
 static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);

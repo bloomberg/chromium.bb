@@ -29,12 +29,9 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
-
-class ExternalStringVisitor;
 
 // WebCoreStringResource is a helper class for v8ExternalString. It is used
 // to manage the life-cycle of the underlying buffer of the external string.

@@ -44,7 +44,6 @@
 #include "bindings/core/v8/V8ValueCache.h"
 #include "platform/heap/Heap.h"
 #include "wtf/GetPtr.h"
-#include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 

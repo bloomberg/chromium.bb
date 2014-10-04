@@ -30,10 +30,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -45,8 +43,6 @@ class DOMDataStore;
 class GCEventData;
 class StringCache;
 struct WrapperTypeInfo;
-
-class ExternalStringVisitor;
 
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 

@@ -37,14 +37,11 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
 class DOMDataStore;
-class ExecutionContext;
-class ScriptController;
 
 enum WorldIdConstants {
     MainWorldId = 0,

@@ -38,7 +38,6 @@
 namespace blink {
 
 class ErrorEvent;
-class LocalFrame;
 
 class V8ErrorHandler FINAL : public V8EventListener {
 public:

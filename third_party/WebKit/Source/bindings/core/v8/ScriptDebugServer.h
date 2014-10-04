@@ -32,22 +32,17 @@
 #define ScriptDebugServer_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "core/InspectorBackendDispatcher.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 #include <v8-debug.h>
 #include <v8.h>
 
 namespace blink {
 
 class ScriptState;
-class ScriptController;
 class ScriptDebugListener;
 class ScriptSourceCode;
 class ScriptValue;

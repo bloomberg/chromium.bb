@@ -34,14 +34,11 @@
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
 class Event;
-class LocalFrame;
-class HTMLFormElement;
 class Node;
 
 // V8LazyEventListener is a wrapper for a JavaScript code string that is compiled and evaluated when an event is fired.

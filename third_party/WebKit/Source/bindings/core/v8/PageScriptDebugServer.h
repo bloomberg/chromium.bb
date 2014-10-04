@@ -33,14 +33,11 @@
 
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptPreprocessor.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include <v8.h>
 
 namespace blink {
 
 class Page;
-class ScriptController;
 class ScriptPreprocessor;
 class ScriptSourceCode;
 

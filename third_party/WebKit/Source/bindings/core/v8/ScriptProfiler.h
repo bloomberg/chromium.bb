@@ -34,17 +34,12 @@
 #include "bindings/core/v8/ScriptHeapSnapshot.h"
 #include "core/inspector/ScriptProfile.h"
 
-#include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class ExternalStringVisitor;
 class WrappedNodeVisitor;
-class Page;
 class ScriptValue;
-class WorkerGlobalScope;
 
 class ScriptProfiler {
     WTF_MAKE_NONCOPYABLE(ScriptProfiler);

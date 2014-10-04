@@ -37,7 +37,6 @@
 namespace blink {
 
 class WorkerGlobalScope;
-class WorkerThread;
 
 class WorkerScriptDebugServer FINAL : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);

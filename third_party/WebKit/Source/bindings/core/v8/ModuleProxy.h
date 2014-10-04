@@ -9,8 +9,6 @@
 
 namespace blink {
 
-class ExecutionContext;
-
 // A proxy class to invoke functions implemented in bindings/modules
 // from bindings/core.
 class ModuleProxy {
