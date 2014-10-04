@@ -283,6 +283,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
             // With deferred filters, we don't need a separate context, but we do need to do transparency and clipping before starting
             // filter processing.
             // FIXME: when the legacy path is removed, remove the transparencyLayerContext as well.
+            ClipRect backgroundRect;
             if (deferredFiltersEnabled) {
                 if (haveTransparency) {
                     // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
@@ -291,13 +292,18 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
                 // We'll handle clipping to the dirty rect before filter rasterization.
                 // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
                 // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
-                ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
+                backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
                 clipToRect(localPaintingInfo, context, backgroundRect, paintFlags);
                 // Subsequent code should not clip to the dirty rect, since we've already
                 // done it above, and doing it later will defeat the outsets.
                 localPaintingInfo.clipToDirtyRect = false;
             }
             context = filterPainter.beginFilterEffect(context);
+
+            if (!filterPainter.hasStartedFilterEffect() && deferredFiltersEnabled) {
+                // If the the filter failed to start, undo the clip immediately
+                restoreClip(context, localPaintingInfo.paintDirtyRect, backgroundRect);
+            }
 
             // Check that we didn't fail to allocate the graphics context for the offscreen buffer.
             if (filterPainter.hasStartedFilterEffect() && !deferredFiltersEnabled) {
