@@ -68,7 +68,6 @@ class Printer {
  private:
   // Format a list of values using the given style.
   enum SequenceStyle {
-    kSequenceStyleFunctionCall,
     kSequenceStyleList,
     kSequenceStyleBlock,
     kSequenceStyleBracedBlock,
@@ -120,6 +119,8 @@ class Printer {
   void Sequence(SequenceStyle style,
                 const std::vector<PARSENODE*>& list,
                 const ParseNode* end);
+
+  void FunctionCall(const FunctionCallNode* func_call);
 
   std::string output_;           // Output buffer.
   std::vector<Token> comments_;  // Pending end-of-line comments.
@@ -327,16 +328,7 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
       }
     }
   } else if (const FunctionCallNode* func_call = root->AsFunctionCall()) {
-    Print(func_call->function().value());
-    Sequence(kSequenceStyleFunctionCall,
-             func_call->args()->contents(),
-             func_call->args()->End());
-    if (func_call->block()) {
-      Print(" ");
-      Sequence(kSequenceStyleBracedBlock,
-               func_call->block()->statements(),
-               func_call->block()->End());
-    }
+    FunctionCall(func_call);
   } else if (const IdentifierNode* identifier = root->AsIdentifier()) {
     Print(identifier->value().value());
   } else if (const ListNode* list = root->AsList()) {
@@ -370,13 +362,8 @@ template <class PARSENODE>
 void Printer::Sequence(SequenceStyle style,
                        const std::vector<PARSENODE*>& list,
                        const ParseNode* end) {
-  int old_margin = margin_;
-  int indent =
-      style == kSequenceStyleFunctionCall ? kIndentSize * 2 : kIndentSize;
   bool force_multiline = false;
-  if (style == kSequenceStyleFunctionCall)
-    Print("(");
-  else if (style == kSequenceStyleList)
+  if (style == kSequenceStyleList)
     Print("[");
   else if (style == kSequenceStyleBracedBlock)
     Print("{");
@@ -393,47 +380,117 @@ void Printer::Sequence(SequenceStyle style,
       force_multiline = true;
   }
 
+  if (list.size() == 0 && !force_multiline) {
+    // No elements, and not forcing newlines, print nothing.
+  } else if (list.size() == 1 && !force_multiline) {
+    Print(" ");
+    Expr(list[0]);
+    CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
+    Print(" ");
+  } else {
+    margin_ += kIndentSize;
+    size_t i = 0;
+    for (const auto& x : list) {
+      Newline();
+      // If:
+      // - we're going to output some comments, and;
+      // - we haven't just started this multiline list, and;
+      // - there isn't already a blank line here;
+      // Then: insert one.
+      if (i != 0 && x->comments() && !x->comments()->before().empty() &&
+          !HaveBlankLine()) {
+        Newline();
+      }
+      ExprStyle expr_style = Expr(x);
+      CHECK(!x->comments() || x->comments()->after().empty());
+      if (i < list.size() - 1 || style == kSequenceStyleList) {
+        if (style == kSequenceStyleList && expr_style == kExprStyleRegular) {
+          Print(",");
+        } else {
+          Newline();
+        }
+      }
+      ++i;
+    }
+
+    // Trailing comments.
+    if (end->comments()) {
+      if (!list.empty())
+        Newline();
+      for (const auto& c : end->comments()->before()) {
+        Newline();
+        TrimAndPrintToken(c);
+      }
+    }
+
+    margin_ -= kIndentSize;
+    Newline();
+  }
+
+  if (style == kSequenceStyleList)
+    Print("]");
+  else if (style == kSequenceStyleBracedBlock)
+    Print("}");
+}
+
+void Printer::FunctionCall(const FunctionCallNode* func_call) {
+  Print(func_call->function().value());
+  Print("(");
+
+  int old_margin = margin_;
+  bool have_block = func_call->block() != nullptr;
+  bool force_multiline = false;
+
+  const std::vector<const ParseNode*>& list = func_call->args()->contents();
+  const ParseNode* end = func_call->args()->End();
+
+  if (end && end->comments() && !end->comments()->before().empty())
+    force_multiline = true;
+
+  // If there's before line comments, make sure we have a place to put them.
+  for (const auto& i : list) {
+    if (i->comments() && !i->comments()->before().empty())
+      force_multiline = true;
+  }
+
   // Calculate the length of the items for function calls so we can decide to
   // compress them in various nicer ways.
   std::vector<int> natural_lengths;
   bool fits_on_current_line = true;
   int max_item_width = 0;
-  if (style == kSequenceStyleFunctionCall) {
-    int total_length = 0;
-    natural_lengths.reserve(list.size());
-    for (size_t i = 0; i < list.size(); ++i) {
-      Metrics sub = GetLengthOfExpr(list[i]);
-      if (sub.multiline)
-        fits_on_current_line = false;
-      natural_lengths.push_back(sub.length);
-      total_length += sub.length;
-      if (i < list.size() - 1)
-        total_length += 2;  // ", "
+  int total_length = 0;
+  natural_lengths.reserve(list.size());
+  std::string terminator = ")";
+  if (have_block)
+    terminator += " {";
+  for (size_t i = 0; i < list.size(); ++i) {
+    Metrics sub = GetLengthOfExpr(list[i]);
+    if (sub.multiline)
+      fits_on_current_line = false;
+    natural_lengths.push_back(sub.length);
+    total_length += sub.length;
+    if (i < list.size() - 1) {
+      total_length += static_cast<int>(strlen(", "));
     }
-    // Strictly less than kMaximumWidth so there's room for closing ).
-    // TODO(scottmg): Need to know if there's an attached block for " {".
-    fits_on_current_line =
-        fits_on_current_line && CurrentColumn() + total_length < kMaximumWidth;
-    if (natural_lengths.size() > 0) {
-      max_item_width =
-          *std::max_element(natural_lengths.begin(), natural_lengths.end());
-    }
+  }
+  // Strictly less than kMaximumWidth so there's room for closing punctuation.
+  fits_on_current_line =
+      fits_on_current_line &&
+      CurrentColumn() + total_length + terminator.size() <= kMaximumWidth;
+  if (natural_lengths.size() > 0) {
+    max_item_width =
+        *std::max_element(natural_lengths.begin(), natural_lengths.end());
   }
 
   if (list.size() == 0 && !force_multiline) {
     // No elements, and not forcing newlines, print nothing.
   } else if (list.size() == 1 && !force_multiline && fits_on_current_line) {
-    if (style != kSequenceStyleFunctionCall)
-      Print(" ");
     Expr(list[0]);
     CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
-    if (style != kSequenceStyleFunctionCall)
-      Print(" ");
   } else {
     // Function calls get to be single line even with multiple arguments, if
     // they fit inside the maximum width.
-    if (style == kSequenceStyleFunctionCall && !force_multiline &&
-        fits_on_current_line) {
+    if (!force_multiline && fits_on_current_line) {
       for (size_t i = 0; i < list.size(); ++i) {
         Expr(list[i]);
         if (i < list.size() - 1)
@@ -441,9 +498,10 @@ void Printer::Sequence(SequenceStyle style,
       }
     } else {
       bool should_break_to_next_line = true;
-      if (style == kSequenceStyleFunctionCall &&
-          (CurrentColumn() + max_item_width < kMaximumWidth ||
-           CurrentColumn() < margin_ + indent)) {
+      int indent = kIndentSize * 2;
+      if (CurrentColumn() + max_item_width + terminator.size() <=
+              kMaximumWidth ||
+          CurrentColumn() < margin_ + indent) {
         should_break_to_next_line = false;
         margin_ = CurrentColumn();
       } else {
@@ -455,21 +513,10 @@ void Printer::Sequence(SequenceStyle style,
         // position should do that instead of going back to margin+4.
         if (i > 0 || should_break_to_next_line)
           Newline();
-        // If:
-        // - we're going to output some comments, and;
-        // - we haven't just started this multiline list, and;
-        // - there isn't already a blank line here;
-        // Then: insert one.
-        if (i != 0 && x->comments() && !x->comments()->before().empty() &&
-            !HaveBlankLine()) {
-          Newline();
-        }
         ExprStyle expr_style = Expr(x);
         CHECK(!x->comments() || x->comments()->after().empty());
-        if (i < list.size() - 1 || style == kSequenceStyleList) {
-          if ((style == kSequenceStyleList ||
-               style == kSequenceStyleFunctionCall) &&
-              expr_style == kExprStyleRegular) {
+        if (i < list.size() - 1) {
+          if (expr_style == kExprStyleRegular) {
             Print(",");
           } else {
             Newline();
@@ -486,27 +533,21 @@ void Printer::Sequence(SequenceStyle style,
           Newline();
           TrimAndPrintToken(c);
         }
-      }
-
-      if (style == kSequenceStyleFunctionCall) {
-        if (end->comments() && !end->comments()->before().empty()) {
+        if (!end->comments()->before().empty())
           Newline();
-        }
-      } else {
-        margin_ = old_margin;
-        Newline();
       }
     }
   }
 
-  if (style == kSequenceStyleFunctionCall)
-    Print(")");
-  else if (style == kSequenceStyleList)
-    Print("]");
-  else if (style == kSequenceStyleBracedBlock)
-    Print("}");
-
+  Print(")");
   margin_ = old_margin;
+
+  if (have_block) {
+    Print(" ");
+    Sequence(kSequenceStyleBracedBlock,
+             func_call->block()->statements(),
+             func_call->block()->End());
+  }
 }
 
 void DoFormat(const ParseNode* root, bool dump_tree, std::string* output) {
