@@ -131,17 +131,6 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
-crbug.com/416539 fast/repaint/overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/scroll-inside-table-cell.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/scroll-absolute-layer-with-reflection.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/overflow-hidden-in-overflow-hidden-scrolled.html [ NeedsRebaseline ]
-crbug.com/416539 svg/custom/absolute-sized-content-with-resources.xhtml [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/scroll-relative-table-inside-table-cell.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/table-overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/scroll-in-clipped-layer.html [ NeedsRebaseline ]
-crbug.com/416539 fast/repaint/table-overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
-
 # Requires subpixel precision for offset/client/scroll properties
 crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
