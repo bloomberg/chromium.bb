@@ -20,7 +20,15 @@
 #include "config.h"
 #include "core/rendering/PointerEventsHitRules.h"
 
+#include "wtf/Assertions.h"
+
 namespace blink {
+
+struct SameSizeAsPointerEventsHitRules {
+    unsigned bitfields;
+};
+
+COMPILE_ASSERT(sizeof(PointerEventsHitRules) <= sizeof(SameSizeAsPointerEventsHitRules), PointerEventsHitRules_should_stay_small);
 
 PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTestRequest& request, EPointerEvents pointerEvents)
     : requireVisible(false)

@@ -35,16 +35,14 @@ public:
 
     PointerEventsHitRules(EHitTesting, const HitTestRequest&, EPointerEvents);
 
-    bool requireVisible;
-    bool requireFill;
-    bool requireStroke;
-    bool canHitStroke;
-    bool canHitFill;
-    bool canHitBoundingBox;
+    unsigned requireVisible : 1;
+    unsigned requireFill : 1;
+    unsigned requireStroke : 1;
+    unsigned canHitStroke : 1;
+    unsigned canHitFill : 1;
+    unsigned canHitBoundingBox : 1;
 };
 
 }
 
 #endif
-
-// vim:ts=4:noet
