@@ -69,6 +69,28 @@ EVENT_MALWARE_PROXY = (
         },
     status=307))
 
+# An HTML via proxy with the deprecated Via header.
+EVENT_IMAGE_BYPASS = (
+    network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
+    url='http://test.image',
+    response_headers={
+        'Chrome-Proxy': 'bypass=1',
+        'Content-Type': 'text/html',
+        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        },
+    status=502))
+
+# An image fetched directly.
+EVENT_IMAGE_DIRECT = (
+    network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
+    url='http://test.image',
+    response_headers={
+        'Content-Type': 'image/jpeg',
+        'Content-Encoding': 'gzip',
+        },
+    body=base64.b64encode(network_unittest.IMAGE_BODY),
+    base64_encoded_body=True))
+
 
 class ChromeProxyMetricTest(unittest.TestCase):
 
@@ -174,6 +196,16 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric.SetEvents([EVENT_IMAGE_DIRECT])
     metric.AddResultsForBypass(None, results)
     results.AssertHasPageSpecificScalarValue('bypass', 'count', 1)
+
+  def testChromeProxyMetricForCorsBypass(self):
+    metric = metrics.ChromeProxyMetric()
+    metric.SetEvents([EVENT_HTML_PROXY_DEPRECATED_VIA,
+                      EVENT_IMAGE_BYPASS,
+                      EVENT_IMAGE_DIRECT])
+    results = test_page_test_results.TestPageTestResults(self)
+    metric.AddResultsForCorsBypass(None, results)
+    results.AssertHasPageSpecificScalarValue('cors_bypass', 'count', 1)
+
 
   def testChromeProxyMetricForHTTPFallback(self):
     metric = metrics.ChromeProxyMetric()

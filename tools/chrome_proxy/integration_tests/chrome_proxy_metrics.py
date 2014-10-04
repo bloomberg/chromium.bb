@@ -248,6 +248,51 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
 
+  def AddResultsForCorsBypass(self, tab, results):
+    eligible_response_count = 0
+    bypass_count = 0
+    bypasses = {}
+    for resp in self.IterResponses(tab):
+      logging.warn('got a resource %s' % (resp.response.url))
+
+    for resp in self.IterResponses(tab):
+      if resp.ShouldHaveChromeProxyViaHeader():
+        eligible_response_count += 1
+        if not resp.HasChromeProxyViaHeader():
+          bypass_count += 1
+        elif resp.response.status == 502:
+          bypasses[resp.response.url] = 0
+
+    for resp in self.IterResponses(tab):
+      if resp.ShouldHaveChromeProxyViaHeader():
+        if not resp.HasChromeProxyViaHeader():
+          if resp.response.status == 200:
+            if (bypasses.has_key(resp.response.url)):
+              bypasses[resp.response.url] = bypasses[resp.response.url] + 1
+
+    for url in bypasses:
+      if bypasses[url] == 0:
+        raise ChromeProxyMetricException, (
+              '%s: Got a 502 without a subsequent 200' % (url))
+      elif bypasses[url] > 1:
+        raise ChromeProxyMetricException, (
+              '%s: Got a 502 and multiple 200s: %d' % (url, bypasses[url]))
+    if bypass_count == 0:
+      raise ChromeProxyMetricException, (
+          'At least one response should be bypassed. '
+          '(eligible_response_count=%d, bypass_count=%d)\n' % (
+              eligible_response_count, bypass_count))
+    if tab:
+      info = GetProxyInfoFromNetworkInternals(tab)
+      if not info['enabled']:
+        raise ChromeProxyMetricException, (
+            'Chrome proxy should be enabled. proxy info: %s' % info)
+      _, expected_bad_proxies = self.IsProxyBypassed(tab)
+      self.VerifyBadProxies(info['badProxies'], expected_bad_proxies)
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'cors_bypass', 'count', bypass_count))
+
   def AddResultsForBlockOnce(self, tab, results):
     eligible_response_count = 0
     bypass_count = 0

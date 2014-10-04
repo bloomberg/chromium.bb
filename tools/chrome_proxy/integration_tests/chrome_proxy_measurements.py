@@ -112,6 +112,23 @@ class ChromeProxyBypass(ChromeProxyValidation):
     self._metrics.AddResultsForBypass(tab, results)
 
 
+class ChromeProxyCorsBypass(ChromeProxyValidation):
+  """Correctness measurement for bypass responses."""
+
+  def __init__(self):
+    super(ChromeProxyCorsBypass, self).__init__(restart_after_each_page=True)
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    # The test page sets window.xhrRequestCompleted to true when the XHR fetch
+    # finishes.
+    tab.WaitForJavaScriptExpression('window.xhrRequestCompleted', 15000)
+    super(ChromeProxyCorsBypass,
+          self).ValidateAndMeasurePag1Ge(page, tab, results)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForCorsBypass(tab, results)
+
+
 class ChromeProxyBlockOnce(ChromeProxyValidation):
   """Correctness measurement for block-once responses."""
 
