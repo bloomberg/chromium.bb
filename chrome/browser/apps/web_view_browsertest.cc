@@ -1202,6 +1202,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigationToExternalProtocol) {
              NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestResizeWebviewWithDisplayNoneResizesContent) {
+  TestHelper("testResizeWebviewWithDisplayNoneResizesContent",
+             "web_view/shim",
+             NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
   TestHelper("testResizeWebviewResizesContent",
              "web_view/shim",

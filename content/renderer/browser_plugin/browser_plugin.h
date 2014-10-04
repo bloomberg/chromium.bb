@@ -207,6 +207,9 @@ class CONTENT_EXPORT BrowserPlugin :
 
   bool mouse_locked_;
 
+  // This indicates that the BrowserPlugin has a geometry.
+  bool ready_;
+
   // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
   // store the BrowserPlugin's BrowserPluginManager in a member variable to
   // avoid accessing the RenderViewImpl.

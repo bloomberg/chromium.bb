@@ -70,6 +70,7 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       plugin_focused_(false),
       visible_(true),
       mouse_locked_(false),
+      ready_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       contents_opaque_(true),
@@ -433,6 +434,11 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
+  if (!ready_) {
+    if (delegate_)
+      delegate_->Ready();
+    ready_ = true;
+  }
   if (!attached())
     return;
 

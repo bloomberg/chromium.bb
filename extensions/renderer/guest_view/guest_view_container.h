@@ -5,6 +5,9 @@
 #ifndef CHROME_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
 #define CHROME_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
 
+#include <queue>
+
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
@@ -16,6 +19,41 @@ namespace extensions {
 class GuestViewContainer : public content::BrowserPluginDelegate,
                            public content::RenderFrameObserver {
  public:
+  // This class represents an AttachGuest request from Javascript. It includes
+  // the input parameters and the callback function. The Attach operation may
+  // not execute immediately, if the container is not ready or if there are
+  // other attach operations in flight.
+  class AttachRequest {
+   public:
+    AttachRequest(int element_instance_id,
+                  int guest_instance_id,
+                  scoped_ptr<base::DictionaryValue> params,
+                  v8::Handle<v8::Function> callback,
+                  v8::Isolate* isolate);
+    ~AttachRequest();
+
+    int element_instance_id() const { return element_instance_id_; }
+
+    int guest_instance_id() const { return guest_instance_id_; }
+
+    base::DictionaryValue* attach_params() const {
+      return params_.get();
+    }
+
+    bool HasCallback() const;
+
+    v8::Handle<v8::Function> GetCallback() const;
+
+    v8::Isolate* isolate() const { return isolate_; }
+
+   private:
+    const int element_instance_id_;
+    const int guest_instance_id_;
+    scoped_ptr<base::DictionaryValue> params_;
+    ScopedPersistent<v8::Function> callback_;
+    v8::Isolate* const isolate_;
+  };
+
   GuestViewContainer(content::RenderFrame* render_frame,
                      const std::string& mime_type);
   virtual ~GuestViewContainer();
@@ -23,16 +61,13 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
   static GuestViewContainer* FromID(int render_view_routing_id,
                                     int element_instance_id);
 
-  void AttachGuest(int element_instance_id,
-                   int guest_instance_id,
-                   scoped_ptr<base::DictionaryValue> params,
-                   v8::Handle<v8::Function> callback,
-                   v8::Isolate* isolate);
+  void AttachGuest(linked_ptr<AttachRequest> request);
 
   // BrowserPluginDelegate implementation.
   virtual void SetElementInstanceID(int element_instance_id) override;
   virtual void DidFinishLoading() override;
   virtual void DidReceiveData(const char* data, int data_length) override;
+  virtual void Ready() override;
 
   // RenderFrameObserver override.
   virtual void OnDestruct() override;
@@ -40,7 +75,12 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
 
  private:
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
-  void OnGuestAttached(int element_instance_id, int guest_routing_id);
+  void OnGuestAttached(int element_instance_id, int guest_proxy_routing_id);
+
+  void AttachGuestInternal(linked_ptr<AttachRequest> request);
+  void EnqueueAttachRequest(linked_ptr<AttachRequest> request);
+  void PerformPendingAttachRequest();
+  void HandlePendingResponseCallback(int guest_proxy_routing_id);
 
   static bool ShouldHandleMessage(const IPC::Message& mesage);
 
@@ -52,10 +92,10 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
   int render_view_routing_id_;
 
   bool attached_;
-  bool attach_pending_;
+  bool ready_;
 
-  ScopedPersistent<v8::Function> callback_;
-  v8::Isolate* isolate_;
+  std::deque<linked_ptr<AttachRequest> > pending_requests_;
+  linked_ptr<AttachRequest> pending_response_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewContainer);
 };

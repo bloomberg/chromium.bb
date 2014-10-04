@@ -23,6 +23,31 @@ static base::LazyInstance<GuestViewContainerMap> g_guest_view_container_map =
 
 namespace extensions {
 
+GuestViewContainer::AttachRequest::AttachRequest(
+    int element_instance_id,
+    int guest_instance_id,
+    scoped_ptr<base::DictionaryValue> params,
+    v8::Handle<v8::Function> callback,
+    v8::Isolate* isolate)
+    : element_instance_id_(element_instance_id),
+      guest_instance_id_(guest_instance_id),
+      params_(params.Pass()),
+      callback_(callback),
+      isolate_(isolate) {
+}
+
+GuestViewContainer::AttachRequest::~AttachRequest() {
+}
+
+bool GuestViewContainer::AttachRequest::HasCallback() const {
+  return !callback_.IsEmpty();
+}
+
+v8::Handle<v8::Function>
+GuestViewContainer::AttachRequest::GetCallback() const {
+  return callback_.NewHandle(isolate_);
+}
+
 GuestViewContainer::GuestViewContainer(
     content::RenderFrame* render_frame,
     const std::string& mime_type)
@@ -32,8 +57,7 @@ GuestViewContainer::GuestViewContainer(
       element_instance_id_(guestview::kInstanceIDNone),
       render_view_routing_id_(render_frame->GetRenderView()->GetRoutingID()),
       attached_(false),
-      attach_pending_(false),
-      isolate_(NULL) {
+      ready_(false) {
 }
 
 GuestViewContainer::~GuestViewContainer() {
@@ -52,29 +76,9 @@ GuestViewContainer* GuestViewContainer::FromID(int render_view_routing_id,
   return it == guest_view_containers->end() ? NULL : it->second;
 }
 
-
-void GuestViewContainer::AttachGuest(int element_instance_id,
-                                     int guest_instance_id,
-                                     scoped_ptr<base::DictionaryValue> params,
-                                     v8::Handle<v8::Function> callback,
-                                     v8::Isolate* isolate) {
-  // GuestViewContainer supports reattachment (i.e. attached_ == true) but not
-  // while a current attach process is pending.
-  if (attach_pending_)
-    return;
-
-  // Step 1, send the attach params to chrome/.
-  render_frame()->Send(new ExtensionHostMsg_AttachGuest(render_view_routing_id_,
-                                                        element_instance_id,
-                                                        guest_instance_id,
-                                                        *params));
-
-  // Step 2, attach plugin through content/.
-  render_frame()->AttachGuest(element_instance_id);
-
-  callback_.reset(callback);
-  isolate_ = isolate;
-  attach_pending_ = true;
+void GuestViewContainer::AttachGuest(linked_ptr<AttachRequest> request) {
+  EnqueueAttachRequest(request);
+  PerformPendingAttachRequest();
 }
 
 void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
@@ -98,6 +102,12 @@ void GuestViewContainer::DidFinishLoading() {
 void GuestViewContainer::DidReceiveData(const char* data, int data_length) {
   std::string value(data, data_length);
   html_string_ += value;
+}
+
+void GuestViewContainer::Ready() {
+  ready_ = true;
+  CHECK(!pending_response_.get());
+  PerformPendingAttachRequest();
 }
 
 void GuestViewContainer::OnDestruct() {
@@ -136,22 +146,61 @@ void GuestViewContainer::OnCreateMimeHandlerViewGuestACK(
 }
 
 void GuestViewContainer::OnGuestAttached(int element_instance_id,
-                                         int guest_routing_id) {
+                                         int guest_proxy_routing_id) {
   attached_ = true;
-  attach_pending_ = false;
+  // Handle the callback for the current request with a pending response.
+  HandlePendingResponseCallback(guest_proxy_routing_id);
+  // Perform the subsequent attach request if one exists.
+  PerformPendingAttachRequest();
+}
+
+void GuestViewContainer::AttachGuestInternal(
+    linked_ptr<AttachRequest> request) {
+  CHECK(!pending_response_.get());
+  // Step 1, send the attach params to chrome/.
+  render_frame()->Send(
+      new ExtensionHostMsg_AttachGuest(render_view_routing_id_,
+                                       request->element_instance_id(),
+                                       request->guest_instance_id(),
+                                       *request->attach_params()));
+
+  // Step 2, attach plugin through content/.
+  render_frame()->AttachGuest(request->element_instance_id());
+
+  pending_response_ = request;
+}
+
+void GuestViewContainer::EnqueueAttachRequest(
+    linked_ptr<AttachRequest> request) {
+  pending_requests_.push_back(request);
+}
+
+void GuestViewContainer::PerformPendingAttachRequest() {
+  if (!ready_ || pending_requests_.empty() || pending_response_.get())
+    return;
+
+  linked_ptr<AttachRequest> pending_request = pending_requests_.front();
+  pending_requests_.pop_front();
+  AttachGuestInternal(pending_request);
+}
+
+void GuestViewContainer::HandlePendingResponseCallback(
+    int guest_proxy_routing_id) {
+  CHECK(pending_response_.get());
+  linked_ptr<AttachRequest> pending_response(pending_response_.release());
 
   // If we don't have a callback then there's nothing more to do.
-  if (callback_.IsEmpty())
+  if (!pending_response->HasCallback())
     return;
 
   content::RenderView* guest_proxy_render_view =
-      content::RenderView::FromRoutingID(guest_routing_id);
+      content::RenderView::FromRoutingID(guest_proxy_routing_id);
   // TODO(fsamuel): Should we be reporting an error to JavaScript or DCHECKing?
   if (!guest_proxy_render_view)
     return;
 
-  v8::HandleScope handle_scope(isolate_);
-  v8::Handle<v8::Function> callback = callback_.NewHandle(isolate_);
+  v8::HandleScope handle_scope(pending_response->isolate());
+  v8::Handle<v8::Function> callback = pending_response->GetCallback();
   v8::Handle<v8::Context> context = callback->CreationContext();
   if (context.IsEmpty())
     return;
@@ -168,7 +217,6 @@ void GuestViewContainer::OnGuestAttached(int element_instance_id,
   // Call the AttachGuest API's callback with the guest proxy as the first
   // parameter.
   callback->Call(context->Global(), argc, argv);
-  callback_.reset();
 }
 
 // static

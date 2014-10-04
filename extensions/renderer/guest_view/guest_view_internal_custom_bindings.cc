@@ -64,13 +64,15 @@ void GuestViewInternalCustomBindings::AttachGuest(
         static_cast<base::DictionaryValue*>(params_as_value.release()));
   }
 
-  guest_view_container->AttachGuest(
-      element_instance_id,
-      guest_instance_id,
-      params.Pass(),
-      args.Length() == 4 ? args[3].As<v8::Function>() :
-          v8::Handle<v8::Function>(),
-      args.GetIsolate());
+  linked_ptr<GuestViewContainer::AttachRequest> request(
+      new GuestViewContainer::AttachRequest(
+          element_instance_id,
+          guest_instance_id,
+          params.Pass(),
+          args.Length() == 4 ? args[3].As<v8::Function>() :
+              v8::Handle<v8::Function>(),
+          args.GetIsolate()));
+  guest_view_container->AttachGuest(request);
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }

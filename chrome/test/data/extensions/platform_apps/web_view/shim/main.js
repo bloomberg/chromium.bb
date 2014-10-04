@@ -1571,6 +1571,70 @@ function testResizeWebviewResizesContent() {
   document.body.appendChild(webview);
 }
 
+function testResizeWebviewWithDisplayNoneResizesContent() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+  var loadStopCalled = false;
+  webview.addEventListener('loadstop', function listener(e) {
+    if (loadStopCalled) {
+      window.console.log('webview is unexpectedly reloading.');
+      embedder.test.fail();
+      return;
+    }
+    loadStopCalled = true;
+    webview.executeScript(
+      {file: 'inject_resize_test.js'},
+      function(results) {
+        if (!results || !results.length) {
+          embedder.test.fail();
+          return;
+        }
+        window.console.log('The resize test has been injected into webview.');
+      }
+    );
+    webview.executeScript(
+      {file: 'inject_comm_channel.js'},
+      function(results) {
+        if (!results || !results.length) {
+          embedder.test.fail();
+          return;
+        }
+        window.console.log('The guest script for a two-way comm channel has ' +
+            'been injected into webview.');
+        // Establish a communication channel with the guest.
+        var msg = ['connect'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      }
+    );
+  });
+  window.addEventListener('message', function(e) {
+    var data = JSON.parse(e.data);
+    if (data[0] == 'connected') {
+      console.log('A communication channel has been established with webview.');
+      console.log('Resizing <webview> width from 300px to 400px.');
+      webview.style.display = 'none';
+      window.setTimeout(function() {
+        webview.style.width = '400px';
+        window.setTimeout(function() {
+          webview.style.display = 'block';
+        }, 0);
+      }, 0);
+      return;
+    }
+    if (data[0] == 'resize') {
+      var width = data[1];
+      var height = data[2];
+      embedder.test.assertEq(400, width);
+      embedder.test.assertEq(300, height);
+      embedder.test.succeed();
+      return;
+    }
+    window.console.log('Unexpected message: \'' + data[0]  + '\'');
+    embedder.test.fail();
+  });
+  document.body.appendChild(webview);
+}
+
 function testPostMessageCommChannel() {
   var webview = new WebView();
   webview.src = 'about:blank';
@@ -1933,6 +1997,8 @@ embedder.test.testList = {
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
+  'testResizeWebviewWithDisplayNoneResizesContent':
+      testResizeWebviewWithDisplayNoneResizesContent,
   'testPostMessageCommChannel': testPostMessageCommChannel,
   'testScreenshotCapture' : testScreenshotCapture,
   'testZoomAPI' : testZoomAPI,
