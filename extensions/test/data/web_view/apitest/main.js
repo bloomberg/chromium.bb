@@ -5,14 +5,19 @@
 var embedder = {};
 
 // TODO(lfg) Move these functions to a common js.
-embedder.closeSocketURL = '';
-
 embedder.setUp_ = function(config) {
   if (!config || !config.testServer) {
     return;
   }
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.closeSocketURL = embedder.baseGuestURL + '/close-socket';
+  embedder.emptyGuestURL = embedder.baseGuestURL + '/empty_guest.html';
+  embedder.noReferrerGuestURL =
+      embedder.baseGuestURL + '/guest_noreferrer.html';
+  embedder.redirectGuestURL = embedder.baseGuestURL + '/server-redirect';
+  embedder.redirectGuestURLDest =
+      embedder.baseGuestURL + '/guest_redirect.html';
+  embedder.windowOpenGuestURL = embedder.baseGuestURL + '/guest.html';
 };
 
 window.runTest = function(testName) {
@@ -964,6 +969,32 @@ function testLoadProgressEvent() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadstart event fires at the beginning of a load
+// and the loadredirect event fires when a redirect occurs.
+function testLoadStartLoadRedirect() {
+  var webview = document.createElement('webview');
+  var loadstartCalled = false;
+  webview.setAttribute('src', embedder.redirectGuestURL);
+  webview.addEventListener('loadstart', function(e) {
+    embedder.test.assertTrue(e.isTopLevel);
+    embedder.test.assertEq(embedder.redirectGuestURL, e.url);
+    loadstartCalled = true;
+  });
+  webview.addEventListener('loadredirect', function(e) {
+    embedder.test.assertTrue(e.isTopLevel);
+    embedder.test.assertEq(embedder.redirectGuestURL,
+        e.oldUrl.replace('127.0.0.1', 'localhost'));
+    embedder.test.assertEq(embedder.redirectGuestURLDest,
+        e.newUrl.replace('127.0.0.1', 'localhost'));
+    if (loadstartCalled) {
+      embedder.test.succeed();
+    } else {
+      embedder.test.fail();
+    }
+  });
+  document.body.appendChild(webview);
+}
+
 function testNavigationToExternalProtocol() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadstop', function(e) {
@@ -1071,6 +1102,119 @@ function testNavOnSrcAttributeChange() {
     }
   });
   webview.src = tests[0];
+  document.body.appendChild(webview);
+}
+
+// This test verifies that new window attachment functions as expected.
+function testNewWindow() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('newwindow', function(e) {
+    e.preventDefault();
+    var newwebview = document.createElement('webview');
+    newwebview.addEventListener('loadstop', function(evt) {
+      // If the new window finishes loading, the test is successful.
+      embedder.test.succeed();
+    });
+    document.body.appendChild(newwebview);
+    // Attach the new window to the new <webview>.
+    e.window.attach(newwebview);
+  });
+  webview.setAttribute('src', embedder.windowOpenGuestURL);
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the attach can be called inline without
+// preventing default.
+function testNewWindowNoPreventDefault() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('newwindow', function(e) {
+    var newwebview = document.createElement('webview');
+    document.body.appendChild(newwebview);
+    // Attach the new window to the new <webview>.
+    try {
+      e.window.attach(newwebview);
+      embedder.test.succeed();
+    } catch (err) {
+      embedder.test.fail();
+    }
+  });
+  webview.setAttribute('src', embedder.windowOpenGuestURL);
+  document.body.appendChild(webview);
+}
+
+function testNewWindowNoReferrerLink() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('newwindow', function(e) {
+    e.preventDefault();
+    var newwebview = document.createElement('webview');
+    newwebview.addEventListener('loadstop', function(evt) {
+      // If the new window finishes loading, the test is successful.
+      embedder.test.succeed();
+    });
+    document.body.appendChild(newwebview);
+    // Attach the new window to the new <webview>.
+    e.window.attach(newwebview);
+  });
+  webview.setAttribute('src', embedder.noReferrerGuestURL);
+  document.body.appendChild(webview);
+}
+
+// This test verifies "first-call-wins" semantics. That is, the first call
+// to perform an action on the new window takes the action and all
+// subsequent calls throw an exception.
+function testNewWindowTwoListeners() {
+  var webview = document.createElement('webview');
+  var error = false;
+  webview.addEventListener('newwindow', function(e) {
+    e.preventDefault();
+    var newwebview = document.createElement('webview');
+    document.body.appendChild(newwebview);
+    try {
+      e.window.attach(newwebview);
+    } catch (err) {
+      embedder.test.fail();
+    }
+  });
+  webview.addEventListener('newwindow', function(e) {
+    e.preventDefault();
+    try {
+      e.window.discard();
+    } catch (err) {
+      embedder.test.succeed();
+    }
+  });
+  webview.setAttribute('src', embedder.windowOpenGuestURL);
+  document.body.appendChild(webview);
+}
+
+function testOnEventProperties() {
+  var sequence = ['first', 'second', 'third', 'fourth'];
+  var webview = document.createElement('webview');
+  function createHandler(id) {
+    return function(e) {
+      embedder.test.assertEq(id, sequence.shift());
+    };
+  }
+
+  webview.addEventListener('loadstart', createHandler('first'));
+  webview.addEventListener('loadstart', createHandler('second'));
+  webview.onloadstart = createHandler('third');
+  webview.addEventListener('loadstart', createHandler('fourth'));
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(0, sequence.length);
+
+    // Test that setting another 'onloadstart' handler replaces the previous
+    // handler.
+    sequence = ['first', 'second', 'fourth'];
+    webview.onloadstart = function() {
+      embedder.test.assertEq(0, sequence.length);
+      embedder.test.succeed();
+    };
+
+    webview.setAttribute('src', 'data:text/html,next navigation');
+  });
+
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
   document.body.appendChild(webview);
 }
 
@@ -1227,6 +1371,34 @@ function testRemoveWebviewAfterNavigation() {
   }, 0);
 }
 
+// This test verifies that a <webview> is torn down gracefully when removed from
+// the DOM on exit.
+window.removeWebviewOnExitDoCrash = null;
+function testRemoveWebviewOnExit() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = document.createElement('webview');
+
+  webview.addEventListener('loadstop', function(e) {
+    chrome.test.sendMessage('guest-loaded');
+  });
+
+  window.removeWebviewOnExitDoCrash = function() {
+    webview.terminate();
+  };
+
+  webview.addEventListener('exit', function(e) {
+    // We expected to be killed.
+    if (e.reason != 'killed') {
+      return;
+    }
+    webview.parentNode.removeChild(webview);
+  });
+
+  // Trigger a navigation to create a guest process.
+  webview.setAttribute('src', embedder.emptyGuestURL);
+  document.body.appendChild(webview);
+}
+
 function testResizeWebviewResizesContent() {
   var webview = document.createElement('webview');
   webview.src = 'about:blank';
@@ -1343,11 +1515,17 @@ embedder.test.testList = {
   'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
   'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
   'testLoadProgressEvent': testLoadProgressEvent,
+  'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testNavigateAfterResize': testNavigateAfterResize,
   'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testNavOnConsecutiveSrcAttributeChanges':
       testNavOnConsecutiveSrcAttributeChanges,
   'testNavOnSrcAttributeChange': testNavOnSrcAttributeChange,
+  'testNewWindow': testNewWindow,
+  'testNewWindowNoPreventDefault': testNewWindowNoPreventDefault,
+  'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
+  'testNewWindowTwoListeners': testNewWindowTwoListeners,
+  'testOnEventProperties': testOnEventProperties,
   'testPartitionRaisesException': testPartitionRaisesException,
   'testPartitionRemovalAfterNavigationFails':
       testPartitionRemovalAfterNavigationFails,
@@ -1356,6 +1534,7 @@ embedder.test.testList = {
   'testReloadAfterTerminate': testReloadAfterTerminate,
   'testRemoveSrcAttribute': testRemoveSrcAttribute,
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
+  'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
   'testTerminateAfterExit': testTerminateAfterExit
 };
