@@ -521,9 +521,13 @@ cr.define('cr.ui', function() {
      * event.
      * @param {Event} e The blur event.
      * @private
+     * @suppress {checkTypes}
+     * TODO(dbeam): remove suppression when the extern
+     * Node.prototype.contains() will be fixed.
      */
     handleElementBlur_: function(e) {
-      this.hasElementFocus = false;
+      if (!this.contains(e.relatedTarget))
+        this.hasElementFocus = false;
     },
 
     /**
