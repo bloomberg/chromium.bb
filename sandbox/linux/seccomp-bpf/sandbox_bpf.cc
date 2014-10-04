@@ -30,6 +30,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
@@ -41,6 +42,11 @@
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::ResultExpr;
+using sandbox::bpf_dsl::SandboxBPFDSLPolicy;
 
 namespace sandbox {
 
@@ -91,20 +97,22 @@ void WriteFailedStderrSetupMessage(int out_fd) {
 
 // We define a really simple sandbox policy. It is just good enough for us
 // to tell that the sandbox has actually been activated.
-class ProbePolicy : public SandboxBPFPolicy {
+class ProbePolicy : public SandboxBPFDSLPolicy {
  public:
   ProbePolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysnum) const OVERRIDE {
+  virtual ~ProbePolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysnum) const OVERRIDE {
     switch (sysnum) {
       case __NR_getpid:
         // Return EPERM so that we can check that the filter actually ran.
-        return ErrorCode(EPERM);
+        return Error(EPERM);
       case __NR_exit_group:
         // Allow exit() with a non-default return code.
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
       default:
         // Make everything else fail in an easily recognizable way.
-        return ErrorCode(EINVAL);
+        return Error(EINVAL);
     }
   }
 
@@ -118,12 +126,14 @@ void ProbeProcess(void) {
   }
 }
 
-class AllowAllPolicy : public SandboxBPFPolicy {
+class AllowAllPolicy : public SandboxBPFDSLPolicy {
  public:
   AllowAllPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysnum) const OVERRIDE {
+  virtual ~AllowAllPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysnum) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysnum));
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 
  private:

@@ -13,10 +13,16 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::ResultExpr;
+using sandbox::bpf_dsl::SandboxBPFDSLPolicy;
 
 namespace sandbox {
 
@@ -33,7 +39,7 @@ class FourtyTwo {
   DISALLOW_COPY_AND_ASSIGN(FourtyTwo);
 };
 
-class EmptyClassTakingPolicy : public SandboxBPFPolicy {
+class EmptyClassTakingPolicy : public SandboxBPFDSLPolicy {
  public:
   explicit EmptyClassTakingPolicy(FourtyTwo* fourty_two) {
     BPF_ASSERT(fourty_two);
@@ -41,10 +47,9 @@ class EmptyClassTakingPolicy : public SandboxBPFPolicy {
   }
   virtual ~EmptyClassTakingPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 };
 
@@ -75,7 +80,7 @@ TEST(BPFTest, BPFTesterCompatibilityDelegateLeakTest) {
   }
 }
 
-class EnosysPtracePolicy : public SandboxBPFPolicy {
+class EnosysPtracePolicy : public SandboxBPFDSLPolicy {
  public:
   EnosysPtracePolicy() {
     my_pid_ = syscall(__NR_getpid);
@@ -86,17 +91,15 @@ class EnosysPtracePolicy : public SandboxBPFPolicy {
     BPF_ASSERT_EQ(my_pid_, syscall(__NR_getpid));
   }
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE {
-    if (!SandboxBPF::IsValidSyscallNumber(system_call_number)) {
-      return ErrorCode(ENOSYS);
-    } else if (system_call_number == __NR_ptrace) {
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE {
+    CHECK(SandboxBPF::IsValidSyscallNumber(system_call_number));
+    if (system_call_number == __NR_ptrace) {
       // The EvaluateSyscall function should run in the process that created
       // the current object.
       BPF_ASSERT_EQ(my_pid_, syscall(__NR_getpid));
-      return ErrorCode(ENOSYS);
+      return Error(ENOSYS);
     } else {
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     }
   }
 
