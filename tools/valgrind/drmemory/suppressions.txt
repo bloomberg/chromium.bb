@@ -656,3 +656,14 @@ blink_web.dll!blink::RemoteFrameClient::firstChild
 blink_web.dll!blink::WebRemoteFrameImpl::~WebRemoteFrameImpl
 blink_web.dll!blink::WebRemoteFrameImpl::close
 content.dll!content::RenderFrameProxy::~RenderFrameProxy
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/420311
+blink_web.dll!blink::Frame::deprecatedLocalOwner
+blink_web.dll!blink::Document::topDocument
+blink_web.dll!blink::Document::axObjectCacheOwner
+blink_web.dll!blink::Document::existingAXObjectCache
+blink_web.dll!blink::FrameView::removeFromAXObjectCache
+blink_web.dll!blink::FrameView::prepareForDetach
+blink_web.dll!blink::LocalFrame::setView
+blink_web.dll!blink::FrameTree::~FrameTree
