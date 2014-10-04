@@ -3,7 +3,6 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="editor-test.js"></script>
 <script>
-
 function test()
 {
     var textEditor = InspectorTest.createTestEditor();
@@ -45,6 +44,18 @@ function test()
             textEditor.setText("'Hello");
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
             InspectorTest.typeIn(textEditor, "\"'", onTypedIn);
+            function onTypedIn()
+            {
+                InspectorTest.dumpTextWithSelection(textEditor);
+                next();
+            }
+        },
+
+        function testQuotesToCloseStringLiteralInsideLine(next)
+        {
+            textEditor.setText("console.log(\"information\");");
+            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 24));
+            InspectorTest.typeIn(textEditor, "\"", onTypedIn);
             function onTypedIn()
             {
                 InspectorTest.dumpTextWithSelection(textEditor);

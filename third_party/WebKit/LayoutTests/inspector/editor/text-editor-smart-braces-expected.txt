@@ -10,3 +10,6 @@ Running: testBraceOverride
 Running: testQuotesToCloseStringLiterals
 'Hello"'|
 
+Running: testQuotesToCloseStringLiteralInsideLine
+console.log("information"|);
+
