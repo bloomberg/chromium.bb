@@ -20,6 +20,30 @@ namespace {
 base::LazyInstance<ScreenlockBridge> g_screenlock_bridge_bridge_instance =
     LAZY_INSTANCE_INITIALIZER;
 
+// Ids for the icons that are supported by lock screen and signin screen
+// account picker as user pod custom icons.
+// The id's should be kept in sync with values used by user_pod_row.js.
+const char kLockedUserPodCustomIconId[] = "locked";
+const char kUnlockedUserPodCustomIconId[] = "unlocked";
+const char kHardlockedUserPodCustomIconId[] = "hardlocked";
+const char kSpinnerUserPodCustomIconId[] = "spinner";
+
+// Given the user pod icon, returns its id as used by the user pod UI code.
+std::string GetIdForIcon(ScreenlockBridge::UserPodCustomIcon icon) {
+  switch (icon) {
+    case ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED:
+      return kLockedUserPodCustomIconId;
+    case ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED:
+      return kUnlockedUserPodCustomIconId;
+    case ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED:
+      return kHardlockedUserPodCustomIconId;
+    case ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER:
+      return kSpinnerUserPodCustomIconId;
+    default:
+      return "";
+  }
+}
+
 }  // namespace
 
 // static
@@ -28,13 +52,7 @@ ScreenlockBridge* ScreenlockBridge::Get() {
 }
 
 ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
-    : width_(0u),
-      height_(0u),
-      animation_set_(false),
-      animation_resource_width_(0u),
-      animation_frame_length_ms_(0u),
-      opacity_(100u),
-      autoshow_tooltip_(false),
+    : autoshow_tooltip_(false),
       hardlock_on_click_(false) {
 }
 
@@ -43,10 +61,11 @@ ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {}
 scoped_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  if (icon_resource_url_.empty())
+  std::string icon_id = GetIdForIcon(icon_);
+  if (icon_id.empty())
     return result.Pass();
 
-  result->SetString("resourceUrl", icon_resource_url_);
+  result->SetString("id", icon_id);
 
   if (!tooltip_.empty()) {
     base::DictionaryValue* tooltip_options = new base::DictionaryValue();
@@ -55,51 +74,15 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
     result->Set("tooltip", tooltip_options);
   }
 
-  base::DictionaryValue* size = new base::DictionaryValue();
-  size->SetInteger("height", height_);
-  size->SetInteger("width", width_);
-  result->Set("size", size);
-
-  result->SetInteger("opacity", opacity_);
-
-  if (animation_set_) {
-    base::DictionaryValue* animation = new base::DictionaryValue();
-    animation->SetInteger("resourceWidth",
-                          animation_resource_width_);
-    animation->SetInteger("frameLengthMs",
-                          animation_frame_length_ms_);
-    result->Set("animation", animation);
-  }
-
   if (hardlock_on_click_)
     result->SetBoolean("hardlockOnClick", true);
 
   return result.Pass();
 }
 
-void ScreenlockBridge::UserPodCustomIconOptions::SetIconAsResourceURL(
-    const std::string& url) {
-  icon_resource_url_ = url;
-}
-
-
-void ScreenlockBridge::UserPodCustomIconOptions::SetSize(size_t icon_width,
-                                                         size_t icon_height) {
-  width_ = icon_width;
-  height_ = icon_height;
-}
-
-void ScreenlockBridge::UserPodCustomIconOptions::SetAnimation(
-    size_t resource_width,
-    size_t frame_length_ms) {
-  animation_set_ = true;
-  animation_resource_width_ = resource_width;
-  animation_frame_length_ms_ = frame_length_ms;
-}
-
-void ScreenlockBridge::UserPodCustomIconOptions::SetOpacity(size_t opacity) {
-  DCHECK_LE(opacity, 100u);
-  opacity_ = opacity;
+void ScreenlockBridge::UserPodCustomIconOptions::SetIcon(
+    ScreenlockBridge::UserPodCustomIcon icon) {
+  icon_ = icon;
 }
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetTooltip(

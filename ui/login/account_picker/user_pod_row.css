@@ -214,6 +214,7 @@ html[dir=rtl] .main-pane {
   display: block;
   flex: auto;
   margin-top: 11px;
+  outline: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -225,11 +226,82 @@ html[dir=rtl] .main-pane {
   background-position: center;
   background-repeat: no-repeat;
   flex: none;
+  height: 27px;
+  width: 27px;
 }
 
 .custom-icon.faded {
   -webkit-transition: opacity 200ms ease-in-out,
                       visibility 200ms ease-in-out;
+}
+
+.custom-icon-hardlocked {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED');
+}
+
+.custom-icon-hardlocked.icon-with-tooltip:hover {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_HOVER');
+}
+
+.custom-icon-hardlocked.interactive-custom-icon:active {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_PRESSED');
+}
+
+.custom-icon-locked {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED');
+}
+
+.custom-icon-locked.icon-with-tooltip:hover {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER');
+}
+
+.custom-icon-locked.interactive-custom-icon:active {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED');
+}
+
+.custom-icon-unlocked {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED');
+}
+
+.custom-icon-unlocked.icon-with-tooltip:hover {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER');
+}
+
+.custom-icon-unlocked.interactive-custom-icon:active {
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED');
+}
+
+/**
+ * Preloads resources for custom icon. Without this, the resources will be
+ * loaded when CSS properties using them are first applied, which has visible
+ * delay and may cause a short white flash when the icon background changes.
+ */
+.custom-icon::after {
+  content:
+    url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED')
+    url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_HOVER')
+    url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_PRESSED')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED')
+    url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED')
+    url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER')
+    url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED');
+  display: none;
+}
+
+.custom-icon-spinner {
+  -webkit-animation: easy-unlock-spinner-animation 2s steps(45) infinite;
+  background-image: url('chrome://theme/IDR_EASY_UNLOCK_SPINNER');
+}
+
+@-webkit-keyframes easy-unlock-spinner-animation {
+  from { background-position: 0 }
+  to { background-position: -1215px }
+}
+
+.interactive-custom-icon {
+  cursor: pointer;
 }
 
 .custom-icon-container {

@@ -15,23 +15,8 @@
 
 namespace {
 
-size_t kIconSize = 27u;
-size_t kSpinnerResourceWidth = 1215u;
-size_t kSpinnerIntervalMs = 50u;
-
-const char kHardlockIconResourceURL[] =
-    "chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED";
-
-const char kLockedIconResourceURL[] =
-    "chrome://theme/IDR_EASY_UNLOCK_LOCKED";
-
-const char kSpinnerIconResourceURL[] =
-    "chrome://theme/IDR_EASY_UNLOCK_SPINNER";
-
-const char kUnlockedIconResourceURL[] =
-    "chrome://theme/IDR_EASY_UNLOCK_UNLOCKED";
-
-std::string GetIconURLForState(EasyUnlockScreenlockStateHandler::State state) {
+ScreenlockBridge::UserPodCustomIcon GetIconForState(
+    EasyUnlockScreenlockStateHandler::State state) {
   switch (state) {
     case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
     case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
@@ -40,18 +25,14 @@ std::string GetIconURLForState(EasyUnlockScreenlockStateHandler::State state) {
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
-      return kLockedIconResourceURL;
+      return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
     case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
-      return kSpinnerIconResourceURL;
+      return ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
-      return kUnlockedIconResourceURL;
+      return ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED;
     default:
-      return "";
+      return ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
   }
-}
-
-bool HasAnimation(EasyUnlockScreenlockStateHandler::State state) {
-  return state == EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING;
 }
 
 bool HardlockOnClick(EasyUnlockScreenlockStateHandler::State state) {
@@ -130,27 +111,23 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
 
   UpdateScreenlockAuthType();
 
-  ScreenlockBridge::UserPodCustomIconOptions icon_options;
+  ScreenlockBridge::UserPodCustomIcon icon = GetIconForState(state_);
 
-  std::string icon_url = GetIconURLForState(state_);
-  if (icon_url.empty()) {
+  if (icon == ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE) {
     screenlock_bridge_->lock_handler()->HideUserPodCustomIcon(user_email_);
     return;
   }
-  icon_options.SetIconAsResourceURL(icon_url);
+
+  ScreenlockBridge::UserPodCustomIconOptions icon_options;
+  icon_options.SetIcon(icon);
 
   bool trial_run = IsTrialRun();
-
-  UpdateTooltipOptions(trial_run, &icon_options);
-
-  icon_options.SetSize(kIconSize, kIconSize);
-
-  if (HasAnimation(state_))
-    icon_options.SetAnimation(kSpinnerResourceWidth, kSpinnerIntervalMs);
 
   // Don't hardlock on trial run.
   if (!trial_run && HardlockOnClick(state_))
     icon_options.SetHardlockOnClick();
+
+  UpdateTooltipOptions(trial_run, &icon_options);
 
   if (trial_run && state_ == STATE_AUTHENTICATED)
     MarkTrialRunComplete();
@@ -216,8 +193,7 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
     return;
 
   ScreenlockBridge::UserPodCustomIconOptions icon_options;
-  icon_options.SetIconAsResourceURL(kHardlockIconResourceURL);
-  icon_options.SetSize(kIconSize, kIconSize);
+  icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
   icon_options.SetTooltip(
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK,
                                  GetDeviceName()),
