@@ -48,6 +48,8 @@ private:
     virtual bool isSliderThumb() const OVERRIDE;
 };
 
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSliderThumb, isSliderThumb());
+
 } // namespace blink
 
 #endif // RenderSliderThumb_h

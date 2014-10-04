@@ -71,7 +71,7 @@ void RenderSlider::layout()
     // http://webkit.org/b/62535
     RenderBox* thumbBox = sliderThumbElement()->renderBox();
     if (thumbBox && thumbBox->isSliderThumb())
-        static_cast<RenderSliderThumb*>(thumbBox)->updateAppearance(style());
+        toRenderSliderThumb(thumbBox)->updateAppearance(style());
 
     RenderFlexibleBox::layout();
 }
