@@ -8,26 +8,24 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace app_list {
 
-DictionaryDataStore::DictionaryDataStore(const base::FilePath& data_file)
-    : data_file_(data_file) {
+DictionaryDataStore::DictionaryDataStore(const base::FilePath& data_file,
+                                         base::SequencedWorkerPool* worker_pool)
+    : data_file_(data_file), worker_pool_(worker_pool) {
   std::string token("app-launcher-data-store");
   token.append(data_file.AsUTF8Unsafe());
 
   // Uses a SKIP_ON_SHUTDOWN file task runner because losing a couple
   // associations is better than blocking shutdown.
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  file_task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      pool->GetNamedSequenceToken(token),
+  file_task_runner_ = worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+      worker_pool->GetNamedSequenceToken(token),
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   writer_.reset(
       new base::ImportantFileWriter(data_file, file_task_runner_.get()));
@@ -64,7 +62,7 @@ void DictionaryDataStore::ScheduleWrite() {
 }
 
 scoped_ptr<base::DictionaryValue> DictionaryDataStore::LoadOnBlockingPool() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(worker_pool_->RunsTasksOnCurrentThread());
 
   int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
   std::string error_message;

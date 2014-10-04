@@ -18,6 +18,7 @@
 namespace base {
 class DictionaryValue;
 class SequencedTaskRunner;
+class SequencedWorkerPool;
 }
 
 namespace app_list {
@@ -31,7 +32,8 @@ class DictionaryDataStore
       scoped_ptr<base::DictionaryValue>)> OnLoadedCallback;
   typedef base::Closure OnFlushedCallback;
 
-  explicit DictionaryDataStore(const base::FilePath& data_file);
+  DictionaryDataStore(const base::FilePath& data_file,
+                      base::SequencedWorkerPool* worker_pool);
 
   // Flushes pending writes.
   void Flush(const OnFlushedCallback& on_flushed);
@@ -65,6 +67,8 @@ class DictionaryDataStore
 
   // Cached JSON dictionary to serve read and incremental change calls.
   scoped_ptr<base::DictionaryValue> cached_dict_;
+
+  base::SequencedWorkerPool* worker_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(DictionaryDataStore);
 };

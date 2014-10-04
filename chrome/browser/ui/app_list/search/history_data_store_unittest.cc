@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {
@@ -40,12 +40,12 @@ std::string GetDataContent(const HistoryData::Data& data) {
 
 class HistoryDataStoreTest : public testing::Test {
  public:
-  HistoryDataStoreTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+  HistoryDataStoreTest() {}
   virtual ~HistoryDataStoreTest() {}
 
   // testing::Test overrides:
   virtual void SetUp() override {
+    worker_pool_ = new base::SequencedWorkerPool(1, "AppLauncherTest");
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
   virtual void TearDown() override {
@@ -56,7 +56,7 @@ class HistoryDataStoreTest : public testing::Test {
   void OpenStore(const std::string& file_name) {
     data_file_ = temp_dir_.path().AppendASCII(file_name);
     store_ = new HistoryDataStore(scoped_refptr<DictionaryDataStore>(
-        new DictionaryDataStore(data_file_)));
+        new DictionaryDataStore(data_file_, worker_pool_.get())));
     Load();
   }
 
@@ -94,10 +94,10 @@ class HistoryDataStoreTest : public testing::Test {
   }
 
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   base::FilePath data_file_;
   scoped_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   scoped_refptr<HistoryDataStore> store_;
   HistoryData::Associations associations_;

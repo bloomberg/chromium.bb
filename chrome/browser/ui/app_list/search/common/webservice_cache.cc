@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace app_list {
 namespace {
@@ -32,7 +33,8 @@ WebserviceCache::WebserviceCache(content::BrowserContext* context)
   const char kStoreDataFileName[] = "Webservice Search Cache";
   const base::FilePath data_file =
       context->GetPath().AppendASCII(kStoreDataFileName);
-  data_store_ = new DictionaryDataStore(data_file);
+  data_store_ = new DictionaryDataStore(
+      data_file, content::BrowserThread::GetBlockingPool());
   data_store_->Load(base::Bind(&WebserviceCache::OnCacheLoaded, AsWeakPtr()));
 }
 

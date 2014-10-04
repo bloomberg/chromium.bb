@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace app_list {
 
@@ -39,7 +40,8 @@ KeyedService* HistoryFactory::BuildServiceInstanceFor(
   const base::FilePath data_file =
       context->GetPath().AppendASCII(kStoreDataFileName);
   scoped_refptr<DictionaryDataStore> dictionary_data_store(
-      new DictionaryDataStore(data_file));
+      new DictionaryDataStore(data_file,
+                              content::BrowserThread::GetBlockingPool()));
   scoped_refptr<HistoryDataStore> history_data_store(
       new HistoryDataStore(dictionary_data_store));
   return new History(history_data_store);
