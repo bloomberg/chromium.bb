@@ -55,7 +55,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
 
   void UpdateDevices();
 
-  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceHasOwnInstanceInIncognito = true;
 
   int next_resource_id_;
 
