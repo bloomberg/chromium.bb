@@ -17,7 +17,7 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
     // Pre-load the guest profile so we don't have to wait for the User Manager
@@ -25,7 +25,7 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
     testing_profile_manager_.CreateGuestProfile();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     testing_profile_manager_.DeleteGuestProfile();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     base::RunLoop().RunUntilIdle();

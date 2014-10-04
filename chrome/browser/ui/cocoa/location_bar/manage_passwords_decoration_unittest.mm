@@ -29,7 +29,7 @@ class TestCommandUpdaterDelegate : public CommandUpdaterDelegate {
 
   virtual void ExecuteCommandWithDisposition(
       int id,
-      WindowOpenDisposition disposition) OVERRIDE {
+      WindowOpenDisposition disposition) override {
     id_ = id;
   }
 

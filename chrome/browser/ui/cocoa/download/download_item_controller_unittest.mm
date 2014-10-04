@@ -64,7 +64,7 @@ namespace {
 
 class DownloadItemControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -90,7 +90,7 @@ class DownloadItemControllerTest : public CocoaProfileTest {
         Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     download_item_.reset();
     [(id)shelf_ verify];
     CocoaProfileTest::TearDown();

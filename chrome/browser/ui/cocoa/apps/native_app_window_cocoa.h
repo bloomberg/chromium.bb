@@ -51,26 +51,26 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
                        const extensions::AppWindow::CreateParams& params);
 
   // ui::BaseWindow implementation.
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsMaximized() const OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
-  virtual bool IsFullscreen() const OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
-  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
-  virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
-  virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void ShowInactive() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void Activate() OVERRIDE;
-  virtual void Deactivate() OVERRIDE;
-  virtual void Maximize() OVERRIDE;
-  virtual void Minimize() OVERRIDE;
-  virtual void Restore() OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void FlashFrame(bool flash) OVERRIDE;
-  virtual bool IsAlwaysOnTop() const OVERRIDE;
+  virtual bool IsActive() const override;
+  virtual bool IsMaximized() const override;
+  virtual bool IsMinimized() const override;
+  virtual bool IsFullscreen() const override;
+  virtual gfx::NativeWindow GetNativeWindow() override;
+  virtual gfx::Rect GetRestoredBounds() const override;
+  virtual ui::WindowShowState GetRestoredState() const override;
+  virtual gfx::Rect GetBounds() const override;
+  virtual void Show() override;
+  virtual void ShowInactive() override;
+  virtual void Hide() override;
+  virtual void Close() override;
+  virtual void Activate() override;
+  virtual void Deactivate() override;
+  virtual void Maximize() override;
+  virtual void Minimize() override;
+  virtual void Restore() override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual void FlashFrame(bool flash) override;
+  virtual bool IsAlwaysOnTop() const override;
 
   // Called when the window is about to be closed.
   void WindowWillClose();
@@ -120,49 +120,49 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
 
  protected:
   // NativeAppWindow implementation.
-  virtual void SetFullscreen(int fullscreen_types) OVERRIDE;
-  virtual bool IsFullscreenOrPending() const OVERRIDE;
-  virtual void UpdateWindowIcon() OVERRIDE;
-  virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void UpdateBadgeIcon() OVERRIDE;
-  virtual void UpdateShape(scoped_ptr<SkRegion> region) OVERRIDE;
+  virtual void SetFullscreen(int fullscreen_types) override;
+  virtual bool IsFullscreenOrPending() const override;
+  virtual void UpdateWindowIcon() override;
+  virtual void UpdateWindowTitle() override;
+  virtual void UpdateBadgeIcon() override;
+  virtual void UpdateShape(scoped_ptr<SkRegion> region) override;
   virtual void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
-  virtual SkRegion* GetDraggableRegion() OVERRIDE;
+      const std::vector<extensions::DraggableRegion>& regions) override;
+  virtual SkRegion* GetDraggableRegion() override;
   virtual void HandleKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool IsFrameless() const OVERRIDE;
-  virtual bool HasFrameColor() const OVERRIDE;
-  virtual SkColor ActiveFrameColor() const OVERRIDE;
-  virtual SkColor InactiveFrameColor() const OVERRIDE;
-  virtual gfx::Insets GetFrameInsets() const OVERRIDE;
-  virtual bool CanHaveAlphaEnabled() const OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual bool IsFrameless() const override;
+  virtual bool HasFrameColor() const override;
+  virtual SkColor ActiveFrameColor() const override;
+  virtual SkColor InactiveFrameColor() const override;
+  virtual gfx::Insets GetFrameInsets() const override;
+  virtual bool CanHaveAlphaEnabled() const override;
 
   // These are used to simulate Mac-style hide/show. Since windows can be hidden
   // and shown using the app.window API, this sets is_hidden_with_app_ to
   // differentiate the reason a window was hidden.
-  virtual void ShowWithApp() OVERRIDE;
-  virtual void HideWithApp() OVERRIDE;
-  virtual void UpdateShelfMenu() OVERRIDE;
-  virtual gfx::Size GetContentMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
+  virtual void ShowWithApp() override;
+  virtual void HideWithApp() override;
+  virtual void UpdateShelfMenu() override;
+  virtual gfx::Size GetContentMinimumSize() const override;
+  virtual gfx::Size GetContentMaximumSize() const override;
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
-                                         const gfx::Size& max_size) OVERRIDE;
-  virtual void SetVisibleOnAllWorkspaces(bool always_visible) OVERRIDE;
+                                         const gfx::Size& max_size) override;
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible) override;
 
   // WebContentsObserver implementation.
-  virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;
+  virtual void RenderViewCreated(content::RenderViewHost* rvh) override;
 
-  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) override;
 
   // WebContentsModalDialogHost implementation.
-  virtual gfx::NativeView GetHostView() const OVERRIDE;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
-  virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
+  virtual gfx::NativeView GetHostView() const override;
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  virtual gfx::Size GetMaximumDialogSize() override;
   virtual void AddObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) override;
   virtual void RemoveObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) override;
 
  private:
   virtual ~NativeAppWindowCocoa();

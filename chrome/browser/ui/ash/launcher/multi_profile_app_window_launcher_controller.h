@@ -17,14 +17,14 @@ class MultiProfileAppWindowLauncherController
   virtual ~MultiProfileAppWindowLauncherController();
 
   // Overridden from AppWindowLauncherController:
-  virtual void ActiveUserChanged(const std::string& user_email) OVERRIDE;
-  virtual void AdditionalUserAddedToSession(Profile* profile) OVERRIDE;
+  virtual void ActiveUserChanged(const std::string& user_email) override;
+  virtual void AdditionalUserAddedToSession(Profile* profile) override;
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowShown(extensions::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override;
+  virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
+  virtual void OnAppWindowShown(extensions::AppWindow* app_window) override;
+  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) override;
 
  private:
   typedef std::vector<extensions::AppWindow*> AppWindowList;

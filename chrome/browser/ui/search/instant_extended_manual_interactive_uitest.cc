@@ -55,7 +55,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
     host_resolver_proc_ = NULL;
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     ASSERT_TRUE(StartsWithASCII(test_info->name(), "MANUAL_", true) ||
@@ -65,12 +65,12 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
         new net::NetworkChangeNotifier::DisableForTest());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     disable_network_change_notifier_.reset();
   }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     chrome::EnableQueryExtractionForTesting();
   }
 

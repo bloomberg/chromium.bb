@@ -24,15 +24,15 @@ class ChromeLauncherAppMenuItemBrowser : public content::NotificationObserver,
                                    bool has_leading_separator);
   virtual ~ChromeLauncherAppMenuItemBrowser();
 
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsEnabled() const OVERRIDE;
-  virtual void Execute(int event_flags) OVERRIDE;
+  virtual bool IsActive() const override;
+  virtual bool IsEnabled() const override;
+  virtual void Execute(int event_flags) override;
 
  private:
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // The browser which is associated which this item.
   Browser* browser_;

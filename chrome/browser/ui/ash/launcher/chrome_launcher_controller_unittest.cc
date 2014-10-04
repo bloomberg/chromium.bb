@@ -98,27 +98,27 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
   }
 
   // Overridden from ash::ShelfModelObserver:
-  virtual void ShelfItemAdded(int index) OVERRIDE {
+  virtual void ShelfItemAdded(int index) override {
     ++added_;
     last_index_ = index;
   }
 
-  virtual void ShelfItemRemoved(int index, ash::ShelfID id) OVERRIDE {
+  virtual void ShelfItemRemoved(int index, ash::ShelfID id) override {
     ++removed_;
     last_index_ = index;
   }
 
   virtual void ShelfItemChanged(int index,
-                                const ash::ShelfItem& old_item) OVERRIDE {
+                                const ash::ShelfItem& old_item) override {
     ++changed_;
     last_index_ = index;
   }
 
-  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE {
+  virtual void ShelfItemMoved(int start_index, int target_index) override {
     last_index_ = target_index;
   }
 
-  virtual void ShelfStatusChanged() OVERRIDE {
+  virtual void ShelfStatusChanged() override {
   }
 
   void clear_counts() {
@@ -152,14 +152,14 @@ class TestAppIconLoaderImpl : public extensions::AppIconLoader {
   }
 
   // AppIconLoader implementation:
-  virtual void FetchImage(const std::string& id) OVERRIDE {
+  virtual void FetchImage(const std::string& id) override {
     ++fetch_count_;
   }
 
-  virtual void ClearImage(const std::string& id) OVERRIDE {
+  virtual void ClearImage(const std::string& id) override {
   }
 
-  virtual void UpdateImage(const std::string& id) OVERRIDE {
+  virtual void UpdateImage(const std::string& id) override {
   }
 
   int fetch_count() const { return fetch_count_; }
@@ -188,12 +188,12 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
   }
 
   // AppTabHelper implementation:
-  virtual std::string GetAppID(content::WebContents* tab) OVERRIDE {
+  virtual std::string GetAppID(content::WebContents* tab) override {
     return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
         std::string();
   }
 
-  virtual bool IsValidIDForCurrentUser(const std::string& id) OVERRIDE {
+  virtual bool IsValidIDForCurrentUser(const std::string& id) override {
     for (TabToStringMap::const_iterator i = tab_id_map_.begin();
          i != tab_id_map_.end(); ++i) {
       if (i->second == id)
@@ -202,7 +202,7 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
     return false;
   }
 
-  virtual void SetCurrentUser(Profile* profile) OVERRIDE {
+  virtual void SetCurrentUser(Profile* profile) override {
     // We can ignore this for now.
   }
 
@@ -227,15 +227,15 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual ~TestV2AppLauncherItemController() {}
 
   // Override for LauncherItemController:
-  virtual bool IsOpen() const OVERRIDE { return true; }
-  virtual bool IsVisible() const OVERRIDE { return true; }
-  virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE {}
-  virtual bool Activate(ash::LaunchSource source) OVERRIDE { return false; }
-  virtual void Close() OVERRIDE {}
-  virtual bool ItemSelected(const ui::Event& event) OVERRIDE { return false; }
-  virtual base::string16 GetTitle() OVERRIDE { return base::string16(); }
+  virtual bool IsOpen() const override { return true; }
+  virtual bool IsVisible() const override { return true; }
+  virtual void Launch(ash::LaunchSource source, int event_flags) override {}
+  virtual bool Activate(ash::LaunchSource source) override { return false; }
+  virtual void Close() override {}
+  virtual bool ItemSelected(const ui::Event& event) override { return false; }
+  virtual base::string16 GetTitle() override { return base::string16(); }
   virtual ChromeLauncherAppMenuItems GetApplicationList(
-      int event_flags) OVERRIDE {
+      int event_flags) override {
     ChromeLauncherAppMenuItems items;
     items.push_back(
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
@@ -243,14 +243,14 @@ class TestV2AppLauncherItemController : public LauncherItemController {
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
     return items.Pass();
   }
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) OVERRIDE {
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) override {
     return NULL;
   }
-  virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE {
+  virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
     return NULL;
   }
-  virtual bool IsDraggable() OVERRIDE { return false; }
-  virtual bool ShouldShowTooltip() OVERRIDE { return false; }
+  virtual bool IsDraggable() override { return false; }
+  virtual bool ShouldShowTooltip() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
@@ -272,7 +272,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   virtual ~ChromeLauncherControllerTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     model_.reset(new ash::ShelfModel);
@@ -411,7 +411,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     InsertPrefValue(user_b, 1, extension8_->id());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (!ash::Shell::HasInstance())
       delete item_delegate_manager_;
     model_->RemoveObserver(model_observer_.get());
@@ -630,7 +630,7 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   }
   virtual ~TestBrowserWindowAura() {}
 
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
+  virtual gfx::NativeWindow GetNativeWindow() override {
     return native_window_.get();
   }
 
@@ -683,7 +683,7 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     message_loop_runner_->Quit();
   }
 
@@ -724,7 +724,7 @@ class V1App : public TestBrowserWindow {
   Browser* browser() { return browser_.get(); }
 
   // TestBrowserWindow override:
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
+  virtual gfx::NativeWindow GetNativeWindow() override {
     return native_window_.get();
   }
 
@@ -781,7 +781,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   }
 
   // Overwrite the Setup function to enable multi profile and needed objects.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
 
@@ -903,10 +903,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   ash::test::TestShellDelegate* shell_delegate() { return shell_delegate_; }
 
   // Override BrowserWithTestWindowTest:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
+  virtual TestingProfile* CreateProfile() override {
     return CreateMultiUserProfile("user1");
   }
-  virtual void DestroyProfile(TestingProfile* profile) OVERRIDE {
+  virtual void DestroyProfile(TestingProfile* profile) override {
     // Delete the profile through our profile manager.
     ProfileToNameMap::iterator it = created_profiles_.find(profile);
     DCHECK(it != created_profiles_.end());

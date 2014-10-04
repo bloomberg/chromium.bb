@@ -196,10 +196,10 @@ class PanelManager : public DisplaySettingsProvider::DisplayObserver,
   void Initialize(DisplaySettingsProvider* provider);
 
   // Overridden from DisplaySettingsProvider::DisplayObserver:
-  virtual void OnDisplayChanged() OVERRIDE;
+  virtual void OnDisplayChanged() override;
 
   // Overridden from DisplaySettingsProvider::FullScreenObserver:
-  virtual void OnFullScreenModeChanged(bool is_full_screen) OVERRIDE;
+  virtual void OnFullScreenModeChanged(bool is_full_screen) override;
 
   // Returns the collection to which a new panel should add. The new panel
   // is expected to be created with |bounds| and |mode|. The size of |bounds|

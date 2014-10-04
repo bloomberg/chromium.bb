@@ -51,16 +51,16 @@ class AppWindowLauncherController
 
   // Overridden from AppWindowRegistry::Observer:
   virtual void OnAppWindowIconChanged(
-      extensions::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowShown(extensions::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) OVERRIDE;
+      extensions::AppWindow* app_window) override;
+  virtual void OnAppWindowShown(extensions::AppWindow* app_window) override;
+  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) override;
 
   // Overriden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // Overriden from client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
  protected:
   // Registers a app window with the shelf and this object.

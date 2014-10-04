@@ -56,10 +56,10 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   virtual ~ScreenshotTaker();
 
   // Overridden from ash::ScreenshotDelegate:
-  virtual void HandleTakeScreenshotForAllRootWindows() OVERRIDE;
+  virtual void HandleTakeScreenshotForAllRootWindows() override;
   virtual void HandleTakePartialScreenshot(aura::Window* window,
-                                           const gfx::Rect& rect) OVERRIDE;
-  virtual bool CanTakeScreenshot() OVERRIDE;
+                                           const gfx::Rect& rect) override;
+  virtual bool CanTakeScreenshot() override;
 
   void ShowNotification(
       ScreenshotTakerObserver::Result screenshot_result,

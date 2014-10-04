@@ -21,7 +21,7 @@ class PanelActiveStateObserver : public TestPanelNotificationObserver {
 
  private:
   // TestNotificationObserver override:
-  virtual bool AtExpectedState() OVERRIDE;
+  virtual bool AtExpectedState() override;
 
   Panel* panel_;
   bool expect_active_;

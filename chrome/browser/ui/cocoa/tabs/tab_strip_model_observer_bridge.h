@@ -29,34 +29,34 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
   // Overridden from TabStripModelObserver
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
-                             bool foreground) OVERRIDE;
+                             bool foreground) override;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             content::WebContents* contents,
-                            int index) OVERRIDE;
+                            int index) override;
   virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) OVERRIDE;
-  virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
+                             int index) override;
+  virtual void TabDeactivated(content::WebContents* contents) override;
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                int reason) OVERRIDE;
+                                int reason) override;
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
-      const ui::ListSelectionModel& old_model) OVERRIDE;
+      const ui::ListSelectionModel& old_model) override;
   virtual void TabMoved(content::WebContents* contents,
                         int from_index,
-                        int to_index) OVERRIDE;
+                        int to_index) override;
   virtual void TabChangedAt(content::WebContents* contents,
                             int index,
-                            TabChangeType change_type) OVERRIDE;
+                            TabChangeType change_type) override;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
                              content::WebContents* new_contents,
-                             int index) OVERRIDE;
+                             int index) override;
   virtual void TabMiniStateChanged(content::WebContents* contents,
-                                   int index) OVERRIDE;
-  virtual void TabStripEmpty() OVERRIDE;
-  virtual void TabStripModelDeleted() OVERRIDE;
+                                   int index) override;
+  virtual void TabStripEmpty() override;
+  virtual void TabStripModelDeleted() override;
 
  private:
   id controller_;  // weak, owns me

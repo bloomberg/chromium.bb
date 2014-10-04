@@ -21,9 +21,9 @@ class GeneratedCreditCardBubbleCocoa : public GeneratedCreditCardBubbleView {
   virtual ~GeneratedCreditCardBubbleCocoa();
 
   // GeneratedCreditCardBubbleView interface.
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual bool IsHiding() const OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual bool IsHiding() const override;
 
   // Callbacks.
   void OnBubbleClosing();

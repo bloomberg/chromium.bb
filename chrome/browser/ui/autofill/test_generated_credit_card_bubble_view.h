@@ -29,9 +29,9 @@ class TestGeneratedCreditCardBubbleView : public GeneratedCreditCardBubbleView {
   virtual ~TestGeneratedCreditCardBubbleView();
 
   // GeneratedCreditCardBubbleView:
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual bool IsHiding() const OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual bool IsHiding() const override;
 
   base::WeakPtr<TestGeneratedCreditCardBubbleView> GetWeakPtr();
 

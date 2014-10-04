@@ -21,36 +21,36 @@ class BubbleViewError : public GlobalErrorWithStandardBubble {
 
   int bubble_view_close_count() { return bubble_view_close_count_; }
 
-  virtual bool HasMenuItem() OVERRIDE { return false; }
-  virtual int MenuItemCommandID() OVERRIDE {
+  virtual bool HasMenuItem() override { return false; }
+  virtual int MenuItemCommandID() override {
     ADD_FAILURE();
     return 0;
   }
-  virtual base::string16 MenuItemLabel() OVERRIDE {
+  virtual base::string16 MenuItemLabel() override {
     ADD_FAILURE();
     return base::string16();
   }
-  virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { ADD_FAILURE(); }
+  virtual void ExecuteMenuItem(Browser* browser) override { ADD_FAILURE(); }
 
-  virtual bool HasBubbleView() OVERRIDE { return true; }
-  virtual base::string16 GetBubbleViewTitle() OVERRIDE {
+  virtual bool HasBubbleView() override { return true; }
+  virtual base::string16 GetBubbleViewTitle() override {
     return base::string16();
   }
-  virtual std::vector<base::string16> GetBubbleViewMessages() OVERRIDE {
+  virtual std::vector<base::string16> GetBubbleViewMessages() override {
     return std::vector<base::string16>();
   }
-  virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE {
+  virtual base::string16 GetBubbleViewAcceptButtonLabel() override {
     return base::string16();
   }
-  virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE {
+  virtual base::string16 GetBubbleViewCancelButtonLabel() override {
     return base::string16();
   }
-  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE {
+  virtual void OnBubbleViewDidClose(Browser* browser) override {
     EXPECT_TRUE(browser);
     ++bubble_view_close_count_;
   }
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE {}
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE {}
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) override {}
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) override {}
 
  private:
   int bubble_view_close_count_;

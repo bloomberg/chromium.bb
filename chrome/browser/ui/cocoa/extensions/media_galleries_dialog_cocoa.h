@@ -42,17 +42,17 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   void OnAuxiliaryButtonClicked();
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGalleries() OVERRIDE;
+  virtual void UpdateGalleries() override;
 
   // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) OVERRIDE;
+      ConstrainedWindowMac* window) override;
 
   // MediaGalleryListEntryController implementation.
   virtual void OnCheckboxToggled(MediaGalleryPrefId pref_id,
-                                 bool checked) OVERRIDE;
-  virtual void OnFolderViewerClicked(MediaGalleryPrefId prefId) OVERRIDE;
-  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId pref_id) OVERRIDE;
+                                 bool checked) override;
+  virtual void OnFolderViewerClicked(MediaGalleryPrefId prefId) override;
+  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId pref_id) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -62,7 +62,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
   // MediaGalleriesDialog implementation:
-  virtual void AcceptDialogForTesting() OVERRIDE;
+  virtual void AcceptDialogForTesting() override;
 
   void InitDialogControls();
   CGFloat CreateCheckboxes(

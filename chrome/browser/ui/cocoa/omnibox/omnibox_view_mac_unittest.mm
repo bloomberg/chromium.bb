@@ -27,7 +27,7 @@ class MockOmniboxEditModel : public OmniboxEditModel {
         up_or_down_count_(0) {
   }
 
-  virtual void OnUpOrDownKeyPressed(int count) OVERRIDE {
+  virtual void OnUpOrDownKeyPressed(int count) override {
     up_or_down_count_ = count;
   }
 
@@ -49,12 +49,12 @@ class MockOmniboxPopupView : public OmniboxPopupView {
   virtual ~MockOmniboxPopupView() {}
 
   // Overridden from OmniboxPopupView:
-  virtual bool IsOpen() const OVERRIDE { return is_open_; }
-  virtual void InvalidateLine(size_t line) OVERRIDE {}
-  virtual void UpdatePopupAppearance() OVERRIDE {}
-  virtual gfx::Rect GetTargetBounds() OVERRIDE { return gfx::Rect(); }
-  virtual void PaintUpdatesNow() OVERRIDE {}
-  virtual void OnDragCanceled() OVERRIDE {}
+  virtual bool IsOpen() const override { return is_open_; }
+  virtual void InvalidateLine(size_t line) override {}
+  virtual void UpdatePopupAppearance() override {}
+  virtual gfx::Rect GetTargetBounds() override { return gfx::Rect(); }
+  virtual void PaintUpdatesNow() override {}
+  virtual void OnDragCanceled() override {}
 
   void set_is_open(bool is_open) { is_open_ = is_open; }
 
@@ -70,10 +70,10 @@ class TestingToolbarModelDelegate : public ToolbarModelDelegate {
   virtual ~TestingToolbarModelDelegate() {}
 
   // Overridden from ToolbarModelDelegate:
-  virtual content::WebContents* GetActiveWebContents() const OVERRIDE {
+  virtual content::WebContents* GetActiveWebContents() const override {
     return NULL;
   }
-  virtual bool InTabbedBrowser() const OVERRIDE {
+  virtual bool InTabbedBrowser() const override {
     return true;
   }
 
@@ -91,16 +91,16 @@ class TestingOmniboxEditController : public OmniboxEditController {
 
  protected:
   // Overridden from OmniboxEditController:
-  virtual void Update(const content::WebContents* contents) OVERRIDE {}
-  virtual void OnChanged() OVERRIDE {}
-  virtual void OnSetFocus() OVERRIDE {}
-  virtual void ShowURL() OVERRIDE {}
-  virtual void HideURL() OVERRIDE {}
-  virtual void EndOriginChipAnimations(bool cancel_fade) OVERRIDE {}
-  virtual InstantController* GetInstant() OVERRIDE { return NULL; }
-  virtual content::WebContents* GetWebContents() OVERRIDE { return NULL; }
-  virtual ToolbarModel* GetToolbarModel() OVERRIDE { return toolbar_model_; }
-  virtual const ToolbarModel* GetToolbarModel() const OVERRIDE {
+  virtual void Update(const content::WebContents* contents) override {}
+  virtual void OnChanged() override {}
+  virtual void OnSetFocus() override {}
+  virtual void ShowURL() override {}
+  virtual void HideURL() override {}
+  virtual void EndOriginChipAnimations(bool cancel_fade) override {}
+  virtual InstantController* GetInstant() override { return NULL; }
+  virtual content::WebContents* GetWebContents() override { return NULL; }
+  virtual ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
+  virtual const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;
   }
 

@@ -50,10 +50,10 @@ class BrowserInstantController : public SearchModelObserver,
  private:
   // SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) OVERRIDE;
+                            const SearchModel::State& new_state) override;
 
   // InstantServiceObserver:
-  virtual void DefaultSearchProviderChanged() OVERRIDE;
+  virtual void DefaultSearchProviderChanged() override;
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.

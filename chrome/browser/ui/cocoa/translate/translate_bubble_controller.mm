@@ -46,16 +46,16 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
 
  private:
   // ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() const override {
     return items_.size();
   }
-  virtual base::string16 GetItemAt(int index) OVERRIDE {
+  virtual base::string16 GetItemAt(int index) override {
     return items_[index];
   }
-  virtual bool IsItemSeparatorAt(int index) OVERRIDE {
+  virtual bool IsItemSeparatorAt(int index) override {
     return false;
   }
-  virtual int GetDefaultIndex() const OVERRIDE {
+  virtual int GetDefaultIndex() const override {
     return 0;
   }
 

@@ -52,7 +52,7 @@ class ContentSettingBubbleControllerTest
   ContentSettingBubbleController* CreateBubbleController(
       ContentSettingsType settingsType);
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeUnitTestSuite::InitializeProviders();
     ChromeUnitTestSuite::InitializeResourceBundle();
     content_client_.reset(new ChromeContentClient);

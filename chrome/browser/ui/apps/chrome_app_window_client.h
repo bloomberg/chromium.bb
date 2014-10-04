@@ -27,13 +27,13 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   // extensions::AppWindowClient
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
-      const extensions::AppWindow::CreateParams& params) OVERRIDE;
+      const extensions::AppWindow::CreateParams& params) override;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
-                                  const base::Closure& callback) OVERRIDE;
-  virtual bool IsCurrentChannelOlderThanDev() OVERRIDE;
+                                  const base::Closure& callback) override;
+  virtual bool IsCurrentChannelOlderThanDev() override;
 
   // Implemented in platform specific code.
   static extensions::NativeAppWindow* CreateNativeAppWindowImpl(

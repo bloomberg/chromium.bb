@@ -25,10 +25,10 @@ class ChromeWebContentsViewDelegateAndroid
   // WebContentsViewDelegate:
   virtual void ShowContextMenu(
       content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
 
   // WebContentsViewDelegate:
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
+  virtual content::WebDragDestDelegate* GetDragDestDelegate() override;
 
  private:
   // The WebContents that owns the view and this delegate transitively.

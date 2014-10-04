@@ -28,7 +28,7 @@ using content::WebContentsTester;
 
 class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     TabSpecificContentSettings::CreateForWebContents(web_contents());
     InfoBarService::CreateForWebContents(web_contents());
@@ -814,7 +814,7 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
-  virtual void RegisterExternalHandler(const std::string& protocol) OVERRIDE {
+  virtual void RegisterExternalHandler(const std::string& protocol) override {
     // Overrides in order to not register the handler with the
     // ChildProcessSecurityPolicy. That has persistent and unalterable
     // side effects on other tests.
@@ -822,19 +822,19 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 
   virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
       ShellIntegration::DefaultWebClientObserver* observer,
-      const std::string& protocol) OVERRIDE {
+      const std::string& protocol) override {
     VLOG(1) << "CreateShellWorker";
     return NULL;
   }
 
   virtual ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
-      ProtocolHandlerRegistry* registry) OVERRIDE {
+      ProtocolHandlerRegistry* registry) override {
     return NULL;
   }
 
   virtual void RegisterWithOSAsDefaultClient(
       const std::string& protocol,
-      ProtocolHandlerRegistry* registry) OVERRIDE {
+      ProtocolHandlerRegistry* registry) override {
     VLOG(1) << "Register With OS";
   }
 };

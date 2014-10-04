@@ -40,7 +40,7 @@ class BookmarkAppleScriptTest : public CocoaProfileTest {
  public:
   BookmarkAppleScriptTest();
   virtual ~BookmarkAppleScriptTest();
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
  private:
   base::scoped_nsobject<FakeAppDelegate> appDelegate_;
 

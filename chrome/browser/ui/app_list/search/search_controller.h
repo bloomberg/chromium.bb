@@ -58,7 +58,7 @@ class SearchController : public SpeechUIModelObserver {
 
   // SpeechUIModelObserver overrides:
   virtual void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) OVERRIDE;
+      SpeechRecognitionState new_state) override;
 
   Profile* profile_;
   SearchBoxModel* search_box_;

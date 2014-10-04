@@ -47,7 +47,7 @@ class BookmarkInstantExtendedTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
+  virtual TestingProfile* CreateProfile() override {
     TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
     // TemplateURLService is normally NULL during testing. Instant extended
     // needs this service so set a custom factory function.

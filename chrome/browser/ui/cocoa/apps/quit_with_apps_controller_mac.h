@@ -20,13 +20,13 @@ class QuitWithAppsController : public NotificationDelegate {
   QuitWithAppsController();
 
   // NotificationDelegate interface.
-  virtual void Display() OVERRIDE;
-  virtual void Error() OVERRIDE;
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual void Click() OVERRIDE;
-  virtual void ButtonClick(int button_index) OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual std::string id() const OVERRIDE;
+  virtual void Display() override;
+  virtual void Error() override;
+  virtual void Close(bool by_user) override;
+  virtual void Click() override;
+  virtual void ButtonClick(int button_index) override;
+  virtual content::WebContents* GetWebContents() const override;
+  virtual std::string id() const override;
 
   // Attempt to quit Chrome. This will display a notification and return false
   // if there are apps running.

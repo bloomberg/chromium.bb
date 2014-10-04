@@ -27,44 +27,44 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
   virtual ~RecentlyUsedFoldersComboModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
-  virtual bool IsItemSeparatorAt(int index) OVERRIDE;
-  virtual int GetDefaultIndex() const OVERRIDE;
-  virtual void AddObserver(ui::ComboboxModelObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(ui::ComboboxModelObserver* observer) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
+  virtual bool IsItemSeparatorAt(int index) override;
+  virtual int GetDefaultIndex() const override;
+  virtual void AddObserver(ui::ComboboxModelObserver* observer) override;
+  virtual void RemoveObserver(ui::ComboboxModelObserver* observer) override;
 
   // Overriden from BookmarkModelObserver:
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+                                   bool ids_reassigned) override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE;
+                                 int new_index) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void OnWillRemoveBookmarks(BookmarkModel* model,
                                      const BookmarkNode* parent,
                                      int old_index,
-                                     const BookmarkNode* node) OVERRIDE;
+                                     const BookmarkNode* node) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE;
+                                   const BookmarkNode* node) override;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE;
+                                          const BookmarkNode* node) override;
   virtual void BookmarkNodeChildrenReordered(
       BookmarkModel* model,
-      const BookmarkNode* node) OVERRIDE;
+      const BookmarkNode* node) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
 
   // If necessary this function moves |node| into the corresponding folder for
   // the given |selected_index|.

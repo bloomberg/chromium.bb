@@ -174,7 +174,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
 
  private:
   // AppListModelObserver
-  virtual void OnAppListItemAdded(AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemAdded(AppListItem* item) override {
     DCHECK(!adding_item_);
     adding_item_ = item;  // Ignore updates while adding an item.
     VLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();
@@ -182,7 +182,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
     adding_item_ = NULL;
   }
 
-  virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) override {
     DCHECK(!adding_item_);
     VLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
     // Don't sync folder removal in case the folder still exists on another
@@ -193,7 +193,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
     owner_->RemoveSyncItem(item->id());
   }
 
-  virtual void OnAppListItemUpdated(AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemUpdated(AppListItem* item) override {
     if (adding_item_) {
       // Adding an item may trigger update notifications which should be
       // ignored.

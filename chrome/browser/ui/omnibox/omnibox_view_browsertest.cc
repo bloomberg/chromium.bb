@@ -139,7 +139,7 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 class OmniboxViewTest : public InProcessBrowserTest,
                         public content::NotificationObserver {
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     chrome::FocusLocationBar(browser());
@@ -341,7 +341,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       case chrome::NOTIFICATION_TAB_PARENTED:

@@ -66,7 +66,7 @@ class GeneratedCreditCardBubbleController
   // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   // Returns whether |bubble_| is currently in the process of hiding.
   bool IsHiding() const;

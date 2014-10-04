@@ -117,19 +117,19 @@ class FastUnloadController : public content::NotificationObserver,
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
-                             bool foreground) OVERRIDE;
+                             bool foreground) override;
   virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) OVERRIDE;
+                             int index) override;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
                              content::WebContents* new_contents,
-                             int index) OVERRIDE;
-  virtual void TabStripEmpty() OVERRIDE;
+                             int index) override;
+  virtual void TabStripEmpty() override;
 
   void TabAttachedImpl(content::WebContents* contents);
   void TabDetachedImpl(content::WebContents* contents);

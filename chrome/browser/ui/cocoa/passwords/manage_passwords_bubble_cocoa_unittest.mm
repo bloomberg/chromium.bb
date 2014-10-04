@@ -29,7 +29,7 @@
 
 class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
 
     // Create the WebContents.

@@ -22,7 +22,7 @@ class RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   virtual ~RecentTabsMenuModelDelegate();
 
   // ui::MenuModelDelegate:
-  virtual void OnIconChanged(int index) OVERRIDE;
+  virtual void OnIconChanged(int index) override;
 
  private:
   ui::MenuModel* model_;  // weak

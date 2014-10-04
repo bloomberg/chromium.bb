@@ -51,11 +51,11 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
     return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
   }
 
-  virtual bool FirstSetupInProgress() const OVERRIDE {
+  virtual bool FirstSetupInProgress() const override {
     return first_setup_in_progress_;
   }
 
-  virtual bool sync_initialized() const OVERRIDE { return sync_initialized_; }
+  virtual bool sync_initialized() const override { return sync_initialized_; }
 
   void set_first_setup_in_progress(bool in_progress) {
     first_setup_in_progress_ = in_progress;
@@ -113,7 +113,7 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
         sync_observer_(NULL),
         sync_observer_destroyed_(true) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents_observer_.reset(new MockWebContentsObserver(web_contents()));
     sync_service_ =
@@ -122,7 +122,7 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
                 profile(), OneClickTestProfileSyncService::Build));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Verify that the |sync_observer_| unregistered as an observer from the
     // sync service and freed its memory.
     EXPECT_TRUE(sync_observer_destroyed_);

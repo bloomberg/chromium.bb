@@ -163,7 +163,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             WebContents* contents,
-                            int index) OVERRIDE {
+                            int index) override {
     ++closing_count_;
   }
 
@@ -185,11 +185,11 @@ class InterstitialObserver : public content::WebContentsObserver {
         detach_callback_(detach_callback) {
   }
 
-  virtual void DidAttachInterstitialPage() OVERRIDE {
+  virtual void DidAttachInterstitialPage() override {
     attach_callback_.Run();
   }
 
-  virtual void DidDetachInterstitialPage() OVERRIDE {
+  virtual void DidDetachInterstitialPage() override {
     detach_callback_.Run();
   }
 
@@ -207,7 +207,7 @@ class TransferHttpsRedirectsContentBrowserClient
   virtual bool ShouldSwapProcessesForRedirect(
       content::ResourceContext* resource_context,
       const GURL& current_url,
-      const GURL& new_url) OVERRIDE {
+      const GURL& new_url) override {
     return new_url.SchemeIs(url::kHttpsScheme);
   }
 };
@@ -244,7 +244,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
     interstitial_page_->DontProceed();
   }
 
-  virtual std::string GetHTMLContents() OVERRIDE {
+  virtual std::string GetHTMLContents() override {
     return "<h1>INTERSTITIAL</h1>";
   }
 
@@ -280,7 +280,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
   // Cache the size when RenderViewHost is first created.
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE {
+      content::RenderViewHost* render_view_host) override {
     render_view_sizes_[render_view_host].rwhv_create_size =
         render_view_host->GetView()->GetViewBounds().size();
   }
@@ -289,7 +289,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   // is pending.
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      NavigationController::ReloadType reload_type) OVERRIDE {
+      NavigationController::ReloadType reload_type) override {
     if (wcv_resize_insets_.IsEmpty())
       return;
     // Resizing the main browser window by |wcv_resize_insets_| will
@@ -311,7 +311,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   // navigation entry is committed, which is before
   // WebContentsDelegate::DidNavigateMainFramePostCommit is called.
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& details) OVERRIDE {
+      const content::LoadCommittedDetails& details) override {
     content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     render_view_sizes_[rvh].rwhv_commit_size =
         web_contents()->GetRenderWidgetHostView()->GetViewBounds().size();
@@ -631,11 +631,11 @@ class RedirectObserver : public content::WebContentsObserver {
 
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE {
+      const content::FrameNavigateParams& params) override {
     params_ = params;
   }
 
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     // Make sure we don't close the tab while the observer is in scope.
     // See http://crbug.com/314036.
     FAIL() << "WebContents closed during navigation (http://crbug.com/314036).";
@@ -847,7 +847,7 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
   // This test is for testing a specific shutdown behavior. This mimics what
   // happens in InProcessBrowserTest::RunTestOnMainThread and QuitBrowsers, but
   // ensures that it happens through the single IDC_EXIT of the test.
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // Cycle both the MessageLoop and the Cocoa runloop twice to flush out any
     // Chrome work that generates Cocoa work. Do this twice since there are two
     // Browsers that must be closed.
@@ -2015,7 +2015,7 @@ class MockWebContentsObserver : public WebContentsObserver {
         got_user_gesture_(false) {
   }
 
-  virtual void DidGetUserGesture() OVERRIDE {
+  virtual void DidGetUserGesture() override {
     got_user_gesture_ = true;
   }
 
@@ -2194,7 +2194,7 @@ class KioskModeTest : public BrowserTest {
  public:
   KioskModeTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kKioskMode);
   }
 };
@@ -2219,7 +2219,7 @@ class LaunchBrowserWithNonAsciiUserDatadir : public BrowserTest {
  public:
   LaunchBrowserWithNonAsciiUserDatadir() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
     tmp_profile = tmp_profile.Append(L"Test Chrome G\u00E9raldine");
@@ -2244,7 +2244,7 @@ class RunInBackgroundTest : public BrowserTest {
  public:
   RunInBackgroundTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kKeepAliveForTest);
   }
 };
@@ -2274,7 +2274,7 @@ class NoStartupWindowTest : public BrowserTest {
  public:
   NoStartupWindowTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kNoStartupWindow);
     command_line->AppendSwitch(switches::kKeepAliveForTest);
   }
@@ -2328,7 +2328,7 @@ class AppModeTest : public BrowserTest {
  public:
   AppModeTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     GURL url = ui_test_utils::GetTestUrl(
        base::FilePath(), base::FilePath().AppendASCII("title1.html"));
     command_line->AppendSwitchASCII(switches::kApp, url.spec());

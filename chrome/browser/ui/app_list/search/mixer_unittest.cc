@@ -29,13 +29,13 @@ class TestSearchResult : public ChromeSearchResult {
   virtual ~TestSearchResult() {}
 
   // ChromeSearchResult overides:
-  virtual void Open(int event_flags) OVERRIDE {}
-  virtual void InvokeAction(int action_index, int event_flags) OVERRIDE {}
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE {
+  virtual void Open(int event_flags) override {}
+  virtual void InvokeAction(int action_index, int event_flags) override {}
+  virtual scoped_ptr<ChromeSearchResult> Duplicate() override {
     return scoped_ptr<ChromeSearchResult>(
         new TestSearchResult(id(), relevance())).Pass();
   }
-  virtual ChromeSearchResultType GetType() OVERRIDE {
+  virtual ChromeSearchResultType GetType() override {
     return SEARCH_RESULT_TYPE_BOUNDARY;
   }
 
@@ -63,7 +63,7 @@ class TestSearchProvider : public SearchProvider {
   virtual ~TestSearchProvider() {}
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) OVERRIDE {
+  virtual void Start(const base::string16& query) override {
     ClearResults();
     for (size_t i = 0; i < count_; ++i) {
       const std::string id =
@@ -72,7 +72,7 @@ class TestSearchProvider : public SearchProvider {
       Add(scoped_ptr<SearchResult>(new TestSearchResult(id, relevance)).Pass());
     }
   }
-  virtual void Stop() OVERRIDE {}
+  virtual void Stop() override {}
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_count(size_t count) { count_ = count; }
@@ -90,7 +90,7 @@ class MixerTest : public testing::Test {
   virtual ~MixerTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     results_.reset(new AppListModel::SearchResults);
 
     providers_.push_back(new TestSearchProvider("app"));

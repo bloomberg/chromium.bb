@@ -186,7 +186,7 @@ class ContentSettingBubbleWebContentsObserverBridge
   // WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE {
+      const content::FrameNavigateParams& params) override {
     // Content settings are based on the main frame, so if it switches then
     // close up shop.
     [controller_ closeBubble:nil];

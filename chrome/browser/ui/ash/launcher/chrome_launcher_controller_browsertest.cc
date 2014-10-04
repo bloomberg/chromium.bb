@@ -94,7 +94,7 @@ class TestAppWindowRegistryObserver
   }
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE {
+  virtual void OnAppWindowIconChanged(AppWindow* app_window) override {
     ++icon_updates_;
   }
 
@@ -117,7 +117,7 @@ class LauncherPlatformAppBrowserTest
 
   virtual ~LauncherPlatformAppBrowserTest() {}
 
-  virtual void RunTestOnMainThreadLoop() OVERRIDE {
+  virtual void RunTestOnMainThreadLoop() override {
     shelf_ = ash::Shelf::ForPrimaryDisplay();
     controller_ = ChromeLauncherController::instance();
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
@@ -192,7 +192,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
   virtual ~ShelfAppBrowserTest() {}
 
-  virtual void RunTestOnMainThreadLoop() OVERRIDE {
+  virtual void RunTestOnMainThreadLoop() override {
     shelf_ = ash::Shelf::ForPrimaryDisplay();
     model_ = ash::test::ShellTestApi(ash::Shell::GetInstance()).shelf_model();
     controller_ = ChromeLauncherController::instance();
@@ -312,7 +312,7 @@ class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
   ShelfAppBrowserTestNoDefaultBrowser() {}
   virtual ~ShelfAppBrowserTestNoDefaultBrowser() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ShelfAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kNoStartupWindow);
   }
@@ -329,7 +329,7 @@ class ShelfAppBrowserNoMinimizeOnClick : public LauncherPlatformAppBrowserTest {
   ShelfAppBrowserNoMinimizeOnClick() {}
   virtual ~ShelfAppBrowserNoMinimizeOnClick() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     LauncherPlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kDisableMinimizeOnSecondLauncherItemClick);
@@ -1735,7 +1735,7 @@ class ShelfAppBrowserTestWithMultiMonitor
   ShelfAppBrowserTestWithMultiMonitor() {}
   virtual ~ShelfAppBrowserTestWithMultiMonitor() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ShelfAppBrowserTestNoDefaultBrowser::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "800x600,801+0-800x600");

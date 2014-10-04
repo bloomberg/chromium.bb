@@ -75,18 +75,18 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver:
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) override;
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+      const content::LoadCommittedDetails& load_details) override;
+  virtual void WebContentsDestroyed() override;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Once the load has committed and any URL fetch has completed, this displays
   // the alternate nav infobar if necessary, and deletes |this|.

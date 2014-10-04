@@ -37,7 +37,7 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   ProfileChooserControllerTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser()->profile());
 
@@ -68,7 +68,7 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     EXPECT_EQ(3U, menu_->GetNumberOfItems());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [controller() close];
     controller_.reset();
     CocoaProfileTest::TearDown();

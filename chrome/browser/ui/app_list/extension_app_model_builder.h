@@ -59,34 +59,34 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
 
   // extensions::InstallObserver.
   virtual void OnBeginExtensionInstall(
-      const ExtensionInstallParams& params) OVERRIDE;
+      const ExtensionInstallParams& params) override;
   virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) OVERRIDE;
-  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
+                                  int percent_downloaded) override;
+  virtual void OnInstallFailure(const std::string& extension_id) override;
   virtual void OnDisabledExtensionUpdated(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnAppInstalledToAppList(
-      const std::string& extension_id) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+      const std::string& extension_id) override;
+  virtual void OnShutdown() override;
 
   // extensions::ExtensionRegistryObserver.
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
+      extensions::UninstallReason reason) override;
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // AppListItemListObserver.
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               app_list::AppListItem* item) OVERRIDE;
+                               app_list::AppListItem* item) override;
 
   scoped_ptr<ExtensionAppItem> CreateAppItem(
       const std::string& extension_id,

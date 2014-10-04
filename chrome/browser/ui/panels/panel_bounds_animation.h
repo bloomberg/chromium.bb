@@ -19,7 +19,7 @@ class PanelBoundsAnimation : public gfx::LinearAnimation {
                        const gfx::Rect& initial_bounds,
                        const gfx::Rect& final_bounds);
   virtual ~PanelBoundsAnimation();
-  virtual double GetCurrentValue() const OVERRIDE;
+  virtual double GetCurrentValue() const override;
 
   // Static because it is reused on Mac to override NSAnimation's calculation.
   static double ComputeAnimationValue(double progress,
@@ -27,7 +27,7 @@ class PanelBoundsAnimation : public gfx::LinearAnimation {
                                       double animation_stop_to_show_titlebar);
 
  protected:
-  virtual void AnimateToState(double state) OVERRIDE {}
+  virtual void AnimateToState(double state) override {}
 
  private:
   Panel* panel_;  // Weak, owns us.

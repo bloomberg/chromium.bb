@@ -98,10 +98,10 @@ class AutofillProfileWrapper : public DataModelWrapper {
                          size_t variant);
   virtual ~AutofillProfileWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
-      OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+      override;
+  virtual const std::string& GetLanguageCode() const override;
 
  protected:
   // Returns the variant that should be used when dealing with an element that
@@ -125,7 +125,7 @@ class AutofillShippingAddressWrapper : public AutofillProfileWrapper {
   explicit AutofillShippingAddressWrapper(const AutofillProfile* profile);
   virtual ~AutofillShippingAddressWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillShippingAddressWrapper);
@@ -137,11 +137,11 @@ class AutofillCreditCardWrapper : public DataModelWrapper {
   explicit AutofillCreditCardWrapper(const CreditCard* card);
   virtual ~AutofillCreditCardWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
-  virtual gfx::Image GetIcon() OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
+  virtual gfx::Image GetIcon() override;
   virtual bool GetDisplayText(base::string16* vertically_compact,
-                              base::string16* horizontally_compact) OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+                              base::string16* horizontally_compact) override;
+  virtual const std::string& GetLanguageCode() const override;
 
  private:
   const CreditCard* card_;
@@ -155,12 +155,12 @@ class WalletAddressWrapper : public DataModelWrapper {
   explicit WalletAddressWrapper(const wallet::Address* address);
   virtual ~WalletAddressWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
-      OVERRIDE;
+      override;
   virtual bool GetDisplayText(base::string16* vertically_compact,
-                              base::string16* horizontally_compact) OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+                              base::string16* horizontally_compact) override;
+  virtual const std::string& GetLanguageCode() const override;
 
  private:
   const wallet::Address* address_;
@@ -175,13 +175,13 @@ class WalletInstrumentWrapper : public DataModelWrapper {
       const wallet::WalletItems::MaskedInstrument* instrument);
   virtual ~WalletInstrumentWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
-      OVERRIDE;
-  virtual gfx::Image GetIcon() OVERRIDE;
+      override;
+  virtual gfx::Image GetIcon() override;
   virtual bool GetDisplayText(base::string16* vertically_compact,
-                              base::string16* horizontally_compact) OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+                              base::string16* horizontally_compact) override;
+  virtual const std::string& GetLanguageCode() const override;
 
  private:
   const wallet::WalletItems::MaskedInstrument* instrument_;
@@ -195,10 +195,10 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   explicit FullWalletBillingWrapper(wallet::FullWallet* full_wallet);
   virtual ~FullWalletBillingWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
   virtual bool GetDisplayText(base::string16* vertically_compact,
-                              base::string16* horizontally_compact) OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+                              base::string16* horizontally_compact) override;
+  virtual const std::string& GetLanguageCode() const override;
 
  private:
   wallet::FullWallet* full_wallet_;
@@ -212,8 +212,8 @@ class FullWalletShippingWrapper : public DataModelWrapper {
   explicit FullWalletShippingWrapper(wallet::FullWallet* full_wallet);
   virtual ~FullWalletShippingWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
+  virtual const std::string& GetLanguageCode() const override;
 
  private:
   wallet::FullWallet* full_wallet_;
@@ -228,8 +228,8 @@ class I18nAddressDataWrapper : public DataModelWrapper {
       const ::i18n::addressinput::AddressData* address);
   virtual ~I18nAddressDataWrapper();
 
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
-  virtual const std::string& GetLanguageCode() const OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type) const override;
+  virtual const std::string& GetLanguageCode() const override;
 
  private:
   const ::i18n::addressinput::AddressData* address_;

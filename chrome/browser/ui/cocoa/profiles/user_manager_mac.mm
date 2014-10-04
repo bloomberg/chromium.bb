@@ -35,7 +35,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
   // to the current window.
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE {
+      const content::NativeWebKeyboardEvent& event) override {
     if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
       return;
 

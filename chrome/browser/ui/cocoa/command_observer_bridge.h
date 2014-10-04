@@ -34,7 +34,7 @@ class CommandObserverBridge : public CommandObserver {
  protected:
   // Overridden from CommandObserver
   virtual void EnabledStateChangedForCommand(int command,
-                                             bool enabled) OVERRIDE;
+                                             bool enabled) override;
 
  private:
   id<CommandObserverProtocol> observer_;  // weak, owns me

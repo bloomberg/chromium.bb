@@ -57,16 +57,16 @@ class ToolkitDelegateMac : public RenderViewContextMenuBase::ToolkitDelegate {
 
  private:
   // ToolkitDelegate:
-  virtual void Init(ui::SimpleMenuModel* menu_model) OVERRIDE {
+  virtual void Init(ui::SimpleMenuModel* menu_model) override {
     context_menu_->InitToolkitMenu();
   }
-  virtual void Cancel() OVERRIDE{
+  virtual void Cancel() override{
     context_menu_->CancelToolkitMenu();
   }
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const base::string16& title) OVERRIDE {
+                              const base::string16& title) override {
     context_menu_->UpdateToolkitMenuItem(
         command_id, enabled, hidden, title);
   }

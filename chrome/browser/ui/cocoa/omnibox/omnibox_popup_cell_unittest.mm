@@ -14,7 +14,7 @@ class OmniboxPopupCellTest : public CocoaTest {
   OmniboxPopupCellTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaTest::SetUp();
     cell_.reset([[OmniboxPopupCell alloc] initTextCell:@""]);
     button_.reset([[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)]);

@@ -43,7 +43,7 @@ class HasTypedURLsTask : public history::HistoryDBTask {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     history::URLRows rows;
     backend->GetAllTypedURLs(&rows);
     if (!rows.empty()) {
@@ -54,7 +54,7 @@ class HasTypedURLsTask : public history::HistoryDBTask {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     cb_.Run(has_typed_urls_);
   }
 

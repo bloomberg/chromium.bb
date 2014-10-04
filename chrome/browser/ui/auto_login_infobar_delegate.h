@@ -56,18 +56,18 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual int GetIconID() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate() OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+  virtual void InfoBarDismissed() override;
+  virtual int GetIconID() const override;
+  virtual Type GetInfoBarType() const override;
+  virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate() override;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
 
   // SigninManagerBase::Observer:
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   const Params params_;
 

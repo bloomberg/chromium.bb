@@ -22,50 +22,50 @@ class PanelCocoa : public NativePanel {
   virtual ~PanelCocoa();
 
   // Overridden from NativePanel
-  virtual void ShowPanel() OVERRIDE;
-  virtual void ShowPanelInactive() OVERRIDE;
-  virtual gfx::Rect GetPanelBounds() const OVERRIDE;
-  virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetPanelBoundsInstantly(const gfx::Rect& bounds) OVERRIDE;
-  virtual void ClosePanel() OVERRIDE;
-  virtual void ActivatePanel() OVERRIDE;
-  virtual void DeactivatePanel() OVERRIDE;
-  virtual bool IsPanelActive() const OVERRIDE;
-  virtual void PreventActivationByOS(bool prevent_activation) OVERRIDE;
-  virtual gfx::NativeWindow GetNativePanelWindow() OVERRIDE;
-  virtual void UpdatePanelTitleBar() OVERRIDE;
-  virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
-  virtual void PanelWebContentsFocused(content::WebContents* contents) OVERRIDE;
-  virtual void PanelCut() OVERRIDE;
-  virtual void PanelCopy() OVERRIDE;
-  virtual void PanelPaste() OVERRIDE;
-  virtual void DrawAttention(bool draw_attention) OVERRIDE;
-  virtual bool IsDrawingAttention() const OVERRIDE;
+  virtual void ShowPanel() override;
+  virtual void ShowPanelInactive() override;
+  virtual gfx::Rect GetPanelBounds() const override;
+  virtual void SetPanelBounds(const gfx::Rect& bounds) override;
+  virtual void SetPanelBoundsInstantly(const gfx::Rect& bounds) override;
+  virtual void ClosePanel() override;
+  virtual void ActivatePanel() override;
+  virtual void DeactivatePanel() override;
+  virtual bool IsPanelActive() const override;
+  virtual void PreventActivationByOS(bool prevent_activation) override;
+  virtual gfx::NativeWindow GetNativePanelWindow() override;
+  virtual void UpdatePanelTitleBar() override;
+  virtual void UpdatePanelLoadingAnimations(bool should_animate) override;
+  virtual void PanelWebContentsFocused(content::WebContents* contents) override;
+  virtual void PanelCut() override;
+  virtual void PanelCopy() override;
+  virtual void PanelPaste() override;
+  virtual void DrawAttention(bool draw_attention) override;
+  virtual bool IsDrawingAttention() const override;
   virtual void HandlePanelKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
-  virtual bool IsPanelAlwaysOnTop() const OVERRIDE;
-  virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
-  virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
-  virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual void FullScreenModeChanged(bool is_full_screen) override;
+  virtual bool IsPanelAlwaysOnTop() const override;
+  virtual void SetPanelAlwaysOnTop(bool on_top) override;
+  virtual void UpdatePanelMinimizeRestoreButtonVisibility() override;
+  virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) override;
   virtual void PanelExpansionStateChanging(
       Panel::ExpansionState old_state,
-      Panel::ExpansionState new_state) OVERRIDE;
-  virtual void AttachWebContents(content::WebContents* contents) OVERRIDE;
-  virtual void DetachWebContents(content::WebContents* contents) OVERRIDE;
+      Panel::ExpansionState new_state) override;
+  virtual void AttachWebContents(content::WebContents* contents) override;
+  virtual void DetachWebContents(content::WebContents* contents) override;
 
   // These sizes are in screen coordinates.
   virtual gfx::Size WindowSizeFromContentSize(
-      const gfx::Size& content_size) const OVERRIDE;
+      const gfx::Size& content_size) const override;
   virtual gfx::Size ContentSizeFromWindowSize(
-      const gfx::Size& window_size) const OVERRIDE;
-  virtual int TitleOnlyHeight() const OVERRIDE;
+      const gfx::Size& window_size) const override;
+  virtual int TitleOnlyHeight() const override;
 
-  virtual void MinimizePanelBySystem() OVERRIDE;
-  virtual bool IsPanelMinimizedBySystem() const OVERRIDE;
-  virtual bool IsPanelShownOnActiveDesktop() const OVERRIDE;
-  virtual void ShowShadow(bool show) OVERRIDE;
-  virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
+  virtual void MinimizePanelBySystem() override;
+  virtual bool IsPanelMinimizedBySystem() const override;
+  virtual bool IsPanelShownOnActiveDesktop() const override;
+  virtual void ShowShadow(bool show) override;
+  virtual NativePanelTesting* CreateNativePanelTesting() override;
 
   Panel* panel() const;
   void DidCloseNativeWindow();

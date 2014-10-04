@@ -52,7 +52,7 @@ class MediaGalleriesDialogTest : public testing::Test {
   MediaGalleriesDialogTest() {}
   virtual ~MediaGalleriesDialogTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     std::vector<base::string16> headers;
     headers.push_back(base::string16());
     headers.push_back(base::ASCIIToUTF16("header2"));
@@ -62,7 +62,7 @@ class MediaGalleriesDialogTest : public testing::Test {
         Times(AnyNumber());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Mock::VerifyAndClearExpectations(&controller_);
     dialog_.reset();
   }

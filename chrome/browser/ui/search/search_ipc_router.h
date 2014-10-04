@@ -184,7 +184,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
 
   // Overridden from contents::WebContentsObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnInstantSupportDetermined(int page_seq_no, bool supports_instant) const;
   void OnVoiceSearchSupportDetermined(int page_id,

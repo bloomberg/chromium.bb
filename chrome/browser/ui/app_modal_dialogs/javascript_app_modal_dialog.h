@@ -45,9 +45,9 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   virtual ~JavaScriptAppModalDialog();
 
   // Overridden from AppModalDialog:
-  virtual NativeAppModalDialog* CreateNativeDialog() OVERRIDE;
-  virtual bool IsJavaScriptModalDialog() OVERRIDE;
-  virtual void Invalidate() OVERRIDE;
+  virtual NativeAppModalDialog* CreateNativeDialog() override;
+  virtual bool IsJavaScriptModalDialog() override;
+  virtual void Invalidate() override;
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);

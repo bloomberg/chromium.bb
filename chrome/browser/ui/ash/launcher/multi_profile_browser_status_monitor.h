@@ -17,9 +17,9 @@ class MultiProfileBrowserStatusMonitor : public BrowserStatusMonitor {
   virtual ~MultiProfileBrowserStatusMonitor();
 
   // BrowserStatusMonitor overrides.
-  virtual void ActiveUserChanged(const std::string& user_email) OVERRIDE;
-  virtual void AddV1AppToShelf(Browser* browser) OVERRIDE;
-  virtual void RemoveV1AppFromShelf(Browser* browser) OVERRIDE;
+  virtual void ActiveUserChanged(const std::string& user_email) override;
+  virtual void AddV1AppToShelf(Browser* browser) override;
+  virtual void RemoveV1AppFromShelf(Browser* browser) override;
 
  private:
   typedef std::vector<Browser*> AppList;

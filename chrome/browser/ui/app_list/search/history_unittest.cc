@@ -47,7 +47,7 @@ class HistoryDataLoadWaiter : public HistoryDataObserver {
 
  private:
   // HistoryDataObserver overrides:
-  virtual void OnHistoryDataLoadedFromStore() OVERRIDE {
+  virtual void OnHistoryDataLoadedFromStore() override {
     run_loop_->Quit();
   }
 
@@ -94,11 +94,11 @@ class SearchHistoryTest : public testing::Test {
   virtual ~SearchHistoryTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_.reset(new TestingProfile);
     CreateHistory();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Flush();
   }
 

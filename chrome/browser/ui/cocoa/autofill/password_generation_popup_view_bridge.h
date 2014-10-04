@@ -30,12 +30,12 @@ class PasswordGenerationPopupViewBridge : public PasswordGenerationPopupView {
   virtual ~PasswordGenerationPopupViewBridge();
 
   // PasswordGenerationPopupView implementation.
-  virtual void Hide() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual gfx::Size GetPreferredSizeOfPasswordView() OVERRIDE;
-  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
-  virtual void PasswordSelectionUpdated() OVERRIDE;
-  virtual bool IsPointInPasswordBounds(const gfx::Point& point) OVERRIDE;
+  virtual void Hide() override;
+  virtual void Show() override;
+  virtual gfx::Size GetPreferredSizeOfPasswordView() override;
+  virtual void UpdateBoundsAndRedrawPopup() override;
+  virtual void PasswordSelectionUpdated() override;
+  virtual bool IsPointInPasswordBounds(const gfx::Point& point) override;
 
   // The native Cocoa view.
   base::scoped_nsobject<PasswordGenerationPopupViewCocoa> view_;

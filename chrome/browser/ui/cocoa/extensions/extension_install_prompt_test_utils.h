@@ -20,8 +20,8 @@ class MockExtensionInstallPromptDelegate
         abort_count_(0) {}
 
   // ExtensionInstallPrompt::Delegate overrides.
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   int proceed_count() { return proceed_count_; }
   int abort_count() { return abort_count_; }

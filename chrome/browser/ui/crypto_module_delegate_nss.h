@@ -41,12 +41,12 @@ class ChromeNSSCryptoModuleDelegate
       WARN_UNUSED_RESULT;
 
   // crypto::NSSCryptoModuleDelegate implementation.
-  virtual crypto::ScopedPK11Slot RequestSlot() OVERRIDE;
+  virtual crypto::ScopedPK11Slot RequestSlot() override;
 
   // crypto::CryptoModuleBlockingPasswordDelegate implementation.
   virtual std::string RequestPassword(const std::string& slot_name,
                                       bool retry,
-                                      bool* cancelled) OVERRIDE;
+                                      bool* cancelled) override;
 
  private:
   void ShowDialog(const std::string& slot_name, bool retry);

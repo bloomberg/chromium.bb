@@ -22,31 +22,31 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
 
   // ash::SessionStateDelegate:
   virtual content::BrowserContext* GetBrowserContextByIndex(
-      ash::MultiProfileIndex index) OVERRIDE;
+      ash::MultiProfileIndex index) override;
   virtual content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) OVERRIDE;
-  virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
-  virtual int NumberOfLoggedInUsers() const OVERRIDE;
-  virtual bool IsActiveUserSessionStarted() const OVERRIDE;
-  virtual bool CanLockScreen() const OVERRIDE;
-  virtual bool IsScreenLocked() const OVERRIDE;
-  virtual bool ShouldLockScreenBeforeSuspending() const OVERRIDE;
-  virtual void LockScreen() OVERRIDE;
-  virtual void UnlockScreen() OVERRIDE;
-  virtual bool IsUserSessionBlocked() const OVERRIDE;
-  virtual SessionState GetSessionState() const OVERRIDE;
+      aura::Window* window) override;
+  virtual int GetMaximumNumberOfLoggedInUsers() const override;
+  virtual int NumberOfLoggedInUsers() const override;
+  virtual bool IsActiveUserSessionStarted() const override;
+  virtual bool CanLockScreen() const override;
+  virtual bool IsScreenLocked() const override;
+  virtual bool ShouldLockScreenBeforeSuspending() const override;
+  virtual void LockScreen() override;
+  virtual void UnlockScreen() override;
+  virtual bool IsUserSessionBlocked() const override;
+  virtual SessionState GetSessionState() const override;
   virtual const user_manager::UserInfo* GetUserInfo(
-      ash::MultiProfileIndex index) const OVERRIDE;
+      ash::MultiProfileIndex index) const override;
   virtual const user_manager::UserInfo* GetUserInfo(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ShouldShowAvatar(aura::Window* window) const OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
-  virtual void CycleActiveUser(CycleUser cycle_user) OVERRIDE;
-  virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ShouldShowAvatar(aura::Window* window) const override;
+  virtual void SwitchActiveUser(const std::string& user_id) override;
+  virtual void CycleActiveUser(CycleUser cycle_user) override;
+  virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const override;
   virtual void AddSessionStateObserver(
-      ash::SessionStateObserver* observer) OVERRIDE;
+      ash::SessionStateObserver* observer) override;
   virtual void RemoveSessionStateObserver(
-      ash::SessionStateObserver* observer) OVERRIDE;
+      ash::SessionStateObserver* observer) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegate);

@@ -108,7 +108,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   virtual void OnRadioClicked(int radio_index) {}
   virtual void OnPopupClicked(int index) {}
@@ -198,8 +198,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   void SetLearnMoreLink();
 
   // content::ContentSettingBubbleModel:
-  virtual void OnManageLinkClicked() OVERRIDE;
-  virtual void OnLearnMoreLinkClicked() OVERRIDE;
+  virtual void OnManageLinkClicked() override;
+  virtual void OnLearnMoreLinkClicked() override;
   Delegate* delegate_;
 };
 
@@ -211,8 +211,8 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
                                ProtocolHandlerRegistry* registry,
                                ContentSettingsType content_type);
 
-  virtual void OnRadioClicked(int radio_index) OVERRIDE;
-  virtual void OnDoneClicked() OVERRIDE;
+  virtual void OnRadioClicked(int radio_index) override;
+  virtual void OnDoneClicked() override;
 
  private:
   // These states must match the order of appearance of the radio buttons

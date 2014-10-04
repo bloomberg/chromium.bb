@@ -102,11 +102,11 @@ class InstantPage : public content::WebContentsObserver,
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) override;
 
   // Overridden from SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) OVERRIDE;
+                            const SearchModel::State& new_state) override;
 
   // Update the status of Instant support.
   void InstantSupportDetermined(bool supports_instant);

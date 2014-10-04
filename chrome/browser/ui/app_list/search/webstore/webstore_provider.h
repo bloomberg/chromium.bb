@@ -34,8 +34,8 @@ class WebstoreProvider : public WebserviceSearchProvider{
   virtual ~WebstoreProvider();
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Start(const base::string16& query) override;
+  virtual void Stop() override;
 
  private:
   friend class app_list::test::WebstoreProviderTest;

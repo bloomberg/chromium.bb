@@ -55,77 +55,77 @@ class SystemTrayDelegateChromeOS
       scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Overridden from ash::SystemTrayDelegate:
-  virtual void Initialize() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual bool GetTrayVisibilityOnStartup() OVERRIDE;
-  virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE;
-  virtual void ChangeProfilePicture() OVERRIDE;
-  virtual const std::string GetEnterpriseDomain() const OVERRIDE;
-  virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;
-  virtual const std::string GetSupervisedUserManager() const OVERRIDE;
-  virtual const base::string16 GetSupervisedUserManagerName() const OVERRIDE;
-  virtual const base::string16 GetSupervisedUserMessage() const OVERRIDE;
-  virtual bool IsUserSupervised() const OVERRIDE;
-  virtual bool SystemShouldUpgrade() const OVERRIDE;
-  virtual base::HourClockType GetHourClockType() const OVERRIDE;
-  virtual void ShowSettings() OVERRIDE;
-  virtual bool ShouldShowSettings() OVERRIDE;
-  virtual void ShowDateSettings() OVERRIDE;
-  virtual void ShowSetTimeDialog() OVERRIDE;
-  virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE;
-  virtual void ShowBluetoothSettings() OVERRIDE;
-  virtual void ShowDisplaySettings() OVERRIDE;
-  virtual void ShowChromeSlow() OVERRIDE;
-  virtual bool ShouldShowDisplayNotification() OVERRIDE;
-  virtual void ShowIMESettings() OVERRIDE;
-  virtual void ShowHelp() OVERRIDE;
-  virtual void ShowAccessibilityHelp() OVERRIDE;
-  virtual void ShowAccessibilitySettings() OVERRIDE;
-  virtual void ShowPublicAccountInfo() OVERRIDE;
-  virtual void ShowSupervisedUserInfo() OVERRIDE;
-  virtual void ShowEnterpriseInfo() OVERRIDE;
-  virtual void ShowUserLogin() OVERRIDE;
-  virtual bool ShowSpringChargerReplacementDialog() OVERRIDE;
-  virtual bool IsSpringChargerReplacementDialogVisible() OVERRIDE;
-  virtual bool HasUserConfirmedSafeSpringCharger() OVERRIDE;
-  virtual void ShutDown() OVERRIDE;
-  virtual void SignOut() OVERRIDE;
-  virtual void RequestLockScreen() OVERRIDE;
-  virtual void RequestRestartForUpdate() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void Shutdown() override;
+  virtual bool GetTrayVisibilityOnStartup() override;
+  virtual ash::user::LoginStatus GetUserLoginStatus() const override;
+  virtual void ChangeProfilePicture() override;
+  virtual const std::string GetEnterpriseDomain() const override;
+  virtual const base::string16 GetEnterpriseMessage() const override;
+  virtual const std::string GetSupervisedUserManager() const override;
+  virtual const base::string16 GetSupervisedUserManagerName() const override;
+  virtual const base::string16 GetSupervisedUserMessage() const override;
+  virtual bool IsUserSupervised() const override;
+  virtual bool SystemShouldUpgrade() const override;
+  virtual base::HourClockType GetHourClockType() const override;
+  virtual void ShowSettings() override;
+  virtual bool ShouldShowSettings() override;
+  virtual void ShowDateSettings() override;
+  virtual void ShowSetTimeDialog() override;
+  virtual void ShowNetworkSettings(const std::string& service_path) override;
+  virtual void ShowBluetoothSettings() override;
+  virtual void ShowDisplaySettings() override;
+  virtual void ShowChromeSlow() override;
+  virtual bool ShouldShowDisplayNotification() override;
+  virtual void ShowIMESettings() override;
+  virtual void ShowHelp() override;
+  virtual void ShowAccessibilityHelp() override;
+  virtual void ShowAccessibilitySettings() override;
+  virtual void ShowPublicAccountInfo() override;
+  virtual void ShowSupervisedUserInfo() override;
+  virtual void ShowEnterpriseInfo() override;
+  virtual void ShowUserLogin() override;
+  virtual bool ShowSpringChargerReplacementDialog() override;
+  virtual bool IsSpringChargerReplacementDialogVisible() override;
+  virtual bool HasUserConfirmedSafeSpringCharger() override;
+  virtual void ShutDown() override;
+  virtual void SignOut() override;
+  virtual void RequestLockScreen() override;
+  virtual void RequestRestartForUpdate() override;
   virtual void GetAvailableBluetoothDevices(ash::BluetoothDeviceList* list)
-      OVERRIDE;
-  virtual void BluetoothStartDiscovering() OVERRIDE;
-  virtual void BluetoothStopDiscovering() OVERRIDE;
-  virtual void ConnectToBluetoothDevice(const std::string& address) OVERRIDE;
-  virtual bool IsBluetoothDiscovering() OVERRIDE;
-  virtual void GetCurrentIME(ash::IMEInfo* info) OVERRIDE;
-  virtual void GetAvailableIMEList(ash::IMEInfoList* list) OVERRIDE;
-  virtual void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) OVERRIDE;
-  virtual void SwitchIME(const std::string& ime_id) OVERRIDE;
-  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE;
-  virtual void ShowNetworkConfigure(const std::string& network_id) OVERRIDE;
-  virtual bool EnrollNetwork(const std::string& network_id) OVERRIDE;
-  virtual void ManageBluetoothDevices() OVERRIDE;
-  virtual void ToggleBluetooth() OVERRIDE;
-  virtual void ShowMobileSimDialog() OVERRIDE;
-  virtual void ShowMobileSetupDialog(const std::string& service_path) OVERRIDE;
-  virtual void ShowOtherNetworkDialog(const std::string& type) OVERRIDE;
-  virtual bool GetBluetoothAvailable() OVERRIDE;
-  virtual bool GetBluetoothEnabled() OVERRIDE;
-  virtual bool GetBluetoothDiscovering() OVERRIDE;
-  virtual void ChangeProxySettings() OVERRIDE;
-  virtual ash::VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;
+      override;
+  virtual void BluetoothStartDiscovering() override;
+  virtual void BluetoothStopDiscovering() override;
+  virtual void ConnectToBluetoothDevice(const std::string& address) override;
+  virtual bool IsBluetoothDiscovering() override;
+  virtual void GetCurrentIME(ash::IMEInfo* info) override;
+  virtual void GetAvailableIMEList(ash::IMEInfoList* list) override;
+  virtual void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) override;
+  virtual void SwitchIME(const std::string& ime_id) override;
+  virtual void ActivateIMEProperty(const std::string& key) override;
+  virtual void ShowNetworkConfigure(const std::string& network_id) override;
+  virtual bool EnrollNetwork(const std::string& network_id) override;
+  virtual void ManageBluetoothDevices() override;
+  virtual void ToggleBluetooth() override;
+  virtual void ShowMobileSimDialog() override;
+  virtual void ShowMobileSetupDialog(const std::string& service_path) override;
+  virtual void ShowOtherNetworkDialog(const std::string& type) override;
+  virtual bool GetBluetoothAvailable() override;
+  virtual bool GetBluetoothEnabled() override;
+  virtual bool GetBluetoothDiscovering() override;
+  virtual void ChangeProxySettings() override;
+  virtual ash::VolumeControlDelegate* GetVolumeControlDelegate() const override;
   virtual void SetVolumeControlDelegate(
-      scoped_ptr<ash::VolumeControlDelegate> delegate) OVERRIDE;
+      scoped_ptr<ash::VolumeControlDelegate> delegate) override;
   virtual bool GetSessionStartTime(base::TimeTicks* session_start_time)
-      OVERRIDE;
+      override;
   virtual bool GetSessionLengthLimit(base::TimeDelta* session_length_limit)
-      OVERRIDE;
-  virtual int GetSystemTrayMenuWidth() OVERRIDE;
-  virtual void ActiveUserWasChanged() OVERRIDE;
-  virtual bool IsSearchKeyMappedToCapsLock() OVERRIDE;
+      override;
+  virtual int GetSystemTrayMenuWidth() override;
+  virtual void ActiveUserWasChanged() override;
+  virtual bool IsSearchKeyMappedToCapsLock() override;
   virtual ash::tray::UserAccountsDelegate* GetUserAccountsDelegate(
-      const std::string& user_id) OVERRIDE;
+      const std::string& user_id) override;
 
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;
@@ -162,18 +162,18 @@ class SystemTrayDelegateChromeOS
   void NotifyIfLastWindowClosed();
 
   // LoginState::Observer overrides.
-  virtual void LoggedInStateChanged() OVERRIDE;
+  virtual void LoggedInStateChanged() override;
 
   // Overridden from SessionManagerClient::Observer.
-  virtual void ScreenIsLocked() OVERRIDE;
-  virtual void ScreenIsUnlocked() OVERRIDE;
+  virtual void ScreenIsLocked() override;
+  virtual void ScreenIsUnlocked() override;
 
   gfx::NativeWindow GetNativeWindow() const;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void OnLanguageRemapSearchKeyToChanged();
 
@@ -184,34 +184,34 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from InputMethodManager::Observer.
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
-                                  bool show_message) OVERRIDE;
+                                  bool show_message) override;
 
   // Overridden from InputMethodMenuManager::Observer.
   virtual void InputMethodMenuItemChanged(
-      ash::ime::InputMethodMenuManager* manager) OVERRIDE;
+      ash::ime::InputMethodMenuManager* manager) override;
 
   // Overridden from CrasAudioHandler::AudioObserver.
-  virtual void OnOutputVolumeChanged() OVERRIDE;
-  virtual void OnOutputMuteChanged() OVERRIDE;
-  virtual void OnInputGainChanged() OVERRIDE;
-  virtual void OnInputMuteChanged() OVERRIDE;
-  virtual void OnAudioNodesChanged() OVERRIDE;
-  virtual void OnActiveOutputNodeChanged() OVERRIDE;
-  virtual void OnActiveInputNodeChanged() OVERRIDE;
+  virtual void OnOutputVolumeChanged() override;
+  virtual void OnOutputMuteChanged() override;
+  virtual void OnInputGainChanged() override;
+  virtual void OnInputMuteChanged() override;
+  virtual void OnAudioNodesChanged() override;
+  virtual void OnActiveOutputNodeChanged() override;
+  virtual void OnActiveInputNodeChanged() override;
 
   // Overridden from BluetoothAdapter::Observer.
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE;
+                                     bool present) override;
   virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                     bool powered) OVERRIDE;
+                                     bool powered) override;
   virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
-                                         bool discovering) OVERRIDE;
+                                         bool discovering) override;
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
-                           device::BluetoothDevice* device) OVERRIDE;
+                           device::BluetoothDevice* device) override;
   virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
 
   void OnStartBluetoothDiscoverySession(
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
@@ -219,17 +219,17 @@ class SystemTrayDelegateChromeOS
   void UpdateEnterpriseDomain();
 
   // Overridden from CloudPolicyStore::Observer
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  virtual void OnStoreError(policy::CloudPolicyStore* store) override;
 
   // Overridden from ash::SessionStateObserver
-  virtual void UserAddedToSession(const std::string& user_id) OVERRIDE;
+  virtual void UserAddedToSession(const std::string& user_id) override;
 
   // Overridden from chrome::BrowserListObserver:
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) override;
 
   // Overridden from extensions::AppWindowRegistry::Observer:
-  virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);

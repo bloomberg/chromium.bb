@@ -38,22 +38,22 @@ class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
 
   // MultiUserWindowManager overrides:
   virtual void SetWindowOwner(
-      aura::Window* window, const std::string& user_id) OVERRIDE;
+      aura::Window* window, const std::string& user_id) override;
   virtual const std::string& GetWindowOwner(
-      aura::Window* window) const OVERRIDE;
+      aura::Window* window) const override;
   virtual void ShowWindowForUser(
-      aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual bool AreWindowsSharedAmongUsers() const OVERRIDE;
+      aura::Window* window, const std::string& user_id) override;
+  virtual bool AreWindowsSharedAmongUsers() const override;
   virtual void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) const OVERRIDE;
+      std::set<std::string>* user_ids) const override;
   virtual bool IsWindowOnDesktopOfUser(
       aura::Window* window,
-      const std::string& user_id) const OVERRIDE;
+      const std::string& user_id) const override;
   virtual const std::string& GetUserPresentingWindow(
-      aura::Window* window) const OVERRIDE;
-  virtual void AddUser(content::BrowserContext* profile) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+      aura::Window* window) const override;
+  virtual void AddUser(content::BrowserContext* profile) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
 
  private:
   // The window of the visiting browser.
@@ -154,7 +154,7 @@ GURL GetGoogleURL() {
 // Subclass that tests navigation while in the Guest session.
 class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     CommandLine command_line_copy = *command_line;
     command_line_copy.AppendSwitchASCII(
         chromeos::switches::kLoginProfile, "user");

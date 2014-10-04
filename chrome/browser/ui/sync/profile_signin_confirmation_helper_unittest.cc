@@ -76,10 +76,10 @@ class TestingPrefStoreWithCustomReadError : public TestingPrefStore {
     // By default the profile is "new" (NO_FILE means that the profile
     // wasn't found on disk, so it was created).
   }
-  virtual PrefReadError GetReadError() const OVERRIDE {
+  virtual PrefReadError GetReadError() const override {
     return read_error_;
   }
-  virtual bool IsInitializationComplete() const OVERRIDE {
+  virtual bool IsInitializationComplete() const override {
     return true;
   }
   void set_read_error(PrefReadError read_error) {
@@ -127,7 +127,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create the profile.
     TestingProfile::Builder builder;
     user_prefs_ = new TestingPrefStoreWithCustomReadError;
@@ -157,7 +157,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
 #endif
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
     // and then run the message queue to clean up.
     profile_.reset();

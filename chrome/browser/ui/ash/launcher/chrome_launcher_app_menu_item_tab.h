@@ -26,9 +26,9 @@ class ChromeLauncherAppMenuItemTab
                                const gfx::Image* icon,
                                content::WebContents* content,
                                bool has_leading_separator);
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsEnabled() const OVERRIDE;
-  virtual void Execute(int event_flags) OVERRIDE;
+  virtual bool IsActive() const override;
+  virtual bool IsEnabled() const override;
+  virtual void Execute(int event_flags) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherAppMenuItemTab);

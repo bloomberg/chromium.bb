@@ -28,7 +28,7 @@ class ManagePasswordsBubbleControllerTest
  public:
   ManagePasswordsBubbleControllerTest() : controller_(nil) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
   }
 

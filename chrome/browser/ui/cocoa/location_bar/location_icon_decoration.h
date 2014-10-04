@@ -20,16 +20,16 @@ class LocationIconDecoration : public ImageDecoration {
   virtual ~LocationIconDecoration();
 
   // Allow dragging the current URL.
-  virtual bool IsDraggable() OVERRIDE;
-  virtual NSPasteboard* GetDragPasteboard() OVERRIDE;
-  virtual NSImage* GetDragImage() OVERRIDE;
-  virtual NSRect GetDragImageFrame(NSRect frame) OVERRIDE;
+  virtual bool IsDraggable() override;
+  virtual NSPasteboard* GetDragPasteboard() override;
+  virtual NSImage* GetDragImage() override;
+  virtual NSRect GetDragImageFrame(NSRect frame) override;
 
   // Show the page info panel on click.
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual NSString* GetToolTip() OVERRIDE;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual bool AcceptsMousePress() override;
+  virtual NSString* GetToolTip() override;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
 
  private:
   NSRect drag_frame_;

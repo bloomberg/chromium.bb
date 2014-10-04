@@ -21,7 +21,7 @@ class LocalNTPTest : public InProcessBrowserTest,
   LocalNTPTest() {}
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");

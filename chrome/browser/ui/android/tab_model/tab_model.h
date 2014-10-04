@@ -68,7 +68,7 @@ class TabModel : public content::NotificationObserver {
   // Determines how TabModel will interact with the profile.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // The profile associated with this TabModel.
   Profile* profile_;

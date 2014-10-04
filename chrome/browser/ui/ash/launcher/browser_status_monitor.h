@@ -57,36 +57,36 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
 
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
+                                 aura::Window* lost_active) override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
   // chrome::BrowserListObserver overrides:
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override;
+  virtual void OnBrowserRemoved(Browser* browser) override;
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+                                       uint32_t metrics) override;
 
   // TabStripModelObserver overrides:
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                int reason) OVERRIDE;
+                                int reason) override;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
                              content::WebContents* new_contents,
-                             int index) OVERRIDE;
+                             int index) override;
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
-                             bool foreground) OVERRIDE;
+                             bool foreground) override;
   virtual void TabClosingAt(TabStripModel* tab_strip_mode,
                             content::WebContents* contents,
-                            int index) OVERRIDE;
+                            int index) override;
 
   // Called from our own |LocalWebContentsObserver| when web contents did go
   // away without any other notification. This might happen in case of

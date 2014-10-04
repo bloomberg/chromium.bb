@@ -13,7 +13,7 @@ class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
   explicit WrenchIconPainterDelegateMac(NSCell* cell) : cell_(cell) {}
   virtual ~WrenchIconPainterDelegateMac() {}
 
-  virtual void ScheduleWrenchIconPaint() OVERRIDE {
+  virtual void ScheduleWrenchIconPaint() override {
     [[cell_ controlView] setNeedsDisplay:YES];
   }
 

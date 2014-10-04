@@ -38,7 +38,7 @@ class AppListServiceImplBrowserTest : public InProcessBrowserTest {
   AppListServiceImplBrowserTest() {}
 
   // Overridden from InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     service_ = test::GetAppListServiceImpl();
     test_api_.reset(new test::AppListServiceImplTestApi(service_));
   }

@@ -43,7 +43,7 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   // content::WebContentsObserver
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE {
+      const content::FrameNavigateParams& params) override {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     ChromeLauncherController::AppState state =
         ChromeLauncherController::APP_STATE_INACTIVE;
@@ -61,7 +61,7 @@ class BrowserStatusMonitor::LocalWebContentsObserver
       monitor_->SetShelfIDForBrowserWindowContents(browser, web_contents());
   }
 
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     // We can only come here when there was a non standard termination like
     // an app got un-installed while running, etc.
     monitor_->WebContentsDestroyed(web_contents());
@@ -83,7 +83,7 @@ class BrowserStatusMonitor::SettingsWindowObserver
   virtual ~SettingsWindowObserver() {}
 
   // SettingsWindowManagerObserver
-  virtual void OnNewSettingsWindow(Browser* settings_browser) OVERRIDE {
+  virtual void OnNewSettingsWindow(Browser* settings_browser) override {
     ash::SetShelfItemDetailsForDialogWindow(
         settings_browser->window()->GetNativeWindow(),
         IDR_ASH_SHELF_ICON_SETTINGS,

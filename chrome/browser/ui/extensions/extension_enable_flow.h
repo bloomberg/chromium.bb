@@ -82,24 +82,24 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver overrides:
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // ExtensionInstallPrompt::Delegate overrides:
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
   // content::PageNavigator overrides:
   virtual content::WebContents* OpenURL(
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
 
   Profile* const profile_;
   const std::string extension_id_;

@@ -23,30 +23,30 @@ class NativeWebContentsModalDialogManagerCocoa
   }
 
   // SingleWebContentsDialogManager overrides
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     GetConstrainedWindowMac(dialog())->ShowWebContentsModalDialog();
   }
 
-  virtual void Hide() OVERRIDE {
+  virtual void Hide() override {
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     GetConstrainedWindowMac(dialog())->CloseWebContentsModalDialog();
   }
 
-  virtual void Focus() OVERRIDE {
+  virtual void Focus() override {
     GetConstrainedWindowMac(dialog())->FocusWebContentsModalDialog();
   }
 
-  virtual void Pulse() OVERRIDE {
+  virtual void Pulse() override {
     GetConstrainedWindowMac(dialog())->PulseWebContentsModalDialog();
   }
 
   virtual void HostChanged(
-      web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {
+      web_modal::WebContentsModalDialogHost* new_host) override {
   }
 
-  virtual NativeWebContentsModalDialog dialog() OVERRIDE {
+  virtual NativeWebContentsModalDialog dialog() override {
     return dialog_;
   }
 

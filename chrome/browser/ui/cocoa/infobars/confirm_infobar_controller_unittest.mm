@@ -85,7 +85,7 @@ namespace {
 class ConfirmInfoBarControllerTest : public CocoaProfileTest,
                                      public MockConfirmInfoBarDelegate::Owner {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));
@@ -110,7 +110,7 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
     delegate_closed_ = false;
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [controller_ removeSelf];
     CocoaProfileTest::TearDown();
   }
@@ -130,7 +130,7 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
   bool closed_delegate_link_clicked_;
 
  private:
-  virtual void OnInfoBarDelegateClosed() OVERRIDE {
+  virtual void OnInfoBarDelegateClosed() override {
     closed_delegate_ok_clicked_ = delegate()->ok_clicked();
     closed_delegate_cancel_clicked_ = delegate()->cancel_clicked();
     closed_delegate_link_clicked_ = delegate()->link_clicked();

@@ -75,12 +75,12 @@ class ExtensionPopupContainer : public ExtensionViewMac::Container {
 
   virtual void OnExtensionSizeChanged(
       ExtensionViewMac* view,
-      const gfx::Size& new_size) OVERRIDE {
+      const gfx::Size& new_size) override {
     [controller_ onSizeChanged:
         NSMakeSize(new_size.width(), new_size.height())];
   }
 
-  virtual void OnExtensionViewDidShow(ExtensionViewMac* view) OVERRIDE {
+  virtual void OnExtensionViewDidShow(ExtensionViewMac* view) override {
     [controller_ onViewDidShow];
   }
 
@@ -123,7 +123,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
+      const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
         if (content::Details<extensions::ExtensionViewHost>(

@@ -20,7 +20,7 @@
 
 class MessageCenterTrayBridgeTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ui::CocoaTest::SetUp();
 
     local_state_.reset(
@@ -31,7 +31,7 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
     bridge_.reset(new MessageCenterTrayBridge(center_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     bridge_.reset();
     message_center::MessageCenter::Shutdown();
     local_state_.reset();
@@ -70,7 +70,7 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
 class MessageCenterTrayBridgeTestPrefNever
     : public MessageCenterTrayBridgeTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     MessageCenterTrayBridgeTest::SetUp();
     local_state()->SetBoolean(prefs::kMessageCenterShowIcon, false);
   }

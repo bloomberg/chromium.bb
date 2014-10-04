@@ -23,7 +23,7 @@ class LoginPromptBrowserTestObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void AddHandler(LoginHandler* handler);
 
@@ -92,7 +92,7 @@ class WindowedLoadStopObserver
  protected:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   int remaining_notification_count_;  // Number of notifications remaining.

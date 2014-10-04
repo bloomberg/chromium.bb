@@ -115,11 +115,11 @@ class TestProfileIOData : public ProfileIOData {
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-      const OVERRIDE {
+      const override {
     NOTREACHED();
   }
   virtual void InitializeExtensionsRequestContext(
-      ProfileParams* profile_params) const OVERRIDE {
+      ProfileParams* profile_params) const override {
     NOTREACHED();
   }
   virtual net::URLRequestContext* InitializeAppRequestContext(
@@ -129,18 +129,18 @@ class TestProfileIOData : public ProfileIOData {
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-      const OVERRIDE {
+      const override {
     NOTREACHED();
     return NULL;
   }
   virtual net::URLRequestContext* InitializeMediaRequestContext(
       net::URLRequestContext* original_context,
-      const StoragePartitionDescriptor& details) const OVERRIDE {
+      const StoragePartitionDescriptor& details) const override {
     NOTREACHED();
     return NULL;
   }
   virtual net::URLRequestContext*
-      AcquireMediaRequestContext() const OVERRIDE {
+      AcquireMediaRequestContext() const override {
     NOTREACHED();
     return NULL;
   }
@@ -151,7 +151,7 @@ class TestProfileIOData : public ProfileIOData {
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-      const OVERRIDE {
+      const override {
     NOTREACHED();
     return NULL;
   }
@@ -159,7 +159,7 @@ class TestProfileIOData : public ProfileIOData {
       AcquireIsolatedMediaRequestContext(
           net::URLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor)
-          const OVERRIDE {
+          const override {
     NOTREACHED();
     return NULL;
   }
@@ -182,11 +182,11 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
   }
 
   // Need to control this for certain tests.
-  virtual bool FirstSetupInProgress() const OVERRIDE {
+  virtual bool FirstSetupInProgress() const override {
     return first_setup_in_progress_;
   }
 
-  virtual bool sync_initialized() const OVERRIDE { return sync_initialized_; }
+  virtual bool sync_initialized() const override { return sync_initialized_; }
 
   // Controls return value of FirstSetupInProgress. Because some bits
   // of UI depend on that value, it's useful to control it separately
@@ -222,8 +222,8 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   OneClickSigninHelperTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Sets up the sign-in manager for tests.  If |username| is
   // is not empty, the profile of the mock WebContents will be connected to
@@ -248,7 +248,7 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
 
  private:
   // ChromeRenderViewHostTestHarness overrides:
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE;
+  virtual content::BrowserContext* CreateBrowserContext() override;
 
   // The ID of the signin process the test will assume to be trusted.
   // By default, set to the test RenderProcessHost's process ID, but
@@ -348,7 +348,7 @@ class OneClickSigninHelperIOTest : public OneClickSigninHelperTest {
  public:
   OneClickSigninHelperIOTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   TestProfileIOData* CreateTestProfileIOData(Profile::ProfileType profile_type);
 
@@ -387,7 +387,7 @@ TestProfileIOData* OneClickSigninHelperIOTest::CreateTestProfileIOData(
 class OneClickSigninHelperIncognitoTest : public OneClickSigninHelperTest {
  protected:
   // content::RenderViewHostTestHarness.
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE;
+  virtual content::BrowserContext* CreateBrowserContext() override;
 };
 
 content::BrowserContext*
@@ -862,12 +862,12 @@ MockStarterWrapper::MockStarterWrapper(
 
 class OneClickSyncStarterWrapperTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Let the SyncStarterWrapper delete itself.
     base::RunLoop().RunUntilIdle();
   }

@@ -33,11 +33,11 @@ class FastUnloadController::DetachedWebContentsDelegate
 
  private:
   // WebContentsDelegate implementation.
-  virtual bool ShouldSuppressDialogs() OVERRIDE {
+  virtual bool ShouldSuppressDialogs() override {
     return true;  // Return true so dialogs are suppressed.
   }
 
-  virtual void CloseContents(content::WebContents* source) OVERRIDE {
+  virtual void CloseContents(content::WebContents* source) override {
     // Finished detached close.
     // FastUnloadController will observe
     // |NOTIFICATION_WEB_CONTENTS_DISCONNECTED|.

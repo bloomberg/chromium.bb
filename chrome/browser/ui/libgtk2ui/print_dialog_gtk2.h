@@ -37,16 +37,16 @@ class PrintDialogGtk2
       PrintingContextLinux* context);
 
   // printing::PrintDialogGtkInterface implementation.
-  virtual void UseDefaultSettings() OVERRIDE;
-  virtual bool UpdateSettings(printing::PrintSettings* settings) OVERRIDE;
+  virtual void UseDefaultSettings() override;
+  virtual bool UpdateSettings(printing::PrintSettings* settings) override;
   virtual void ShowDialog(
       gfx::NativeView parent_view,
       bool has_selection,
-      const PrintingContextLinux::PrintSettingsCallback& callback) OVERRIDE;
+      const PrintingContextLinux::PrintSettingsCallback& callback) override;
   virtual void PrintDocument(const printing::MetafilePlayer& metafile,
-                             const base::string16& document_name) OVERRIDE;
-  virtual void AddRefToDialog() OVERRIDE;
-  virtual void ReleaseDialog() OVERRIDE;
+                             const base::string16& document_name) override;
+  virtual void AddRefToDialog() override;
+  virtual void ReleaseDialog() override;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -73,7 +73,7 @@ class PrintDialogGtk2
   void InitPrintSettings(printing::PrintSettings* settings);
 
   // aura::WindowObserver implementation.
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // Printing dialog callback.
   PrintingContextLinux::PrintSettingsCallback callback_;

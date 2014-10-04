@@ -116,7 +116,7 @@ void CheckLayoutNoOverlap(BrowserWindowController* controller) {
 // -------------------PresentationModeControllerTest----------------------------
 class PresentationModeControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -127,7 +127,7 @@ class PresentationModeControllerTest : public CocoaProfileTest {
          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [controller_ close];
     CocoaProfileTest::TearDown();
   }

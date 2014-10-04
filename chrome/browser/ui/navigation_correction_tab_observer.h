@@ -31,7 +31,7 @@ class NavigationCorrectionTabObserver
 
   // content::WebContentsObserver overrides:
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   // Internal helpers ----------------------------------------------------------
 

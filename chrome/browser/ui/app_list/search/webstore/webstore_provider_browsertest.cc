@@ -100,7 +100,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   virtual ~WebstoreProviderTest() {}
 
   // InProcessBrowserTest overrides:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     test_server_.reset(new EmbeddedTestServer);
 
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
@@ -121,7 +121,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     webstore_provider_->set_use_throttling(false);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
   }

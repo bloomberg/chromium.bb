@@ -24,10 +24,10 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   // Determines what combination of labels and image will best fit
   // within |width|, makes those current for |BubbleDecoration|, and
   // return the resulting width.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) override;
 
   // Implements |BubbleDecoration|.
-  virtual ui::NinePartImageIds GetBubbleImageIds() OVERRIDE;
+  virtual ui::NinePartImageIds GetBubbleImageIds() override;
 
   void SetImage(NSImage* image);
 

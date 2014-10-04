@@ -51,7 +51,7 @@ class JSONResponseFetcher : public net::URLFetcherDelegate {
   void OnJsonParseError(const std::string& error);
 
   // net::URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   Callback callback_;
   net::URLRequestContextGetter* context_getter_;

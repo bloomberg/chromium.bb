@@ -45,10 +45,10 @@ class WebstoreResult : public ChromeSearchResult,
   bool is_paid() const { return is_paid_; }
 
   // ChromeSearchResult overides:
-  virtual void Open(int event_flags) OVERRIDE;
-  virtual void InvokeAction(int action_index, int event_flags) OVERRIDE;
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE;
-  virtual ChromeSearchResultType GetType() OVERRIDE;
+  virtual void Open(int event_flags) override;
+  virtual void InvokeAction(int action_index, int event_flags) override;
+  virtual scoped_ptr<ChromeSearchResult> Duplicate() override;
+  virtual ChromeSearchResultType GetType() override;
 
  private:
   // Set the initial state and start observing both InstallObserver and
@@ -71,15 +71,15 @@ class WebstoreResult : public ChromeSearchResult,
 
   // extensions::InstallObserver overrides:
   virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+                                  int percent_downloaded) override;
+  virtual void OnShutdown() override;
 
   // extensions::ExtensionRegistryObserver overides:
   virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      bool is_update) OVERRIDE;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
+      bool is_update) override;
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   Profile* profile_;
   const std::string app_id_;

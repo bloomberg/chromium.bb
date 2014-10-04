@@ -25,7 +25,7 @@ class PanelCollectionSqueezeObserver : public TestPanelNotificationObserver {
 
  private:
   // TestNotificationObserver override:
-  virtual bool AtExpectedState() OVERRIDE;
+  virtual bool AtExpectedState() override;
 
   bool IsSqueezed(Panel* panel);
 

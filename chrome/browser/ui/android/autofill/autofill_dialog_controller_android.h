@@ -32,9 +32,9 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   virtual ~AutofillDialogControllerAndroid();
 
   // AutofillDialogController implementation:
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void TabActivated() OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void TabActivated() override;
 
   // JNI bindings for Java-side AutofillDialogDelegate:
   void DialogCancel(JNIEnv* env, jobject obj);

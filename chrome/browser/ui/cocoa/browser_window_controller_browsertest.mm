@@ -92,7 +92,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   BrowserWindowControllerTest() : InProcessBrowserTest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     [[controller() bookmarkBarController] setStateAnimationsEnabled:NO];
     [[controller() bookmarkBarController] setInnerContentAnimationsEnabled:NO];
   }

@@ -30,7 +30,7 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
         succeeded_count_(0) {}
 
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
     // Disable sync to simplify the creation of a OneClickSigninSyncStarter.
@@ -51,7 +51,7 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
   }
 
   // ChromeRenderViewHostTestHarness:
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+  virtual content::BrowserContext* CreateBrowserContext() override {
     // Create the sign in manager required by OneClickSigninSyncStarter.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(

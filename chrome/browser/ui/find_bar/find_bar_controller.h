@@ -63,7 +63,7 @@ class FindBarController : public content::NotificationObserver {
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   FindBar* find_bar() const { return find_bar_.get(); }
 

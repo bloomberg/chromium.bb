@@ -24,18 +24,18 @@ class StatusIconMac : public StatusIcon {
   virtual ~StatusIconMac();
 
   // Overridden from StatusIcon.
-  virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
-  virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE;
+  virtual void SetImage(const gfx::ImageSkia& image) override;
+  virtual void SetToolTip(const base::string16& tool_tip) override;
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const base::string16& title,
-                              const base::string16& contents) OVERRIDE;
+                              const base::string16& contents) override;
 
   bool HasStatusIconMenu();
 
  protected:
   // Overridden from StatusIcon.
   virtual void UpdatePlatformContextMenu(
-      StatusIconMenuModel* model) OVERRIDE;
+      StatusIconMenuModel* model) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StatusIconMacTest, CreateMenu);

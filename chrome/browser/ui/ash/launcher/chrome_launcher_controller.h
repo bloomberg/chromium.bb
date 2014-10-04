@@ -291,56 +291,56 @@ class ChromeLauncherController : public ash::ShelfDelegate,
                                         bool allow_minimize);
 
   // ash::ShelfDelegate overrides:
-  virtual void OnShelfCreated(ash::Shelf* shelf) OVERRIDE;
-  virtual void OnShelfDestroyed(ash::Shelf* shelf) OVERRIDE;
-  virtual ash::ShelfID GetShelfIDForAppID(const std::string& app_id) OVERRIDE;
-  virtual const std::string& GetAppIDForShelfID(ash::ShelfID id) OVERRIDE;
-  virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
-  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
-  virtual bool CanPin() const OVERRIDE;
-  virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
+  virtual void OnShelfCreated(ash::Shelf* shelf) override;
+  virtual void OnShelfDestroyed(ash::Shelf* shelf) override;
+  virtual ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
+  virtual const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
+  virtual void PinAppWithID(const std::string& app_id) override;
+  virtual bool IsAppPinned(const std::string& app_id) override;
+  virtual bool CanPin() const override;
+  virtual void UnpinAppWithID(const std::string& app_id) override;
 
   // ash::ShelfModelObserver overrides:
-  virtual void ShelfItemAdded(int index) OVERRIDE;
-  virtual void ShelfItemRemoved(int index, ash::ShelfID id) OVERRIDE;
-  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE;
+  virtual void ShelfItemAdded(int index) override;
+  virtual void ShelfItemRemoved(int index, ash::ShelfID id) override;
+  virtual void ShelfItemMoved(int start_index, int target_index) override;
   virtual void ShelfItemChanged(int index,
-                                const ash::ShelfItem& old_item) OVERRIDE;
-  virtual void ShelfStatusChanged() OVERRIDE;
+                                const ash::ShelfItem& old_item) override;
+  virtual void ShelfStatusChanged() override;
 
   // ash::ShellObserver overrides:
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ash::DisplayController::Observer overrides:
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+  virtual void OnDisplayConfigurationChanged() override;
 
   // ExtensionRegistryObserver overrides:
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
   // PrefServiceSyncableObserver overrides:
-  virtual void OnIsSyncingChanged() OVERRIDE;
+  virtual void OnIsSyncingChanged() override;
 
   // AppSyncUIStateObserver overrides:
-  virtual void OnAppSyncUIStatusChanged() OVERRIDE;
+  virtual void OnAppSyncUIStatusChanged() override;
 
   // ExtensionEnableFlowDelegate overrides:
-  virtual void ExtensionEnableFlowFinished() OVERRIDE;
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
+  virtual void ExtensionEnableFlowFinished() override;
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) override;
 
   // extensions::AppIconLoader overrides:
   virtual void SetAppImage(const std::string& app_id,
-                           const gfx::ImageSkia& image) OVERRIDE;
+                           const gfx::ImageSkia& image) override;
 
   // ash::ShelfLayoutManagerObserver overrides:
   virtual void OnAutoHideBehaviorChanged(
       aura::Window* root_window,
-      ash::ShelfAutoHideBehavior new_behavior) OVERRIDE;
+      ash::ShelfAutoHideBehavior new_behavior) override;
 
   // Called when the active user has changed.
   void ActiveUserChanged(const std::string& user_email);

@@ -39,9 +39,9 @@ class CocoaProfileTest : public CocoaTest {
   // succeed, else it will ASSERT and cause the test to fail. Subclasses that
   // do work in SetUp should ASSERT that either browser() or profile() are
   // non-NULL before proceeding after the call to super (this).
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   TestingProfileManager* testing_profile_manager() {
     return &profile_manager_;

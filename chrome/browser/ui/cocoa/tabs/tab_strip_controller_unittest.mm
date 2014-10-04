@@ -89,7 +89,7 @@ namespace {
 
 class TabStripControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -127,7 +127,7 @@ class TabStripControllerTest : public CocoaProfileTest {
                           delegate:controller_delegate_.get()]);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // The call to CocoaTest::TearDown() deletes the Browser and TabStripModel
     // objects, so we first have to delete the controller, which refers to them.
     controller_.reset();

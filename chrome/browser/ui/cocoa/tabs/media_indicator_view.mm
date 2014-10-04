@@ -23,15 +23,15 @@ class MediaIndicatorViewAnimationDelegate : public gfx::AnimationDelegate {
     doneCallbackSelector_ = selector;
   }
 
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) override {
     *animatingMediaState_ = *mediaState_;
     [view_ setNeedsDisplay:YES];
     [doneCallbackObject_ performSelector:doneCallbackSelector_];
   }
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) override {
     [view_ setNeedsDisplay:YES];
   }
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) override {
     AnimationEnded(animation);
   }
 

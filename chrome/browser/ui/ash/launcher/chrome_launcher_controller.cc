@@ -290,12 +290,12 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
   virtual void UserAddedToSession(
-      const user_manager::User* added_user) OVERRIDE;
+      const user_manager::User* added_user) override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                const content::NotificationSource& source,
-               const content::NotificationDetails& details) OVERRIDE;
+               const content::NotificationDetails& details) override;
 
  private:
   // Add a user to the session.

@@ -136,7 +136,7 @@ class SwitchToMetroUIHandler
 
  private:
   virtual void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) OVERRIDE {
+      ShellIntegration::DefaultWebClientUIState state) override {
     switch (state) {
       case ShellIntegration::STATE_PROCESSING:
         return;
@@ -157,7 +157,7 @@ class SwitchToMetroUIHandler
     delete this;
   }
 
-  virtual void OnSetAsDefaultConcluded(bool success)  OVERRIDE {
+  virtual void OnSetAsDefaultConcluded(bool success)  override {
     if (!success) {
       delete this;
       return;
@@ -166,7 +166,7 @@ class SwitchToMetroUIHandler
     default_browser_worker_->StartCheckIsDefault();
   }
 
-  virtual bool IsInteractiveSetDefaultPermitted() OVERRIDE {
+  virtual bool IsInteractiveSetDefaultPermitted() override {
     return true;
   }
 
@@ -845,11 +845,11 @@ class BrowserCommandController::InterstitialObserver
         controller_(controller) {
   }
 
-  virtual void DidAttachInterstitialPage() OVERRIDE {
+  virtual void DidAttachInterstitialPage() override {
     controller_->UpdateCommandsForTabState();
   }
 
-  virtual void DidDetachInterstitialPage() OVERRIDE {
+  virtual void DidDetachInterstitialPage() override {
     controller_->UpdateCommandsForTabState();
   }
 

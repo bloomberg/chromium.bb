@@ -21,7 +21,7 @@
 namespace {
 
 class InfoBarContainerControllerTest : public CocoaProfileTest {
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     web_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile())));
@@ -35,7 +35,7 @@ class InfoBarContainerControllerTest : public CocoaProfileTest {
     [[test_window() contentView] addSubview:view];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [[controller_ view] removeFromSuperviewWithoutNeedingDisplay];
     controller_.reset();
     CocoaProfileTest::TearDown();

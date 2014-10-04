@@ -29,23 +29,23 @@ class TestTabModel : public TabModel {
   explicit TestTabModel(Profile* profile)
     : TabModel(profile) {}
 
-  virtual int GetTabCount() const OVERRIDE { return 0; }
-  virtual int GetActiveIndex() const OVERRIDE { return 0; }
-  virtual content::WebContents* GetWebContentsAt(int index) const OVERRIDE {
+  virtual int GetTabCount() const override { return 0; }
+  virtual int GetActiveIndex() const override { return 0; }
+  virtual content::WebContents* GetWebContentsAt(int index) const override {
     return NULL;
   }
   virtual void CreateTab(content::WebContents* web_contents,
-                         int parent_tab_id) OVERRIDE {}
+                         int parent_tab_id) override {}
   virtual content::WebContents* CreateNewTabForDevTools(
-      const GURL& url) OVERRIDE {
+      const GURL& url) override {
     return NULL;
   }
-  virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
-  virtual TabAndroid* GetTabAt(int index) const OVERRIDE {
+  virtual bool IsSessionRestoreInProgress() const override { return false; }
+  virtual TabAndroid* GetTabAt(int index) const override {
     return NULL;
   }
-  virtual void SetActiveIndex(int index) OVERRIDE {}
-  virtual void CloseTabAt(int index) OVERRIDE {}
+  virtual void SetActiveIndex(int index) override {}
+  virtual void CloseTabAt(int index) override {}
 };
 
 TEST_F(TabModelTest, TestProfileHandling) {

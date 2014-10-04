@@ -28,10 +28,10 @@ class ExtensionUninstallDialogCocoa
   ExtensionUninstallDialogCocoa(Profile* profile,
                                 gfx::NativeWindow parent,
                                 Delegate* delegate);
-  virtual ~ExtensionUninstallDialogCocoa() OVERRIDE;
+  virtual ~ExtensionUninstallDialogCocoa() override;
 
  private:
-  virtual void Show() OVERRIDE;
+  virtual void Show() override;
 };
 
 ExtensionUninstallDialogCocoa::ExtensionUninstallDialogCocoa(

@@ -22,12 +22,12 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate {
 
   const base::string16& program_name() const { return program_name_; }
 
-  virtual void DoAccept(const GURL& url, bool dont_block) const OVERRIDE;
-  virtual void DoCancel(const GURL& url, bool dont_block) const OVERRIDE;
+  virtual void DoAccept(const GURL& url, bool dont_block) const override;
+  virtual void DoCancel(const GURL& url, bool dont_block) const override;
 
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetCheckboxText() const OVERRIDE;
-  virtual base::string16 GetTitleText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetCheckboxText() const override;
+  virtual base::string16 GetTitleText() const override;
 
  private:
   int render_process_host_id_;

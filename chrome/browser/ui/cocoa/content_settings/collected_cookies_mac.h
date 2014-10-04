@@ -33,7 +33,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
 
   // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) OVERRIDE;
+      ConstrainedWindowMac* window) override;
 
   CollectedCookiesWindowController* sheet_controller() const {
     return sheet_controller_.get();
@@ -43,7 +43,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

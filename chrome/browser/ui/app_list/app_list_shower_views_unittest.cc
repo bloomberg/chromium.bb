@@ -19,30 +19,30 @@ class FakeAppListShower : public AppListShower {
       : AppListShower(delegate), has_view_(false), visible_(false) {}
 
   // AppListShower:
-  virtual void HandleViewBeingDestroyed() OVERRIDE {
+  virtual void HandleViewBeingDestroyed() override {
     AppListShower::HandleViewBeingDestroyed();
     has_view_ = false;
     visible_ = false;
   }
 
-  virtual bool IsAppListVisible() const OVERRIDE { return visible_; }
+  virtual bool IsAppListVisible() const override { return visible_; }
 
-  virtual app_list::AppListView* MakeViewForCurrentProfile() OVERRIDE {
+  virtual app_list::AppListView* MakeViewForCurrentProfile() override {
     has_view_ = true;
     return NULL;
   }
 
-  virtual void UpdateViewForNewProfile() OVERRIDE {}
+  virtual void UpdateViewForNewProfile() override {}
 
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     visible_ = true;
   }
 
-  virtual void Hide() OVERRIDE {
+  virtual void Hide() override {
     visible_ = false;
   }
 
-  virtual bool HasView() const OVERRIDE {
+  virtual bool HasView() const override {
     return has_view_;
   }
 
@@ -62,13 +62,13 @@ class AppListShowerUnitTest : public testing::Test,
       : views_created_(0),
         views_dismissed_(0) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     shower_.reset(new FakeAppListShower(this));
     profile1_ = CreateProfile("p1").Pass();
     profile2_ = CreateProfile("p2").Pass();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
   }
 
   scoped_ptr<FakeProfile> CreateProfile(const std::string& name) {
@@ -76,7 +76,7 @@ class AppListShowerUnitTest : public testing::Test,
   }
 
   // AppListShowerDelegate:
-  virtual AppListViewDelegate* GetViewDelegateForCreate() OVERRIDE {
+  virtual AppListViewDelegate* GetViewDelegateForCreate() override {
     return NULL;
   }
 
@@ -84,9 +84,9 @@ class AppListShowerUnitTest : public testing::Test,
     return shower_->keep_alive_.get() != NULL;
   }
 
-  virtual void OnViewCreated() OVERRIDE { ++views_created_; }
-  virtual void OnViewDismissed() OVERRIDE { ++views_dismissed_; }
-  virtual void MoveNearCursor(app_list::AppListView* view) OVERRIDE {}
+  virtual void OnViewCreated() override { ++views_created_; }
+  virtual void OnViewDismissed() override { ++views_dismissed_; }
+  virtual void MoveNearCursor(app_list::AppListView* view) override {}
 
  protected:
   scoped_ptr<FakeAppListShower> shower_;

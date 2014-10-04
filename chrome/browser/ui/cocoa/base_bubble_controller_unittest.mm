@@ -88,7 +88,7 @@ class BaseBubbleControllerTest : public CocoaTest {
  public:
   BaseBubbleControllerTest() : controller_(nil) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     bubble_window_.reset([[InfoBubbleWindow alloc]
         initWithContentRect:NSMakeRect(0, 0, kBubbleWindowWidth,
                                        kBubbleWindowHeight)
@@ -106,7 +106,7 @@ class BaseBubbleControllerTest : public CocoaTest {
     EXPECT_EQ(bubble_window_.get(), [controller_ window]);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Close our windows.
     [controller_ close];
     bubble_window_.reset();

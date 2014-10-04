@@ -23,13 +23,13 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   VirtualKeyboardWebContentTest() {};
   virtual ~VirtualKeyboardWebContentTest() {};
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ui::SetUpInputMethodFactoryForTesting();
     InProcessBrowserTest::SetUp();
   }
 
   // Ensure that the virtual keyboard is enabled.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
   }

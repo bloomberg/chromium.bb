@@ -17,11 +17,11 @@ class ChromeNewWindowDelegate : public ash::NewWindowDelegate {
   virtual ~ChromeNewWindowDelegate();
 
   // Overridden from ash::NewWindowDelegate:
-  virtual void NewTab() OVERRIDE;
-  virtual void NewWindow(bool incognito) OVERRIDE;
-  virtual void RestoreTab() OVERRIDE;
-  virtual void ShowTaskManager() OVERRIDE;
-  virtual void OpenFeedbackPage() OVERRIDE;
+  virtual void NewTab() override;
+  virtual void NewWindow(bool incognito) override;
+  virtual void RestoreTab() override;
+  virtual void ShowTaskManager() override;
+  virtual void OpenFeedbackPage() override;
 
  private:
   class TabRestoreHelper;

@@ -78,7 +78,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     SearchTabHelper::CreateForWebContents(web_contents());
   }
 
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+  virtual content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
@@ -289,13 +289,13 @@ class TabTitleObserver : public content::WebContentsObserver {
       content::RenderFrameHost* /* render_frame_host */,
       const GURL& /* validated_url */,
       bool /* is_error_page */,
-      bool /* is_iframe_srcdoc */) OVERRIDE {
+      bool /* is_iframe_srcdoc */) override {
     title_on_start_ = web_contents()->GetTitle();
   }
 
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& /* details */,
-      const content::FrameNavigateParams& /* params */) OVERRIDE {
+      const content::FrameNavigateParams& /* params */) override {
     title_on_commit_ = web_contents()->GetTitle();
   }
 
@@ -314,7 +314,7 @@ TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
 
 class SearchTabHelperWindowTest : public BrowserWithTestWindowTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
@@ -404,7 +404,7 @@ class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
   virtual ~SearchTabHelperPrerenderTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "EmbeddedSearch",
         "Group1 espv:89 prefetch_results:1 "

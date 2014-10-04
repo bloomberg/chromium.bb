@@ -89,21 +89,21 @@ class PasswordGenerationPopupControllerImpl
 
  private:
   // PasswordGenerationPopupController implementation:
-  virtual void Hide() OVERRIDE;
-  virtual void ViewDestroyed() OVERRIDE;
-  virtual void SetSelectionAtPoint(const gfx::Point& point) OVERRIDE;
-  virtual bool AcceptSelectedLine() OVERRIDE;
-  virtual void SelectionCleared() OVERRIDE;
-  virtual void OnSavedPasswordsLinkClicked() OVERRIDE;
-  virtual int GetMinimumWidth() OVERRIDE;
-  virtual gfx::NativeView container_view() OVERRIDE;
-  virtual const gfx::Rect& popup_bounds() const OVERRIDE;
-  virtual bool display_password() const OVERRIDE;
-  virtual bool password_selected() const OVERRIDE;
-  virtual base::string16 password() const OVERRIDE;
-  virtual base::string16 SuggestedText() OVERRIDE;
-  virtual const base::string16& HelpText() OVERRIDE;
-  virtual const gfx::Range& HelpTextLinkRange() OVERRIDE;
+  virtual void Hide() override;
+  virtual void ViewDestroyed() override;
+  virtual void SetSelectionAtPoint(const gfx::Point& point) override;
+  virtual bool AcceptSelectedLine() override;
+  virtual void SelectionCleared() override;
+  virtual void OnSavedPasswordsLinkClicked() override;
+  virtual int GetMinimumWidth() override;
+  virtual gfx::NativeView container_view() override;
+  virtual const gfx::Rect& popup_bounds() const override;
+  virtual bool display_password() const override;
+  virtual bool password_selected() const override;
+  virtual base::string16 password() const override;
+  virtual base::string16 SuggestedText() override;
+  virtual const base::string16& HelpText() override;
+  virtual const gfx::Range& HelpTextLinkRange() override;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();
 

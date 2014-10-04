@@ -17,7 +17,7 @@ class StatusTrayMac : public StatusTray {
   virtual StatusIcon* CreatePlatformStatusIcon(
       StatusIconType type,
       const gfx::ImageSkia& image,
-      const base::string16& tool_tip) OVERRIDE;
+      const base::string16& tool_tip) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusTrayMac);

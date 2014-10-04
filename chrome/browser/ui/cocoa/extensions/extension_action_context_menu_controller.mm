@@ -57,7 +57,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
   virtual ~AsyncUninstaller() {}
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted() OVERRIDE {
+  virtual void ExtensionUninstallAccepted() override {
     extensions::ExtensionSystem::Get(profile_)
         ->extension_service()
         ->UninstallExtension(extension_->id(),
@@ -65,7 +65,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
                              base::Bind(&base::DoNothing),
                              NULL);
   }
-  virtual void ExtensionUninstallCanceled() OVERRIDE {}
+  virtual void ExtensionUninstallCanceled() override {}
 
  private:
   // The extension that's being uninstalled.

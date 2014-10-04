@@ -19,7 +19,7 @@ class MockSearchModelObserver : public SearchModelObserver {
   virtual ~MockSearchModelObserver();
 
   virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) OVERRIDE;
+                            const SearchModel::State& new_state) override;
 
   void VerifySearchModelStates(const SearchModel::State& expected_old_state,
                                const SearchModel::State& expected_new_state);
@@ -66,8 +66,8 @@ void MockSearchModelObserver::VerifyNotificationCount(int expected_count) {
 
 class SearchModelTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   MockSearchModelObserver mock_observer;
   SearchModel* model;

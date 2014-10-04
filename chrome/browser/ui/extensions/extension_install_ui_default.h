@@ -18,10 +18,10 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
 
   // ExtensionInstallUI:
   virtual void OnInstallSuccess(const extensions::Extension* extension,
-                                const SkBitmap* icon) OVERRIDE;
+                                const SkBitmap* icon) override;
   virtual void OnInstallFailure(
-      const extensions::CrxInstallerError& error) OVERRIDE;
-  virtual void SetUseAppInstalledBubble(bool use_bubble) OVERRIDE;
+      const extensions::CrxInstallerError& error) override;
+  virtual void SetUseAppInstalledBubble(bool use_bubble) override;
 
  private:
   // Used to undo theme installation.

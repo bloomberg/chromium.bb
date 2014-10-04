@@ -31,17 +31,17 @@ class EVBubbleDecoration : public BubbleDecoration {
 
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual NSPasteboard* GetDragPasteboard() OVERRIDE;
-  virtual NSImage* GetDragImage() OVERRIDE;
-  virtual NSRect GetDragImageFrame(NSRect frame) OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) override;
+  virtual bool IsDraggable() override;
+  virtual NSPasteboard* GetDragPasteboard() override;
+  virtual NSImage* GetDragImage() override;
+  virtual NSRect GetDragImageFrame(NSRect frame) override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual bool AcceptsMousePress() override;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Implement |BubbleDecoration|.
-  virtual ui::NinePartImageIds GetBubbleImageIds() OVERRIDE;
+  virtual ui::NinePartImageIds GetBubbleImageIds() override;
 
  private:
   // The real label.  BubbleDecoration's label may be elided.

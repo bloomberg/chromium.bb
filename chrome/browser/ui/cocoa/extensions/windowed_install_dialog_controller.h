@@ -32,8 +32,8 @@ class WindowedInstallDialogController
   void OnWindowClosing();
 
   // ExtensionInstallPrompt::Delegate:
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
+  virtual void InstallUIProceed() override;
+  virtual void InstallUIAbort(bool user_initiated) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowedInstallDialogControllerBrowserTest,

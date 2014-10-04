@@ -95,137 +95,137 @@ class AutofillDialogControllerImpl
       const AutofillClient::ResultCallback& callback);
 
   // AutofillDialogController implementation.
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void TabActivated() OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void TabActivated() override;
 
   // AutofillDialogViewDelegate implementation.
-  virtual base::string16 DialogTitle() const OVERRIDE;
-  virtual base::string16 AccountChooserText() const OVERRIDE;
-  virtual base::string16 SignInLinkText() const OVERRIDE;
-  virtual base::string16 SpinnerText() const OVERRIDE;
-  virtual base::string16 EditSuggestionText() const OVERRIDE;
-  virtual base::string16 CancelButtonText() const OVERRIDE;
-  virtual base::string16 ConfirmButtonText() const OVERRIDE;
-  virtual base::string16 SaveLocallyText() const OVERRIDE;
-  virtual base::string16 SaveLocallyTooltip() const OVERRIDE;
-  virtual base::string16 LegalDocumentsText() OVERRIDE;
-  virtual bool ShouldShowSpinner() const OVERRIDE;
-  virtual bool ShouldShowAccountChooser() const OVERRIDE;
-  virtual bool ShouldShowSignInWebView() const OVERRIDE;
-  virtual GURL SignInUrl() const OVERRIDE;
-  virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
-  virtual bool ShouldSaveInChrome() const OVERRIDE;
-  virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
-  virtual gfx::Image AccountChooserImage() OVERRIDE;
-  virtual gfx::Image ButtonStripImage() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual DialogOverlayState GetDialogOverlay() OVERRIDE;
-  virtual const std::vector<gfx::Range>& LegalDocumentLinks() OVERRIDE;
-  virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
+  virtual base::string16 DialogTitle() const override;
+  virtual base::string16 AccountChooserText() const override;
+  virtual base::string16 SignInLinkText() const override;
+  virtual base::string16 SpinnerText() const override;
+  virtual base::string16 EditSuggestionText() const override;
+  virtual base::string16 CancelButtonText() const override;
+  virtual base::string16 ConfirmButtonText() const override;
+  virtual base::string16 SaveLocallyText() const override;
+  virtual base::string16 SaveLocallyTooltip() const override;
+  virtual base::string16 LegalDocumentsText() override;
+  virtual bool ShouldShowSpinner() const override;
+  virtual bool ShouldShowAccountChooser() const override;
+  virtual bool ShouldShowSignInWebView() const override;
+  virtual GURL SignInUrl() const override;
+  virtual bool ShouldOfferToSaveInChrome() const override;
+  virtual bool ShouldSaveInChrome() const override;
+  virtual ui::MenuModel* MenuModelForAccountChooser() override;
+  virtual gfx::Image AccountChooserImage() override;
+  virtual gfx::Image ButtonStripImage() const override;
+  virtual int GetDialogButtons() const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  virtual DialogOverlayState GetDialogOverlay() override;
+  virtual const std::vector<gfx::Range>& LegalDocumentLinks() override;
+  virtual bool SectionIsActive(DialogSection section) const override;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
-      const OVERRIDE;
+      const override;
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
-      ServerFieldType type) OVERRIDE;
-  virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
-  virtual base::string16 LabelForSection(DialogSection section) const OVERRIDE;
+      ServerFieldType type) override;
+  virtual ui::MenuModel* MenuModelForSection(DialogSection section) override;
+  virtual base::string16 LabelForSection(DialogSection section) const override;
   virtual SuggestionState SuggestionStateForSection(
-      DialogSection section) OVERRIDE;
+      DialogSection section) override;
   virtual FieldIconMap IconsForFields(const FieldValueMap& user_inputs)
-      const OVERRIDE;
-  virtual bool FieldControlsIcons(ServerFieldType type) const OVERRIDE;
-  virtual base::string16 TooltipForField(ServerFieldType type) const OVERRIDE;
+      const override;
+  virtual bool FieldControlsIcons(ServerFieldType type) const override;
+  virtual base::string16 TooltipForField(ServerFieldType type) const override;
   virtual bool InputIsEditable(const DetailInput& input, DialogSection section)
-      OVERRIDE;
+      override;
   virtual base::string16 InputValidityMessage(DialogSection section,
                                         ServerFieldType type,
-                                        const base::string16& value) OVERRIDE;
+                                        const base::string16& value) override;
   virtual ValidityMessages InputsAreValid(
-      DialogSection section, const FieldValueMap& inputs) OVERRIDE;
+      DialogSection section, const FieldValueMap& inputs) override;
   virtual void UserEditedOrActivatedInput(DialogSection section,
                                           ServerFieldType type,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
                                           const base::string16& field_contents,
-                                          bool was_edit) OVERRIDE;
+                                          bool was_edit) override;
   virtual bool HandleKeyPressEventInInput(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void FocusMoved() OVERRIDE;
-  virtual bool ShouldShowErrorBubble() const OVERRIDE;
-  virtual void ViewClosed() OVERRIDE;
-  virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
-  virtual void LinkClicked(const GURL& url) OVERRIDE;
-  virtual void SignInLinkClicked() OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual void FocusMoved() override;
+  virtual bool ShouldShowErrorBubble() const override;
+  virtual void ViewClosed() override;
+  virtual std::vector<DialogNotification> CurrentNotifications() override;
+  virtual void LinkClicked(const GURL& url) override;
+  virtual void SignInLinkClicked() override;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
-                                                bool checked) OVERRIDE;
-  virtual void LegalDocumentLinkClicked(const gfx::Range& range) OVERRIDE;
-  virtual bool OnCancel() OVERRIDE;
-  virtual bool OnAccept() OVERRIDE;
-  virtual Profile* profile() OVERRIDE;
-  virtual content::WebContents* GetWebContents() OVERRIDE;
+                                                bool checked) override;
+  virtual void LegalDocumentLinkClicked(const gfx::Range& range) override;
+  virtual bool OnCancel() override;
+  virtual bool OnAccept() override;
+  virtual Profile* profile() override;
+  virtual content::WebContents* GetWebContents() override;
 
   // AutofillPopupDelegate implementation.
-  virtual void OnPopupShown() OVERRIDE;
-  virtual void OnPopupHidden() OVERRIDE;
+  virtual void OnPopupShown() override;
+  virtual void OnPopupHidden() override;
   virtual void DidSelectSuggestion(const base::string16& value,
-                                   int identifier) OVERRIDE;
+                                   int identifier) override;
   virtual void DidAcceptSuggestion(const base::string16& value,
-                                   int identifier) OVERRIDE;
+                                   int identifier) override;
   virtual void RemoveSuggestion(const base::string16& value,
-                                int identifier) OVERRIDE;
-  virtual void ClearPreviewedForm() OVERRIDE;
+                                int identifier) override;
+  virtual void ClearPreviewedForm() override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // SuggestionsMenuModelDelegate implementation.
   virtual void SuggestionItemSelected(SuggestionsMenuModel* model,
-                                      size_t index) OVERRIDE;
+                                      size_t index) override;
 
   // wallet::WalletClientDelegate implementation.
-  virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE;
-  virtual std::string GetRiskData() const OVERRIDE;
-  virtual std::string GetWalletCookieValue() const OVERRIDE;
-  virtual bool IsShippingAddressRequired() const OVERRIDE;
-  virtual void OnDidAcceptLegalDocuments() OVERRIDE;
-  virtual void OnDidAuthenticateInstrument(bool success) OVERRIDE;
+  virtual const AutofillMetrics& GetMetricLogger() const override;
+  virtual std::string GetRiskData() const override;
+  virtual std::string GetWalletCookieValue() const override;
+  virtual bool IsShippingAddressRequired() const override;
+  virtual void OnDidAcceptLegalDocuments() override;
+  virtual void OnDidAuthenticateInstrument(bool success) override;
   virtual void OnDidGetFullWallet(
-      scoped_ptr<wallet::FullWallet> full_wallet) OVERRIDE;
+      scoped_ptr<wallet::FullWallet> full_wallet) override;
   virtual void OnDidGetWalletItems(
-      scoped_ptr<wallet::WalletItems> wallet_items) OVERRIDE;
+      scoped_ptr<wallet::WalletItems> wallet_items) override;
   virtual void OnDidSaveToWallet(
       const std::string& instrument_id,
       const std::string& address_id,
       const std::vector<wallet::RequiredAction>& required_actions,
-      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
+      const std::vector<wallet::FormFieldError>& form_field_errors) override;
   virtual void OnWalletError(
-      wallet::WalletClient::ErrorType error_type) OVERRIDE;
+      wallet::WalletClient::ErrorType error_type) override;
 
   // PersonalDataManagerObserver implementation.
-  virtual void OnPersonalDataChanged() OVERRIDE;
+  virtual void OnPersonalDataChanged() override;
 
   // AccountChooserModelDelegate implementation.
-  virtual void AccountChoiceChanged() OVERRIDE;
-  virtual void AddAccount() OVERRIDE;
-  virtual void UpdateAccountChooserView() OVERRIDE;
+  virtual void AccountChoiceChanged() override;
+  virtual void AddAccount() override;
+  virtual void UpdateAccountChooserView() override;
 
   // wallet::WalletSigninHelperDelegate implementation.
-  virtual void OnPassiveSigninSuccess() OVERRIDE;
+  virtual void OnPassiveSigninSuccess() override;
   virtual void OnPassiveSigninFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
   virtual void OnDidFetchWalletCookieValue(
-      const std::string& cookie_value) OVERRIDE;
+      const std::string& cookie_value) override;
 
   // gfx::AnimationDelegate implementation.
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
   // LoadRulesListener implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
-                                              bool success) OVERRIDE;
+                                              bool success) override;
 
  protected:
   enum DialogSignedInState {

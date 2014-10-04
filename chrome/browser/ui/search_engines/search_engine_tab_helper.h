@@ -29,8 +29,8 @@ class SearchEngineTabHelper
   // content::WebContentsObserver overrides.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit SearchEngineTabHelper(content::WebContents* web_contents);

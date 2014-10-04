@@ -53,15 +53,15 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   ash::ShelfID id() const { return item_.id; }
 
   // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
+  virtual base::string16 GetLabelForCommandId(int command_id) const override;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
+  virtual bool IsCommandIdVisible(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

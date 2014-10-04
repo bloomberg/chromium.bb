@@ -62,15 +62,15 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   ui::SimpleMenuModel* menu_model() { return menu_model_.get(); }
 
   // ui::SimpleMenuModel::Delegate implementation:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
+  virtual bool IsCommandIdVisible(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
+  virtual base::string16 GetLabelForCommandId(int command_id) const override;
 
   void set_navigator(content::PageNavigator* navigator) {
     navigator_ = navigator;
@@ -88,7 +88,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
 
   // Overridden from BaseBookmarkModelObserver:
   // Any change to the model results in closing the menu.
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
 
   gfx::NativeWindow parent_window_;
   BookmarkContextMenuControllerDelegate* delegate_;

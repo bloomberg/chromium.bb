@@ -116,10 +116,10 @@ class InstantController : public InstantPage::Delegate {
   // the RenderViewHost being created which is not always true. Fix this.
   virtual void InstantSupportDetermined(
       const content::WebContents* contents,
-      bool supports_instant) OVERRIDE;
+      bool supports_instant) override;
   virtual void InstantPageAboutToNavigateMainFrame(
       const content::WebContents* contents,
-      const GURL& url) OVERRIDE;
+      const GURL& url) override;
 
   // Helper function to navigate the given contents to the local fallback
   // Instant URL and trim the history correctly.

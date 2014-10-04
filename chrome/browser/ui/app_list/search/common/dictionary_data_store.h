@@ -57,7 +57,7 @@ class DictionaryDataStore
   scoped_ptr<base::DictionaryValue> LoadOnBlockingPool();
 
   // ImportantFileWriter::DataSerializer overrides:
-  virtual bool SerializeData(std::string* data) OVERRIDE;
+  virtual bool SerializeData(std::string* data) override;
 
   base::FilePath data_file_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

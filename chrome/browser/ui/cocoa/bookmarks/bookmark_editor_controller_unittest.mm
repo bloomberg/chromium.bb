@@ -26,7 +26,7 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
   base::string16 default_title_;
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -48,7 +48,7 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -140,7 +140,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaProfileTest {
  public:
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -158,7 +158,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -176,7 +176,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
   base::string16 default_title_;
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -198,7 +198,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -218,7 +218,7 @@ class BookmarkEditorControllerUtf8NodeTest : public CocoaProfileTest {
  public:
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -239,7 +239,7 @@ class BookmarkEditorControllerUtf8NodeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -321,7 +321,7 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
                       configuration:BookmarkEditor::SHOW_TREE];
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -330,7 +330,7 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -457,7 +457,7 @@ TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithFolderSelected) {
 class BookmarkEditorControllerTreeNoNodeTest :
     public BookmarkEditorControllerTreeTest {
  public:
-  virtual BookmarkEditorController* CreateController() OVERRIDE {
+  virtual BookmarkEditorController* CreateController() override {
     return [[BookmarkEditorController alloc]
                initWithParentWindow:test_window()
                             profile:profile()

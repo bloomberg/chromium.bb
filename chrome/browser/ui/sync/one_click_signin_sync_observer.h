@@ -31,10 +31,10 @@ class OneClickSigninSyncObserver : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver:
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void WebContentsDestroyed() override;
 
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // Loads the |continue_url_| in the |web_contents()|.
   void LoadContinueUrl();

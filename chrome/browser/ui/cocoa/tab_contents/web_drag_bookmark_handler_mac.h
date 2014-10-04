@@ -23,11 +23,11 @@ class WebDragBookmarkHandlerMac : public content::WebDragDestDelegate {
   virtual ~WebDragBookmarkHandlerMac();
 
   // Overridden from content::WebDragDestDelegate:
-  virtual void DragInitialize(content::WebContents* contents) OVERRIDE;
-  virtual void OnDragOver() OVERRIDE;
-  virtual void OnDragEnter() OVERRIDE;
-  virtual void OnDrop() OVERRIDE;
-  virtual void OnDragLeave() OVERRIDE;
+  virtual void DragInitialize(content::WebContents* contents) override;
+  virtual void OnDragOver() override;
+  virtual void OnDragEnter() override;
+  virtual void OnDrop() override;
+  virtual void OnDragLeave() override;
 
  private:
   // The BookmarkTabHelper.

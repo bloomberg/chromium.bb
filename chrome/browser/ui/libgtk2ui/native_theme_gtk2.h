@@ -24,22 +24,22 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   // Overridden from ui::NativeThemeBase:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
-                                const ExtraParams& extra) const OVERRIDE;
+                                const ExtraParams& extra) const override;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
-                     const ExtraParams& extra) const OVERRIDE;
-  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
+                     const ExtraParams& extra) const override;
+  virtual SkColor GetSystemColor(ColorId color_id) const override;
   virtual void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
-      const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
+      const MenuBackgroundExtraParams& menu_background) const override;
   virtual void PaintMenuItemBackground(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const OVERRIDE;
+      const MenuListExtraParams& menu_list) const override;
 
  private:
   NativeThemeGtk2();

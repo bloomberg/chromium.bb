@@ -43,7 +43,7 @@ class BadgedIconSource : public gfx::CanvasImageSource {
   BadgedIconSource(const gfx::ImageSkia& icon, const gfx::Size& icon_size)
       : CanvasImageSource(icon_size, false), icon_(icon) {}
 
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     canvas->DrawImageInt(icon_, 0, 0);
     const gfx::ImageSkia& badge = *ui::ResourceBundle::GetSharedInstance().
          GetImageSkiaNamed(IDR_WEBSTORE_ICON_16);

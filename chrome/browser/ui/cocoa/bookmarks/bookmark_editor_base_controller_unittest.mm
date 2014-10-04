@@ -82,7 +82,7 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
                    configuration:BookmarkEditor::SHOW_TREE];
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -92,12 +92,12 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     CocoaTest::TearDown();
   }
 
-  virtual Browser* CreateBrowser() OVERRIDE {
+  virtual Browser* CreateBrowser() override {
     Browser::CreateParams native_params(profile(), chrome::GetActiveDesktop());
     return chrome::CreateBrowserWithTestWindowForParams(&native_params);
   }

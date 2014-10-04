@@ -32,9 +32,9 @@ class CountryComboboxModel : public ui::ComboboxModel {
                     const base::Callback<bool(const std::string&)>& filter);
 
   // ui::ComboboxModel implementation:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
-  virtual bool IsItemSeparatorAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
+  virtual bool IsItemSeparatorAt(int index) override;
 
   const std::vector<AutofillCountry*>& countries() const {
     return countries_.get();

@@ -19,9 +19,9 @@ class MicSearchDecoration : public ImageDecoration {
   virtual ~MicSearchDecoration();
 
   // Implement |LocationBarDecoration|.
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual NSString* GetToolTip() OVERRIDE;
+  virtual bool AcceptsMousePress() override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual NSString* GetToolTip() override;
 
  private:
   CommandUpdater* command_updater_;  // Weak, owned by Browser.

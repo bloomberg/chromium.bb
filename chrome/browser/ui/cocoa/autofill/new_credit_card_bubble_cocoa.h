@@ -33,8 +33,8 @@ class NewCreditCardBubbleCocoa : public NewCreditCardBubbleView {
   virtual ~NewCreditCardBubbleCocoa();
 
   // NewCreditCardBubbleView implementation.
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NewCreditCardBubbleCocoaUnitTest, CloseDeletes);

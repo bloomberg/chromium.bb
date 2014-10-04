@@ -25,7 +25,7 @@ class AppSyncUIStateWatcher : public AppSyncUIStateObserver {
 
  private:
   // AppSyncUIStateObserver overrides:
-  virtual void OnAppSyncUIStatusChanged() OVERRIDE;
+  virtual void OnAppSyncUIStatusChanged() override;
 
   AppSyncUIState* app_sync_ui_state_;
   app_list::AppListModel* model_;  // Owned by AppListView

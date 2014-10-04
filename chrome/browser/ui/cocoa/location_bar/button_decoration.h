@@ -57,12 +57,12 @@ class ButtonDecoration : public LocationBarDecoration {
   NSImage* GetIconImage() const;
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual ButtonDecoration* AsButtonDecoration() OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) override;
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
+  virtual bool AcceptsMousePress() override;
+  virtual bool IsDraggable() override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual ButtonDecoration* AsButtonDecoration() override;
 
  private:
   ui::NinePartImageIds normal_image_ids_;

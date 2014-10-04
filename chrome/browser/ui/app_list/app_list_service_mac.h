@@ -56,32 +56,32 @@ class AppListServiceMac : public AppListServiceImpl,
   void WindowAnimationDidEnd();
 
   // AppListService overrides:
-  virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void DismissAppList() OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
+  virtual void Init(Profile* initial_profile) override;
+  virtual void CreateForProfile(Profile* requested_profile) override;
+  virtual void ShowForProfile(Profile* requested_profile) override;
+  virtual void DismissAppList() override;
+  virtual bool IsAppListVisible() const override;
   virtual void EnableAppList(Profile* initial_profile,
-                             AppListEnableSource enable_source) OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-  virtual void CreateShortcut() OVERRIDE;
+                             AppListEnableSource enable_source) override;
+  virtual gfx::NativeWindow GetAppListWindow() override;
+  virtual AppListControllerDelegate* GetControllerDelegate() override;
+  virtual Profile* GetCurrentAppListProfile() override;
+  virtual void CreateShortcut() override;
 
   // AppListServiceImpl overrides:
-  virtual void DestroyAppList() OVERRIDE;
+  virtual void DestroyAppList() override;
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
                             apps::AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) OVERRIDE;
-  virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
+                            const std::vector<base::FilePath>& files) override;
+  virtual void OnShimClose(apps::AppShimHandler::Host* host) override;
   virtual void OnShimFocus(apps::AppShimHandler::Host* host,
                            apps::AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) OVERRIDE;
+                           const std::vector<base::FilePath>& files) override;
   virtual void OnShimSetHidden(apps::AppShimHandler::Host* host,
-                               bool hidden) OVERRIDE;
-  virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
+                               bool hidden) override;
+  virtual void OnShimQuit(apps::AppShimHandler::Host* host) override;
 
  private:
   friend class test::AppListServiceMacTestApi;

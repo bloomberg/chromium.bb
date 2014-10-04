@@ -44,10 +44,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void DidSelectSuggestion(const base::string16& value,
-                                   int identifier) OVERRIDE {}
+                                   int identifier) override {}
   virtual void RemoveSuggestion(const base::string16& value,
-                                int identifier) OVERRIDE {}
-  virtual void ClearPreviewedForm() OVERRIDE {}
+                                int identifier) override {}
+  virtual void ClearPreviewedForm() override {}
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr() {
     return AutofillExternalDelegate::GetWeakPtr();
   }
@@ -58,7 +58,7 @@ class MockAutofillClient : public autofill::TestAutofillClient {
   MockAutofillClient() : prefs_(autofill::test::PrefServiceForTesting()) {}
   virtual ~MockAutofillClient() {}
 
-  virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
+  virtual PrefService* GetPrefs() override { return prefs_.get(); }
 
  private:
   scoped_ptr<PrefService> prefs_;
@@ -113,7 +113,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   }
 
  private:
-  virtual void ShowView() OVERRIDE {}
+  virtual void ShowView() override {}
 
   TestPopupControllerCommon* test_controller_common_;
 };
@@ -127,7 +127,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
         autofill_popup_controller_(NULL) {}
   virtual ~AutofillPopupControllerUnitTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
     ContentAutofillDriver::CreateForWebContentsAndDelegate(
@@ -147,7 +147,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
             external_delegate_->GetWeakPtr(),gfx::Rect());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // This will make sure the controller and the view (if any) are both
     // cleaned up.
     if (autofill_popup_controller_)

@@ -74,43 +74,43 @@ class MultiUserWindowManagerChromeOS
 
   // MultiUserWindowManager overrides:
   virtual void SetWindowOwner(
-      aura::Window* window, const std::string& user_id) OVERRIDE;
+      aura::Window* window, const std::string& user_id) override;
   virtual const std::string& GetWindowOwner(
-      aura::Window* window) const OVERRIDE;
+      aura::Window* window) const override;
   virtual void ShowWindowForUser(
-      aura::Window* window, const std::string& user_id) OVERRIDE;
-  virtual bool AreWindowsSharedAmongUsers() const OVERRIDE;
+      aura::Window* window, const std::string& user_id) override;
+  virtual bool AreWindowsSharedAmongUsers() const override;
   virtual void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) const OVERRIDE;
+      std::set<std::string>* user_ids) const override;
   virtual bool IsWindowOnDesktopOfUser(
       aura::Window* window,
-      const std::string& user_id) const OVERRIDE;
+      const std::string& user_id) const override;
   virtual const std::string& GetUserPresentingWindow(
-      aura::Window* window) const OVERRIDE;
-  virtual void AddUser(content::BrowserContext* context) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+      aura::Window* window) const override;
+  virtual void AddUser(content::BrowserContext* context) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
 
   // SessionStateObserver overrides:
-  virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
+  virtual void ActiveUserChanged(const std::string& user_id) override;
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
   virtual void OnWindowVisibilityChanging(aura::Window* window,
-                                          bool visible) OVERRIDE;
+                                          bool visible) override;
   virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE;
+                                         bool visible) override;
 
   // TransientWindowObserver overrides:
   virtual void OnTransientChildAdded(aura::Window* window,
-                                     aura::Window* transient) OVERRIDE;
+                                     aura::Window* transient) override;
   virtual void OnTransientChildRemoved(aura::Window* window,
-                                       aura::Window* transient) OVERRIDE;
+                                       aura::Window* transient) override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                const content::NotificationSource& source,
-               const content::NotificationDetails& details) OVERRIDE;
+               const content::NotificationDetails& details) override;
 
   // Disable any animations for unit tests.
   void SetAnimationSpeedForTest(AnimationSpeed speed);

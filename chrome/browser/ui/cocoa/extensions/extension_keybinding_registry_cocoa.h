@@ -56,10 +56,10 @@ class ExtensionKeybindingRegistryCocoa
   // Overridden from ExtensionKeybindingRegistry:
   virtual void AddExtensionKeybinding(
       const extensions::Extension* extension,
-      const std::string& command_name) OVERRIDE;
+      const std::string& command_name) override;
   virtual void RemoveExtensionKeybindingImpl(
       const ui::Accelerator& accelerator,
-      const std::string& command_name) OVERRIDE;
+      const std::string& command_name) override;
 
  private:
   // Keeps track of whether shortcut handling is currently suspended. Shortcuts

@@ -64,60 +64,60 @@ class Gtk2UI : public views::LinuxUI {
 
   // ui::LinuxInputMethodContextFactory:
   virtual scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
-      ui::LinuxInputMethodContextDelegate* delegate) const OVERRIDE;
+      ui::LinuxInputMethodContextDelegate* delegate) const override;
 
   // gfx::LinuxFontDelegate:
-  virtual gfx::FontRenderParams GetDefaultFontRenderParams() const OVERRIDE;
+  virtual gfx::FontRenderParams GetDefaultFontRenderParams() const override;
   virtual scoped_ptr<gfx::ScopedPangoFontDescription>
-      GetDefaultPangoFontDescription() const OVERRIDE;
-  virtual double GetFontDPI() const OVERRIDE;
+      GetDefaultPangoFontDescription() const override;
+  virtual double GetFontDPI() const override;
 
   // ui::LinuxShellDialog:
   virtual ui::SelectFileDialog* CreateSelectFileDialog(
       ui::SelectFileDialog::Listener* listener,
-      ui::SelectFilePolicy* policy) const OVERRIDE;
+      ui::SelectFilePolicy* policy) const override;
 
   // ui::LinuxUI:
-  virtual void Initialize() OVERRIDE;
-  virtual gfx::Image GetThemeImageNamed(int id) const OVERRIDE;
-  virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
-  virtual bool HasCustomImage(int id) const OVERRIDE;
-  virtual SkColor GetFocusRingColor() const OVERRIDE;
-  virtual SkColor GetThumbActiveColor() const OVERRIDE;
-  virtual SkColor GetThumbInactiveColor() const OVERRIDE;
-  virtual SkColor GetTrackColor() const OVERRIDE;
-  virtual SkColor GetActiveSelectionBgColor() const OVERRIDE;
-  virtual SkColor GetActiveSelectionFgColor() const OVERRIDE;
-  virtual SkColor GetInactiveSelectionBgColor() const OVERRIDE;
-  virtual SkColor GetInactiveSelectionFgColor() const OVERRIDE;
-  virtual double GetCursorBlinkInterval() const OVERRIDE;
-  virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const OVERRIDE;
+  virtual void Initialize() override;
+  virtual gfx::Image GetThemeImageNamed(int id) const override;
+  virtual bool GetColor(int id, SkColor* color) const override;
+  virtual bool HasCustomImage(int id) const override;
+  virtual SkColor GetFocusRingColor() const override;
+  virtual SkColor GetThumbActiveColor() const override;
+  virtual SkColor GetThumbInactiveColor() const override;
+  virtual SkColor GetTrackColor() const override;
+  virtual SkColor GetActiveSelectionBgColor() const override;
+  virtual SkColor GetActiveSelectionFgColor() const override;
+  virtual SkColor GetInactiveSelectionBgColor() const override;
+  virtual SkColor GetInactiveSelectionFgColor() const override;
+  virtual double GetCursorBlinkInterval() const override;
+  virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
   virtual void SetNativeThemeOverride(const NativeThemeGetter& callback)
-      OVERRIDE;
-  virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
-  virtual void SetDownloadCount(int count) const OVERRIDE;
-  virtual void SetProgressFraction(float percentage) const OVERRIDE;
-  virtual bool IsStatusIconSupported() const OVERRIDE;
+      override;
+  virtual bool GetDefaultUsesSystemTheme() const override;
+  virtual void SetDownloadCount(int count) const override;
+  virtual void SetProgressFraction(float percentage) const override;
+  virtual bool IsStatusIconSupported() const override;
   virtual scoped_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
-      const base::string16& tool_tip) const OVERRIDE;
+      const base::string16& tool_tip) const override;
   virtual gfx::Image GetIconForContentType(
-      const std::string& content_type, int size) const OVERRIDE;
+      const std::string& content_type, int size) const override;
   virtual scoped_ptr<views::Border> CreateNativeBorder(
       views::LabelButton* owning_button,
-      scoped_ptr<views::LabelButtonBorder> border) OVERRIDE;
+      scoped_ptr<views::LabelButtonBorder> border) override;
   virtual void AddWindowButtonOrderObserver(
-      views::WindowButtonOrderObserver* observer) OVERRIDE;
+      views::WindowButtonOrderObserver* observer) override;
   virtual void RemoveWindowButtonOrderObserver(
-      views::WindowButtonOrderObserver* observer) OVERRIDE;
-  virtual bool UnityIsRunning() OVERRIDE;
-  virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() OVERRIDE;
-  virtual void NotifyWindowManagerStartupComplete() OVERRIDE;
+      views::WindowButtonOrderObserver* observer) override;
+  virtual bool UnityIsRunning() override;
+  virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() override;
+  virtual void NotifyWindowManagerStartupComplete() override;
 
   // ui::TextEditKeybindingDelegate:
   virtual bool MatchEvent(
       const ui::Event& event,
-      std::vector<ui::TextEditCommandAuraLinux>* commands) OVERRIDE;
+      std::vector<ui::TextEditCommandAuraLinux>* commands) override;
 
  private:
   typedef std::map<int, SkColor> ColorMap;

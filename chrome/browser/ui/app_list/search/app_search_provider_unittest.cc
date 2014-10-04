@@ -34,7 +34,7 @@ class AppSearchProviderTest : public AppListTestBase {
   virtual ~AppSearchProviderTest() {}
 
   // AppListTestBase overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AppListTestBase::SetUp();
 
     app_search_.reset(new AppSearchProvider(profile_.get(), NULL));

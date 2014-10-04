@@ -24,7 +24,7 @@ class PDFPasswordDialogMacBridge : public ConstrainedWindowMacDelegate {
  public:
   explicit PDFPasswordDialogMacBridge(PDFPasswordDialogMac* dialog);
   virtual ~PDFPasswordDialogMacBridge();
-  virtual void OnConstrainedWindowClosed(ConstrainedWindowMac* window) OVERRIDE;
+  virtual void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
  private:
   PDFPasswordDialogMac* dialog_;  // weak

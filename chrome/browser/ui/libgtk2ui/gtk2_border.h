@@ -33,12 +33,12 @@ class Gtk2Border : public views::Border, public ui::NativeThemeObserver {
   virtual ~Gtk2Border();
 
   // Overridden from views::Border:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) override;
+  virtual gfx::Insets GetInsets() const override;
+  virtual gfx::Size GetMinimumSize() const override;
 
   // Overridden from views::NativeThemeChangeObserver:
-  virtual void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) OVERRIDE;
+  virtual void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
  private:
   void PaintState(const ui::NativeTheme::State state,

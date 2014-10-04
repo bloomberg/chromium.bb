@@ -20,7 +20,7 @@
 
 class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     static_cast<TestingBrowserProcess*>(g_browser_process)
         ->SetLocalState(&pref_service);
     chrome::RegisterLocalState(pref_service.registry());
@@ -30,7 +30,7 @@ class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(NULL);
     BrowserWithTestWindowTest::TearDown();
   }

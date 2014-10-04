@@ -34,10 +34,10 @@ class TestGeneratedCreditCardBubbleController
 
  protected:
   // GeneratedCreditCardBubbleController:
-  virtual base::WeakPtr<GeneratedCreditCardBubbleView> CreateBubble() OVERRIDE;
-  virtual bool CanShow() const OVERRIDE;
+  virtual base::WeakPtr<GeneratedCreditCardBubbleView> CreateBubble() override;
+  virtual bool CanShow() const override;
   virtual void SetupAndShow(const base::string16& fronting_card_name,
-                            const base::string16& backing_card_name) OVERRIDE;
+                            const base::string16& backing_card_name) override;
 
  private:
   // How many bubbles have been shown via this controller.

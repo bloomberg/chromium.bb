@@ -32,10 +32,10 @@ class TranslateInfoBar : public InfoBarAndroid {
  private:
   // InfoBarAndroid:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) OVERRIDE;
+      JNIEnv* env) override;
   virtual void ProcessButton(int action,
-                             const std::string& action_value) OVERRIDE;
-  virtual void PassJavaInfoBar(InfoBarAndroid* source) OVERRIDE;
+                             const std::string& action_value) override;
+  virtual void PassJavaInfoBar(InfoBarAndroid* source) override;
 
   void TransferOwnership(TranslateInfoBar* destination,
                          translate::TranslateStep new_type);

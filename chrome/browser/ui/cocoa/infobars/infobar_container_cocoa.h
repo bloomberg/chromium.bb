@@ -20,14 +20,14 @@ class InfoBarContainerCocoa : public infobars::InfoBarContainer,
  private:
   // InfoBarContainer:
   virtual void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
-                                          size_t position) OVERRIDE;
+                                          size_t position) override;
   virtual void PlatformSpecificRemoveInfoBar(
-      infobars::InfoBar* infobar) OVERRIDE;
+      infobars::InfoBar* infobar) override;
 
   // InfoBarContainer::Delegate:
-  virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
-  virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
-  virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
+  virtual SkColor GetInfoBarSeparatorColor() const override;
+  virtual void InfoBarContainerStateChanged(bool is_animating) override;
+  virtual bool DrawInfoBarArrows(int* x) const override;
 
   InfoBarContainerController* controller_;  // weak, owns us.
 

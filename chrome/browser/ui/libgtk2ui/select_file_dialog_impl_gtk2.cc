@@ -56,7 +56,7 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   virtual ~SelectFileDialogImplGTK();
 
   // BaseShellDialog implementation:
-  virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE;
+  virtual bool IsRunning(gfx::NativeWindow parent_window) const override;
 
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
@@ -68,13 +68,13 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
       int file_type_index,
       const base::FilePath::StringType& default_extension,
       gfx::NativeWindow owning_window,
-      void* params) OVERRIDE;
+      void* params) override;
 
  private:
-  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
+  virtual bool HasMultipleFileTypeChoicesImpl() override;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // Add the filters from |file_types_| to |chooser|.
   void AddFilters(GtkFileChooser* chooser);

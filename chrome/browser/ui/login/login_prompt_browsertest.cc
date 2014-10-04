@@ -96,11 +96,11 @@ class InterstitialObserver : public content::WebContentsObserver {
         detach_callback_(detach_callback) {
   }
 
-  virtual void DidAttachInterstitialPage() OVERRIDE {
+  virtual void DidAttachInterstitialPage() override {
     attach_callback_.Run();
   }
 
-  virtual void DidDetachInterstitialPage() OVERRIDE {
+  virtual void DidDetachInterstitialPage() override {
     detach_callback_.Run();
   }
 

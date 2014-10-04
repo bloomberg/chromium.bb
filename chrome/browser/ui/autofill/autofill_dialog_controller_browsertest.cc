@@ -95,7 +95,7 @@ class MockAutofillMetrics : public AutofillMetrics {
 
   virtual void LogDialogUiDuration(
       const base::TimeDelta& duration,
-      DialogDismissalAction dismissal_action) const OVERRIDE {
+      DialogDismissalAction dismissal_action) const override {
     // Ignore constness for testing.
     MockAutofillMetrics* mutable_this = const_cast<MockAutofillMetrics*>(this);
     mutable_this->dialog_dismissal_action_ = dismissal_action;
@@ -141,11 +141,11 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual ~TestAutofillDialogController() {}
 
-  virtual GURL SignInUrl() const OVERRIDE {
+  virtual GURL SignInUrl() const override {
     return GURL(chrome::kChromeUIVersionURL);
   }
 
-  virtual void ViewClosed() OVERRIDE {
+  virtual void ViewClosed() override {
     message_loop_runner_->Quit();
     AutofillDialogControllerImpl::ViewClosed();
   }
@@ -153,7 +153,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   virtual base::string16 InputValidityMessage(
       DialogSection section,
       ServerFieldType type,
-      const base::string16& value) OVERRIDE {
+      const base::string16& value) override {
     if (!use_validation_)
       return base::string16();
     return AutofillDialogControllerImpl::InputValidityMessage(
@@ -162,7 +162,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual ValidityMessages InputsAreValid(
       DialogSection section,
-      const FieldValueMap& inputs) OVERRIDE {
+      const FieldValueMap& inputs) override {
     if (!use_validation_)
       return ValidityMessages();
     return AutofillDialogControllerImpl::InputsAreValid(section, inputs);
@@ -170,7 +170,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   // Saving to Chrome is tested in AutofillDialogControllerImpl unit tests.
   // TODO(estade): test that the view defaults to saving to Chrome.
-  virtual bool ShouldOfferToSaveInChrome() const OVERRIDE {
+  virtual bool ShouldOfferToSaveInChrome() const override {
     return true;
   }
 
@@ -184,7 +184,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   MOCK_METHOD0(LoadRiskFingerprintData, void());
 
-  virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE {
+  virtual std::vector<DialogNotification> CurrentNotifications() override {
     return notifications_;
   }
 
@@ -226,27 +226,27 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
  protected:
-  virtual PersonalDataManager* GetManager() const OVERRIDE {
+  virtual PersonalDataManager* GetManager() const override {
     return &const_cast<TestAutofillDialogController*>(this)->test_manager_;
   }
 
-  virtual AddressValidator* GetValidator() OVERRIDE {
+  virtual AddressValidator* GetValidator() override {
     return &mock_validator_;
   }
 
-  virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
+  virtual wallet::WalletClient* GetWalletClient() override {
     return &mock_wallet_client_;
   }
 
   virtual bool IsSignInContinueUrl(const GURL& url, size_t* user_index) const
-      OVERRIDE {
+      override {
     *user_index = sign_in_user_index_;
     return url == wallet::GetSignInContinueUrl();
   }
 
  private:
   // To specify our own metric logger.
-  virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
+  virtual const AutofillMetrics& GetMetricLogger() const override {
     return metric_logger_;
   }
 
@@ -289,7 +289,7 @@ class NavEntryCommittedObserver : public content::WindowedNotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     content::LoadCommittedDetails* load_details =
         content::Details<content::LoadCommittedDetails>(details).ptr();
     if (load_details->entry->GetVirtualURL() != url_)
@@ -311,11 +311,11 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   AutofillDialogControllerTest() : controller_(NULL) {}
   virtual ~AutofillDialogControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
     InitializeController();
   }
@@ -1501,7 +1501,7 @@ class AutofillDialogControllerSecurityTest :
   AutofillDialogControllerSecurityTest() {}
   virtual ~AutofillDialogControllerSecurityTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     CHECK(!command_line->HasSwitch(::switches::kReduceSecurityForTesting));
   }
 

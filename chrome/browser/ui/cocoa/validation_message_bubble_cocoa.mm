@@ -168,7 +168,7 @@ class ValidationMessageBubbleCocoa : public chrome::ValidationMessageBubble {
 
   virtual void SetPositionRelativeToAnchor(
       content::RenderWidgetHost* widget_host,
-      const gfx::Rect& anchor_in_root_view) OVERRIDE {
+      const gfx::Rect& anchor_in_root_view) override {
     [controller_.get()
         setAnchorPoint:GetAnchorPoint(widget_host, anchor_in_root_view)];
   }

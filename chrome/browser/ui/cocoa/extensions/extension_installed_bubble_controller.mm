@@ -74,7 +74,7 @@ class ExtensionLoadedNotificationObserver
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
+      const content::NotificationDetails& details) override {
     if (type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();

@@ -29,7 +29,7 @@ class ScreenCaptureNotificationUICocoaTest : public CocoaTest {
       : callback_called_(0) {
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     callback_called_ = 0;
     target_.reset();
     EXPECT_EQ(0, callback_called_);

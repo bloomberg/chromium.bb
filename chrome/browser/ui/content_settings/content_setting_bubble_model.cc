@@ -183,7 +183,7 @@ class ContentSettingTitleLinkAndCustomModel
 
  private:
   void SetCustomLink();
-  virtual void OnCustomLinkClicked() OVERRIDE {}
+  virtual void OnCustomLinkClicked() override {}
 };
 
 ContentSettingTitleLinkAndCustomModel::ContentSettingTitleLinkAndCustomModel(
@@ -224,7 +224,7 @@ class ContentSettingSingleRadioGroup
  private:
   void SetRadioGroup();
   void AddException(ContentSetting setting);
-  virtual void OnRadioClicked(int radio_index) OVERRIDE;
+  virtual void OnRadioClicked(int radio_index) override;
 
   ContentSetting block_setting_;
   int selected_item_;
@@ -413,7 +413,7 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
   virtual ~ContentSettingCookiesBubbleModel();
 
  private:
-  virtual void OnCustomLinkClicked() OVERRIDE;
+  virtual void OnCustomLinkClicked() override;
 };
 
 ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
@@ -457,7 +457,7 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
   virtual ~ContentSettingPluginBubbleModel();
 
  private:
-  virtual void OnCustomLinkClicked() OVERRIDE;
+  virtual void OnCustomLinkClicked() override;
 };
 
 ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
@@ -508,7 +508,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
 
  private:
   void SetPopups();
-  virtual void OnPopupClicked(int index) OVERRIDE;
+  virtual void OnPopupClicked(int index) override;
 };
 
 ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
@@ -574,9 +574,9 @@ class ContentSettingMediaStreamBubbleModel
                                   const std::string& device);
 
   // ContentSettingBubbleModel implementation.
-  virtual void OnRadioClicked(int radio_index) OVERRIDE;
+  virtual void OnRadioClicked(int radio_index) override;
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
-                                  const std::string& selected_device) OVERRIDE;
+                                  const std::string& selected_device) override;
 
   // The index of the selected radio item.
   int selected_item_;
@@ -866,7 +866,7 @@ class ContentSettingDomainListBubbleModel
  private:
   void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
   void SetDomainsAndCustomLink();
-  virtual void OnCustomLinkClicked() OVERRIDE;
+  virtual void OnCustomLinkClicked() override;
 };
 
 ContentSettingDomainListBubbleModel::ContentSettingDomainListBubbleModel(
@@ -953,7 +953,7 @@ class ContentSettingMixedScriptBubbleModel
   virtual ~ContentSettingMixedScriptBubbleModel() {}
 
  private:
-  virtual void OnCustomLinkClicked() OVERRIDE;
+  virtual void OnCustomLinkClicked() override;
 };
 
 ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
@@ -1119,7 +1119,7 @@ class ContentSettingMidiSysExBubbleModel
  private:
   void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
   void SetDomainsAndCustomLink();
-  virtual void OnCustomLinkClicked() OVERRIDE;
+  virtual void OnCustomLinkClicked() override;
 };
 
 ContentSettingMidiSysExBubbleModel::ContentSettingMidiSysExBubbleModel(

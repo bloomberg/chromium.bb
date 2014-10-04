@@ -39,7 +39,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   static bool CheckKDEDialogWorksOnUIThread();
 
   // BaseShellDialog implementation.
-  virtual void ListenerDestroyed() OVERRIDE;
+  virtual void ListenerDestroyed() override;
 
  protected:
   explicit SelectFileDialogImpl(Listener* listener,

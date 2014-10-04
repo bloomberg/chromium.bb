@@ -18,7 +18,7 @@ class ChromeWebModalDialogManagerDelegate
  protected:
   // Overridden from web_modal::WebContentsModalDialogManagerDelegate:
   virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) OVERRIDE;
+      content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebModalDialogManagerDelegate);

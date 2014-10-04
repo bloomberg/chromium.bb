@@ -39,13 +39,13 @@ class AshKeyboardControllerProxy
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // keyboard::KeyboardControllerProxy overrides
-  virtual content::BrowserContext* GetBrowserContext() OVERRIDE;
-  virtual ui::InputMethod* GetInputMethod() OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() override;
+  virtual ui::InputMethod* GetInputMethod() override;
   virtual void RequestAudioInput(content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
-  virtual void SetupWebContents(content::WebContents* contents) OVERRIDE;
-  virtual void ShowKeyboardContainer(aura::Window* container) OVERRIDE;
+      const content::MediaResponseCallback& callback) override;
+  virtual void SetupWebContents(content::WebContents* contents) override;
+  virtual void ShowKeyboardContainer(aura::Window* container) override;
 
   // The overridden implementation dispatches
   // chrome.virtualKeyboardPrivate.onTextInputBoxFocused event to extension to
@@ -54,15 +54,15 @@ class AshKeyboardControllerProxy
   // information, but not when the virtual keyboard is used in conjunction with
   // another IME. virtualKeyboardPrivate.onTextInputBoxFocused is the remedy in
   // that case.
-  virtual void SetUpdateInputType(ui::TextInputType type) OVERRIDE;
+  virtual void SetUpdateInputType(ui::TextInputType type) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate overrides
   virtual extensions::WindowController* GetExtensionWindowController() const
-      OVERRIDE;
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+      override;
+  virtual content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsObserver overrides
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;

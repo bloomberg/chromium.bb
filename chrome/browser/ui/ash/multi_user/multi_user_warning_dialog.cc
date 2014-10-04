@@ -37,13 +37,13 @@ class TeleportWarningView : public views::DialogDelegateView {
   static void ShowDialog(const base::Callback<void(bool)>& on_accept);
 
   // views::DialogDelegate overrides.
-  virtual bool Accept() OVERRIDE;
+  virtual bool Accept() override;
 
   // views::WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
  private:
   void InitDialog();

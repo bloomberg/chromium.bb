@@ -48,7 +48,7 @@ class SSLCertificateViewerCocoaBridge : public ConstrainedWindowMacDelegate {
 
   // ConstrainedWindowMacDelegate implementation:
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac * window) OVERRIDE {
+      ConstrainedWindowMac * window) override {
     // |onConstrainedWindowClosed| will delete the sheet which might be still
     // in use higher up the call stack. Wait for the next cycle of the event
     // loop to call this function.

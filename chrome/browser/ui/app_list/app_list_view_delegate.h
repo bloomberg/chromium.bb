@@ -75,81 +75,81 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetUpCustomLauncherPages();
 
   // Overridden from app_list::AppListViewDelegate:
-  virtual bool ForceNativeDesktop() const OVERRIDE;
-  virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
-  virtual app_list::AppListModel* GetModel() OVERRIDE;
-  virtual app_list::SpeechUIModel* GetSpeechUI() OVERRIDE;
+  virtual bool ForceNativeDesktop() const override;
+  virtual void SetProfileByPath(const base::FilePath& profile_path) override;
+  virtual app_list::AppListModel* GetModel() override;
+  virtual app_list::SpeechUIModel* GetSpeechUI() override;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
-  virtual void StartSearch() OVERRIDE;
-  virtual void StopSearch() OVERRIDE;
+      const base::Callback<void(const base::FilePath&)>& callback) override;
+  virtual void StartSearch() override;
+  virtual void StopSearch() override;
   virtual void OpenSearchResult(app_list::SearchResult* result,
                                 bool auto_launch,
-                                int event_flags) OVERRIDE;
+                                int event_flags) override;
   virtual void InvokeSearchResultAction(app_list::SearchResult* result,
                                         int action_index,
-                                        int event_flags) OVERRIDE;
-  virtual base::TimeDelta GetAutoLaunchTimeout() OVERRIDE;
-  virtual void AutoLaunchCanceled() OVERRIDE;
-  virtual void ViewInitialized() OVERRIDE;
-  virtual void Dismiss() OVERRIDE;
-  virtual void ViewClosing() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual void OpenSettings() OVERRIDE;
-  virtual void OpenHelp() OVERRIDE;
-  virtual void OpenFeedback() OVERRIDE;
-  virtual void ToggleSpeechRecognition() OVERRIDE;
+                                        int event_flags) override;
+  virtual base::TimeDelta GetAutoLaunchTimeout() override;
+  virtual void AutoLaunchCanceled() override;
+  virtual void ViewInitialized() override;
+  virtual void Dismiss() override;
+  virtual void ViewClosing() override;
+  virtual gfx::ImageSkia GetWindowIcon() override;
+  virtual void OpenSettings() override;
+  virtual void OpenHelp() override;
+  virtual void OpenFeedback() override;
+  virtual void ToggleSpeechRecognition() override;
   virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
 #if defined(TOOLKIT_VIEWS)
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
+  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override;
   virtual std::vector<views::View*> CreateCustomPageWebViews(
-      const gfx::Size& size) OVERRIDE;
+      const gfx::Size& size) override;
 #endif
-  virtual bool IsSpeechRecognitionEnabled() OVERRIDE;
-  virtual const Users& GetUsers() const OVERRIDE;
-  virtual bool ShouldCenterWindow() const OVERRIDE;
+  virtual bool IsSpeechRecognitionEnabled() override;
+  virtual const Users& GetUsers() const override;
+  virtual bool ShouldCenterWindow() const override;
   virtual void AddObserver(
-      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
+      app_list::AppListViewDelegateObserver* observer) override;
   virtual void RemoveObserver(
-      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
+      app_list::AppListViewDelegateObserver* observer) override;
 
   // Overridden from app_list::StartPageObserver:
   virtual void OnSpeechResult(const base::string16& result,
-                              bool is_final) OVERRIDE;
-  virtual void OnSpeechSoundLevelChanged(int16 level) OVERRIDE;
+                              bool is_final) override;
+  virtual void OnSpeechSoundLevelChanged(int16 level) override;
   virtual void OnSpeechRecognitionStateChanged(
-      app_list::SpeechRecognitionState new_state) OVERRIDE;
+      app_list::SpeechRecognitionState new_state) override;
 
   // Overridden from HotwordClient:
-  virtual void OnHotwordStateChanged(bool started) OVERRIDE;
-  virtual void OnHotwordRecognized() OVERRIDE;
+  virtual void OnHotwordStateChanged(bool started) override;
+  virtual void OnHotwordRecognized() override;
 
   // Overridden from SigninManagerFactory::Observer:
-  virtual void SigninManagerCreated(SigninManagerBase* manager) OVERRIDE;
-  virtual void SigninManagerShutdown(SigninManagerBase* manager) OVERRIDE;
+  virtual void SigninManagerCreated(SigninManagerBase* manager) override;
+  virtual void SigninManagerShutdown(SigninManagerBase* manager) override;
 
   // Overridden from SigninManagerBase::Observer:
-  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   // Overridden from ProfileInfoCacheObserver:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const base::string16& profile_name) OVERRIDE;
+                                   const base::string16& profile_name) override;
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const base::string16& old_profile_name) OVERRIDE;
+      const base::string16& old_profile_name) override;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Unowned pointer to the controller.
   AppListControllerDelegate* controller_;

@@ -43,7 +43,7 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
       : callback_called_(false), media_list_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaTest::SetUp();
 
     media_list_ = new FakeDesktopMediaList();
@@ -61,7 +61,7 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
                    targetName:base::ASCIIToUTF16("https://foo.com")]);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     CocoaTest::TearDown();
   }

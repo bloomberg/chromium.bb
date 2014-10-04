@@ -13,9 +13,9 @@ class ChromeNewWindowDelegateChromeos : public ChromeNewWindowDelegate {
   virtual ~ChromeNewWindowDelegateChromeos();
 
   // Overridden from ash::NewWindowDelegate:
-  virtual void OpenFileManager() OVERRIDE;
-  virtual void OpenCrosh() OVERRIDE;
-  virtual void ShowKeyboardOverlay() OVERRIDE;
+  virtual void OpenFileManager() override;
+  virtual void OpenCrosh() override;
+  virtual void ShowKeyboardOverlay() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeNewWindowDelegateChromeos);

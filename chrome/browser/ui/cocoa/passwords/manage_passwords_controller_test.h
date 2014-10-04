@@ -19,7 +19,7 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
  public:
   ManagePasswordsControllerTest();
   virtual ~ManagePasswordsControllerTest();
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   ManagePasswordsUIControllerMock* ui_controller() { return ui_controller_; }
   ManagePasswordsBubbleModel* model();

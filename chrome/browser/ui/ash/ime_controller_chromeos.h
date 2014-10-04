@@ -17,11 +17,11 @@ class ImeController : public ash::ImeControlDelegate {
   virtual ~ImeController() {}
 
   // Overridden from ash::ImeControlDelegate:
-  virtual void HandleNextIme() OVERRIDE;
-  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void HandleNextIme() override;
+  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) override;
+  virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) override;
   virtual ui::Accelerator RemapAccelerator(
-      const ui::Accelerator& accelerator) OVERRIDE;
+      const ui::Accelerator& accelerator) override;
 
  private:
   bool UsingFrenchInputMethod() const;

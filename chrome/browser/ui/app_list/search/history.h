@@ -49,7 +49,7 @@ class History : public KeyedService, public HistoryDataObserver {
   friend class app_list::test::SearchHistoryTest;
 
   // HistoryDataObserver overrides:
-  virtual void OnHistoryDataLoadedFromStore() OVERRIDE;
+  virtual void OnHistoryDataLoadedFromStore() override;
 
   scoped_ptr<HistoryData> data_;
   scoped_refptr<HistoryDataStore> store_;

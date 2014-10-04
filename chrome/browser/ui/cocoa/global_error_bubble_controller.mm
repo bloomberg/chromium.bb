@@ -38,7 +38,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
   }
 
  private:
-  virtual void CloseBubbleView() OVERRIDE {
+  virtual void CloseBubbleView() override {
     [controller_ close];
   }
 

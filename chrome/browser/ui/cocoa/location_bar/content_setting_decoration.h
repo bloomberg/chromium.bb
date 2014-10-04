@@ -33,12 +33,12 @@ class ContentSettingDecoration : public ImageDecoration {
   bool UpdateFromWebContents(content::WebContents* web_contents);
 
   // Overridden from |LocationBarDecoration|
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual NSString* GetToolTip() OVERRIDE;
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
+  virtual bool AcceptsMousePress() override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual NSString* GetToolTip() override;
+  virtual CGFloat GetWidthForSpace(CGFloat width) override;
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Called from internal animator. Only public because ObjC objects can't
   // be friends.

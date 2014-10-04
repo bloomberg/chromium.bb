@@ -77,7 +77,7 @@ class StartPageService : public KeyedService {
   void UnloadContents();
 
   // KeyedService overrides:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   Profile* profile_;
   scoped_ptr<content::WebContents> contents_;

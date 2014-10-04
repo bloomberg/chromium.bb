@@ -17,7 +17,7 @@ class LoadingAnimation : public gfx::LinearAnimation {
   virtual ~LoadingAnimation();
 
   // gfx::Animation implementation.
-  virtual void Step(base::TimeTicks time_now) OVERRIDE;
+  virtual void Step(base::TimeTicks time_now) override;
 
   // Returns the vertical pixel offset for the nth dot.
   double GetCurrentValueForDot(size_t dot_i) const;

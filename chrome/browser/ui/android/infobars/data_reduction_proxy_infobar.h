@@ -27,7 +27,7 @@ class DataReductionProxyInfoBar : public ConfirmInfoBar {
  private:
   // ConfirmInfoBar:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) OVERRIDE;
+      JNIEnv* env) override;
 
   DataReductionProxyInfoBarDelegate* GetDelegate();
 

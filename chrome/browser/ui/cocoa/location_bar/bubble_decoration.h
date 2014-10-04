@@ -28,11 +28,11 @@ class BubbleDecoration : public LocationBarDecoration {
   virtual ui::NinePartImageIds GetBubbleImageIds() = 0;
 
   // Implement |LocationBarDecoration|.
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
   virtual void DrawWithBackgroundInFrame(NSRect background_frame,
                                          NSRect frame,
-                                         NSView* control_view) OVERRIDE;
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+                                         NSView* control_view) override;
+  virtual CGFloat GetWidthForSpace(CGFloat width) override;
 
  protected:
   // Helper returning bubble width for the given |image| and |label|

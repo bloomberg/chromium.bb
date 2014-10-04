@@ -60,9 +60,9 @@ class DummyPrerenderContents : public PrerenderContents {
       int ALLOW_UNUSED creator_child_id,
       const gfx::Size& ALLOW_UNUSED size,
       content::SessionStorageNamespace* session_storage_namespace,
-      net::URLRequestContextGetter* request_context) OVERRIDE;
-  virtual bool GetChildId(int* child_id) const OVERRIDE;
-  virtual bool GetRouteId(int* route_id) const OVERRIDE;
+      net::URLRequestContextGetter* request_context) override;
+  virtual bool GetChildId(int* child_id) const override;
+  virtual bool GetRouteId(int* route_id) const override;
 
  private:
   Profile* profile_;
@@ -88,7 +88,7 @@ class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
       const GURL& url,
       const Referrer& referrer,
       Origin origin,
-      uint8 experiment_id) OVERRIDE;
+      uint8 experiment_id) override;
 
  private:
   bool call_did_finish_load_;
@@ -165,7 +165,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
   InstantSearchPrerendererTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
@@ -430,7 +430,7 @@ class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
    ReuseInstantSearchBasePageTest() {}
 
   protected:
-   virtual void SetUp() OVERRIDE {
+   virtual void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
@@ -471,7 +471,7 @@ TEST_F(ReuseInstantSearchBasePageTest,
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 class TestUsePrerenderPage : public InstantSearchPrerendererTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Disable query extraction flag in field trials.
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "EmbeddedSearch", "Group1 strk:20 query_extraction:0"));

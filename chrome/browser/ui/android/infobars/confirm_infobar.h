@@ -18,10 +18,10 @@ class ConfirmInfoBar : public InfoBarAndroid {
  protected:
   // InfoBarAndroid:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) OVERRIDE;
-  virtual void OnLinkClicked(JNIEnv* env, jobject obj) OVERRIDE;
+      JNIEnv* env) override;
+  virtual void OnLinkClicked(JNIEnv* env, jobject obj) override;
   virtual void ProcessButton(int action,
-                             const std::string& action_value) OVERRIDE;
+                             const std::string& action_value) override;
 
   base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
 

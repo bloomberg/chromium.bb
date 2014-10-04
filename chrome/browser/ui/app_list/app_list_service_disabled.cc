@@ -21,33 +21,33 @@ class AppListServiceDisabled : public AppListService {
   AppListServiceDisabled() {}
 
   // AppListService overrides:
-  virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE {}
-  virtual void HandleFirstRun() OVERRIDE {}
-  virtual void Init(Profile* initial_profile) OVERRIDE {}
+  virtual void SetAppListNextPaintCallback(void (*callback)()) override {}
+  virtual void HandleFirstRun() override {}
+  virtual void Init(Profile* initial_profile) override {}
 
   virtual base::FilePath GetProfilePath(
-      const base::FilePath& user_data_dir) OVERRIDE {
+      const base::FilePath& user_data_dir) override {
     return base::FilePath();
   }
-  virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE {}
+  virtual void SetProfilePath(const base::FilePath& profile_path) override {}
 
-  virtual void Show() OVERRIDE {}
-  virtual void CreateForProfile(Profile* profile) OVERRIDE {}
-  virtual void ShowForProfile(Profile* profile) OVERRIDE {}
-  virtual void AutoShowForProfile(Profile* profile) OVERRIDE {}
-  virtual void DismissAppList() OVERRIDE {}
+  virtual void Show() override {}
+  virtual void CreateForProfile(Profile* profile) override {}
+  virtual void ShowForProfile(Profile* profile) override {}
+  virtual void AutoShowForProfile(Profile* profile) override {}
+  virtual void DismissAppList() override {}
 
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE { return NULL; }
-  virtual bool IsAppListVisible() const OVERRIDE { return false; }
+  virtual Profile* GetCurrentAppListProfile() override { return NULL; }
+  virtual bool IsAppListVisible() const override { return false; }
   virtual void EnableAppList(Profile* initial_profile,
-                             AppListEnableSource enable_source) OVERRIDE {}
-  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE {
+                             AppListEnableSource enable_source) override {}
+  virtual AppListControllerDelegate* GetControllerDelegate() override {
     return NULL;
   }
 
-  virtual void CreateShortcut() OVERRIDE {}
+  virtual void CreateShortcut() override {}
 
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE {
+  virtual gfx::NativeWindow GetAppListWindow() override {
     return NULL;
   }
 

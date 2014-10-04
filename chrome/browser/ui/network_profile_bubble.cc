@@ -44,9 +44,9 @@ class BrowserListObserver : public chrome::BrowserListObserver {
   virtual ~BrowserListObserver();
 
   // Overridden from chrome::BrowserListObserver:
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
-  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override;
+  virtual void OnBrowserRemoved(Browser* browser) override;
+  virtual void OnBrowserSetLastActive(Browser* browser) override;
 };
 
 BrowserListObserver::~BrowserListObserver() {

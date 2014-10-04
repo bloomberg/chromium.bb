@@ -32,7 +32,7 @@ class TestComboboxModelObserver : public ui::ComboboxModelObserver {
   }
 
   // ComboboxModelObserver:
-  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) OVERRIDE {
+  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) override {
     changed_ = true;
   }
 
@@ -46,8 +46,8 @@ class RecentlyUsedFoldersComboModelTest : public testing::Test {
  public:
   RecentlyUsedFoldersComboModelTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   BookmarkModel* GetModel();

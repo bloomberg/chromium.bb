@@ -68,12 +68,12 @@ class AppSyncUIState : public KeyedService,
   void OnMaxSyncingTimer();
 
   // ProfileSyncServiceObserver overrides:
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // extensions::ExtensionRegistryObserver overrides:
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
 
   Profile* profile_;
   ProfileSyncService* sync_service_;

@@ -37,12 +37,12 @@ class BrowserTabRestorer : public TabRestoreServiceObserver,
   explicit BrowserTabRestorer(Browser* browser);
 
   // TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override;
 
   // BrowserListObserver:
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) override;
 
   Browser* browser_;
   TabRestoreService* tab_restore_service_;

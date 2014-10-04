@@ -24,14 +24,14 @@ class ZoomDecorationTest : public InProcessBrowserTest {
         should_quit_on_zoom_(false) {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     zoom_subscription_ = content::HostZoomMap::GetDefaultForBrowserContext(
         browser()->profile())->AddZoomLevelChangedCallback(
             base::Bind(&ZoomDecorationTest::OnZoomChanged,
                        base::Unretained(this)));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     zoom_subscription_.reset();
   }
 

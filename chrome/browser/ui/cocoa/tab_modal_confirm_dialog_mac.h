@@ -35,15 +35,15 @@ class TabModalConfirmDialogMac : public TabModalConfirmDialog,
   virtual ~TabModalConfirmDialogMac();
 
   // TabModalConfirmDialog:
-  virtual void AcceptTabModalDialog() OVERRIDE;
-  virtual void CancelTabModalDialog() OVERRIDE;
+  virtual void AcceptTabModalDialog() override;
+  virtual void CancelTabModalDialog() override;
 
   // TabModalConfirmDialogCloseDelegate:
-  virtual void CloseDialog() OVERRIDE;
+  virtual void CloseDialog() override;
 
   // ConstrainedWindowMacDelegate:
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) OVERRIDE;
+      ConstrainedWindowMac* window) override;
 
   bool closing_;
 

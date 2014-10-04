@@ -52,7 +52,7 @@ class ExtensionActionIconFactoryBridge
   virtual ~ExtensionActionIconFactoryBridge() {}
 
   // ExtensionActionIconFactory::Observer implementation.
-  virtual void OnIconUpdated() OVERRIDE {
+  virtual void OnIconUpdated() override {
     [owner_ updateState];
   }
 

@@ -33,10 +33,10 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
   virtual ~LoginInterstitialDelegate();
 
   // content::InterstitialPageDelegate:
-  virtual void CommandReceived(const std::string& command) OVERRIDE;
+  virtual void CommandReceived(const std::string& command) override;
 
  protected:
-  virtual std::string GetHTMLContents() OVERRIDE;
+  virtual std::string GetHTMLContents() override;
 
  private:
   base::Closure callback_;

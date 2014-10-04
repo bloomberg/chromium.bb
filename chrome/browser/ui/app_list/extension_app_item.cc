@@ -48,7 +48,7 @@ class ShortcutOverlayImageSource : public gfx::CanvasImageSource {
 
  private:
   // gfx::CanvasImageSource overrides:
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     canvas->DrawImageInt(icon_, 0, 0);
 
     // Draw the overlay in the bottom left corner of the icon.
@@ -73,7 +73,7 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 
  private:
   // gfx::CanvasImageSource overrides:
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     // The radius used to round the app icon.
     const size_t kRoundingRadius = 2;
 

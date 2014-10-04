@@ -76,10 +76,10 @@ class StatusBubbleMacIgnoreMouseMoved : public StatusBubbleMac {
 
   virtual void MouseMoved(
       const gfx::Point& location,
-      bool left_content) OVERRIDE {
+      bool left_content) override {
   }
 
-  virtual gfx::Point GetMouseLocation() OVERRIDE {
+  virtual gfx::Point GetMouseLocation() override {
     return mouseLocation_;
   }
 

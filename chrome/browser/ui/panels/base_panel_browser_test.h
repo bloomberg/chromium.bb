@@ -42,8 +42,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   BasePanelBrowserTest();
   virtual ~BasePanelBrowserTest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void SetUpOnMainThread() override;
 
  protected:
   enum ActiveState { SHOW_AS_ACTIVE, SHOW_AS_INACTIVE };

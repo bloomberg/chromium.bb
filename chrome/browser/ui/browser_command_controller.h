@@ -80,25 +80,25 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Overridden from CommandUpdaterDelegate:
   virtual void ExecuteCommandWithDisposition(
       int id,
-      WindowOpenDisposition disposition) OVERRIDE;
+      WindowOpenDisposition disposition) override;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
-                             bool foreground) OVERRIDE;
+                             bool foreground) override;
   virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) OVERRIDE;
+                             int index) override;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
                              content::WebContents* new_contents,
-                             int index) OVERRIDE;
+                             int index) override;
   virtual void TabBlockedStateChanged(content::WebContents* contents,
-                                      int index) OVERRIDE;
+                                      int index) override;
 
   // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override;
 
   // Returns true if the regular Chrome UI (not the fullscreen one and
   // not the single-tab one) is shown. Used for updating window command states

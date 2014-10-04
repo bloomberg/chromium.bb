@@ -43,7 +43,7 @@ class OmniboxController : public AutocompleteControllerDelegate {
   void StartAutocomplete(const AutocompleteInput& input) const;
 
   // AutocompleteControllerDelegate:
-  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
+  virtual void OnResultChanged(bool default_match_changed) override;
 
   AutocompleteController* autocomplete_controller() {
     return autocomplete_controller_.get();

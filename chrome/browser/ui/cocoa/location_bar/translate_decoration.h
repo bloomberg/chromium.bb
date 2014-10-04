@@ -24,10 +24,10 @@ class TranslateDecoration : public ImageDecoration {
   void SetLit(bool on);
 
   // Implement |LocationBarDecoration|
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual NSString* GetToolTip() OVERRIDE;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
+  virtual bool AcceptsMousePress() override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual NSString* GetToolTip() override;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
 
  private:
   // For showing the translate bubble up.

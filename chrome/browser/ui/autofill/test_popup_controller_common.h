@@ -21,7 +21,7 @@ class TestPopupControllerCommon : public PopupControllerCommon {
  protected:
   // Returns |display_|
   virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE;
+      const gfx::Point& point) const override;
 
  private:
   gfx::Display display_;

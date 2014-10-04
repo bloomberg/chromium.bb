@@ -21,25 +21,25 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   friend class SearchIPCRouterPolicyTest;
 
   // Overridden from SearchIPCRouter::Policy:
-  virtual bool ShouldProcessSetVoiceSearchSupport() OVERRIDE;
-  virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) OVERRIDE;
-  virtual bool ShouldProcessNavigateToURL(bool is_active_tab) OVERRIDE;
-  virtual bool ShouldProcessDeleteMostVisitedItem() OVERRIDE;
-  virtual bool ShouldProcessUndoMostVisitedDeletion() OVERRIDE;
-  virtual bool ShouldProcessUndoAllMostVisitedDeletions() OVERRIDE;
-  virtual bool ShouldProcessLogEvent() OVERRIDE;
-  virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) OVERRIDE;
-  virtual bool ShouldProcessChromeIdentityCheck() OVERRIDE;
-  virtual bool ShouldSendSetPromoInformation() OVERRIDE;
-  virtual bool ShouldSendSetDisplayInstantResults() OVERRIDE;
-  virtual bool ShouldSendSetSuggestionToPrefetch() OVERRIDE;
-  virtual bool ShouldSendSetOmniboxStartMargin() OVERRIDE;
-  virtual bool ShouldSendSetInputInProgress(bool is_active_tab) OVERRIDE;
-  virtual bool ShouldSendOmniboxFocusChanged() OVERRIDE;
-  virtual bool ShouldSendMostVisitedItems() OVERRIDE;
-  virtual bool ShouldSendThemeBackgroundInfo() OVERRIDE;
-  virtual bool ShouldSendToggleVoiceSearch() OVERRIDE;
-  virtual bool ShouldSubmitQuery() OVERRIDE;
+  virtual bool ShouldProcessSetVoiceSearchSupport() override;
+  virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) override;
+  virtual bool ShouldProcessNavigateToURL(bool is_active_tab) override;
+  virtual bool ShouldProcessDeleteMostVisitedItem() override;
+  virtual bool ShouldProcessUndoMostVisitedDeletion() override;
+  virtual bool ShouldProcessUndoAllMostVisitedDeletions() override;
+  virtual bool ShouldProcessLogEvent() override;
+  virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
+  virtual bool ShouldProcessChromeIdentityCheck() override;
+  virtual bool ShouldSendSetPromoInformation() override;
+  virtual bool ShouldSendSetDisplayInstantResults() override;
+  virtual bool ShouldSendSetSuggestionToPrefetch() override;
+  virtual bool ShouldSendSetOmniboxStartMargin() override;
+  virtual bool ShouldSendSetInputInProgress(bool is_active_tab) override;
+  virtual bool ShouldSendOmniboxFocusChanged() override;
+  virtual bool ShouldSendMostVisitedItems() override;
+  virtual bool ShouldSendThemeBackgroundInfo() override;
+  virtual bool ShouldSendToggleVoiceSearch() override;
+  virtual bool ShouldSubmitQuery() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

@@ -20,7 +20,7 @@ class InstantOverlayControllerMac : public InstantOverlayController {
 
  private:
   // Overridden from InstantOverlayController:
-  virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
+  virtual void OverlayStateChanged(const InstantOverlayModel& model) override;
 
   OverlayableContentsController* const overlay_;
 

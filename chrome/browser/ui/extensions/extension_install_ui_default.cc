@@ -88,10 +88,10 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ErrorInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual base::string16 GetMessageText() const override;
+  virtual int GetButtons() const override;
+  virtual base::string16 GetLinkText() const override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
 
   extensions::CrxInstallerError error_;
 

@@ -26,7 +26,7 @@
 
 class AvatarIconControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -35,7 +35,7 @@ class AvatarIconControllerTest : public CocoaProfileTest {
     [[controller_ view] setHidden:YES];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     browser()->window()->Close();
     CocoaProfileTest::TearDown();
   }

@@ -30,13 +30,13 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
         popup_hidden_(true) {}
   virtual ~TestAutofillExternalDelegate() {}
 
-  virtual void OnPopupShown() OVERRIDE {
+  virtual void OnPopupShown() override {
     popup_hidden_ = false;
 
     AutofillExternalDelegate::OnPopupShown();
   }
 
-  virtual void OnPopupHidden() OVERRIDE {
+  virtual void OnPopupHidden() override {
     popup_hidden_ = true;
 
     if (message_loop_runner_.get())
@@ -71,7 +71,7 @@ class AutofillPopupControllerBrowserTest
   AutofillPopupControllerBrowserTest() {}
   virtual ~AutofillPopupControllerBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents != NULL);
@@ -88,7 +88,7 @@ class AutofillPopupControllerBrowserTest
 
   // Normally the WebContents will automatically delete the delegate, but here
   // the delegate is owned by this test, so we have to manually destroy.
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     autofill_external_delegate_.reset();
   }
 

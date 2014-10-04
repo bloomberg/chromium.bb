@@ -23,18 +23,18 @@ class BrowserSyncedWindowDelegate : public browser_sync::SyncedWindowDelegate {
   virtual ~BrowserSyncedWindowDelegate();
 
   // SyncedWindowDelegate:
-  virtual bool HasWindow() const OVERRIDE;
-  virtual SessionID::id_type GetSessionId() const OVERRIDE;
-  virtual int GetTabCount() const OVERRIDE;
-  virtual int GetActiveIndex() const OVERRIDE;
-  virtual bool IsApp() const OVERRIDE;
-  virtual bool IsTypeTabbed() const OVERRIDE;
-  virtual bool IsTypePopup() const OVERRIDE;
+  virtual bool HasWindow() const override;
+  virtual SessionID::id_type GetSessionId() const override;
+  virtual int GetTabCount() const override;
+  virtual int GetActiveIndex() const override;
+  virtual bool IsApp() const override;
+  virtual bool IsTypeTabbed() const override;
+  virtual bool IsTypePopup() const override;
   virtual bool IsTabPinned(
-      const browser_sync::SyncedTabDelegate* tab) const OVERRIDE;
-  virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const OVERRIDE;
-  virtual SessionID::id_type GetTabIdAt(int index) const OVERRIDE;
-  virtual bool IsSessionRestoreInProgress() const OVERRIDE;
+      const browser_sync::SyncedTabDelegate* tab) const override;
+  virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const override;
+  virtual SessionID::id_type GetTabIdAt(int index) const override;
+  virtual bool IsSessionRestoreInProgress() const override;
 
  private:
   Browser* browser_;

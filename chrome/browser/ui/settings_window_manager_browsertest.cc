@@ -31,7 +31,7 @@ class SettingsWindowTestObserver
   SettingsWindowTestObserver() : browser_(NULL), new_settings_count_(0) {}
   virtual ~SettingsWindowTestObserver() {}
 
-  virtual void OnNewSettingsWindow(Browser* settings_browser) OVERRIDE {
+  virtual void OnNewSettingsWindow(Browser* settings_browser) override {
     browser_ = settings_browser;
     ++new_settings_count_;
   }
@@ -59,7 +59,7 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
     settings_manager_->RemoveObserver(&observer_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kEnableSettingsWindow);
   }
 

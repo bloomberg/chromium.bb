@@ -127,10 +127,10 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
   }
 
   // Overridden from NotificationDelegate:
-  virtual void Display() OVERRIDE {}
-  virtual void Error() OVERRIDE {}
-  virtual void Close(bool by_user) OVERRIDE {}
-  virtual void Click() OVERRIDE {
+  virtual void Display() override {}
+  virtual void Error() override {}
+  virtual void Close(bool by_user) override {}
+  virtual void Click() override {
     if (!success_)
       return;
 #if defined(OS_CHROMEOS)
@@ -139,7 +139,7 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
     // TODO(sschmitz): perhaps add similar action for Windows.
 #endif
   }
-  virtual void ButtonClick(int button_index) OVERRIDE {
+  virtual void ButtonClick(int button_index) override {
     DCHECK(success_ && button_index == 0);
 
     // To avoid keeping the screenshot image on memory, it will re-read the
@@ -158,11 +158,11 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
         FROM_HERE, base::Bind(
             &ReadFileAndCopyToClipboardLocal, screenshot_path_));
   }
-  virtual bool HasClickedListener() OVERRIDE { return success_; }
-  virtual std::string id() const OVERRIDE {
+  virtual bool HasClickedListener() override { return success_; }
+  virtual std::string id() const override {
     return std::string(kNotificationId);
   }
-  virtual content::WebContents* GetWebContents() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const override {
     return NULL;
   }
 

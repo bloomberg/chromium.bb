@@ -31,8 +31,8 @@ class SadTabHelper : public content::WebContentsObserver,
   void InstallSadTab(base::TerminationStatus status);
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewReady() OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderViewReady() override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
 
   scoped_ptr<chrome::SadTab> sad_tab_;
 

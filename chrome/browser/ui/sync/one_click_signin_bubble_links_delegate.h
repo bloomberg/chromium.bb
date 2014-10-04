@@ -19,8 +19,8 @@ class OneClickSigninBubbleLinksDelegate : public OneClickSigninBubbleDelegate {
 
  private:
   // OneClickSigninBubbleDelegate:
-  virtual void OnLearnMoreLinkClicked(bool is_dialog) OVERRIDE;
-  virtual void OnAdvancedLinkClicked() OVERRIDE;
+  virtual void OnLearnMoreLinkClicked(bool is_dialog) override;
+  virtual void OnAdvancedLinkClicked() override;
 
   // Browser in which the links should be opened.
   Browser* browser_;

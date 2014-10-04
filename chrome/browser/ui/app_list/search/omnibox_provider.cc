@@ -91,7 +91,7 @@ class OmniboxResult : public ChromeSearchResult {
   virtual ~OmniboxResult() {}
 
   // ChromeSearchResult overides:
-  virtual void Open(int event_flags) OVERRIDE {
+  virtual void Open(int event_flags) override {
     chrome::NavigateParams params(profile_,
                                   match_.destination_url,
                                   match_.transition);
@@ -99,14 +99,14 @@ class OmniboxResult : public ChromeSearchResult {
     chrome::Navigate(&params);
   }
 
-  virtual void InvokeAction(int action_index, int event_flags) OVERRIDE {}
+  virtual void InvokeAction(int action_index, int event_flags) override {}
 
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE {
+  virtual scoped_ptr<ChromeSearchResult> Duplicate() override {
     return scoped_ptr<ChromeSearchResult>(
         new OmniboxResult(profile_, autocomplete_controller_, match_)).Pass();
   }
 
-  virtual ChromeSearchResultType GetType() OVERRIDE {
+  virtual ChromeSearchResultType GetType() override {
     return OMNIBOX_SEARCH_RESULT;
   }
 

@@ -31,19 +31,19 @@ class AXTreeSourceAsh
   void SetSelection(int32 id, int32 start, int32 end);
 
   // AXTreeSource implementation.
-  virtual views::AXAuraObjWrapper* GetRoot() const OVERRIDE;
-  virtual views::AXAuraObjWrapper* GetFromId(int32 id) const OVERRIDE;
-  virtual int32 GetId(views::AXAuraObjWrapper* node) const OVERRIDE;
+  virtual views::AXAuraObjWrapper* GetRoot() const override;
+  virtual views::AXAuraObjWrapper* GetFromId(int32 id) const override;
+  virtual int32 GetId(views::AXAuraObjWrapper* node) const override;
   virtual void GetChildren(views::AXAuraObjWrapper* node,
-      std::vector<views::AXAuraObjWrapper*>* out_children) const OVERRIDE;
+      std::vector<views::AXAuraObjWrapper*>* out_children) const override;
   virtual views::AXAuraObjWrapper* GetParent(
-      views::AXAuraObjWrapper* node) const OVERRIDE;
-  virtual bool IsValid(views::AXAuraObjWrapper* node) const OVERRIDE;
+      views::AXAuraObjWrapper* node) const override;
+  virtual bool IsValid(views::AXAuraObjWrapper* node) const override;
   virtual bool IsEqual(views::AXAuraObjWrapper* node1,
-                       views::AXAuraObjWrapper* node2) const OVERRIDE;
-  virtual views::AXAuraObjWrapper* GetNull() const OVERRIDE;
+                       views::AXAuraObjWrapper* node2) const override;
+  virtual views::AXAuraObjWrapper* GetNull() const override;
   virtual void SerializeNode(
-      views::AXAuraObjWrapper* node, ui::AXNodeData* out_data) const OVERRIDE;
+      views::AXAuraObjWrapper* node, ui::AXNodeData* out_data) const override;
 
   // Useful for debugging.
   std::string ToString(views::AXAuraObjWrapper* root, std::string prefix);

@@ -40,7 +40,7 @@ class FaviconRawBitmapHandler : public content::WebContentsObserver {
 
   // content::WebContentObserver implementation.
   virtual void DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) OVERRIDE;
+    const std::vector<content::FaviconURL>& candidates) override;
 
  private:
   void DidDownloadFavicon(

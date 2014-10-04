@@ -54,14 +54,14 @@ class ZoomDecoration : public ImageDecoration,
   virtual bool ShouldShowDecoration() const;
 
   // LocationBarDecoration implementation.
-  virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual NSString* GetToolTip() OVERRIDE;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
+  virtual bool AcceptsMousePress() override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual NSString* GetToolTip() override;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // ZoomBubbleControllerDelegate implementation.
-  virtual content::WebContents* GetWebContents() OVERRIDE;
-  virtual void OnClose() OVERRIDE;
+  virtual content::WebContents* GetWebContents() override;
+  virtual void OnClose() override;
 
   // The control that owns this. Weak.
   LocationBarViewMac* owner_;

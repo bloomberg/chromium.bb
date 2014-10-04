@@ -47,17 +47,17 @@ class AppListServiceImpl : public AppListService,
   static void RecordAppListAppLaunch();
 
   // AppListService overrides:
-  virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE;
-  virtual void HandleFirstRun() OVERRIDE;
-  virtual void Init(Profile* initial_profile) OVERRIDE;
+  virtual void SetAppListNextPaintCallback(void (*callback)()) override;
+  virtual void HandleFirstRun() override;
+  virtual void Init(Profile* initial_profile) override;
   virtual base::FilePath GetProfilePath(
-      const base::FilePath& user_data_dir) OVERRIDE;
-  virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void AutoShowForProfile(Profile* requested_profile) OVERRIDE;
+      const base::FilePath& user_data_dir) override;
+  virtual void SetProfilePath(const base::FilePath& profile_path) override;
+  virtual void Show() override;
+  virtual void AutoShowForProfile(Profile* requested_profile) override;
   virtual void EnableAppList(Profile* initial_profile,
-                             AppListEnableSource enable_source) OVERRIDE;
-  virtual void CreateShortcut() OVERRIDE;
+                             AppListEnableSource enable_source) override;
+  virtual void CreateShortcut() override;
 
  protected:
   AppListServiceImpl();
@@ -89,7 +89,7 @@ class AppListServiceImpl : public AppListService,
 
   // ProfileInfoCacheObserver overrides:
   virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
 
   scoped_ptr<ProfileStore> profile_store_;
   base::CommandLine command_line_;

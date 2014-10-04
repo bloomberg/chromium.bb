@@ -35,21 +35,21 @@ class TabModelBase : public TabModel {
   void TabAddedToModel(JNIEnv* env, jobject obj, jobject jtab);
 
   // TabModel:
-  virtual int GetTabCount() const OVERRIDE;
-  virtual int GetActiveIndex() const OVERRIDE;
-  virtual content::WebContents* GetWebContentsAt(int index) const OVERRIDE;
-  virtual TabAndroid* GetTabAt(int index) const OVERRIDE;
+  virtual int GetTabCount() const override;
+  virtual int GetActiveIndex() const override;
+  virtual content::WebContents* GetWebContentsAt(int index) const override;
+  virtual TabAndroid* GetTabAt(int index) const override;
 
-  virtual void SetActiveIndex(int index) OVERRIDE;
-  virtual void CloseTabAt(int index) OVERRIDE;
+  virtual void SetActiveIndex(int index) override;
+  virtual void CloseTabAt(int index) override;
 
   virtual void CreateTab(content::WebContents* web_contents,
-                         int parent_tab_id) OVERRIDE;
+                         int parent_tab_id) override;
   virtual content::WebContents* CreateNewTabForDevTools(
-      const GURL& url) OVERRIDE;
+      const GURL& url) override;
 
   // Return true if we are currently restoring sessions asynchronously.
-  virtual bool IsSessionRestoreInProgress() const OVERRIDE;
+  virtual bool IsSessionRestoreInProgress() const override;
 
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.

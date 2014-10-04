@@ -194,7 +194,7 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
   virtual ~AppObserver() {}
 
   // AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE {
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     aura::Window* window = app_window->GetNativeWindow();
     DCHECK(window);
     MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,

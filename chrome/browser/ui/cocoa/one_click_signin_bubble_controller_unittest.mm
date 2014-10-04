@@ -30,7 +30,7 @@ class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
             base::Bind(&OneClickSigninBubbleControllerTest::OnStartSync,
                        weak_ptr_factory_.GetWeakPtr())) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     BrowserWindowCocoa* browser_window =
         static_cast<BrowserWindowCocoa*>(browser()->window());
@@ -44,7 +44,7 @@ class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
                 [[controller_ viewController] nibName]);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     CocoaProfileTest::TearDown();
   }

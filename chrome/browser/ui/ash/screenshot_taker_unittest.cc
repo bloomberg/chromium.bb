@@ -48,7 +48,7 @@ class ScreenshotTakerTest : public AshTestBase,
   // Overridden from ScreenshotTakerObserver
   virtual void OnScreenshotCompleted(
       ScreenshotTakerObserver::Result screenshot_result,
-      const base::FilePath& screenshot_path) OVERRIDE {
+      const base::FilePath& screenshot_path) override {
     screenshot_complete_ = true;
     screenshot_result_ = screenshot_result;
     screenshot_path_ = screenshot_path;

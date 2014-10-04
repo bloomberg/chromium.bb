@@ -311,11 +311,11 @@ class Browser::InterstitialObserver : public content::WebContentsObserver {
         browser_(browser) {
   }
 
-  virtual void DidAttachInterstitialPage() OVERRIDE {
+  virtual void DidAttachInterstitialPage() override {
     browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
   }
 
-  virtual void DidDetachInterstitialPage() OVERRIDE {
+  virtual void DidDetachInterstitialPage() override {
     browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
   }
 

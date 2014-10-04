@@ -22,10 +22,10 @@ class SearchWebstoreResult : public ChromeSearchResult {
   virtual ~SearchWebstoreResult();
 
   // ChromeSearchResult overides:
-  virtual void Open(int event_flags) OVERRIDE;
-  virtual void InvokeAction(int action_index, int event_flags) OVERRIDE;
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE;
-  virtual ChromeSearchResultType GetType() OVERRIDE;
+  virtual void Open(int event_flags) override;
+  virtual void InvokeAction(int action_index, int event_flags) override;
+  virtual scoped_ptr<ChromeSearchResult> Duplicate() override;
+  virtual ChromeSearchResultType GetType() override;
 
  private:
   Profile* profile_;

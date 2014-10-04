@@ -309,17 +309,17 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow {
   virtual ~FullscreenTestBrowserWindow() {}
 
   // TestBrowserWindow overrides:
-  virtual bool ShouldHideUIForFullscreen() const OVERRIDE {
+  virtual bool ShouldHideUIForFullscreen() const override {
     return fullscreen_;
   }
-  virtual bool IsFullscreen() const OVERRIDE {
+  virtual bool IsFullscreen() const override {
     return fullscreen_;
   }
   virtual void EnterFullscreen(
-      const GURL& url, FullscreenExitBubbleType type) OVERRIDE {
+      const GURL& url, FullscreenExitBubbleType type) override {
     fullscreen_ = true;
   }
-  virtual void ExitFullscreen() OVERRIDE {
+  virtual void ExitFullscreen() override {
     fullscreen_ = false;
   }
 
@@ -337,7 +337,7 @@ class BrowserCommandControllerFullscreenTest
   virtual ~BrowserCommandControllerFullscreenTest() {}
 
   // BrowserWithTestWindowTest overrides:
-  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE {
+  virtual BrowserWindow* CreateBrowserWindow() override {
     return new FullscreenTestBrowserWindow;
   }
 

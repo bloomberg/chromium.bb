@@ -25,7 +25,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
         .Append(chrome::kPreferencesFilename);
   }
 
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     base::FilePath default_profile =

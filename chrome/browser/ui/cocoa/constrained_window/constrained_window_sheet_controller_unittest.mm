@@ -69,7 +69,7 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
   virtual ~ConstrainedWindowSheetControllerTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaTest::SetUp();
 
     // Center the window so that the sheet doesn't go offscreen.
@@ -113,7 +113,7 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
     EXPECT_FALSE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sheet_.reset();
     sheet_window_.reset();
     CocoaTest::TearDown();

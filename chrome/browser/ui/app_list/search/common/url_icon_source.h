@@ -45,15 +45,15 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   void StartIconFetch();
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE;
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
   // net::URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // ImageDecoder::Delegate overrides:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+                              const SkBitmap& decoded_image) override;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   IconLoadedCallback icon_loaded_callback_;
   net::URLRequestContextGetter* context_getter_;

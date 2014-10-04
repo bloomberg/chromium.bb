@@ -30,7 +30,7 @@ const int64 kQuickNavigationDelayInMS = 500;
 class MockElapsedTimer : public base::ElapsedTimer {
  public:
   MockElapsedTimer() {}
-  virtual base::TimeDelta Elapsed() const OVERRIDE { return delta_; }
+  virtual base::TimeDelta Elapsed() const override { return delta_; }
 
   void Advance(int64 ms) { delta_ = base::TimeDelta::FromMilliseconds(ms); }
 
@@ -46,7 +46,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ManagePasswordsUIControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
     // Create the test UIController here so that it's bound to

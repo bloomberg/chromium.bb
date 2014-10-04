@@ -20,14 +20,14 @@ class ContentSettingBlockedImageModel : public ContentSettingImageModel {
   explicit ContentSettingBlockedImageModel(
       ContentSettingsType content_settings_type);
 
-  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
 class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
-  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
 // Image model for displaying media icons in the location bar.
@@ -35,28 +35,28 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
  public:
   explicit ContentSettingMediaImageModel(ContentSettingsType type);
 
-  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
 class ContentSettingRPHImageModel : public ContentSettingImageModel {
  public:
   ContentSettingRPHImageModel();
 
-  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
 class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
  public:
   ContentSettingNotificationsImageModel();
 
-  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
 class ContentSettingMIDISysExImageModel : public ContentSettingImageModel {
  public:
   ContentSettingMIDISysExImageModel();
 
-  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
 namespace {

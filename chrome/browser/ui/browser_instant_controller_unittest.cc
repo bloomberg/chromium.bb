@@ -27,7 +27,7 @@ namespace {
 
 class BrowserInstantControllerTest : public InstantUnitTestBase {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
     InstantUnitTestBase::SetUp();
@@ -64,7 +64,7 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
 
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE {
+      content::NavigationController::ReloadType reload_type) override {
     if (url_ == url)
       num_reloads_++;
   }

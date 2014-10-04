@@ -153,12 +153,12 @@ class OneClickSigninHelper
     virtual void OnSigninOAuthInformationAvailable(
         const std::string& email,
         const std::string& display_email,
-        const std::string& refresh_token) OVERRIDE;
+        const std::string& refresh_token) override;
     virtual void OnSigninOAuthInformationFailure(
-        const GoogleServiceAuthError& error) OVERRIDE;
+        const GoogleServiceAuthError& error) override;
 
     // Overriden from chrome::BrowserListObserver.
-    virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+    virtual void OnBrowserRemoved(Browser* browser) override;
 
     OneClickSigninHelper::StartSyncArgs args_;
     chrome::HostDesktopType desktop_type_;
@@ -334,12 +334,12 @@ class OneClickSigninHelper
   // content::WebContentsObserver overrides.
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
   virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   OneClickSigninSyncStarter::Callback CreateSyncStarterCallback();
 

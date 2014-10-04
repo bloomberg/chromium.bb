@@ -90,7 +90,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
   }
 
   // ExtensionEnableFlowDelegate overrides.
-  virtual void ExtensionEnableFlowFinished() OVERRIDE {
+  virtual void ExtensionEnableFlowFinished() override {
     const Extension* extension =
         service_->GetExtensionById(extension_id_, false);
     if (!extension)
@@ -99,7 +99,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
     delete this;
   }
 
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE {
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) override {
     delete this;
   }
 

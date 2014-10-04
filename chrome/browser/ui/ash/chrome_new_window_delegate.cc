@@ -55,15 +55,15 @@ class ChromeNewWindowDelegate::TabRestoreHelper
 
   TabRestoreService* tab_restore_service() { return tab_restore_service_; }
 
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE {
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override {
   }
 
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE {
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override {
     // This destroys us.
     delegate_->tab_restore_helper_.reset();
   }
 
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE {
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override {
     RestoreTabUsingProfile(profile_);
     // This destroys us.
     delegate_->tab_restore_helper_.reset();

@@ -288,7 +288,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE {
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override {
     // Tokens can only be added by adding an account through the inline flow,
     // which is started from the account management view. Refresh it to show the
     // update.
@@ -303,7 +303,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     }
   }
 
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override {
     // Tokens can only be removed from the account management view. Refresh it
     // to show the update.
     if ([controller_ viewMode] == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
@@ -312,7 +312,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE {
+  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override {
     profiles::BubbleViewMode viewMode = [controller_ viewMode];
     if (viewMode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
         viewMode == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
@@ -324,7 +324,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
+      const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
     if (browser_ == content::Source<Browser>(source).ptr()) {
       RemoveTokenServiceObserver();

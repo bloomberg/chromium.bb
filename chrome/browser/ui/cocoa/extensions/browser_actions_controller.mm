@@ -194,7 +194,7 @@ class ExtensionServiceObserverBridge
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
+      const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [ExtensionPopupController popup];
@@ -222,28 +222,28 @@ class ExtensionServiceObserverBridge
   // extensions::ExtensionToolbarModel::Observer implementation.
   virtual void ToolbarExtensionAdded(
       const Extension* extension,
-      int index) OVERRIDE {
+      int index) override {
     [owner_ createActionButtonForExtension:extension withIndex:index];
     [owner_ resizeContainerAndAnimate:NO];
   }
 
-  virtual void ToolbarExtensionRemoved(const Extension* extension) OVERRIDE {
+  virtual void ToolbarExtensionRemoved(const Extension* extension) override {
     [owner_ removeActionButtonForExtension:extension];
     [owner_ resizeContainerAndAnimate:NO];
   }
 
   virtual void ToolbarExtensionMoved(const Extension* extension,
-                                     int index) OVERRIDE {
+                                     int index) override {
   }
 
-  virtual void ToolbarExtensionUpdated(const Extension* extension) OVERRIDE {
+  virtual void ToolbarExtensionUpdated(const Extension* extension) override {
     BrowserActionButton* button = [owner_ buttonForExtension:extension];
     if (button)
       [button updateState];
   }
 
   virtual bool ShowExtensionActionPopup(const Extension* extension,
-                                        bool grant_active_tab) OVERRIDE {
+                                        bool grant_active_tab) override {
     // Do not override other popups and only show in active window.
     ExtensionPopupController* popup = [ExtensionPopupController popup];
     if (popup || !browser_->window()->IsActive())
@@ -254,13 +254,13 @@ class ExtensionServiceObserverBridge
                                       shouldGrant:grant_active_tab];
   }
 
-  virtual void ToolbarVisibleCountChanged() OVERRIDE {
+  virtual void ToolbarVisibleCountChanged() override {
   }
 
-  virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE {
+  virtual void ToolbarHighlightModeChanged(bool is_highlighting) override {
   }
 
-  virtual Browser* GetBrowser() OVERRIDE {
+  virtual Browser* GetBrowser() override {
     return browser_;
   }
 

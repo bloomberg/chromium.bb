@@ -34,7 +34,7 @@ using content::WebContents;
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE {
+  virtual WebContents* OpenURL(const OpenURLParams& params) override {
     urls_.push_back(params.url);
     return NULL;
   }
@@ -50,7 +50,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
     profile_->CreateBookmarkModel(true);
@@ -59,7 +59,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
     AddTestData(model_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
 
     // Flush the message loop to make application verifiers happy.

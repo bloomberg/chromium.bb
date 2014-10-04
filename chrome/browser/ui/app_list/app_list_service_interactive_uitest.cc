@@ -145,7 +145,7 @@ class ShowAppListInteractiveTest : public InProcessBrowserTest {
  public:
   ShowAppListInteractiveTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kShowAppList);
   }
 
@@ -197,7 +197,7 @@ class ShowAppListNonDefaultInteractiveTest : public ShowAppListInteractiveTest {
       : second_profile_name_(FILE_PATH_LITERAL("Profile 1")) {
   }
 
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     // Create a temp dir for "Profile 1" and seed the user data dir with a Local
     // State file configuring the app list to use it.
     base::FilePath user_data_dir;

@@ -90,25 +90,25 @@ class AppListControllerSearchResultsBrowserTest
   }
 
   // Overridden from SearchResultObserver:
-  virtual void OnIconChanged() OVERRIDE {}
-  virtual void OnActionsChanged() OVERRIDE {}
-  virtual void OnIsInstallingChanged() OVERRIDE {}
-  virtual void OnPercentDownloadedChanged() OVERRIDE {}
-  virtual void OnItemInstalled() OVERRIDE {}
-  virtual void OnItemUninstalled() OVERRIDE {
+  virtual void OnIconChanged() override {}
+  virtual void OnActionsChanged() override {}
+  virtual void OnIsInstallingChanged() override {}
+  virtual void OnPercentDownloadedChanged() override {}
+  virtual void OnItemInstalled() override {}
+  virtual void OnItemUninstalled() override {
     ++item_uninstall_count_;
     EXPECT_TRUE(observed_result_);
   }
 
   // Overridden from ui::ListModelObserver:
-  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE {
+  virtual void ListItemsAdded(size_t start, size_t count) override {
     AttemptToLocateItem();
   }
-  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE {
+  virtual void ListItemsRemoved(size_t start, size_t count) override {
     AttemptToLocateItem();
   }
-  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE {}
-  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE {}
+  virtual void ListItemMoved(size_t index, size_t target_index) override {}
+  virtual void ListItemsChanged(size_t start, size_t count) override {}
 
   app_list::SearchResult* observed_result_;
   int item_uninstall_count_;

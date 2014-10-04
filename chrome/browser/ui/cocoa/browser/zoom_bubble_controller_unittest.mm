@@ -20,12 +20,12 @@ class TestZoomBubbleControllerDelegate : public ZoomBubbleControllerDelegate {
   TestZoomBubbleControllerDelegate() : did_close_(false) {}
 
   // Get the web contents associated with this bubble.
-  virtual content::WebContents* GetWebContents() OVERRIDE {
+  virtual content::WebContents* GetWebContents() override {
     return NULL;
   }
 
   // Called when the bubble is being closed.
-  virtual void OnClose() OVERRIDE {
+  virtual void OnClose() override {
     did_close_ = true;
   }
 

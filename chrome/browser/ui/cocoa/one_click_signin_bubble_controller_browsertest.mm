@@ -20,7 +20,7 @@ class OneClickSigninBubbleControllerTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     BrowserWindow::StartSyncCallback callback = base::Bind(

@@ -50,11 +50,11 @@ class AppResult : public ChromeSearchResult,
                               const base::Time& last_launched);
 
   // ChromeSearchResult overides:
-  virtual void Open(int event_flags) OVERRIDE;
-  virtual void InvokeAction(int action_index, int event_flags) OVERRIDE;
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE;
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
-  virtual ChromeSearchResultType GetType() OVERRIDE;
+  virtual void Open(int event_flags) override;
+  virtual void InvokeAction(int action_index, int event_flags) override;
+  virtual scoped_ptr<ChromeSearchResult> Duplicate() override;
+  virtual ui::MenuModel* GetContextMenuModel() override;
+  virtual ChromeSearchResultType GetType() override;
 
  private:
   void StartObservingExtensionRegistry();
@@ -70,24 +70,24 @@ class AppResult : public ChromeSearchResult,
 
   // extensions::IconImage::Observer overrides:
   virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) OVERRIDE;
+      extensions::IconImage* image) override;
 
   // AppContextMenuDelegate overrides:
-  virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;
+  virtual void ExecuteLaunchCommand(int event_flags) override;
 
   // ExtensionEnableFlowDelegate overrides:
-  virtual void ExtensionEnableFlowFinished() OVERRIDE;
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
+  virtual void ExtensionEnableFlowFinished() override;
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) override;
 
   // extensions::ExtensionRegistryObserver override:
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
+      extensions::UninstallReason reason) override;
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   Profile* profile_;
   const std::string app_id_;

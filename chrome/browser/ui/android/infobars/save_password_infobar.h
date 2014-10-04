@@ -24,7 +24,7 @@ class SavePasswordInfoBar : public ConfirmInfoBar {
  private:
   // ConfirmInfoBar:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) OVERRIDE;
+      JNIEnv* env) override;
 
   SavePasswordInfoBarDelegate* GetDelegate();
 

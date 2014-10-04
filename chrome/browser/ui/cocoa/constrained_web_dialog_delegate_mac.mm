@@ -32,7 +32,7 @@ class ConstrainedWebDialogDelegateMac
       : ConstrainedWebDialogDelegateBase(browser_context, delegate, NULL) {}
 
   // WebDialogWebContentsDelegate interface.
-  virtual void CloseContents(WebContents* source) OVERRIDE {
+  virtual void CloseContents(WebContents* source) override {
     window_->CloseWebContentsModalDialog();
   }
 
@@ -61,28 +61,28 @@ class ConstrainedWebDialogDelegateViewMac :
 
   // ConstrainedWebDialogDelegate interface
   virtual const WebDialogDelegate*
-      GetWebDialogDelegate() const OVERRIDE {
+      GetWebDialogDelegate() const override {
     return impl_->GetWebDialogDelegate();
   }
-  virtual WebDialogDelegate* GetWebDialogDelegate() OVERRIDE {
+  virtual WebDialogDelegate* GetWebDialogDelegate() override {
     return impl_->GetWebDialogDelegate();
   }
-  virtual void OnDialogCloseFromWebUI() OVERRIDE {
+  virtual void OnDialogCloseFromWebUI() override {
     return impl_->OnDialogCloseFromWebUI();
   }
-  virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
+  virtual void ReleaseWebContentsOnDialogClose() override {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
+  virtual NativeWebContentsModalDialog GetNativeDialog() override {
     return constrained_window_->GetNativeDialog();
   }
-  virtual WebContents* GetWebContents() OVERRIDE {
+  virtual WebContents* GetWebContents() override {
     return impl_->GetWebContents();
   }
 
   // ConstrainedWindowMacDelegate interface
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) OVERRIDE {
+      ConstrainedWindowMac* window) override {
     if (!impl_->closed_via_webui())
       GetWebDialogDelegate()->OnDialogClosed("");
     delete this;

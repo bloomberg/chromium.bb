@@ -32,12 +32,12 @@
 // Integration tests for the Mac password bubble.
 class ManagePasswordsBubbleTest : public ManagePasswordsTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ManagePasswordsTest::SetUpOnMainThread();
     browser()->window()->Show();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     ManagePasswordsTest::TearDownOnMainThread();
   }
 
@@ -68,7 +68,7 @@ class ManagePasswordsBubbleTest : public ManagePasswordsTest {
     return [bwc locationBarBridge]->manage_passwords_decoration();
   }
 
-  virtual ManagePasswordsIcon* view() OVERRIDE {
+  virtual ManagePasswordsIcon* view() override {
     return decoration()->icon();
   }
 };

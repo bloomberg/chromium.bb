@@ -156,70 +156,70 @@ class TestAutofillDialogView : public AutofillDialogView {
       : updates_started_(0), save_details_locally_checked_(true) {}
   virtual ~TestAutofillDialogView() {}
 
-  virtual void Show() OVERRIDE {}
-  virtual void Hide() OVERRIDE {}
+  virtual void Show() override {}
+  virtual void Hide() override {}
 
-  virtual void UpdatesStarted() OVERRIDE {
+  virtual void UpdatesStarted() override {
     updates_started_++;
   }
 
-  virtual void UpdatesFinished() OVERRIDE {
+  virtual void UpdatesFinished() override {
     updates_started_--;
     EXPECT_GE(updates_started_, 0);
   }
 
-  virtual void UpdateNotificationArea() OVERRIDE {
+  virtual void UpdateNotificationArea() override {
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateAccountChooser() OVERRIDE {
+  virtual void UpdateAccountChooser() override {
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateButtonStrip() OVERRIDE {
+  virtual void UpdateButtonStrip() override {
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateOverlay() OVERRIDE {
+  virtual void UpdateOverlay() override {
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateDetailArea() OVERRIDE {
+  virtual void UpdateDetailArea() override {
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateSection(DialogSection section) OVERRIDE {
+  virtual void UpdateSection(DialogSection section) override {
     section_updates_[section]++;
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateErrorBubble() OVERRIDE {
+  virtual void UpdateErrorBubble() override {
     EXPECT_GE(updates_started_, 1);
   }
 
   virtual void FillSection(DialogSection section,
-                           ServerFieldType originating_type) OVERRIDE {}
+                           ServerFieldType originating_type) override {}
   virtual void GetUserInput(DialogSection section, FieldValueMap* output)
-      OVERRIDE {
+      override {
     *output = outputs_[section];
   }
 
-  virtual base::string16 GetCvc() OVERRIDE { return base::string16(); }
+  virtual base::string16 GetCvc() override { return base::string16(); }
 
-  virtual bool SaveDetailsLocally() OVERRIDE {
+  virtual bool SaveDetailsLocally() override {
     return save_details_locally_checked_;
   }
 
-  virtual const content::NavigationController* ShowSignIn() OVERRIDE {
+  virtual const content::NavigationController* ShowSignIn() override {
     return NULL;
   }
-  virtual void HideSignIn() OVERRIDE {}
+  virtual void HideSignIn() override {}
 
   MOCK_METHOD0(ModelChanged, void());
   MOCK_METHOD0(UpdateForErrors, void());
 
-  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE {}
-  virtual void ValidateSection(DialogSection) OVERRIDE {}
+  virtual void OnSignInResize(const gfx::Size& pref_size) override {}
+  virtual void ValidateSection(DialogSection) override {}
 
   void SetUserInput(DialogSection section, const FieldValueMap& map) {
     outputs_[section] = map;
@@ -273,7 +273,7 @@ class TestAutofillDialogController
 
   virtual ~TestAutofillDialogController() {}
 
-  virtual AutofillDialogView* CreateView() OVERRIDE {
+  virtual AutofillDialogView* CreateView() override {
     return new testing::NiceMock<TestAutofillDialogView>();
   }
 
@@ -341,40 +341,40 @@ class TestAutofillDialogController
   using AutofillDialogControllerImpl::SignedInState;
 
  protected:
-  virtual PersonalDataManager* GetManager() const OVERRIDE {
+  virtual PersonalDataManager* GetManager() const override {
     return const_cast<TestAutofillDialogController*>(this)->
         GetTestingManager();
   }
 
-  virtual AddressValidator* GetValidator() OVERRIDE {
+  virtual AddressValidator* GetValidator() override {
     return &mock_validator_;
   }
 
-  virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
+  virtual wallet::WalletClient* GetWalletClient() override {
     return &mock_wallet_client_;
   }
 
-  virtual void OpenTabWithUrl(const GURL& url) OVERRIDE {
+  virtual void OpenTabWithUrl(const GURL& url) override {
     open_tab_url_ = url;
   }
 
   virtual void ShowNewCreditCardBubble(
       scoped_ptr<CreditCard> new_card,
-      scoped_ptr<AutofillProfile> billing_profile) OVERRIDE {
+      scoped_ptr<AutofillProfile> billing_profile) override {
     mock_new_card_bubble_controller_->Show(new_card.Pass(),
                                            billing_profile.Pass());
   }
 
   // AutofillDialogControllerImpl calls this method before showing the dialog
   // window.
-  virtual void SubmitButtonDelayBegin() OVERRIDE {
+  virtual void SubmitButtonDelayBegin() override {
     // Do not delay enabling the submit button in testing.
     submit_button_delay_count_++;
   }
 
  private:
   // To specify our own metric logger.
-  virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
+  virtual const AutofillMetrics& GetMetricLogger() const override {
     return metric_logger_;
   }
 
@@ -400,12 +400,12 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   AutofillDialogControllerTest(): form_structure_(NULL) {}
 
   // testing::Test implementation:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     Reset();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (controller_)
       controller_->ViewClosed();
     ChromeRenderViewHostTestHarness::TearDown();

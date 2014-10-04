@@ -24,41 +24,41 @@ class DetachedPanelCollection : public PanelCollection {
   virtual ~DetachedPanelCollection();
 
   // PanelCollection OVERRIDES:
-  virtual void OnDisplayChanged() OVERRIDE;
-  virtual void RefreshLayout() OVERRIDE;
+  virtual void OnDisplayChanged() override;
+  virtual void RefreshLayout() override;
   virtual void AddPanel(Panel* panel,
-                        PositioningMask positioning_mask) OVERRIDE;
-  virtual void RemovePanel(Panel* panel, RemovalReason reason) OVERRIDE;
-  virtual void CloseAll() OVERRIDE;
+                        PositioningMask positioning_mask) override;
+  virtual void RemovePanel(Panel* panel, RemovalReason reason) override;
+  virtual void CloseAll() override;
   virtual void ResizePanelWindow(
       Panel* panel,
-      const gfx::Size& preferred_window_size) OVERRIDE;
+      const gfx::Size& preferred_window_size) override;
   virtual panel::Resizability GetPanelResizability(
-      const Panel* panel) const OVERRIDE;
+      const Panel* panel) const override;
   virtual void OnPanelResizedByMouse(Panel* panel,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
+  virtual void OnPanelAttentionStateChanged(Panel* panel) override;
   virtual void OnPanelTitlebarClicked(Panel* panel,
-                                      panel::ClickModifier modifier) OVERRIDE;
-  virtual void ActivatePanel(Panel* panel) OVERRIDE;
-  virtual void MinimizePanel(Panel* panel) OVERRIDE;
-  virtual void RestorePanel(Panel* panel) OVERRIDE;
+                                      panel::ClickModifier modifier) override;
+  virtual void ActivatePanel(Panel* panel) override;
+  virtual void MinimizePanel(Panel* panel) override;
+  virtual void RestorePanel(Panel* panel) override;
   virtual void OnMinimizeButtonClicked(Panel* panel,
-                                       panel::ClickModifier modifier) OVERRIDE;
+                                       panel::ClickModifier modifier) override;
   virtual void OnRestoreButtonClicked(Panel* panel,
-                                      panel::ClickModifier modifier) OVERRIDE;
-  virtual bool CanShowMinimizeButton(const Panel* panel) const OVERRIDE;
-  virtual bool CanShowRestoreButton(const Panel* panel) const OVERRIDE;
-  virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
-  virtual bool UsesAlwaysOnTopPanels() const OVERRIDE;
-  virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
-  virtual void RestorePanelToSavedPlacement() OVERRIDE;
-  virtual void DiscardSavedPanelPlacement() OVERRIDE;
-  virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
-  virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
+                                      panel::ClickModifier modifier) override;
+  virtual bool CanShowMinimizeButton(const Panel* panel) const override;
+  virtual bool CanShowRestoreButton(const Panel* panel) const override;
+  virtual bool IsPanelMinimized(const Panel* panel) const override;
+  virtual bool UsesAlwaysOnTopPanels() const override;
+  virtual void SavePanelPlacement(Panel* panel) override;
+  virtual void RestorePanelToSavedPlacement() override;
+  virtual void DiscardSavedPanelPlacement() override;
+  virtual void UpdatePanelOnCollectionChange(Panel* panel) override;
+  virtual void OnPanelExpansionStateChanged(Panel* panel) override;
+  virtual void OnPanelActiveStateChanged(Panel* panel) override;
   virtual gfx::Rect GetInitialPanelBounds(
-      const gfx::Rect& requested_bounds) const OVERRIDE;
+      const gfx::Rect& requested_bounds) const override;
 
   bool HasPanel(Panel* panel) const;
 

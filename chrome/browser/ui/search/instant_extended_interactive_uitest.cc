@@ -91,11 +91,11 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
   QuittingHistoryDBTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     base::MessageLoop::current()->Quit();
   }
 
@@ -109,7 +109,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
   FakeNetworkChangeNotifier() : connection_type_(CONNECTION_NONE) {}
 
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  virtual ConnectionType GetCurrentConnectionType() const override {
     return connection_type_;
   }
 
@@ -143,7 +143,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
         on_toggle_voice_search_calls_(0) {
   }
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     chrome::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
@@ -258,7 +258,7 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
         fake_factory_(new net::FakeURLFetcherFactory(factory_.get())) {
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     chrome::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
@@ -268,7 +268,7 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
     InstantTestBase::Init(instant_url, ntp_url, true);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,
         "EmbeddedSearch/Group11 prefetch_results_srp:1/");
@@ -288,13 +288,13 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
 
 class InstantExtendedNetworkTest : public InstantExtendedTest {
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     disable_for_test_.reset(new net::NetworkChangeNotifier::DisableForTest);
     fake_network_change_notifier_.reset(new FakeNetworkChangeNotifier);
     InstantExtendedTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     InstantExtendedTest::TearDownOnMainThread();
     fake_network_change_notifier_.reset();
     disable_for_test_.reset();
@@ -317,7 +317,7 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
   InstantPolicyTest() {}
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");

@@ -41,10 +41,10 @@ class AutomationManagerAsh : public extensions::AutomationActionAdapter {
                    ui::AXEvent event_type);
 
   // AutomationActionAdapter implementation.
-  virtual void DoDefault(int32 id) OVERRIDE;
-  virtual void Focus(int32 id) OVERRIDE;
-  virtual void MakeVisible(int32 id) OVERRIDE;
-  virtual void SetSelection(int32 id, int32 start, int32 end) OVERRIDE;
+  virtual void DoDefault(int32 id) override;
+  virtual void Focus(int32 id) override;
+  virtual void MakeVisible(int32 id) override;
+  virtual void SetSelection(int32 id, int32 start, int32 end) override;
 
  protected:
   virtual ~AutomationManagerAsh();

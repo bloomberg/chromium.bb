@@ -25,27 +25,27 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   virtual ~UserWallpaperDelegate() {
   }
 
-  virtual int GetAnimationType() OVERRIDE {
+  virtual int GetAnimationType() override {
     return ShouldShowInitialAnimation() ?
         ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE :
         static_cast<int>(wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   }
 
-  virtual bool ShouldShowInitialAnimation() OVERRIDE {
+  virtual bool ShouldShowInitialAnimation() override {
     return true;
   }
 
-  virtual int GetAnimationDurationOverride() OVERRIDE {
+  virtual int GetAnimationDurationOverride() override {
     // Return 0 to select the default.
     return 0;
   }
 
   virtual void SetAnimationDurationOverride(
-      int animation_duration_in_ms) OVERRIDE {
+      int animation_duration_in_ms) override {
     NOTIMPLEMENTED();
   }
 
-  virtual void UpdateWallpaper(bool clear_cache) OVERRIDE {
+  virtual void UpdateWallpaper(bool clear_cache) override {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(16, 16);
     bitmap.eraseARGB(255, kBackgroundRed, kBackgroundGreen, kBackgroundBlue);
@@ -63,21 +63,21 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
         ->SetWallpaperImage(wallpaper, ash::WALLPAPER_LAYOUT_TILE);
   }
 
-  virtual void InitializeWallpaper() OVERRIDE {
+  virtual void InitializeWallpaper() override {
     UpdateWallpaper(false);
   }
 
-  virtual void OpenSetWallpaperPage() OVERRIDE {
+  virtual void OpenSetWallpaperPage() override {
   }
 
-  virtual bool CanOpenSetWallpaperPage() OVERRIDE {
+  virtual bool CanOpenSetWallpaperPage() override {
     return false;
   }
 
-  virtual void OnWallpaperAnimationFinished() OVERRIDE {
+  virtual void OnWallpaperAnimationFinished() override {
   }
 
-  virtual void OnWallpaperBootAnimationFinished() OVERRIDE {
+  virtual void OnWallpaperBootAnimationFinished() override {
   }
 
  private:

@@ -33,7 +33,7 @@ class AppShimMenuControllerBrowserTest
 
   virtual ~AppShimMenuControllerBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 

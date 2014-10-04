@@ -23,7 +23,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBubbleSignInDelegateTest() {}
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   class Window : public TestBrowserWindow {
@@ -34,7 +34,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
 
    private:
     // TestBrowserWindow:
-    virtual void Show() OVERRIDE {
+    virtual void Show() override {
       ++show_count_;
     }
 
@@ -44,7 +44,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
     DISALLOW_COPY_AND_ASSIGN(Window);
   };
 
-  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE {
+  virtual BrowserWindow* CreateBrowserWindow() override {
     return new Window();
   }
 

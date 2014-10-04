@@ -19,7 +19,7 @@ class SyncPromoUITest : public testing::Test {
   SyncPromoUITest() {}
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),

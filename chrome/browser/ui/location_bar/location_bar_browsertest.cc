@@ -46,7 +46,7 @@ class LocationBarBrowserTest : public ExtensionBrowserTest {
   virtual ~LocationBarBrowserTest() {}
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Load an extension with a PageAction that sends a message when clicked.
   const extensions::Extension* LoadPageActionExtension(
@@ -170,7 +170,7 @@ class LocationBarBrowserTestWithRedesign : public LocationBarBrowserTest {
   virtual ~LocationBarBrowserTestWithRedesign() {}
 
  private:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
 

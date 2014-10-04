@@ -25,10 +25,10 @@ class BookmarkBubbleSignInDelegate : public BookmarkBubbleDelegate,
   virtual ~BookmarkBubbleSignInDelegate();
 
   // BookmarkBubbleDelegate:
-  virtual void OnSignInLinkClicked() OVERRIDE;
+  virtual void OnSignInLinkClicked() override;
 
   // chrome::BrowserListObserver:
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) override;
 
   // Makes sure |browser_| points to a valid browser.
   void EnsureBrowser();

@@ -18,24 +18,24 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
   virtual ~OmniboxCurrentPageDelegateImpl();
 
   // OmniboxCurrentPageDelegate.
-  virtual bool CurrentPageExists() const OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
-  virtual bool IsInstantNTP() const OVERRIDE;
-  virtual bool IsSearchResultsPage() const OVERRIDE;
-  virtual bool IsLoading() const OVERRIDE;
+  virtual bool CurrentPageExists() const override;
+  virtual const GURL& GetURL() const override;
+  virtual bool IsInstantNTP() const override;
+  virtual bool IsSearchResultsPage() const override;
+  virtual bool IsLoading() const override;
   virtual content::NavigationController&
-      GetNavigationController() const OVERRIDE;
-  virtual const SessionID& GetSessionID() const OVERRIDE;
+      GetNavigationController() const override;
+  virtual const SessionID& GetSessionID() const override;
   virtual bool ProcessExtensionKeyword(
       TemplateURL* template_url,
       const AutocompleteMatch& match,
-      WindowOpenDisposition disposition) OVERRIDE;
-  virtual void OnInputStateChanged() OVERRIDE;
+      WindowOpenDisposition disposition) override;
+  virtual void OnInputStateChanged() override;
   virtual void OnFocusChanged(OmniboxFocusState state,
-                              OmniboxFocusChangeReason reason) OVERRIDE;
-  virtual void DoPrerender(const AutocompleteMatch& match) OVERRIDE;
+                              OmniboxFocusChangeReason reason) override;
+  virtual void DoPrerender(const AutocompleteMatch& match) override;
   virtual void SetSuggestionToPrefetch(
-      const InstantSuggestion& suggestion) OVERRIDE;
+      const InstantSuggestion& suggestion) override;
 
  private:
   OmniboxEditController* controller_;

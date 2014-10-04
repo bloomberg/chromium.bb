@@ -41,8 +41,8 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
       scoped_ptr<AlternateNavInfoBarDelegate> delegate);
 
   // InfoBarDelegate:
-  virtual int GetIconID() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual Type GetInfoBarType() const override;
 
   Profile* profile_;
   const base::string16 text_;

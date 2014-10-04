@@ -31,22 +31,22 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   virtual ~OmniboxPopupViewMac();
 
   // Overridden from OmniboxPopupView:
-  virtual bool IsOpen() const OVERRIDE;
-  virtual void InvalidateLine(size_t line) OVERRIDE {}
-  virtual void UpdatePopupAppearance() OVERRIDE;
-  virtual gfx::Rect GetTargetBounds() OVERRIDE;
+  virtual bool IsOpen() const override;
+  virtual void InvalidateLine(size_t line) override {}
+  virtual void UpdatePopupAppearance() override;
+  virtual gfx::Rect GetTargetBounds() override;
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
-  virtual void PaintUpdatesNow() OVERRIDE;
-  virtual void OnDragCanceled() OVERRIDE {}
+  virtual void PaintUpdatesNow() override;
+  virtual void OnDragCanceled() override {}
 
   // Overridden from OmniboxPopupMatrixDelegate:
   virtual void OnMatrixRowSelected(OmniboxPopupMatrix* matrix,
-                                   size_t row) OVERRIDE;
+                                   size_t row) override;
   virtual void OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
-                                  size_t row) OVERRIDE;
+                                  size_t row) override;
   virtual void OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
-                                        size_t row) OVERRIDE;
+                                        size_t row) override;
 
   OmniboxPopupMatrix* matrix() { return matrix_; }
 

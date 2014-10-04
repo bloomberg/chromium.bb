@@ -24,8 +24,8 @@ class SadTabCocoa : public SadTab {
 
  private:
   // Overridden from SadTab:
-  virtual void Show() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Show() override;
+  virtual void Close() override;
 
   base::scoped_nsobject<SadTabController> sad_tab_controller_;
 

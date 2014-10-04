@@ -24,8 +24,8 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
  public:
   MultiUserContextMenuChromeOSTest() : multi_user_window_manager_(NULL) {}
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   // Set up the test environment for this many windows.

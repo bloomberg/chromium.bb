@@ -24,7 +24,7 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   virtual ~PanelDragBrowserTest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BasePanelBrowserTest::SetUpOnMainThread();
 
     // All the tests here assume using mocked 800x600 display area for the

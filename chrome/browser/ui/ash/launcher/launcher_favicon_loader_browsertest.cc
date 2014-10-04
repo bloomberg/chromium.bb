@@ -40,12 +40,12 @@ class ContentsObserver : public WebContentsObserver {
 
   // WebContentsObserver overrides.
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE {
+                             const GURL& validated_url) override {
     loaded_ = true;
   }
 
   virtual void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) OVERRIDE {
+      const std::vector<content::FaviconURL>& candidates) override {
     if (!candidates.empty())
       got_favicons_ = true;
   }
@@ -67,7 +67,7 @@ class LauncherFaviconLoaderBrowsertest
   virtual ~LauncherFaviconLoaderBrowsertest() {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     contents_observer_.reset(new ContentsObserver(web_contents));
@@ -75,7 +75,7 @@ class LauncherFaviconLoaderBrowsertest
   }
 
   // LauncherFaviconLoader::Delegate overrides:
-  virtual void FaviconUpdated() OVERRIDE {
+  virtual void FaviconUpdated() override {
     favicon_updated_ = true;
   }
 

@@ -51,7 +51,7 @@ class PopupBlockerTabHelper
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
  private:
   struct BlockedRequest;

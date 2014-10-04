@@ -44,12 +44,12 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   void RunDoNothingIfIncognitoIsForcedTest(const GURL& url);
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   bool OpenPOSTURLInNewForegroundTabAndGetTitle(const GURL& url,
                                                 const std::string& post_data,

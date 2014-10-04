@@ -34,46 +34,46 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   class NewWindowContentsDelegate;
 
   // extensions::AppDelegate:
-  virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
+  virtual void InitWebContents(content::WebContents* web_contents) override;
   virtual void ResizeWebContents(content::WebContents* web_contents,
-                                 const gfx::Size& size) OVERRIDE;
+                                 const gfx::Size& size) override;
   virtual content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual void AddNewContents(content::BrowserContext* context,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
+                              bool* was_blocked) override;
   virtual content::ColorChooser* ShowColorChooser(
       content::WebContents* web_contents,
-      SkColor initial_color) OVERRIDE;
+      SkColor initial_color) override;
   virtual void RunFileChooser(
       content::WebContents* tab,
-      const content::FileChooserParams& params) OVERRIDE;
+      const content::FileChooserParams& params) override;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual bool CheckMediaAccessPermission(
       content::WebContents* web_contents,
       const GURL& security_origin,
       content::MediaStreamType type,
-      const extensions::Extension* extension) OVERRIDE;
-  virtual int PreferredIconSize() OVERRIDE;
+      const extensions::Extension* extension) override;
+  virtual int PreferredIconSize() override;
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) OVERRIDE;
+                                     bool blocked) override;
   virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) OVERRIDE;
-  virtual void SetTerminatingCallback(const base::Closure& callback) OVERRIDE;
+      content::WebContents* web_contents) override;
+  virtual void SetTerminatingCallback(const base::Closure& callback) override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   scoped_ptr<ScopedKeepAlive> keep_alive_;
   scoped_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;

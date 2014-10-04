@@ -35,24 +35,24 @@ class OriginChipDecoration : public ButtonDecoration,
   void Update();
 
   // Implement |ButtonDecoration|.
-  virtual bool PreventFocus(NSPoint location) const OVERRIDE;
+  virtual bool PreventFocus(NSPoint location) const override;
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
-  virtual NSString* GetToolTip() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) override;
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
+  virtual NSString* GetToolTip() override;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Implement |IconImage::Observer|.
   virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) OVERRIDE;
+      extensions::IconImage* image) override;
 
   // Implement |SafeBrowsingUIManager::Observer|.
   virtual void OnSafeBrowsingHit(
-      const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
+      const SafeBrowsingUIManager::UnsafeResource& resource) override;
   virtual void OnSafeBrowsingMatch(
-      const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
+      const SafeBrowsingUIManager::UnsafeResource& resource) override;
 
  private:
   // Returns the width required to display the chip's contents.

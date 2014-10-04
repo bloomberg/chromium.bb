@@ -30,8 +30,8 @@ class ActiveDesktopMonitor : public aura::EnvObserver {
   static bool IsDesktopWindow(aura::WindowTreeHost* host);
 
   // aura::EnvObserver methods.
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
-  virtual void OnHostActivated(aura::WindowTreeHost* host) OVERRIDE;
+  virtual void OnWindowInitialized(aura::Window* window) override;
+  virtual void OnHostActivated(aura::WindowTreeHost* host) override;
 
   static ActiveDesktopMonitor* g_instance_;
   chrome::HostDesktopType last_activated_desktop_;

@@ -38,7 +38,7 @@ class NotificationForwarder : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
       model_->UpdateFromWebContents(
           content::Source<content::WebContents>(source).ptr());

@@ -73,8 +73,8 @@ class Exporter : public ui::SelectFileDialog::Listener {
 
   // SelectFileDialog::Listener implemenation.
   virtual void FileSelected(const base::FilePath& path,
-                            int index, void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+                            int index, void* params) override;
+  virtual void FileSelectionCanceled(void* params) override;
  private:
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

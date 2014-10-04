@@ -42,38 +42,38 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
   }
 
   // AppListService overrides:
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE {
+  virtual Profile* GetCurrentAppListProfile() override {
     // We don't return showing_for_profile_ here because that is only defined if
     // the app list is visible.
     return NULL;
   }
 
-  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE {
+  virtual void CreateForProfile(Profile* requested_profile) override {
   }
 
-  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE {
+  virtual void ShowForProfile(Profile* requested_profile) override {
     showing_for_profile_ = requested_profile;
     RecordAppListLaunch();
   }
 
-  virtual void DismissAppList() OVERRIDE {
+  virtual void DismissAppList() override {
     showing_for_profile_ = NULL;
   }
 
-  virtual bool IsAppListVisible() const OVERRIDE {
+  virtual bool IsAppListVisible() const override {
     return !!showing_for_profile_;
   }
 
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE {
+  virtual gfx::NativeWindow GetAppListWindow() override {
     return NULL;
   }
 
-  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE {
+  virtual AppListControllerDelegate* GetControllerDelegate() override {
     return NULL;
   }
 
   // AppListServiceImpl overrides:
-  virtual void DestroyAppList() OVERRIDE { ++destroy_app_list_call_count_; }
+  virtual void DestroyAppList() override { ++destroy_app_list_call_count_; }
 
  private:
   Profile* showing_for_profile_;
@@ -86,7 +86,7 @@ class AppListServiceUnitTest : public testing::Test {
  public:
   AppListServiceUnitTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     SetupWithCommandLine(CommandLine(CommandLine::NO_PROGRAM));
   }
 

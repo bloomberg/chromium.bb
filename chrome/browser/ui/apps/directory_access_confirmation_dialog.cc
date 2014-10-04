@@ -21,15 +21,15 @@ class DirectoryAccessConfirmationDialog : public TabModalConfirmDialogDelegate {
                                     const base::Closure& on_accept,
                                     const base::Closure& on_cancel);
 
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetDialogMessage() OVERRIDE;
-  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual base::string16 GetCancelButtonTitle() OVERRIDE;
+  virtual base::string16 GetTitle() override;
+  virtual base::string16 GetDialogMessage() override;
+  virtual base::string16 GetAcceptButtonTitle() override;
+  virtual base::string16 GetCancelButtonTitle() override;
 
  private:
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
+  virtual void OnAccepted() override;
+  virtual void OnCanceled() override;
+  virtual void OnClosed() override;
 
   const base::Closure on_accept_;
   const base::Closure on_cancel_;

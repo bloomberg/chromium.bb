@@ -36,7 +36,7 @@ class MaximizableWidgetDelegate : public views::WidgetDelegateView {
   virtual ~MaximizableWidgetDelegate() {
   }
 
-  virtual bool CanMaximize() const OVERRIDE {
+  virtual bool CanMaximize() const override {
     return true;
   }
 

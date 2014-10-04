@@ -54,15 +54,15 @@ class ExtensionViewMac : public extensions::ExtensionView {
   void WindowFrameChanged();
 
   // extensions::ExtensionView:
-  virtual void Init() OVERRIDE;
-  virtual Browser* GetBrowser() OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void RenderViewCreated() OVERRIDE;
+  virtual void Init() override;
+  virtual Browser* GetBrowser() override;
+  virtual gfx::NativeView GetNativeView() override;
+  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) override;
+  virtual void RenderViewCreated() override;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual void DidStopLoading() override;
 
  private:
   content::RenderViewHost* render_view_host() const;

@@ -19,8 +19,8 @@ class BrowserToolbarModelDelegate : public ToolbarModelDelegate {
   virtual ~BrowserToolbarModelDelegate();
 
   // ToolbarModelDelegate:
-  virtual content::WebContents* GetActiveWebContents() const OVERRIDE;
-  virtual bool InTabbedBrowser() const OVERRIDE;
+  virtual content::WebContents* GetActiveWebContents() const override;
+  virtual bool InTabbedBrowser() const override;
 
  private:
   Browser* browser_;

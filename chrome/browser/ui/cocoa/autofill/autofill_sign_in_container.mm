@@ -40,7 +40,7 @@ class CocoaSignInDelegate : public autofill::AutofillDialogSignInDelegate {
   // to the current window.
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
 
  private:
   NSView* view_;  // WebContentsView, used to redispatch key events.

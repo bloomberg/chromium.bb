@@ -28,28 +28,28 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   virtual ~AppListControllerDelegateImpl();
 
   // AppListControllerDelegate overrides:
-  virtual void DismissView() OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual bool IsAppPinned(const std::string& extension_id) OVERRIDE;
-  virtual void PinApp(const std::string& extension_id) OVERRIDE;
-  virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
-  virtual Pinnable GetPinnable() OVERRIDE;
-  virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
+  virtual void DismissView() override;
+  virtual gfx::NativeWindow GetAppListWindow() override;
+  virtual gfx::ImageSkia GetWindowIcon() override;
+  virtual bool IsAppPinned(const std::string& extension_id) override;
+  virtual void PinApp(const std::string& extension_id) override;
+  virtual void UnpinApp(const std::string& extension_id) override;
+  virtual Pinnable GetPinnable() override;
+  virtual bool CanDoCreateShortcutsFlow() override;
   virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) OVERRIDE;
-  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
+                                     const std::string& extension_id) override;
+  virtual void CreateNewWindow(Profile* profile, bool incognito) override;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            AppListSource source,
-                           int event_flags) OVERRIDE;
+                           int event_flags) override;
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          AppListSource source,
-                         int event_flags) OVERRIDE;
+                         int event_flags) override;
   virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE;
-  virtual bool ShouldShowUserIcon() OVERRIDE;
+      const base::FilePath& profile_path) override;
+  virtual bool ShouldShowUserIcon() override;
 
  protected:
   // Perform platform-specific adjustments of |params| before OpenApplication().

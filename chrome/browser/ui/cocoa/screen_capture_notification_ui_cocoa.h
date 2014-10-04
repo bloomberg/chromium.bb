@@ -36,7 +36,7 @@ class ScreenCaptureNotificationUICocoa : public ScreenCaptureNotificationUI {
 
   // ScreenCaptureNotificationUI interface.
   virtual gfx::NativeViewId OnStarted(const base::Closure& stop_callback)
-      OVERRIDE;
+      override;
 
  private:
   friend class ScreenCaptureNotificationUICocoaTest;

@@ -363,7 +363,7 @@ class WaitForStableInitialSize : public TestPanelNotificationObserver {
   virtual ~WaitForStableInitialSize() {}
 
  protected:
-  virtual bool AtExpectedState() OVERRIDE {
+  virtual bool AtExpectedState() override {
     return panel_->GetBounds().height() > panel_->TitleOnlyHeight();
   }
   Panel* panel_;
@@ -380,7 +380,7 @@ class WaitForAutoResizeWider : public TestPanelNotificationObserver {
   virtual ~WaitForAutoResizeWider() {}
 
  protected:
-  virtual bool AtExpectedState() OVERRIDE {
+  virtual bool AtExpectedState() override {
     return panel_->GetBounds().width() > initial_size_.width();
   }
   Panel* panel_;
@@ -398,7 +398,7 @@ class WaitForAutoResizeNarrower : public TestPanelNotificationObserver {
   virtual ~WaitForAutoResizeNarrower() {}
 
  protected:
-  virtual bool AtExpectedState() OVERRIDE {
+  virtual bool AtExpectedState() override {
     return panel_->GetBounds().width() < initial_size_.width();
   }
   Panel* panel_;
@@ -1759,7 +1759,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
 class PanelExtensionApiTest : public ExtensionApiTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }

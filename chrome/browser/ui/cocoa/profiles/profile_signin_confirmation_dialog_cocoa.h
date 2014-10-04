@@ -46,7 +46,7 @@ class ProfileSigninConfirmationDialogCocoa : ConstrainedWindowMacDelegate {
 
  private:
   // ConstrainedWindowMacDelegate:
-  virtual void OnConstrainedWindowClosed(ConstrainedWindowMac* window) OVERRIDE;
+  virtual void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   // Controller for the dialog view.
   base::scoped_nsobject<ProfileSigninConfirmationViewController> controller_;

@@ -263,7 +263,7 @@ class WebContentsCloseObserver : public content::NotificationObserver {
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
     contents_ = NULL;
   }

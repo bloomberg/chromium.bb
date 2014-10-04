@@ -25,12 +25,12 @@ class JavaScriptAppModalDialogCocoa : public NativeAppModalDialog {
   virtual ~JavaScriptAppModalDialogCocoa();
 
   // Overridden from NativeAppModalDialog:
-  virtual int GetAppModalDialogButtons() const OVERRIDE;
-  virtual void ShowAppModalDialog() OVERRIDE;
-  virtual void ActivateAppModalDialog() OVERRIDE;
-  virtual void CloseAppModalDialog() OVERRIDE;
-  virtual void AcceptAppModalDialog() OVERRIDE;
-  virtual void CancelAppModalDialog() OVERRIDE;
+  virtual int GetAppModalDialogButtons() const override;
+  virtual void ShowAppModalDialog() override;
+  virtual void ActivateAppModalDialog() override;
+  virtual void CloseAppModalDialog() override;
+  virtual void AcceptAppModalDialog() override;
+  virtual void CancelAppModalDialog() override;
 
   JavaScriptAppModalDialog* dialog() const { return dialog_.get(); }
 

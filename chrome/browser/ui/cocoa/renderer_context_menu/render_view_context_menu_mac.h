@@ -23,9 +23,9 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   virtual ~RenderViewContextMenuMac();
 
   // SimpleMenuModel::Delegate implementation.
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
 
   void Show();
 
@@ -33,8 +33,8 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   // RenderViewContextMenu implementation.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void AppendPlatformEditableItems() OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void AppendPlatformEditableItems() override;
 
  private:
   friend class ToolkitDelegateMac;

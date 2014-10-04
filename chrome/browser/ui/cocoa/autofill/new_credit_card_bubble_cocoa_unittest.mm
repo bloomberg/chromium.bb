@@ -32,7 +32,7 @@ namespace autofill {
 
 class NewCreditCardBubbleCocoaUnitTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 

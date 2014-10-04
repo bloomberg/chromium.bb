@@ -80,12 +80,12 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   void SetEnabled(const std::string& item_key, bool enabled);
 
   // ui::SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   // Represents an item in this model.
@@ -118,8 +118,8 @@ class MonthComboboxModel : public ui::ComboboxModel {
   static base::string16 FormatMonth(int index);
 
   // ui::Combobox implementation:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MonthComboboxModel);
@@ -132,8 +132,8 @@ class YearComboboxModel : public ui::ComboboxModel {
   virtual ~YearComboboxModel();
 
   // ui::Combobox implementation:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
 
  private:
   // The current year (e.g., 2012).

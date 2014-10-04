@@ -104,7 +104,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             Callback callback);
 
   // chrome::BrowserListObserver override.
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) override;
 
   // If the |browser| argument is non-null, returns the pointer directly.
   // Otherwise creates a new browser for the given profile on the given
@@ -126,13 +126,13 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   void Initialize(Profile* profile, Browser* browser);
 
   // SigninTracker::Observer override.
-  virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void SigninSuccess() OVERRIDE;
+  virtual void SigninFailed(const GoogleServiceAuthError& error) override;
+  virtual void SigninSuccess() override;
   virtual void MergeSessionComplete(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // LoginUIService::Observer override.
-  virtual void OnSyncConfirmationUIClosed(bool configure_sync_first) OVERRIDE;
+  virtual void OnSyncConfirmationUIClosed(bool configure_sync_first) override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // User input handler for the signin confirmation dialog.
@@ -142,9 +142,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
     SigninDialogDelegate(
         base::WeakPtr<OneClickSigninSyncStarter> sync_starter);
     virtual ~SigninDialogDelegate();
-    virtual void OnCancelSignin() OVERRIDE;
-    virtual void OnContinueSignin() OVERRIDE;
-    virtual void OnSigninWithNewProfile() OVERRIDE;
+    virtual void OnCancelSignin() override;
+    virtual void OnContinueSignin() override;
+    virtual void OnSigninWithNewProfile() override;
    private:
     base::WeakPtr<OneClickSigninSyncStarter> sync_starter_;
   };

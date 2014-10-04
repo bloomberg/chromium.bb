@@ -44,7 +44,7 @@ class AXTreeSourceAshTest : public ash::test::AshTestBase {
   AXTreeSourceAshTest() {}
   virtual ~AXTreeSourceAshTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AshTestBase::SetUp();
 
     widget_ = new Widget();

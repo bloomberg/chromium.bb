@@ -17,7 +17,7 @@ class AppListTestBase : public extensions::ExtensionServiceTestBase {
   AppListTestBase();
   virtual ~AppListTestBase();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_TEST_UTIL_H_

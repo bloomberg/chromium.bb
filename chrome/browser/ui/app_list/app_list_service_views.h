@@ -31,20 +31,20 @@ class AppListServiceViews : public AppListServiceImpl,
   virtual void OnViewBeingDestroyed();
 
   // AppListService overrides:
-  virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void DismissAppList() OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
+  virtual void Init(Profile* initial_profile) override;
+  virtual void CreateForProfile(Profile* requested_profile) override;
+  virtual void ShowForProfile(Profile* requested_profile) override;
+  virtual void DismissAppList() override;
+  virtual bool IsAppListVisible() const override;
+  virtual gfx::NativeWindow GetAppListWindow() override;
+  virtual Profile* GetCurrentAppListProfile() override;
+  virtual AppListControllerDelegate* GetControllerDelegate() override;
 
   // AppListServiceImpl overrides:
-  virtual void DestroyAppList() OVERRIDE;
+  virtual void DestroyAppList() override;
 
   // AppListShowerDelegate overrides:
-  virtual AppListViewDelegate* GetViewDelegateForCreate() OVERRIDE;
+  virtual AppListViewDelegate* GetViewDelegateForCreate() override;
 
  private:
   // Responsible for creating the app list and responding to profile changes.

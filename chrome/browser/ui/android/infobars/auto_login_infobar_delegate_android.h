@@ -15,9 +15,9 @@ class AutoLoginInfoBarDelegateAndroid : public AutoLoginInfoBarDelegate {
   virtual ~AutoLoginInfoBarDelegateAndroid();
 
   // AutoLoginInfoBarDelegate:
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
+  virtual base::string16 GetMessageText() const override;
 
   // These methods are defined in downstream code.
   bool AttachAccount(JavaObjectWeakGlobalRef weak_java_translate_helper);

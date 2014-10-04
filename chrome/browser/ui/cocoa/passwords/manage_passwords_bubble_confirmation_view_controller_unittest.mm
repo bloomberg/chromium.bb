@@ -40,7 +40,7 @@ class ManagePasswordsBubbleConfirmationViewControllerTest
  public:
   ManagePasswordsBubbleConfirmationViewControllerTest() : controller_(nil) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset(
         [[ManagePasswordsBubbleContentViewTestDelegate alloc] init]);

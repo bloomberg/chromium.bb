@@ -36,16 +36,16 @@ class DisplaySettingsProviderCocoa : public DisplaySettingsProvider,
 
  protected:
   // Overridden from DisplaySettingsProvider:
-  virtual bool NeedsPeriodicFullScreenCheck() const OVERRIDE;
-  virtual bool IsFullScreen() OVERRIDE;
+  virtual bool NeedsPeriodicFullScreenCheck() const override;
+  virtual bool IsFullScreen() override;
 
   // Overridden from ui::WorkAreaWatcherObserver:
-  virtual void WorkAreaChanged() OVERRIDE;
+  virtual void WorkAreaChanged() override;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   void ActiveWorkSpaceChanged();

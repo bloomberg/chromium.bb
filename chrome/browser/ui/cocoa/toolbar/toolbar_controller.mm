@@ -117,7 +117,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
   virtual void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
                                    WrenchIconPainter::Severity severity,
-                                   bool animate) OVERRIDE {
+                                   bool animate) override {
     [controller_ updateWrenchButtonSeverity:severity animate:animate];
   }
 

@@ -120,15 +120,15 @@ class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
   virtual ~ConfirmEmailDialogDelegate();
 
   // TabModalConfirmDialogDelegate:
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetDialogMessage() OVERRIDE;
-  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual base::string16 GetCancelButtonTitle() OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
-  virtual void OnLinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual base::string16 GetTitle() override;
+  virtual base::string16 GetDialogMessage() override;
+  virtual base::string16 GetAcceptButtonTitle() override;
+  virtual base::string16 GetCancelButtonTitle() override;
+  virtual base::string16 GetLinkText() const override;
+  virtual void OnAccepted() override;
+  virtual void OnCanceled() override;
+  virtual void OnClosed() override;
+  virtual void OnLinkClicked(WindowOpenDisposition disposition) override;
 
   std::string last_email_;
   std::string email_;
@@ -432,11 +432,11 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   virtual ~CurrentHistoryCleaner();
 
   // content::WebContentsObserver:
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void WebContentsDestroyed() override;
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) override;
 
  private:
   scoped_ptr<content::WebContents> contents_;

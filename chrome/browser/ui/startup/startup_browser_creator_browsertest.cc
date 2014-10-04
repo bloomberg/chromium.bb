@@ -89,11 +89,11 @@ Browser* FindOneOtherBrowser(Browser* browser) {
 
 class StartupBrowserCreatorTest : public ExtensionBrowserTest {
  protected:
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     return ExtensionBrowserTest::SetUpUserDataDirectory();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
     command_line->AppendSwitchASCII(switches::kHomePage, url::kAboutBlankURL);
@@ -142,11 +142,11 @@ class OpenURLsPopupObserver : public chrome::BrowserListObserver {
  public:
   OpenURLsPopupObserver() : added_browser_(NULL) { }
 
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
+  virtual void OnBrowserAdded(Browser* browser) override {
     added_browser_ = browser;
   }
 
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE { }
+  virtual void OnBrowserRemoved(Browser* browser) override { }
 
   Browser* added_browser_;
 };
@@ -1003,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
 
 class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
@@ -1045,8 +1045,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
 
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpInProcessBrowserTestFixture() override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::MockConfigurationPolicyProvider provider_;

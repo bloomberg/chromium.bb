@@ -28,19 +28,19 @@ class ManagePasswordsUIControllerMock
   // is native UI and therefore isn't available in a tab for unit tests.
   //
   // TODO(mkwst): Determine how to reasonably test this on that platform.
-  virtual void NavigateToPasswordManagerSettingsPage() OVERRIDE;
+  virtual void NavigateToPasswordManagerSettingsPage() override;
   bool navigated_to_settings_page() const {
     return navigated_to_settings_page_;
   }
 
   // We don't have a FormManager in tests, so stub these out.
-  virtual void SavePasswordInternal() OVERRIDE;
+  virtual void SavePasswordInternal() override;
   bool saved_password() const { return saved_password_; }
 
-  virtual void NeverSavePasswordInternal() OVERRIDE;
+  virtual void NeverSavePasswordInternal() override;
   bool never_saved_password() const { return never_saved_password_; }
 
-  virtual const autofill::PasswordForm& PendingCredentials() const OVERRIDE;
+  virtual const autofill::PasswordForm& PendingCredentials() const override;
   void SetPendingCredentials(autofill::PasswordForm pending_credentials);
 
   // Sneaky setters for testing.

@@ -67,35 +67,35 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
 class TestAppListControllerDelegate : public AppListControllerDelegate {
  public:
   virtual ~TestAppListControllerDelegate() {}
-  virtual void DismissView() OVERRIDE {}
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE { return NULL; }
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE { return gfx::ImageSkia(); }
-  virtual bool IsAppPinned(const std::string& extension_id) OVERRIDE {
+  virtual void DismissView() override {}
+  virtual gfx::NativeWindow GetAppListWindow() override { return NULL; }
+  virtual gfx::ImageSkia GetWindowIcon() override { return gfx::ImageSkia(); }
+  virtual bool IsAppPinned(const std::string& extension_id) override {
     return false;
   }
-  virtual void PinApp(const std::string& extension_id) OVERRIDE {}
-  virtual void UnpinApp(const std::string& extension_id) OVERRIDE {}
-  virtual Pinnable GetPinnable() OVERRIDE { return NO_PIN; }
-  virtual bool CanDoCreateShortcutsFlow() OVERRIDE { return false; }
+  virtual void PinApp(const std::string& extension_id) override {}
+  virtual void UnpinApp(const std::string& extension_id) override {}
+  virtual Pinnable GetPinnable() override { return NO_PIN; }
+  virtual bool CanDoCreateShortcutsFlow() override { return false; }
   virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) OVERRIDE {
+                                     const std::string& extension_id) override {
   }
-  virtual bool CanDoShowAppInfoFlow() OVERRIDE { return false; }
+  virtual bool CanDoShowAppInfoFlow() override { return false; }
   virtual void DoShowAppInfoFlow(Profile* profile,
-                                 const std::string& extension_id) OVERRIDE {
+                                 const std::string& extension_id) override {
   };
-  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE {}
+  virtual void CreateNewWindow(Profile* profile, bool incognito) override {}
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            AppListSource source,
-                           int event_flags) OVERRIDE {}
+                           int event_flags) override {}
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          AppListSource source,
-                         int event_flags) OVERRIDE {}
+                         int event_flags) override {}
   virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE {}
-  virtual bool ShouldShowUserIcon() OVERRIDE { return false; }
+      const base::FilePath& profile_path) override {}
+  virtual bool ShouldShowUserIcon() override { return false; }
 };
 
 const char kDefaultApps[] = "Packaged App 1,Packaged App 2,Hosted App";
@@ -108,13 +108,13 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
   ExtensionAppModelBuilderTest() {}
   virtual ~ExtensionAppModelBuilderTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AppListTestBase::SetUp();
 
     CreateBuilder();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ResetBuilder();
   }
 

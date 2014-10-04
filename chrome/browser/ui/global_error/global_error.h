@@ -98,10 +98,10 @@ class GlobalErrorWithStandardBubble
   virtual bool ShouldCloseOnDeactivate() const;
 
   // GlobalError overrides:
-  virtual bool HasBubbleView() OVERRIDE;
-  virtual bool HasShownBubbleView() OVERRIDE;
-  virtual void ShowBubbleView(Browser* browser) OVERRIDE;
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() OVERRIDE;
+  virtual bool HasBubbleView() override;
+  virtual bool HasShownBubbleView() override;
+  virtual void ShowBubbleView(Browser* browser) override;
+  virtual GlobalErrorBubbleViewBase* GetBubbleView() override;
 
  private:
   bool has_shown_bubble_view_;

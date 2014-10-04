@@ -25,8 +25,8 @@ class ExtensionUninstaller
 
  private:
   // Overridden from ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted() OVERRIDE;
-  virtual void ExtensionUninstallCanceled() OVERRIDE;
+  virtual void ExtensionUninstallAccepted() override;
+  virtual void ExtensionUninstallCanceled() override;
   void CleanUp();
 
   Profile* profile_;

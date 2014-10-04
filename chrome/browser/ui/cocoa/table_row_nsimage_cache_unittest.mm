@@ -18,10 +18,10 @@ class TestTable : public TableRowNSImageCache::Table {
   }
 
   // TableRowNSImageCache::Table overrides.
-  virtual int RowCount() const OVERRIDE {
+  virtual int RowCount() const override {
     return rows_.size();
   }
-  virtual gfx::ImageSkia GetIcon(int index) const OVERRIDE {
+  virtual gfx::ImageSkia GetIcon(int index) const override {
     return gfx::ImageSkia::CreateFrom1xBitmap(rows_[index]);
   }
 

@@ -65,7 +65,7 @@ class GesturePrefsObserver : public KeyedService {
   virtual ~GesturePrefsObserver();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   // Notification callback invoked when browser-side preferences

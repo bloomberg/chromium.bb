@@ -23,9 +23,9 @@ class MockPasswordUIView : public PasswordUIView {
     password_manager_presenter_.Initialize();
   }
   virtual ~MockPasswordUIView() {}
-  virtual Profile* GetProfile() OVERRIDE;
+  virtual Profile* GetProfile() override;
 #if !defined(OS_ANDROID)
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() override;
 #endif
   MOCK_METHOD2(ShowPassword, void(size_t, const base::string16&));
   MOCK_METHOD2(SetPasswordList,
@@ -53,7 +53,7 @@ class PasswordManagerPresenterTest : public testing::Test {
   PasswordManagerPresenterTest() {}
 
   virtual ~PasswordManagerPresenterTest() {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         &profile_, MockPasswordStoreService::Build);
     mock_controller_.reset(new MockPasswordUIView(&profile_));

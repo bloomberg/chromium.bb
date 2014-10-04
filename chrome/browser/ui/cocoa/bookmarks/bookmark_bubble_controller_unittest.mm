@@ -78,7 +78,7 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
     edits_ = 0;
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [controller_ close];
     CocoaProfileTest::TearDown();
   }

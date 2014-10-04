@@ -33,33 +33,33 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual ~AutofillDialogCocoa();
 
   // AutofillDialogView implementation:
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void UpdatesStarted() OVERRIDE;
-  virtual void UpdatesFinished() OVERRIDE;
-  virtual void UpdateAccountChooser() OVERRIDE;
-  virtual void UpdateButtonStrip() OVERRIDE;
-  virtual void UpdateOverlay() OVERRIDE;
-  virtual void UpdateDetailArea() OVERRIDE;
-  virtual void UpdateForErrors() OVERRIDE;
-  virtual void UpdateNotificationArea() OVERRIDE;
-  virtual void UpdateSection(DialogSection section) OVERRIDE;
-  virtual void UpdateErrorBubble() OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void UpdatesStarted() override;
+  virtual void UpdatesFinished() override;
+  virtual void UpdateAccountChooser() override;
+  virtual void UpdateButtonStrip() override;
+  virtual void UpdateOverlay() override;
+  virtual void UpdateDetailArea() override;
+  virtual void UpdateForErrors() override;
+  virtual void UpdateNotificationArea() override;
+  virtual void UpdateSection(DialogSection section) override;
+  virtual void UpdateErrorBubble() override;
   virtual void FillSection(DialogSection section,
-                           ServerFieldType originating_type) OVERRIDE;
+                           ServerFieldType originating_type) override;
   virtual void GetUserInput(DialogSection section,
-                            FieldValueMap* output) OVERRIDE;
-  virtual base::string16 GetCvc() OVERRIDE;
-  virtual bool SaveDetailsLocally() OVERRIDE;
-  virtual const content::NavigationController* ShowSignIn() OVERRIDE;
-  virtual void HideSignIn() OVERRIDE;
-  virtual void ModelChanged() OVERRIDE;
-  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
-  virtual void ValidateSection(DialogSection section) OVERRIDE;
+                            FieldValueMap* output) override;
+  virtual base::string16 GetCvc() override;
+  virtual bool SaveDetailsLocally() override;
+  virtual const content::NavigationController* ShowSignIn() override;
+  virtual void HideSignIn() override;
+  virtual void ModelChanged() override;
+  virtual void OnSignInResize(const gfx::Size& pref_size) override;
+  virtual void ValidateSection(DialogSection section) override;
 
   // ConstrainedWindowMacDelegate implementation:
   virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) OVERRIDE;
+      ConstrainedWindowMac* window) override;
 
   AutofillDialogViewDelegate* delegate() { return delegate_; }
 

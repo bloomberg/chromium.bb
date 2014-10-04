@@ -74,34 +74,34 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   }
 
   // ProfileInfoCacheObserver:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE {
+  virtual void OnProfileAdded(const base::FilePath& profile_path) override {
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileWasRemoved(
       const base::FilePath& profile_path,
-      const base::string16& profile_name) OVERRIDE {
+      const base::string16& profile_name) override {
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const base::string16& old_profile_name) OVERRIDE {
+      const base::string16& old_profile_name) override {
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) OVERRIDE {
+      const base::FilePath& profile_path) override {
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileSupervisedUserIdChanged(
-      const base::FilePath& profile_path) OVERRIDE {
+      const base::FilePath& profile_path) override {
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   // SigninErrorController::Observer:
-  virtual void OnErrorChanged() OVERRIDE {
+  virtual void OnErrorChanged() override {
     SigninErrorController* errorController =
         profiles::GetSigninErrorController(profile_);
     if (errorController)

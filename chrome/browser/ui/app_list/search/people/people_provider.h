@@ -37,17 +37,17 @@ class PeopleProvider : public WebserviceSearchProvider,
   virtual ~PeopleProvider();
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Start(const base::string16& query) override;
+  virtual void Stop() override;
 
   // OAuth2TokenService::Consumer overrides:
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
-      const base::Time& expiration_time) OVERRIDE;
+      const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
  private:
   friend class app_list::test::PeopleProviderTest;
