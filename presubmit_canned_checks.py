@@ -109,9 +109,11 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
   # - runtime/int         : Can be fixed long term; volume of errors too high
   # - runtime/virtual     : Broken now, but can be fixed in the future?
   # - whitespace/braces   : We have a lot of explicit scoping in chrome code.
+  # - readability/inheritance : Temporary, while the OVERRIDE and FINAL fixup
+  #                             is in progress.
   cpplint._SetFilters('-build/include,-build/include_order,-build/namespace,'
                       '-readability/casting,-runtime/int,-runtime/virtual,'
-                      '-whitespace/braces')
+                      '-whitespace/braces,-readability/inheritance')
 
   # We currently are more strict with normal code than unit tests; 4 and 5 are
   # the verbosity level that would normally be passed to cpplint.py through
