@@ -27,6 +27,7 @@ Beacon status=stable
 // The changes enabled behind this flag are very likely to break lots of content.
 // ** DO NOT use this flag unless you know what you are doing. **
 BleedingEdgeFastPaths
+Bluetooth status=experimental
 ClientHintsDpr status=experimental
 CompositedSelectionUpdate
 ContextMenu status=experimental

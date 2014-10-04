@@ -205,6 +205,7 @@
     'modules_dependency_idl_files': [
       'battery/NavigatorBattery.idl',
       'beacon/NavigatorBeacon.idl',
+      'bluetooth/NavigatorBluetooth.idl',
       'credentialmanager/NavigatorCredentials.idl',
       'crypto/WindowCrypto.idl',
       'crypto/WorkerGlobalScopeCrypto.idl',
@@ -334,6 +335,7 @@
       'battery/NavigatorBattery.h',
       'beacon/NavigatorBeacon.cpp',
       'beacon/NavigatorBeacon.h',
+      'bluetooth/NavigatorBluetooth.h',
       'credentialmanager/Credential.cpp',
       'credentialmanager/Credential.h',
       'credentialmanager/CredentialManagerClient.cpp',
