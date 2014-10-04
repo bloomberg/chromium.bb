@@ -53,9 +53,8 @@ const unsigned GC3D_COMPRESSED_ATC_RGB_AMD = 0x8C92;
 const unsigned GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD = 0x8C93;
 const unsigned GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE;
 
-// GL_CHROMIUM_image
-const unsigned GC3D_IMAGE_ROWBYTES_CHROMIUM = 0x78F0;
-const unsigned GC3D_IMAGE_MAP_CHROMIUM = 0x78F1;
-const unsigned GC3D_IMAGE_SCANOUT_CHROMIUM = 0x78F2;
+// GL_CHROMIUM_gpu_memory_buffer_image
+const unsigned GC3D_MAP_CHROMIUM = 0x78F1;
+const unsigned GC3D_SCANOUT_CHROMIUM = 0x78F2;
 
 #endif

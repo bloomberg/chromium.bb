@@ -109,7 +109,7 @@ public:
         m_mostRecentlyWaitedSyncPoint = syncPoint;
     }
 
-    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage)
+    virtual WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage)
     {
         m_imageSizes.set(m_currentImageId, IntSize(width, height));
         return m_currentImageId++;

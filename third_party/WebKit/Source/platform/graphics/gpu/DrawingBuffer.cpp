@@ -1046,7 +1046,7 @@ void DrawingBuffer::allocateTextureMemory(TextureInfo* info, const IntSize& size
     if (RuntimeEnabledFeatures::webGLImageChromiumEnabled()) {
         deleteChromiumImageForTexture(info);
 
-        info->imageId = m_context->createImageCHROMIUM(size.width(), size.height(), GL_RGBA8_OES, GC3D_IMAGE_SCANOUT_CHROMIUM);
+        info->imageId = m_context->createGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), GL_RGBA, GC3D_SCANOUT_CHROMIUM);
         if (info->imageId) {
             m_context->bindTexImage2DCHROMIUM(GL_TEXTURE_2D, info->imageId);
             return;

@@ -439,12 +439,11 @@ public:
 
     virtual GrGLInterface* createGrGLInterface() { return 0; }
 
-    // GL_CHROMIUM_map_image
-    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) { return 0; }
+    // GL_CHROMIUM_image
     virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
-    virtual void getImageParameterivCHROMIUM(WGC3Duint imageId, WGC3Denum pname, WGC3Dint* params) { }
-    virtual void* mapImageCHROMIUM(WGC3Duint imageId) { return 0; }
-    virtual void unmapImageCHROMIUM(WGC3Duint imageId) { }
+
+    // GL_CHROMIUM_gpu_memory_buffer_image
+    virtual WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) { return 0; }
 
     // GL_ANGLE_instanced_arrays
     virtual void drawArraysInstancedANGLE(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count, WGC3Dsizei primcount) { }
