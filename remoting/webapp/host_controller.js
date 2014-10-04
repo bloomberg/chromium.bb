@@ -531,8 +531,10 @@ remoting.HostController.prototype.clearPairedClients = function(
  */
 remoting.HostController.prototype.getClientBaseJid_ = function(
     onSuccess, onError) {
+  /** @type {remoting.SignalStrategy} */
   var signalStrategy = null;
 
+  /** @param {remoting.SignalStrategy.State} state */
   var onState = function(state) {
     switch (state) {
       case remoting.SignalStrategy.State.CONNECTED:
