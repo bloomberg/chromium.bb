@@ -40,6 +40,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -83,7 +84,7 @@ struct CSSPropertyInfo {
     CSSPropertyID propID;
 };
 
-static CSSPropertyID cssResolvedPropertyID(const String& propertyName)
+static CSSPropertyID cssResolvedPropertyID(const String& propertyName, v8::Isolate* isolate)
 {
     unsigned length = propertyName.length();
     if (!length)
@@ -95,9 +96,12 @@ static CSSPropertyID cssResolvedPropertyID(const String& propertyName)
     unsigned i = 0;
     bool hasSeenDash = false;
 
-    if (hasCSSPropertyNamePrefix(propertyName, "css"))
+    if (hasCSSPropertyNamePrefix(propertyName, "css")) {
         i += 3;
-    else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
+        // getComputedStyle(elem).cssX is a non-standard behaviour
+        // Measure this behaviour as CSSXGetComputedStyleQueries.
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::CSSXGetComputedStyleQueries);
+    } else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
         builder.append('-');
     else if (isASCIIUpper(propertyName[0]))
         return CSSPropertyInvalid;
@@ -136,7 +140,7 @@ static CSSPropertyID cssResolvedPropertyID(const String& propertyName)
 // Example: 'backgroundPositionY' -> 'background-position-y'
 //
 // Also, certain prefixes such as 'css-' are stripped.
-static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
+static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName, v8::Isolate* isolate)
 {
     String propertyName = toCoreString(v8PropertyName);
     typedef HashMap<String, CSSPropertyInfo*> CSSPropertyInfoMap;
@@ -144,7 +148,7 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
     CSSPropertyInfo* propInfo = map.get(propertyName);
     if (!propInfo) {
         propInfo = new CSSPropertyInfo();
-        propInfo->propID = cssResolvedPropertyID(propertyName);
+        propInfo->propID = cssResolvedPropertyID(propertyName, isolate);
         map.add(propertyName, propInfo);
     }
     if (!propInfo->propID)
@@ -183,7 +187,7 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::String> v8Nam
 {
     // NOTE: cssPropertyInfo lookups incur several mallocs.
     // Successful lookups have the same cost the first time, but are cached.
-    if (cssPropertyInfo(v8Name)) {
+    if (cssPropertyInfo(v8Name, info.GetIsolate())) {
         v8SetReturnValueInt(info, 0);
         return;
     }
@@ -196,7 +200,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
         return;
 
     // Search the style declaration.
-    CSSPropertyInfo* propInfo = cssPropertyInfo(name);
+    CSSPropertyInfo* propInfo = cssPropertyInfo(name, info.GetIsolate());
 
     // Do not handle non-property names.
     if (!propInfo)
@@ -216,7 +220,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
 void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
-    CSSPropertyInfo* propInfo = cssPropertyInfo(name);
+    CSSPropertyInfo* propInfo = cssPropertyInfo(name, info.GetIsolate());
     if (!propInfo)
         return;
 
