@@ -6,7 +6,10 @@
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/test/chrome/athena_browsertest.h"
+#include "athena/test/chrome/test_util.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
@@ -18,15 +21,37 @@ namespace {
 const char kTestUrl[] = "chrome:about";
 }
 
-typedef AthenaBrowserTest ContentProxyBrowserTest;
+// Need to override the test class to make the test always draw its content.
+class ContentProxyBrowserTest : public AthenaBrowserTest {
+ public:
+  ContentProxyBrowserTest() {}
+  virtual ~ContentProxyBrowserTest() {}
+
+  // AthenaBrowserTest:
+  virtual void SetUp() OVERRIDE {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+    // Make sure that we draw the output - it's required for this test.
+    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+
+    AthenaBrowserTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentProxyBrowserTest);
+};
 
 IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
   const int kTimeoutMS = 12000;  // The timeout: 2 seconds.
   const int kIterationSleepMS = 5;  // The wait time in ms per iteration.
   const GURL gurl(kTestUrl);
+  content::BrowserContext* context = test_util::GetBrowserContext();
   // Create an activity (and wait until it is loaded).
   // The size of its overview image should be empty since it is visible.
-  Activity* activity1 = CreateWebActivity(base::UTF8ToUTF16("App1"), gurl);
+  Activity* activity1 =
+      test_util::CreateTestWebActivity(context,
+                                       base::UTF8ToUTF16("App1"),
+                                       gurl);
 
   DCHECK_EQ(activity1->GetActivityViewModel()->GetOverviewModeImage()
                 .size().ToString(),
@@ -34,7 +59,10 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
 
   // Create another activity. The size of all overview images should be empty
   // since they have the visible state.
-  Activity* activity2 = CreateWebActivity(base::UTF8ToUTF16("App2"), gurl);
+  Activity* activity2 =
+      test_util::CreateTestWebActivity(context,
+                                       base::UTF8ToUTF16("App2"),
+                                       gurl);
   DCHECK_EQ(activity1->GetActivityViewModel()->GetOverviewModeImage()
                 .size().ToString(),
             gfx::Size().ToString());
@@ -44,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
 
   // Turn the activity invisible which should create the ContentProxy.
   activity1->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
-  WaitUntilIdle();
+  test_util::WaitUntilIdle();
   DCHECK_EQ(activity1->GetCurrentState(), Activity::ACTIVITY_INVISIBLE);
 
   // Wait until an image is loaded, but do not give more then 2 seconds.
@@ -58,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
       LOG(ERROR) << "Timout on reading back the content image.";
       break;
     }
-    WaitUntilIdle();
+    test_util::WaitUntilIdle();
     usleep(1000 * kIterationSleepMS);
   }
 
@@ -72,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
 
   // After the Activity gets entirely unloaded, the image should still be there.
   activity1->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  WaitUntilIdle();
+  test_util::WaitUntilIdle();
   DCHECK_EQ(activity1->GetCurrentState(), Activity::ACTIVITY_UNLOADED);
 
   DCHECK_NE(activity1->GetActivityViewModel()->GetOverviewModeImage()
@@ -81,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
 
   // When it then becomes visible again, the image will be gone.
   activity1->SetCurrentState(Activity::ACTIVITY_VISIBLE);
-  WaitUntilIdle();
+  test_util::WaitUntilIdle();
   DCHECK_EQ(activity1->GetCurrentState(), Activity::ACTIVITY_VISIBLE);
 
   DCHECK_EQ(activity1->GetActivityViewModel()->GetOverviewModeImage()
