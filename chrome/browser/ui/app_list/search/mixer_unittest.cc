@@ -8,17 +8,17 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/history_types.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_provider.h"
+#include "ui/app_list/search_result.h"
 
 namespace app_list {
 namespace test {
 
-class TestSearchResult : public ChromeSearchResult {
+class TestSearchResult : public SearchResult {
  public:
   TestSearchResult(const std::string& id, double relevance)
       : instance_id_(instantiation_count++) {
@@ -28,15 +28,11 @@ class TestSearchResult : public ChromeSearchResult {
   }
   virtual ~TestSearchResult() {}
 
-  // ChromeSearchResult overides:
+  // SearchResult overrides:
   virtual void Open(int event_flags) override {}
   virtual void InvokeAction(int action_index, int event_flags) override {}
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() override {
-    return scoped_ptr<ChromeSearchResult>(
-        new TestSearchResult(id(), relevance())).Pass();
-  }
-  virtual ChromeSearchResultType GetType() override {
-    return SEARCH_RESULT_TYPE_BOUNDARY;
+  virtual scoped_ptr<SearchResult> Duplicate() override {
+    return scoped_ptr<SearchResult>(new TestSearchResult(id(), relevance()));
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference
@@ -196,12 +192,12 @@ TEST_F(MixerTest, RemoveDuplicates) {
 }
 
 TEST_F(MixerTest, Publish) {
-  scoped_ptr<ChromeSearchResult> result1(new TestSearchResult("app1", 0));
-  scoped_ptr<ChromeSearchResult> result2(new TestSearchResult("app2", 0));
-  scoped_ptr<ChromeSearchResult> result3(new TestSearchResult("app3", 0));
-  scoped_ptr<ChromeSearchResult> result3_copy = result3->Duplicate();
-  scoped_ptr<ChromeSearchResult> result4(new TestSearchResult("app4", 0));
-  scoped_ptr<ChromeSearchResult> result5(new TestSearchResult("app5", 0));
+  scoped_ptr<SearchResult> result1(new TestSearchResult("app1", 0));
+  scoped_ptr<SearchResult> result2(new TestSearchResult("app2", 0));
+  scoped_ptr<SearchResult> result3(new TestSearchResult("app3", 0));
+  scoped_ptr<SearchResult> result3_copy = result3->Duplicate();
+  scoped_ptr<SearchResult> result4(new TestSearchResult("app4", 0));
+  scoped_ptr<SearchResult> result5(new TestSearchResult("app5", 0));
 
   AppListModel::SearchResults ui_results;
 

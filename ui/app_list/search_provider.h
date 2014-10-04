@@ -34,9 +34,6 @@ class APP_LIST_EXPORT SearchProvider {
     result_changed_callback_ = callback;
   }
 
-  // TODO(mukai): Fix the ownership and copying of the results.
-  void ReleaseResult(std::vector<SearchResult*>* results);
-
   const Results& results() const { return results_; }
 
  protected:

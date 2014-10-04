@@ -9,13 +9,14 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "grit/theme_resources.h"
+#include "ui/app_list/search_result.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace app_list {
@@ -65,7 +66,7 @@ void ACMatchClassificationsToTags(
   }
 }
 
-class OmniboxResult : public ChromeSearchResult {
+class OmniboxResult : public SearchResult {
  public:
   OmniboxResult(Profile* profile,
                 AutocompleteController* autocomplete_controller,
@@ -90,8 +91,9 @@ class OmniboxResult : public ChromeSearchResult {
   }
   virtual ~OmniboxResult() {}
 
-  // ChromeSearchResult overides:
+  // SearchResult overrides:
   virtual void Open(int event_flags) override {
+    RecordHistogram(OMNIBOX_SEARCH_RESULT);
     chrome::NavigateParams params(profile_,
                                   match_.destination_url,
                                   match_.transition);
@@ -99,15 +101,9 @@ class OmniboxResult : public ChromeSearchResult {
     chrome::Navigate(&params);
   }
 
-  virtual void InvokeAction(int action_index, int event_flags) override {}
-
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() override {
-    return scoped_ptr<ChromeSearchResult>(
-        new OmniboxResult(profile_, autocomplete_controller_, match_)).Pass();
-  }
-
-  virtual ChromeSearchResultType GetType() override {
-    return OMNIBOX_SEARCH_RESULT;
+  virtual scoped_ptr<SearchResult> Duplicate() override {
+    return scoped_ptr<SearchResult>(
+        new OmniboxResult(profile_, autocomplete_controller_, match_));
   }
 
  private:

@@ -14,6 +14,7 @@
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/app_list/test/test_search_result.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
@@ -61,7 +62,7 @@ size_t GetVisibleTileItemViews(const std::vector<TileItemView*>& tiles) {
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.
 const int kInitialItems = 34;
 
-class TestTileSearchResult : public SearchResult {
+class TestTileSearchResult : public TestSearchResult {
  public:
   TestTileSearchResult() { set_display_type(DISPLAY_TILE); }
   virtual ~TestTileSearchResult() {}

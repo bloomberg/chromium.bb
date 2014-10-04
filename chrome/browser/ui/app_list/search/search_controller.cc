@@ -10,13 +10,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
@@ -29,16 +27,15 @@
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/app_list/search_result.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
-  const char kAppListSearchResultOpenTypeHistogram[] =
-      "Apps.AppListSearchResultOpenType";
 
-  // Maximum time (in milliseconds) to wait to the search providers to finish.
-  const int kStopTimeMS = 1500;
+// Maximum time (in milliseconds) to wait to the search providers to finish.
+const int kStopTimeMS = 1500;
 }
 
 namespace app_list {
@@ -133,16 +130,11 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
   // Count AppList.Search here because it is composed of search + action.
   content::RecordAction(base::UserMetricsAction("AppList_Search"));
 
-  ChromeSearchResult* chrome_result =
-      static_cast<app_list::ChromeSearchResult*>(result);
-  UMA_HISTOGRAM_ENUMERATION(kAppListSearchResultOpenTypeHistogram,
-                            chrome_result->GetType(),
-                            SEARCH_RESULT_TYPE_BOUNDARY);
-  chrome_result->Open(event_flags);
+  result->Open(event_flags);
 
   if (history_ && history_->IsReady()) {
     history_->AddLaunchEvent(base::UTF16ToUTF8(search_box_->text()),
-                             chrome_result->id());
+                             result->id());
   }
 }
 
@@ -150,8 +142,7 @@ void SearchController::InvokeResultAction(SearchResult* result,
                                           int action_index,
                                           int event_flags) {
   // TODO(xiyuan): Hook up with user learning.
-  static_cast<app_list::ChromeSearchResult*>(result)->InvokeAction(
-      action_index, event_flags);
+  result->InvokeAction(action_index, event_flags);
 }
 
 void SearchController::AddProvider(Mixer::GroupId group,

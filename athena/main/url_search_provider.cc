@@ -170,7 +170,11 @@ class UrlSearchResult : public app_list::SearchResult {
   virtual ~UrlSearchResult() {}
 
  private:
-  // Overriddenn from app_list::SearchResult:
+  // Overridden from app_list::SearchResult:
+  virtual scoped_ptr<app_list::SearchResult> Duplicate() override {
+    return make_scoped_ptr(new UrlSearchResult(browser_context_, match_));
+  }
+
   virtual void Open(int event_flags) override {
     Activity* activity = ActivityFactory::Get()->CreateWebActivity(
         browser_context_, base::string16(), match_.destination_url);

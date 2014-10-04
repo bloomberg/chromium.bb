@@ -9,10 +9,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "ui/app_list/search_result.h"
 
 class AppListControllerDelegate;
 class ExtensionEnableFlow;
@@ -32,7 +32,7 @@ class AppContextMenu;
 class TokenizedString;
 class TokenizedStringMatch;
 
-class AppResult : public ChromeSearchResult,
+class AppResult : public SearchResult,
                   public extensions::IconImage::Observer,
                   public AppContextMenuDelegate,
                   public ExtensionEnableFlowDelegate,
@@ -49,12 +49,10 @@ class AppResult : public ChromeSearchResult,
   void UpdateFromLastLaunched(const base::Time& current_time,
                               const base::Time& last_launched);
 
-  // ChromeSearchResult overides:
+  // SearchResult overrides:
   virtual void Open(int event_flags) override;
-  virtual void InvokeAction(int action_index, int event_flags) override;
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() override;
+  virtual scoped_ptr<SearchResult> Duplicate() override;
   virtual ui::MenuModel* GetContextMenuModel() override;
-  virtual ChromeSearchResultType GetType() override;
 
  private:
   void StartObservingExtensionRegistry();

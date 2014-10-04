@@ -204,6 +204,8 @@
         'test/app_list_test_model.h',
         'test/app_list_test_view_delegate.cc',
         'test/app_list_test_view_delegate.h',
+        'test/test_search_result.cc',
+        'test/test_search_result.h',
       ],
     },
     {

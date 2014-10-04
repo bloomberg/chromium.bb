@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "ui/app_list/search_provider.h"
+#include "ui/app_list/search_result.h"
 
 namespace app_list {
 
@@ -26,8 +26,7 @@ const size_t kMaxPeopleResults = 2;
 // A value to indicate no max number of results limit.
 const size_t kNoMaxResultsLimit = 0;
 
-void UpdateResult(const ChromeSearchResult& source,
-                  ChromeSearchResult* target) {
+void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_title(source.title());
   target->set_title_tags(source.title_tags());
   target->set_details(source.details());
@@ -39,7 +38,7 @@ void UpdateResult(const ChromeSearchResult& source,
 Mixer::SortData::SortData() : result(NULL), score(0.0) {
 }
 
-Mixer::SortData::SortData(ChromeSearchResult* result, double score)
+Mixer::SortData::SortData(SearchResult* result, double score)
     : result(result), score(score) {
 }
 
@@ -99,8 +98,7 @@ class Mixer::Group {
         }
 
         results_.push_back(
-            SortData(static_cast<ChromeSearchResult*>(*result_it),
-                     (*result_it)->relevance() + boost));
+            SortData(*result_it, (*result_it)->relevance() + boost));
       }
     }
 
@@ -182,7 +180,7 @@ void Mixer::MixAndPublish(const KnownResults& known_results) {
 
 void Mixer::Publish(const SortedResults& new_results,
                     AppListModel::SearchResults* ui_results) {
-  typedef std::map<std::string, ChromeSearchResult*> IdToResultMap;
+  typedef std::map<std::string, SearchResult*> IdToResultMap;
 
   // The following algorithm is used:
   // 1. Transform the |ui_results| list into an unordered map from result ID
@@ -195,8 +193,7 @@ void Mixer::Publish(const SortedResults& new_results,
   // A map of the items in |ui_results| that takes ownership of the items.
   IdToResultMap ui_results_map;
   for (size_t i = 0; i < ui_results->item_count(); ++i) {
-    ChromeSearchResult* ui_result =
-        static_cast<ChromeSearchResult*>(ui_results->GetItemAt(i));
+    SearchResult* ui_result = ui_results->GetItemAt(i);
     ui_results_map[ui_result->id()] = ui_result;
   }
   // We have to erase all results at once so that observers are notified with
@@ -205,12 +202,12 @@ void Mixer::Publish(const SortedResults& new_results,
 
   // Add items back to |ui_results| in the order of |new_results|.
   for (size_t i = 0; i < new_results.size(); ++i) {
-    ChromeSearchResult* new_result = new_results[i].result;
+    SearchResult* new_result = new_results[i].result;
     IdToResultMap::const_iterator ui_result_it =
         ui_results_map.find(new_result->id());
     if (ui_result_it != ui_results_map.end()) {
       // Update and use the old result if it exists.
-      ChromeSearchResult* ui_result = ui_result_it->second;
+      SearchResult* ui_result = ui_result_it->second;
       UpdateResult(*new_result, ui_result);
 
       // |ui_results| takes back ownership from |ui_results_map| here.

@@ -118,10 +118,14 @@ class APP_LIST_EXPORT SearchResult {
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
 
+  // TODO(mukai): Remove this method and really simplify the ownership of
+  // SearchResult. Ideally, SearchResult will be copyable.
+  virtual scoped_ptr<SearchResult> Duplicate() = 0;
+
   // Opens the result.
   virtual void Open(int event_flags);
 
-  // Invokes a custom action on the result.
+  // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 
   // Returns the context menu model for this item, or NULL if there is currently

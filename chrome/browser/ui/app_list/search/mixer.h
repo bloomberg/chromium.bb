@@ -17,8 +17,8 @@ namespace test {
 FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
-class ChromeSearchResult;
 class SearchProvider;
+class SearchResult;
 
 // Mixer collects results from providers, sorts them and publishes them to the
 // SearchResults UI model. The targeted results have 6 slots to hold the
@@ -55,11 +55,11 @@ class Mixer {
   // Used for sorting and mixing results.
   struct SortData {
     SortData();
-    SortData(ChromeSearchResult* result, double score);
+    SortData(SearchResult* result, double score);
 
     bool operator<(const SortData& other) const;
 
-    ChromeSearchResult* result;  // Not owned.
+    SearchResult* result;  // Not owned.
     double score;
   };
   typedef std::vector<Mixer::SortData> SortedResults;

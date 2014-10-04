@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -42,6 +43,7 @@ SearchWebstoreResult::SearchWebstoreResult(Profile* profile,
 SearchWebstoreResult::~SearchWebstoreResult() {}
 
 void SearchWebstoreResult::Open(int event_flags) {
+  RecordHistogram(WEBSTORE_SEARCH_RESULT);
   const GURL store_url = net::AppendQueryParameter(
       launch_url_,
       extension_urls::kWebstoreSourceField,
@@ -54,16 +56,8 @@ void SearchWebstoreResult::Open(int event_flags) {
   chrome::Navigate(&params);
 }
 
-void SearchWebstoreResult::InvokeAction(int action_index, int event_flags) {
-}
-
-scoped_ptr<ChromeSearchResult> SearchWebstoreResult::Duplicate() {
-  return scoped_ptr<ChromeSearchResult>(
-      new SearchWebstoreResult(profile_, query_)).Pass();
-}
-
-ChromeSearchResultType SearchWebstoreResult::GetType() {
-  return WEBSTORE_SEARCH_RESULT;
+scoped_ptr<SearchResult> SearchWebstoreResult::Duplicate() {
+  return scoped_ptr<SearchResult>(new SearchWebstoreResult(profile_, query_));
 }
 
 }  // namespace app_list

@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_installer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -105,6 +106,7 @@ WebstoreResult::~WebstoreResult() {
 }
 
 void WebstoreResult::Open(int event_flags) {
+  RecordHistogram(SEARCH_WEBSTORE_SEARCH_RESULT);
   const GURL store_url = net::AppendQueryParameter(
       GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + app_id_),
       extension_urls::kWebstoreSourceField,
@@ -128,14 +130,14 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
   StartInstall(action_index == kLaunchEphemeralAppAction);
 }
 
-scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
-  return scoped_ptr<ChromeSearchResult>(new WebstoreResult(profile_,
-                                                           app_id_,
-                                                           localized_name_,
-                                                           icon_url_,
-                                                           is_paid_,
-                                                           item_type_,
-                                                           controller_)).Pass();
+scoped_ptr<SearchResult> WebstoreResult::Duplicate() {
+  return scoped_ptr<SearchResult>(new WebstoreResult(profile_,
+                                                     app_id_,
+                                                     localized_name_,
+                                                     icon_url_,
+                                                     is_paid_,
+                                                     item_type_,
+                                                     controller_));
 }
 
 void WebstoreResult::InitAndStartObserving() {
@@ -299,10 +301,6 @@ void WebstoreResult::OnShutdown() {
 
 void WebstoreResult::OnShutdown(extensions::ExtensionRegistry* registry) {
   StopObservingRegistry();
-}
-
-ChromeSearchResultType WebstoreResult::GetType() {
-  return SEARCH_WEBSTORE_SEARCH_RESULT;
 }
 
 }  // namespace app_list

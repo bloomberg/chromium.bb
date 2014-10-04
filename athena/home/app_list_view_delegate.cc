@@ -53,14 +53,10 @@ void AppListViewDelegate::RegisterSearchProvider(
 void AppListViewDelegate::SearchResultChanged() {
   // TODO(mukai): port app-list's Mixer to reorder the results properly.
   app_list::SearchProvider* search_provider = search_providers_[0];
-  std::vector<app_list::SearchResult*> results;
-  search_provider->ReleaseResult(&results);
-  if (results.empty()) {
-    model_->results()->DeleteAll();
-  } else {
-    for (size_t i = 0; i < results.size(); ++i)
-      model_->results()->Add(results[i]);
-  }
+  const app_list::SearchProvider::Results& results = search_provider->results();
+  model_->results()->DeleteAll();
+  for (size_t i = 0; i < results.size(); ++i)
+    model_->results()->Add(results[i]->Duplicate().release());
 }
 
 bool AppListViewDelegate::ForceNativeDesktop() const {

@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 #include "chrome/browser/ui/app_list/search/people/person.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/api/hangouts_private.h"
 #include "chrome/grit/generated_resources.h"
@@ -86,6 +87,8 @@ PeopleResult::~PeopleResult() {
 }
 
 void PeopleResult::Open(int event_flags) {
+  RecordHistogram(SEARCH_PEOPLE_SEARCH_RESULT);
+
   // Action 0 will always be our default action.
   InvokeAction(0, event_flags);
 }
@@ -109,9 +112,9 @@ void PeopleResult::InvokeAction(int action_index, int event_flags) {
   }
 }
 
-scoped_ptr<ChromeSearchResult> PeopleResult::Duplicate() {
-  return scoped_ptr<ChromeSearchResult>(
-      new PeopleResult(profile_, person_->Duplicate().Pass())).Pass();
+scoped_ptr<SearchResult> PeopleResult::Duplicate() {
+  return scoped_ptr<SearchResult>(
+      new PeopleResult(profile_, person_->Duplicate().Pass()));
 }
 
 void PeopleResult::OnIconLoaded() {
@@ -192,10 +195,6 @@ void PeopleResult::RefreshHangoutsExtensionId() {
     }
   }
   hangouts_extension_id_.clear();
-}
-
-ChromeSearchResultType PeopleResult::GetType() {
-  return SEARCH_PEOPLE_SEARCH_RESULT;
 }
 
 }  // namespace app_list

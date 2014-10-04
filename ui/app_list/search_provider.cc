@@ -13,10 +13,6 @@ SearchProvider::SearchProvider() {
 SearchProvider::~SearchProvider() {
 }
 
-void SearchProvider::ReleaseResult(std::vector<SearchResult*>* results) {
-  results_.release(results);
-}
-
 void SearchProvider::Add(scoped_ptr<SearchResult> result) {
   results_.push_back(result.release());
   FireResultChanged();

@@ -10,10 +10,10 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
+#include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;
@@ -26,7 +26,7 @@ class InstallTracker;
 
 namespace app_list {
 
-class WebstoreResult : public ChromeSearchResult,
+class WebstoreResult : public SearchResult,
                        public extensions::InstallObserver,
                        public extensions::ExtensionRegistryObserver {
  public:
@@ -44,11 +44,10 @@ class WebstoreResult : public ChromeSearchResult,
   extensions::Manifest::Type item_type() const { return item_type_; }
   bool is_paid() const { return is_paid_; }
 
-  // ChromeSearchResult overides:
+  // SearchResult overrides:
   virtual void Open(int event_flags) override;
   virtual void InvokeAction(int action_index, int event_flags) override;
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() override;
-  virtual ChromeSearchResultType GetType() override;
+  virtual scoped_ptr<SearchResult> Duplicate() override;
 
  private:
   // Set the initial state and start observing both InstallObserver and

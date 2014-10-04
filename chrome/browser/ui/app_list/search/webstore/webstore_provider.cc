@@ -146,9 +146,9 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
   }
 }
 
-scoped_ptr<ChromeSearchResult> WebstoreProvider::CreateResult(
+scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
     const base::DictionaryValue& dict) {
-  scoped_ptr<ChromeSearchResult> result;
+  scoped_ptr<SearchResult> result;
 
   std::string app_id;
   std::string localized_name;

@@ -24,8 +24,8 @@ namespace test {
 class PeopleProviderTest;
 }
 
-class ChromeSearchResult;
 class JSONResponseFetcher;
+class SearchResult;
 
 // PeopleProvider fetches search results from the web store server.
 // A "Search in web store" result will be returned if the server does not
@@ -67,8 +67,7 @@ class PeopleProvider : public WebserviceSearchProvider,
   // Callback for people search results being fetched.
   void OnPeopleSearchFetched(scoped_ptr<base::DictionaryValue> json);
   void ProcessPeopleSearchResults(const base::DictionaryValue* json);
-  scoped_ptr<ChromeSearchResult> CreateResult(
-      const base::DictionaryValue& dict);
+  scoped_ptr<SearchResult> CreateResult(const base::DictionaryValue& dict);
 
   // Setup the various variables that we override for testing.
   void SetupForTest(const base::Closure& people_search_fetched_callback,

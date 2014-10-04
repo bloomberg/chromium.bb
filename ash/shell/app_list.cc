@@ -188,6 +188,11 @@ class ExampleSearchResult : public app_list::SearchResult {
 
   WindowTypeShelfItem::Type type() const { return type_; }
 
+  // app_list::SearchResult:
+  virtual scoped_ptr<SearchResult> Duplicate() override {
+    return scoped_ptr<SearchResult>();
+  }
+
  private:
   WindowTypeShelfItem::Type type_;
 

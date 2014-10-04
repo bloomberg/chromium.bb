@@ -8,8 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/search_result.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/app_list/test/test_search_result.h"
 #include "ui/app_list/views/progress_bar_view.h"
 #include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
@@ -55,7 +55,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   void SetUpSearchResults() {
     AppListModel::SearchResults* results = GetResults();
     for (int i = 0; i < kDefaultSearchItems; ++i)
-      results->Add(new SearchResult());
+      results->Add(new TestSearchResult());
 
     // Adding results will schedule Update().
     RunPendingMessages();
@@ -78,7 +78,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   }
 
   void AddTestResultAtIndex(int index) {
-    GetResults()->Add(new SearchResult());
+    GetResults()->Add(new TestSearchResult());
   }
 
   void DeleteResultAt(int index) { GetResults()->DeleteAt(index); }

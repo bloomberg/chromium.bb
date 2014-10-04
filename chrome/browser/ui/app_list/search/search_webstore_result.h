@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -16,16 +16,14 @@ class Profile;
 namespace app_list {
 
 // A "search in webstore" result.
-class SearchWebstoreResult : public ChromeSearchResult {
+class SearchWebstoreResult : public SearchResult {
  public:
   SearchWebstoreResult(Profile* profile, const std::string& query);
   virtual ~SearchWebstoreResult();
 
-  // ChromeSearchResult overides:
+  // SearchResult overrides:
   virtual void Open(int event_flags) override;
-  virtual void InvokeAction(int action_index, int event_flags) override;
-  virtual scoped_ptr<ChromeSearchResult> Duplicate() override;
-  virtual ChromeSearchResultType GetType() override;
+  virtual scoped_ptr<SearchResult> Duplicate() override;
 
  private:
   Profile* profile_;

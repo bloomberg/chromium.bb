@@ -182,9 +182,9 @@ void PeopleProvider::ProcessPeopleSearchResults(
   }
 }
 
-scoped_ptr<ChromeSearchResult> PeopleProvider::CreateResult(
+scoped_ptr<SearchResult> PeopleProvider::CreateResult(
     const base::DictionaryValue& dict) {
-  scoped_ptr<ChromeSearchResult> result;
+  scoped_ptr<SearchResult> result;
 
   scoped_ptr<Person> person = Person::Create(dict);
   if (!person)
