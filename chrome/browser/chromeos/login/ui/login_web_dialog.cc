@@ -142,9 +142,9 @@ void LoginWebDialog::OnCloseContents(WebContents* source,
   if (g_web_contents_stack.Pointer()->size() &&
       source == g_web_contents_stack.Pointer()->front()) {
     g_web_contents_stack.Pointer()->pop_front();
-  } else {
-    NOTREACHED();
   }
+  // Else: TODO(pkotwicz): Investigate if the else case should ever be hit.
+  // http://crbug.com/419837
 }
 
 bool LoginWebDialog::ShouldShowDialogTitle() const {
