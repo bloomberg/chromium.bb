@@ -1632,14 +1632,14 @@ constrain_position(struct weston_move_grab *move, int *cx, int *cy)
 
 static void
 move_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-		 wl_fixed_t x, wl_fixed_t y)
+		 struct weston_pointer_motion_event *event)
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
 	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = move->base.shsurf;
 	int cx, cy;
 
-	weston_pointer_move(pointer, x, y);
+	weston_pointer_move(pointer, event);
 	if (!shsurf)
 		return;
 
@@ -1758,7 +1758,7 @@ struct weston_resize_grab {
 
 static void
 resize_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-		   wl_fixed_t x, wl_fixed_t y)
+		   struct weston_pointer_motion_event *event)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct weston_pointer *pointer = grab->pointer;
@@ -1767,7 +1767,7 @@ resize_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 	wl_fixed_t from_x, from_y;
 	wl_fixed_t to_x, to_y;
 
-	weston_pointer_move(pointer, x, y);
+	weston_pointer_move(pointer, event);
 
 	if (!shsurf)
 		return;
@@ -1973,9 +1973,9 @@ busy_cursor_grab_focus(struct weston_pointer_grab *base)
 
 static void
 busy_cursor_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-			wl_fixed_t x, wl_fixed_t y)
+			struct weston_pointer_motion_event *event)
 {
-	weston_pointer_move(grab->pointer, x, y);
+	weston_pointer_move(grab->pointer, event);
 }
 
 static void
@@ -3141,18 +3141,20 @@ popup_grab_focus(struct weston_pointer_grab *grab)
 
 static void
 popup_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-		  wl_fixed_t x, wl_fixed_t y)
+		  struct weston_pointer_motion_event *event)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct wl_resource *resource;
+	wl_fixed_t x, y;
 	wl_fixed_t sx, sy;
 
 	if (pointer->focus) {
+		weston_pointer_motion_to_abs(pointer, event, &x, &y);
 		weston_view_from_global_fixed(pointer->focus, x, y,
 					      &pointer->sx, &pointer->sy);
 	}
 
-	weston_pointer_move(pointer, x, y);
+	weston_pointer_move(pointer, event);
 
 	wl_resource_for_each(resource, &pointer->focus_resource_list) {
 		weston_view_from_global_fixed(pointer->focus,
@@ -4812,7 +4814,7 @@ terminate_binding(struct weston_keyboard *keyboard, uint32_t time,
 
 static void
 rotate_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-		   wl_fixed_t x, wl_fixed_t y)
+		   struct weston_pointer_motion_event *event)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
@@ -4820,7 +4822,7 @@ rotate_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 	struct shell_surface *shsurf = rotate->base.shsurf;
 	float cx, cy, dx, dy, cposx, cposy, dposx, dposy, r;
 
-	weston_pointer_move(pointer, x, y);
+	weston_pointer_move(pointer, event);
 
 	if (!shsurf)
 		return;

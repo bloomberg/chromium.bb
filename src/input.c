@@ -167,17 +167,20 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 
 static void
 default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
-			    wl_fixed_t x, wl_fixed_t y)
+			    struct weston_pointer_motion_event *event)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
+	wl_fixed_t x, y;
 
-	if (pointer->focus)
+	if (pointer->focus) {
+		weston_pointer_motion_to_abs(pointer, event, &x, &y);
 		weston_view_from_global_fixed(pointer->focus, x, y,
 					      &pointer->sx, &pointer->sy);
+	}
 
-	weston_pointer_move(pointer, x, y);
+	weston_pointer_move(pointer, event);
 
 	resource_list = &pointer->focus_resource_list;
 	wl_resource_for_each(resource, resource_list) {
@@ -936,9 +939,9 @@ weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t 
 		weston_pointer_clamp_for_output(pointer, prev, fx, fy);
 }
 
-/* Takes absolute values */
-WL_EXPORT void
-weston_pointer_move(struct weston_pointer *pointer, wl_fixed_t x, wl_fixed_t y)
+static void
+weston_pointer_move_to(struct weston_pointer *pointer,
+		       wl_fixed_t x, wl_fixed_t y)
 {
 	int32_t ix, iy;
 
@@ -959,6 +962,33 @@ weston_pointer_move(struct weston_pointer *pointer, wl_fixed_t x, wl_fixed_t y)
 
 	pointer->grab->interface->focus(pointer->grab);
 	wl_signal_emit(&pointer->motion_signal, pointer);
+}
+
+WL_EXPORT void
+weston_pointer_motion_to_abs(struct weston_pointer *pointer,
+			     struct weston_pointer_motion_event *event,
+			     wl_fixed_t *x, wl_fixed_t *y)
+{
+	if (event->mask & WESTON_POINTER_MOTION_ABS) {
+		*x = wl_fixed_from_double(event->x);
+		*y = wl_fixed_from_double(event->y);
+	} else if (event->mask & WESTON_POINTER_MOTION_REL) {
+		*x = pointer->x + wl_fixed_from_double(event->dx);
+		*y = pointer->y + wl_fixed_from_double(event->dy);
+	} else {
+		assert(!"invalid motion event");
+		*x = *y = 0;
+	}
+}
+
+WL_EXPORT void
+weston_pointer_move(struct weston_pointer *pointer,
+		    struct weston_pointer_motion_event *event)
+{
+	wl_fixed_t x, y;
+
+	weston_pointer_motion_to_abs(pointer, event, &x, &y);
+	weston_pointer_move_to(pointer, x, y);
 }
 
 /** Verify if the pointer is in a valid position and move it if it isn't.
@@ -1002,18 +1032,19 @@ weston_pointer_handle_output_destroy(struct wl_listener *listener, void *data)
 	fy = pointer->y;
 
 	weston_pointer_clamp_for_output(pointer, closest, &fx, &fy);
-	weston_pointer_move(pointer, fx, fy);
+	weston_pointer_move_to(pointer, fx, fy);
 }
 
 WL_EXPORT void
 notify_motion(struct weston_seat *seat,
-	      uint32_t time, wl_fixed_t dx, wl_fixed_t dy)
+	      uint32_t time,
+	      struct weston_pointer_motion_event *event)
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	weston_compositor_wake(ec);
-	pointer->grab->interface->motion(pointer->grab, time, pointer->x + dx, pointer->y + dy);
+	pointer->grab->interface->motion(pointer->grab, time, event);
 }
 
 static void
@@ -1058,9 +1089,17 @@ notify_motion_absolute(struct weston_seat *seat,
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+	struct weston_pointer_motion_event event = { 0 };
 
 	weston_compositor_wake(ec);
-	pointer->grab->interface->motion(pointer->grab, time, x, y);
+
+	event = (struct weston_pointer_motion_event) {
+		.mask = WESTON_POINTER_MOTION_ABS,
+		.x = wl_fixed_to_double(x),
+		.y = wl_fixed_to_double(y),
+	};
+
+	pointer->grab->interface->motion(pointer->grab, time, &event);
 }
 
 WL_EXPORT void
@@ -1439,7 +1478,7 @@ notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	if (output) {
-		weston_pointer_move(pointer, x, y);
+		weston_pointer_move_to(pointer, x, y);
 	} else {
 		/* FIXME: We should call weston_pointer_set_focus(seat,
 		 * NULL) here, but somehow that breaks re-entry... */

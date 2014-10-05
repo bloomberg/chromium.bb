@@ -334,7 +334,7 @@ drag_grab_focus(struct weston_pointer_grab *grab)
 
 static void
 drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-		 wl_fixed_t x, wl_fixed_t y)
+		 struct weston_pointer_motion_event *event)
 {
 	struct weston_pointer_drag *drag =
 		container_of(grab, struct weston_pointer_drag, grab);
@@ -342,7 +342,7 @@ drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 	float fx, fy;
 	wl_fixed_t sx, sy;
 
-	weston_pointer_move(pointer, x, y);
+	weston_pointer_move(pointer, event);
 
 	if (drag->base.icon) {
 		fx = wl_fixed_to_double(pointer->x) + drag->base.dx;

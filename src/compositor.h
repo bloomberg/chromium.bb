@@ -240,11 +240,24 @@ struct weston_output {
 	struct weston_timeline_object timeline;
 };
 
+enum weston_pointer_motion_mask {
+	WESTON_POINTER_MOTION_ABS = 1 << 0,
+	WESTON_POINTER_MOTION_REL = 1 << 1,
+};
+
+struct weston_pointer_motion_event {
+	uint32_t mask;
+	double x;
+	double y;
+	double dx;
+	double dy;
+};
+
 struct weston_pointer_grab;
 struct weston_pointer_grab_interface {
 	void (*focus)(struct weston_pointer_grab *grab);
 	void (*motion)(struct weston_pointer_grab *grab, uint32_t time,
-		       wl_fixed_t x, wl_fixed_t y);
+		       struct weston_pointer_motion_event *event);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
 	void (*axis)(struct weston_pointer_grab *grab,
@@ -366,6 +379,11 @@ struct weston_touch {
 	uint32_t grab_time;
 };
 
+void
+weston_pointer_motion_to_abs(struct weston_pointer *pointer,
+			     struct weston_pointer_motion_event *event,
+			     wl_fixed_t *x, wl_fixed_t *y);
+
 struct weston_pointer *
 weston_pointer_create(struct weston_seat *seat);
 void
@@ -389,7 +407,7 @@ weston_pointer_clamp(struct weston_pointer *pointer,
 			    wl_fixed_t *fx, wl_fixed_t *fy);
 void
 weston_pointer_move(struct weston_pointer *pointer,
-		    wl_fixed_t x, wl_fixed_t y);
+		    struct weston_pointer_motion_event *event);
 void
 weston_pointer_set_default_grab(struct weston_pointer *pointer,
 		const struct weston_pointer_grab_interface *interface);
@@ -1102,7 +1120,7 @@ weston_surface_activate(struct weston_surface *surface,
 			struct weston_seat *seat);
 void
 notify_motion(struct weston_seat *seat, uint32_t time,
-	      wl_fixed_t dx, wl_fixed_t dy);
+	      struct weston_pointer_motion_event *event);
 void
 notify_motion_absolute(struct weston_seat *seat, uint32_t time,
 		       wl_fixed_t x, wl_fixed_t y);

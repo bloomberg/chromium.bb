@@ -1126,6 +1126,7 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 {
 	struct x11_output *output;
 	wl_fixed_t x, y;
+	struct weston_pointer_motion_event motion_event = { 0 };
 	xcb_motion_notify_event_t *motion_notify =
 			(xcb_motion_notify_event_t *) event;
 
@@ -1140,8 +1141,14 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 					   wl_fixed_from_int(motion_notify->event_y),
 					   &x, &y);
 
+	motion_event = (struct weston_pointer_motion_event) {
+		.mask = WESTON_POINTER_MOTION_REL,
+		.dx = wl_fixed_to_double(x - b->prev_x),
+		.dy = wl_fixed_to_double(y - b->prev_y)
+	};
+
 	notify_motion(&b->core_seat, weston_compositor_get_time(),
-		      x - b->prev_x, y - b->prev_y);
+		      &motion_event);
 
 	b->prev_x = x;
 	b->prev_y = y;

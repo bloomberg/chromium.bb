@@ -1380,16 +1380,18 @@ layer_set_pos(struct ivi_layout_layer *layer, wl_fixed_t pos_x,
 
 static void
 pointer_move_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
-			 wl_fixed_t x, wl_fixed_t y)
+			 struct weston_pointer_motion_event *event)
 {
 	struct pointer_move_grab *pnt_move_grab =
 		(struct pointer_move_grab *)grab;
-	wl_fixed_t pointer_pos[2] = {x, y};
+	wl_fixed_t pointer_pos[2];
 
+	weston_pointer_motion_to_abs(grab->pointer, event,
+				     &pointer_pos[0], &pointer_pos[1]);
 	move_grab_update(&pnt_move_grab->move, pointer_pos);
 	layer_set_pos(pnt_move_grab->base.layer,
 		      pnt_move_grab->move.pos[0], pnt_move_grab->move.pos[1]);
-	weston_pointer_move(pnt_move_grab->base.grab.pointer, x, y);
+	weston_pointer_move(pnt_move_grab->base.grab.pointer, event);
 }
 
 static void

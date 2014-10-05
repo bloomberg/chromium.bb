@@ -145,10 +145,15 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+	struct weston_pointer_motion_event event = { 0 };
 
-	notify_motion(seat, 100,
-		      wl_fixed_from_int(x) - pointer->x,
-		      wl_fixed_from_int(y) - pointer->y);
+	event = (struct weston_pointer_motion_event) {
+		.mask = WESTON_POINTER_MOTION_REL,
+		.dx = wl_fixed_to_double(wl_fixed_from_int(x) - pointer->x),
+		.dy = wl_fixed_to_double(wl_fixed_from_int(y) - pointer->y),
+	};
+
+	notify_motion(seat, 100, &event);
 
 	notify_pointer_position(test, resource);
 }
