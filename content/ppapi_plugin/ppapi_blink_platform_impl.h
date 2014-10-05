@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITPLATFORMSUPPORT_IMPL_H_
-#define CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITPLATFORMSUPPORT_IMPL_H_
+#ifndef CONTENT_PPAPI_PLUGIN_PPAPI_BLINK_PLATFORM_IMPL_H_
+#define CONTENT_PPAPI_PLUGIN_PPAPI_BLINK_PLATFORM_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,15 +11,15 @@
 
 namespace content {
 
-class PpapiWebKitPlatformSupportImpl : public BlinkPlatformImpl {
+class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  PpapiWebKitPlatformSupportImpl();
-  virtual ~PpapiWebKitPlatformSupportImpl();
+  PpapiBlinkPlatformImpl();
+  virtual ~PpapiBlinkPlatformImpl();
 
   // Shutdown must be called just prior to shutting down blink.
   void Shutdown();
 
-  // WebKitPlatformSupport methods:
+  // BlinkPlatformImpl methods:
   virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebFileUtilities* fileUtilities();
@@ -54,9 +54,9 @@ class PpapiWebKitPlatformSupportImpl : public BlinkPlatformImpl {
   class SandboxSupport;
   scoped_ptr<SandboxSupport> sandbox_support_;
 
-  DISALLOW_COPY_AND_ASSIGN(PpapiWebKitPlatformSupportImpl);
+  DISALLOW_COPY_AND_ASSIGN(PpapiBlinkPlatformImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITPLATFORMSUPPORT_IMPL_H_
+#endif  // CONTENT_PPAPI_PLUGIN_PPAPI_BLINK_PLATFORM_IMPL_H_

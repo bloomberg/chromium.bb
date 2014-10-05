@@ -52,7 +52,7 @@ class PluginThread : public ChildThread {
 
   bool forcefully_terminate_plugin_process_;
 
-  scoped_ptr<BlinkPlatformImpl> webkit_platform_support_;
+  scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginThread);
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -156,7 +156,7 @@ base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
 
 //------------------------------------------------------------------------------
 
-class RendererWebKitPlatformSupportImpl::MimeRegistry
+class RendererBlinkPlatformImpl::MimeRegistry
     : public SimpleWebMimeRegistryImpl {
  public:
   virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
@@ -174,8 +174,7 @@ class RendererWebKitPlatformSupportImpl::MimeRegistry
       const blink::WebString& file_path);
 };
 
-class RendererWebKitPlatformSupportImpl::FileUtilities
-    : public WebFileUtilitiesImpl {
+class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
  public:
   explicit FileUtilities(ThreadSafeSender* sender)
       : thread_safe_sender_(sender) {}
@@ -188,10 +187,9 @@ class RendererWebKitPlatformSupportImpl::FileUtilities
 #if defined(OS_ANDROID)
 // WebKit doesn't use WebSandboxSupport on android so we don't need to
 // implement anything here.
-class RendererWebKitPlatformSupportImpl::SandboxSupport {
-};
+class RendererBlinkPlatformImpl::SandboxSupport {};
 #else
-class RendererWebKitPlatformSupportImpl::SandboxSupport
+class RendererBlinkPlatformImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
@@ -223,17 +221,16 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
 
 //------------------------------------------------------------------------------
 
-RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
+RendererBlinkPlatformImpl::RendererBlinkPlatformImpl()
     : clipboard_client_(new RendererClipboardClient),
       clipboard_(new WebClipboardImpl(clipboard_client_.get())),
-      mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
+      mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       child_thread_loop_(base::MessageLoopProxy::current()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
   if (g_sandbox_enabled && sandboxEnabled()) {
-    sandbox_support_.reset(
-        new RendererWebKitPlatformSupportImpl::SandboxSupport);
+    sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
   } else {
     DVLOG(1) << "Disabling sandbox support for testing.";
   }
@@ -250,13 +247,13 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
   }
 }
 
-RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
+RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
 //------------------------------------------------------------------------------
 
-blink::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
+blink::WebClipboard* RendererBlinkPlatformImpl::clipboard() {
   blink::WebClipboard* clipboard =
       GetContentClient()->renderer()->OverrideWebClipboard();
   if (clipboard)
@@ -264,12 +261,11 @@ blink::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
   return clipboard_.get();
 }
 
-blink::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
+blink::WebMimeRegistry* RendererBlinkPlatformImpl::mimeRegistry() {
   return mime_registry_.get();
 }
 
-blink::WebFileUtilities*
-RendererWebKitPlatformSupportImpl::fileUtilities() {
+blink::WebFileUtilities* RendererBlinkPlatformImpl::fileUtilities() {
   if (!file_utilities_) {
     file_utilities_.reset(new FileUtilities(thread_safe_sender_.get()));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
@@ -277,7 +273,7 @@ RendererWebKitPlatformSupportImpl::fileUtilities() {
   return file_utilities_.get();
 }
 
-blink::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
+blink::WebSandboxSupport* RendererBlinkPlatformImpl::sandboxSupport() {
 #if defined(OS_ANDROID)
   // WebKit doesn't use WebSandboxSupport on android.
   return NULL;
@@ -286,12 +282,12 @@ blink::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
 #endif
 }
 
-blink::WebCookieJar* RendererWebKitPlatformSupportImpl::cookieJar() {
+blink::WebCookieJar* RendererBlinkPlatformImpl::cookieJar() {
   NOTREACHED() << "Use WebFrameClient::cookieJar() instead!";
   return NULL;
 }
 
-blink::WebThemeEngine* RendererWebKitPlatformSupportImpl::themeEngine() {
+blink::WebThemeEngine* RendererBlinkPlatformImpl::themeEngine() {
   blink::WebThemeEngine* theme_engine =
       GetContentClient()->renderer()->OverrideThemeEngine();
   if (theme_engine)
@@ -299,7 +295,7 @@ blink::WebThemeEngine* RendererWebKitPlatformSupportImpl::themeEngine() {
   return BlinkPlatformImpl::themeEngine();
 }
 
-bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
+bool RendererBlinkPlatformImpl::sandboxEnabled() {
   // As explained in Platform.h, this function is used to decide
   // whether to allow file system operations to come out of WebKit or not.
   // Even if the sandbox is disabled, there's no reason why the code should
@@ -310,18 +306,17 @@ bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
 
-unsigned long long RendererWebKitPlatformSupportImpl::visitedLinkHash(
+unsigned long long RendererBlinkPlatformImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
   return GetContentClient()->renderer()->VisitedLinkHash(canonical_url, length);
 }
 
-bool RendererWebKitPlatformSupportImpl::isLinkVisited(
-    unsigned long long link_hash) {
+bool RendererBlinkPlatformImpl::isLinkVisited(unsigned long long link_hash) {
   return GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
-void RendererWebKitPlatformSupportImpl::createMessageChannel(
+void RendererBlinkPlatformImpl::createMessageChannel(
     blink::WebMessagePortChannel** channel1,
     blink::WebMessagePortChannel** channel2) {
   WebMessagePortChannelImpl::CreatePair(
@@ -329,15 +324,14 @@ void RendererWebKitPlatformSupportImpl::createMessageChannel(
 }
 
 blink::WebPrescientNetworking*
-RendererWebKitPlatformSupportImpl::prescientNetworking() {
+RendererBlinkPlatformImpl::prescientNetworking() {
   return GetContentClient()->renderer()->GetPrescientNetworking();
 }
 
-void RendererWebKitPlatformSupportImpl::cacheMetadata(
-    const blink::WebURL& url,
-    double response_time,
-    const char* data,
-    size_t size) {
+void RendererBlinkPlatformImpl::cacheMetadata(const blink::WebURL& url,
+                                              double response_time,
+                                              const char* data,
+                                              size_t size) {
   // Let the browser know we generated cacheable metadata for this resource. The
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.
@@ -346,11 +340,11 @@ void RendererWebKitPlatformSupportImpl::cacheMetadata(
       new ViewHostMsg_DidGenerateCacheableMetadata(url, response_time, copy));
 }
 
-WebString RendererWebKitPlatformSupportImpl::defaultLocale() {
+WebString RendererBlinkPlatformImpl::defaultLocale() {
   return base::ASCIIToUTF16(RenderThread::Get()->GetLocale());
 }
 
-void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
+void RendererBlinkPlatformImpl::suddenTerminationChanged(bool enabled) {
   if (enabled) {
     // We should not get more enables than disables, but we want it to be a
     // non-fatal error if it does happen.
@@ -370,28 +364,27 @@ void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
     thread->Send(new ViewHostMsg_SuddenTerminationChanged(enabled));
 }
 
-WebStorageNamespace*
-RendererWebKitPlatformSupportImpl::createLocalStorageNamespace() {
+WebStorageNamespace* RendererBlinkPlatformImpl::createLocalStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
 
 
 //------------------------------------------------------------------------------
 
-WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
+WebIDBFactory* RendererBlinkPlatformImpl::idbFactory() {
   return web_idb_factory_.get();
 }
 
 //------------------------------------------------------------------------------
 
-WebFileSystem* RendererWebKitPlatformSupportImpl::fileSystem() {
+WebFileSystem* RendererBlinkPlatformImpl::fileSystem() {
   return WebFileSystemImpl::ThreadSpecificInstance(child_thread_loop_.get());
 }
 
 //------------------------------------------------------------------------------
 
 WebMimeRegistry::SupportsType
-RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
+RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
     const WebString& mime_type,
     const WebString& codecs,
     const WebString& key_system) {
@@ -439,8 +432,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
   return IsSupported;
 }
 
-bool
-RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaSourceMIMEType(
+bool RendererBlinkPlatformImpl::MimeRegistry::supportsMediaSourceMIMEType(
     const blink::WebString& mime_type,
     const WebString& codecs) {
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
@@ -452,8 +444,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaSourceMIMEType(
       mime_type_ascii, parsed_codec_ids);
 }
 
-bool
-RendererWebKitPlatformSupportImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
+bool RendererBlinkPlatformImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
     const WebString& key_system,
     const WebString& mime_type,
     const WebString& codecs) {
@@ -477,8 +468,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
       mime_type_ascii, codec_vector, base::UTF16ToASCII(key_system));
 }
 
-WebString
-RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
+WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
     const WebString& file_extension) {
   if (IsPluginProcess())
     return SimpleWebMimeRegistryImpl::mimeTypeForExtension(file_extension);
@@ -492,7 +482,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
   return base::ASCIIToUTF16(mime_type);
 }
 
-WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
+WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeFromFile(
     const WebString& file_path) {
   if (IsPluginProcess())
     return SimpleWebMimeRegistryImpl::mimeTypeFromFile(file_path);
@@ -508,7 +498,7 @@ WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
 
 //------------------------------------------------------------------------------
 
-bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
+bool RendererBlinkPlatformImpl::FileUtilities::getFileInfo(
     const WebString& path,
     WebFileInfo& web_file_info) {
   base::File::Info file_info;
@@ -523,8 +513,8 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
   return true;
 }
 
-bool RendererWebKitPlatformSupportImpl::FileUtilities::
-SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const {
+bool RendererBlinkPlatformImpl::FileUtilities::SendSyncMessageFromAnyThread(
+    IPC::SyncMessage* msg) const {
   base::TimeTicks begin = base::TimeTicks::Now();
   const bool success = thread_safe_sender_->Send(msg);
   base::TimeDelta delta = base::TimeTicks::Now() - begin;
@@ -536,8 +526,7 @@ SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const {
 
 #if defined(OS_WIN)
 
-bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
-    HFONT font) {
+bool RendererBlinkPlatformImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
   RenderThread::Get()->PreCacheFont(logfont);
@@ -546,8 +535,9 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
 
 #elif defined(OS_MACOSX)
 
-bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
-    NSFont* src_font, CGFontRef* out, uint32* font_id) {
+bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
+                                                         CGFontRef* out,
+                                                         uint32* font_id) {
   uint32 font_data_size;
   FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
@@ -582,8 +572,7 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 #elif defined(OS_POSIX)
 
-void
-RendererWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
+void RendererBlinkPlatformImpl::SandboxSupport::getFallbackFontForCharacter(
     blink::WebUChar32 character,
     const char* preferred_locale,
     blink::WebFallbackFont* fallbackFont) {
@@ -604,9 +593,10 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
   unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
-void
-RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
-    const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out) {
+void RendererBlinkPlatformImpl::SandboxSupport::getRenderStyleForStrike(
+    const char* family,
+    int sizeAndStyle,
+    blink::WebFontRenderStyle* out) {
   GetRenderStyleForStrike(family, sizeAndStyle, out);
 }
 
@@ -614,38 +604,39 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
 
 //------------------------------------------------------------------------------
 
-Platform::FileHandle
-RendererWebKitPlatformSupportImpl::databaseOpenFile(
-    const WebString& vfs_file_name, int desired_flags) {
+Platform::FileHandle RendererBlinkPlatformImpl::databaseOpenFile(
+    const WebString& vfs_file_name,
+    int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(
       vfs_file_name, desired_flags, sync_message_filter_.get());
 }
 
-int RendererWebKitPlatformSupportImpl::databaseDeleteFile(
-    const WebString& vfs_file_name, bool sync_dir) {
+int RendererBlinkPlatformImpl::databaseDeleteFile(
+    const WebString& vfs_file_name,
+    bool sync_dir) {
   return DatabaseUtil::DatabaseDeleteFile(
       vfs_file_name, sync_dir, sync_message_filter_.get());
 }
 
-long RendererWebKitPlatformSupportImpl::databaseGetFileAttributes(
+long RendererBlinkPlatformImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
   return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name,
                                                  sync_message_filter_.get());
 }
 
-long long RendererWebKitPlatformSupportImpl::databaseGetFileSize(
+long long RendererBlinkPlatformImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
   return DatabaseUtil::DatabaseGetFileSize(vfs_file_name,
                                            sync_message_filter_.get());
 }
 
-long long RendererWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
+long long RendererBlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
   return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier,
                                                  sync_message_filter_.get());
 }
 
-bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
+bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   GpuChannelHost* host = thread->EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
@@ -655,33 +646,32 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
   return host->gpu_info().SupportsAccelerated2dCanvas();
 }
 
-bool RendererWebKitPlatformSupportImpl::isThreadedCompositingEnabled() {
+bool RendererBlinkPlatformImpl::isThreadedCompositingEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   // thread can be NULL in tests.
   return thread && thread->compositor_message_loop_proxy().get();
 }
 
-double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
+double RendererBlinkPlatformImpl::audioHardwareSampleRate() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
 }
 
-size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
+size_t RendererBlinkPlatformImpl::audioHardwareBufferSize() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
 }
 
-unsigned RendererWebKitPlatformSupportImpl::audioHardwareOutputChannels() {
+unsigned RendererBlinkPlatformImpl::audioHardwareOutputChannels() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputChannels();
 }
 
-WebDatabaseObserver* RendererWebKitPlatformSupportImpl::databaseObserver() {
+WebDatabaseObserver* RendererBlinkPlatformImpl::databaseObserver() {
   return web_database_observer_impl_.get();
 }
 
-WebAudioDevice*
-RendererWebKitPlatformSupportImpl::createAudioDevice(
+WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
     size_t buffer_size,
     unsigned input_channels,
     unsigned channels,
@@ -747,8 +737,9 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
 }
 
 #if defined(OS_ANDROID)
-bool RendererWebKitPlatformSupportImpl::loadAudioResource(
-    blink::WebAudioBus* destination_bus, const char* audio_file_data,
+bool RendererBlinkPlatformImpl::loadAudioResource(
+    blink::WebAudioBus* destination_bus,
+    const char* audio_file_data,
     size_t data_size) {
   return DecodeAudioFileData(destination_bus,
                              audio_file_data,
@@ -756,8 +747,9 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
                              thread_safe_sender_);
 }
 #else
-bool RendererWebKitPlatformSupportImpl::loadAudioResource(
-    blink::WebAudioBus* destination_bus, const char* audio_file_data,
+bool RendererBlinkPlatformImpl::loadAudioResource(
+    blink::WebAudioBus* destination_bus,
+    const char* audio_file_data,
     size_t data_size) {
   return DecodeAudioFileData(
       destination_bus, audio_file_data, data_size);
@@ -766,8 +758,7 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
 
 //------------------------------------------------------------------------------
 
-blink::WebMIDIAccessor*
-RendererWebKitPlatformSupportImpl::createMIDIAccessor(
+blink::WebMIDIAccessor* RendererBlinkPlatformImpl::createMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {
   blink::WebMIDIAccessor* accessor =
       GetContentClient()->renderer()->OverrideCreateMIDIAccessor(client);
@@ -777,7 +768,7 @@ RendererWebKitPlatformSupportImpl::createMIDIAccessor(
   return new RendererWebMIDIAccessorImpl(client);
 }
 
-void RendererWebKitPlatformSupportImpl::getPluginList(
+void RendererBlinkPlatformImpl::getPluginList(
     bool refresh,
     blink::WebPluginListBuilder* builder) {
 #if defined(ENABLE_PLUGINS)
@@ -810,15 +801,13 @@ void RendererWebKitPlatformSupportImpl::getPluginList(
 
 //------------------------------------------------------------------------------
 
-blink::WebPublicSuffixList*
-RendererWebKitPlatformSupportImpl::publicSuffixList() {
+blink::WebPublicSuffixList* RendererBlinkPlatformImpl::publicSuffixList() {
   return &public_suffix_list_;
 }
 
 //------------------------------------------------------------------------------
 
-blink::WebString
-RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
+blink::WebString RendererBlinkPlatformImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const blink::WebString& challenge,
     const blink::WebURL& url) {
@@ -833,7 +822,7 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 
 //------------------------------------------------------------------------------
 
-void RendererWebKitPlatformSupportImpl::screenColorProfile(
+void RendererBlinkPlatformImpl::screenColorProfile(
     WebVector<char>* to_profile) {
 #if defined(OS_WIN)
   // On Windows screen color profile is only available in the browser.
@@ -854,21 +843,20 @@ void RendererWebKitPlatformSupportImpl::screenColorProfile(
 
 //------------------------------------------------------------------------------
 
-blink::WebScrollbarBehavior*
-    RendererWebKitPlatformSupportImpl::scrollbarBehavior() {
+blink::WebScrollbarBehavior* RendererBlinkPlatformImpl::scrollbarBehavior() {
   return web_scrollbar_behavior_.get();
 }
 
 //------------------------------------------------------------------------------
 
-WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
+WebBlobRegistry* RendererBlinkPlatformImpl::blobRegistry() {
   // blob_registry_ can be NULL when running some tests.
   return blob_registry_.get();
 }
 
 //------------------------------------------------------------------------------
 
-void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
+void RendererBlinkPlatformImpl::sampleGamepads(WebGamepads& gamepads) {
   PlatformEventObserverBase* observer =
       platform_event_observers_.Lookup(blink::WebPlatformEventGamepad);
   if (!observer)
@@ -879,7 +867,7 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
 //------------------------------------------------------------------------------
 
 WebRTCPeerConnectionHandler*
-RendererWebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
+RendererBlinkPlatformImpl::createRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
@@ -903,8 +891,7 @@ RendererWebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
 
 //------------------------------------------------------------------------------
 
-WebMediaStreamCenter*
-RendererWebKitPlatformSupportImpl::createMediaStreamCenter(
+WebMediaStreamCenter* RendererBlinkPlatformImpl::createMediaStreamCenter(
     WebMediaStreamCenterClient* client) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
@@ -914,8 +901,7 @@ RendererWebKitPlatformSupportImpl::createMediaStreamCenter(
 }
 
 // static
-bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
-    bool enable) {
+bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
   bool was_enabled = g_sandbox_enabled;
   g_sandbox_enabled = enable;
   return was_enabled;
@@ -923,16 +909,16 @@ bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
 
 //------------------------------------------------------------------------------
 
-blink::WebSpeechSynthesizer*
-RendererWebKitPlatformSupportImpl::createSpeechSynthesizer(
+blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
   return GetContentClient()->renderer()->OverrideSpeechSynthesizer(client);
 }
 
 //------------------------------------------------------------------------------
 
-bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
-    size_t* private_bytes, size_t* shared_bytes) {
+bool RendererBlinkPlatformImpl::processMemorySizesInBytes(
+    size_t* private_bytes,
+    size_t* shared_bytes) {
   content::RenderThread::Get()->Send(
       new ViewHostMsg_GetProcessMemorySizes(private_bytes, shared_bytes));
   return true;
@@ -941,13 +927,13 @@ bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
 //------------------------------------------------------------------------------
 
 blink::WebGraphicsContext3D*
-RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
+RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
   return createOffscreenGraphicsContext3D(attributes, NULL);
 }
 
 blink::WebGraphicsContext3D*
-RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
+RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context) {
   if (!RenderThreadImpl::current())
@@ -990,8 +976,8 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
 
 //------------------------------------------------------------------------------
 
-blink::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
-    createSharedOffscreenGraphicsContext3DProvider() {
+blink::WebGraphicsContext3DProvider*
+RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
   scoped_refptr<webkit::gpu::ContextProviderWebContext> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
   if (!provider.get())
@@ -1001,14 +987,13 @@ blink::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
 
 //------------------------------------------------------------------------------
 
-blink::WebCompositorSupport*
-RendererWebKitPlatformSupportImpl::compositorSupport() {
+blink::WebCompositorSupport* RendererBlinkPlatformImpl::compositorSupport() {
   return &compositor_support_;
 }
 
 //------------------------------------------------------------------------------
 
-blink::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
+blink::WebString RendererBlinkPlatformImpl::convertIDNToUnicode(
     const blink::WebString& host,
     const blink::WebString& languages) {
   return net::IDNToUnicode(host.utf8(), languages.utf8());
@@ -1017,15 +1002,14 @@ blink::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
 //------------------------------------------------------------------------------
 
 // static
-void RendererWebKitPlatformSupportImpl::SetMockDeviceLightDataForTesting(
-    double data) {
+void RendererBlinkPlatformImpl::SetMockDeviceLightDataForTesting(double data) {
   g_test_device_light_data = data;
 }
 
 //------------------------------------------------------------------------------
 
 // static
-void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
+void RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(
     const blink::WebDeviceMotionData& data) {
   g_test_device_motion_data.Get() = data;
 }
@@ -1033,19 +1017,19 @@ void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
 //------------------------------------------------------------------------------
 
 // static
-void RendererWebKitPlatformSupportImpl::SetMockDeviceOrientationDataForTesting(
+void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
     const blink::WebDeviceOrientationData& data) {
   g_test_device_orientation_data.Get() = data;
 }
 
 //------------------------------------------------------------------------------
 
-void RendererWebKitPlatformSupportImpl::vibrate(unsigned int milliseconds) {
+void RendererBlinkPlatformImpl::vibrate(unsigned int milliseconds) {
   RenderThread::Get()->Send(
       new ViewHostMsg_Vibrate(base::checked_cast<int64>(milliseconds)));
 }
 
-void RendererWebKitPlatformSupportImpl::cancelVibration() {
+void RendererBlinkPlatformImpl::cancelVibration() {
   RenderThread::Get()->Send(new ViewHostMsg_CancelVibration());
 }
 
@@ -1053,7 +1037,7 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 
 // static
 PlatformEventObserverBase*
-RendererWebKitPlatformSupportImpl::CreatePlatformEventObserverFromType(
+RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     blink::WebPlatformEventType type) {
   RenderThread* thread = RenderThreadImpl::current();
 
@@ -1084,14 +1068,14 @@ RendererWebKitPlatformSupportImpl::CreatePlatformEventObserverFromType(
   default:
     // A default statement is required to prevent compilation errors when Blink
     // adds a new type.
-    VLOG(1) << "RendererWebKitPlatformSupportImpl::startListening() with "
+    VLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
                "unknown type.";
   }
 
   return 0;
 }
 
-void RendererWebKitPlatformSupportImpl::SetPlatformEventObserverForTesting(
+void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     blink::WebPlatformEventType type,
     scoped_ptr<PlatformEventObserverBase> observer) {
   if (platform_event_observers_.Lookup(type))
@@ -1099,7 +1083,7 @@ void RendererWebKitPlatformSupportImpl::SetPlatformEventObserverForTesting(
   platform_event_observers_.AddWithID(observer.release(), type);
 }
 
-void RendererWebKitPlatformSupportImpl::startListening(
+void RendererBlinkPlatformImpl::startListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
@@ -1124,7 +1108,7 @@ void RendererWebKitPlatformSupportImpl::startListening(
   }
 }
 
-void RendererWebKitPlatformSupportImpl::SendFakeDeviceEventDataForTesting(
+void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
     blink::WebPlatformEventType type) {
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   CHECK(observer);
@@ -1158,7 +1142,7 @@ void RendererWebKitPlatformSupportImpl::SendFakeDeviceEventDataForTesting(
                  base::Unretained(observer), data));
 }
 
-void RendererWebKitPlatformSupportImpl::stopListening(
+void RendererBlinkPlatformImpl::stopListening(
     blink::WebPlatformEventType type) {
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   if (!observer)
@@ -1168,7 +1152,7 @@ void RendererWebKitPlatformSupportImpl::stopListening(
 
 //------------------------------------------------------------------------------
 
-void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
+void RendererBlinkPlatformImpl::queryStorageUsageAndQuota(
     const blink::WebURL& storage_partition,
     blink::WebStorageQuotaType type,
     blink::WebStorageQuotaCallbacks callbacks) {
@@ -1184,7 +1168,7 @@ void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
 
 //------------------------------------------------------------------------------
 
-void RendererWebKitPlatformSupportImpl::MockBatteryStatusChangedForTesting(
+void RendererBlinkPlatformImpl::MockBatteryStatusChangedForTesting(
     const blink::WebBatteryStatus& status) {
   PlatformEventObserverBase* observer =
       platform_event_observers_.Lookup(blink::WebPlatformEventBattery);

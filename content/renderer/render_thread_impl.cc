@@ -91,7 +91,7 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/scheduler_proxy_task_runner.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
@@ -594,13 +594,13 @@ void RenderThreadImpl::Shutdown() {
   }
 
   // Wait for all databases to be closed.
-  if (webkit_platform_support_) {
+  if (blink_platform_impl_) {
     // WaitForAllDatabasesToClose might run a nested message loop. To avoid
     // processing timer events while we're already in the process of shutting
     // down blink, put a ScopePageLoadDeferrer on the stack.
     WebView::willEnterModalLoop();
-    webkit_platform_support_->web_database_observer_impl()->
-        WaitForAllDatabasesToClose();
+    blink_platform_impl_->web_database_observer_impl()
+        ->WaitForAllDatabasesToClose();
     WebView::didExitModalLoop();
   }
 
@@ -657,7 +657,7 @@ void RenderThreadImpl::Shutdown() {
 
   main_thread_compositor_task_runner_ = NULL;
 
-  if (webkit_platform_support_)
+  if (blink_platform_impl_)
     blink::shutdown();
 
   lazy_tls.Pointer()->Set(NULL);
@@ -698,7 +698,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 
   if (pumping_events) {
     if (suspend_webkit_shared_timer)
-      webkit_platform_support_->SuspendSharedTimer();
+      blink_platform_impl_->SuspendSharedTimer();
 
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
@@ -727,7 +727,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
       WebView::didExitModalLoop();
 
     if (suspend_webkit_shared_timer)
-      webkit_platform_support_->ResumeSharedTimer();
+      blink_platform_impl_->ResumeSharedTimer();
   }
 
   return rv;
@@ -834,11 +834,11 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
 }
 
 void RenderThreadImpl::EnsureWebKitInitialized() {
-  if (webkit_platform_support_)
+  if (blink_platform_impl_)
     return;
 
-  webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
-  blink::initialize(webkit_platform_support_.get());
+  blink_platform_impl_.reset(new RendererBlinkPlatformImpl);
+  blink::initialize(blink_platform_impl_.get());
   main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
@@ -1466,9 +1466,9 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   // point we already know that the browser has refreshed its list, so disable
   // refresh temporarily to prevent each renderer process causing the list to be
   // regenerated.
-  webkit_platform_support_->set_plugin_refresh_allowed(false);
+  blink_platform_impl_->set_plugin_refresh_allowed(false);
   blink::resetPluginCache(reload_pages);
-  webkit_platform_support_->set_plugin_refresh_allowed(true);
+  blink_platform_impl_->set_plugin_refresh_allowed(true);
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, PluginListChanged());
 }
@@ -1499,9 +1499,9 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
   if (suspend_webkit_shared_timer_) {
     EnsureWebKitInitialized();
     if (suspend) {
-      webkit_platform_support_->SuspendSharedTimer();
+      blink_platform_impl_->SuspendSharedTimer();
     } else {
-      webkit_platform_support_->ResumeSharedTimer();
+      blink_platform_impl_->ResumeSharedTimer();
     }
     webkit_shared_timer_suspended_ = suspend;
   }
@@ -1517,8 +1517,8 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
     bool redraw) {
   EnsureWebKitInitialized();
   static_cast<WebScrollbarBehaviorImpl*>(
-      webkit_platform_support_->scrollbarBehavior())->set_jump_on_track_click(
-          jump_on_track_click);
+      blink_platform_impl_->scrollbarBehavior())
+      ->set_jump_on_track_click(jump_on_track_click);
   blink::WebScrollbarTheme::updateScrollbars(initial_button_delay,
                                              autoscroll_button_delay,
                                              preferred_scroller_style,
@@ -1544,13 +1544,13 @@ void RenderThreadImpl::OnMemoryPressure(
   // Trigger full v8 garbage collection on critical memory notification. This
   // will potentially hang the renderer for a long time, however, when we
   // receive a memory pressure notification, we might be about to be killed.
-  if (webkit_platform_support_ && blink::mainThreadIsolate()) {
+  if (blink_platform_impl_ && blink::mainThreadIsolate()) {
     blink::mainThreadIsolate()->LowMemoryNotification();
   }
 
   if (memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL) {
-    if (webkit_platform_support_) {
+    if (blink_platform_impl_) {
       // Clear the image cache. Do not call into blink if it is not initialized.
       blink::WebImageCache::clear();
     }
@@ -1588,7 +1588,7 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
-  webkit_platform_support_->sampleGamepads(*data);
+  blink_platform_impl_->sampleGamepads(*data);
 }
 
 void RenderThreadImpl::WidgetCreated() {

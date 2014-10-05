@@ -32,7 +32,7 @@ namespace {
 // This tracks the renderer processes that received a suspend request. It's
 // important on resume to only resume the renderer processes that were actually
 // suspended as opposed to all the current renderer processes because the
-// suspend calls are refcounted within WebKitPlatformSupport and it expects a
+// suspend calls are refcounted within BlinkPlatformImpl and it expects a
 // perfectly matched number of resume calls.
 // Note that this class is only accessed from the UI thread.
 class SuspendedProcessWatcher : public content::RenderProcessHostObserver {

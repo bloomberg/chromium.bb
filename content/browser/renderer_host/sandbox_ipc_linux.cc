@@ -443,7 +443,7 @@ void SandboxIPCHandler::SendRendererReply(
 
 SandboxIPCHandler::~SandboxIPCHandler() {
   paths_.deleteAll();
-  if (webkit_platform_support_)
+  if (blink_platform_impl_)
     blink::shutdownWithoutV8();
 
   if (IGNORE_EINTR(close(lifeline_fd_)) < 0)
@@ -453,10 +453,10 @@ SandboxIPCHandler::~SandboxIPCHandler() {
 }
 
 void SandboxIPCHandler::EnsureWebKitInitialized() {
-  if (webkit_platform_support_)
+  if (blink_platform_impl_)
     return;
-  webkit_platform_support_.reset(new BlinkPlatformImpl);
-  blink::initializeWithoutV8(webkit_platform_support_.get());
+  blink_platform_impl_.reset(new BlinkPlatformImpl);
+  blink::initializeWithoutV8(blink_platform_impl_.get());
 }
 
 }  // namespace content

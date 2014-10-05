@@ -35,7 +35,7 @@ struct SyncLoadResponse;
 // now that it lives in content/.
 class CONTENT_EXPORT ResourceLoaderBridge {
  public:
-  // use WebKitPlatformSupportImpl::CreateResourceLoader() for construction, but
+  // use BlinkPlatformImpl::CreateResourceLoader() for construction, but
   // anybody can delete at any time, INCLUDING during processing of callbacks.
   virtual ~ResourceLoaderBridge();
 
@@ -78,8 +78,7 @@ class CONTENT_EXPORT ResourceLoaderBridge {
   virtual void SyncLoad(SyncLoadResponse* response) = 0;
 
  protected:
-  // Construction must go through
-  // WebKitPlatformSupportImpl::CreateResourceLoader()
+  // Construction must go through BlinkPlatformImpl::CreateResourceLoader().
   // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
   // methods may be called to construct the body of the request.
   ResourceLoaderBridge();

@@ -24,7 +24,7 @@
 #include "content/common/sandbox_util.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
-#include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
+#include "content/ppapi_plugin/ppapi_blink_platform_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -111,8 +111,8 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
   globals->set_command_line(
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
 
-  webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
-  blink::initialize(webkit_platform_support_.get());
+  blink_platform_impl_.reset(new PpapiBlinkPlatformImpl);
+  blink::initialize(blink_platform_impl_.get());
 
   if (!is_broker_) {
     channel()->AddFilter(
@@ -130,7 +130,7 @@ void PpapiThread::Shutdown() {
   ppapi::proxy::PluginGlobals::Get()->ResetPluginProxyDelegate();
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();
-  webkit_platform_support_->Shutdown();
+  blink_platform_impl_->Shutdown();
   blink::shutdown();
 }
 

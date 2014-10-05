@@ -31,7 +31,7 @@ class WebURLLoaderMockFactory {
   WebURLLoaderMockFactory();
   virtual ~WebURLLoaderMockFactory();
 
-  // Called by TestWebKitPlatformSupport to create a WebURLLoader.
+  // Called by TestBlinkWebUnitTestSupport to create a WebURLLoader.
   // Non-mocked request are forwarded to |default_loader| which should not be
   // NULL.
   virtual blink::WebURLLoader* CreateURLLoader(

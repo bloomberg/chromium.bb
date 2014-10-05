@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_webkit_platform_support.h"
+#include "content/test/test_blink_web_unit_test_support.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -40,7 +40,7 @@
 
 namespace content {
 
-TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
+TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
@@ -105,7 +105,7 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
 }
 
-TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
+TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   url_loader_factory_.reset();
   mock_clipboard_.reset();
   blink::shutdown();
@@ -113,40 +113,40 @@ TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
   stats_table_.reset();
 }
 
-blink::WebBlobRegistry* TestWebKitPlatformSupport::blobRegistry() {
+blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::blobRegistry() {
   return &blob_registry_;
 }
 
-blink::WebClipboard* TestWebKitPlatformSupport::clipboard() {
+blink::WebClipboard* TestBlinkWebUnitTestSupport::clipboard() {
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
   return mock_clipboard_.get();
 }
 
-blink::WebFileUtilities* TestWebKitPlatformSupport::fileUtilities() {
+blink::WebFileUtilities* TestBlinkWebUnitTestSupport::fileUtilities() {
   return &file_utilities_;
 }
 
-blink::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
+blink::WebIDBFactory* TestBlinkWebUnitTestSupport::idbFactory() {
   NOTREACHED() <<
       "IndexedDB cannot be tested with in-process harnesses.";
   return NULL;
 }
 
-blink::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
+blink::WebMimeRegistry* TestBlinkWebUnitTestSupport::mimeRegistry() {
   return &mime_registry_;
 }
 
-blink::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
+blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
   return url_loader_factory_->CreateURLLoader(
       BlinkPlatformImpl::createURLLoader());
 }
 
-blink::WebString TestWebKitPlatformSupport::userAgent() {
+blink::WebString TestBlinkWebUnitTestSupport::userAgent() {
   return blink::WebString::fromUTF8("DumpRenderTree/0.0.0.0");
 }
 
-blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
+blink::WebData TestBlinkWebUnitTestSupport::loadResource(const char* name) {
   if (!strcmp(name, "deleteButton")) {
     // Create a red 30x30 square.
     const char red_square[] =
@@ -166,7 +166,7 @@ blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
   return BlinkPlatformImpl::loadResource(name);
 }
 
-blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
+blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
     blink::WebLocalizedString::Name name) {
   // Returns placeholder strings to check if they are correctly localized.
   switch (name) {
@@ -193,7 +193,7 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
   }
 }
 
-blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
+blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
     blink::WebLocalizedString::Name name,
     const blink::WebString& value) {
   if (name == blink::WebLocalizedString::ValidationRangeUnderflow)
@@ -205,7 +205,7 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
   return BlinkPlatformImpl::queryLocalizedString(name, value);
 }
 
-blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
+blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
     blink::WebLocalizedString::Name name,
     const blink::WebString& value1,
     const blink::WebString& value2) {
@@ -216,25 +216,26 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
   return BlinkPlatformImpl::queryLocalizedString(name, value1, value2);
 }
 
-blink::WebString TestWebKitPlatformSupport::defaultLocale() {
+blink::WebString TestBlinkWebUnitTestSupport::defaultLocale() {
   return base::ASCIIToUTF16("en-US");
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-void TestWebKitPlatformSupport::SetThemeEngine(blink::WebThemeEngine* engine) {
+void TestBlinkWebUnitTestSupport::SetThemeEngine(
+    blink::WebThemeEngine* engine) {
   active_theme_engine_ = engine ? engine : BlinkPlatformImpl::themeEngine();
 }
 
-blink::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
+blink::WebThemeEngine* TestBlinkWebUnitTestSupport::themeEngine() {
   return active_theme_engine_;
 }
 #endif
 
-blink::WebCompositorSupport* TestWebKitPlatformSupport::compositorSupport() {
+blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::compositorSupport() {
   return &compositor_support_;
 }
 
-blink::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
+blink::WebGestureCurve* TestBlinkWebUnitTestSupport::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
@@ -242,37 +243,38 @@ blink::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
   return new WebGestureCurveMock(velocity, cumulative_scroll);
 }
 
-blink::WebUnitTestSupport* TestWebKitPlatformSupport::unitTestSupport() {
+blink::WebUnitTestSupport* TestBlinkWebUnitTestSupport::unitTestSupport() {
   return this;
 }
 
-void TestWebKitPlatformSupport::registerMockedURL(
+void TestBlinkWebUnitTestSupport::registerMockedURL(
     const blink::WebURL& url,
     const blink::WebURLResponse& response,
     const blink::WebString& file_path) {
   url_loader_factory_->RegisterURL(url, response, file_path);
 }
 
-void TestWebKitPlatformSupport::registerMockedErrorURL(
+void TestBlinkWebUnitTestSupport::registerMockedErrorURL(
     const blink::WebURL& url,
     const blink::WebURLResponse& response,
     const blink::WebURLError& error) {
   url_loader_factory_->RegisterErrorURL(url, response, error);
 }
 
-void TestWebKitPlatformSupport::unregisterMockedURL(const blink::WebURL& url) {
+void TestBlinkWebUnitTestSupport::unregisterMockedURL(
+    const blink::WebURL& url) {
   url_loader_factory_->UnregisterURL(url);
 }
 
-void TestWebKitPlatformSupport::unregisterAllMockedURLs() {
+void TestBlinkWebUnitTestSupport::unregisterAllMockedURLs() {
   url_loader_factory_->UnregisterAllURLs();
 }
 
-void TestWebKitPlatformSupport::serveAsynchronousMockedRequests() {
+void TestBlinkWebUnitTestSupport::serveAsynchronousMockedRequests() {
   url_loader_factory_->ServeAsynchronousRequests();
 }
 
-blink::WebString TestWebKitPlatformSupport::webKitRootDir() {
+blink::WebString TestBlinkWebUnitTestSupport::webKitRootDir() {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
@@ -284,7 +286,7 @@ blink::WebString TestWebKitPlatformSupport::webKitRootDir() {
 }
 
 blink::WebLayerTreeView*
-TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
+TestBlinkWebUnitTestSupport::createLayerTreeViewForTesting() {
   scoped_ptr<WebLayerTreeViewImplForTesting> view(
       new WebLayerTreeViewImplForTesting());
 
@@ -292,7 +294,7 @@ TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
   return view.release();
 }
 
-blink::WebData TestWebKitPlatformSupport::readFromFile(
+blink::WebData TestBlinkWebUnitTestSupport::readFromFile(
     const blink::WebString& path) {
   base::FilePath file_path = base::FilePath::FromUTF16Unsafe(path);
 

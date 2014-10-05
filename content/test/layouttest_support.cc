@@ -17,7 +17,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/renderer/test_runner/test_common.h"
 #include "content/shell/renderer/test_runner/web_frame_test_proxy.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
@@ -109,28 +109,29 @@ void FetchManifest(blink::WebView* view, const GURL& url,
 }
 
 void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider) {
-  RenderThreadImpl::current()->webkit_platform_support()->
-      SetPlatformEventObserverForTesting(
+  RenderThreadImpl::current()
+      ->blink_platform_impl()
+      ->SetPlatformEventObserverForTesting(
           blink::WebPlatformEventGamepad,
           provider.PassAs<PlatformEventObserverBase>());
 }
 
 void SetMockDeviceLightData(const double data) {
-  RendererWebKitPlatformSupportImpl::SetMockDeviceLightDataForTesting(data);
+  RendererBlinkPlatformImpl::SetMockDeviceLightDataForTesting(data);
 }
 
 void SetMockDeviceMotionData(const WebDeviceMotionData& data) {
-  RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(data);
+  RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(data);
 }
 
 void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
-  RendererWebKitPlatformSupportImpl::
-      SetMockDeviceOrientationDataForTesting(data);
+  RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(data);
 }
 
 void MockBatteryStatusChanged(const WebBatteryStatus& status) {
-  RenderThreadImpl::current()->webkit_platform_support()->
-    MockBatteryStatusChangedForTesting(status);
+  RenderThreadImpl::current()
+      ->blink_platform_impl()
+      ->MockBatteryStatusChangedForTesting(status);
 }
 
 void EnableRendererLayoutTestMode() {

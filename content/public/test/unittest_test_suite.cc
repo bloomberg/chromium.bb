@@ -8,7 +8,7 @@
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
 #if !defined(OS_IOS)
-#include "content/test/test_webkit_platform_support.h"
+#include "content/test/test_blink_web_unit_test_support.h"
 #endif
 #include "third_party/WebKit/public/web/WebKit.h"
 
@@ -18,13 +18,13 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
   DCHECK(test_suite);
 #if !defined(OS_IOS)
-  platform_support_.reset(new TestWebKitPlatformSupport);
+  blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
 #endif
 }
 
 UnitTestTestSuite::~UnitTestTestSuite() {
 #if !defined(OS_IOS)
-  platform_support_.reset();
+  blink_test_support_.reset();
 #endif
 }
 

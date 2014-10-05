@@ -38,7 +38,7 @@ struct ChannelHandle;
 
 namespace content {
 
-class PpapiWebKitPlatformSupportImpl;
+class PpapiBlinkPlatformImpl;
 
 class PpapiThread : public ChildThread,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
@@ -149,8 +149,8 @@ class PpapiThread : public ChildThread,
   std::map<uint32, ppapi::proxy::PluginDispatcher*> plugin_dispatchers_;
   uint32 next_plugin_dispatcher_id_;
 
-  // The WebKitPlatformSupport implementation.
-  scoped_ptr<PpapiWebKitPlatformSupportImpl> webkit_platform_support_;
+  // The BlinkPlatformImpl implementation.
+  scoped_ptr<PpapiBlinkPlatformImpl> blink_platform_impl_;
 
 #if defined(OS_WIN)
   // Caches the handle to the peer process if this is a broker.

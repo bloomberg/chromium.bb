@@ -14,7 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/test_content_client_initializer.h"
-#include "content/test/test_webkit_platform_support.h"
+#include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -63,21 +63,21 @@ class TestEnvironment {
   TestEnvironment() {
     main_message_loop_.reset(new MessageLoopType);
 
-    // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
-    webkit_platform_support_.reset(new TestWebKitPlatformSupport);
+    // TestBlinkWebUnitTestSupport must be instantiated after MessageLoopType.
+    blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
     content_initializer_.reset(new content::TestContentClientInitializer());
   }
 
   ~TestEnvironment() {
   }
 
-  TestWebKitPlatformSupport* webkit_platform_support() const {
-    return webkit_platform_support_.get();
+  TestBlinkWebUnitTestSupport* blink_platform_impl() const {
+    return blink_test_support_.get();
   }
 
  private:
   scoped_ptr<MessageLoopType> main_message_loop_;
-  scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
+  scoped_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
   scoped_ptr<TestContentClientInitializer> content_initializer_;
 };
 

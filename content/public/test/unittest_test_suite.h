@@ -13,7 +13,7 @@ class TestSuite;
 }
 
 namespace content {
-class TestWebKitPlatformSupport;
+class TestBlinkWebUnitTestSupport;
 
 // A special test suite that also initializes WebKit once for all unittests.
 // This is useful for two reasons:
@@ -32,7 +32,7 @@ class UnitTestTestSuite {
   scoped_ptr<base::TestSuite> test_suite_;
 
 #if !defined(OS_IOS)
-  scoped_ptr<TestWebKitPlatformSupport> platform_support_;
+  scoped_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);

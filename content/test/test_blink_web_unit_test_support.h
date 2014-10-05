@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_
-#define CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_
+#ifndef CONTENT_TEST_TEST_BLINK_WEB_UNIT_TEST_SUPPORT_H_
+#define CONTENT_TEST_TEST_BLINK_WEB_UNIT_TEST_SUPPORT_H_
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -26,13 +26,13 @@ class WebLayerTreeView;
 
 namespace content {
 
-// An implementation of WebKitPlatformSupport for tests.
-class TestWebKitPlatformSupport
-    : public blink::WebUnitTestSupport,
-      public BlinkPlatformImpl {
+// An implementation of blink::WebUnitTestSupport and BlinkPlatformImpl for
+// tests.
+class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
+                                    public BlinkPlatformImpl {
  public:
-  TestWebKitPlatformSupport();
-  virtual ~TestWebKitPlatformSupport();
+  TestBlinkWebUnitTestSupport();
+  virtual ~TestBlinkWebUnitTestSupport();
 
   virtual blink::WebBlobRegistry* blobRegistry();
   virtual blink::WebClipboard* clipboard();
@@ -103,9 +103,9 @@ class TestWebKitPlatformSupport
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(TestWebKitPlatformSupport);
+  DISALLOW_COPY_AND_ASSIGN(TestBlinkWebUnitTestSupport);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_
+#endif  // CONTENT_TEST_TEST_BLINK_WEB_UNIT_TEST_SUPPORT_H_

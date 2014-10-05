@@ -12,8 +12,9 @@ class SyncMessageFilter;
 }
 
 namespace content {
-// A class of utility functions used by RendererWebKitPlatformSupportImpl and
-// WorkerWebKitPlatformSupportImpl to handle database file accesses.
+
+// A class of utility functions used by RendererBlinkPlatformImpl to handle
+// database file accesses.
 class DatabaseUtil {
  public:
   static blink::Platform::FileHandle DatabaseOpenFile(

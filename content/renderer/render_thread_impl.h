@@ -95,9 +95,9 @@ class MidiMessageFilter;
 class NetInfoDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionTracker;
-class RendererDemuxerAndroid;
-class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
+class RendererBlinkPlatformImpl;
+class RendererDemuxerAndroid;
 class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
@@ -194,9 +194,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     layout_test_mode_ = layout_test_mode;
   }
 
-  RendererWebKitPlatformSupportImpl* webkit_platform_support() const {
-    DCHECK(webkit_platform_support_);
-    return webkit_platform_support_.get();
+  RendererBlinkPlatformImpl* blink_platform_impl() const {
+    DCHECK(blink_platform_impl_);
+    return blink_platform_impl_.get();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -458,7 +458,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
-  scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   scoped_ptr<EmbeddedWorkerDispatcher> embedded_worker_dispatcher_;
 
   // Used on the render thread and deleted by WebKit at shutdown.

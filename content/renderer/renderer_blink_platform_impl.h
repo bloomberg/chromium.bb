@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
-#define CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
+#ifndef CONTENT_RENDERER_RENDERER_BLINK_PLATFORM_IMPL_H_
+#define CONTENT_RENDERER_RENDERER_BLINK_PLATFORM_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
@@ -49,11 +49,10 @@ class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
 
-class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
-    : public BlinkPlatformImpl {
+class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  RendererWebKitPlatformSupportImpl();
-  virtual ~RendererWebKitPlatformSupportImpl();
+  RendererBlinkPlatformImpl();
+  virtual ~RendererBlinkPlatformImpl();
 
   void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
     plugin_refresh_allowed_ = plugin_refresh_allowed;
@@ -240,9 +239,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererWebKitPlatformSupportImpl);
+  DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
+#endif  // CONTENT_RENDERER_RENDERER_BLINK_PLATFORM_IMPL_H_

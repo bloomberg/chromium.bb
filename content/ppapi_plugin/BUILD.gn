@@ -10,12 +10,12 @@ source_set("ppapi_plugin") {
     "broker_process_dispatcher.h",
     "plugin_process_dispatcher.cc",
     "plugin_process_dispatcher.h",
+    "ppapi_blink_platform_impl.cc",
+    "ppapi_blink_platform_impl.h",
     "ppapi_broker_main.cc",
     "ppapi_plugin_main.cc",
     "ppapi_thread.cc",
     "ppapi_thread.h",
-    "ppapi_webkitplatformsupport_impl.cc",
-    "ppapi_webkitplatformsupport_impl.h",
   ]
 
   configs += [ "//content:content_implementation" ]

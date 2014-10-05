@@ -94,8 +94,8 @@ void UtilityThreadImpl::Init() {
     // we run the utility thread on separate thread. This means that if any code
     // needs WebKit initialized in the utility process, they need to have
     // another path to support single process mode.
-    webkit_platform_support_.reset(new BlinkPlatformImpl);
-    blink::initialize(webkit_platform_support_.get());
+    blink_platform_impl_.reset(new BlinkPlatformImpl);
+    blink::initialize(blink_platform_impl_.get());
   }
   GetContentClient()->utility()->UtilityThreadStarted();
 }

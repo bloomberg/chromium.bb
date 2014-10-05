@@ -14,7 +14,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
-#include "content/test/test_webkit_platform_support.h"
+#include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"

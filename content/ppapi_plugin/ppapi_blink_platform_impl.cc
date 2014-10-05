@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
+#include "content/ppapi_plugin/ppapi_blink_platform_impl.h"
 
 #include <map>
 
@@ -38,16 +38,14 @@ typedef struct CGFont* CGFontRef;
 
 namespace content {
 
-class PpapiWebKitPlatformSupportImpl::SandboxSupport
-    : public WebSandboxSupport {
+class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
 
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
-  virtual bool loadFont(
-      NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
+  virtual bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
 #elif defined(OS_ANDROID)
   // Empty class.
 #elif defined(OS_POSIX)
@@ -56,8 +54,9 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
       WebUChar32 character,
       const char* preferred_locale,
       blink::WebFallbackFont* fallbackFont);
-  virtual void getRenderStyleForStrike(
-      const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out);
+  virtual void getRenderStyleForStrike(const char* family,
+                                       int sizeAndStyle,
+                                       blink::WebFontRenderStyle* out);
 
  private:
   // WebKit likes to ask us for the correct font family to use for a set of
@@ -71,8 +70,7 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
 
 #if defined(OS_WIN)
 
-bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
-    HFONT font) {
+bool PpapiBlinkPlatformImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
 
@@ -84,12 +82,11 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
 
 #elif defined(OS_MACOSX)
 
-bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
-    NSFont* src_font,
-    CGFontRef* out,
-    uint32_t* font_id) {
+bool PpapiBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
+                                                      CGFontRef* out,
+                                                      uint32_t* font_id) {
   // TODO(brettw) this should do the something similar to what
-  // RendererWebKitClientImpl does and request that the browser load the font.
+  // RendererBlinkPlatformImpl does and request that the browser load the font.
   // Note: need to unlock the proxy lock like ensureFontLoaded does.
   NOTIMPLEMENTED();
   return false;
@@ -101,12 +98,11 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 #elif defined(OS_POSIX)
 
-PpapiWebKitPlatformSupportImpl::SandboxSupport::SandboxSupport()
+PpapiBlinkPlatformImpl::SandboxSupport::SandboxSupport()
     : creation_thread_(base::PlatformThread::CurrentId()) {
 }
 
-void
-PpapiWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
+void PpapiBlinkPlatformImpl::SandboxSupport::getFallbackFontForCharacter(
     WebUChar32 character,
     const char* preferred_locale,
     blink::WebFallbackFont* fallbackFont) {
@@ -129,64 +125,65 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
   unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
-void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
-    const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out) {
+void PpapiBlinkPlatformImpl::SandboxSupport::getRenderStyleForStrike(
+    const char* family,
+    int sizeAndStyle,
+    blink::WebFontRenderStyle* out) {
   GetRenderStyleForStrike(family, sizeAndStyle, out);
 }
 
 #endif
 
-PpapiWebKitPlatformSupportImpl::PpapiWebKitPlatformSupportImpl()
-    : sandbox_support_(new PpapiWebKitPlatformSupportImpl::SandboxSupport()) {
+PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl()
+    : sandbox_support_(new PpapiBlinkPlatformImpl::SandboxSupport()) {
 }
 
-PpapiWebKitPlatformSupportImpl::~PpapiWebKitPlatformSupportImpl() {
+PpapiBlinkPlatformImpl::~PpapiBlinkPlatformImpl() {
 }
 
-void PpapiWebKitPlatformSupportImpl::Shutdown() {
+void PpapiBlinkPlatformImpl::Shutdown() {
   // SandboxSupport contains a map of WebFontFamily objects, which hold
   // WebCStrings, which become invalidated when blink is shut down. Hence, we
   // need to clear that map now, just before blink::shutdown() is called.
   sandbox_support_.reset();
 }
 
-blink::WebClipboard* PpapiWebKitPlatformSupportImpl::clipboard() {
+blink::WebClipboard* PpapiBlinkPlatformImpl::clipboard() {
   NOTREACHED();
   return NULL;
 }
 
-blink::WebMimeRegistry* PpapiWebKitPlatformSupportImpl::mimeRegistry() {
+blink::WebMimeRegistry* PpapiBlinkPlatformImpl::mimeRegistry() {
   NOTREACHED();
   return NULL;
 }
 
-blink::WebFileUtilities* PpapiWebKitPlatformSupportImpl::fileUtilities() {
+blink::WebFileUtilities* PpapiBlinkPlatformImpl::fileUtilities() {
   NOTREACHED();
   return NULL;
 }
 
-blink::WebSandboxSupport* PpapiWebKitPlatformSupportImpl::sandboxSupport() {
+blink::WebSandboxSupport* PpapiBlinkPlatformImpl::sandboxSupport() {
   return sandbox_support_.get();
 }
 
-bool PpapiWebKitPlatformSupportImpl::sandboxEnabled() {
+bool PpapiBlinkPlatformImpl::sandboxEnabled() {
   return true;  // Assume PPAPI is always sandboxed.
 }
 
-unsigned long long PpapiWebKitPlatformSupportImpl::visitedLinkHash(
+unsigned long long PpapiBlinkPlatformImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
   NOTREACHED();
   return 0;
 }
 
-bool PpapiWebKitPlatformSupportImpl::isLinkVisited(
-    unsigned long long link_hash) {
+bool PpapiBlinkPlatformImpl::isLinkVisited(unsigned long long link_hash) {
   NOTREACHED();
   return false;
 }
 
-void PpapiWebKitPlatformSupportImpl::createMessageChannel(
+void PpapiBlinkPlatformImpl::createMessageChannel(
     blink::WebMessagePortChannel** channel1,
     blink::WebMessagePortChannel** channel2) {
   NOTREACHED();
@@ -194,66 +191,71 @@ void PpapiWebKitPlatformSupportImpl::createMessageChannel(
   *channel2 = NULL;
 }
 
-void PpapiWebKitPlatformSupportImpl::setCookies(
+void PpapiBlinkPlatformImpl::setCookies(
     const blink::WebURL& url,
     const blink::WebURL& first_party_for_cookies,
     const blink::WebString& value) {
   NOTREACHED();
 }
 
-blink::WebString PpapiWebKitPlatformSupportImpl::cookies(
+blink::WebString PpapiBlinkPlatformImpl::cookies(
     const blink::WebURL& url,
     const blink::WebURL& first_party_for_cookies) {
   NOTREACHED();
   return blink::WebString();
 }
 
-blink::WebString PpapiWebKitPlatformSupportImpl::defaultLocale() {
+blink::WebString PpapiBlinkPlatformImpl::defaultLocale() {
   NOTREACHED();
   return blink::WebString();
 }
 
-blink::WebThemeEngine* PpapiWebKitPlatformSupportImpl::themeEngine() {
+blink::WebThemeEngine* PpapiBlinkPlatformImpl::themeEngine() {
   NOTREACHED();
   return NULL;
 }
 
-blink::WebURLLoader* PpapiWebKitPlatformSupportImpl::createURLLoader() {
+blink::WebURLLoader* PpapiBlinkPlatformImpl::createURLLoader() {
   NOTREACHED();
   return NULL;
 }
 
 blink::WebSocketStreamHandle*
-    PpapiWebKitPlatformSupportImpl::createSocketStreamHandle() {
+PpapiBlinkPlatformImpl::createSocketStreamHandle() {
   NOTREACHED();
   return NULL;
 }
 
-void PpapiWebKitPlatformSupportImpl::getPluginList(bool refresh,
+void PpapiBlinkPlatformImpl::getPluginList(
+    bool refresh,
     blink::WebPluginListBuilder* builder) {
   NOTREACHED();
 }
 
-blink::WebData PpapiWebKitPlatformSupportImpl::loadResource(const char* name) {
+blink::WebData PpapiBlinkPlatformImpl::loadResource(const char* name) {
   NOTREACHED();
   return blink::WebData();
 }
 
 blink::WebStorageNamespace*
-PpapiWebKitPlatformSupportImpl::createLocalStorageNamespace() {
+PpapiBlinkPlatformImpl::createLocalStorageNamespace() {
   NOTREACHED();
   return 0;
 }
 
-void PpapiWebKitPlatformSupportImpl::dispatchStorageEvent(
-    const blink::WebString& key, const blink::WebString& old_value,
-    const blink::WebString& new_value, const blink::WebString& origin,
-    const blink::WebURL& url, bool is_local_storage) {
+void PpapiBlinkPlatformImpl::dispatchStorageEvent(
+    const blink::WebString& key,
+    const blink::WebString& old_value,
+    const blink::WebString& new_value,
+    const blink::WebString& origin,
+    const blink::WebURL& url,
+    bool is_local_storage) {
   NOTREACHED();
 }
 
-int PpapiWebKitPlatformSupportImpl::databaseDeleteFile(
-    const blink::WebString& vfs_file_name, bool sync_dir) {
+int PpapiBlinkPlatformImpl::databaseDeleteFile(
+    const blink::WebString& vfs_file_name,
+    bool sync_dir) {
   NOTREACHED();
   return 0;
 }

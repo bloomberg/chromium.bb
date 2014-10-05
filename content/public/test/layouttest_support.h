@@ -58,15 +58,15 @@ void FetchManifest(blink::WebView* view, const GURL& url,
 void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider);
 
 // Sets a double that should be used when registering
-// a listener through WebKitPlatformSupport::setDeviceLightListener().
+// a listener through BlinkPlatformImpl::setDeviceLightListener().
 void SetMockDeviceLightData(const double data);
 
 // Sets WebDeviceMotionData that should be used when registering
-// a listener through WebKitPlatformSupport::setDeviceMotionListener().
+// a listener through BlinkPlatformImpl::setDeviceMotionListener().
 void SetMockDeviceMotionData(const blink::WebDeviceMotionData& data);
 
 // Sets WebDeviceOrientationData that should be used when registering
-// a listener through WebKitPlatformSupport::setDeviceOrientationListener().
+// a listener through BlinkPlatformImpl::setDeviceOrientationListener().
 void SetMockDeviceOrientationData(const blink::WebDeviceOrientationData& data);
 
 // Notifies blink that battery status has changed.

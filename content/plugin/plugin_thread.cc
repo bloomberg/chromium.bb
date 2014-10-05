@@ -93,9 +93,9 @@ PluginThread::PluginThread()
 
   channel()->AddFilter(new EnsureTerminateMessageFilter());
 
-  // This is needed because we call some code which uses WebKit strings.
-  webkit_platform_support_.reset(new BlinkPlatformImpl);
-  blink::initialize(webkit_platform_support_.get());
+  // This is needed because we call some code which uses Blink strings.
+  blink_platform_impl_.reset(new BlinkPlatformImpl);
+  blink::initialize(blink_platform_impl_.get());
 }
 
 PluginThread::~PluginThread() {
