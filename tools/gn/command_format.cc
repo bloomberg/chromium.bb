@@ -26,7 +26,7 @@ const char kFormat[] = "format";
 const char kFormat_HelpShort[] =
     "format: Format .gn file. (ALPHA, WILL DESTROY DATA!)";
 const char kFormat_Help[] =
-    "gn format [--dump-tree] [--in-place] BUILD.gn\n"
+    "gn format [--dump-tree] [--in-place] [--stdin] BUILD.gn\n"
     "\n"
     "  Formats .gn file to a standard format. THIS IS NOT FULLY IMPLEMENTED\n"
     "  YET! IT WILL EAT YOUR BEAUTIFUL .GN FILES. AND YOUR LAUNDRY.\n"
@@ -55,6 +55,17 @@ namespace {
 
 const int kIndentSize = 2;
 const int kMaximumWidth = 80;
+
+enum Precedence {
+  kPrecedenceLowest,
+  kPrecedenceAssign,
+  kPrecedenceOr,
+  kPrecedenceAnd,
+  kPrecedenceCompare,
+  kPrecedenceAdd,
+  kPrecedenceSuffix,
+  kPrecedenceUnary,
+};
 
 class Printer {
  public:
@@ -104,13 +115,20 @@ class Printer {
   // Get the 0-based x position on the current line.
   int CurrentColumn();
 
+  // Adds an opening ( if prec is less than the outers (to maintain evalution
+  // order for a subexpression). If an opening paren is emitted, *parenthesized
+  // will be set so it can be closed at the end of the expression.
+  void AddParen(int prec, int outer_prec, bool* parenthesized);
+
   // Print the expression to the output buffer. Returns the type of element
-  // added to the output.
-  ExprStyle Expr(const ParseNode* root);
+  // added to the output. The value of outer_prec gives the precedence of the
+  // operator outside this Expr. If that operator binds tighter than root's,
+  // Expr must introduce parentheses.
+  ExprStyle Expr(const ParseNode* root, int outer_prec);
 
   // Use a sub-Printer recursively to figure out the size that an expression
   // would be before actually adding it to the output.
-  Metrics GetLengthOfExpr(const ParseNode* expr);
+  Metrics GetLengthOfExpr(const ParseNode* expr, int outer_prec);
 
   // Format a list of values using the given style.
   // |end| holds any trailing comments to be printed just before the closing
@@ -126,11 +144,28 @@ class Printer {
   std::vector<Token> comments_;  // Pending end-of-line comments.
   int margin_;                   // Left margin (number of spaces).
 
+  // Gives the precedence for operators in a BinaryOpNode.
+  std::map<base::StringPiece, Precedence> precedence_;
+
   DISALLOW_COPY_AND_ASSIGN(Printer);
 };
 
 Printer::Printer() : margin_(0) {
   output_.reserve(100 << 10);
+  precedence_["="] = kPrecedenceAssign;
+  precedence_["+="] = kPrecedenceAssign;
+  precedence_["-="] = kPrecedenceAssign;
+  precedence_["||"] = kPrecedenceOr;
+  precedence_["&&"] = kPrecedenceAnd;
+  precedence_["<"] = kPrecedenceCompare;
+  precedence_[">"] = kPrecedenceCompare;
+  precedence_["=="] = kPrecedenceCompare;
+  precedence_["!="] = kPrecedenceCompare;
+  precedence_["<="] = kPrecedenceCompare;
+  precedence_[">="] = kPrecedenceCompare;
+  precedence_["+"] = kPrecedenceAdd;
+  precedence_["-"] = kPrecedenceAdd;
+  precedence_["!"] = kPrecedenceUnary;
 }
 
 Printer::~Printer() {
@@ -212,7 +247,7 @@ void Printer::Block(const ParseNode* root) {
 
   size_t i = 0;
   for (const auto& stmt : block->statements()) {
-    Expr(stmt);
+    Expr(stmt, kPrecedenceLowest);
     Newline();
     if (stmt->comments()) {
       // Why are before() not printed here too? before() are handled inside
@@ -238,10 +273,11 @@ void Printer::Block(const ParseNode* root) {
   }
 }
 
-Printer::Metrics Printer::GetLengthOfExpr(const ParseNode* expr) {
+Printer::Metrics Printer::GetLengthOfExpr(const ParseNode* expr,
+                                          int outer_prec) {
   Metrics result;
   Printer sub;
-  sub.Expr(expr);
+  sub.Expr(expr, outer_prec);
   std::vector<std::string> lines;
   base::SplitStringDontTrim(sub.String(), '\n', &lines);
   result.multiline = lines.size() > 1;
@@ -250,7 +286,14 @@ Printer::Metrics Printer::GetLengthOfExpr(const ParseNode* expr) {
   return result;
 }
 
-Printer::ExprStyle Printer::Expr(const ParseNode* root) {
+void Printer::AddParen(int prec, int outer_prec, bool* parenthesized) {
+  if (prec < outer_prec) {
+    Print("(");
+    *parenthesized = true;
+  }
+}
+
+Printer::ExprStyle Printer::Expr(const ParseNode* root, int outer_prec) {
   ExprStyle result = kExprStyleRegular;
   if (root->comments()) {
     if (!root->comments()->before().empty()) {
@@ -267,49 +310,53 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
     }
   }
 
+  bool parenthesized = false;
+
   if (const AccessorNode* accessor = root->AsAccessor()) {
+    AddParen(kPrecedenceSuffix, outer_prec, &parenthesized);
     Print(accessor->base().value());
     if (accessor->member()) {
       Print(".");
-      Expr(accessor->member());
+      Expr(accessor->member(), kPrecedenceLowest);
     } else {
       CHECK(accessor->index());
       Print("[");
-      Expr(accessor->index());
+      Expr(accessor->index(), kPrecedenceLowest);
       Print("]");
     }
   } else if (const BinaryOpNode* binop = root->AsBinaryOp()) {
-    // TODO(scottmg): Lots to do here for complex if expressions: reflowing,
-    // parenthesizing, etc.
-    Metrics left = GetLengthOfExpr(binop->left());
-    Metrics right = GetLengthOfExpr(binop->right());
+    CHECK(precedence_.find(binop->op().value()) != precedence_.end());
+    Precedence prec = precedence_[binop->op().value()];
+    AddParen(prec, outer_prec, &parenthesized);
+    Metrics left = GetLengthOfExpr(binop->left(), prec);
+    Metrics right = GetLengthOfExpr(binop->right(), prec + 1);
     int total_width = left.length +
                       static_cast<int>(binop->op().value().size()) + 2 +
                       right.length;
     if (CurrentColumn() + total_width < kMaximumWidth ||
         binop->right()->AsList()) {
       // If it just fits normally, put it here.
-      Expr(binop->left());
+      Expr(binop->left(), prec);
       Print(" ");
       Print(binop->op().value());
       Print(" ");
-      Expr(binop->right());
+      Expr(binop->right(), prec + 1);
     } else {
       // Otherwise, put first argument and op, and indent next.
-      Expr(binop->left());
+      Expr(binop->left(), prec);
       Print(" ");
       Print(binop->op().value());
       int old_margin = margin_;
       margin_ += kIndentSize * 2;
       Newline();
-      Expr(binop->right());
+      Expr(binop->right(), prec + 1);
       margin_ = old_margin;
     }
   } else if (const BlockNode* block = root->AsBlock()) {
     Sequence(kSequenceStyleBracedBlock, block->statements(), block->End());
   } else if (const ConditionNode* condition = root->AsConditionNode()) {
     Print("if (");
-    Expr(condition->condition());
+    Expr(condition->condition(), kPrecedenceLowest);
     Print(") ");
     Sequence(kSequenceStyleBracedBlock,
              condition->if_true()->statements(),
@@ -320,7 +367,7 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
       // ConditionNode::Execute.
       bool is_else_if = condition->if_false()->AsBlock() == NULL;
       if (is_else_if) {
-        Expr(condition->if_false());
+        Expr(condition->if_false(), kPrecedenceLowest);
       } else {
         Sequence(kSequenceStyleBracedBlock,
                  condition->if_false()->AsBlock()->statements(),
@@ -338,7 +385,7 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
     Print(literal->value().value());
   } else if (const UnaryOpNode* unaryop = root->AsUnaryOp()) {
     Print(unaryop->op().value());
-    Expr(unaryop->operand());
+    Expr(unaryop->operand(), kPrecedenceUnary);
   } else if (const BlockCommentNode* block_comment = root->AsBlockComment()) {
     Print(block_comment->comment().value());
     result = kExprStyleComment;
@@ -347,6 +394,9 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root) {
   } else {
     CHECK(false) << "Unhandled case in Expr.";
   }
+
+  if (parenthesized)
+    Print(")");
 
   // Defer any end of line comment until we reach the newline.
   if (root->comments() && !root->comments()->suffix().empty()) {
@@ -384,7 +434,7 @@ void Printer::Sequence(SequenceStyle style,
     // No elements, and not forcing newlines, print nothing.
   } else if (list.size() == 1 && !force_multiline) {
     Print(" ");
-    Expr(list[0]);
+    Expr(list[0], kPrecedenceLowest);
     CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
     Print(" ");
   } else {
@@ -401,7 +451,7 @@ void Printer::Sequence(SequenceStyle style,
           !HaveBlankLine()) {
         Newline();
       }
-      ExprStyle expr_style = Expr(x);
+      ExprStyle expr_style = Expr(x, kPrecedenceLowest);
       CHECK(!x->comments() || x->comments()->after().empty());
       if (i < list.size() - 1 || style == kSequenceStyleList) {
         if (style == kSequenceStyleList && expr_style == kExprStyleRegular) {
@@ -464,7 +514,7 @@ void Printer::FunctionCall(const FunctionCallNode* func_call) {
   if (have_block)
     terminator += " {";
   for (size_t i = 0; i < list.size(); ++i) {
-    Metrics sub = GetLengthOfExpr(list[i]);
+    Metrics sub = GetLengthOfExpr(list[i], kPrecedenceLowest);
     if (sub.multiline)
       fits_on_current_line = false;
     natural_lengths.push_back(sub.length);
@@ -485,14 +535,14 @@ void Printer::FunctionCall(const FunctionCallNode* func_call) {
   if (list.size() == 0 && !force_multiline) {
     // No elements, and not forcing newlines, print nothing.
   } else if (list.size() == 1 && !force_multiline && fits_on_current_line) {
-    Expr(list[0]);
+    Expr(list[0], kPrecedenceLowest);
     CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
   } else {
     // Function calls get to be single line even with multiple arguments, if
     // they fit inside the maximum width.
     if (!force_multiline && fits_on_current_line) {
       for (size_t i = 0; i < list.size(); ++i) {
-        Expr(list[i]);
+        Expr(list[i], kPrecedenceLowest);
         if (i < list.size() - 1)
           Print(", ");
       }
@@ -513,7 +563,7 @@ void Printer::FunctionCall(const FunctionCallNode* func_call) {
         // position should do that instead of going back to margin+4.
         if (i > 0 || should_break_to_next_line)
           Newline();
-        ExprStyle expr_style = Expr(x);
+        ExprStyle expr_style = Expr(x, kPrecedenceLowest);
         CHECK(!x->comments() || x->comments()->after().empty());
         if (i < list.size() - 1) {
           if (expr_style == kExprStyleRegular) {
