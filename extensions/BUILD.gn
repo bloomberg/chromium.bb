@@ -156,9 +156,7 @@ repack("shell_and_test_pak") {
 # does not have a reference to CreateNativeWebModalManager but it still links.
 # The GN build fails with this symbol being undefined.
 if (false) {
-test("unittests") {
-  output_name = "extensions_unittests"
-
+test("extensions_unittests") {
   sources = [
     "browser/admin_policy_unittest.cc",
     "browser/api/api_resource_manager_unittest.cc",
