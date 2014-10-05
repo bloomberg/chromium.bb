@@ -251,8 +251,9 @@ void FrameLoader::didExplicitOpen()
 
 void FrameLoader::clear()
 {
-    // clear() is called during (Local)Frame finalization and when creating
-    // a new Document within it (DocumentLoader::createWriterFor().)
+    // clear() is called during (Local)Frame detachment or when
+    // reusing a FrameLoader by putting a new Document within it
+    // (DocumentLoader::ensureWriter().)
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 

@@ -1525,16 +1525,16 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
     cancelPendingScopingEffort();
 }
 
+#if ENABLE(OILPAN)
 void WebLocalFrameImpl::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_printContext);
     visitor->trace(m_geolocationClientProxy);
-
-    WebFrame::traceChildren(visitor, this);
-#endif
+    visitor->registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
+    WebFrame::traceFrames(visitor, this);
 }
+#endif
 
 void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
 {

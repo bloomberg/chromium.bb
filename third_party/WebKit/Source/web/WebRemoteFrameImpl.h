@@ -184,7 +184,9 @@ public:
 
     virtual void initializeFromFrame(WebLocalFrame*) const OVERRIDE;
 
-    virtual void trace(Visitor*);
+#if ENABLE(OILPAN)
+    void trace(Visitor*);
+#endif
 
 private:
     RemoteFrameClientImpl m_frameClient;

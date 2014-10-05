@@ -132,15 +132,15 @@ WebRemoteFrameImpl::~WebRemoteFrameImpl()
 {
 }
 
+#if ENABLE(OILPAN)
 void WebRemoteFrameImpl::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_ownersForChildren);
-
-    WebFrame::traceChildren(visitor, this);
-#endif
+    visitor->registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
+    WebFrame::traceFrames(visitor, this);
 }
+#endif
 
 bool WebRemoteFrameImpl::isWebLocalFrame() const
 {

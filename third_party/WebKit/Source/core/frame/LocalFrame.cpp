@@ -274,12 +274,21 @@ FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize,
 
 void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
+    // Oilpan: setDOMWindow() cannot be used when finalizing. Which
+    // is acceptable as its actions are either not needed or handled
+    // by other means --
+    //
+    //  - FrameDestructionObserver::willDetachFrameHost() will have
+    //    signalled the Inspector frameWindowDiscarded() notifications.
+    //    We assume that all LocalFrames are detached, where that notification
+    //    will have been done.
+    //
+    //  - Calling LocalDOMWindow::reset() is not needed (called from
+    //    Frame::setDOMWindow().) The Member references it clears will now
+    //    die with the window. And the registered DOMWindowProperty instances that don't,
+    //    only keep a weak reference to this frame, so there's no need to be
+    //    explicitly notified that this frame is going away.
     if (m_domWindow) {
-        // Oilpan: the assumption is that FrameDestructionObserver::willDetachFrameHost()
-        // on LocalWindow will have signalled these frameWindowDiscarded() notifications.
-        //
-        // It is not invoked when finalizing the LocalFrame, as setDOMWindow() isn't
-        // performed (accessing the m_domWindow heap object is unsafe then.)
         console().messageStorage()->frameWindowDiscarded(m_domWindow.get());
         InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
     }

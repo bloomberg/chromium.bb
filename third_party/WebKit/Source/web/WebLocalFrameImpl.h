@@ -313,7 +313,9 @@ public:
     // Returns a hit-tested VisiblePosition for the given point
     VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
+#if ENABLE(OILPAN)
     void trace(Visitor*);
+#endif
 
 private:
     friend class FrameLoaderClientImpl;

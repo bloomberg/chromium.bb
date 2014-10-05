@@ -226,20 +226,44 @@ WebFrame::~WebFrame()
     m_openedFrameTracker.reset(0);
 }
 
-void WebFrame::traceChildren(Visitor* visitor, WebFrame* frame)
-{
 #if ENABLE(OILPAN)
-    // Trace the children frames.
-    WebFrame* child = frame ? frame->firstChild() : 0;
-    while (child) {
-        if (child->isWebLocalFrame())
-            visitor->trace(toWebLocalFrameImpl(child));
-        else
-            visitor->trace(toWebRemoteFrameImpl(child));
+void WebFrame::traceFrame(Visitor* visitor, WebFrame* frame)
+{
+    if (!frame)
+        return;
 
-        child = child->nextSibling();
-    }
-#endif
+    if (frame->isWebLocalFrame())
+        visitor->trace(toWebLocalFrameImpl(frame));
+    else
+        visitor->trace(toWebRemoteFrameImpl(frame));
 }
+
+void WebFrame::traceFrames(Visitor* visitor, WebFrame* frame)
+{
+    ASSERT(frame);
+    traceFrame(visitor, frame->m_parent);
+    for (WebFrame* child = frame->firstChild(); child; child = child->nextSibling())
+        traceFrame(visitor, child);
+    // m_opener is a weak reference.
+    frame->m_openedFrameTracker->traceFrames(visitor);
+}
+
+bool WebFrame::isAlive(Visitor* visitor, WebFrame* frame)
+{
+    if (!frame)
+        return true;
+
+    if (frame->isWebLocalFrame())
+        return visitor->isAlive(toWebLocalFrameImpl(frame));
+
+    return visitor->isAlive(toWebRemoteFrameImpl(frame));
+}
+
+void WebFrame::clearWeakFrames(Visitor* visitor)
+{
+    if (!isAlive(visitor, m_opener))
+        m_opener = nullptr;
+}
+#endif
 
 } // namespace blink

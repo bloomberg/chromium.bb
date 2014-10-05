@@ -657,15 +657,25 @@ public:
 
 #if BLINK_IMPLEMENTATION
     static WebFrame* fromFrame(Frame*);
-    static void traceChildren(Visitor*, WebFrame*);
+#if ENABLE(OILPAN)
+    static void traceFrames(Visitor*, WebFrame*);
+    void clearWeakFrames(Visitor*);
+#endif
 #endif
 
 protected:
-    explicit WebFrame();
+    WebFrame();
     virtual ~WebFrame();
 
 private:
     friend class OpenedFrameTracker;
+
+#if BLINK_IMPLEMENTATION
+#if ENABLE(OILPAN)
+    static void traceFrame(Visitor*, WebFrame*);
+    static bool isAlive(Visitor*, WebFrame*);
+#endif
+#endif
 
     WebFrame* m_parent;
     WebFrame* m_previousSibling;
