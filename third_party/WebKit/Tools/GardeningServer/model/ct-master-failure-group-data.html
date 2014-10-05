@@ -5,9 +5,10 @@ found in the LICENSE file.
 -->
 
 <script>
-function CTMasterFailureGroupData(failure) {
+function CTMasterFailureGroupData(failure, examineUrl) {
   this.failure = failure;
   this.category = 'master';
+  this.url = examineUrl;
 };
 
 CTMasterFailureGroupData.prototype.getAnnotations = function() {

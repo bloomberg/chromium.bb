@@ -231,11 +231,12 @@ CTFailures.prototype._processBuilderFailure = function(newFailures, alert) {
     category = 'builder';
     failure = new CTBuilderFailure(alert.tree, alert.master_url, alert.builder_name, alert.state,
         timeSinceLastUpdate, alert.pending_builds, alert.hasOwnProperty('isMaster'));
-    data = new CTBuilderFailureGroupData(failure, alert.builder_name);
+    data = new CTBuilderFailureGroupData(failure, alert.builder_name,
+        alert.master_url + "/builders/" + alert.builder_name);
   } else {
     category = 'master';
     failure = new CTMasterFailure(alert.tree, alert.master_url, timeSinceLastUpdate);
-    data = new CTMasterFailureGroupData(failure);
+    data = new CTMasterFailureGroupData(failure, alert.master_url);
   }
   if (!newFailures[alert.tree])
     newFailures[alert.tree] = [];

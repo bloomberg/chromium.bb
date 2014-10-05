@@ -7,11 +7,12 @@ found in the LICENSE file.
 <link rel="import" href="ct-builder-list.html">
 
 <script>
-function CTBuilderFailureGroupData(failure, bot) {
+function CTBuilderFailureGroupData(failure, bot, examineUrl) {
   this.bot = bot;
   this.failure = failure;
   this.builder = new CTBuilder(failure.masterUrl, failure.builder);
   this.category = 'builder';
+  this.url = examineUrl;
 };
 
 CTBuilderFailureGroupData.prototype.getAnnotations = function() {
