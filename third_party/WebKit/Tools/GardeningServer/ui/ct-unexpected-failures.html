@@ -42,7 +42,7 @@ found in the LICENSE file.
     <template if="{{ failures && failures.failures && (!failures.failures[tree] || !failures.failures[tree].length) }}">
       <ct-party-time></ct-party-time>
     </template>
-    <ct-failure-stream title="Probably-hung bots" category="builders" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}"></ct-failure-stream>
+    <ct-failure-stream title="Probably-hung bots" category="builder" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}"></ct-failure-stream>
     <ct-failure-stream title="Reliable failures" category="default" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}"></ct-failure-stream>
     <ct-failure-stream title="Failures that have only happened once (on one bot)" category="failedOnce" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}"></ct-failure-stream>
     <ct-failure-stream title="Snoozed failures" category="snoozed" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}"></ct-failure-stream>
