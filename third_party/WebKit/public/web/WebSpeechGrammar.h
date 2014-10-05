@@ -47,7 +47,6 @@ public:
     BLINK_EXPORT void assign(const WebSpeechGrammar&);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebSpeechGrammar(SpeechGrammar*);
     WebSpeechGrammar& operator=(SpeechGrammar*);
 #endif
 

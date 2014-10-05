@@ -55,12 +55,6 @@ WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(SpeechRecognition* speech
 {
 }
 
-WebSpeechRecognitionHandle& WebSpeechRecognitionHandle::operator=(SpeechRecognition* speechRecognition)
-{
-    m_private = speechRecognition;
-    return *this;
-}
-
 WebSpeechRecognitionHandle::operator SpeechRecognition*() const
 {
     return m_private.get();

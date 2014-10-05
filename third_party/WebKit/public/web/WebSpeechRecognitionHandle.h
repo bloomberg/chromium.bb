@@ -59,8 +59,7 @@ public:
     BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebSpeechRecognitionHandle(SpeechRecognition*);
-    WebSpeechRecognitionHandle& operator=(SpeechRecognition*);
+    WebSpeechRecognitionHandle(SpeechRecognition*);
     operator SpeechRecognition*() const;
 #endif
 

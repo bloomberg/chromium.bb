@@ -65,17 +65,17 @@ void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const S
     if (RuntimeEnabledFeatures::mediaStreamSpeechEnabled() && audioTrack)
         track.assign(audioTrack->component());
     WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, track, WebSecurityOrigin(recognition->executionContext()->securityOrigin()));
-    m_recognizer->start(WebSpeechRecognitionHandle(recognition), params, this);
+    m_recognizer->start(recognition, params, this);
 }
 
 void SpeechRecognitionClientProxy::stop(SpeechRecognition* recognition)
 {
-    m_recognizer->stop(WebSpeechRecognitionHandle(recognition), this);
+    m_recognizer->stop(recognition, this);
 }
 
 void SpeechRecognitionClientProxy::abort(SpeechRecognition* recognition)
 {
-    m_recognizer->abort(WebSpeechRecognitionHandle(recognition), this);
+    m_recognizer->abort(recognition, this);
 }
 
 void SpeechRecognitionClientProxy::didStartAudio(const WebSpeechRecognitionHandle& handle)
@@ -110,11 +110,11 @@ void SpeechRecognitionClientProxy::didReceiveResults(const WebSpeechRecognitionH
 
     HeapVector<Member<SpeechRecognitionResult> > finalResultsVector(newFinalResults.size());
     for (size_t i = 0; i < newFinalResults.size(); ++i)
-        finalResultsVector[i] = static_cast<SpeechRecognitionResult*>(newFinalResults[i]);
+        finalResultsVector[i] = Member<SpeechRecognitionResult>(newFinalResults[i]);
 
     HeapVector<Member<SpeechRecognitionResult> > interimResultsVector(currentInterimResults.size());
     for (size_t i = 0; i < currentInterimResults.size(); ++i)
-        interimResultsVector[i] = static_cast<SpeechRecognitionResult*>(currentInterimResults[i]);
+        interimResultsVector[i] = Member<SpeechRecognitionResult>(currentInterimResults[i]);
 
     recognition->didReceiveResults(finalResultsVector, interimResultsVector);
 }
