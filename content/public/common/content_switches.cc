@@ -96,6 +96,10 @@ const char kDisableApplicationCache[]       = "disable-application-cache";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
+// Disable the Blink Scheduler. Ensures there's no reordering of blink tasks.
+// This switch is intended only for performance tests.
+const char kDisableBlinkScheduler[]         = "disable-blink-scheduler";
+
 // Disable the creation of compositing layers when it would prevent LCD text.
 const char kDisablePreferCompositingToLCDText[] =
     "disable-prefer-compositing-to-lcd-text";

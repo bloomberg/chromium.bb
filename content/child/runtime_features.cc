@@ -92,6 +92,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableApplicationCache))
     WebRuntimeFeatures::enableApplicationCache(false);
 
+  if (command_line.HasSwitch(switches::kDisableBlinkScheduler))
+    WebRuntimeFeatures::enableBlinkScheduler(false);
+
   if (command_line.HasSwitch(switches::kDisableDesktopNotifications))
     WebRuntimeFeatures::enableNotifications(false);
 

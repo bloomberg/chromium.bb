@@ -37,6 +37,7 @@ CONTENT_EXPORT extern const char kDisableLayerSquashing[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 CONTENT_EXPORT extern const char kDisableApplicationCache[];
 extern const char kDisableBackingStoreLimit[];
+CONTENT_EXPORT extern const char kDisableBlinkScheduler[];
 CONTENT_EXPORT extern const char kDisablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kDisableCompositingForTransition[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
