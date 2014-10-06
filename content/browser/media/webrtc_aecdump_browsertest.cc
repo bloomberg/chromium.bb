@@ -53,9 +53,6 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
-#elif defined(OS_WIN) && !defined(NDEBUG)
-// Flaky on Webkit Win7 Debug bot: http://crbug.com/417756
-#define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
 #else
 #define MAYBE_CallWithAecDump CallWithAecDump
 #endif
