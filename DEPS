@@ -1,21 +1,30 @@
-# This file is automatically processed to create .DEPS.git which is the file
-# that gclient uses under git.
+# This file is used to manage the dependencies of the Chromium src repo. It is
+# used by gclient to determine what version of each dependency to check out, and
+# where.
 #
-# See http://code.google.com/p/chromium/wiki/UsingGit
-#
-# To test manually, run:
-#   python tools/deps2git/deps2git.py -o .DEPS.git -w <gclientdir>
-# where <gcliendir> is the absolute path to the directory containing the
-# .gclient file (the parent of 'src').
-#
-# Then commit .DEPS.git locally (gclient doesn't like dirty trees) and run
-#   gclient sync
-# Verify the thing happened you wanted. Then revert your .DEPS.git change
-# DO NOT CHECK IN CHANGES TO .DEPS.git upstream. It will be automatically
-# updated by a bot when you modify this one.
+# For more information, please refer to the official documentation:
+#   https://sites.google.com/a/chromium.org/dev/developers/how-tos/get-the-code
 #
 # When adding a new dependency, please update the top-level .gitignore file
 # to list the dependency's destination directory.
+#
+# -----------------------------------------------------------------------------
+# Rolling deps
+# -----------------------------------------------------------------------------
+# All repositories in this file are git-based, using Chromium git mirrors where
+# necessary (e.g., a git mirror is used when the source project is SVN-based).
+# To update the revision that Chromium pulls for a given dependency:
+#
+#  # Create and switch to a new branch
+#  git new-branch depsroll
+#  # Run roll-dep (provided by depot_tools) giving the dep's path and the
+#  # desired SVN revision number (e.g., third_party/foo/bar and a revision such
+#  # number from Subversion)
+#  roll-dep third_party/foo/bar REVISION_NUMBER
+#  # You should now have a modified DEPS file; commit and upload as normal
+#  git commit -a
+#  git cl upload
+
 
 vars = {
   # Use this googlecode_url variable only if there is an internal mirror for it.
