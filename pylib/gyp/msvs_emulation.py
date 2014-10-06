@@ -13,9 +13,12 @@ import subprocess
 import sys
 
 from gyp.common import OrderedSet
+import gyp.MSVSUtil
 import gyp.MSVSVersion
 
+
 windows_quoter_regex = re.compile(r'(\\*)"')
+
 
 def QuoteForRspFile(arg):
   """Quote a command line argument so that it appears as one argument when
@@ -220,6 +223,17 @@ class MsvsSettings(object):
     if unsupported:
       raise Exception('\n'.join(unsupported))
 
+  def GetExtension(self):
+    """Returns the extension for the target, with no leading dot.
+
+    Uses 'product_extension' if specified, otherwise uses MSVS defaults based on
+    the target type.
+    """
+    ext = self.spec.get('product_extension', None)
+    if ext:
+      return ext
+    return gyp.MSVSUtil.TARGET_TYPE_EXT.get(self.spec['type'], '')
+
   def GetVSMacroEnv(self, base_to_build=None, config=None):
     """Get a dict of variables mapping internal VS macro names to their gyp
     equivalents."""
@@ -227,16 +241,22 @@ class MsvsSettings(object):
     target_name = self.spec.get('product_prefix', '') + \
         self.spec.get('product_name', self.spec['target_name'])
     target_dir = base_to_build + '\\' if base_to_build else ''
+    target_ext = '.' + self.GetExtension()
+    target_file_name = target_name + target_ext
+
     replacements = {
-        '$(OutDir)\\': target_dir,
-        '$(TargetDir)\\': target_dir,
-        '$(IntDir)': '$!INTERMEDIATE_DIR',
-        '$(InputPath)': '${source}',
         '$(InputName)': '${root}',
-        '$(ProjectName)': self.spec['target_name'],
-        '$(TargetName)': target_name,
+        '$(InputPath)': '${source}',
+        '$(IntDir)': '$!INTERMEDIATE_DIR',
+        '$(OutDir)\\': target_dir,
         '$(PlatformName)': target_platform,
         '$(ProjectDir)\\': '',
+        '$(ProjectName)': self.spec['target_name'],
+        '$(TargetDir)\\': target_dir,
+        '$(TargetExt)': target_ext,
+        '$(TargetFileName)': target_file_name,
+        '$(TargetName)': target_name,
+        '$(TargetPath)': os.path.join(target_dir, target_file_name),
     }
     replacements.update(GetGlobalVSMacroEnv(self.vs_version))
     return replacements

@@ -1526,12 +1526,13 @@ def CalculateVariables(default_variables, params):
     generator_extra_sources_for_rules = getattr(xcode_generator,
         'generator_extra_sources_for_rules', [])
   elif flavor == 'win':
+    exts = gyp.MSVSUtil.TARGET_TYPE_EXT
     default_variables.setdefault('OS', 'win')
-    default_variables['EXECUTABLE_SUFFIX'] = '.exe'
+    default_variables['EXECUTABLE_SUFFIX'] = '.' + exts['executable'] 
     default_variables['STATIC_LIB_PREFIX'] = ''
-    default_variables['STATIC_LIB_SUFFIX'] = '.lib'
+    default_variables['STATIC_LIB_SUFFIX'] = '.' + exts['static_library']
     default_variables['SHARED_LIB_PREFIX'] = ''
-    default_variables['SHARED_LIB_SUFFIX'] = '.dll'
+    default_variables['SHARED_LIB_SUFFIX'] = '.' + exts['shared_library']
 
     # Copy additional generator configuration data from VS, which is shared
     # by the Windows Ninja generator.
