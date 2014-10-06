@@ -34,7 +34,7 @@
 
 namespace blink {
 
-bool RenderSVGResource::applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short)
+bool RenderSVGResource::applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags)
 {
     ASSERT_NOT_REACHED();
     return false;

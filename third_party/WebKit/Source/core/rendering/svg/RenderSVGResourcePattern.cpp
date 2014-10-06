@@ -112,7 +112,7 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const 
     return m_patternMap.set(object, patternData.release()).storedValue->value.get();
 }
 
-bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext*& context, unsigned short resourceMode)
+bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext* context, RenderSVGResourceModeFlags resourceMode)
 {
     ASSERT(object);
     ASSERT(style);
@@ -170,7 +170,7 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     return true;
 }
 
-void RenderSVGResourcePattern::postApplyResource(RenderObject*, GraphicsContext*& context)
+void RenderSVGResourcePattern::postApplyResource(GraphicsContext* context)
 {
     ASSERT(context);
     context->restore();
