@@ -206,12 +206,12 @@ void RenderSVGShape::fillShape(RenderStyle* style, GraphicsContext* context)
     if (RenderSVGResource* fillPaintingResource = RenderSVGResource::requestPaintingResource(ApplyToFillMode, this, style, hasFallback)) {
         if (fillPaintingResource->applyResource(this, style, context, ApplyToFillMode)) {
             fillShape(context);
-            fillPaintingResource->postApplyResource(this, context);
+            fillPaintingResource->postApplyResource(context);
         } else if (hasFallback) {
             RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
             if (fallbackResource->applyResource(this, style, context, ApplyToFillMode)) {
                 fillShape(context);
-                fallbackResource->postApplyResource(this, context);
+                fallbackResource->postApplyResource(context);
             }
         }
     }
@@ -223,12 +223,12 @@ void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
     if (RenderSVGResource* strokePaintingResource = RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, this, style, hasFallback)) {
         if (strokePaintingResource->applyResource(this, style, context, ApplyToStrokeMode)) {
             strokeShape(context);
-            strokePaintingResource->postApplyResource(this, context);
+            strokePaintingResource->postApplyResource(context);
         } else if (hasFallback) {
             RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
             if (fallbackResource->applyResource(this, style, context, ApplyToStrokeMode)) {
                 strokeShape(context);
-                fallbackResource->postApplyResource(this, context);
+                fallbackResource->postApplyResource(context);
             }
         }
     }
