@@ -22,24 +22,31 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 CLANG_VER = '3.4'
 
-# Return the path to the local copy of the driver script.
+# Return the path to a tool to build target libraries
 # msys should be false if the path will be called directly rather than passed to
 # an msys or cygwin tool such as sh or make.
-def PnaclTool(toolname, msys=True):
+def PnaclTool(toolname, msys=True, arch='le32'):
   if not msys and pynacl.platform.IsWindows():
     ext = '.bat'
   else:
     ext = ''
+  if IsBCArch(arch):
+    base = 'pnacl-' + toolname
+  else:
+    base = '-'.join([TargetArch(arch), 'nacl', toolname])
   return command.path.join('%(abs_target_lib_compiler)s',
-                           'bin', 'pnacl-' + toolname + ext)
+                           'bin', base + ext)
 
 # PNaCl tools for newlib's environment, e.g. CC_FOR_TARGET=/path/to/pnacl-clang
 TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
                    'RANLIB': 'ranlib', 'READELF': 'readelf',
-                   'OBJDUMP': 'illegal', 'AS': 'illegal', 'LD': 'illegal',
+                   'OBJDUMP': 'illegal', 'AS': 'as', 'LD': 'illegal',
                    'STRIP': 'illegal' }
-TARGET_TOOLS = [ tool + '_FOR_TARGET=' + PnaclTool(name)
-                 for tool, name in TOOL_ENV_NAMES.iteritems() ]
+
+def TargetTools(arch):
+  return [ tool + '_FOR_TARGET=' + PnaclTool(name, msys=True, arch=arch)
+           for tool, name in TOOL_ENV_NAMES.iteritems() ]
+
 
 def MakeCommand():
   make_command = ['make']
@@ -57,14 +64,31 @@ def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
 
-def BiasedBitcodeTriple(bias_arch):
-  return 'le32-nacl' if bias_arch == 'le32' else bias_arch + '_bc-nacl'
+def TripleFromArch(bias_arch):
+  return bias_arch + '-nacl'
+
+
+def IsBiasedBCArch(arch):
+  return arch.endswith('_bc')
+
+
+def IsBCArch(arch):
+  return IsBiasedBCArch(arch) or arch == 'le32'
+
+
+# Return the target arch recognized by the compiler (e.g. i686) from an arch
+# string which might be a biased-bitcode-style arch (e.g. i686_bc)
+def TargetArch(bias_arch):
+  if IsBiasedBCArch(bias_arch):
+    return bias_arch[:bias_arch.index('_bc')]
+  return bias_arch
 
 def BiasedBitcodeTargetFlag(arch):
+  arch = TargetArch(arch)
   flagmap = {
       # Arch     Target                           Extra flags.
-      'x86-64': ('x86_64-unknown-nacl',           []),
-      'x86-32': ('i686-unknown-nacl',             []),
+      'x86_64': ('x86_64-unknown-nacl',           []),
+      'i686':   ('i686-unknown-nacl',             []),
       'arm':    ('armv7-unknown-nacl-gnueabihf',  ['-mfloat-abi=hard']),
       # MIPS doesn't use biased bitcode:
       'mips32': ('le32-unknown-nacl',             []),
@@ -73,8 +97,10 @@ def BiasedBitcodeTargetFlag(arch):
 
 
 def TargetLibCflags(bias_arch):
-  flags = '-g -O2 -mllvm -inline-threshold=5'
-  if bias_arch != 'le32':
+  flags = '-g -O2'
+  if IsBCArch(bias_arch):
+    flags += ' -mllvm -inline-threshold=5 -allow-asm'
+  if IsBiasedBCArch(bias_arch):
     flags += ' ' + ' '.join(BiasedBitcodeTargetFlag(bias_arch))
   return flags
 
@@ -82,7 +108,7 @@ def NewlibIsystemCflags(bias_arch):
   return ' '.join([
     '-isystem',
     command.path.join('%(' + GSDJoin('abs_newlib', bias_arch) +')s',
-                      BiasedBitcodeTriple(bias_arch), 'include')])
+                      TripleFromArch(bias_arch), 'include')])
 
 def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
@@ -220,13 +246,51 @@ def TargetLibsSrc(GitSyncCmds):
   return source
 
 
+def NewlibDirectoryCmds(bias_arch):
+  commands = []
+  target_triple = TripleFromArch(bias_arch)
+  if bias_arch != 'i686':
+    commands.extend([
+        # We configured newlib with target=le32-nacl to get its pure C
+        # implementation, so rename its output dir (which matches the
+        # target to the output dir for the package we are building)
+        command.Rename(os.path.join('%(output)s', 'le32-nacl'),
+                       os.path.join('%(output)s', target_triple)),
+        # Copy nacl_random.h, used by libc++. It uses the IRT, so should
+        # be safe to include in the toolchain.
+        command.Mkdir(
+            os.path.join('%(output)s', target_triple, 'include', 'nacl')),
+        command.Copy(os.path.join('%(top_srcdir)s', 'src', 'untrusted',
+                                  'nacl', 'nacl_random.h'),
+                     os.path.join('%(output)s', target_triple, 'include',
+                                  'nacl', 'nacl_random.h'))
+    ])
+  else:
+    # Use multilib-style directories for i686
+    commands.extend([
+        command.Rename(os.path.join('%(output)s', 'le32-nacl'),
+                       os.path.join('%(output)s', 'x86_64-nacl')),
+        command.RemoveDirectory(
+            os.path.join('%(output)s', 'x86_64-nacl', 'include')),
+        command.Rename(
+            os.path.join('%(output)s', 'x86_64-nacl', 'lib'),
+            os.path.join('%(output)s', 'x86_64-nacl', 'lib32')),
+    ])
+  # Remove the 'share' directory from the biased builds; the data is
+  # duplicated exactly and takes up 2MB per package.
+  if bias_arch != 'le32':
+    commands.append(command.RemoveDirectory(os.path.join('%(output)s','share')))
+
+  return commands
+
+
 def TargetLibs(bias_arch, is_canonical):
   def T(component_name):
     return GSDJoin(component_name, bias_arch)
-  bc_triple = BiasedBitcodeTriple(bias_arch)
+  target_triple = TripleFromArch(bias_arch)
   clang_libdir = os.path.join(
-      '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', bc_triple)
-  libc_libdir = os.path.join('%(output)s', bc_triple, 'lib')
+      '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
+  libc_libdir = os.path.join('%(output)s', target_triple, 'lib')
   libs = {
       T('newlib'): {
           'type': 'build' if is_canonical else 'work',
@@ -234,9 +298,8 @@ def TargetLibs(bias_arch, is_canonical):
           'commands' : [
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
-                  TARGET_TOOLS +
-                  ['CFLAGS_FOR_TARGET=' + TargetLibCflags(bias_arch) +
-                   ' -allow-asm',
+                  TargetTools(bias_arch) +
+                  ['CFLAGS_FOR_TARGET=' + TargetLibCflags(bias_arch),
                   '--disable-multilib',
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
@@ -255,25 +318,7 @@ def TargetLibs(bias_arch, is_canonical):
               ]),
               command.Command(MakeCommand()),
               command.Command(['make', 'DESTDIR=%(abs_output)s', 'install']),
-              # We configured newlib with target=le32-nacl to get its pure C
-              # implementation, so rename its output dir (which matches the
-              # target to the output dir for the package we are building)
-              command.Rename(os.path.join('%(output)s', 'le32-nacl'),
-                             os.path.join('%(output)s', bc_triple)),
-              # Copy nacl_random.h, used by libc++. It uses the IRT, so should
-              # be safe to include in the toolchain.
-              command.Mkdir(
-                  os.path.join('%(output)s', bc_triple, 'include', 'nacl')),
-              command.Copy(os.path.join('%(top_srcdir)s', 'src', 'untrusted',
-                                        'nacl', 'nacl_random.h'),
-                           os.path.join(
-                               '%(output)s', bc_triple, 'include', 'nacl',
-                               'nacl_random.h')),
-              # Remove the 'share' directory from the biased builds; the data is
-              # duplicated exactly and takes up 2MB per package.
-              command.RemoveDirectory(os.path.join('%(output)s', 'share'),
-                             run_cond = lambda x: bias_arch != 'le32'),
-          ],
+          ] + NewlibDirectoryCmds(bias_arch)
       },
       T('libcxx'): {
           'type': 'build' if is_canonical else 'work',
@@ -321,7 +366,7 @@ def TargetLibs(bias_arch, is_canonical):
               command.Command(MakeCommand() + ['VERBOSE=1']),
               command.Command([
                   'make',
-                  'DESTDIR=' + os.path.join('%(abs_output)s', bc_triple),
+                  'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
                   'VERBOSE=1',
                   'install']),
           ],
@@ -335,7 +380,7 @@ def TargetLibs(bias_arch, is_canonical):
                   'sh',
                   command.path.join('%(gcc_src)s', 'libstdc++-v3',
                                     'configure')] +
-                  TARGET_TOOLS + [
+                  TargetTools(bias_arch) + [
                   'CC_FOR_BUILD=cc',
                   'CC=' + PnaclTool('clang'),
                   'CXX=' + PnaclTool('clang++'),
@@ -366,15 +411,16 @@ def TargetLibs(bias_arch, is_canonical):
               command.Command(MakeCommand()),
               command.Command([
                   'make',
-                  'DESTDIR=' + os.path.join('%(abs_output)s', bc_triple),
+                  'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
                   'install-data']),
               command.RemoveDirectory(
-                  os.path.join('%(output)s', bc_triple, 'share')),
-              command.Remove(os.path.join('%(output)s', bc_triple, 'lib',
+                  os.path.join('%(output)s', target_triple, 'share')),
+              command.Remove(os.path.join('%(output)s', target_triple, 'lib',
                                           'libstdc++*-gdb.py')),
               command.Copy(
                   os.path.join('src', '.libs', 'libstdc++.a'),
-                  os.path.join('%(output)s', bc_triple, 'lib', 'libstdc++.a')),
+                  os.path.join('%(output)s', target_triple, 'lib',
+                               'libstdc++.a')),
           ],
       },
       T('libs_support'): {
@@ -414,6 +460,12 @@ def TargetLibs(bias_arch, is_canonical):
           ],
       },
   }
+  # For now, only the newlib build is enabled for direct-to-nacl.
+  # TODO(dschuff): enable others.
+  if not IsBCArch(bias_arch):
+    del libs[T('libs_support')]
+    del libs[T('libstdcxx')]
+    del libs[T('libcxx')]
   return libs
 
 
