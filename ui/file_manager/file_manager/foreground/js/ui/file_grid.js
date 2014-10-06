@@ -67,8 +67,9 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
   var boxes = this.querySelectorAll('.img-container');
   for (var i = 0; i < boxes.length; i++) {
     var box = boxes[i];
-    var entry = this.dataModel.item(this.getListItemAncestor(box));
-    if (!entry || !(entry.toURL() in urls))
+    var listItem = this.getListItemAncestor(box);
+    var entry = listItem && this.dataModel.item(listItem.listIndex);
+    if (!entry || urls.indexOf(entry.toURL()) === -1)
       continue;
 
     FileGrid.decorateThumbnailBox(box,
