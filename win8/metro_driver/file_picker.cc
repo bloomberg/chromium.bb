@@ -114,7 +114,7 @@ class OpenFilePickerSession : public FilePickerSessionBase {
   explicit OpenFilePickerSession(OPENFILENAME* open_file_name);
 
  private:
-  virtual HRESULT StartFilePicker() OVERRIDE;
+  virtual HRESULT StartFilePicker() override;
 
   typedef winfoundtn::IAsyncOperation<winstorage::StorageFile*>
       SingleFileAsyncOp;
@@ -142,7 +142,7 @@ class SaveFilePickerSession : public FilePickerSessionBase {
   explicit SaveFilePickerSession(OPENFILENAME* open_file_name);
 
  private:
-  virtual HRESULT StartFilePicker() OVERRIDE;
+  virtual HRESULT StartFilePicker() override;
 
   typedef winfoundtn::IAsyncOperation<winstorage::StorageFile*>
       SaveFileAsyncOp;

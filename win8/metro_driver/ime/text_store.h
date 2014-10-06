@@ -102,7 +102,7 @@ class ATL_NO_VTABLE TextStore
   END_COM_MAP()
 
   // ITextStoreACP:
-  STDMETHOD(AdviseSink)(REFIID iid, IUnknown* unknown, DWORD mask) OVERRIDE;
+  STDMETHOD(AdviseSink)(REFIID iid, IUnknown* unknown, DWORD mask) override;
   STDMETHOD(FindNextAttrTransition)(LONG acp_start,
                                     LONG acp_halt,
                                     ULONG num_filter_attributes,
@@ -110,26 +110,26 @@ class ATL_NO_VTABLE TextStore
                                     DWORD flags,
                                     LONG* acp_next,
                                     BOOL* found,
-                                    LONG* found_offset) OVERRIDE;
+                                    LONG* found_offset) override;
   STDMETHOD(GetACPFromPoint)(TsViewCookie view_cookie,
                              const POINT* point,
                              DWORD flags,
-                             LONG* acp) OVERRIDE;
-  STDMETHOD(GetActiveView)(TsViewCookie* view_cookie) OVERRIDE;
+                             LONG* acp) override;
+  STDMETHOD(GetActiveView)(TsViewCookie* view_cookie) override;
   STDMETHOD(GetEmbedded)(LONG acp_pos,
                          REFGUID service,
                          REFIID iid,
-                         IUnknown** unknown) OVERRIDE;
-  STDMETHOD(GetEndACP)(LONG* acp) OVERRIDE;
+                         IUnknown** unknown) override;
+  STDMETHOD(GetEndACP)(LONG* acp) override;
   STDMETHOD(GetFormattedText)(LONG acp_start,
                               LONG acp_end,
-                              IDataObject** data_object) OVERRIDE;
-  STDMETHOD(GetScreenExt)(TsViewCookie view_cookie, RECT* rect) OVERRIDE;
+                              IDataObject** data_object) override;
+  STDMETHOD(GetScreenExt)(TsViewCookie view_cookie, RECT* rect) override;
   STDMETHOD(GetSelection)(ULONG selection_index,
                           ULONG selection_buffer_size,
                           TS_SELECTION_ACP* selection_buffer,
-                          ULONG* fetched_count) OVERRIDE;
-  STDMETHOD(GetStatus)(TS_STATUS* pdcs) OVERRIDE;
+                          ULONG* fetched_count) override;
+  STDMETHOD(GetStatus)(TS_STATUS* pdcs) override;
   STDMETHOD(GetText)(LONG acp_start,
                      LONG acp_end,
                      wchar_t* text_buffer,
@@ -138,73 +138,73 @@ class ATL_NO_VTABLE TextStore
                      TS_RUNINFO* run_info_buffer,
                      ULONG run_info_buffer_size,
                      ULONG* run_info_buffer_copied,
-                     LONG* next_acp) OVERRIDE;
+                     LONG* next_acp) override;
   STDMETHOD(GetTextExt)(TsViewCookie view_cookie,
                         LONG acp_start,
                         LONG acp_end,
                         RECT* rect,
-                        BOOL* clipped) OVERRIDE;
-  STDMETHOD(GetWnd)(TsViewCookie view_cookie, HWND* window_handle) OVERRIDE;
+                        BOOL* clipped) override;
+  STDMETHOD(GetWnd)(TsViewCookie view_cookie, HWND* window_handle) override;
   STDMETHOD(InsertEmbedded)(DWORD flags,
                             LONG acp_start,
                             LONG acp_end,
                             IDataObject* data_object,
-                            TS_TEXTCHANGE* change) OVERRIDE;
+                            TS_TEXTCHANGE* change) override;
   STDMETHOD(InsertEmbeddedAtSelection)(DWORD flags,
                                        IDataObject* data_object,
                                        LONG* acp_start,
                                        LONG* acp_end,
-                                       TS_TEXTCHANGE* change) OVERRIDE;
+                                       TS_TEXTCHANGE* change) override;
   STDMETHOD(InsertTextAtSelection)(DWORD flags,
                                    const wchar_t* text_buffer,
                                    ULONG text_buffer_size,
                                    LONG* acp_start,
                                    LONG* acp_end,
-                                   TS_TEXTCHANGE* text_change) OVERRIDE;
+                                   TS_TEXTCHANGE* text_change) override;
   STDMETHOD(QueryInsert)(LONG acp_test_start,
                          LONG acp_test_end,
                          ULONG text_size,
                          LONG* acp_result_start,
-                         LONG* acp_result_end) OVERRIDE;
+                         LONG* acp_result_end) override;
   STDMETHOD(QueryInsertEmbedded)(const GUID* service,
                                  const FORMATETC* format,
-                                 BOOL* insertable) OVERRIDE;
+                                 BOOL* insertable) override;
   STDMETHOD(RequestAttrsAtPosition)(LONG acp_pos,
                                     ULONG attribute_buffer_size,
                                     const TS_ATTRID* attribute_buffer,
-                                    DWORD flags) OVERRIDE;
+                                    DWORD flags) override;
   STDMETHOD(RequestAttrsTransitioningAtPosition)(
       LONG acp_pos,
       ULONG attribute_buffer_size,
       const TS_ATTRID* attribute_buffer,
-      DWORD flags) OVERRIDE;
-  STDMETHOD(RequestLock)(DWORD lock_flags, HRESULT* result) OVERRIDE;
+      DWORD flags) override;
+  STDMETHOD(RequestLock)(DWORD lock_flags, HRESULT* result) override;
   STDMETHOD(RequestSupportedAttrs)(DWORD flags,
                                    ULONG attribute_buffer_size,
-                                   const TS_ATTRID* attribute_buffer) OVERRIDE;
+                                   const TS_ATTRID* attribute_buffer) override;
   STDMETHOD(RetrieveRequestedAttrs)(ULONG attribute_buffer_size,
                                     TS_ATTRVAL* attribute_buffer,
-                                    ULONG* attribute_buffer_copied) OVERRIDE;
+                                    ULONG* attribute_buffer_copied) override;
   STDMETHOD(SetSelection)(ULONG selection_buffer_size,
-                          const TS_SELECTION_ACP* selection_buffer) OVERRIDE;
+                          const TS_SELECTION_ACP* selection_buffer) override;
   STDMETHOD(SetText)(DWORD flags,
                      LONG acp_start,
                      LONG acp_end,
                      const wchar_t* text_buffer,
                      ULONG text_buffer_size,
-                     TS_TEXTCHANGE* text_change) OVERRIDE;
-  STDMETHOD(UnadviseSink)(IUnknown* unknown) OVERRIDE;
+                     TS_TEXTCHANGE* text_change) override;
+  STDMETHOD(UnadviseSink)(IUnknown* unknown) override;
 
   // ITfContextOwnerCompositionSink:
   STDMETHOD(OnStartComposition)(ITfCompositionView* composition_view,
-                                BOOL* ok) OVERRIDE;
+                                BOOL* ok) override;
   STDMETHOD(OnUpdateComposition)(ITfCompositionView* composition_view,
-                                 ITfRange* range) OVERRIDE;
-  STDMETHOD(OnEndComposition)(ITfCompositionView* composition_view) OVERRIDE;
+                                 ITfRange* range) override;
+  STDMETHOD(OnEndComposition)(ITfCompositionView* composition_view) override;
 
   // ITfTextEditSink:
   STDMETHOD(OnEndEdit)(ITfContext* context, TfEditCookie read_only_edit_cookie,
-                       ITfEditRecord* edit_record) OVERRIDE;
+                       ITfEditRecord* edit_record) override;
 
   // Cancels the ongoing composition if exists.
   bool CancelComposition();

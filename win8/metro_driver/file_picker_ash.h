@@ -92,7 +92,7 @@ class OpenFilePickerSession : public FilePickerSessionBase {
   }
 
  private:
-  virtual HRESULT StartFilePicker() OVERRIDE;
+  virtual HRESULT StartFilePicker() override;
 
   typedef winfoundtn::IAsyncOperation<winstorage::StorageFile*>
       SingleFileAsyncOp;
@@ -132,7 +132,7 @@ class SaveFilePickerSession : public FilePickerSessionBase {
   int SaveFilePickerSession::filter_index() const;
 
  private:
-  virtual HRESULT StartFilePicker() OVERRIDE;
+  virtual HRESULT StartFilePicker() override;
 
   typedef winfoundtn::IAsyncOperation<winstorage::StorageFile*>
       SaveFileAsyncOp;
@@ -152,7 +152,7 @@ class FolderPickerSession : public FilePickerSessionBase {
                                const base::string16& title);
 
  private:
-  virtual HRESULT StartFilePicker() OVERRIDE;
+  virtual HRESULT StartFilePicker() override;
 
   typedef winfoundtn::IAsyncOperation<winstorage::StorageFolder*>
       FolderPickerAsyncOp;

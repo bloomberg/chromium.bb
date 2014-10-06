@@ -63,14 +63,14 @@ class ATL_NO_VTABLE InputSourceMonitor
 
  private:
   // ITfLanguageProfileNotifySink overrides:
-  STDMETHOD(OnLanguageChange)(LANGID langid, BOOL *accept) OVERRIDE {
+  STDMETHOD(OnLanguageChange)(LANGID langid, BOOL *accept) override {
     if (!accept)
       return E_INVALIDARG;
     *accept = TRUE;
     return S_OK;
   }
 
-  STDMETHOD(OnLanguageChanged)() OVERRIDE {
+  STDMETHOD(OnLanguageChanged)() override {
     if (!on_language_chanaged_.is_null())
       on_language_chanaged_.Run();
     return S_OK;
@@ -99,7 +99,7 @@ class InputSourceImpl : public InputSource {
 
  private:
   // InputSource overrides.
-  virtual bool GetActiveSource(LANGID* langid, bool* is_ime) OVERRIDE {
+  virtual bool GetActiveSource(LANGID* langid, bool* is_ime) override {
     TF_INPUTPROCESSORPROFILE profile = {};
     HRESULT hr = profile_manager_->GetActiveProfile(GUID_TFCAT_TIP_KEYBOARD,
                                                     &profile);
@@ -112,10 +112,10 @@ class InputSourceImpl : public InputSource {
     *is_ime = profile.dwProfileType == TF_PROFILETYPE_INPUTPROCESSOR;
     return true;
   }
-  virtual void AddObserver(InputSourceObserver* observer) OVERRIDE {
+  virtual void AddObserver(InputSourceObserver* observer) override {
     observer_list_.AddObserver(observer);
   }
-  virtual void RemoveObserver(InputSourceObserver* observer) OVERRIDE {
+  virtual void RemoveObserver(InputSourceObserver* observer) override {
     observer_list_.RemoveObserver(observer);
   }
   void OnLanguageChanged() {

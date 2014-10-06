@@ -912,7 +912,7 @@ class CoreWindowEmulation
   }
 
   // InputHandler
-  virtual bool HandleKeyboardMessage(const MSG& msg) OVERRIDE {
+  virtual bool HandleKeyboardMessage(const MSG& msg) override {
     switch (msg.message) {
       case WM_KEYDOWN:
       case WM_KEYUP: {
@@ -943,7 +943,7 @@ class CoreWindowEmulation
     return true;
   }
 
-  virtual bool HandleMouseMessage(const MSG& msg) OVERRIDE {
+  virtual bool HandleMouseMessage(const MSG& msg) override {
     PointerEventHandler* handler = NULL;
     mswr::ComPtr<winui::Core::IPointerEventArgs> event_args;
     event_args = mswr::Make<MouseEvent>(msg);

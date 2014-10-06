@@ -120,18 +120,18 @@ class ChromeAppViewAsh
   class PointerInfoHandler;
 
   // ImePopupObserver overrides.
-  virtual void OnImePopupChanged(ImePopupObserver::EventType event) OVERRIDE;
+  virtual void OnImePopupChanged(ImePopupObserver::EventType event) override;
 
   // InputSourceObserver overrides.
-  virtual void OnInputSourceChanged() OVERRIDE;
+  virtual void OnInputSourceChanged() override;
 
   // TextServiceDelegate overrides.
   virtual void OnCompositionChanged(
       const base::string16& text,
       int32 selection_start,
       int32 selection_end,
-      const std::vector<metro_viewer::UnderlineInfo>& underlines) OVERRIDE;
-  virtual void OnTextCommitted(const base::string16& text) OVERRIDE;
+      const std::vector<metro_viewer::UnderlineInfo>& underlines) override;
+  virtual void OnTextCommitted(const base::string16& text) override;
 
   // Convenience for sending a MetroViewerHostMsg_MouseButton with the specified
   // parameters.

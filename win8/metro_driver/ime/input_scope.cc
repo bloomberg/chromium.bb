@@ -36,7 +36,7 @@ class ATL_NO_VTABLE InputScopeImpl
 
  private:
   // ITfInputScope overrides:
-  STDMETHOD(GetInputScopes)(InputScope** input_scopes, UINT* count) OVERRIDE {
+  STDMETHOD(GetInputScopes)(InputScope** input_scopes, UINT* count) override {
     if (!count || !input_scopes)
       return E_INVALIDARG;
     *input_scopes = static_cast<InputScope*>(
@@ -49,16 +49,16 @@ class ATL_NO_VTABLE InputScopeImpl
     *count = static_cast<UINT>(input_scopes_.size());
     return S_OK;
   }
-  STDMETHOD(GetPhrase)(BSTR** phrases, UINT* count) OVERRIDE {
+  STDMETHOD(GetPhrase)(BSTR** phrases, UINT* count) override {
     return E_NOTIMPL;
   }
-  STDMETHOD(GetRegularExpression)(BSTR* regexp) OVERRIDE {
+  STDMETHOD(GetRegularExpression)(BSTR* regexp) override {
     return E_NOTIMPL;
   }
-  STDMETHOD(GetSRGS)(BSTR* srgs) OVERRIDE {
+  STDMETHOD(GetSRGS)(BSTR* srgs) override {
     return E_NOTIMPL;
   }
-  STDMETHOD(GetXML)(BSTR* xml) OVERRIDE {
+  STDMETHOD(GetXML)(BSTR* xml) override {
     return E_NOTIMPL;
   }
 

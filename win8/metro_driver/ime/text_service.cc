@@ -334,7 +334,7 @@ class TextServiceImpl : public TextService,
 
  private:
   // TextService overrides:
-  virtual void CancelComposition() OVERRIDE {
+  virtual void CancelComposition() override {
     if (!current_document_) {
       VLOG(0) << "|current_document_| is NULL due to the previous error.";
       return;
@@ -348,7 +348,7 @@ class TextServiceImpl : public TextService,
   virtual void OnDocumentChanged(
       const std::vector<int32>& input_scopes,
       const std::vector<metro_viewer::CharacterBounds>& character_bounds)
-      OVERRIDE {
+      override {
     bool document_type_changed = input_scopes_ != input_scopes;
     input_scopes_ = input_scopes;
     composition_character_bounds_ = character_bounds;
@@ -356,7 +356,7 @@ class TextServiceImpl : public TextService,
       OnDocumentTypeChanged(input_scopes);
   }
 
-  virtual void OnWindowActivated() OVERRIDE {
+  virtual void OnWindowActivated() override {
     if (!current_document_) {
       VLOG(0) << "|current_document_| is NULL due to the previous error.";
       return;
@@ -377,7 +377,7 @@ class TextServiceImpl : public TextService,
       const base::string16& text,
       int32 selection_start,
       int32 selection_end,
-      const std::vector<metro_viewer::UnderlineInfo>& underlines) OVERRIDE {
+      const std::vector<metro_viewer::UnderlineInfo>& underlines) override {
     if (!delegate_)
       return;
     delegate_->OnCompositionChanged(text,
@@ -386,7 +386,7 @@ class TextServiceImpl : public TextService,
                                     underlines);
   }
 
-  virtual void OnTextCommitted(const base::string16& text) OVERRIDE {
+  virtual void OnTextCommitted(const base::string16& text) override {
     if (!delegate_)
       return;
     delegate_->OnTextCommitted(text);
@@ -413,7 +413,7 @@ class TextServiceImpl : public TextService,
   }
 
   virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             RECT* rect) OVERRIDE {
+                                             RECT* rect) override {
     if (index >= composition_character_bounds_.size()) {
       return false;
     }

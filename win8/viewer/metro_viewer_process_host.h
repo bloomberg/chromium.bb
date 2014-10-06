@@ -119,11 +119,11 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
 
  protected:
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE = 0;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override = 0;
 
  private:
   // The following are the implementation for the corresponding static methods
@@ -187,7 +187,7 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
     InternalMessageFilter(MetroViewerProcessHost* owner);
 
     // IPC::MessageFilter implementation.
-    virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+    virtual void OnChannelConnected(int32 peer_pid) override;
 
    private:
     MetroViewerProcessHost* owner_;
