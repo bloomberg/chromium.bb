@@ -673,7 +673,7 @@ private:
 #if BLINK_IMPLEMENTATION
 #if ENABLE(OILPAN)
     static void traceFrame(Visitor*, WebFrame*);
-    static bool isAlive(Visitor*, WebFrame*);
+    static bool isFrameAlive(Visitor*, const WebFrame*);
 #endif
 #endif
 

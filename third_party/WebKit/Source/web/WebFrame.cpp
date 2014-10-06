@@ -248,7 +248,7 @@ void WebFrame::traceFrames(Visitor* visitor, WebFrame* frame)
     frame->m_openedFrameTracker->traceFrames(visitor);
 }
 
-bool WebFrame::isAlive(Visitor* visitor, WebFrame* frame)
+bool WebFrame::isFrameAlive(Visitor* visitor, const WebFrame* frame)
 {
     if (!frame)
         return true;
@@ -261,7 +261,7 @@ bool WebFrame::isAlive(Visitor* visitor, WebFrame* frame)
 
 void WebFrame::clearWeakFrames(Visitor* visitor)
 {
-    if (!isAlive(visitor, m_opener))
+    if (!isFrameAlive(visitor, m_opener))
         m_opener = nullptr;
 }
 #endif
