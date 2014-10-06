@@ -71,6 +71,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/rendering/style/GridCoordinate.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
@@ -3597,12 +3598,8 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
     if (!arguments || arguments->size() < 3 || !validUnit(arguments->valueAt(0), FPositiveInteger) || !isComma(arguments->valueAt(1)))
         return false;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(arguments->valueAt(0)->fValue > 0);
     size_t repetitions = arguments->valueAt(0)->fValue;
-
-    // The spec allows us to clamp the number of repetitions: http://www.w3.org/TR/css-grid-1/#repeat-notation
-    const size_t maxRepetitions = 10000;
-    repetitions = std::min(repetitions, maxRepetitions);
+    ASSERT_WITH_SECURITY_IMPLICATION(repetitions > 0);
 
     RefPtrWillBeRawPtr<CSSValueList> repeatedValues = CSSValueList::createSpaceSeparated();
     arguments->next(); // Skip the repetition count.
@@ -3613,14 +3610,14 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
     if (currentValue && currentValue->unit == CSSParserValue::ValueList)
         parseGridLineNames(*arguments, *repeatedValues);
 
-    bool seenTrackSize = false;
+    size_t numberOfTracks = 0;
     while (arguments->current()) {
         RefPtrWillBeRawPtr<CSSValue> trackSize = parseGridTrackSize(*arguments);
         if (!trackSize)
             return false;
 
         repeatedValues->append(trackSize);
-        seenTrackSize = true;
+        ++numberOfTracks;
 
         // This takes care of any trailing <ident>* in the grammar.
         currentValue = arguments->current();
@@ -3629,8 +3626,12 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
     }
 
     // We should have found at least one <track-size> or else it is not a valid <track-list>.
-    if (!seenTrackSize)
+    if (!numberOfTracks)
         return false;
+
+    // We clamp the number of repetitions to a multiple of the repeat() track list's size, while staying below the max
+    // grid size.
+    repetitions = std::min(repetitions, kGridMaxTracks / numberOfTracks);
 
     for (size_t i = 0; i < repetitions; ++i) {
         for (size_t j = 0; j < repeatedValues->length(); ++j)

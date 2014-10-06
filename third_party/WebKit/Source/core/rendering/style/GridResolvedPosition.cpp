@@ -126,12 +126,12 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const R
 
 size_t GridResolvedPosition::explicitGridColumnCount(const RenderStyle& gridContainerStyle)
 {
-    return gridContainerStyle.gridTemplateColumns().size();
+    return std::min(gridContainerStyle.gridTemplateColumns().size(), kGridMaxTracks);
 }
 
 size_t GridResolvedPosition::explicitGridRowCount(const RenderStyle& gridContainerStyle)
 {
-    return gridContainerStyle.gridTemplateRows().size();
+    return std::min(gridContainerStyle.gridTemplateRows().size(), kGridMaxTracks);
 }
 
 size_t GridResolvedPosition::explicitGridSizeForSide(const RenderStyle& gridContainerStyle, GridPositionSide side)

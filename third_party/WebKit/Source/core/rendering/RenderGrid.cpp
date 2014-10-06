@@ -870,8 +870,8 @@ void RenderGrid::placeItemsOnGrid()
         insertItemIntoGrid(*child, GridCoordinate(*rowPositions, *columnPositions));
     }
 
-    ASSERT(gridRowCount() >= style()->gridTemplateRows().size());
-    ASSERT(gridColumnCount() >= style()->gridTemplateColumns().size());
+    ASSERT(gridRowCount() >= GridResolvedPosition::explicitGridRowCount(*style()));
+    ASSERT(gridColumnCount() >= GridResolvedPosition::explicitGridColumnCount(*style()));
 
     // FIXME: Implement properly "stack" value in auto-placement algorithm.
     if (style()->isGridAutoFlowAlgorithmStack()) {

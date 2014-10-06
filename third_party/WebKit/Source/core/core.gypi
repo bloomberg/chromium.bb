@@ -3540,6 +3540,7 @@
             'css/invalidation/DescendantInvalidationSetTest.cpp',
             'css/parser/BisonCSSParserTest.cpp',
             'css/parser/CSSParserValuesTest.cpp',
+            'css/parser/CSSPropertyParserTest.cpp',
             'css/parser/SizesCalcParserTest.cpp',
             'css/parser/MediaQueryTokenizerTest.cpp',
             'css/parser/SizesAttributeParserTest.cpp',
