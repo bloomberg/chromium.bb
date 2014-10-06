@@ -52,7 +52,7 @@ void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<Mutation
 
     v8::Isolate* isolate = m_scriptState->isolate();
 
-    if (m_scriptState->contextIsValid())
+    if (!m_scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(m_scriptState.get());
 

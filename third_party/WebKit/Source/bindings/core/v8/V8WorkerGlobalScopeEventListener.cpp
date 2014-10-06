@@ -60,7 +60,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext*, Event* eve
     if (!script)
         return;
 
-    if (scriptState()->contextIsValid())
+    if (!scriptState()->contextIsValid())
         return;
     ScriptState::Scope scope(scriptState());
 

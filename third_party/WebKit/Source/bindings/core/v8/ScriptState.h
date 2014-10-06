@@ -74,7 +74,7 @@ public:
 
     // This can return an empty handle if the v8::Context is gone.
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
-    bool contextIsValid() const { return m_context.isEmpty() || m_globalObjectDetached; }
+    bool contextIsValid() const { return !m_context.isEmpty() && !m_globalObjectDetached; }
     void detachGlobalObject();
     void clearContext() { return m_context.clear(); }
 

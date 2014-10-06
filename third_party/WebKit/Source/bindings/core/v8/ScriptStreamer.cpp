@@ -408,7 +408,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
         return false;
     }
 
-    if (scriptState->contextIsValid())
+    if (!scriptState->contextIsValid())
         return false;
     ScriptState::Scope scope(scriptState);
 

@@ -75,7 +75,7 @@ V8AbstractEventListener::~V8AbstractEventListener()
 
 void V8AbstractEventListener::handleEvent(ExecutionContext*, Event* event)
 {
-    if (scriptState()->contextIsValid())
+    if (!scriptState()->contextIsValid())
         return;
     if (!scriptState()->executionContext())
         return;
@@ -110,7 +110,7 @@ void V8AbstractEventListener::invokeEventHandler(Event* event, v8::Local<v8::Val
     if (jsEvent.IsEmpty())
         return;
 
-    ASSERT(!scriptState()->contextIsValid());
+    ASSERT(scriptState()->contextIsValid());
     v8::Local<v8::Value> returnValue;
     {
         // Catch exceptions thrown in the event handler so they do not propagate to javascript code that caused the event to fire.

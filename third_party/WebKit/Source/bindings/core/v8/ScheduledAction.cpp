@@ -89,7 +89,7 @@ void ScheduledAction::execute(ExecutionContext* context)
 
 void ScheduledAction::execute(LocalFrame* frame)
 {
-    if (m_scriptState->contextIsValid()) {
+    if (!m_scriptState->contextIsValid()) {
         WTF_LOG(Timers, "ScheduledAction::execute %p: context is empty", this);
         return;
     }
@@ -112,7 +112,7 @@ void ScheduledAction::execute(LocalFrame* frame)
 void ScheduledAction::execute(WorkerGlobalScope* worker)
 {
     ASSERT(worker->thread()->isCurrentThread());
-    ASSERT(!m_scriptState->contextIsValid());
+    ASSERT(m_scriptState->contextIsValid());
     if (!m_function.isEmpty()) {
         ScriptState::Scope scope(m_scriptState.get());
         Vector<v8::Handle<v8::Value> > info;

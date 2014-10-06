@@ -45,7 +45,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
         return true;
 
     v8::Isolate* isolate = m_scriptState->isolate();
-    if (m_scriptState->contextIsValid())
+    if (!m_scriptState->contextIsValid())
         return true;
 
     ScriptState::Scope scope(m_scriptState.get());

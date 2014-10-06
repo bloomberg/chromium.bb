@@ -651,7 +651,7 @@ bool ScriptDebugServer::isPaused()
 
 void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
 {
-    if (scriptState->contextIsValid())
+    if (!scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(scriptState);
 
@@ -691,7 +691,7 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
     if (script.IsEmpty())
         return;
 
-    if (scriptState->contextIsValid())
+    if (!scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(scriptState);
     v8::TryCatch tryCatch;

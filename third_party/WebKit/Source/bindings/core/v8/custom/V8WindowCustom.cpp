@@ -326,7 +326,7 @@ v8::Handle<v8::Value> DialogHandler::returnValue() const
 {
     if (!m_scriptStateForDialogFrame)
         return v8Undefined();
-    ASSERT(!m_scriptStateForDialogFrame->contextIsValid());
+    ASSERT(m_scriptStateForDialogFrame->contextIsValid());
 
     v8::Isolate* isolate = m_scriptStateForDialogFrame->isolate();
     v8::EscapableHandleScope handleScope(isolate);
