@@ -16,6 +16,13 @@
         ],
       },
     }],
+    ['OS=="mac" and asan==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/libclang_rt.asan_osx_dynamic.dylib',
+        ],
+      },
+    }],
     ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
       'variables': {
         'files': [
