@@ -216,6 +216,9 @@
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES" desc="Permission string for implementing Bluetooth profiles.">
         Send messages to and receive messages from Bluetooth devices.
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_PRIVATE" desc="Permission string for Bluetooth Private API.">
+        Control Bluetooth adapter state and pairing
+      </message>
 
       <!-- Host access permissions. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">

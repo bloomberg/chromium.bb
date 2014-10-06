@@ -69,6 +69,22 @@
     "dependencies": ["permission:app.window.shape"],
     "contexts": ["blessed_extension"]
   },
+  "bluetooth": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"]
+  },
+  "bluetoothLowEnergy": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"]
+  },
+  "bluetoothPrivate": {
+    "dependencies": ["permission:bluetoothPrivate"],
+    "contexts": ["blessed_extension"]
+  },
+  "bluetoothSocket": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"]
+  },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]

@@ -245,10 +245,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kFirstRunPrivate, "firstRunPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kBluetoothPrivate, "bluetoothPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional,
-       IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_PRIVATE,
-       PermissionMessage::kBluetoothPrivate},
 
       // Full url access permissions.
       {APIPermission::kDebugger, "debugger",
