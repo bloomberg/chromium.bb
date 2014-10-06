@@ -226,6 +226,7 @@ public:
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
     LayoutRect physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0) const;
     LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const RenderLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const;
+    LayoutRect fragmentsBoundingBox(const RenderLayer* ancestorLayer) const;
 
     // FIXME: This function is inconsistent as to whether the returned rect has been flipped for writing mode.
     LayoutRect boundingBoxForCompositingOverlapTest() const { return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : logicalBoundingBox(); }
@@ -539,6 +540,7 @@ public:
 private:
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;
+    LayoutRect flippedLogicalBoundingBox() const;
 
     bool hasOverflowControls() const;
 

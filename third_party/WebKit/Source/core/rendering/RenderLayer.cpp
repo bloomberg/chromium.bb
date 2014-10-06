@@ -1128,7 +1128,7 @@ LayoutRect RenderLayer::transparencyClipBox(const RenderLayer* layer, const Rend
         return result;
     }
 
-    LayoutRect clipRect = layer->physicalBoundingBox(rootLayer);
+    LayoutRect clipRect = layer->fragmentsBoundingBox(rootLayer);
     expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, paintBehavior);
     layer->renderer()->style()->filterOutsets().expandRect(clipRect);
     clipRect.move(subPixelAccumulation);
@@ -1400,7 +1400,7 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
 {
     LayoutPoint delta;
     convertToLayerCoords(ancestorLayer, delta);
-    rect.move(-delta.x(), -delta.y());
+    rect.moveBy(delta);
 }
 
 void RenderLayer::didUpdateNeedsCompositedScrolling()
@@ -2213,21 +2213,42 @@ LayoutRect RenderLayer::logicalBoundingBox() const
     return result;
 }
 
-LayoutRect RenderLayer::physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot) const
+LayoutRect RenderLayer::flippedLogicalBoundingBox() const
 {
     LayoutRect result = logicalBoundingBox();
     if (m_renderer->isBox())
         renderBox()->flipForWritingMode(result);
     else
         m_renderer->containingBlock()->flipForWritingMode(result);
+    return result;
+}
 
-    LayoutPoint delta;
+LayoutRect RenderLayer::physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot) const
+{
+    LayoutRect result = flippedLogicalBoundingBox();
     if (offsetFromRoot)
-        delta = *offsetFromRoot;
+        result.moveBy(*offsetFromRoot);
     else
-        convertToLayerCoords(ancestorLayer, delta);
+        convertToLayerCoords(ancestorLayer, result);
+    return result;
+}
 
-    result.moveBy(delta);
+LayoutRect RenderLayer::fragmentsBoundingBox(const RenderLayer* ancestorLayer) const
+{
+    if (!enclosingPaginationLayer())
+        return physicalBoundingBox(ancestorLayer);
+
+    LayoutRect result = flippedLogicalBoundingBox();
+
+    // Split our box up into the actual fragment boxes that render in the columns/pages and unite those together to
+    // get our true bounding box.
+    LayoutPoint offsetWithinPaginationLayer;
+    convertToLayerCoords(enclosingPaginationLayer(), offsetWithinPaginationLayer);
+    result.moveBy(offsetWithinPaginationLayer);
+
+    RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
+    result = enclosingFlowThread->fragmentsBoundingBox(result);
+    enclosingPaginationLayer()->convertToLayerCoords(ancestorLayer, result);
     return result;
 }
 
