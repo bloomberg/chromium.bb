@@ -156,12 +156,6 @@
       "sql_unittests",
       "sync_unit_tests",
       "ui_unittests",
-      {
-        "test": "unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       "url_unittests"
     ]
   },
