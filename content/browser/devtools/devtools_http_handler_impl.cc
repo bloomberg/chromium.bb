@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "content/browser/devtools/devtools_browser_target.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -70,6 +69,8 @@ const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 
 // Maximum write buffer size of devtools http/websocket connectinos.
 const int32 kSendBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
+
+// DevToolsAgentHostClientImpl -----------------------------------------------
 
 // An internal implementation of DevToolsAgentHostClient that delegates
 // messages sent to a DebuggerShell instance.
@@ -149,6 +150,72 @@ static bool TimeComparator(const DevToolsTarget* target1,
 
 }  // namespace
 
+// DevToolsHttpHandlerImpl::BrowserTarget ------------------------------------
+
+class DevToolsHttpHandlerImpl::BrowserTarget {
+ public:
+  BrowserTarget(base::MessageLoop* message_loop,
+                net::HttpServer* server,
+                int connection_id)
+      : message_loop_(message_loop),
+        server_(server),
+        connection_id_(connection_id) {
+  }
+
+  ~BrowserTarget() {
+    STLDeleteElements(&handlers_);
+  }
+
+  // Takes ownership.
+  void RegisterHandler(DevToolsProtocol::Handler* handler) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    handler->SetNotifier(
+        base::Bind(&BrowserTarget::Respond, base::Unretained(this)));
+    handlers_.push_back(handler);
+  }
+
+  void HandleMessage(const std::string& message) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    std::string error_response;
+    scoped_refptr<DevToolsProtocol::Command> command =
+        DevToolsProtocol::ParseCommand(message, &error_response);
+    if (!command.get()) {
+      Respond(error_response);
+      return;
+    }
+
+    for (const auto& handler : handlers_) {
+      scoped_refptr<DevToolsProtocol::Response> response =
+              handler->HandleCommand(command);
+      if (response.get()) {
+        if (!response->is_async_promise())
+          Respond(response->Serialize());
+        return;
+      }
+    }
+
+    Respond(command->NoSuchMethodErrorResponse()->Serialize());
+  }
+
+  void Respond(const std::string& message) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&net::HttpServer::SendOverWebSocket,
+                   base::Unretained(server_),
+                   connection_id_,
+                   message));
+  }
+
+ private:
+  base::MessageLoop* const message_loop_;
+  net::HttpServer* const server_;
+  const int connection_id_;
+  std::vector<DevToolsProtocol::Handler*> handlers_;
+};
+
+// DevToolsHttpHandler -------------------------------------------------------
+
 // static
 bool DevToolsHttpHandler::IsSupportedProtocolVersion(
     const std::string& version) {
@@ -179,6 +246,8 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
   return http_handler;
 }
 
+// DevToolsHttpHandler::ServerSocketFactory ----------------------------------
+
 DevToolsHttpHandler::ServerSocketFactory::ServerSocketFactory(
     const std::string& address,
     int port,
@@ -200,6 +269,8 @@ DevToolsHttpHandler::ServerSocketFactory::CreateAndListen() const {
   }
   return scoped_ptr<net::ServerSocket>();
 }
+
+// DevToolsHttpHandlerImpl ---------------------------------------------------
 
 DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -371,30 +442,6 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
 void DevToolsHttpHandlerImpl::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  std::string browser_prefix = "/devtools/browser";
-  size_t browser_pos = request.path.find(browser_prefix);
-  if (browser_pos == 0) {
-    scoped_refptr<DevToolsBrowserTarget> browser_target =
-        new DevToolsBrowserTarget(server_.get(), connection_id);
-    browser_target->RegisterDomainHandler(
-        devtools::Tracing::kName,
-        new DevToolsTracingHandler(DevToolsTracingHandler::Browser),
-        true /* handle on UI thread */);
-    browser_target->RegisterDomainHandler(
-        devtools::Tethering::kName,
-        new TetheringHandler(delegate_.get(), thread_->message_loop_proxy()),
-        true /* handle on UI thread */);
-    browser_target->RegisterDomainHandler(
-        devtools::SystemInfo::kName,
-        new DevToolsSystemInfoHandler(),
-        true /* handle on UI thread */);
-    browser_targets_[connection_id] = browser_target;
-
-    server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
-    server_->AcceptWebSocket(connection_id, request);
-    return;
-  }
-
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -408,12 +455,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
 void DevToolsHttpHandlerImpl::OnWebSocketMessage(
     int connection_id,
     const std::string& data) {
-  BrowserTargets::iterator it = browser_targets_.find(connection_id);
-  if (it != browser_targets_.end()) {
-    it->second->HandleMessage(data);
-    return;
-  }
-
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -425,13 +466,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketMessage(
 }
 
 void DevToolsHttpHandlerImpl::OnClose(int connection_id) {
-  BrowserTargets::iterator it = browser_targets_.find(connection_id);
-  if (it != browser_targets_.end()) {
-    it->second->Detach();
-    browser_targets_.erase(it);
-    return;
-  }
-
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -652,6 +686,22 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   if (!thread_)
     return;
 
+  std::string browser_prefix = "/devtools/browser";
+  size_t browser_pos = request.path.find(browser_prefix);
+  if (browser_pos == 0) {
+    BrowserTarget* browser_target = new BrowserTarget(
+        thread_->message_loop(), server_.get(), connection_id);
+    browser_target->RegisterHandler(
+        new DevToolsTracingHandler(DevToolsTracingHandler::Browser));
+    browser_target->RegisterHandler(
+        new TetheringHandler(delegate_.get(), thread_->message_loop_proxy()));
+    browser_target->RegisterHandler(
+        new DevToolsSystemInfoHandler());
+    browser_targets_[connection_id] = browser_target;
+    AcceptWebSocket(connection_id, request);
+    return;
+  }
+
   size_t pos = request.path.find(kPageUrlPrefix);
   if (pos != 0) {
     Send404(connection_id);
@@ -683,6 +733,12 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
 void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
     int connection_id,
     const std::string& data) {
+  BrowserTargets::iterator browser_it = browser_targets_.find(connection_id);
+  if (browser_it != browser_targets_.end()) {
+    browser_it->second->HandleMessage(data);
+    return;
+  }
+
   ConnectionToClientMap::iterator it =
       connection_to_client_ui_.find(connection_id);
   if (it == connection_to_client_ui_.end())
@@ -694,6 +750,13 @@ void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
 }
 
 void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
+  BrowserTargets::iterator browser_it = browser_targets_.find(connection_id);
+  if (browser_it != browser_targets_.end()) {
+    delete browser_it->second;
+    browser_targets_.erase(connection_id);
+    return;
+  }
+
   ConnectionToClientMap::iterator it =
       connection_to_client_ui_.find(connection_id);
   if (it != connection_to_client_ui_.end()) {

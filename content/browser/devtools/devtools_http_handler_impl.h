@@ -34,8 +34,6 @@ class URLRequestContextGetter;
 
 namespace content {
 
-class DevToolsBrowserTarget;
-
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
       public base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>,
@@ -43,6 +41,8 @@ class DevToolsHttpHandlerImpl
  private:
   friend class base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>;
   friend class DevToolsHttpHandler;
+
+  class BrowserTarget;
 
   DevToolsHttpHandlerImpl(scoped_ptr<ServerSocketFactory> server_socket_factory,
                           const std::string& frontend_url,
@@ -127,7 +127,7 @@ class DevToolsHttpHandlerImpl
   const base::FilePath active_port_output_directory_;
   typedef std::map<std::string, DevToolsTarget*> TargetMap;
   TargetMap target_map_;
-  typedef std::map<int, scoped_refptr<DevToolsBrowserTarget> > BrowserTargets;
+  typedef std::map<int, BrowserTarget*> BrowserTargets;
   BrowserTargets browser_targets_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
