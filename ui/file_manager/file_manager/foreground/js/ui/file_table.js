@@ -101,21 +101,37 @@ FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
  * Handles to the start of column resizing by splitters.
  */
 FileTableColumnModel.prototype.handleSplitterDragStart = function() {
-  this.columnPos_ = [0];
-  for (var i = 0; i < this.columns_.length; i++) {
-    this.columnPos_[i + 1] = this.columns_[i].width + this.columnPos_[i];
-  }
+  this.initializeColumnPos();
 };
 
 /**
  * Handles to the end of column resizing by splitters.
  */
 FileTableColumnModel.prototype.handleSplitterDragEnd = function() {
-  this.columnPos_ = null;
+  this.destroyColumnPos();
 };
 
 /**
+ * Initialize columnPos_ which is used in setWidthAndKeepTotal().
+ */
+FileTableColumnModel.prototype.initializeColumnPos = function() {
+  this.columnPos_ = [0];
+  for (var i = 0; i < this.columns_.length; i++) {
+    this.columnPos_[i + 1] = this.columns_[i].width + this.columnPos_[i];
+  }
+}
+
+/**
+ * Destroy columnPos_ which is used in setWidthAndKeepTotal().
+ */
+FileTableColumnModel.prototype.destroyColumnPos = function() {
+  this.columnPos_ = null;
+}
+
+/**
  * Sets the width of column with keeping the total width of table.
+ * Before and after calling this method, you must initialize and destroy
+ * columnPos with initializeColumnPos() and destroyColumnPos().
  * @param {number} columnIndex Index of column that is resized.
  * @param {number} columnWidth New width of the column.
  */
@@ -349,6 +365,56 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
     return currentSelection;
   };
 };
+
+/**
+ * Adjust column width to fit its content.
+ * @param {number} index Index of the column to adjust width.
+ * @override
+ */
+FileTable.prototype.fitColumn = function(index) {
+  var list = this.list_;
+  var listHeight = list.clientHeight;
+
+  var cm = this.columnModel;
+  var dm = this.dataModel;
+  var columnId = cm.getId(index);
+  var doc = this.ownerDocument;
+  var render = cm.getRenderFunction(index);
+  var table = this;
+  var MAXIMUM_ROWS_TO_MEASURE = 1000;
+
+  // Create a temporaty list item, put all cells into it and measure its
+  // width. Then remove the item. It fits "list > *" CSS rules.
+  var container = doc.createElement('li');
+  container.style.display = 'inline-block';
+  container.style.textAlign = 'start';
+  // The container will have width of the longest cell.
+  container.style.webkitBoxOrient = 'vertical';
+
+  // Ensure all needed data available.
+  dm.prepareSort(columnId, function() {
+    // Select at most MAXIMUM_ROWS_TO_MEASURE items around visible area.
+    var items = list.getItemsInViewPort(list.scrollTop, listHeight);
+    var firstIndex = Math.floor(Math.max(0,
+        (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
+    var lastIndex = Math.min(dm.length,
+                             firstIndex + MAXIMUM_ROWS_TO_MEASURE);
+    for (var i = firstIndex; i < lastIndex; i++) {
+      var item = dm.item(i);
+      var div = doc.createElement('div');
+      div.className = 'table-row-cell';
+      div.appendChild(render(item, columnId, table));
+      container.appendChild(div);
+    }
+    list.appendChild(container);
+    var width = parseFloat(window.getComputedStyle(container).width);
+    list.removeChild(container);
+
+    cm.initializeColumnPos();
+    cm.setWidthAndKeepTotal(index, Math.ceil(width));
+    cm.destroyColumnPos();
+  });
+}
 
 /**
  * Sets date and time format.
