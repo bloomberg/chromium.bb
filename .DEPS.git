@@ -74,8 +74,8 @@ deps_os = {
     },
     'win':
     {
-        'third_party/NSIS':
-            Var('git_url') + '/native_client/deps/third_party/NSIS.git@21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
+        'third_party/mingw-w64/mingw/bin':
+            Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
     },
 }
 
