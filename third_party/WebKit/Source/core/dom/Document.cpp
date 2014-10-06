@@ -3460,9 +3460,11 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
 
 void Document::hoveredNodeDetached(Node* node)
 {
+    ASSERT(node);
     if (!m_hoverNode)
         return;
 
+    m_hoverNode->document().updateDistributionForNodeIfNeeded(m_hoverNode.get());
     if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(m_hoverNode.get())))
         return;
 
