@@ -29,12 +29,13 @@ bool NotificationUIManagerAndroid::Update(const Notification& notification,
 }
 
 const Notification* NotificationUIManagerAndroid::FindById(
-    const std::string& notification_id) const {
+    const std::string& delegate_id,
+    ProfileID profile_id) const {
   return 0;
 }
 
-bool NotificationUIManagerAndroid::CancelById(
-    const std::string& notification_id) {
+bool NotificationUIManagerAndroid::CancelById(const std::string& delegate_id,
+                                              ProfileID profile_id) {
   return false;
 }
 

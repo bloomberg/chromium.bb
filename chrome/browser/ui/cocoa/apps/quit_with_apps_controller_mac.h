@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/notification.h"
 
 class PrefRegistrySimple;
+class Profile;
 
 // QuitWithAppsController checks whether any apps are running and shows a
 // notification to quit all of them.
@@ -39,6 +40,11 @@ class QuitWithAppsController : public NotificationDelegate {
   virtual ~QuitWithAppsController();
 
   scoped_ptr<Notification> notification_;
+  // The Profile instance associated with the notification_. We need to cache
+  // the instance here because when we want to cancel the notification we need
+  // to provide the profile which was used to add the notification previously.
+  // Not owned by this class.
+  Profile* notification_profile_;
 
   // Whether to suppress showing the notification for the rest of the session.
   bool suppress_for_session_;

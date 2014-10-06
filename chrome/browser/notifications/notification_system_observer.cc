@@ -43,7 +43,8 @@ void NotificationSystemObserver::Observe(
   } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     // We only want to remove the incognito notifications.
     if (content::Source<Profile>(source)->IsOffTheRecord())
-      ui_manager_->CancelAllByProfile(content::Source<Profile>(source).ptr());
+      ui_manager_->CancelAllByProfile(NotificationUIManager::GetProfileID(
+          content::Source<Profile>(source).ptr()));
   } else {
     NOTREACHED();
   }

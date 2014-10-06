@@ -281,8 +281,9 @@ class ConsumerManagementServiceEnrollmentTest
   }
 
   bool HasEnrollmentNotification() {
-    return g_browser_process->notification_ui_manager()->
-        FindById("consumer_management.enroll");
+    return g_browser_process->notification_ui_manager()->FindById(
+        "consumer_management.enroll",
+        NotificationUIManager::GetProfileID(profile()));
   }
 
   void RunEnrollmentTest() {

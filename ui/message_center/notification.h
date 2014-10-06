@@ -64,6 +64,8 @@ class MESSAGE_CENTER_EXPORT Notification {
                const RichNotificationData& optional_fields,
                NotificationDelegate* delegate);
 
+  Notification(const std::string& id, const Notification& other);
+
   Notification(const Notification& other);
 
   virtual ~Notification();

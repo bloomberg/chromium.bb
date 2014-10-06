@@ -151,8 +151,9 @@ class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
         message_center->GetVisibleNotifications().rbegin();
     for (size_t i = 0; i < index; ++i)
       ++it;
-    ASSERT_TRUE(g_browser_process->notification_ui_manager()->
-        CancelById((*it)->id()));
+    ASSERT_TRUE(g_browser_process->notification_ui_manager()->CancelById(
+        (*it)->id(),
+        NotificationUIManager::GetProfileID(browser()->profile())));
   }
 
   virtual size_t CountBalloons() override {

@@ -156,8 +156,8 @@ class SyncErrorNotifierTest : public AshTestBase  {
     EXPECT_EQ(is_error, error_controller_->HasError());
 
     // If there is an error we should see a notification.
-    const Notification* notification = notification_ui_manager_->
-        FindById(kNotificationId);
+    const Notification* notification = notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_));
     if (is_error) {
       ASSERT_TRUE(notification);
       ASSERT_FALSE(notification->title().empty());
@@ -193,7 +193,8 @@ class SyncErrorNotifierTest : public AshTestBase  {
 #define MAYBE_PassphraseNotification PassphraseNotification
 #endif
 TEST_F(SyncErrorNotifierTest, MAYBE_PassphraseNotification) {
-  ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+  ASSERT_FALSE(notification_ui_manager_->FindById(
+      kNotificationId, NotificationUIManager::GetProfileID(profile_)));
 
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(*service_, QueryDetailedSyncStatus(_))

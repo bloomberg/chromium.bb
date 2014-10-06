@@ -476,7 +476,8 @@ Notification* ScreenshotTaker::CreateNotification(
   const std::string notification_id(kNotificationId);
   // We cancel a previous screenshot notification, if any, to ensure we get
   // a fresh notification pop-up.
-  g_browser_process->notification_ui_manager()->CancelById(notification_id);
+  g_browser_process->notification_ui_manager()->CancelById(
+      notification_id, NotificationUIManager::GetProfileID(GetProfile()));
   const base::string16 replace_id(base::UTF8ToUTF16(notification_id));
   bool success =
       (screenshot_result == ScreenshotTakerObserver::SCREENSHOT_SUCCESS);

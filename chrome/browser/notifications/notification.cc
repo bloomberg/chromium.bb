@@ -54,6 +54,18 @@ Notification::Notification(
   // to prevent "Downloading" the data url and overwriting the existing |icon|.
 }
 
+Notification::Notification(const std::string& id,
+                           const Notification& notification)
+    : message_center::Notification(id, notification),
+      origin_url_(notification.origin_url()),
+      icon_url_(notification.icon_url()),
+      button_one_icon_url_(notification.button_one_icon_url()),
+      button_two_icon_url_(notification.button_two_icon_url()),
+      image_url_(notification.image_url()),
+      replace_id_(notification.replace_id()),
+      delegate_(notification.delegate()) {
+}
+
 Notification::Notification(const Notification& notification)
     : message_center::Notification(notification),
       origin_url_(notification.origin_url()),

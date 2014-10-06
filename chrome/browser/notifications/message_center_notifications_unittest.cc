@@ -169,9 +169,13 @@ TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
 TEST_F(MessageCenterNotificationManagerTest, FirstRunShown) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
+  std::string notification_id =
+      notification_manager()
+          ->FindById("test", NotificationUIManager::GetProfileID(&profile))
+          ->id();
   message_center()->DisplayedNotification(
-      "test", message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
-  message_center()->MarkSinglePopupAsShown("test", false);
+      notification_id, message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
+  message_center()->MarkSinglePopupAsShown(notification_id, false);
 
   run_loop()->Run();
   base::RunLoop run_loop_2;
@@ -184,8 +188,12 @@ TEST_F(MessageCenterNotificationManagerTest,
        FirstRunNotShownWithPopupsVisible) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
+  std::string notification_id =
+      notification_manager()
+          ->FindById("test", NotificationUIManager::GetProfileID(&profile))
+          ->id();
   message_center()->DisplayedNotification(
-      "test", message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
+      notification_id, message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(delegate()->displayed_first_run_balloon());
   EXPECT_FALSE(notification_manager()->FirstRunTimerIsActive());

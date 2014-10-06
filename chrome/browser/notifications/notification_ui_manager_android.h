@@ -18,9 +18,10 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   virtual void Add(const Notification& notification, Profile* profile) OVERRIDE;
   virtual bool Update(const Notification& notification,
                       Profile* profile) OVERRIDE;
-  virtual const Notification* FindById(
-      const std::string& notification_id) const OVERRIDE;
-  virtual bool CancelById(const std::string& notification_id) OVERRIDE;
+  virtual const Notification* FindById(const std::string& delegate_id,
+                                       ProfileID profile_id) const OVERRIDE;
+  virtual bool CancelById(const std::string& delegate_id,
+                          ProfileID profile_id) OVERRIDE;
   virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,
       const GURL& source) OVERRIDE;

@@ -18,6 +18,8 @@ namespace {
 const int kNotificationsMaxCount = 20;
 }
 
+// TODO(dewittj) remove the dependency on the MessageCenter because this
+// violates layering.
 GoogleNowNotificationStatsCollector::GoogleNowNotificationStatsCollector(
     message_center::MessageCenter* message_center)
     : message_center_(message_center) {
@@ -32,7 +34,7 @@ void GoogleNowNotificationStatsCollector::OnNotificationDisplayed(
     const std::string& notification_id,
     const message_center::DisplaySource source) {
   if ((source == message_center::DISPLAY_SOURCE_POPUP) &&
-      IsNotificationIdForGoogleNow(notification_id)) {
+      IsVisibleNotificationIdForGoogleNow(notification_id)) {
     content::RecordAction(
         base::UserMetricsAction(
             "GoogleNow.MessageCenter.NotificationPoppedUp"));
@@ -48,11 +50,12 @@ void GoogleNowNotificationStatsCollector::OnCenterVisibilityChanged(
   }
 }
 
-bool GoogleNowNotificationStatsCollector::IsNotificationIdForGoogleNow(
-  const std::string& notification_id) {
+bool GoogleNowNotificationStatsCollector::IsVisibleNotificationIdForGoogleNow(
+    const std::string& notification_id) {
   bool isGoogleNowNotification = false;
-  const Notification* const notification =
-      g_browser_process->notification_ui_manager()->FindById(notification_id);
+  const message_center::Notification* const notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          notification_id);
   if (notification) {
     isGoogleNowNotification =
         ((notification->notifier_id().type ==

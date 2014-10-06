@@ -55,14 +55,15 @@ class MessageCenterNotificationManager
                    Profile* profile) OVERRIDE;
   virtual bool Update(const Notification& notification,
                       Profile* profile) OVERRIDE;
-  virtual const Notification* FindById(
-      const std::string& notification_id) const OVERRIDE;
-  virtual bool CancelById(const std::string& notification_id) OVERRIDE;
+  virtual const Notification* FindById(const std::string& delegate_id,
+                                       ProfileID profile_id) const OVERRIDE;
+  virtual bool CancelById(const std::string& delegate_id,
+                          ProfileID profile_id) OVERRIDE;
   virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,
       const GURL& source) OVERRIDE;
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
-  virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
+  virtual bool CancelAllByProfile(ProfileID profile_id) OVERRIDE;
   virtual void CancelAll() OVERRIDE;
 
   // MessageCenterObserver
@@ -87,6 +88,11 @@ class MessageCenterNotificationManager
   // Takes ownership of |delegate|.
   void SetMessageCenterTrayDelegateForTest(
       message_center::MessageCenterTrayDelegate* delegate);
+
+  // Returns the notification id which this manager will use to add to message
+  // center, for this combination of delegate id and profile.
+  std::string GetMessageCenterNotificationIdForTest(
+      const std::string& delegate_id, Profile* profile);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,

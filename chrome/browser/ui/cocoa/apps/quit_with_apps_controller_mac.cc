@@ -37,7 +37,7 @@ const char QuitWithAppsController::kQuitWithAppsNotificationID[] =
     "quit-with-apps";
 
 QuitWithAppsController::QuitWithAppsController()
-    : suppress_for_session_(false) {
+    : notification_profile_(NULL), suppress_for_session_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // There is only ever one notification to replace, so use the same replace_id
@@ -80,11 +80,13 @@ void QuitWithAppsController::Close(bool by_user) {
 }
 
 void QuitWithAppsController::Click() {
-  g_browser_process->notification_ui_manager()->CancelById(id());
+  g_browser_process->notification_ui_manager()->CancelById(
+      id(), NotificationUIManager::GetProfileID(notification_profile_));
 }
 
 void QuitWithAppsController::ButtonClick(int button_index) {
-  g_browser_process->notification_ui_manager()->CancelById(id());
+  g_browser_process->notification_ui_manager()->CancelById(
+      id(), NotificationUIManager::GetProfileID(notification_profile_));
   if (button_index == kQuitAllAppsButtonIndex) {
     AppWindowRegistryUtil::CloseAllAppWindows();
   } else if (button_index == kDontShowAgainButtonIndex) {
@@ -132,10 +134,16 @@ bool QuitWithAppsController::ShouldQuit() {
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   DCHECK(profiles.size());
 
-  // Delete any existing notification to ensure this one is shown.
-  g_browser_process->notification_ui_manager()->CancelById(id());
+  // Delete any existing notification to ensure this one is shown. If
+  // notification_profile_ is NULL then it must be that no notification has been
+  // added by this class yet.
+  if (notification_profile_) {
+    g_browser_process->notification_ui_manager()->CancelById(
+        id(), NotificationUIManager::GetProfileID(notification_profile_));
+  }
+  notification_profile_ = profiles[0];
   g_browser_process->notification_ui_manager()->Add(*notification_,
-                                                    profiles[0]);
+                                                    notification_profile_);
 
   // Always return false, the notification UI can be used to quit all apps which
   // will cause Chrome to quit.

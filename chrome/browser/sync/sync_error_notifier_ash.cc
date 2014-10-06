@@ -151,7 +151,8 @@ void SyncErrorNotifier::OnErrorChanged() {
     return;
 
   if (!error_controller_->HasError()) {
-    g_browser_process->notification_ui_manager()->CancelById(notification_id_);
+    g_browser_process->notification_ui_manager()->CancelById(
+        notification_id_, NotificationUIManager::GetProfileID(profile_));
     return;
   }
 
@@ -169,7 +170,8 @@ void SyncErrorNotifier::OnErrorChanged() {
 #endif
 
   // Keep the existing notification if there is one.
-  if (notification_ui_manager->FindById(notification_id_))
+  if (notification_ui_manager->FindById(
+          notification_id_, NotificationUIManager::GetProfileID(profile_)))
     return;
 
   // Add an accept button to launch the sync setup settings subpage.

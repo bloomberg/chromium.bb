@@ -62,19 +62,29 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
     std::string id_;
   };
 
-  void AddNotification(const std::string& id, const std::string& replace_id) {
-    ::Notification notification(GURL("chrome-extension://abbccedd"),
-                                GURL(),
-                                base::ASCIIToUTF16("Test Web Notification"),
-                                base::ASCIIToUTF16(
-                                    "Notification message body."),
-                                blink::WebTextDirectionDefault,
-                                base::string16(),
-                                base::ASCIIToUTF16(replace_id),
-                                new TestNotificationDelegate(id));
+  void AddNotification(const std::string& delegate_id,
+                       const std::string& replace_id) {
+    ::Notification notification(
+        GURL("chrome-extension://abbccedd"),
+        GURL(),
+        base::ASCIIToUTF16("Test Web Notification"),
+        base::ASCIIToUTF16("Notification message body."),
+        blink::WebTextDirectionDefault,
+        base::string16(),
+        base::ASCIIToUTF16(replace_id),
+        new TestNotificationDelegate(delegate_id));
 
     g_browser_process->notification_ui_manager()->Add(
      notification, browser()->profile());
+  }
+
+  std::string FindNotificationIdByDelegateId(const std::string& delegate_id) {
+    const ::Notification* notification =
+        g_browser_process->notification_ui_manager()->FindById(
+            delegate_id,
+            NotificationUIManager::GetProfileID(browser()->profile()));
+    EXPECT_TRUE(notification);
+    return notification->id();
   }
 
   void UpdateNotification(const std::string& replace_id,
@@ -93,7 +103,8 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   }
 
   void RemoveNotification(const std::string& id) {
-    g_browser_process->notification_ui_manager()->CancelById(id);
+    g_browser_process->notification_ui_manager()->CancelById(
+        id, NotificationUIManager::GetProfileID(browser()->profile()));
   }
 
   bool HasNotification(message_center::MessageCenter* message_center,
@@ -116,12 +127,14 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
   // Add a notification.
   AddNotification("test_id1", "replace_id1");
   EXPECT_EQ(1u, message_center->NotificationCount());
-  EXPECT_TRUE(HasNotification(message_center, "test_id1"));
+  EXPECT_TRUE(HasNotification(message_center,
+                              FindNotificationIdByDelegateId("test_id1")));
   EXPECT_FALSE(HasNotification(message_center, "test_id2"));
   AddNotification("test_id2", "replace_id2");
   AddNotification("test_id2", "replace_id2");
   EXPECT_EQ(2u, message_center->NotificationCount());
-  EXPECT_TRUE(HasNotification(message_center, "test_id1"));
+  EXPECT_TRUE(HasNotification(message_center,
+                              FindNotificationIdByDelegateId("test_id1")));
 
   // Ensure that updating a notification does not affect the count.
   UpdateNotification("replace_id2", "test_id3");

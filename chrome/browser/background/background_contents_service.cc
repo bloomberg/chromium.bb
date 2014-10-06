@@ -67,10 +67,11 @@ namespace {
 
 const char kNotificationPrefix[] = "app.background.crashed.";
 
-void CloseBalloon(const std::string& balloon_id) {
+void CloseBalloon(const std::string& balloon_id, ProfileID profile_id) {
   NotificationUIManager* notification_ui_manager =
       g_browser_process->notification_ui_manager();
-  bool cancelled ALLOW_UNUSED = notification_ui_manager->CancelById(balloon_id);
+  bool cancelled ALLOW_UNUSED =
+      notification_ui_manager->CancelById(balloon_id, profile_id);
 #if defined(ENABLE_NOTIFICATIONS)
   if (cancelled) {
     // TODO(dewittj): Add this functionality to the notification UI manager's
@@ -82,11 +83,14 @@ void CloseBalloon(const std::string& balloon_id) {
 }
 
 // Closes the crash notification balloon for the app/extension with this id.
-void ScheduleCloseBalloon(const std::string& extension_id) {
+void ScheduleCloseBalloon(const std::string& extension_id, Profile* profile) {
   if (!base::MessageLoop::current())  // For unit_tests
     return;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&CloseBalloon, kNotificationPrefix + extension_id));
+      FROM_HERE,
+      base::Bind(&CloseBalloon,
+                 kNotificationPrefix + extension_id,
+                 NotificationUIManager::GetProfileID(profile)));
 }
 
 // Delegate for the app/extension crash notification balloon. Restarts the
@@ -135,7 +139,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
     // Closing the crash notification balloon for the app/extension here should
     // be OK, but it causes a crash on Mac, see: http://crbug.com/78167
-    ScheduleCloseBalloon(copied_extension_id);
+    ScheduleCloseBalloon(copied_extension_id, profile_);
   }
 
   virtual bool HasClickedListener() OVERRIDE { return true; }
@@ -286,7 +290,8 @@ void BackgroundContentsService::
 }
 
 // static
-std::string BackgroundContentsService::GetNotificationIdForExtensionForTesting(
+std::string
+BackgroundContentsService::GetNotificationDelegateIdForExtensionForTesting(
     const std::string& extension_id) {
   return kNotificationPrefix + extension_id;
 }
@@ -451,7 +456,7 @@ void BackgroundContentsService::OnExtensionLoaded(
   }
 
   // Close the crash notification balloon for the app/extension, if any.
-  ScheduleCloseBalloon(extension->id());
+  ScheduleCloseBalloon(extension->id(), profile);
   SendChangeNotification(profile);
 }
 
@@ -492,11 +497,12 @@ void BackgroundContentsService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   // Make sure the extension-crash balloons are removed when the extension is
   // uninstalled/reloaded. We cannot do this from UNLOADED since a crashed
   // extension is unloaded immediately after the crash, not when user reloads or
   // uninstalls the extension.
-  ScheduleCloseBalloon(extension->id());
+  ScheduleCloseBalloon(extension->id(), profile);
 }
 
 void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(
@@ -658,7 +664,7 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
   BackgroundContentsOpenedDetails details = {contents,
                                              frame_name,
                                              application_id};
-  BackgroundContentsOpened(&details);
+  BackgroundContentsOpened(&details, profile);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED,
       content::Source<Profile>(profile),
@@ -726,14 +732,15 @@ void BackgroundContentsService::ShutdownAssociatedBackgroundContents(
 }
 
 void BackgroundContentsService::BackgroundContentsOpened(
-    BackgroundContentsOpenedDetails* details) {
+    BackgroundContentsOpenedDetails* details,
+    Profile* profile) {
   // Add the passed object to our list. Should not already be tracked.
   DCHECK(!IsTracked(details->contents));
   DCHECK(!details->application_id.empty());
   contents_map_[details->application_id].contents = details->contents;
   contents_map_[details->application_id].frame_name = details->frame_name;
 
-  ScheduleCloseBalloon(base::UTF16ToASCII(details->application_id));
+  ScheduleCloseBalloon(base::UTF16ToASCII(details->application_id), profile);
 }
 
 // Used by test code and debug checks to verify whether a given

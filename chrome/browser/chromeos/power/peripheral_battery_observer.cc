@@ -97,6 +97,7 @@ class PeripheralBatteryNotificationDelegate : public NotificationDelegate {
 
 PeripheralBatteryObserver::PeripheralBatteryObserver()
     : testing_clock_(NULL),
+      notification_profile_(NULL),
       weakptr_factory_(
           new base::WeakPtrFactory<PeripheralBatteryObserver>(this)) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -231,15 +232,18 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
 
   notification.set_priority(message_center::SYSTEM_PRIORITY);
 
-  notification_manager->Add(
-      notification,
-      ProfileManager::GetPrimaryUserProfile());
+  notification_profile_ = ProfileManager::GetPrimaryUserProfile();
+  notification_manager->Add(notification, notification_profile_);
 
   return true;
 }
 
 void PeripheralBatteryObserver::CancelNotification(const std::string& address) {
-  g_browser_process->notification_ui_manager()->CancelById(address);
+  // If last_used_profile_ is NULL then no notification has been posted yet.
+  if (notification_profile_) {
+    g_browser_process->notification_ui_manager()->CancelById(
+        address, NotificationUIManager::GetProfileID(notification_profile_));
+  }
 }
 
 }  // namespace chromeos

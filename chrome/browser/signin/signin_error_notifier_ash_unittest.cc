@@ -103,7 +103,9 @@ class SigninErrorNotifierTest : public AshTestBase {
  protected:
   void GetMessage(base::string16* message) {
     const Notification* notification =
-        g_browser_process->notification_ui_manager()->FindById(kNotificationId);
+        g_browser_process->notification_ui_manager()->FindById(
+            kNotificationId,
+            NotificationUIManager::GetProfileID(profile_.get()));
     ASSERT_FALSE(notification == NULL);
     *message = notification->message();
   }
@@ -118,13 +120,16 @@ class SigninErrorNotifierTest : public AshTestBase {
 };
 
 TEST_F(SigninErrorNotifierTest, NoErrorAuthStatusProviders) {
-  ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+  ASSERT_FALSE(notification_ui_manager_->FindById(
+      kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
   {
     // Add a provider (removes itself on exiting this scope).
     FakeAuthStatusProvider provider(error_controller_);
-    ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+    ASSERT_FALSE(notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
   }
-  ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+  ASSERT_FALSE(notification_ui_manager_->FindById(
+      kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
 }
 
 #if !defined(OS_WIN)
@@ -132,7 +137,8 @@ TEST_F(SigninErrorNotifierTest, NoErrorAuthStatusProviders) {
 TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
   {
     FakeAuthStatusProvider provider(error_controller_);
-    ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+    ASSERT_FALSE(notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
     {
       FakeAuthStatusProvider error_provider(error_controller_);
       error_provider.SetAuthError(
@@ -140,13 +146,17 @@ TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
           kTestUsername,
           GoogleServiceAuthError(
               GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-      ASSERT_TRUE(notification_ui_manager_->FindById(kNotificationId));
+      ASSERT_TRUE(notification_ui_manager_->FindById(
+          kNotificationId,
+          NotificationUIManager::GetProfileID(profile_.get())));
     }
     // error_provider is removed now that we've left that scope.
-    ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+    ASSERT_FALSE(notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
   }
   // All providers should be removed now.
-  ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+  ASSERT_FALSE(notification_ui_manager_->FindById(
+      kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
 }
 #endif
 
@@ -167,7 +177,8 @@ TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
         kTestUsername,
         GoogleServiceAuthError(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    ASSERT_TRUE(notification_ui_manager_->FindById(kNotificationId));
+    ASSERT_TRUE(notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
 
     base::string16 message;
     GetMessage(&message);
@@ -184,7 +195,8 @@ TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
         kTestUsername,
         GoogleServiceAuthError::AuthErrorNone());
 
-    ASSERT_TRUE(notification_ui_manager_->FindById(kNotificationId));
+    ASSERT_TRUE(notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
 
     base::string16 new_message;
     GetMessage(&new_message);
@@ -194,7 +206,8 @@ TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
 
     provider1.SetAuthError(
         kTestAccountId, kTestUsername, GoogleServiceAuthError::AuthErrorNone());
-    ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
+    ASSERT_FALSE(notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
   }
 }
 
@@ -230,8 +243,8 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
     provider.SetAuthError(kTestAccountId,
                           kTestUsername,
                           GoogleServiceAuthError(table[i].error_state));
-    const Notification* notification = notification_ui_manager_->
-        FindById(kNotificationId);
+    const Notification* notification = notification_ui_manager_->FindById(
+        kNotificationId, NotificationUIManager::GetProfileID(profile_.get()));
     ASSERT_EQ(table[i].is_error, notification != NULL);
     if (table[i].is_error) {
       EXPECT_FALSE(notification->title().empty());

@@ -31,8 +31,8 @@ class GoogleNowNotificationStatsCollector
   // Counts the number of Google Now Notifications in the message center.
   int CountVisibleGoogleNowNotifications();
 
-  // Returns true if the notification ID is for Google Now.
-  bool IsNotificationIdForGoogleNow(const std::string& notification_id);
+  // Returns true if the ID of a visible notification is for Google Now.
+  bool IsVisibleNotificationIdForGoogleNow(const std::string& notification_id);
 
   // Weak, global.
   message_center::MessageCenter* message_center_;

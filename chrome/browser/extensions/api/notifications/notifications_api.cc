@@ -536,7 +536,8 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   // with "false".
   const Notification* matched_notification =
       g_browser_process->notification_ui_manager()->FindById(
-          CreateScopedIdentifier(extension_->id(), params_->notification_id));
+          CreateScopedIdentifier(extension_->id(), params_->notification_id),
+          NotificationUIManager::GetProfileID(GetProfile()));
   if (!matched_notification) {
     SetResult(new base::FundamentalValue(false));
     SendResponse(true);
@@ -573,7 +574,8 @@ bool NotificationsClearFunction::RunNotificationsApi() {
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   bool cancel_result = g_browser_process->notification_ui_manager()->CancelById(
-      CreateScopedIdentifier(extension_->id(), params_->notification_id));
+      CreateScopedIdentifier(extension_->id(), params_->notification_id),
+      NotificationUIManager::GetProfileID(GetProfile()));
 
   SetResult(new base::FundamentalValue(cancel_result));
   SendResponse(true);

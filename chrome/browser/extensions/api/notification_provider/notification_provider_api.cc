@@ -117,7 +117,8 @@ NotificationProviderNotifyOnClearedFunction::Run() {
 
   const Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(
-          params->notification_id);
+          params->notification_id,
+          NotificationUIManager::GetProfileID(GetProfile()));
 
   bool found_notification = notification != NULL;
   if (found_notification)
@@ -144,7 +145,8 @@ NotificationProviderNotifyOnClickedFunction::Run() {
 
   const Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(
-          params->notification_id);
+          params->notification_id,
+          NotificationUIManager::GetProfileID(GetProfile()));
 
   bool found_notification = notification != NULL;
   if (found_notification)
@@ -171,7 +173,8 @@ NotificationProviderNotifyOnButtonClickedFunction::Run() {
 
   const Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(
-          params->notification_id);
+          params->notification_id,
+          NotificationUIManager::GetProfileID(GetProfile()));
 
   bool found_notification = notification != NULL;
   if (found_notification)

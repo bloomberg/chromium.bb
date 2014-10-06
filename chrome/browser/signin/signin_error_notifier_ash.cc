@@ -164,7 +164,8 @@ void SigninErrorNotifier::OnErrorChanged() {
     return;
 
   if (!error_controller_->HasError()) {
-    g_browser_process->notification_ui_manager()->CancelById(notification_id_);
+    g_browser_process->notification_ui_manager()->CancelById(
+        notification_id_, NotificationUIManager::GetProfileID(profile_));
     return;
   }
 
@@ -212,7 +213,8 @@ void SigninErrorNotifier::OnErrorChanged() {
       delegate);
 
   // Update or add the notification.
-  if (notification_ui_manager->FindById(notification_id_))
+  if (notification_ui_manager->FindById(
+          notification_id_, NotificationUIManager::GetProfileID(profile_)))
     notification_ui_manager->Update(notification, profile_);
   else
     notification_ui_manager->Add(notification, profile_);

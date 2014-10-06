@@ -66,8 +66,8 @@ class BackgroundContentsService : private content::NotificationObserver,
   static void SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(
       int restart_delay_in_ms);
 
-  // Get the crash notification's id for the extension.
-  static std::string GetNotificationIdForExtensionForTesting(
+  // Get the crash notification's delegate id for the extension.
+  static std::string GetNotificationDelegateIdForExtensionForTesting(
       const std::string& extension_id);
 
   // Show a popup notification balloon with a crash message for a given app/
@@ -185,7 +185,8 @@ class BackgroundContentsService : private content::NotificationObserver,
                               const base::string16& appid);
 
   // Invoked when a new BackgroundContents is opened.
-  void BackgroundContentsOpened(BackgroundContentsOpenedDetails* details);
+  void BackgroundContentsOpened(BackgroundContentsOpenedDetails* details,
+                                Profile* profile);
 
   // Invoked when a BackgroundContents object is destroyed.
   void BackgroundContentsShutdown(BackgroundContents* contents);

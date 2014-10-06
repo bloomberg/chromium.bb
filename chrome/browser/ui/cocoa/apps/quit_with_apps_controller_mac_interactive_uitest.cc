@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,10 +55,17 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  DCHECK(profile_manager);
+
+  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  DCHECK(profiles.size());
+
   // With no app windows open, ShouldQuit returns true.
   EXPECT_TRUE(controller->ShouldQuit());
   notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID);
+      QuitWithAppsController::kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(profiles[0]));
   EXPECT_EQ(NULL, notification);
 
   // Open an app window.
@@ -73,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   EXPECT_FALSE(controller->ShouldQuit());
   EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID);
+      QuitWithAppsController::kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(profiles[0]));
   ASSERT_TRUE(notification);
 
   // If notification was dismissed by click, show again on next quit.
@@ -82,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   EXPECT_FALSE(controller->ShouldQuit());
   EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID);
+      QuitWithAppsController::kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(profiles[0]));
   ASSERT_TRUE(notification);
 
   EXPECT_FALSE(chrome::BrowserIterator().done());
@@ -94,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   EXPECT_FALSE(controller->ShouldQuit());
   EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID);
+      QuitWithAppsController::kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(profiles[0]));
   EXPECT_EQ(NULL, notification);
 
   EXPECT_FALSE(chrome::BrowserIterator().done());
@@ -113,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   // Trying to quit while there are no browsers always shows notification.
   EXPECT_FALSE(controller->ShouldQuit());
   notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID);
+      QuitWithAppsController::kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(profiles[0]));
   ASSERT_TRUE(notification);
 
   // Clicking "Quit All Apps." button closes all app windows. With no browsers

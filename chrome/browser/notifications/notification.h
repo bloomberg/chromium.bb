@@ -51,6 +51,8 @@ class Notification : public message_center::Notification {
       const message_center::RichNotificationData& rich_notification_data,
       NotificationDelegate* delegate);
 
+  Notification(const std::string& id, const Notification& notification);
+
   Notification(const Notification& notification);
   virtual ~Notification();
   Notification& operator=(const Notification& notification);

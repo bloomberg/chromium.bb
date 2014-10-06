@@ -55,8 +55,8 @@ using message_center::NotifierId;
 
 namespace {
 
-void CancelNotification(const std::string& id) {
-  g_browser_process->notification_ui_manager()->CancelById(id);
+void CancelNotification(const std::string& id, ProfileID profile_id) {
+  g_browser_process->notification_ui_manager()->CancelById(id, profile_id);
 }
 
 }  // namespace
@@ -173,7 +173,10 @@ void DesktopNotificationService::ShowDesktopNotification(
 
   g_browser_process->notification_ui_manager()->Add(notification, profile_);
   if (cancel_callback)
-    *cancel_callback = base::Bind(&CancelNotification, proxy->id());
+    *cancel_callback =
+        base::Bind(&CancelNotification,
+                   proxy->id(),
+                   NotificationUIManager::GetProfileID(profile_));
 
   DesktopNotificationProfileUtil::UsePermission(profile_, origin);
 }

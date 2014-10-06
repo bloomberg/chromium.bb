@@ -15,6 +15,8 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
+class Profile;
+
 namespace chromeos {
 
 class BluetoothDevice;
@@ -88,6 +90,9 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
 
   // Used only for helping test. Not owned and can be NULL.
   base::SimpleTestTickClock* testing_clock_;
+
+  // Record the profile used when adding message center notifications.
+  Profile* notification_profile_;
 
   scoped_ptr<base::WeakPtrFactory<PeripheralBatteryObserver> > weakptr_factory_;
 

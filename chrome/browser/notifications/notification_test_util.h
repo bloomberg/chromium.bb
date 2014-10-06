@@ -46,9 +46,7 @@ class MockNotificationDelegate : public NotificationDelegate {
 template<class Logger>
 class LoggingNotificationDelegate : public NotificationDelegate {
  public:
-  explicit LoggingNotificationDelegate(std::string id)
-      : notification_id_(id) {
-  }
+  explicit LoggingNotificationDelegate(std::string id) : notification_id_(id) {}
 
   // NotificationObjectProxy override
   virtual void Display() OVERRIDE {
@@ -94,14 +92,16 @@ class StubNotificationUIManager : public NotificationUIManager {
 
   // Returns NULL if no notifications match the supplied ID, either currently
   // displayed or in the queue.
-  virtual const Notification* FindById(const std::string& id) const OVERRIDE;
+  virtual const Notification* FindById(const std::string& delegate_id,
+                                       ProfileID profile_id) const OVERRIDE;
 
   // Removes any notifications matching the supplied ID, either currently
   // displayed or in the queue.  Returns true if anything was removed.
-  virtual bool CancelById(const std::string& notification_id) OVERRIDE;
+  virtual bool CancelById(const std::string& delegate_id,
+                          ProfileID profile_id) OVERRIDE;
 
-  // Adds the notification_id for each outstanding notification to the set
-  // |notification_ids| (must not be NULL).
+  // Adds the delegate_id for each outstanding notification to the set
+  // |delegate_ids| (must not be NULL).
   virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,
       const GURL& source) OVERRIDE;
@@ -111,7 +111,7 @@ class StubNotificationUIManager : public NotificationUIManager {
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
 
   // Removes notifications matching |profile|. Returns true if any were removed.
-  virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
+  virtual bool CancelAllByProfile(ProfileID profile_id) OVERRIDE;
 
   // Cancels all pending notifications and closes anything currently showing.
   // Used when the app is terminating.

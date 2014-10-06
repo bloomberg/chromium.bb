@@ -24,9 +24,11 @@ StubNotificationUIManager::StubNotificationUIManager(const GURL& welcome_origin)
                     base::string16(),
                     base::string16(),
                     new MockNotificationDelegate("stub")),
+      profile_(NULL),
       welcome_origin_(welcome_origin),
       welcomed_(false),
-      added_notifications_(0U) {}
+      added_notifications_(0U) {
+}
 
 StubNotificationUIManager::~StubNotificationUIManager() {}
 
@@ -49,13 +51,18 @@ bool StubNotificationUIManager::Update(const Notification& notification,
   return true;
 }
 
-const Notification* StubNotificationUIManager::FindById(const std::string& id)
-    const {
-  return (notification_.id() == id) ? &notification_ : NULL;
+const Notification* StubNotificationUIManager::FindById(
+    const std::string& delegate_id,
+    ProfileID profile_id) const {
+  if (notification_.delegate_id() == delegate_id && profile_ == profile_id)
+    return &notification_;
+  else
+    return NULL;
 }
 
-bool StubNotificationUIManager::CancelById(const std::string& notification_id) {
-  dismissed_id_ = notification_id;
+bool StubNotificationUIManager::CancelById(const std::string& delegate_id,
+                                           ProfileID profile_id) {
+  dismissed_id_ = delegate_id;
   return true;
 }
 
@@ -63,10 +70,10 @@ std::set<std::string>
 StubNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
     Profile* profile,
     const GURL& source) {
-  std::set<std::string> notification_ids;
+  std::set<std::string> delegate_ids;
   if (source == notification_.origin_url() && profile->IsSameProfile(profile_))
-    notification_ids.insert(notification_.delegate_id());
-  return notification_ids;
+    delegate_ids.insert(notification_.delegate_id());
+  return delegate_ids;
 }
 
 bool StubNotificationUIManager::CancelAllBySourceOrigin(
@@ -74,7 +81,7 @@ bool StubNotificationUIManager::CancelAllBySourceOrigin(
   return false;
 }
 
-bool StubNotificationUIManager::CancelAllByProfile(Profile* profile) {
+bool StubNotificationUIManager::CancelAllByProfile(ProfileID profile_id) {
   return false;
 }
 

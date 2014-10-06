@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 
 class Notification;
+class Profile;
 
 namespace gfx {
 class ImageSkia;
@@ -28,6 +29,7 @@ class DesktopNotificationBalloon {
 
  private:
   std::string notification_id_;
+  Profile* profile_;
 
   // Counter to provide unique ids to notifications.
   static int id_count_;

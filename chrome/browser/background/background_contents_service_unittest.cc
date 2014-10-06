@@ -80,7 +80,7 @@ class MockBackgroundContents : public BackgroundContents {
     base::string16 frame_name = base::ASCIIToUTF16("background");
     BackgroundContentsOpenedDetails details = {
         this, frame_name, appid_ };
-    service->BackgroundContentsOpened(&details);
+    service->BackgroundContentsOpened(&details, profile_);
   }
 
   virtual void Navigate(GURL url) {
@@ -123,8 +123,8 @@ class MockBackgroundContents : public BackgroundContents {
 // Wait for the notification created.
 class NotificationWaiter : public message_center::MessageCenterObserver {
  public:
-  explicit NotificationWaiter(const std::string& target_id)
-      : target_id_(target_id) {}
+  explicit NotificationWaiter(const std::string& target_id, Profile* profile)
+      : target_id_(target_id), profile_(profile) {}
   virtual ~NotificationWaiter() {}
 
   void WaitForNotificationAdded() {
@@ -141,17 +141,26 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
   // message_center::MessageCenterObserver overrides:
   virtual void OnNotificationAdded(
       const std::string& notification_id) OVERRIDE {
-    if (notification_id == target_id_)
+    if (notification_id == FindNotificationIdFromDelegateId(target_id_))
       run_loop_.Quit();
   }
 
   virtual void OnNotificationUpdated(
       const std::string& notification_id) OVERRIDE {
-    if (notification_id == target_id_)
+    if (notification_id == FindNotificationIdFromDelegateId(target_id_))
       run_loop_.Quit();
   }
 
+  std::string FindNotificationIdFromDelegateId(const std::string& delegate_id) {
+    MessageCenterNotificationManager* manager =
+        static_cast<MessageCenterNotificationManager*>(
+            g_browser_process->notification_ui_manager());
+    DCHECK(manager);
+    return manager->FindById(delegate_id, profile_)->id();
+  }
+
   std::string target_id_;
+  Profile* profile_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationWaiter);
@@ -196,16 +205,15 @@ class BackgroundContentsServiceNotificationTest
   // the created one.
   const Notification* CreateCrashNotification(
       scoped_refptr<extensions::Extension> extension) {
-    std::string notification_id =
-        BackgroundContentsService::GetNotificationIdForExtensionForTesting(
-            extension->id());
-    NotificationWaiter waiter(notification_id);
+    std::string notification_id = BackgroundContentsService::
+        GetNotificationDelegateIdForExtensionForTesting(extension->id());
+    NotificationWaiter waiter(notification_id, profile());
     BackgroundContentsService::ShowBalloonForTesting(
         extension.get(), profile());
     waiter.WaitForNotificationAdded();
 
     return g_browser_process->notification_ui_manager()->FindById(
-        notification_id);
+        notification_id, profile());
   }
 
  private:

@@ -70,6 +70,21 @@ Notification::Notification(NotificationType type,
       is_read_(false),
       delegate_(delegate) {}
 
+Notification::Notification(const std::string& id, const Notification& other)
+    : type_(other.type_),
+      id_(id),
+      title_(other.title_),
+      message_(other.message_),
+      icon_(other.icon_),
+      display_source_(other.display_source_),
+      notifier_id_(other.notifier_id_),
+      serial_number_(other.serial_number_),
+      optional_fields_(other.optional_fields_),
+      shown_as_popup_(other.shown_as_popup_),
+      is_read_(other.is_read_),
+      delegate_(other.delegate_) {
+}
+
 Notification::Notification(const Notification& other)
     : type_(other.type_),
       id_(other.id_),
