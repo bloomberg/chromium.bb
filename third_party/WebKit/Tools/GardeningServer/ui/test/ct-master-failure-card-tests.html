@@ -21,7 +21,7 @@ describe('ct-master-failure-card', function() {
 
   beforeEach(function(done) {
     card = document.createElement('ct-master-failure-card');
-    group = new CTFailureGroup('', 'blink', new CTMasterFailureGroupData(
+    group = new CTFailureGroup('blink', new CTMasterFailureGroupData(
         new CTMasterFailure('blink', masterUrl,
             7200)));
     card.group = group.data;

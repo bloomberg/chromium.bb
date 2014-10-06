@@ -155,7 +155,7 @@ CTFailures.prototype._processTrooperFailures = function(data) {
   Object.keys(data, function(failureType, failuresByTree) {
     Object.keys(failuresByTree, function(tree, failure) {
       if (failure.should_alert) {
-        trooper_failures.push(new CTFailureGroup(failureType + '::' + tree, 'trooper',
+        trooper_failures.push(new CTFailureGroup('trooper',
             new CTTrooperFailureGroupData(failure.details, failure.url, failure, failureType, tree)));
       }
     });
@@ -217,7 +217,7 @@ CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, range
     if (!newFailures[tree])
       newFailures[tree] = [];
     var commitList = new CTCommitList(this.commitLog, rangeGroup.likely_revisions);
-    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, tree, new CTStepFailureGroupData(treeFailures, commitList)));
+    newFailures[tree].push(new CTFailureGroup(tree, new CTStepFailureGroupData(treeFailures, commitList)));
   }.bind(this));
 };
 
@@ -240,7 +240,7 @@ CTFailures.prototype._processBuilderFailure = function(newFailures, alert) {
   }
   if (!newFailures[alert.tree])
     newFailures[alert.tree] = [];
-  newFailures[alert.tree].push(new CTFailureGroup(failure.key, alert.tree, data, category));
+  newFailures[alert.tree].push(new CTFailureGroup(alert.tree, data, category));
 };
 
 })();

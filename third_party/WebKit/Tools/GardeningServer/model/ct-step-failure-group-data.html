@@ -10,6 +10,9 @@ found in the LICENSE file.
 <script>
 function CTStepFailureGroupData(failures, commitList) {
   this.failures = failures;
+  this.key = failures.map(function(failure) {
+    return failure.key;
+  }).join('::');
   this.commitList = commitList;
   this.builderList = new CTBuilderList(failures);
   this.category = 'step';

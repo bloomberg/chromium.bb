@@ -20,7 +20,7 @@ describe('ct-builder-failure-card', function() {
 
   beforeEach(function(done) {
     card = document.createElement('ct-builder-failure-card');
-    group = new CTFailureGroup('', 'blink', new CTBuilderFailureGroupData(
+    group = new CTFailureGroup('blink', new CTBuilderFailureGroupData(
         new CTBuilderFailure('blink', 'https://build.chromium.org/p/chromium.webkit',
             'Linux (dbg)', 'building', 7200, 5), "Linux (dbg)", "http://foo.bar"));
     card.group = group.data;

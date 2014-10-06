@@ -24,7 +24,7 @@ describe('ct-failure-card-buttons', function() {
   beforeEach(function(done) {
     card = document.createElement('ct-failure-card-buttons');
     var cl = new CTCommitListMock();
-    group = new CTFailureGroup('some::key', 'blink', new CTStepFailureGroupData([
+    group = new CTFailureGroup('blink', new CTStepFailureGroupData([
         new CTStepFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
                           {'blink':158544})], cl));
     card.group = group;
@@ -35,7 +35,7 @@ describe('ct-failure-card-buttons', function() {
 
     it('examine should link to failure', function() {
       assert(card.shadowRoot.getElementById('examine').parentNode.href.endsWith(
-          '/blink/failure/some%3A%3Akey'));
+          '/blink/failure/autobot%3A%3Aunknown'));
     });
 
     it('clicking link bug should show dialog', function(done) {

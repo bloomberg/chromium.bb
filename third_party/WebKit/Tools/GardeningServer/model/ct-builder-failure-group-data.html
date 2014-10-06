@@ -10,6 +10,7 @@ found in the LICENSE file.
 function CTBuilderFailureGroupData(failure, bot, examineUrl) {
   this.bot = bot;
   this.failure = failure;
+  this.key = failure.key;
   this.builder = new CTBuilder(failure.masterUrl, failure.builder);
   this.category = 'builder';
   this.url = examineUrl;
