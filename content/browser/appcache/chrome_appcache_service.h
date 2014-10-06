@@ -54,9 +54,9 @@ class CONTENT_EXPORT ChromeAppCacheService
 
   // AppCachePolicy overrides
   virtual bool CanLoadAppCache(const GURL& manifest_url,
-                               const GURL& first_party) OVERRIDE;
+                               const GURL& first_party) override;
   virtual bool CanCreateAppCache(const GURL& manifest_url,
-                                 const GURL& first_party) OVERRIDE;
+                                 const GURL& first_party) override;
 
  protected:
   virtual ~ChromeAppCacheService();

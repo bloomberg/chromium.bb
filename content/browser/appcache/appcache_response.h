@@ -177,7 +177,7 @@ class CONTENT_EXPORT AppCacheResponseReader
                          int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
 
-  virtual void OnIOComplete(int result) OVERRIDE;
+  virtual void OnIOComplete(int result) override;
   void ContinueReadInfo();
   void ContinueReadData();
   void OpenEntryIfNeededAndContinue();
@@ -243,7 +243,7 @@ class CONTENT_EXPORT AppCacheResponseWriter
     SECOND_ATTEMPT
   };
 
-  virtual void OnIOComplete(int result) OVERRIDE;
+  virtual void OnIOComplete(int result) override;
   void ContinueWriteInfo();
   void ContinueWriteData();
   void CreateEntryIfNeededAndContinue();

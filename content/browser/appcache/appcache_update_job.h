@@ -136,10 +136,10 @@ class CONTENT_EXPORT AppCacheUpdateJob
     // URLRequest::Delegate overrides
     virtual void OnReceivedRedirect(net::URLRequest* request,
                                     const net::RedirectInfo& redirect_info,
-                                    bool* defer_redirect) OVERRIDE;
-    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+                                    bool* defer_redirect) override;
+    virtual void OnResponseStarted(net::URLRequest* request) override;
     virtual void OnReadCompleted(net::URLRequest* request,
-                                 int bytes_read) OVERRIDE;
+                                 int bytes_read) override;
 
     void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
     void OnWriteComplete(int result);
@@ -166,22 +166,22 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Methods for AppCacheStorage::Delegate.
   virtual void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
-                                    int64 response_id) OVERRIDE;
+                                    int64 response_id) override;
   virtual void OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                            AppCache* newest_cache,
                                            bool success,
-                                           bool would_exceed_quota) OVERRIDE;
+                                           bool would_exceed_quota) override;
   virtual void OnGroupMadeObsolete(AppCacheGroup* group,
                                    bool success,
-                                   int response_code) OVERRIDE;
+                                   int response_code) override;
 
   // Methods for AppCacheHost::Observer.
-  virtual void OnCacheSelectionComplete(AppCacheHost* host) OVERRIDE {}  // N/A
-  virtual void OnDestructionImminent(AppCacheHost* host) OVERRIDE;
+  virtual void OnCacheSelectionComplete(AppCacheHost* host) override {}  // N/A
+  virtual void OnDestructionImminent(AppCacheHost* host) override;
 
   // Methods for AppCacheServiceImpl::Observer.
   virtual void OnServiceReinitialized(
-      AppCacheStorageReference* old_storage) OVERRIDE;
+      AppCacheStorageReference* old_storage) override;
 
   void HandleCacheFailure(const AppCacheErrorDetails& details,
                           ResultType result,

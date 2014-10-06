@@ -45,11 +45,11 @@ class CONTENT_EXPORT AppCacheDiskCache
   bool is_disabled() const { return is_disabled_; }
 
   virtual int CreateEntry(int64 key, Entry** entry,
-                          const net::CompletionCallback& callback) OVERRIDE;
+                          const net::CompletionCallback& callback) override;
   virtual int OpenEntry(int64 key, Entry** entry,
-                        const net::CompletionCallback& callback) OVERRIDE;
+                        const net::CompletionCallback& callback) override;
   virtual int DoomEntry(int64 key,
-                        const net::CompletionCallback& callback) OVERRIDE;
+                        const net::CompletionCallback& callback) override;
 
  private:
   class CreateBackendCallbackShim;

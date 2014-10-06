@@ -325,7 +325,7 @@ class BaseInternalsJob : public net::URLRequestSimpleJob,
   }
 
   virtual void OnServiceReinitialized(
-      AppCacheStorageReference* old_storage_ref) OVERRIDE {
+      AppCacheStorageReference* old_storage_ref) override {
     if (old_storage_ref->storage() == appcache_storage_)
       disabled_storage_reference_ = old_storage_ref;
   }
@@ -345,7 +345,7 @@ class MainPageJob : public BaseInternalsJob {
         weak_factory_(this) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK(request_);
     info_collection_ = new AppCacheInfoCollection;
     appcache_service_->GetAllAppCacheInfo(
@@ -358,7 +358,7 @@ class MainPageJob : public BaseInternalsJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* out,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     mime_type->assign("text/html");
     charset->assign("UTF-8");
 
@@ -411,12 +411,12 @@ class RedirectToMainPageJob : public BaseInternalsJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     return net::OK;  // IsRedirectResponse induces a redirect.
   }
 
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE {
+                                  int* http_status_code) override {
     *location = ClearQuery(request_->url());
     *http_status_code = 307;
     return true;
@@ -439,7 +439,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
         weak_factory_(this) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK(request_);
 
     appcache_service_->DeleteAppCacheGroup(
@@ -471,7 +471,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
       : BaseInternalsJob(request, network_delegate, service),
         manifest_url_(manifest_url) {}
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK(request_);
     appcache_storage_->LoadOrCreateGroup(manifest_url_, this);
   }
@@ -480,7 +480,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* out,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     mime_type->assign("text/html");
     charset->assign("UTF-8");
     out->clear();
@@ -507,7 +507,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
 
   // AppCacheStorage::Delegate override
   virtual void OnGroupLoaded(
-      AppCacheGroup* group, const GURL& manifest_url) OVERRIDE {
+      AppCacheGroup* group, const GURL& manifest_url) override {
     DCHECK_EQ(manifest_url_, manifest_url);
     if (group && group->newest_complete_cache()) {
       appcache_info_.manifest_url = manifest_url;
@@ -546,7 +546,7 @@ class ViewEntryJob : public BaseInternalsJob,
         response_id_(response_id), group_id_(group_id), amount_read_(0) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK(request_);
     appcache_storage_->LoadResponseInfo(
         manifest_url_, group_id_, response_id_, this);
@@ -556,7 +556,7 @@ class ViewEntryJob : public BaseInternalsJob,
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* out,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     mime_type->assign("text/html");
     charset->assign("UTF-8");
     out->clear();
@@ -591,7 +591,7 @@ class ViewEntryJob : public BaseInternalsJob,
   }
 
   virtual void OnResponseInfoLoaded(
-      AppCacheResponseInfo* response_info, int64 response_id) OVERRIDE {
+      AppCacheResponseInfo* response_info, int64 response_id) override {
     if (!response_info) {
       StartAsync();
       return;

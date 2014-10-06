@@ -268,8 +268,8 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
   }
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~InitTask() {}
@@ -330,7 +330,7 @@ class AppCacheStorageImpl::DisableDatabaseTask : public DatabaseTask {
       : DatabaseTask(storage) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE { database_->Disable(); }
+  virtual void Run() override { database_->Disable(); }
 
  protected:
   virtual ~DisableDatabaseTask() {}
@@ -346,8 +346,8 @@ class AppCacheStorageImpl::GetAllInfoTask : public DatabaseTask {
   }
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~GetAllInfoTask() {}
@@ -500,8 +500,8 @@ class AppCacheStorageImpl::CacheLoadTask : public StoreOrLoadTask {
         success_(false) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~CacheLoadTask() {}
@@ -542,8 +542,8 @@ class AppCacheStorageImpl::GroupLoadTask : public StoreOrLoadTask {
         success_(false) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~GroupLoadTask() {}
@@ -596,9 +596,9 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
                        int64 quota);
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
-  virtual void CancelCompletion() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
+  virtual void CancelCompletion() override;
 
  protected:
   virtual ~StoreGroupAndCacheTask() {}
@@ -901,8 +901,8 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   }
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~FindMainResponseTask() {}
@@ -1102,8 +1102,8 @@ class AppCacheStorageImpl::MarkEntryAsForeignTask : public DatabaseTask {
       : DatabaseTask(storage), cache_id_(cache_id), entry_url_(url) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~MarkEntryAsForeignTask() {}
@@ -1132,9 +1132,9 @@ class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
                         int response_code);
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
-  virtual void CancelCompletion() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
+  virtual void CancelCompletion() override;
 
  protected:
   virtual ~MakeGroupObsoleteTask() {}
@@ -1221,8 +1221,8 @@ class AppCacheStorageImpl::GetDeletableResponseIdsTask : public DatabaseTask {
       : DatabaseTask(storage), max_rowid_(max_rowid) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
-  virtual void RunCompleted() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunCompleted() override;
 
  protected:
   virtual ~GetDeletableResponseIdsTask() {}
@@ -1252,7 +1252,7 @@ class AppCacheStorageImpl::InsertDeletableResponseIdsTask
       : DatabaseTask(storage) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   std::vector<int64> response_ids_;
 
@@ -1274,7 +1274,7 @@ class AppCacheStorageImpl::DeleteDeletableResponseIdsTask
       : DatabaseTask(storage) {}
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   std::vector<int64> response_ids_;
 
@@ -1299,7 +1299,7 @@ class AppCacheStorageImpl::UpdateGroupLastAccessTimeTask
   }
 
   // DatabaseTask:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  protected:
   virtual ~UpdateGroupLastAccessTimeTask() {}

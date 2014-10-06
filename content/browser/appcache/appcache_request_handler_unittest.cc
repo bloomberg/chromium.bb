@@ -36,31 +36,31 @@ class AppCacheRequestHandlerTest : public testing::Test {
   class MockFrontend : public AppCacheFrontend {
    public:
     virtual void OnCacheSelected(
-        int host_id, const AppCacheInfo& info) OVERRIDE {}
+        int host_id, const AppCacheInfo& info) override {}
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 AppCacheStatus status) OVERRIDE {}
+                                 AppCacheStatus status) override {}
 
     virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               AppCacheEventID event_id) OVERRIDE {}
+                               AppCacheEventID event_id) override {}
 
     virtual void OnErrorEventRaised(
         const std::vector<int>& host_ids,
-        const AppCacheErrorDetails& details) OVERRIDE {}
+        const AppCacheErrorDetails& details) override {}
 
     virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                        const GURL& url,
                                        int num_total,
-                                       int num_complete) OVERRIDE {
+                                       int num_complete) override {
     }
 
     virtual void OnLogMessage(int host_id,
                               AppCacheLogLevel log_level,
-                              const std::string& message) OVERRIDE {
+                              const std::string& message) override {
     }
 
     virtual void OnContentBlocked(int host_id,
-                                  const GURL& manifest_url) OVERRIDE {}
+                                  const GURL& manifest_url) override {}
   };
 
   // Helper callback to run a test on our io_thread. The io_thread is spun up
@@ -75,9 +75,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // exercise fallback code paths.
 
   class MockURLRequestDelegate : public net::URLRequest::Delegate {
-    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {}
+    virtual void OnResponseStarted(net::URLRequest* request) override {}
     virtual void OnReadCompleted(net::URLRequest* request,
-                                 int bytes_read) OVERRIDE {
+                                 int bytes_read) override {
     }
   };
 
@@ -99,14 +99,14 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
    protected:
     virtual ~MockURLRequestJob() {}
-    virtual void Start() OVERRIDE {
+    virtual void Start() override {
       NotifyHeadersComplete();
     }
-    virtual int GetResponseCode() const OVERRIDE {
+    virtual int GetResponseCode() const override {
       return response_code_;
     }
     virtual void GetResponseInfo(
-        net::HttpResponseInfo* info) OVERRIDE {
+        net::HttpResponseInfo* info) override {
       if (!has_response_info_)
         return;
       *info = response_info_;
@@ -134,7 +134,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
         const std::string& scheme,
         net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE {
+        net::NetworkDelegate* network_delegate) const override {
       if (job_) {
         net::URLRequestJob* temp = job_;
         job_ = NULL;
@@ -148,15 +148,15 @@ class AppCacheRequestHandlerTest : public testing::Test {
       }
     }
 
-    virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+    virtual bool IsHandledProtocol(const std::string& scheme) const override {
       return scheme == "http";
     };
 
-    virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+    virtual bool IsHandledURL(const GURL& url) const override {
       return url.SchemeIs("http");
     }
 
-    virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    virtual bool IsSafeRedirectTarget(const GURL& location) const override {
       return false;
     }
 

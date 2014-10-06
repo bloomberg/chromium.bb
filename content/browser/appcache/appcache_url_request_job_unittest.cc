@@ -62,7 +62,7 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
   virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     if (job_) {
       net::URLRequestJob* temp = job_;
       job_ = NULL;
@@ -74,15 +74,15 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
     }
   }
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+  virtual bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "http";
   };
 
-  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+  virtual bool IsHandledURL(const GURL& url) const override {
     return url.SchemeIs("http");
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -103,7 +103,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     }
 
     virtual void OnResponseInfoLoaded(AppCacheResponseInfo* info,
-                                      int64 response_id) OVERRIDE {
+                                      int64 response_id) override {
       loaded_info_ = info;
       loaded_info_id_ = response_id;
       test_->ScheduleNextTask();
@@ -123,7 +123,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
           kill_after_amount_received_(0), kill_with_io_pending_(false) {
     }
 
-    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
+    virtual void OnResponseStarted(net::URLRequest* request) override {
       amount_received_ = 0;
       did_receive_headers_ = false;
       if (request->status().is_success()) {
@@ -137,7 +137,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     }
 
     virtual void OnReadCompleted(net::URLRequest* request,
-                                 int bytes_read) OVERRIDE {
+                                 int bytes_read) override {
       if (bytes_read > 0) {
         amount_received_ += bytes_read;
 

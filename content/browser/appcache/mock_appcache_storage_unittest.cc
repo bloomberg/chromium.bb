@@ -21,27 +21,27 @@ class MockAppCacheStorageTest : public testing::Test {
           obsoleted_success_(false), found_cache_id_(kAppCacheNoCacheId) {
     }
 
-    virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) OVERRIDE {
+    virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) override {
       loaded_cache_ = cache;
       loaded_cache_id_ = cache_id;
     }
 
     virtual void OnGroupLoaded(AppCacheGroup* group,
-                               const GURL& manifest_url) OVERRIDE {
+                               const GURL& manifest_url) override {
       loaded_group_ = group;
       loaded_manifest_url_ = manifest_url;
     }
 
     virtual void OnGroupAndNewestCacheStored(
         AppCacheGroup* group, AppCache* newest_cache, bool success,
-        bool would_exceed_quota) OVERRIDE {
+        bool would_exceed_quota) override {
       stored_group_ = group;
       stored_group_success_ = success;
     }
 
     virtual void OnGroupMadeObsolete(AppCacheGroup* group,
                                      bool success,
-                                     int response_code) OVERRIDE {
+                                     int response_code) override {
       obsoleted_group_ = group;
       obsoleted_success_ = success;
     }
@@ -52,7 +52,7 @@ class MockAppCacheStorageTest : public testing::Test {
                                      const AppCacheEntry& fallback_entry,
                                      int64 cache_id,
                                      int64 group_id,
-                                     const GURL& manifest_url) OVERRIDE {
+                                     const GURL& manifest_url) override {
       found_url_ = url;
       found_entry_ = entry;
       found_fallback_url_ = fallback_url;

@@ -17,9 +17,9 @@ class MockAppCachePolicy : public AppCachePolicy {
   virtual ~MockAppCachePolicy();
 
   virtual bool CanLoadAppCache(const GURL& manifest_url,
-                               const GURL& first_party) OVERRIDE;
+                               const GURL& first_party) override;
   virtual bool CanCreateAppCache(const GURL& manifest_url,
-                                 const GURL& first_party) OVERRIDE;
+                                 const GURL& first_party) override;
 
   bool can_load_return_value_;
   bool can_create_return_value_;

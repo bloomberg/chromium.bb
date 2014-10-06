@@ -188,12 +188,12 @@ class CONTENT_EXPORT AppCacheHost
   void AssociateCacheHelper(AppCache* cache, const GURL& manifest_url);
 
   // AppCacheStorage::Delegate impl
-  virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) OVERRIDE;
+  virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) override;
   virtual void OnGroupLoaded(AppCacheGroup* group,
-                             const GURL& manifest_url) OVERRIDE;
+                             const GURL& manifest_url) override;
   // AppCacheServiceImpl::Observer impl
   virtual void OnServiceReinitialized(
-      AppCacheStorageReference* old_storage_ref) OVERRIDE;
+      AppCacheStorageReference* old_storage_ref) override;
 
   void FinishCacheSelection(AppCache* cache, AppCacheGroup* group);
   void DoPendingGetStatus();
@@ -203,7 +203,7 @@ class CONTENT_EXPORT AppCacheHost
   void ObserveGroupBeingUpdated(AppCacheGroup* group);
 
   // AppCacheGroup::UpdateObserver methods.
-  virtual void OnUpdateComplete(AppCacheGroup* group) OVERRIDE;
+  virtual void OnUpdateComplete(AppCacheGroup* group) override;
 
   // Returns true if this host is for a dedicated worker context.
   bool is_for_dedicated_worker() const {

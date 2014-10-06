@@ -52,14 +52,14 @@ class CONTENT_EXPORT AppCacheInterceptor
   // Override from net::URLRequest::Interceptor:
   virtual net::URLRequestJob* MaybeIntercept(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) OVERRIDE;
+      net::NetworkDelegate* network_delegate) override;
   virtual net::URLRequestJob* MaybeInterceptResponse(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) OVERRIDE;
+      net::NetworkDelegate* network_delegate) override;
   virtual net::URLRequestJob* MaybeInterceptRedirect(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      const GURL& location) OVERRIDE;
+      const GURL& location) override;
 
  private:
   friend struct DefaultSingletonTraits<AppCacheInterceptor>;

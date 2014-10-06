@@ -94,7 +94,7 @@ class AppCacheServiceImpl::CanHandleOfflineHelper : AsyncHelper {
         first_party_(first_party) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     AppCachePolicy* policy = service_->appcache_policy();
     if (policy && !policy->CanLoadAppCache(url_, first_party_)) {
       CallCallback(net::ERR_FAILED);
@@ -110,7 +110,7 @@ class AppCacheServiceImpl::CanHandleOfflineHelper : AsyncHelper {
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, int64 group_id, const GURL& mainfest_url) OVERRIDE;
+      int64 cache_id, int64 group_id, const GURL& mainfest_url) override;
 
   GURL url_;
   GURL first_party_;
@@ -137,17 +137,17 @@ class AppCacheServiceImpl::DeleteHelper : public AsyncHelper {
       : AsyncHelper(service, callback), manifest_url_(manifest_url) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     service_->storage()->LoadOrCreateGroup(manifest_url_, this);
   }
 
  private:
   // AppCacheStorage::Delegate implementation.
   virtual void OnGroupLoaded(
-      AppCacheGroup* group, const GURL& manifest_url) OVERRIDE;
+      AppCacheGroup* group, const GURL& manifest_url) override;
   virtual void OnGroupMadeObsolete(AppCacheGroup* group,
                                    bool success,
-                                   int response_code) OVERRIDE;
+                                   int response_code) override;
 
   GURL manifest_url_;
   DISALLOW_COPY_AND_ASSIGN(DeleteHelper);
@@ -184,19 +184,19 @@ class AppCacheServiceImpl::DeleteOriginHelper : public AsyncHelper {
         num_caches_to_delete_(0), successes_(0), failures_(0) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     // We start by listing all caches, continues in OnAllInfo().
     service_->storage()->GetAllInfo(this);
   }
 
  private:
   // AppCacheStorage::Delegate implementation.
-  virtual void OnAllInfo(AppCacheInfoCollection* collection) OVERRIDE;
+  virtual void OnAllInfo(AppCacheInfoCollection* collection) override;
   virtual void OnGroupLoaded(
-      AppCacheGroup* group, const GURL& manifest_url) OVERRIDE;
+      AppCacheGroup* group, const GURL& manifest_url) override;
   virtual void OnGroupMadeObsolete(AppCacheGroup* group,
                                    bool success,
-                                   int response_code) OVERRIDE;
+                                   int response_code) override;
 
   void CacheCompleted(bool success);
 
@@ -278,13 +278,13 @@ class AppCacheServiceImpl::GetInfoHelper : AsyncHelper {
       : AsyncHelper(service, callback), collection_(collection) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     service_->storage()->GetAllInfo(this);
   }
 
  private:
   // AppCacheStorage::Delegate implementation.
-  virtual void OnAllInfo(AppCacheInfoCollection* collection) OVERRIDE;
+  virtual void OnAllInfo(AppCacheInfoCollection* collection) override;
 
   scoped_refptr<AppCacheInfoCollection> collection_;
 
@@ -316,11 +316,11 @@ class AppCacheServiceImpl::CheckResponseHelper : AsyncHelper {
         amount_data_read_(0) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     service_->storage()->LoadOrCreateGroup(manifest_url_, this);
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     AppCacheHistograms::CountCheckResponseResult(
         AppCacheHistograms::CHECK_CANCELED);
     response_reader_.reset();
@@ -329,7 +329,7 @@ class AppCacheServiceImpl::CheckResponseHelper : AsyncHelper {
 
  private:
   virtual void OnGroupLoaded(AppCacheGroup* group,
-                             const GURL& manifest_url) OVERRIDE;
+                             const GURL& manifest_url) override;
   void OnReadInfoComplete(int result);
   void OnReadDataComplete(int result);
 
