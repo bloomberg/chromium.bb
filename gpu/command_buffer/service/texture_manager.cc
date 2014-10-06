@@ -425,20 +425,7 @@ void Texture::UpdateCleared() {
     return;
   }
 
-  const Texture::LevelInfo& first_face = level_infos_[0][0];
-  int levels_needed = TextureManager::ComputeMipMapCount(
-      target_, first_face.width, first_face.height, first_face.depth);
-  bool cleared = true;
-  for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
-    for (GLint jj = 0; jj < levels_needed; ++jj) {
-      const Texture::LevelInfo& info = level_infos_[ii][jj];
-      if (info.width > 0 && info.height > 0 && info.depth > 0 &&
-          !info.cleared) {
-        cleared = false;
-        break;
-      }
-    }
-  }
+  const bool cleared = (num_uncleared_mips_ == 0);
 
   // If texture is uncleared and is attached to a framebuffer,
   // that framebuffer must be marked possibly incomplete.
