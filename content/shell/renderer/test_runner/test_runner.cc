@@ -74,7 +74,7 @@ class HostMethodTask : public WebMethodTask<TestRunner> {
   HostMethodTask(TestRunner* object, CallbackMethodType callback)
       : WebMethodTask<TestRunner>(object), callback_(callback) {}
 
-  virtual void RunIfValid() OVERRIDE { (object_->*callback_)(); }
+  virtual void RunIfValid() override { (object_->*callback_)(); }
 
  private:
   CallbackMethodType callback_;
@@ -89,7 +89,7 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
         callback_(blink::mainThreadIsolate(), callback),
         argc_(0) {}
 
-  virtual void RunIfValid() OVERRIDE {
+  virtual void RunIfValid() override {
     v8::Isolate* isolate = blink::mainThreadIsolate();
     v8::HandleScope handle_scope(isolate);
     WebFrame* frame = object_->web_view_->mainFrame();
@@ -142,7 +142,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   // gin::Wrappable:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   void LogToStderr(const std::string& output);
   void NotifyDone();
@@ -1451,7 +1451,7 @@ class TestPageOverlay : public WebPageOverlay {
   }
   virtual ~TestPageOverlay() {}
 
-  virtual void paintPageOverlay(WebCanvas* canvas) OVERRIDE  {
+  virtual void paintPageOverlay(WebCanvas* canvas) override  {
     SkRect rect = SkRect::MakeWH(web_view_->size().width,
                                  web_view_->size().height);
     SkPaint paint;
@@ -1915,7 +1915,7 @@ class WorkItemBackForward : public TestRunner::WorkItem {
  public:
   WorkItemBackForward(int distance) : distance_(distance) {}
 
-  virtual bool Run(WebTestDelegate* delegate, WebView*) OVERRIDE {
+  virtual bool Run(WebTestDelegate* delegate, WebView*) override {
     delegate->GoToOffset(distance_);
     return true; // FIXME: Did it really start a navigation?
   }
@@ -1948,7 +1948,7 @@ void TestRunner::QueueForwardNavigation(int how_far_forward) {
 
 class WorkItemReload : public TestRunner::WorkItem {
  public:
-  virtual bool Run(WebTestDelegate* delegate, WebView*) OVERRIDE {
+  virtual bool Run(WebTestDelegate* delegate, WebView*) override {
     delegate->Reload();
     return true;
   }
@@ -1963,7 +1963,7 @@ class WorkItemLoadingScript : public TestRunner::WorkItem {
   WorkItemLoadingScript(const std::string& script)
       : script_(script) {}
 
-  virtual bool Run(WebTestDelegate*, WebView* web_view) OVERRIDE {
+  virtual bool Run(WebTestDelegate*, WebView* web_view) override {
     web_view->mainFrame()->executeScript(
         WebScriptSource(WebString::fromUTF8(script_)));
     return true; // FIXME: Did it really start a navigation?
@@ -1982,7 +1982,7 @@ class WorkItemNonLoadingScript : public TestRunner::WorkItem {
   WorkItemNonLoadingScript(const std::string& script)
       : script_(script) {}
 
-  virtual bool Run(WebTestDelegate*, WebView* web_view) OVERRIDE {
+  virtual bool Run(WebTestDelegate*, WebView* web_view) override {
     web_view->mainFrame()->executeScript(
         WebScriptSource(WebString::fromUTF8(script_)));
     return false;
@@ -2001,7 +2001,7 @@ class WorkItemLoad : public TestRunner::WorkItem {
   WorkItemLoad(const WebURL& url, const std::string& target)
       : url_(url), target_(target) {}
 
-  virtual bool Run(WebTestDelegate* delegate, WebView*) OVERRIDE {
+  virtual bool Run(WebTestDelegate* delegate, WebView*) override {
     delegate->LoadURLForFrame(url_, target_);
     return true; // FIXME: Did it really start a navigation?
   }
@@ -2027,7 +2027,7 @@ class WorkItemLoadHTMLString : public TestRunner::WorkItem  {
                          const WebURL& unreachable_url)
       : html_(html), base_url_(base_url), unreachable_url_(unreachable_url) {}
 
-  virtual bool Run(WebTestDelegate*, WebView* web_view) OVERRIDE {
+  virtual bool Run(WebTestDelegate*, WebView* web_view) override {
     web_view->mainFrame()->loadHTMLString(
         WebData(html_.data(), html_.length()),
         base_url_, unreachable_url_);

@@ -17,7 +17,7 @@ class NotifyDoneForwarder : public WebContentsObserver,
   virtual ~NotifyDoneForwarder();
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   friend class WebContentsUserData<NotifyDoneForwarder>;

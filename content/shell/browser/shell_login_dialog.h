@@ -33,7 +33,7 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
 
   // ResourceDispatcherHostLoginDelegate implementation:
   // Threading: IO thread.
-  virtual void OnRequestCancelled() OVERRIDE;
+  virtual void OnRequestCancelled() override;
 
   // Called by the platform specific code when the user responds. Public because
   // the aforementioned platform specific code may not have access to private

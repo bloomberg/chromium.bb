@@ -30,7 +30,7 @@ class AccessibilityControllerBindings
 
   // gin::Wrappable:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   void LogAccessibilityEvents();
   void SetNotificationListener(v8::Handle<v8::Function> callback);

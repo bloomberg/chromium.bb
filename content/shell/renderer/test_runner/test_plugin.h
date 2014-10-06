@@ -88,7 +88,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) OVERRIDE;
+      bool use_shared_memory) override;
 
  private:
   TestPlugin(blink::WebFrame* frame,

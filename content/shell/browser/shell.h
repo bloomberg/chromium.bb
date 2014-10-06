@@ -114,48 +114,48 @@ class Shell : public WebContentsDelegate,
 
   // WebContentsDelegate
   virtual WebContents* OpenURLFromTab(WebContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+                                      const OpenURLParams& params) override;
   virtual void AddNewContents(WebContents* source,
                               WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
+                              bool* was_blocked) override;
   virtual void LoadingStateChanged(WebContents* source,
-                                   bool to_different_document) OVERRIDE;
+                                   bool to_different_document) override;
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(WebContents* source,
-                                   double progress) OVERRIDE;
+                                   double progress) override;
 #endif
   virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen) OVERRIDE;
+                                          bool enter_fullscreen) override;
   virtual bool IsFullscreenForTabOrPending(
-      const WebContents* web_contents) const OVERRIDE;
+      const WebContents* web_contents) const override;
   virtual void RequestToLockMouse(WebContents* web_contents,
                                   bool user_gesture,
-                                  bool last_unlocked_by_target) OVERRIDE;
-  virtual void CloseContents(WebContents* source) OVERRIDE;
-  virtual bool CanOverscrollContent() const OVERRIDE;
+                                  bool last_unlocked_by_target) override;
+  virtual void CloseContents(WebContents* source) override;
+  virtual bool CanOverscrollContent() const override;
   virtual void DidNavigateMainFramePostCommit(
-      WebContents* web_contents) OVERRIDE;
-  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
+      WebContents* web_contents) override;
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() override;
 #if defined(OS_MACOSX)
   virtual void HandleKeyboardEvent(
       WebContents* source,
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const NativeWebKeyboardEvent& event) override;
 #endif
   virtual bool AddMessageToConsole(WebContents* source,
                                    int32 level,
                                    const base::string16& message,
                                    int32 line_no,
-                                   const base::string16& source_id) OVERRIDE;
-  virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
-  virtual void ActivateContents(WebContents* contents) OVERRIDE;
-  virtual void DeactivateContents(WebContents* contents) OVERRIDE;
-  virtual void WorkerCrashed(WebContents* source) OVERRIDE;
+                                   const base::string16& source_id) override;
+  virtual void RendererUnresponsive(WebContents* source) override;
+  virtual void ActivateContents(WebContents* contents) override;
+  virtual void DeactivateContents(WebContents* contents) override;
+  virtual void WorkerCrashed(WebContents* source) override;
   virtual bool HandleContextMenu(const content::ContextMenuParams& params)
-      OVERRIDE;
-  virtual void WebContentsFocused(WebContents* contents) OVERRIDE;
+      override;
+  virtual void WebContentsFocused(WebContents* contents) override;
 
  private:
   enum UIControl {
@@ -214,7 +214,7 @@ class Shell : public WebContentsDelegate,
   gfx::NativeView GetContentView();
 
   // WebContentsObserver
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) OVERRIDE;
+  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 
   void InnerShowDevTools(const std::string& settings,
                          const std::string& frontend_url);

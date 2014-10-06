@@ -31,28 +31,28 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual ~ShellContentRendererClient();
 
   // ContentRendererClient implementation.
-  virtual void RenderThreadStarted() OVERRIDE;
-  virtual void RenderFrameCreated(RenderFrame* render_frame) OVERRIDE;
-  virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
+  virtual void RenderThreadStarted() override;
+  virtual void RenderFrameCreated(RenderFrame* render_frame) override;
+  virtual void RenderViewCreated(RenderView* render_view) override;
   virtual bool OverrideCreatePlugin(
       RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params,
-      blink::WebPlugin** plugin) OVERRIDE;
+      blink::WebPlugin** plugin) override;
   virtual blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
-      blink::WebMediaStreamCenterClient* client) OVERRIDE;
+      blink::WebMediaStreamCenterClient* client) override;
   virtual blink::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
+      blink::WebRTCPeerConnectionHandlerClient* client) override;
   virtual blink::WebMIDIAccessor* OverrideCreateMIDIAccessor(
-      blink::WebMIDIAccessorClient* client) OVERRIDE;
+      blink::WebMIDIAccessorClient* client) override;
   virtual blink::WebAudioDevice* OverrideCreateAudioDevice(
-      double sample_rate) OVERRIDE;
-  virtual blink::WebClipboard* OverrideWebClipboard() OVERRIDE;
-  virtual blink::WebThemeEngine* OverrideThemeEngine() OVERRIDE;
-  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url) OVERRIDE;
-  virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) OVERRIDE;
-  virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
+      double sample_rate) override;
+  virtual blink::WebClipboard* OverrideWebClipboard() override;
+  virtual blink::WebThemeEngine* OverrideThemeEngine() override;
+  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
+  virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
+  virtual bool IsPluginAllowedToUseDevChannelAPIs() override;
 
  private:
   void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);

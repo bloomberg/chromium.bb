@@ -18,7 +18,7 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
 
   // Overridden from WebContentsViewDelegate:
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
-                               const ContextMenuParams& params) OVERRIDE;
+                               const ContextMenuParams& params) override;
 
 #if defined(OS_MACOSX)
   void ActionPerformed(int id);

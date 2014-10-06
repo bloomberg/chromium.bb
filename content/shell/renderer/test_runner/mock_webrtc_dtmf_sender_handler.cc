@@ -19,7 +19,7 @@ class DTMFSenderToneTask : public WebMethodTask<MockWebRTCDTMFSenderHandler> {
                      WebRTCDTMFSenderHandlerClient* client)
       : WebMethodTask<MockWebRTCDTMFSenderHandler>(object), client_(client) {}
 
-  virtual void RunIfValid() OVERRIDE {
+  virtual void RunIfValid() override {
     WebString tones = object_->currentToneBuffer();
     object_->ClearToneBuffer();
     client_->didPlayTone(tones);

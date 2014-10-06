@@ -35,57 +35,57 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   // ContentBrowserClient overrides.
   virtual BrowserMainParts* CreateBrowserMainParts(
-      const MainFunctionParams& parameters) OVERRIDE;
-  virtual void RenderProcessWillLaunch(RenderProcessHost* host) OVERRIDE;
+      const MainFunctionParams& parameters) override;
+  virtual void RenderProcessWillLaunch(RenderProcessHost* host) override;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       BrowserContext* browser_context,
       ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
+      URLRequestInterceptorScopedVector request_interceptors) override;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       BrowserContext* browser_context,
       const base::FilePath& partition_path,
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
-  virtual bool IsHandledURL(const GURL& url) OVERRIDE;
+      URLRequestInterceptorScopedVector request_interceptors) override;
+  virtual bool IsHandledURL(const GURL& url) override;
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
-                                              int child_process_id) OVERRIDE;
+                                              int child_process_id) override;
   virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                                    const GURL& url,
-                                   WebPreferences* prefs) OVERRIDE;
-  virtual void ResourceDispatcherHostCreated() OVERRIDE;
-  virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
-  virtual std::string GetDefaultDownloadName() OVERRIDE;
+                                   WebPreferences* prefs) override;
+  virtual void ResourceDispatcherHostCreated() override;
+  virtual AccessTokenStore* CreateAccessTokenStore() override;
+  virtual std::string GetDefaultDownloadName() override;
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
-      WebContents* web_contents) OVERRIDE;
-  virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
+      WebContents* web_contents) override;
+  virtual QuotaPermissionContext* CreateQuotaPermissionContext() override;
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       RenderFrameHost* render_frame_host,
       const base::Callback<void(blink::WebNotificationPermission)>& callback)
-          OVERRIDE;
+          override;
   virtual blink::WebNotificationPermission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
           ResourceContext* context,
-          int render_process_id) OVERRIDE;
+          int render_process_id) override;
   virtual SpeechRecognitionManagerDelegate*
-      GetSpeechRecognitionManagerDelegate() OVERRIDE;
-  virtual net::NetLog* GetNetLog() OVERRIDE;
+      GetSpeechRecognitionManagerDelegate() override;
+  virtual net::NetLog* GetNetLog() override;
   virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                               const GURL& current_url,
-                                              const GURL& new_url) OVERRIDE;
-  virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate() OVERRIDE;
+                                              const GURL& new_url) override;
+  virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      FileDescriptorInfo* mappings) OVERRIDE;
+      FileDescriptorInfo* mappings) override;
 #endif
 #if defined(OS_WIN)
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                bool* success) OVERRIDE;
+                                bool* success) override;
 #endif
 
   ShellBrowserContext* browser_context();

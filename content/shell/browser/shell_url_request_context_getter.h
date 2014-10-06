@@ -40,9 +40,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       net::NetLog* net_log);
 
   // net::URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
   net::HostResolver* host_resolver();
 

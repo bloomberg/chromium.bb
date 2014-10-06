@@ -23,7 +23,7 @@ class ClientCallTask : public MockWebSpeechRecognizer::Task {
 
   virtual ~ClientCallTask() {}
 
-  virtual void run() OVERRIDE {
+  virtual void run() override {
     (recognizer_->Client()->*function_)(recognizer_->Handle());
   }
 
@@ -45,7 +45,7 @@ class ResultTask : public MockWebSpeechRecognizer::Task {
 
   virtual ~ResultTask() {}
 
-  virtual void run() OVERRIDE {
+  virtual void run() override {
     blink::WebVector<blink::WebString> transcripts(static_cast<size_t>(1));
     blink::WebVector<float> confidences(static_cast<size_t>(1));
     transcripts[0] = transcript_;
@@ -74,7 +74,7 @@ class NoMatchTask : public MockWebSpeechRecognizer::Task {
 
   virtual ~NoMatchTask() {}
 
-  virtual void run() OVERRIDE {
+  virtual void run() override {
     recognizer_->Client()->didReceiveNoMatch(
         recognizer_->Handle(), blink::WebSpeechRecognitionResult());
   }
@@ -93,7 +93,7 @@ class ErrorTask : public MockWebSpeechRecognizer::Task {
 
   virtual ~ErrorTask() {}
 
-  virtual void run() OVERRIDE {
+  virtual void run() override {
     recognizer_->Client()->didReceiveError(
         recognizer_->Handle(), message_, code_);
   }

@@ -32,10 +32,10 @@ class GamepadController
 
   // RendererGamepadProvider implementation.
   virtual void SampleGamepads(
-      blink::WebGamepads& gamepads) OVERRIDE;
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+      blink::WebGamepads& gamepads) override;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  virtual void SendStartMessage() override;
+  virtual void SendStopMessage() override;
 
  private:
   friend class GamepadControllerBindings;

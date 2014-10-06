@@ -33,7 +33,7 @@ class TextInputControllerBindings
 
   // gin::Wrappable:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   void InsertText(const std::string& text);
   void UnmarkText();

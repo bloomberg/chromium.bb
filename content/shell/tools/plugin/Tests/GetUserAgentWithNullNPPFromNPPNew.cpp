@@ -48,7 +48,7 @@ private:
                          int16_t argc,
                          char* argn[],
                          char* argv[],
-                         NPSavedData* saved) OVERRIDE {
+                         NPSavedData* saved) override {
         if (!browser->uagent(0))
             pluginLog(m_npp, "FAILURE: Null user agent returned.");
         else

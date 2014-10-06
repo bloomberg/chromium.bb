@@ -46,7 +46,7 @@ private:
                          int16_t argc,
                          char* argn[],
                          char* argv[],
-                         NPSavedData* saved) OVERRIDE {
+                         NPSavedData* saved) override {
         NPN_GetURL("javascript:removePlugin()", 0);
         return NPERR_NO_ERROR;
     }

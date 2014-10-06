@@ -13,7 +13,7 @@ public:
         : PluginTest(npp, identifier)
     {
     }
-    virtual NPError NPP_GetValue(NPPVariable, void*) OVERRIDE;
+    virtual NPError NPP_GetValue(NPPVariable, void*) override;
 };
 
 NPError FormValue::NPP_GetValue(NPPVariable variable, void *value)

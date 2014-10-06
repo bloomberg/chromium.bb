@@ -75,13 +75,13 @@ private:
                             int16_t argc,
                             char* argn[],
                             char* argv[],
-                            NPSavedData* saved) OVERRIDE {
+                            NPSavedData* saved) override {
         registerNPShutdownFunction(shutdown);
 
         return NPERR_NO_ERROR;
     }
 
-    virtual NPError NPP_GetValue(NPPVariable variable, void *value) OVERRIDE
+    virtual NPError NPP_GetValue(NPPVariable variable, void *value) override
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;

@@ -43,77 +43,77 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual ~WebKitTestRunner();
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void Navigate(const GURL& url) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+  virtual void Navigate(const GURL& url) override;
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
+                                        bool is_new_navigation) override;
   virtual void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
-                                      const blink::WebURLError& error) OVERRIDE;
+                                      const blink::WebURLError& error) override;
 
   // WebTestDelegate implementation.
-  virtual void ClearEditCommand() OVERRIDE;
+  virtual void ClearEditCommand() override;
   virtual void SetEditCommand(const std::string& name,
-                              const std::string& value) OVERRIDE;
-  virtual void SetGamepadProvider(scoped_ptr<RendererGamepadProvider>) OVERRIDE;
-  virtual void SetDeviceLightData(const double data) OVERRIDE;
+                              const std::string& value) override;
+  virtual void SetGamepadProvider(scoped_ptr<RendererGamepadProvider>) override;
+  virtual void SetDeviceLightData(const double data) override;
   virtual void SetDeviceMotionData(
-      const blink::WebDeviceMotionData& data) OVERRIDE;
+      const blink::WebDeviceMotionData& data) override;
   virtual void SetDeviceOrientationData(
-      const blink::WebDeviceOrientationData& data) OVERRIDE;
+      const blink::WebDeviceOrientationData& data) override;
   virtual void SetScreenOrientation(
-      const blink::WebScreenOrientationType& orientation) OVERRIDE;
-  virtual void ResetScreenOrientation() OVERRIDE;
+      const blink::WebScreenOrientationType& orientation) override;
+  virtual void ResetScreenOrientation() override;
   virtual void DidChangeBatteryStatus(
-      const blink::WebBatteryStatus& status) OVERRIDE;
-  virtual void PrintMessage(const std::string& message) OVERRIDE;
-  virtual void PostTask(WebTask* task) OVERRIDE;
-  virtual void PostDelayedTask(WebTask* task, long long ms) OVERRIDE;
+      const blink::WebBatteryStatus& status) override;
+  virtual void PrintMessage(const std::string& message) override;
+  virtual void PostTask(WebTask* task) override;
+  virtual void PostDelayedTask(WebTask* task, long long ms) override;
   virtual blink::WebString RegisterIsolatedFileSystem(
-      const blink::WebVector<blink::WebString>& absolute_filenames) OVERRIDE;
-  virtual long long GetCurrentTimeInMillisecond() OVERRIDE;
+      const blink::WebVector<blink::WebString>& absolute_filenames) override;
+  virtual long long GetCurrentTimeInMillisecond() override;
   virtual blink::WebString GetAbsoluteWebStringFromUTF8Path(
-      const std::string& utf8_path) OVERRIDE;
+      const std::string& utf8_path) override;
   virtual blink::WebURL LocalFileToDataURL(
-      const blink::WebURL& file_url) OVERRIDE;
+      const blink::WebURL& file_url) override;
   virtual blink::WebURL RewriteLayoutTestsURL(
-      const std::string& utf8_url) OVERRIDE;
-  virtual TestPreferences* Preferences() OVERRIDE;
-  virtual void ApplyPreferences() OVERRIDE;
+      const std::string& utf8_url) override;
+  virtual TestPreferences* Preferences() override;
+  virtual void ApplyPreferences() override;
   virtual std::string makeURLErrorDescription(const blink::WebURLError& error);
-  virtual void UseUnfortunateSynchronousResizeMode(bool enable) OVERRIDE;
+  virtual void UseUnfortunateSynchronousResizeMode(bool enable) override;
   virtual void EnableAutoResizeMode(const blink::WebSize& min_size,
-                                    const blink::WebSize& max_size) OVERRIDE;
-  virtual void DisableAutoResizeMode(const blink::WebSize& new_size) OVERRIDE;
-  virtual void ClearDevToolsLocalStorage() OVERRIDE;
+                                    const blink::WebSize& max_size) override;
+  virtual void DisableAutoResizeMode(const blink::WebSize& new_size) override;
+  virtual void ClearDevToolsLocalStorage() override;
   virtual void ShowDevTools(const std::string& settings,
-                            const std::string& frontend_url) OVERRIDE;
-  virtual void CloseDevTools() OVERRIDE;
+                            const std::string& frontend_url) override;
+  virtual void CloseDevTools() override;
   virtual void EvaluateInWebInspector(long call_id,
-                                      const std::string& script) OVERRIDE;
-  virtual void ClearAllDatabases() OVERRIDE;
-  virtual void SetDatabaseQuota(int quota) OVERRIDE;
+                                      const std::string& script) override;
+  virtual void ClearAllDatabases() override;
+  virtual void SetDatabaseQuota(int quota) override;
   virtual blink::WebNotificationPresenter::Permission
-      CheckWebNotificationPermission(const GURL& origin) OVERRIDE;
+      CheckWebNotificationPermission(const GURL& origin) override;
   virtual void GrantWebNotificationPermission(const GURL& origin,
-                                              bool permission_granted) OVERRIDE;
-  virtual void ClearWebNotificationPermissions() OVERRIDE;
-  virtual void SetDeviceScaleFactor(float factor) OVERRIDE;
-  virtual void SetDeviceColorProfile(const std::string& name) OVERRIDE;
-  virtual void SetFocus(WebTestProxyBase* proxy, bool focus) OVERRIDE;
-  virtual void SetAcceptAllCookies(bool accept) OVERRIDE;
-  virtual std::string PathToLocalResource(const std::string& resource) OVERRIDE;
-  virtual void SetLocale(const std::string& locale) OVERRIDE;
-  virtual void TestFinished() OVERRIDE;
-  virtual void CloseRemainingWindows() OVERRIDE;
-  virtual void DeleteAllCookies() OVERRIDE;
-  virtual int NavigationEntryCount() OVERRIDE;
-  virtual void GoToOffset(int offset) OVERRIDE;
-  virtual void Reload() OVERRIDE;
+                                              bool permission_granted) override;
+  virtual void ClearWebNotificationPermissions() override;
+  virtual void SetDeviceScaleFactor(float factor) override;
+  virtual void SetDeviceColorProfile(const std::string& name) override;
+  virtual void SetFocus(WebTestProxyBase* proxy, bool focus) override;
+  virtual void SetAcceptAllCookies(bool accept) override;
+  virtual std::string PathToLocalResource(const std::string& resource) override;
+  virtual void SetLocale(const std::string& locale) override;
+  virtual void TestFinished() override;
+  virtual void CloseRemainingWindows() override;
+  virtual void DeleteAllCookies() override;
+  virtual int NavigationEntryCount() override;
+  virtual void GoToOffset(int offset) override;
+  virtual void Reload() override;
   virtual void LoadURLForFrame(const blink::WebURL& url,
-                               const std::string& frame_name) OVERRIDE;
-  virtual bool AllowExternalPages() OVERRIDE;
-  virtual std::string DumpHistoryForWindow(WebTestProxyBase* proxy) OVERRIDE;
+                               const std::string& frame_name) override;
+  virtual bool AllowExternalPages() override;
+  virtual std::string DumpHistoryForWindow(WebTestProxyBase* proxy) override;
 
   void Reset();
 

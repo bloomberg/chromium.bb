@@ -29,7 +29,7 @@ public:
 
 private:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate*) OVERRIDE;
+      v8::Isolate*) override;
 
   base::WeakPtr<IPCEcho> native_;
 };

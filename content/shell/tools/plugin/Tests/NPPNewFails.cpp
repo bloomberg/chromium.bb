@@ -46,7 +46,7 @@ private:
                          int16_t argc,
                          char* argn[],
                          char* argv[],
-                         NPSavedData* saved) OVERRIDE {
+                         NPSavedData* saved) override {
         return NPERR_GENERIC_ERROR;
     }
 };

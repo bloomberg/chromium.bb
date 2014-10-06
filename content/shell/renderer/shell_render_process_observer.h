@@ -34,9 +34,9 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   void SetMainWindow(RenderView* view);
 
   // RenderProcessObserver implementation.
-  virtual void WebKitInitialized() OVERRIDE;
-  virtual void OnRenderProcessShutdown() OVERRIDE;
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void WebKitInitialized() override;
+  virtual void OnRenderProcessShutdown() override;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   WebTestDelegate* test_delegate() const {
     return test_delegate_;

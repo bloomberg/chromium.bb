@@ -83,16 +83,16 @@ class ContextMenuModel : public ui::SimpleMenuModel,
   }
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdChecked(int command_id) const override {
     return false;
   }
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int command_id) const override {
     return true;
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE { return false; }
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+      ui::Accelerator* accelerator) override { return false; }
+  virtual void ExecuteCommand(int command_id, int event_flags) override {
     switch (command_id) {
       case COMMAND_OPEN_DEVTOOLS:
         shell_->ShowDevToolsForElementAt(params_.x, params_.y);
@@ -309,10 +309,10 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
   // Overridden from TextfieldController
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE {
+                               const base::string16& new_contents) override {
   }
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE {
+                              const ui::KeyEvent& key_event) override {
    if (sender == url_entry_ && key_event.key_code() == ui::VKEY_RETURN) {
      std::string text = base::UTF16ToUTF8(url_entry_->text());
      GURL url(text);
@@ -328,7 +328,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
   // Overridden from ButtonListener
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
+                             const ui::Event& event) override {
     if (sender == back_button_)
       shell_->GoBackOrForward(-1);
     else if (sender == forward_button_)
@@ -340,35 +340,35 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
 
   // Overridden from WidgetDelegateView
-  virtual bool CanResize() const OVERRIDE { return true; }
-  virtual bool CanMaximize() const OVERRIDE { return true; }
-  virtual bool CanMinimize() const OVERRIDE { return true; }
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual bool CanResize() const override { return true; }
+  virtual bool CanMaximize() const override { return true; }
+  virtual bool CanMinimize() const override { return true; }
+  virtual base::string16 GetWindowTitle() const override {
     return title_;
   }
-  virtual void WindowClosing() OVERRIDE {
+  virtual void WindowClosing() override {
     if (shell_) {
       delete shell_;
       shell_ = NULL;
     }
   }
-  virtual View* GetContentsView() OVERRIDE { return this; }
+  virtual View* GetContentsView() override { return this; }
 
   // Overridden from View
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     // We want to be able to make the window smaller than its initial
     // (preferred) size.
     return gfx::Size();
   }
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
+      const ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       InitShellWindow();
     }
   }
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     switch (accelerator.key_code()) {
     case ui::VKEY_F5:
       shell_->Reload();

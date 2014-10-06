@@ -36,7 +36,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
 
   // gin::Wrappable:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   virtual v8::Handle<v8::Object> GetChildAtIndex(unsigned index);
   virtual bool IsRoot() const;
@@ -140,8 +140,8 @@ class RootWebAXObjectProxy : public WebAXObjectProxy {
  public:
   RootWebAXObjectProxy(const blink::WebAXObject&, Factory*);
 
-  virtual v8::Handle<v8::Object> GetChildAtIndex(unsigned index) OVERRIDE;
-  virtual bool IsRoot() const OVERRIDE;
+  virtual v8::Handle<v8::Object> GetChildAtIndex(unsigned index) override;
+  virtual bool IsRoot() const override;
 };
 
 
@@ -155,7 +155,7 @@ class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
 
   void Clear();
   virtual v8::Handle<v8::Object> GetOrCreate(
-      const blink::WebAXObject&) OVERRIDE;
+      const blink::WebAXObject&) override;
   v8::Handle<v8::Object> CreateRoot(const blink::WebAXObject&);
 
  private:

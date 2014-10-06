@@ -35,11 +35,11 @@ class ShellBrowserContext::ShellResourceContext : public ResourceContext {
   virtual ~ShellResourceContext() {}
 
   // ResourceContext implementation:
-  virtual net::HostResolver* GetHostResolver() OVERRIDE {
+  virtual net::HostResolver* GetHostResolver() override {
     CHECK(getter_);
     return getter_->host_resolver();
   }
-  virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetRequestContext() override {
     CHECK(getter_);
     return getter_->GetURLRequestContext();
   }

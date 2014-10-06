@@ -72,7 +72,7 @@ private:
         }
     };
 
-    virtual NPError NPP_GetValue(NPPVariable variable, void *value) OVERRIDE
+    virtual NPError NPP_GetValue(NPPVariable variable, void *value) override
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;

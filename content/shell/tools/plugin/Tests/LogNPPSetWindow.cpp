@@ -38,7 +38,7 @@ public:
     LogNPPSetWindow(NPP, const string& identifier);
 
 private:
-    virtual NPError NPP_SetWindow(NPWindow*) OVERRIDE;
+    virtual NPError NPP_SetWindow(NPWindow*) override;
 };
 
 LogNPPSetWindow::LogNPPSetWindow(NPP npp, const string& identifier)

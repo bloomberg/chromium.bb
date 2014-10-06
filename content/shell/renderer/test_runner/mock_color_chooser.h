@@ -23,8 +23,8 @@ public:
     virtual ~MockColorChooser();
 
     // blink::WebColorChooser implementation.
-    virtual void setSelectedColor(const blink::WebColor color) OVERRIDE;
-    virtual void endChooser() OVERRIDE;
+    virtual void setSelectedColor(const blink::WebColor color) override;
+    virtual void endChooser() override;
 
     void InvokeDidEndChooser();
     WebTaskList* mutable_task_list() { return &task_list_; }

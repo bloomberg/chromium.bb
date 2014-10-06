@@ -233,7 +233,7 @@ class MouseDownTask : public WebMethodTask<EventSender> {
         button_number_(button_number),
         modifiers_(modifiers) {}
 
-  virtual void RunIfValid() OVERRIDE {
+  virtual void RunIfValid() override {
     object_->MouseDown(button_number_, modifiers_);
   }
 
@@ -249,7 +249,7 @@ class MouseUpTask : public WebMethodTask<EventSender> {
         button_number_(button_number),
         modifiers_(modifiers) {}
 
-  virtual void RunIfValid() OVERRIDE {
+  virtual void RunIfValid() override {
     object_->MouseUp(button_number_, modifiers_);
   }
 
@@ -269,7 +269,7 @@ class KeyDownTask : public WebMethodTask<EventSender> {
         modifiers_(modifiers),
         location_(location) {}
 
-  virtual void RunIfValid() OVERRIDE {
+  virtual void RunIfValid() override {
     object_->KeyDown(code_str_, modifiers_, location_);
   }
 
@@ -348,7 +348,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
 
   // gin::Wrappable:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // Bound methods:
   void EnableDOMUIEventLogging();

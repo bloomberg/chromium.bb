@@ -21,14 +21,14 @@ class ShellDownloadManagerDelegate : public DownloadManagerDelegate {
 
   void SetDownloadManager(DownloadManager* manager);
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
   virtual bool DetermineDownloadTarget(
       DownloadItem* download,
-      const DownloadTargetCallback& callback) OVERRIDE;
+      const DownloadTargetCallback& callback) override;
   virtual bool ShouldOpenDownload(
       DownloadItem* item,
-      const DownloadOpenDelayedCallback& callback) OVERRIDE;
-  virtual void GetNextId(const DownloadIdCallback& callback) OVERRIDE;
+      const DownloadOpenDelayedCallback& callback) override;
+  virtual void GetNextId(const DownloadIdCallback& callback) override;
 
   // Inhibits prompting and sets the default download path.
   void SetDownloadBehaviorForTesting(

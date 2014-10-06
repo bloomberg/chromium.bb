@@ -29,7 +29,7 @@ class GCController : public gin::Wrappable<GCController> {
 
   // gin::Wrappable.
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   void Collect(const gin::Arguments& args);
   void CollectAll(const gin::Arguments& args);

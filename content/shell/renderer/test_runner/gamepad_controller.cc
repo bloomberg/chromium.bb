@@ -35,7 +35,7 @@ class GamepadControllerBindings
 
   // gin::Wrappable.
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   void Connect(int index);
   void DispatchConnected(int index);

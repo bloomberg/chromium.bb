@@ -50,12 +50,12 @@ private:
                          int16_t argc,
                          char* argn[],
                          char* argv[],
-                         NPSavedData* saved) OVERRIDE {
+                         NPSavedData* saved) override {
         NPN_GetURLNotify(urlThatFailsToLoad, 0, reinterpret_cast<void*>(0x12345678));
         return NPERR_NO_ERROR;
     }
 
-    virtual bool NPP_URLNotify(const char* url, NPReason reason, void* notifyData) OVERRIDE
+    virtual bool NPP_URLNotify(const char* url, NPReason reason, void* notifyData) override
     {
         bool didFail = false;
 

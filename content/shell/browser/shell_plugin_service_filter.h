@@ -22,10 +22,10 @@ class ShellPluginServiceFilter : public PluginServiceFilter {
                                  const void* context,
                                  const GURL& url,
                                  const GURL& policy_url,
-                                 WebPluginInfo* plugin) OVERRIDE;
+                                 WebPluginInfo* plugin) override;
 
   virtual bool CanLoadPlugin(int render_process_id,
-                             const base::FilePath& path) OVERRIDE;
+                             const base::FilePath& path) override;
 
  private:
 

@@ -132,20 +132,20 @@ class WebKitTestController : public base::NonThreadSafe,
   void DevToolsProcessCrashed();
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+                             base::ProcessId plugin_pid) override;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  virtual void WebContentsDestroyed() override;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
   // GpuDataManagerObserver implementation.
-  virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) OVERRIDE;
+  virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) override;
 
  private:
   enum TestPhase {
