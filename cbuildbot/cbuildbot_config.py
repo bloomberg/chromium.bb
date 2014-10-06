@@ -1473,6 +1473,7 @@ _x86_release_boards = frozenset([
   'panther_moblab',
   'parrot',
   'parrot_ivb',
+  'parry',
   'peppy',
   'quawks',
   'rambi',
@@ -1929,6 +1930,12 @@ internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
+)
+
+internal_paladin.add_config('parry-paladin',
+  boards=['parry'],
+  paladin_builder_name='parry paladin',
+  important=False,
 )
 
 internal_paladin.add_config('rambi-paladin',
@@ -2784,6 +2791,7 @@ _x86_firmware_boards = (
   'monroe',
   'panther',
   'parrot',
+  'parry',
   'peppy',
   'quawks',
   'rambi',
@@ -2811,6 +2819,7 @@ _x86_depthcharge_firmware_boards = (
   'kip',
   'leon',
   'link',
+  'parry',
   'quawks',
   'rambi',
   'samus',
