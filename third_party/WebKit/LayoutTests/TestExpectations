@@ -1438,3 +1438,7 @@ crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-d
 
 # This appears to have become flaky after r183245 (moving marquee to blink-in-js).
 crbug.com/341031 fast/html/marquee-scrollamount.html [ Pass Failure ImageOnlyFailure ]
+
+crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
+crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
+crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing [ Pass Failure ]
