@@ -58,7 +58,7 @@ enum PaintBehaviorFlags {
     PaintBehaviorSelectionOnly = 1 << 0,
     PaintBehaviorForceBlackText = 1 << 1,
     PaintBehaviorFlattenCompositingLayers = 1 << 2,
-    PaintBehaviorRenderingSVGMask = 1 << 3,
+    PaintBehaviorRenderingClipPathAsMask = 1 << 3,
     PaintBehaviorSkipRootBackground = 1 << 4,
     PaintBehaviorRootBackgroundOnly = 1 << 5
 };

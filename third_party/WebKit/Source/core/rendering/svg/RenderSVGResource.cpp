@@ -50,7 +50,7 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     // If we have no style at all, ignore it.
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
-    bool isRenderingMask = SVGRenderSupport::isRenderingMaskImage(*object);
+    bool isRenderingMask = SVGRenderSupport::isRenderingClipPathAsMaskImage(*object);
 
     // If we have no fill/stroke, return 0.
     if (mode == ApplyToFillMode) {

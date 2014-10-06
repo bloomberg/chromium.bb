@@ -285,7 +285,7 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
         }
     }
 
-    if (SVGRenderSupport::isRenderingMaskImage(textRenderer)) {
+    if (SVGRenderSupport::isRenderingClipPathAsMaskImage(textRenderer)) {
         hasFill = true;
         hasVisibleStroke = false;
     }

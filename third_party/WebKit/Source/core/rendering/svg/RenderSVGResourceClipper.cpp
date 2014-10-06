@@ -254,7 +254,7 @@ void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context,
     // - fill is set to the initial fill paint server (solid, black)
     // - stroke is set to the initial stroke paint server (none)
     PaintBehavior oldBehavior = frame()->view()->paintBehavior();
-    frame()->view()->setPaintBehavior(oldBehavior | PaintBehaviorRenderingSVGMask);
+    frame()->view()->setPaintBehavior(oldBehavior | PaintBehaviorRenderingClipPathAsMask);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();

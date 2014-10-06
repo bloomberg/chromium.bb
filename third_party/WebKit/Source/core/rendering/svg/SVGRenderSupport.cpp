@@ -276,9 +276,9 @@ bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
     return object->style()->overflowX() == OHIDDEN || object->style()->overflowX() == OSCROLL;
 }
 
-bool SVGRenderSupport::isRenderingMaskImage(const RenderObject& object)
+bool SVGRenderSupport::isRenderingClipPathAsMaskImage(const RenderObject& object)
 {
-    return object.frame() && object.frame()->view() && object.frame()->view()->paintBehavior() & PaintBehaviorRenderingSVGMask;
+    return object.frame() && object.frame()->view() && object.frame()->view()->paintBehavior() & PaintBehaviorRenderingClipPathAsMask;
 }
 
 void SVGRenderSupport::intersectPaintInvalidationRectWithResources(const RenderObject* renderer, FloatRect& paintInvalidationRect)

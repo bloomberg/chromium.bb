@@ -54,7 +54,7 @@ public:
     static bool isOverflowHidden(const RenderObject*);
 
     // Returns true if we're currently within the rendering of a clip-path as a mask.
-    static bool isRenderingMaskImage(const RenderObject&);
+    static bool isRenderingClipPathAsMaskImage(const RenderObject&);
 
     // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
     static void intersectPaintInvalidationRectWithResources(const RenderObject*, FloatRect&);

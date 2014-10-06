@@ -99,7 +99,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
     // Setup transparency layers before setting up SVG resources!
-    bool isRenderingMask = SVGRenderSupport::isRenderingMaskImage(*m_object);
+    bool isRenderingMask = SVGRenderSupport::isRenderingClipPathAsMaskImage(*m_object);
     // RenderLayer takes care of root opacity.
     float opacity = (object->isSVGRoot() || isRenderingMask) ? 1 : style->opacity();
     bool hasBlendMode = style->hasBlendMode() && !isRenderingMask;
