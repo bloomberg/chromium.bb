@@ -70,8 +70,6 @@ cvox2.Background.prototype = {
    * @param {Object} changeInfo
    */
   onTabUpdated: function(tabId, changeInfo) {
-    if (changeInfo.status != 'complete')
-      return;
     chrome.tabs.get(tabId, function(tab) {
       if (!tab.url)
         return;
@@ -87,7 +85,7 @@ cvox2.Background.prototype = {
 
       this.disableClassicChromeVox_(tab.id);
 
-      chrome.automation.getTree(this.onGotTree);
+      chrome.automation.getTree(this.onGotTree.bind(this));
     }.bind(this));
   },
 
@@ -100,14 +98,12 @@ cvox2.Background.prototype = {
     root.addEventListener(chrome.automation.EventType.focus,
                           this.onFocus,
                           true);
+    root.addEventListener(chrome.automation.EventType.loadComplete,
+                          this.onLoadComplete,
+                          true);
 
-    if (root.attributes.docLoaded) {
+    if (root.attributes.docLoaded)
       this.onLoadComplete({target: root});
-    } else {
-      root.addEventListener(chrome.automation.EventType.loadComplete,
-                            this.onLoadComplete,
-                            true);
-    }
   },
 
   /**
@@ -164,26 +160,15 @@ cvox2.Background.prototype = {
             cvox2.AutomationPredicates.inlineTextBox);
         current = current ? current.parent() : current;
         break;
-      case 'goToBeginning':
-        current = cvox2.AutomationUtil.findNodePost(current.root,
-            cvox2.Dir.FORWARD,
-            cvox2.AutomationPredicates.inlineTextBox);
-        break;
-      case 'goToEnd':
-        current = cvox2.AutomationUtil.findNodePost(current.root,
-            cvox2.Dir.BACKWARD,
-            cvox2.AutomationPredicates.inlineTextBox);
-        break;
     }
 
     if (pred)
       current = cvox2.AutomationUtil.findNextNode(current, dir, pred);
 
-    if (current) {
+    if (current)
       current.focus();
 
-      this.onFocus({target: current});
-    }
+    this.onFocus({target: current || previous});
   },
 
   /**
@@ -194,8 +179,6 @@ cvox2.Background.prototype = {
     var node = evt.target;
     if (!node)
       return;
-
-    this.current_ = node;
     var container = node;
     while (container &&
         (container.role == chrome.automation.RoleType.inlineTextBox ||
@@ -209,6 +192,8 @@ cvox2.Background.prototype = {
     cvox.ChromeVox.tts.speak(output, cvox.QueueMode.FLUSH);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
     chrome.accessibilityPrivate.setFocusRing([evt.target.location]);
+
+    this.current_ = node;
   },
 
   /**
@@ -216,9 +201,6 @@ cvox2.Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    if (this.current_)
-      return;
-
     this.current_ = cvox2.AutomationUtil.findNodePost(evt.target,
         cvox2.Dir.FORWARD,
         cvox2.AutomationPredicates.inlineTextBox);
