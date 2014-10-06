@@ -48,6 +48,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
+        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',

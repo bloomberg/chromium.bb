@@ -399,6 +399,7 @@ source_set("sync_core") {
     "//google_apis",
     "//net",
     "//sql",
+    "//third_party/leveldatabase",
     "//third_party/zlib",
     "//url",
     "//sync/protocol",

@@ -6,6 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UPLOADER_IMPL_H_
 
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -51,11 +52,17 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
                                     const AttachmentId& attachment_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AttachmentUploaderImplTest, ComputeHashHeader);
+
   class UploadState;
   typedef std::string UniqueId;
   typedef base::ScopedPtrHashMap<UniqueId, UploadState> StateMap;
 
   void OnUploadStateStopped(const UniqueId& unique_id);
+
+  // Returns an X-Goog-Hash header for |memory|.  Potentially expensive.
+  static std::string ComputeHashHeader(
+      const scoped_refptr<base::RefCountedMemory>& memory);
 
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

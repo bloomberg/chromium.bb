@@ -4,9 +4,14 @@
 
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
+#include "base/sys_byteorder.h"
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
@@ -15,6 +20,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/sync.pb.h"
+#include "third_party/leveldatabase/src/util/crc32c.h"
 
 namespace {
 
@@ -201,12 +207,15 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   fetcher_->SetUploadData(kContentType, upload_content);
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);
+  // TODO(maniscalco): Consider computing the hash once and storing the value as
+  // a new field in the Attachment object to avoid recomputing when an upload
+  // fails and is retried (bug 417794).
+  fetcher_->AddExtraRequestHeader(ComputeHashHeader(memory));
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DISABLE_CACHE);
-  // TODO(maniscalco): Set an appropriate headers (User-Agent, Content-type, and
-  // Content-length) on the request and include the content's MD5,
-  // AttachmentId's unique_id and the "sync birthday" (bug 371521).
+  // TODO(maniscalco): Set appropriate headers (e.g. User-Agent) on the request
+  // and include the "sync birthday" (bug 371521).
   fetcher_->Start();
 }
 
@@ -332,6 +341,20 @@ void AttachmentUploaderImpl::OnUploadStateStopped(const UniqueId& unique_id) {
   if (iter != state_map_.end() && iter->second->IsStopped()) {
     state_map_.erase(iter);
   }
+}
+
+std::string AttachmentUploaderImpl::ComputeHashHeader(
+    const scoped_refptr<base::RefCountedMemory>& memory) {
+  // Generate an X-Goog-Hash header containing the object's crc32c, big-endian,
+  // base64 encoded.  See also
+  // https://cloud.google.com/storage/docs/reference-headers#xgooghash
+  const uint32_t crc32c_big_endian = base::HostToNet32(
+      leveldb::crc32c::Value(memory->front_as<char>(), memory->size()));
+  const base::StringPiece raw(reinterpret_cast<const char*>(&crc32c_big_endian),
+                              sizeof(crc32c_big_endian));
+  std::string encoded;
+  base::Base64Encode(raw, &encoded);
+  return base::StringPrintf("X-Goog-Hash: crc32c=%s", encoded.c_str());
 }
 
 }  // namespace syncer
