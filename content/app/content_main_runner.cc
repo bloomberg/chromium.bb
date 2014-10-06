@@ -480,7 +480,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   }
 #endif
 
-  virtual int Initialize(const ContentMainParams& params) OVERRIDE {
+  virtual int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
 
 #if defined(OS_WIN)
@@ -749,7 +749,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     return -1;
   }
 
-  virtual int Run() OVERRIDE {
+  virtual int Run() override {
     DCHECK(is_initialized_);
     DCHECK(!is_shutdown_);
     const base::CommandLine& command_line =
@@ -772,7 +772,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
   }
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
     DCHECK(is_initialized_);
     DCHECK(!is_shutdown_);
 

@@ -53,7 +53,7 @@ class SurfaceTexturePeerChildImpl : public SurfaceTexturePeer,
       base::ProcessHandle pid,
       scoped_refptr<gfx::SurfaceTexture> surface_texture,
       int primary_id,
-      int secondary_id) OVERRIDE {
+      int secondary_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     content::Java_ChildProcessService_establishSurfaceTexturePeer(
         env, service_.obj(), pid,
@@ -63,7 +63,7 @@ class SurfaceTexturePeerChildImpl : public SurfaceTexturePeer,
   }
 
   // Overridden from GpuSurfaceLookup:
-  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) OVERRIDE {
+  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     gfx::ScopedJavaSurface surface(
         content::Java_ChildProcessService_getViewSurface(
@@ -85,7 +85,7 @@ class SurfaceTexturePeerChildImpl : public SurfaceTexturePeer,
   // Overridden from SurfaceTextureLookup:
   virtual gfx::AcceleratedWidget AcquireNativeWidget(int primary_id,
                                                      int secondary_id)
-      OVERRIDE {
+      override {
     JNIEnv* env = base::android::AttachCurrentThread();
     gfx::ScopedJavaSurface surface(
         content::Java_ChildProcessService_getSurfaceTextureSurface(
