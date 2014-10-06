@@ -196,4 +196,8 @@ BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
   return NULL;
 }
 
+std::string ContentRendererClient::GetUserAgentOverrideForURL(const GURL& url) {
+  return std::string();
+}
+
 }  // namespace content

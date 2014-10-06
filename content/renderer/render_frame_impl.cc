@@ -3105,6 +3105,11 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
 blink::WebString RenderFrameImpl::userAgentOverride(blink::WebLocalFrame* frame,
                                                     const blink::WebURL& url) {
   DCHECK(!frame_ || frame_ == frame);
+  std::string user_agent_override_for_url =
+      GetContentClient()->renderer()->GetUserAgentOverrideForURL(GURL(url));
+  if (!user_agent_override_for_url.empty())
+    return WebString::fromUTF8(user_agent_override_for_url);
+
   if (!render_view_->webview() || !render_view_->webview()->mainFrame() ||
       render_view_->renderer_preferences_.user_agent_override.empty()) {
     return blink::WebString();

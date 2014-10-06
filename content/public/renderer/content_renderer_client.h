@@ -273,6 +273,10 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if dev channel APIs are available for plugins.
   virtual bool IsPluginAllowedToUseDevChannelAPIs();
+
+  // Returns a user agent override specific for |url|, or empty string if
+  // default user agent should be used.
+  virtual std::string GetUserAgentOverrideForURL(const GURL& url);
 };
 
 }  // namespace content
