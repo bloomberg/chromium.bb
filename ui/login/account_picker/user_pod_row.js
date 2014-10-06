@@ -949,6 +949,19 @@ cr.define('login', function() {
         this.userTypeBubbleElement.classList.remove('bubble-shown');
 
         this.actionBoxAreaElement.classList.add('active');
+
+        // If the user pod is on either edge of the screen, then the menu
+        // could be displayed partially ofscreen.
+        this.actionBoxMenu.classList.remove('left-edge-offset');
+        this.actionBoxMenu.classList.remove('right-edge-offset');
+
+        var offsetLeft =
+            cr.ui.login.DisplayManager.getOffset(this.actionBoxMenu).left;
+        var menuWidth = this.actionBoxMenu.offsetWidth;
+        if (offsetLeft < 0)
+          this.actionBoxMenu.classList.add('left-edge-offset');
+        else if (offsetLeft + menuWidth > window.innerWidth)
+          this.actionBoxMenu.classList.add('right-edge-offset');
       } else {
         this.actionBoxAreaElement.classList.remove('active');
         this.actionBoxAreaElement.classList.remove('menu-moved-up');

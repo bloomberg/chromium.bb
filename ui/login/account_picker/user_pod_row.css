@@ -416,6 +416,14 @@ html[dir=rtl] .user-type-icon-area {
   width: 220px;
 }
 
+.action-box-area.active ~ .action-box-menu.left-edge-offset {
+  left: 0 !important;
+}
+
+.action-box-area.active ~ .action-box-menu.right-edge-offset {
+  right: 0 !important;
+}
+
 .action-box-area.active ~ .action-box-menu:not(.menu-moved-up) {
   top: 18px;
 }
