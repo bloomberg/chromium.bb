@@ -468,6 +468,69 @@ function testContentLoadEvent() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the basic use cases of the declarative WebRequest API
+// work as expected. This test demonstrates that rules can be added prior to
+// navigation and attachment.
+// 1. It adds a rule to block URLs that contain guest.
+// 2. It attempts to navigate to a guest.html page.
+// 3. It detects the appropriate loadabort message.
+// 4. It removes the rule blocking the page and reloads.
+// 5. The page loads successfully.
+function testDeclarativeWebRequestAPI() {
+  var step = 1;
+  var webview = new WebView();
+  var rule = {
+    conditions: [
+      new chrome.webViewRequest.RequestMatcher(
+        {
+          url: { urlContains: 'guest' }
+        }
+      )
+    ],
+    actions: [
+      new chrome.webViewRequest.CancelRequest()
+    ]
+  };
+  webview.request.onRequest.addRules([rule]);
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(1, step);
+    embedder.test.assertEq('ERR_BLOCKED_BY_CLIENT', e.reason);
+    step = 2;
+    webview.request.onRequest.removeRules();
+    webview.reload();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.assertEq(2, step);
+    embedder.test.succeed();
+  });
+  webview.src = embedder.emptyGuestURL;
+  document.body.appendChild(webview);
+}
+
+function testDeclarativeWebRequestAPISendMessage() {
+  var webview = new WebView();
+  window.console.log(embedder.emptyGuestURL);
+  var rule = {
+    conditions: [
+      new chrome.webViewRequest.RequestMatcher(
+        {
+          url: { urlContains: 'guest' }
+        }
+      )
+    ],
+    actions: [
+      new chrome.webViewRequest.SendMessageToExtension({ message: 'bleep' })
+    ]
+  };
+  webview.request.onRequest.addRules([rule]);
+  webview.request.onMessage.addListener(function(e) {
+    embedder.test.assertEq('bleep', e.message);
+    embedder.test.succeed();
+  });
+  webview.src = embedder.emptyGuestURL;
+  document.body.appendChild(webview);
+}
+
 // This test registers two listeners on an event (loadcommit) and removes
 // the <webview> tag when the first listener fires.
 // Current expected behavior is that the second event listener will still
@@ -1475,6 +1538,74 @@ function testTerminateAfterExit() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the WebRequest API onBeforeRequest event fires on
+// webview.
+function testWebRequestAPI() {
+  var webview = new WebView();
+  webview.request.onBeforeRequest.addListener(function(e) {
+    embedder.test.succeed();
+  }, { urls: ['<all_urls>']}) ;
+  webview.src = embedder.windowOpenGuestURL;
+  document.body.appendChild(webview);
+}
+
+function testWebRequestAPIExistence() {
+  var apiPropertiesToCheck = [
+    // Declarative WebRequest API.
+    'onMessage',
+    'onRequest',
+    // WebRequest API.
+    'onBeforeRequest',
+    'onBeforeSendHeaders',
+    'onSendHeaders',
+    'onHeadersReceived',
+    'onAuthRequired',
+    'onBeforeRedirect',
+    'onResponseStarted',
+    'onCompleted',
+    'onErrorOccurred'
+  ];
+  var webview = document.createElement('webview');
+  webview.setAttribute('partition', arguments.callee.name);
+  webview.addEventListener('loadstop', function(e) {
+    for (var i = 0; i < apiPropertiesToCheck.length; ++i) {
+      embedder.test.assertEq('object',
+                             typeof webview.request[apiPropertiesToCheck[i]]);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].addListener);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].addRules);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].getRules);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].removeRules);
+    }
+
+    // Try to overwrite webview.request, shall not succeed.
+    webview.request = '123';
+    embedder.test.assertTrue(typeof webview.request !== 'string');
+
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'data:text/html,webview check api');
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the WebRequest API onBeforeRequest event fires on
+// clients*.google.com URLs.
+function testWebRequestAPIGoogleProperty() {
+  var webview = new WebView();
+  webview.request.onBeforeRequest.addListener(function(e) {
+    embedder.test.succeed();
+    return {cancel: true};
+  }, { urls: ['<all_urls>']}, ['blocking']) ;
+  webview.src = 'http://clients6.google.com';
+  document.body.appendChild(webview);
+}
 
 // Tests end.
 
@@ -1491,6 +1622,9 @@ embedder.test.testList = {
   'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
   'testChromeExtensionURL': testChromeExtensionURL,
   'testContentLoadEvent': testContentLoadEvent,
+  'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
+  'testDeclarativeWebRequestAPISendMessage':
+      testDeclarativeWebRequestAPISendMessage,
   'testDestroyOnEventListener': testDestroyOnEventListener,
   'testDisplayNoneWebviewLoad': testDisplayNoneWebviewLoad,
   'testDisplayNoneWebviewRemoveChild': testDisplayNoneWebviewRemoveChild,
@@ -1536,7 +1670,10 @@ embedder.test.testList = {
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
-  'testTerminateAfterExit': testTerminateAfterExit
+  'testTerminateAfterExit': testTerminateAfterExit,
+  'testWebRequestAPI': testWebRequestAPI,
+  'testWebRequestAPIExistence': testWebRequestAPIExistence,
+  'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty
 };
 
 onload = function() {

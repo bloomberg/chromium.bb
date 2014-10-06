@@ -212,6 +212,19 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContentLoadEvent) {
   RunTest("testContentLoadEvent", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDeclarativeWebRequestAPI) {
+  StartTestServer();
+  RunTest("testDeclarativeWebRequestAPI", "web_view/apitest");
+  StopTestServer();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       TestDeclarativeWebRequestAPISendMessage) {
+  StartTestServer();
+  RunTest("testDeclarativeWebRequestAPISendMessage", "web_view/apitest");
+  StopTestServer();
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDestroyOnEventListener) {
   RunTest("testDestroyOnEventListener", "web_view/apitest");
 }
@@ -426,6 +439,26 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestResizeWebviewResizesContent) {
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestTerminateAfterExit) {
   RunTest("testTerminateAfterExit", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPI) {
+  StartTestServer();
+  RunTest("testWebRequestAPI", "web_view/apitest");
+  StopTestServer();
+}
+
+// Tests the existence of WebRequest API event objects on the request
+// object, on the webview element, and hanging directly off webview.
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIExistence) {
+  StartTestServer();
+  RunTest("testWebRequestAPIExistence", "web_view/apitest");
+  StopTestServer();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIGoogleProperty) {
+  StartTestServer();
+  RunTest("testWebRequestAPIGoogleProperty", "web_view/apitest");
+  StopTestServer();
 }
 
 }  // namespace extensions
