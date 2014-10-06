@@ -732,6 +732,7 @@ private:
 
     void setLowCollectionRate(bool value) { m_lowCollectionRate = value; }
 
+    void performPendingSweepInParallel();
     void waitUntilSweepersDone();
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers(Visitor&);
