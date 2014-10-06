@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -257,17 +258,46 @@ bool IsExtensionIdle(const std::string& extension_id,
   ProcessManager* process_manager =
       ExtensionSystem::Get(context)->process_manager();
   DCHECK(process_manager);
-  ExtensionHost* host =
-      process_manager->GetBackgroundHostForExtension(extension_id);
-  if (host)
-    return false;
 
-  content::SiteInstance* site_instance = process_manager->GetSiteInstanceForURL(
-      Extension::GetBaseURLFromExtensionId(extension_id));
-  if (site_instance && site_instance->HasProcess())
-    return false;
+  std::vector<std::string> ids_to_check;
+  ids_to_check.push_back(extension_id);
 
-  return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
+  const Extension* extension =
+      ExtensionRegistry::Get(context)
+          ->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
+  if (extension && extension->is_shared_module()) {
+    // We have to check all the extensions that use this shared module for idle
+    // to tell whether it is really 'idle'.
+    SharedModuleService* service = ExtensionSystem::Get(context)
+                                       ->extension_service()
+                                       ->shared_module_service();
+    scoped_ptr<ExtensionSet> dependents =
+        service->GetDependentExtensions(extension);
+    for (ExtensionSet::const_iterator i = dependents->begin();
+         i != dependents->end();
+         i++) {
+      ids_to_check.push_back((*i)->id());
+    }
+  }
+
+  for (std::vector<std::string>::const_iterator i = ids_to_check.begin();
+       i != ids_to_check.end();
+       i++) {
+    const std::string id = (*i);
+    ExtensionHost* host = process_manager->GetBackgroundHostForExtension(id);
+    if (host)
+      return false;
+
+    content::SiteInstance* site_instance =
+        process_manager->GetSiteInstanceForURL(
+            Extension::GetBaseURLFromExtensionId(id));
+    if (site_instance && site_instance->HasProcess())
+      return false;
+
+    if (!process_manager->GetRenderViewHostsForExtension(id).empty())
+      return false;
+  }
+  return true;
 }
 
 GURL GetSiteForExtensionId(const std::string& extension_id,

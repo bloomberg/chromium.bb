@@ -2081,6 +2081,26 @@ void ExtensionService::Observe(int type,
         // app or extension becoming idle.
         std::set<std::string> extension_ids =
             process_map->GetExtensionsInProcess(process->GetID());
+        // In addition to the extensions listed in the process map, one of those
+        // extensions could be referencing a shared module which is waiting for
+        // idle to update.  Check all imports of these extensions, too.
+        std::set<std::string> import_ids;
+        for (std::set<std::string>::const_iterator it = extension_ids.begin();
+             it != extension_ids.end();
+             ++it) {
+          const Extension* extension = GetExtensionById(*it, true);
+          if (!extension)
+            continue;
+          const std::vector<SharedModuleInfo::ImportInfo>& imports =
+              SharedModuleInfo::GetImports(extension);
+          std::vector<SharedModuleInfo::ImportInfo>::const_iterator import_it;
+          for (import_it = imports.begin(); import_it != imports.end();
+               import_it++) {
+            import_ids.insert((*import_it).extension_id);
+          }
+        }
+        extension_ids.insert(import_ids.begin(), import_ids.end());
+
         for (std::set<std::string>::const_iterator it = extension_ids.begin();
              it != extension_ids.end(); ++it) {
           if (delayed_installs_.Contains(*it)) {
