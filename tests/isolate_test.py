@@ -1164,12 +1164,21 @@ class IsolateCommand(IsolateBase):
 
   def test_CMDarchive(self):
     actual = []
-    self.mock(
-        isolate.isolateserver, 'upload_tree',
-        lambda **kwargs: actual.append(kwargs))
 
-    isolate_file = os.path.join(self.cwd, 'x.isolate')
-    isolated_file = os.path.join(self.cwd, 'x.isolated')
+    def mocked_upload_tree(base_url, infiles, namespace):
+      # |infiles| may be a generator of pair, materialize it into a list.
+      actual.append({
+        'base_url': base_url,
+        'infiles': dict(infiles),
+        'namespace': namespace,
+      })
+    self.mock(isolate.isolateserver, 'upload_tree', mocked_upload_tree)
+
+    def join(*path):
+      return os.path.join(self.cwd, *path)
+
+    isolate_file = join('x.isolate')
+    isolated_file = join('x.isolated')
     with open(isolate_file, 'wb') as f:
       f.write(
           '# Foo\n'
@@ -1182,7 +1191,7 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(os.path.join(self.cwd, 'foo'), 'wb') as f:
+    with open(join('foo'), 'wb') as f:
       f.write('fooo')
 
     self.mock(sys, 'stdout', cStringIO.StringIO())
@@ -1196,12 +1205,11 @@ class IsolateCommand(IsolateBase):
     expected = [
         {
           'base_url': 'http://localhost:1',
-          'indir': self.cwd,
           'infiles': {
-            isolated_file: {
+            join(isolated_file): {
               'priority': '0',
             },
-            u'foo': {
+            join('foo'): {
               'h': '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0',
               's': 4,
             },
@@ -1210,22 +1218,31 @@ class IsolateCommand(IsolateBase):
         },
     ]
     # These always change.
-    actual[0]['infiles'][isolated_file].pop('h')
-    actual[0]['infiles'][isolated_file].pop('s')
-    actual[0]['infiles']['foo'].pop('m')
-    actual[0]['infiles']['foo'].pop('t')
+    actual[0]['infiles'][join(isolated_file)].pop('h')
+    actual[0]['infiles'][join(isolated_file)].pop('s')
+    actual[0]['infiles'][join('foo')].pop('m')
+    actual[0]['infiles'][join('foo')].pop('t')
     self.assertEqual(expected, actual)
 
   def test_CMDbatcharchive(self):
     # Same as test_CMDarchive but via code path that parses *.gen.json files.
     actual = []
-    self.mock(
-        isolate.isolateserver, 'upload_tree',
-        lambda **kwargs: actual.append(kwargs))
+
+    def mocked_upload_tree(base_url, infiles, namespace):
+      # |infiles| may be a generator of pair, materialize it into a list.
+      actual.append({
+        'base_url': base_url,
+        'infiles': dict(infiles),
+        'namespace': namespace,
+      })
+    self.mock(isolate.isolateserver, 'upload_tree', mocked_upload_tree)
+
+    def join(*path):
+      return os.path.join(self.cwd, *path)
 
     # First isolate: x.isolate.
-    isolate_file_x = os.path.join(self.cwd, 'x.isolate')
-    isolated_file_x = os.path.join(self.cwd, 'x.isolated')
+    isolate_file_x = join('x.isolate')
+    isolated_file_x = join('x.isolated')
     with open(isolate_file_x, 'wb') as f:
       f.write(
           '# Foo\n'
@@ -1238,9 +1255,9 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(os.path.join(self.cwd, 'foo'), 'wb') as f:
+    with open(join('foo'), 'wb') as f:
       f.write('fooo')
-    with open(os.path.join(self.cwd, 'x.isolated.gen.json'), 'wb') as f:
+    with open(join('x.isolated.gen.json'), 'wb') as f:
       json.dump({
         'args': [
           '-i', isolate_file_x,
@@ -1252,8 +1269,8 @@ class IsolateCommand(IsolateBase):
       }, f)
 
     # Second isolate: y.isolate.
-    isolate_file_y = os.path.join(self.cwd, 'y.isolate')
-    isolated_file_y = os.path.join(self.cwd, 'y.isolated')
+    isolate_file_y = join('y.isolate')
+    isolated_file_y = join('y.isolated')
     with open(isolate_file_y, 'wb') as f:
       f.write(
           '# Foo\n'
@@ -1266,9 +1283,9 @@ class IsolateCommand(IsolateBase):
           '    }],'
           '  ],'
           '}')
-    with open(os.path.join(self.cwd, 'bar'), 'wb') as f:
+    with open(join('bar'), 'wb') as f:
       f.write('barr')
-    with open(os.path.join(self.cwd, 'y.isolated.gen.json'), 'wb') as f:
+    with open(join('y.isolated.gen.json'), 'wb') as f:
       json.dump({
         'args': [
           '-i', isolate_file_y,
@@ -1283,34 +1300,26 @@ class IsolateCommand(IsolateBase):
     cmd = [
       '--isolate-server', 'http://localhost:1',
       '--dump-json', 'json_output.json',
-      os.path.join(self.cwd, 'x.isolated.gen.json'),
-      os.path.join(self.cwd, 'y.isolated.gen.json'),
+      join('x.isolated.gen.json'),
+      join('y.isolated.gen.json'),
     ]
     self.assertEqual(
         0, isolate.CMDbatcharchive(tools.OptionParserWithLogging(), cmd))
     expected = [
         {
           'base_url': 'http://localhost:1',
-          'indir': self.cwd,
           'infiles': {
-            isolated_file_x: {
+            join(isolated_file_x): {
               'priority': '0',
             },
-            u'foo': {
+            join('foo'): {
               'h': '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0',
               's': 4,
             },
-          },
-          'namespace': 'default-gzip',
-        },
-        {
-          'base_url': 'http://localhost:1',
-          'indir': self.cwd,
-          'infiles': {
-            isolated_file_y: {
+            join(isolated_file_y): {
               'priority': '0',
             },
-            u'bar': {
+            join('bar'): {
               'h': 'e918b3a3f9597e3cfdc62ce20ecf5756191cb3ec',
               's': 4,
             },
@@ -1319,14 +1328,14 @@ class IsolateCommand(IsolateBase):
         },
     ]
     # These always change.
-    actual[0]['infiles'][isolated_file_x].pop('h')
-    actual[0]['infiles'][isolated_file_x].pop('s')
-    actual[0]['infiles']['foo'].pop('m')
-    actual[0]['infiles']['foo'].pop('t')
-    actual[1]['infiles'][isolated_file_y].pop('h')
-    actual[1]['infiles'][isolated_file_y].pop('s')
-    actual[1]['infiles']['bar'].pop('m')
-    actual[1]['infiles']['bar'].pop('t')
+    actual[0]['infiles'][join(isolated_file_x)].pop('h')
+    actual[0]['infiles'][join(isolated_file_x)].pop('s')
+    actual[0]['infiles'][join('foo')].pop('m')
+    actual[0]['infiles'][join('foo')].pop('t')
+    actual[0]['infiles'][join(isolated_file_y)].pop('h')
+    actual[0]['infiles'][join(isolated_file_y)].pop('s')
+    actual[0]['infiles'][join('bar')].pop('m')
+    actual[0]['infiles'][join('bar')].pop('t')
     self.assertEqual(expected, actual)
 
     expected_json = {

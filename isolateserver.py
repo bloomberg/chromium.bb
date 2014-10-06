@@ -404,6 +404,8 @@ class Storage(object):
     Returns:
       List of items that were uploaded. All other items are already there.
     """
+    logging.info('upload_items(items=%d)', len(items))
+
     # TODO(vadimsh): Optimize special case of len(items) == 1 that is frequently
     # used by swarming.py. There's no need to spawn multiple threads and try to
     # do stuff in parallel: there's nothing to parallelize. 'contains' check and
@@ -423,7 +425,7 @@ class Storage(object):
         duplicates += 1
     items = seen.values()
     if duplicates:
-      logging.info('Skipped %d duplicated files', duplicates)
+      logging.info('Skipped %d files with duplicated content', duplicates)
 
     # Enqueue all upload tasks.
     missing = set()
@@ -1440,35 +1442,35 @@ def get_storage(file_or_url, namespace):
   return Storage(get_storage_api(file_or_url, namespace))
 
 
-def upload_tree(base_url, indir, infiles, namespace):
+def upload_tree(base_url, infiles, namespace):
   """Uploads the given tree to the given url.
 
   Arguments:
-    base_url:  The base url, it is assume that |base_url|/has/ can be used to
-               query if an element was already uploaded, and |base_url|/store/
-               can be used to upload a new element.
-    indir:     Root directory the infiles are based in.
-    infiles:   dict of files to upload from |indir| to |base_url|.
+    base_url:  The url of the isolate server to upload to.
+    infiles:   iterable of pairs (absolute path, metadata dict) of files.
     namespace: The namespace to use on the server.
   """
-  logging.info('upload_tree(indir=%s, files=%d)', indir, len(infiles))
-
-  # Convert |indir| + |infiles| into a list of FileItem objects.
+  # Convert |infiles| into a list of FileItem objects, skip duplicates.
   # Filter out symlinks, since they are not represented by items on isolate
   # server side.
-  items = [
-      FileItem(
-          path=os.path.join(indir, filepath),
+  items = []
+  seen = set()
+  skipped = 0
+  for filepath, metadata in infiles:
+    if 'l' not in metadata and filepath not in seen:
+      seen.add(filepath)
+      item = FileItem(
+          path=filepath,
           digest=metadata['h'],
           size=metadata['s'],
           high_priority=metadata.get('priority') == '0')
-      for filepath, metadata in infiles.iteritems()
-      if 'l' not in metadata
-  ]
+      items.append(item)
+    else:
+      skipped += 1
 
+  logging.info('Skipped %d duplicated entries', skipped)
   with get_storage(base_url, namespace) as storage:
     storage.upload_items(items)
-  return 0
 
 
 def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):

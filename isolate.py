@@ -13,9 +13,10 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 import datetime
+import itertools
 import logging
 import optparse
 import os
@@ -35,6 +36,16 @@ from third_party.depot_tools import subcommand
 
 from utils import file_path
 from utils import tools
+
+
+# Exit code of 'archive' and 'batcharchive' if the command fails due to an error
+# in *.isolate file (format error, or some referenced files are missing, etc.)
+EXIT_CODE_ISOLATE_ERROR = 1
+
+
+# Exit code of 'archive' and 'batcharchive' if the command fails due to
+# a network or server issue. It is an infrastructure failure.
+EXIT_CODE_UPLOAD_ERROR = 101
 
 
 # Supported version of *.isolated.gen.json files consumed by CMDbatcharchive.
@@ -746,37 +757,67 @@ def prepare_for_archival(options, cwd):
   return complete_state, infiles, isolated_hash
 
 
-def isolate_and_archive(options, cwd, isolate_server, namespace):
-  """Isolates and uploads isolated tree.
+def isolate_and_archive(trees, isolate_server, namespace):
+  """Isolates and uploads a bunch of isolated trees.
 
-  Returns hash of the *.isolated file on success, None on failure.
+  Args:
+    trees: list of pairs (Options, working directory) that describe what tree
+        to isolate. Options are processed by 'process_isolate_options'.
+    isolate_server: URL of Isolate Server to upload to.
+    namespace: namespace to upload to.
+
+  Returns a dict {target name -> isolate hash or None}, where target name is
+  a name of *.isolated file without an extension (e.g. 'base_unittests').
+
+  Have multiple failure modes:
+    * If the upload fails due to server or network error returns None.
+    * If some *.isolate file is incorrect (but rest of them are fine and were
+      successfully uploaded), returns a dict where the value of the entry
+      corresponding to invalid *.isolate file is None.
   """
-  with tools.Profiler('GenerateHashtable'):
-    success = False
-    isolated_hash = None
-    try:
-      complete_state, infiles, isolated_hash = prepare_for_archival(
-          options, cwd)
-      logging.info('Creating content addressed object store with %d item',
-                   len(infiles))
+  if not trees:
+    return {}
 
+  # Helper generator to avoid materializing the full (huge) list of files until
+  # the very end (in upload_tree).
+  def emit_files(root_dir, files):
+    for path, meta in files.iteritems():
+      yield (os.path.join(root_dir, path), meta)
+
+  # Process all *.isolate files, it involves parsing, file system traversal and
+  # hashing. The result is a list of generators that produce files to upload
+  # and the mapping {target name -> hash of *.isolated file} to return from
+  # this function.
+  files_generators = []
+  isolated_hashes = {}
+  with tools.Profiler('Isolate'):
+    for opts, cwd in trees:
+      target_name = os.path.splitext(os.path.basename(opts.isolated))[0]
+      try:
+        complete_state, files, isolated_hash = prepare_for_archival(opts, cwd)
+        files_generators.append(emit_files(complete_state.root_dir, files))
+        isolated_hashes[target_name] = isolated_hash[0]
+        print('%s  %s' % (isolated_hash[0], target_name))
+      except Exception:
+        logging.exception('Exception when isolating %s', target_name)
+        isolated_hashes[target_name] = None
+
+  # All bad? Nothing to upload.
+  if all(v is None for v in isolated_hashes.itervalues()):
+    return isolated_hashes
+
+  # Now upload all necessary files at once.
+  with tools.Profiler('Upload'):
+    try:
       isolateserver.upload_tree(
           base_url=isolate_server,
-          indir=complete_state.root_dir,
-          infiles=infiles,
+          infiles=itertools.chain(*files_generators),
           namespace=namespace)
-      success = True
-      print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
     except Exception:
-      logging.exception(
-          'Exception when archiving %s', os.path.basename(options.isolated))
-      success = False
-    finally:
-      # If the command failed, delete the .isolated file if it exists. This is
-      # important so no stale swarm job is executed.
-      if not success and os.path.isfile(options.isolated):
-        os.remove(options.isolated)
-  return isolated_hash[0] if success else None
+      logging.exception('Exception while uploading files')
+      return None
+
+  return isolated_hashes
 
 
 def parse_archive_command_line(args, cwd):
@@ -816,9 +857,14 @@ def CMDarchive(parser, args):
   if not file_path.is_url(options.isolate_server):
     parser.error('Not a valid server URL: %s' % options.isolate_server)
   auth.ensure_logged_in(options.isolate_server)
-  isolated_hash = isolate_and_archive(
-      options, os.getcwd(), options.isolate_server, options.namespace)
-  return int(not isolated_hash)
+  result = isolate_and_archive(
+      [(options, os.getcwd())], options.isolate_server, options.namespace)
+  if result is None:
+    return EXIT_CODE_UPLOAD_ERROR
+  assert len(result) == 1, result
+  if result.values()[0] is None:
+    return EXIT_CODE_ISOLATE_ERROR
+  return 0
 
 
 @subcommand.usage('-- GEN_JSON_1 GEN_JSON_2 ...')
@@ -852,7 +898,7 @@ def CMDbatcharchive(parser, args):
   auth.ensure_logged_in(options.isolate_server)
 
   # Validate all incoming options, prepare what needs to be archived as a list
-  # of tuples (working directory, archival options).
+  # of tuples (archival options, working directory).
   work_units = []
   for gen_json_path in args:
     # Validate JSON format of a *.isolated.gen.json file.
@@ -867,21 +913,27 @@ def CMDbatcharchive(parser, args):
         not all(isinstance(x, unicode) for x in args)):
       parser.error('Invalid args in %s' % gen_json_path)
     # Convert command line (embedded in JSON) to Options object.
-    work_units.append((cwd, parse_archive_command_line(args, cwd)))
+    work_units.append((parse_archive_command_line(args, cwd), cwd))
 
-  # Perform the archival.
-  # TODO(vadimsh): Start optimizing this by removing redundant work.
-  isolated_hashes = {}
-  for cwd, opts in work_units:
-    target_name = os.path.splitext(os.path.basename(opts.isolated))[0]
-    isolated_hashes[target_name] = isolate_and_archive(
-        opts, cwd, options.isolate_server, options.namespace)
+  # Perform the archival, all at once.
+  isolated_hashes = isolate_and_archive(
+      work_units, options.isolate_server, options.namespace)
 
+  # TODO(vadimsh): isolate_and_archive returns None on upload failure, there's
+  # no way currently to figure out what *.isolated file from a batch were
+  # successfully uploaded, so consider them all failed (and emit empty dict
+  # as JSON result).
   if options.dump_json:
-    tools.write_json(options.dump_json, isolated_hashes, False)
+    tools.write_json(options.dump_json, isolated_hashes or {}, False)
 
-  # 'isolate_and_archive' returns None on failure. At least one None -> failure.
-  return int(not all(isolated_hashes.itervalues()))
+  if isolated_hashes is None:
+    return EXIT_CODE_UPLOAD_ERROR
+
+  # isolated_hashes[x] is None if 'x.isolate' contains a error.
+  if not all(isolated_hashes.itervalues()):
+    return EXIT_CODE_ISOLATE_ERROR
+
+  return 0
 
 
 def CMDcheck(parser, args):
