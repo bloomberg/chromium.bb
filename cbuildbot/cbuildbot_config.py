@@ -2714,7 +2714,9 @@ _AddGroupConfig('rambi-c', 'squawks', (
     'candy',
 ))
 
-_AddGroupConfig('rambi-d', 'cranky', (),
+_AddGroupConfig('rambi-d', 'cranky', (
+    'parry',
+    ),
     important=False,
 )
 
