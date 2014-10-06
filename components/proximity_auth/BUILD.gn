@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("proximity_auth") {
+source_set("proximity_auth") {
   sources = [
     "bluetooth_connection.cc",
     "bluetooth_connection.h",
@@ -37,6 +37,7 @@ source_set("unit_tests") {
 
   deps = [
     ":proximity_auth",
+    "cryptauth:unit_tests",
     "//base/test:test_support",
     "//device/bluetooth:mocks",
     "//testing/gmock",

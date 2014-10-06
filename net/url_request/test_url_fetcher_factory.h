@@ -160,6 +160,9 @@ class TestURLFetcher : public URLFetcher {
   int id() const { return id_; }
 
   // Returns the data uploaded on this URLFetcher.
+  const std::string& upload_content_type() const {
+    return upload_content_type_;
+  }
   const std::string& upload_data() const { return upload_data_; }
   const base::FilePath& upload_file_path() const { return upload_file_path_; }
 
@@ -200,6 +203,7 @@ class TestURLFetcher : public URLFetcher {
   const GURL original_url_;
   URLFetcherDelegate* delegate_;
   DelegateForTests* delegate_for_tests_;
+  std::string upload_content_type_;
   std::string upload_data_;
   base::FilePath upload_file_path_;
   std::list<std::string> chunks_;

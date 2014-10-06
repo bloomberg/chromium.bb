@@ -72,6 +72,7 @@ group("all_components") {
     "//components/precache/content",
     "//components/pref_registry",
     "//components/proximity_auth",
+    "//components/proximity_auth/cryptauth",
     "//components/query_parser",
     "//components/rappor",
     "//components/renderer_context_menu",

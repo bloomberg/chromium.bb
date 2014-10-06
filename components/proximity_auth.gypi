@@ -31,5 +31,21 @@
         "proximity_auth/wire_message.h",
       ],
     },
+    {
+      'target_name': 'cryptauth',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../net/net.gyp:net',
+      ],
+      'sources': [
+        "proximity_auth/cryptauth/cryptauth_api_call_flow.cc",
+        "proximity_auth/cryptauth/cryptauth_api_call_flow.h",
+      ],
+    },
   ],
 }

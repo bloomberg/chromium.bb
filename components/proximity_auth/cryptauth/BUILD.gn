@@ -1,0 +1,30 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("cryptauth") {
+  sources = [
+    "cryptauth_api_call_flow.cc",
+    "cryptauth_api_call_flow.h",
+  ]
+
+  deps = [
+    "//base",
+    "//google_apis",
+    "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "cryptauth_api_call_flow_unittest.cc",
+  ]
+
+  deps = [
+    ":cryptauth",
+    "//base/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}
