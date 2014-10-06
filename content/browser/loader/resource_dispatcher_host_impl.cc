@@ -1176,12 +1176,17 @@ void ResourceDispatcherHostImpl::BeginRequest(
       GetBlobStorageContext(filter_);
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
-    // Attaches the BlobDataHandles to request_body not to free the blobs and
-    // any attached shareable files until upload completion. These data will be
-    // used in UploadDataStream and ServiceWorkerURLRequestJob.
-    AttachRequestBodyBlobDataHandles(
-        request_data.request_body.get(),
-        blob_context);
+    // |blob_context| could be null when the request is from the plugins because
+    // ResourceMessageFilters created in PluginProcessHost don't have the blob
+    // context.
+    if (blob_context) {
+      // Attaches the BlobDataHandles to request_body not to free the blobs and
+      // any attached shareable files until upload completion. These data will
+      // be used in UploadDataStream and ServiceWorkerURLRequestJob.
+      AttachRequestBodyBlobDataHandles(
+          request_data.request_body.get(),
+          blob_context);
+    }
     new_request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
         blob_context,
