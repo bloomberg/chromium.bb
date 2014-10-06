@@ -139,11 +139,7 @@ void MessagePumpMojo::DoRunLoop(RunState* run_state, Delegate* delegate) {
   bool more_work_is_plausible = true;
   for (;;) {
     const bool block = !more_work_is_plausible;
-    DoInternalWork(*run_state, block);
-
-    // There isn't a good way to know if there are more handles ready, we assume
-    // not.
-    more_work_is_plausible = false;
+    more_work_is_plausible = DoInternalWork(*run_state, block);
 
     if (run_state->should_quit)
       break;
@@ -166,15 +162,15 @@ void MessagePumpMojo::DoRunLoop(RunState* run_state, Delegate* delegate) {
   }
 }
 
-void MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
+bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   const MojoDeadline deadline = block ? GetDeadlineForWait(run_state) : 0;
   const WaitState wait_state = GetWaitState(run_state);
   const MojoResult result =
       WaitMany(wait_state.handles, wait_state.wait_signals, deadline);
+  bool did_work = true;
   if (result == 0) {
     // Control pipe was written to.
-    uint32_t num_bytes = 0;
-    ReadMessageRaw(run_state.read_handle.get(), NULL, &num_bytes, NULL, NULL,
+    ReadMessageRaw(run_state.read_handle.get(), NULL, NULL, NULL, NULL,
                    MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
   } else if (result > 0) {
     const size_t index = static_cast<size_t>(result);
@@ -188,6 +184,7 @@ void MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
         RemoveFirstInvalidHandle(wait_state);
         break;
       case MOJO_RESULT_DEADLINE_EXCEEDED:
+        did_work = false;
         break;
       default:
         base::debug::Alias(&result);
@@ -208,8 +205,11 @@ void MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
         handlers_.find(i->first) != handlers_.end() &&
         handlers_[i->first].id == i->second.id) {
       i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
+      handlers_.erase(i->first);
+      did_work = true;
     }
   }
+  return did_work;
 }
 
 void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {

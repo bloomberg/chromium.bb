@@ -12,7 +12,7 @@ namespace mojo {
 namespace common {
 
 // Used by MessagePumpMojo to notify when a handle is either ready or has become
-// invalid.
+// invalid. In case of error, the handler will be removed.
 class MOJO_COMMON_EXPORT MessagePumpMojoHandler {
  public:
   virtual void OnHandleReady(const Handle& handle) = 0;

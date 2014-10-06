@@ -73,8 +73,9 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   void DoRunLoop(RunState* run_state, Delegate* delegate);
 
   // Services the set of handles ready. If |block| is true this waits for a
-  // handle to become ready, otherwise this does not block.
-  void DoInternalWork(const RunState& run_state, bool block);
+  // handle to become ready, otherwise this does not block. Returns |true| if a
+  // handle has become ready, |false| otherwise.
+  bool DoInternalWork(const RunState& run_state, bool block);
 
   // Removes the first invalid handle. This is called if MojoWaitMany finds an
   // invalid handle.
