@@ -57,6 +57,9 @@ const AcceleratorData kAcceleratorData[] = {
   // The lock key on Chrome OS keyboards produces F13 scancodes.
   { true, ui::VKEY_F13, ui::EF_NONE, LOCK_PRESSED },
   { false, ui::VKEY_F13, ui::EF_NONE, LOCK_RELEASED },
+  // Generic keyboards can use VKEY_SLEEP to mimic ChromeOS keyboard's lock key.
+  { true, ui::VKEY_SLEEP, ui::EF_NONE, LOCK_PRESSED },
+  { false, ui::VKEY_SLEEP, ui::EF_NONE, LOCK_RELEASED },
   { true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
   { true, ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
