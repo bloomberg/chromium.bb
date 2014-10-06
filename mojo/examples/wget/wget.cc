@@ -80,7 +80,7 @@ class WGetApp : public ApplicationDelegate {
     std::string url((args.size() > 1) ? args[1].get() : PromptForURL());
     printf("Loading: %s\n", url.c_str());
 
-    network_service_->CreateURLLoader(Get(&url_loader_));
+    network_service_->CreateURLLoader(GetProxy(&url_loader_));
 
     URLRequestPtr request(URLRequest::New());
     request->url = url;

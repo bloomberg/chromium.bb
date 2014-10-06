@@ -86,9 +86,9 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
     mojo::InterfacePtr<serial::DataSource> source;
     service->Connect(path,
                      serial::ConnectionOptions::New(),
-                     mojo::Get(&connection),
-                     mojo::Get(&sink),
-                     mojo::Get(&source));
+                     mojo::GetProxy(&connection),
+                     mojo::GetProxy(&sink),
+                     mojo::GetProxy(&source));
     connection.set_error_handler(this);
     expecting_error_ = !expecting_success;
     connection->GetInfo(
@@ -113,7 +113,7 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
 
 TEST_F(SerialServiceTest, GetDevices) {
   mojo::InterfacePtr<serial::SerialService> service;
-  SerialServiceImpl::Create(NULL, mojo::Get(&service));
+  SerialServiceImpl::Create(NULL, mojo::GetProxy(&service));
   service.set_error_handler(this);
   mojo::Array<serial::DeviceInfoPtr> result;
   service->GetDevices(

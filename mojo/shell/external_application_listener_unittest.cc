@@ -140,7 +140,7 @@ class FakeExternalApplication {
 
   void ConnectToAppByUrl(std::string app_url) {
     ServiceProviderPtr sp;
-    ptr_->ConnectToApplication(app_url, Get(&sp));
+    ptr_->ConnectToApplication(app_url, GetProxy(&sp));
   }
 
   const std::string& url() { return url_; }

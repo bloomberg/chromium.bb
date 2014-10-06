@@ -92,7 +92,7 @@ class PepperContainerApp: public ApplicationDelegate,
     size->width = 600;
     // TODO(jamesr): Output a surface to the native viewport instead.
     gpu_service_->CreateOnscreenGLES2Context(
-        native_viewport_id_, size.Pass(), Get(&command_buffer));
+        native_viewport_id_, size.Pass(), GetProxy(&command_buffer));
     return command_buffer.PassMessagePipe();
   }
 

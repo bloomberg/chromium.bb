@@ -16,7 +16,7 @@ PackageFetcher::PackageFetcher(NetworkService* network_service,
                                const GURL& url)
     : delegate_(delegate),
       url_(url) {
-  network_service->CreateURLLoader(Get(&loader_));
+  network_service->CreateURLLoader(GetProxy(&loader_));
 
   URLRequestPtr request(URLRequest::New());
   request->url = url.spec();

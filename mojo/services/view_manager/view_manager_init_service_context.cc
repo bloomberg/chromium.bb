@@ -58,7 +58,7 @@ void ViewManagerInitServiceContext::Embed(
     const String& url,
     ServiceProviderPtr service_provider,
     const Callback<void(bool)>& callback) {
-  connection_manager_->EmbedRoot(url, Get(&service_provider));
+  connection_manager_->EmbedRoot(url, GetProxy(&service_provider));
   callback.Run(true);
 }
 

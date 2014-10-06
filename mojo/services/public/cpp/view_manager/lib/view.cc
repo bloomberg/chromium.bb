@@ -442,12 +442,12 @@ void View::CreateBitmapUploader() {
   SurfacesServicePtr surfaces_service;
   InterfacePtr<ServiceProvider> surfaces_service_provider;
   vmci->shell()->ConnectToApplication("mojo:mojo_surfaces_service",
-                                      Get(&surfaces_service_provider));
+                                      GetProxy(&surfaces_service_provider));
   ConnectToService(surfaces_service_provider.get(), &surfaces_service);
   GpuPtr gpu_service;
   InterfacePtr<ServiceProvider> gpu_service_provider;
   vmci->shell()->ConnectToApplication("mojo:mojo_native_viewport_service",
-                                      Get(&gpu_service_provider));
+                                      GetProxy(&gpu_service_provider));
   ConnectToService(gpu_service_provider.get(), &gpu_service);
   bitmap_uploader_.reset(new BitmapUploader(
       vmci, id_, surfaces_service.Pass(), gpu_service.Pass()));

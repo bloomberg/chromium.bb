@@ -64,7 +64,8 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
     const String& application_url) {
   MOJO_CHECK(initialized_);
   ServiceProviderPtr out_service_provider;
-  shell_->ConnectToApplication(application_url, Get(&out_service_provider));
+  shell_->ConnectToApplication(application_url,
+                               GetProxy(&out_service_provider));
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
       this,
       application_url,

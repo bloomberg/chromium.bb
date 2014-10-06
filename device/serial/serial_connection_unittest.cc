@@ -78,9 +78,9 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
     mojo::InterfacePtr<serial::DataSource> producer;
     service->Connect("device",
                      serial::ConnectionOptions::New(),
-                     mojo::Get(&connection_),
-                     mojo::Get(&consumer),
-                     mojo::Get(&producer));
+                     mojo::GetProxy(&connection_),
+                     mojo::GetProxy(&consumer),
+                     mojo::GetProxy(&producer));
     sender_.reset(new DataSender(
         consumer.Pass(), kBufferSize, serial::SEND_ERROR_DISCONNECTED));
     receiver_ = new DataReceiver(

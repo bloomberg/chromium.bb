@@ -145,7 +145,7 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
 
 WebSocketHandleImpl::WebSocketHandleImpl(NetworkService* network_service)
     : did_close_(false) {
-  network_service->CreateWebSocket(Get(&web_socket_));
+  network_service->CreateWebSocket(GetProxy(&web_socket_));
 }
 
 WebSocketHandleImpl::~WebSocketHandleImpl() {

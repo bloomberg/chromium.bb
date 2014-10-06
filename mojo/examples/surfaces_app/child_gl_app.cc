@@ -39,7 +39,7 @@ class ChildGLApp : public ApplicationDelegate, public InterfaceFactory<Child> {
   virtual void Create(ApplicationConnection* connection,
                       InterfaceRequest<Child> request) override {
     CommandBufferPtr command_buffer;
-    gpu_service_->CreateOffscreenGLES2Context(Get(&command_buffer));
+    gpu_service_->CreateOffscreenGLES2Context(GetProxy(&command_buffer));
     BindToRequest(
         new ChildGLImpl(surfaces_service_connection_, command_buffer.Pass()),
         &request);

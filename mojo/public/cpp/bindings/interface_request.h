@@ -60,12 +60,12 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 //
 //   InterfacePtr<Foo> foo = ...;
 //   InterfacePtr<Bar> bar;
-//   foo->CreateBar(Get(&bar));
+//   foo->CreateBar(GetProxy(&bar));
 //
 // Upon return from CreateBar, |bar| is ready to have methods called on it.
 //
 template <typename Interface>
-InterfaceRequest<Interface> Get(InterfacePtr<Interface>* ptr) {
+InterfaceRequest<Interface> GetProxy(InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   ptr->Bind(pipe.handle0.Pass());
   return MakeRequest<Interface>(pipe.handle1.Pass());

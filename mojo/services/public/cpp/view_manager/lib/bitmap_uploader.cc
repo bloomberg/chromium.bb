@@ -48,7 +48,7 @@ BitmapUploader::BitmapUploader(ViewManagerClientImpl* client,
   surfaces_service_->CreateSurfaceConnection(base::Bind(
       &BitmapUploader::OnSurfaceConnectionCreated, weak_factory_.GetWeakPtr()));
   CommandBufferPtr gles2_client;
-  gpu_service_->CreateOffscreenGLES2Context(Get(&gles2_client));
+  gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
   gles2_context_ =
       MojoGLES2CreateContext(gles2_client.PassMessagePipe().release().value(),
                              &LostContext,

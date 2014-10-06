@@ -321,7 +321,7 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
   sample::NamedObjectPtr object1;
   EXPECT_FALSE(object1);
 
-  InterfaceRequest<sample::NamedObject> object1_request = Get(&object1);
+  InterfaceRequest<sample::NamedObject> object1_request = GetProxy(&object1);
   EXPECT_TRUE(object1_request.is_pending());
   factory->CreateNamedObject(object1_request.Pass());
   EXPECT_FALSE(object1_request.is_pending());  // We've passed the request.
@@ -330,7 +330,7 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
   object1->SetName("object1");
 
   sample::NamedObjectPtr object2;
-  factory->CreateNamedObject(Get(&object2));
+  factory->CreateNamedObject(GetProxy(&object2));
   object2->SetName("object2");
 
   std::string name1;

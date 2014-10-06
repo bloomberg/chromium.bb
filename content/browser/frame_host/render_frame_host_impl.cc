@@ -206,7 +206,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
     GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
     mojo::ServiceProviderPtr service_provider;
     setup->GetServiceProviderForFrame(routing_id_,
-                                      mojo::Get(&service_provider));
+                                      mojo::GetProxy(&service_provider));
     service_registry_.BindRemoteServiceProvider(
         service_provider.PassMessagePipe());
   }

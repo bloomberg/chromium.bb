@@ -110,7 +110,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
             "window-manager");
   }
   InterfacePtr<ServiceProvider> sp;
-  shell->ConnectToApplication(window_manager_url, Get(&sp));
+  shell->ConnectToApplication(window_manager_url, GetProxy(&sp));
   ConnectToService(sp.get(), &window_manager_);
   window_manager_.set_client(this);
 }

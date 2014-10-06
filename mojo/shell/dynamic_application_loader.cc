@@ -135,7 +135,7 @@ class DynamicApplicationLoader::NetworkLoader : public Loader {
       request->bypass_cache = true;
     }
 
-    network_service->CreateURLLoader(Get(&url_loader_));
+    network_service->CreateURLLoader(GetProxy(&url_loader_));
     url_loader_->Start(request.Pass(),
                        base::Bind(&NetworkLoader::OnLoadComplete,
                                   weak_ptr_factory_.GetWeakPtr()));

@@ -57,7 +57,7 @@ void ExternalApplicationRegistrarConnection::Register(
     base::Closure register_complete_callback) {
   DCHECK(!client_socket_);
   registrar_->Register(
-      String::From(app_url), Get(shell), register_complete_callback);
+      String::From(app_url), GetProxy(shell), register_complete_callback);
 }
 
 void ExternalApplicationRegistrarConnection::OnConnect(

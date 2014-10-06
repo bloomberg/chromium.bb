@@ -220,7 +220,7 @@ void WebLayerTreeViewImpl::finishAllRendering() {
 void WebLayerTreeViewImpl::OnSurfaceConnectionCreated(SurfacePtr surface,
                                                       uint32_t id_namespace) {
   CommandBufferPtr cb;
-  gpu_service_->CreateOffscreenGLES2Context(Get(&cb));
+  gpu_service_->CreateOffscreenGLES2Context(GetProxy(&cb));
   scoped_refptr<cc::ContextProvider> context_provider(
       new ContextProviderMojo(cb.PassMessagePipe()));
   output_surface_.reset(new OutputSurfaceMojo(

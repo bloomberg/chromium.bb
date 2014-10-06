@@ -59,7 +59,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(ApplicationImpl* app)
   app->ConnectToService("mojo:mojo_network_service", &network_service_);
 
   CookieStorePtr cookie_store;
-  network_service_->GetCookieStore(Get(&cookie_store));
+  network_service_->GetCookieStore(GetProxy(&cookie_store));
   cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
   ClipboardPtr clipboard;

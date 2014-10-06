@@ -78,7 +78,7 @@ WebURLRequestExtraData::~WebURLRequestExtraData() {
 WebURLLoaderImpl::WebURLLoaderImpl(NetworkService* network_service)
     : client_(NULL),
       weak_factory_(this) {
-  network_service->CreateURLLoader(Get(&url_loader_));
+  network_service->CreateURLLoader(GetProxy(&url_loader_));
 }
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
