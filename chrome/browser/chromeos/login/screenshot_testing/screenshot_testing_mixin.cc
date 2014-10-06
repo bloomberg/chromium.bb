@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screenshot_testing_mixin.h"
+#include "chrome/browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -38,6 +38,10 @@ void ScreenshotTestingMixin::RunScreenshotTesting(
   }
 }
 
+void ScreenshotTestingMixin::IgnoreArea(const SkIRect& area) {
+  screenshot_tester_.IgnoreArea(area);
+}
+
 // Current implementation is a mockup.
 // It simply waits for 5 seconds, assuming that this time is enough for
 // animation to load completely.
@@ -47,7 +51,7 @@ void ScreenshotTestingMixin::SynchronizeAnimationLoadWithCompositor() {
   base::RunLoop waiter;
   animation_waiter_quitter_ = waiter.QuitClosure();
   timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(5),
+               base::TimeDelta::FromSeconds(2),
                this,
                &ScreenshotTestingMixin::HandleAnimationLoad);
   waiter.Run();

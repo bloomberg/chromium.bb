@@ -8,7 +8,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/screenshot_testing_mixin.h"
+#include "chrome/browser/chromeos/login/screenshot_testing/login_screen_areas.h"
+#include "chrome/browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -34,6 +35,9 @@ class LoginUITest : public chromeos::LoginManagerTest {
   bool enable_test_screenshots_;
   LoginUITest() : LoginManagerTest(false) {
     screenshot_testing_ = new ScreenshotTestingMixin;
+    screenshot_testing_->IgnoreArea(areas::kClockArea);
+    screenshot_testing_->IgnoreArea(areas::kFirstUserpod);
+    screenshot_testing_->IgnoreArea(areas::kSecondUserpod);
     AddMixin(screenshot_testing_);
   }
   virtual ~LoginUITest() {}

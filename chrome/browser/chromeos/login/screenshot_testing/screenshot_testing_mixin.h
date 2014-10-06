@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_MIXIN_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_MIXIN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_SCREENSHOT_TESTING_MIXIN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_SCREENSHOT_TESTING_MIXIN_H_
 
 #include <string>
 
 #include "base/command_line.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/mixin_based_browser_test.h"
-#include "chrome/browser/chromeos/login/screenshot_tester.h"
+#include "chrome/browser/chromeos/login/screenshot_testing/screenshot_tester.h"
 #include "content/public/test/browser_test_base.h"
 
 namespace chromeos {
@@ -32,6 +32,9 @@ class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
 
   // Runs screenshot testing if it is turned on by command line switches.
   void RunScreenshotTesting(const std::string& test_name);
+
+  // Remembers that area |area| should be ignored during comparison.
+  void IgnoreArea(const SkIRect& area);
 
  private:
   // It turns out that it takes some more time for the animation
@@ -60,4 +63,4 @@ class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_MIXIN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_SCREENSHOT_TESTING_MIXIN_H_

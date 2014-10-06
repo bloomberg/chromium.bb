@@ -43,20 +43,20 @@ void LoginManagerTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
+  MixinBasedBrowserTest::SetUpInProcessBrowserTestFixture();
   mock_login_utils_ = new testing::NiceMock<MockLoginUtils>();
   mock_login_utils_->DelegateToFake();
   mock_login_utils_->GetFakeLoginUtils()->set_should_launch_browser(
       should_launch_browser_);
   LoginUtils::Set(mock_login_utils_);
-  MixinBasedBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
+  MixinBasedBrowserTest::SetUpOnMainThread();
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   InitializeWebContents();
-  MixinBasedBrowserTest::SetUpOnMainThread();
 }
 
 void LoginManagerTest::RegisterUser(const std::string& user_id) {
