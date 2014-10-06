@@ -10,37 +10,6 @@
 var util = {};
 
 /**
- * Returns a function that console.log's its arguments, prefixed by |msg|.
- *
- * @param {string} msg The message prefix to use in the log.
- * @param {function(...string)=} opt_callback A function to invoke after
- *     logging.
- * @return {function(...string)} Function that logs.
- */
-util.flog = function(msg, opt_callback) {
-  return function() {
-    var ary = Array.apply(null, arguments);
-    console.log(msg + ': ' + ary.join(', '));
-    if (opt_callback)
-      opt_callback.apply(null, arguments);
-  };
-};
-
-/**
- * Returns a function that throws an exception that includes its arguments
- * prefixed by |msg|.
- *
- * @param {string} msg The message prefix to use in the exception.
- * @return {function(...string)} Function that throws.
- */
-util.ferr = function(msg) {
-  return function() {
-    var ary = Array.apply(null, arguments);
-    throw new Error(msg + ': ' + ary.join(', '));
-  };
-};
-
-/**
  * @param {string} name File error name.
  * @return {string} Translated file error string.
  */
@@ -123,164 +92,6 @@ util.htmlUnescape = function(str) {
       case '&amp;': return '&';
     }
   });
-};
-
-/**
- * Iterates the entries contained by dirEntry, and invokes callback once for
- * each entry. On completion, successCallback will be invoked.
- *
- * @param {DirectoryEntry} dirEntry The entry of the directory.
- * @param {function(Entry, function())} callback Invoked for each entry.
- * @param {function()} successCallback Invoked on completion.
- * @param {function(FileError)} errorCallback Invoked if an error is found on
- *     directory entry reading.
- */
-util.forEachDirEntry = function(
-    dirEntry, callback, successCallback, errorCallback) {
-  var reader = dirEntry.createReader();
-  var iterate = function() {
-    reader.readEntries(function(entries) {
-      if (entries.length == 0) {
-        successCallback();
-        return;
-      }
-
-      AsyncUtil.forEach(
-          entries,
-          function(forEachCallback, entry) {
-            // Do not pass index nor entries.
-            callback(entry, forEachCallback);
-          },
-          iterate);
-    }, errorCallback);
-  };
-  iterate();
-};
-
-/**
- * Reads contents of directory.
- * @param {DirectoryEntry} root Root entry.
- * @param {string} path Directory path.
- * @param {function(Array.<Entry>)} callback List of entries passed to callback.
- */
-util.readDirectory = function(root, path, callback) {
-  var onError = function(e) {
-    callback([], e);
-  };
-  root.getDirectory(path, {create: false}, function(entry) {
-    var reader = entry.createReader();
-    var r = [];
-    var readNext = function() {
-      reader.readEntries(function(results) {
-        if (results.length == 0) {
-          callback(r, null);
-          return;
-        }
-        r.push.apply(r, results);
-        readNext();
-      }, onError);
-    };
-    readNext();
-  }, onError);
-};
-
-/**
- * Utility function to resolve multiple directories with a single call.
- *
- * The successCallback will be invoked once for each directory object
- * found.  The errorCallback will be invoked once for each
- * path that could not be resolved.
- *
- * The successCallback is invoked with a null entry when all paths have
- * been processed.
- *
- * @param {DirEntry} dirEntry The base directory.
- * @param {Object} params The parameters to pass to the underlying
- *     getDirectory calls.
- * @param {Array.<string>} paths The list of directories to resolve.
- * @param {function(!DirEntry)} successCallback The function to invoke for
- *     each DirEntry found.  Also invoked once with null at the end of the
- *     process.
- * @param {function(FileError)} errorCallback The function to invoke
- *     for each path that cannot be resolved.
- */
-util.getDirectories = function(dirEntry, params, paths, successCallback,
-                               errorCallback) {
-
-  // Copy the params array, since we're going to destroy it.
-  params = [].slice.call(params);
-
-  var onComplete = function() {
-    successCallback(null);
-  };
-
-  var getNextDirectory = function() {
-    var path = paths.shift();
-    if (!path)
-      return onComplete();
-
-    dirEntry.getDirectory(
-        path, params,
-        function(entry) {
-          successCallback(entry);
-          getNextDirectory();
-        },
-        function(err) {
-          errorCallback(err);
-          getNextDirectory();
-        });
-  };
-
-  getNextDirectory();
-};
-
-/**
- * Utility function to resolve multiple files with a single call.
- *
- * The successCallback will be invoked once for each directory object
- * found.  The errorCallback will be invoked once for each
- * path that could not be resolved.
- *
- * The successCallback is invoked with a null entry when all paths have
- * been processed.
- *
- * @param {DirEntry} dirEntry The base directory.
- * @param {Object} params The parameters to pass to the underlying
- *     getFile calls.
- * @param {Array.<string>} paths The list of files to resolve.
- * @param {function(!FileEntry)} successCallback The function to invoke for
- *     each FileEntry found.  Also invoked once with null at the end of the
- *     process.
- * @param {function(FileError)} errorCallback The function to invoke
- *     for each path that cannot be resolved.
- */
-util.getFiles = function(dirEntry, params, paths, successCallback,
-                         errorCallback) {
-  // Copy the params array, since we're going to destroy it.
-  params = [].slice.call(params);
-
-  var onComplete = function() {
-    successCallback(null);
-  };
-
-  var getNextFile = function() {
-    var path = paths.shift();
-    if (!path)
-      return onComplete();
-
-    dirEntry.getFile(
-        path, params,
-        function(entry) {
-          successCallback(entry);
-          getNextFile();
-        },
-        function(err) {
-          errorCallback(err);
-          getNextFile();
-        });
-  };
-
-  getNextFile();
 };
 
 /**
@@ -406,30 +217,6 @@ util.readFileBytes = function(file, begin, end, callback, onError) {
 };
 
 /**
- * Write a blob to a file.
- * Truncates the file first, so the previous content is fully overwritten.
- * @param {FileEntry} entry File entry.
- * @param {Blob} blob The blob to write.
- * @param {function(Event)} onSuccess Completion callback. The first argument is
- *     a 'writeend' event.
- * @param {function(FileError)} onError Error handler.
- */
-util.writeBlobToFile = function(entry, blob, onSuccess, onError) {
-  var truncate = function(writer) {
-    writer.onerror = onError;
-    writer.onwriteend = write.bind(null, writer);
-    writer.truncate(0);
-  };
-
-  var write = function(writer) {
-    writer.onwriteend = onSuccess;
-    writer.write(blob);
-  };
-
-  entry.createWriter(truncate, onError);
-};
-
-/**
  * Returns a string '[Ctrl-][Alt-][Shift-][Meta-]' depending on the event
  * modifiers. Convenient for writing out conditions in keyboard handlers.
  *
@@ -468,33 +255,6 @@ util.extractFilePath = function(url) {
   var path = match && match[2];
   if (!path) return null;
   return decodeURIComponent(path);
-};
-
-/**
- * Traverses a directory tree whose root is the given entry, and invokes
- * callback for each entry. Upon completion, successCallback will be called.
- * On error, errorCallback will be called.
- *
- * @param {Entry} entry The root entry.
- * @param {function(Entry):boolean} callback Callback invoked for each entry.
- *     If this returns false, entries under it won't be traversed. Note that
- *     its siblings (and their children) will be still traversed.
- * @param {function()} successCallback Called upon successful completion.
- * @param {function(error)} errorCallback Called upon error.
- */
-util.traverseTree = function(entry, callback, successCallback, errorCallback) {
-  if (!callback(entry)) {
-    successCallback();
-    return;
-  }
-
-  util.forEachDirEntry(
-      entry,
-      function(child, iterationCallback) {
-        util.traverseTree(child, callback, iterationCallback, errorCallback);
-      },
-      successCallback,
-      errorCallback);
 };
 
 /**
@@ -743,34 +503,6 @@ util.cancelLoadImage = function(taskId) {
 };
 
 /**
- * Finds proerty descriptor in the object prototype chain.
- * @param {Object} object The object.
- * @param {string} propertyName The property name.
- * @return {Object} Property descriptor.
- */
-util.findPropertyDescriptor = function(object, propertyName) {
-  for (var p = object; p; p = Object.getPrototypeOf(p)) {
-    var d = Object.getOwnPropertyDescriptor(p, propertyName);
-    if (d)
-      return d;
-  }
-  return null;
-};
-
-/**
- * Calls inherited property setter (useful when property is
- * overridden).
- * @param {Object} object The object.
- * @param {string} propertyName The property name.
- * @param {*} value Value to set.
- */
-util.callInheritedSetter = function(object, propertyName, value) {
-  var d = util.findPropertyDescriptor(Object.getPrototypeOf(object),
-                                      propertyName);
-  d.set.call(object, value);
-};
-
-/**
  * Returns true if the board of the device matches the given prefix.
  * @param {string} boardPrefix The board prefix to match against.
  *     (ex. "x86-mario". Prefix is used as the actual board name comes with
@@ -805,18 +537,6 @@ util.addIsFocusedMethod = function() {
   window.isFocused = function() {
     return focused;
   };
-};
-
-/**
- * Makes a redirect to the specified Files.app's window from another window.
- * @param {number} id Window id.
- * @param {string} url Target url.
- * @return {boolean} True if the window has been found. False otherwise.
- */
-util.redirectMainWindow = function(id, url) {
-  // TODO(mtomasz): Implement this for Apps V2, once the photo importer is
-  // restored.
-  return false;
 };
 
 /**
@@ -1165,35 +885,6 @@ util.testSendMessage = function(message) {
   var test = chrome.test || window.top.chrome.test;
   if (test)
     test.sendMessage(message);
-};
-
-/**
- * Returns the localized name for the root type. If not available, then returns
- * null.
- *
- * @param {VolumeManagerCommon.RootType} rootType The root type.
- * @return {?string} The localized name, or null if not available.
- */
-util.getRootTypeLabel = function(rootType) {
-  var str = function(id) {
-    return loadTimeData.getString(id);
-  };
-
-  switch (rootType) {
-    case VolumeManagerCommon.RootType.DOWNLOADS:
-      return str('DOWNLOADS_DIRECTORY_LABEL');
-    case VolumeManagerCommon.RootType.DRIVE:
-      return str('DRIVE_MY_DRIVE_LABEL');
-    case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
-      return str('DRIVE_OFFLINE_COLLECTION_LABEL');
-    case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
-      return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
-    case VolumeManagerCommon.RootType.DRIVE_RECENT:
-      return str('DRIVE_RECENT_COLLECTION_LABEL');
-  }
-
-  // Translation not found.
-  return null;
 };
 
 /**

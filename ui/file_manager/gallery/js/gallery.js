@@ -712,7 +712,8 @@ Gallery.prototype.delete_ = function() {
 
     var entry = itemsToRemove.pop().getEntry();
     entry.remove(deleteNext, function() {
-      util.flog('Error deleting: ' + entry.name, deleteNext);
+      console.error('Error deleting: ' + entry.name);
+      deleteNext();
     });
   }
 
