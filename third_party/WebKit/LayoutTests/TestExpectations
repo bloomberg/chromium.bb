@@ -1435,3 +1435,6 @@ crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass
 crbug.com/420307 [ Win ] http/tests/serviceworker/fetch-frame-resource.html [ Pass Timeout ]
 
 crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Pass Timeout ]
+
+# This appears to have become flaky after r183245 (moving marquee to blink-in-js).
+crbug.com/341031 fast/html/marquee-scrollamount.html [ Pass Failure ImageOnlyFailure ]
