@@ -90,8 +90,9 @@ class Printer {
   };
 
   struct Metrics {
-    Metrics() : length(-1), multiline(false) {}
-    int length;
+    Metrics() : first_length(-1), longest_length(-1), multiline(false) {}
+    int first_length;
+    int longest_length;
     bool multiline;
   };
 
@@ -281,8 +282,11 @@ Printer::Metrics Printer::GetLengthOfExpr(const ParseNode* expr,
   std::vector<std::string> lines;
   base::SplitStringDontTrim(sub.String(), '\n', &lines);
   result.multiline = lines.size() > 1;
-  for (const auto& line : lines)
-    result.length = std::max(result.length, static_cast<int>(line.size()));
+  result.first_length = static_cast<int>(lines[0].size());
+  for (const auto& line : lines) {
+    result.longest_length =
+        std::max(result.longest_length, static_cast<int>(line.size()));
+  }
   return result;
 }
 
@@ -328,22 +332,17 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root, int outer_prec) {
     CHECK(precedence_.find(binop->op().value()) != precedence_.end());
     Precedence prec = precedence_[binop->op().value()];
     AddParen(prec, outer_prec, &parenthesized);
-    Metrics left = GetLengthOfExpr(binop->left(), prec);
     Metrics right = GetLengthOfExpr(binop->right(), prec + 1);
-    int total_width = left.length +
-                      static_cast<int>(binop->op().value().size()) + 2 +
-                      right.length;
-    if (CurrentColumn() + total_width < kMaximumWidth ||
-        binop->right()->AsList()) {
+    int op_length = static_cast<int>(binop->op().value().size()) + 2;
+    Expr(binop->left(), prec);
+    if (CurrentColumn() + op_length + right.first_length <= kMaximumWidth) {
       // If it just fits normally, put it here.
-      Expr(binop->left(), prec);
       Print(" ");
       Print(binop->op().value());
       Print(" ");
       Expr(binop->right(), prec + 1);
     } else {
       // Otherwise, put first argument and op, and indent next.
-      Expr(binop->left(), prec);
       Print(" ");
       Print(binop->op().value());
       int old_margin = margin_;
@@ -517,13 +516,12 @@ void Printer::FunctionCall(const FunctionCallNode* func_call) {
     Metrics sub = GetLengthOfExpr(list[i], kPrecedenceLowest);
     if (sub.multiline)
       fits_on_current_line = false;
-    natural_lengths.push_back(sub.length);
-    total_length += sub.length;
+    natural_lengths.push_back(sub.longest_length);
+    total_length += sub.longest_length;
     if (i < list.size() - 1) {
       total_length += static_cast<int>(strlen(", "));
     }
   }
-  // Strictly less than kMaximumWidth so there's room for closing punctuation.
   fits_on_current_line =
       fits_on_current_line &&
       CurrentColumn() + total_length + terminator.size() <= kMaximumWidth;
@@ -715,7 +713,6 @@ int RunFormat(const std::vector<std::string>& args) {
         base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
     if (in_place) {
       base::FilePath to_write = setup.build_settings().GetFullPath(file);
-      printf("Writing formatted to '%s'.\n", to_write.AsUTF8Unsafe().c_str());
       if (base::WriteFile(to_write,
                           output_string.data(),
                           static_cast<int>(output_string.size())) == -1) {
@@ -724,6 +721,7 @@ int RunFormat(const std::vector<std::string>& args) {
                 to_write.AsUTF8Unsafe() + std::string("\".")).PrintToStdout();
         return 1;
       }
+      printf("Wrote formatted to '%s'.\n", to_write.AsUTF8Unsafe().c_str());
     } else {
       printf("%s", output_string.c_str());
     }
