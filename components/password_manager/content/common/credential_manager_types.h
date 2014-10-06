@@ -43,7 +43,7 @@ struct CredentialInfo {
   // WebCredential's id property.
   base::string16 id;
 
-  // An user-friendly name ("John Doe"). Corresponds to WebCredential's name
+  // An user-friendly name ("Jane Doe"). Corresponds to WebCredential's name
   // property.
   base::string16 name;
 
