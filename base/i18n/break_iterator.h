@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/base_i18n_export.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 // The BreakIterator class iterates through the words, word breaks, and
 // line breaks in a UTF-16 string.
@@ -71,12 +72,12 @@ class BASE_I18N_EXPORT BreakIterator {
   };
 
   // Requires |str| to live as long as the BreakIterator does.
-  BreakIterator(const string16& str, BreakType break_type);
+  BreakIterator(const StringPiece16& str, BreakType break_type);
   // Make a rule-based iterator. BreakType == RULE_BASED is implied.
   // TODO(andrewhayden): This signature could easily be misinterpreted as
   // "(const string16& str, const string16& locale)". We should do something
   // better.
-  BreakIterator(const string16& str, const string16& rules);
+  BreakIterator(const StringPiece16& str, const string16& rules);
   ~BreakIterator();
 
   // Init() must be called before any of the iterators are valid.
@@ -115,6 +116,8 @@ class BASE_I18N_EXPORT BreakIterator {
   // have advanced to somewhere useful.
   string16 GetString() const;
 
+  StringPiece16 GetStringPiece() const;
+
   // Returns the value of pos() returned before Advance() was last called.
   size_t prev() const { return prev_; }
 
@@ -130,7 +133,7 @@ class BASE_I18N_EXPORT BreakIterator {
   void* iter_;
 
   // The string we're iterating over. Can be changed with SetText(...)
-  const string16& string_;
+  StringPiece16 string_;
 
   // Rules for our iterator. Mutually exclusive with break_type_.
   const string16 rules_;
