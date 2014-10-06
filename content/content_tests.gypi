@@ -1158,6 +1158,7 @@
           ],
           'sources': [
             'app/mojo/mojo_browsertest.cc',
+            'browser/accessibility/accessibility_ipc_error_browsertest.cc',
             'browser/accessibility/accessibility_mode_browsertest.cc',
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/android_hit_testing_browsertest.cc',

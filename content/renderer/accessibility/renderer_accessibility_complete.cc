@@ -39,6 +39,7 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
       serializer_(&tree_source_),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
+      reset_token_(0),
       weak_factory_(this) {
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->settings();
@@ -80,6 +81,7 @@ bool RendererAccessibilityComplete::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection,
                         OnSetTextSelection)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -227,7 +229,8 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
             << "\n" << event_msg.update.ToString();
   }
 
-  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs));
+  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_));
+  reset_token_ = 0;
 
   if (had_layout_complete_messages)
     SendLocationChanges();
@@ -412,6 +415,16 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
     render_frame_->GetRenderView()->GetWebView()->clearFocusedElement();
   else
     obj.setFocused(true);
+}
+
+void RendererAccessibilityComplete::OnReset(int reset_token) {
+  reset_token_ = reset_token;
+  serializer_.Reset();
+  pending_events_.clear();
+
+  const WebDocument& document = GetMainDocument();
+  if (!document.isNull())
+    HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
 void RendererAccessibilityComplete::OnFatalError() {

@@ -140,7 +140,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   **/
 #endif
 
-  Send(new AccessibilityHostMsg_Events(routing_id(), events));
+  Send(new AccessibilityHostMsg_Events(routing_id(), events, false));
 
   // Increment the id, wrap back when we get past a million.
   next_id_++;
