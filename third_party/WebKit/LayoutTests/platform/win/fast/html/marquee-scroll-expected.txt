@@ -16,9 +16,16 @@ layer at (0,0) size 800x600
           text run at (0,0) width 747: "The marquee below is defined with a scrollDelay value of zero and with the truespeed attribute assigned to an empty"
           text run at (0,18) width 45: "string. "
           text run at (44,18) width 573: "It should scroll until the text, \"The marquee scroll test passed\" is visible and left justified."
-      RenderBlock (anonymous) at (0,86) size 784x18
+      RenderBlock {P} at (0,86) size 784x36
+        RenderText {#text} at (0,0) size 774x35
+          text run at (0,0) width 774: "This test uses cyan characters to make the result image deterministic. (Otherwise, the result image changes depending on"
+          text run at (0,18) width 652: "when the content_shell takes a snapshot.) In order to run this test manually, change the color to black."
+      RenderBlock (anonymous) at (0,138) size 784x18
         RenderText {#text} at (0,0) size 0x0
-layer at (8,94) size 392x18 scrollX -384
-  RenderMarquee {MARQUEE} at (0,0) size 392x18 [bgcolor=#00FFFF]
-    RenderText {#text} at (0,0) size 197x17
-      text run at (0,0) width 197: "The marquee scroll test passed"
+layer at (8,146) size 392x18
+  RenderBlock {MARQUEE} at (0,0) size 392x18 [bgcolor=#00FFFF]
+    RenderBlock {DIV} at (0,0) size 392x18
+      RenderInline {SPAN} at (0,0) size 197x17 [color=#00FFFF]
+        RenderText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "The marquee scroll test passed"
+      RenderText {#text} at (0,0) size 0x0
