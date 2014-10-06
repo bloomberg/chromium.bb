@@ -38,7 +38,6 @@
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
-#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
@@ -215,7 +214,7 @@ void IDBRequest::setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
     ASSERT(!m_blobInfo);
     m_blobInfo = blobInfo;
     if (m_blobInfo && m_blobInfo->size() > 0)
-        V8PerIsolateData::from(scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->registerRequest(*this);
+        ThreadState::current()->registerPreFinalizer(*this);
 }
 
 void IDBRequest::handleBlobAcks()
@@ -223,7 +222,7 @@ void IDBRequest::handleBlobAcks()
     if (m_blobInfo.get() && m_blobInfo->size()) {
         m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
         m_blobInfo.clear();
-        V8PerIsolateData::from(scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->unregisterRequest(*this);
+        ThreadState::current()->unregisterPreFinalizer(*this);
     }
 }
 
@@ -461,7 +460,7 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
         cursorToNotify = getResultCursor();
         if (cursorToNotify) {
             if (m_blobInfo && m_blobInfo->size() > 0)
-                V8PerIsolateData::from(scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->unregisterRequest(*this);
+                ThreadState::current()->unregisterPreFinalizer(*this);
             cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release(), m_blobInfo.release());
         }
     }

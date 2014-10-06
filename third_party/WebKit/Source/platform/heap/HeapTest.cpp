@@ -1006,6 +1006,7 @@ private:
 };
 
 class Observable : public GarbageCollectedFinalized<Observable> {
+    USING_PRE_FINALIZER(Observable, willFinalize);
 public:
     static Observable* create(Bar* bar) { return new Observable(bar);  }
     ~Observable() { m_wasDestructed = true; }
@@ -1017,7 +1018,9 @@ public:
     {
         EXPECT_FALSE(m_wasDestructed);
         EXPECT_FALSE(m_bar->hasBeenFinalized());
+        s_willFinalizeWasCalled = true;
     }
+    static bool s_willFinalizeWasCalled;
 
 private:
     explicit Observable(Bar* bar)
@@ -1029,6 +1032,34 @@ private:
     Member<Bar> m_bar;
     bool m_wasDestructed;
 };
+
+bool Observable::s_willFinalizeWasCalled = false;
+
+class ObservableWithPreFinalizer : public GarbageCollected<ObservableWithPreFinalizer> {
+    USING_PRE_FINALIZER(ObservableWithPreFinalizer, dispose);
+public:
+    static ObservableWithPreFinalizer* create() { return new ObservableWithPreFinalizer();  }
+    ~ObservableWithPreFinalizer() { m_wasDestructed = true; }
+    void trace(Visitor*) { }
+    void dispose()
+    {
+        ThreadState::current()->unregisterPreFinalizer(*this);
+        EXPECT_FALSE(m_wasDestructed);
+        s_disposeWasCalled = true;
+    }
+    static bool s_disposeWasCalled;
+
+private:
+    explicit ObservableWithPreFinalizer()
+        : m_wasDestructed(false)
+    {
+        ThreadState::current()->registerPreFinalizer(*this);
+    }
+
+    bool m_wasDestructed;
+};
+
+bool ObservableWithPreFinalizer::s_disposeWasCalled = false;
 
 template <typename T> class FinalizationObserver : public GarbageCollected<FinalizationObserver<T> > {
 public:
@@ -3280,6 +3311,38 @@ TEST(HeapTest, FinalizationObserver)
     EXPECT_EQ(0u, Bar::s_live);
     EXPECT_EQ(0u, map.size());
     EXPECT_TRUE(FinalizationObserverWithHashMap::s_didCallWillFinalize);
+}
+
+TEST(HeapTest, PreFinalizer)
+{
+    Observable::s_willFinalizeWasCalled = false;
+    {
+        Observable* foo = Observable::create(Bar::create());
+        ThreadState::current()->registerPreFinalizer(*foo);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_TRUE(Observable::s_willFinalizeWasCalled);
+}
+
+TEST(HeapTest, PreFinalizerIsNotCalledIfUnregistered)
+{
+    Observable::s_willFinalizeWasCalled = false;
+    {
+        Observable* foo = Observable::create(Bar::create());
+        ThreadState::current()->registerPreFinalizer(*foo);
+        ThreadState::current()->unregisterPreFinalizer(*foo);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_FALSE(Observable::s_willFinalizeWasCalled);
+}
+
+TEST(HeapTest, PreFinalizerUnregistersItself)
+{
+    ObservableWithPreFinalizer::s_disposeWasCalled = false;
+    ObservableWithPreFinalizer::create();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_TRUE(ObservableWithPreFinalizer::s_disposeWasCalled);
+    // Don't crash, and assertions don't fail.
 }
 
 TEST(HeapTest, Comparisons)

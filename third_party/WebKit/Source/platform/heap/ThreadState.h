@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/AddressSanitizer.h"
 #include "public/platform/WebThread.h"
+#include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -41,10 +42,6 @@
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-
-#if ENABLE(GC_PROFILE_HEAP)
-#include "wtf/HashMap.h"
-#endif
 
 namespace blink {
 
@@ -130,6 +127,52 @@ struct ThreadingTrait {
     }
 
 template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { };
+
+// Declare that a class has a pre-finalizer function.  The function is called in
+// the object's owner thread, and can access Member<>s to other
+// garbarge-collected objects allocated in the thread.  However we must not
+// allocate new garbage-collected objects, nor update Member<> and Persistent<>
+// pointers.
+//
+// This feature is similar to the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
+// idiom.  The difference between this and the idiom is that pre-finalizer
+// function is called whenever an object is destructed with this feature.  The
+// HeapHashMap<WeakMember...> idiom requires an assumption that the HeapHashMap
+// outlives objects pointed by WeakMembers.
+// FIXME: Replace all of the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
+// idiom usages with the pre-finalizer.
+//
+// See ThreadState::registerPreFinalizer.
+//
+// Usage:
+//
+// class Foo : GarbageCollected<Foo> {
+//     USING_PRE_FINALIZER(Foo, dispose);
+// public:
+//     Foo()
+//     {
+//         ThreadState::current()->registerPreFinalizer(*this);
+//     }
+// private:
+//     void dispose();
+//     Member<Bar> m_bar;
+// };
+//
+// void Foo::dispose()
+// {
+//     m_bar->...
+// }
+#define USING_PRE_FINALIZER(Class, method)   \
+    public: \
+        static bool invokePreFinalizer(void* object, Visitor& visitor)   \
+        { \
+            Class* self = reinterpret_cast<Class*>(object); \
+            if (visitor.isAlive(self)) \
+                return false; \
+            self->method(); \
+            return true; \
+        } \
+        typedef char UsingPreFinazlizerMacroNeedsTrailingSemiColon
 
 // List of typed heaps. The list is used to generate the implementation
 // of typed heap related methods.
@@ -629,6 +672,29 @@ public:
     void registerSweepingTask();
     void unregisterSweepingTask();
 
+    // Request to call a pref-finalizer of the target object before the object
+    // is destructed.  The class T must have USING_PRE_FINALIZER().  The
+    // argument should be |*this|.  Registering a lot of objects affects GC
+    // performance.  We should register an object only if the object really
+    // requires pre-finalizer, and we should unregister the object if
+    // pre-finalizer is unnecessary.
+    template<typename T>
+    void registerPreFinalizer(T& target)
+    {
+        ASSERT(!m_preFinalizers.contains(&target));
+        ASSERT(!isSweepInProgress());
+        m_preFinalizers.add(&target, &T::invokePreFinalizer);
+    }
+
+    // Cancel above requests.  The argument should be |*this|.  This function is
+    // ignored if it is called in pre-finalizer functions.
+    template<typename T>
+    void unregisterPreFinalizer(T& target)
+    {
+        ASSERT(&T::invokePreFinalizer);
+        unregisterPreFinalizerInternal(&target);
+    }
+
     Mutex& sweepMutex() { return m_sweepMutex; }
 
 private:
@@ -667,6 +733,8 @@ private:
     void setLowCollectionRate(bool value) { m_lowCollectionRate = value; }
 
     void waitUntilSweepersDone();
+    void unregisterPreFinalizerInternal(void*);
+    void invokePreFinalizers(Visitor&);
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;
@@ -718,6 +786,7 @@ private:
     ThreadCondition m_sweepThreadCondition;
 
     CallbackStack* m_weakCallbackStack;
+    HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
 
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;

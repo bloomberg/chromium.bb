@@ -455,6 +455,8 @@ void ThreadState::cleanup()
         // We should not have any persistents left when getting to this point,
         // if we have it is probably a bug so adding a debug ASSERT to catch this.
         ASSERT(!currentCount);
+        // All of pre-finalizers should be consumed.
+        ASSERT(m_preFinalizers.isEmpty());
 
         // Add pages to the orphaned page pool to ensure any global GCs from this point
         // on will not trace objects on this thread's heaps.
@@ -1114,6 +1116,10 @@ void ThreadState::performPendingSweep()
             // Perform thread-specific weak processing.
             while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
         }
+        {
+            TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
+            invokePreFinalizers(*Heap::s_markingVisitor);
+        }
         leaveNoAllocationScope();
 
         // Perform sweeping and finalization.
@@ -1245,6 +1251,25 @@ ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
 {
     DEFINE_STATIC_LOCAL(AttachedThreadStateSet, threads, ());
     return threads;
+}
+
+void ThreadState::unregisterPreFinalizerInternal(void* target)
+{
+    if (isSweepInProgress())
+        return;
+    auto it = m_preFinalizers.find(target);
+    ASSERT(it != m_preFinalizers.end());
+    m_preFinalizers.remove(it);
+}
+
+void ThreadState::invokePreFinalizers(Visitor& visitor)
+{
+    Vector<void*> deadObjects;
+    for (auto& entry : m_preFinalizers) {
+        if (entry.value(entry.key, visitor))
+            deadObjects.append(entry.key);
+    }
+    m_preFinalizers.removeAll(deadObjects);
 }
 
 #if ENABLE(GC_PROFILE_MARKING)

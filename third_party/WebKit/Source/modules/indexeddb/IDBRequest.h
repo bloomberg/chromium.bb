@@ -58,11 +58,11 @@ class IDBRequest
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBRequest>);
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(IDBRequest, dispose);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
-    void dispose();
     virtual void trace(Visitor*) OVERRIDE;
 
     ScriptState* scriptState() { return m_scriptState.get(); }
@@ -142,6 +142,7 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
+    void dispose();
     void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> >);
     void setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>>);
     void handleBlobAcks();

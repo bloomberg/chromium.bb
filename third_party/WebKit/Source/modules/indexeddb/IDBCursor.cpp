@@ -333,7 +333,7 @@ void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<Shared
         m_blobInfo = blobInfo;
         m_valueDirty = true;
         if (m_blobInfo && m_blobInfo->size() > 0)
-            V8PerIsolateData::from(m_request->scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->registerCursor(*this);
+            ThreadState::current()->registerPreFinalizer(*this);
     }
 
     m_gotValue = true;
@@ -360,7 +360,7 @@ void IDBCursor::handleBlobAcks()
         ASSERT(m_request);
         m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
         m_blobInfo.clear();
-        V8PerIsolateData::from(m_request->scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->unregisterCursor(*this);
+        ThreadState::current()->unregisterPreFinalizer(*this);
     }
 }
 
