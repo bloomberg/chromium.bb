@@ -46,9 +46,9 @@ class SessionManagerClient;
 class SMSClient;
 class UpdateEngineClient;
 
-// The bundle of all D-Bus clients used in DBusThreadManagerImpl. The bundle
+// The bundle of all D-Bus clients used in DBusThreadManager. The bundle
 // is used to delete them at once in the right order before shutting down the
-// system bus. See also the comment in the destructor of DBusThreadManagerImpl.
+// system bus. See also the comment in the destructor of DBusThreadManager.
 class CHROMEOS_EXPORT DBusClientBundle {
  public:
   typedef int DBusClientTypeMask;
@@ -78,7 +78,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     UPDATE_ENGINE =        1 << 18,
   };
 
-  DBusClientBundle(DBusClientTypeMask unstub_client_mask);
+  explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
   ~DBusClientBundle();
 
   // Returns true if |client| is stubbed.

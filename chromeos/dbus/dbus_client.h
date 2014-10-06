@@ -14,7 +14,7 @@ class Bus;
 namespace chromeos {
 
 // Interface for all DBus clients handled by DBusThreadManager. It restricts
-// access to the Init function to DBusThreadManagerImpl only to prevent
+// access to the Init function to DBusThreadManager only to prevent
 // incorrect calls. Stub clients may lift that restriction however.
 class DBusClient {
  protected:

@@ -35,8 +35,6 @@ class BluetoothProfileManagerClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
-class DBusClient;
-class DBusThreadManager;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class EasyUnlockClient;
