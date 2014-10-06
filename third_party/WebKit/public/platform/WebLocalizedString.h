@@ -146,6 +146,7 @@ struct WebLocalizedString {
         ValidationStepMismatch,
         ValidationStepMismatchCloseToLimit,
         ValidationTooLong,
+        ValidationTooShort,
         ValidationTypeMismatch,
         ValidationTypeMismatchForEmail,
         ValidationTypeMismatchForEmailEmpty,
