@@ -82,8 +82,10 @@ def CommandGypBuild(context):
     Command(context, cmd=[
         sys.executable, '/b/build/goma/goma_ctl.py', 'restart'])
   try:
-    Command(context, cmd=[
-        'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
+    cmd = ['ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']]
+    if use_goma:
+      cmd += ['-j50']
+    Command(context, cmd=cmd)
   finally:
     if use_goma:
       Command(context, cmd=[
