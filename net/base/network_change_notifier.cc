@@ -4,6 +4,8 @@
 
 #include "net/base/network_change_notifier.h"
 
+#include <limits>
+
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -535,6 +537,13 @@ NetworkChangeNotifier::GetConnectionType() {
 }
 
 // static
+double NetworkChangeNotifier::GetMaxBandwidth() {
+  return g_network_change_notifier ?
+      g_network_change_notifier->GetCurrentMaxBandwidth() :
+      std::numeric_limits<double>::infinity();
+}
+
+// static
 void NetworkChangeNotifier::GetDnsConfig(DnsConfig* config) {
   if (!g_network_change_notifier) {
     *config = DnsConfig();
@@ -765,6 +774,15 @@ NetworkChangeNotifier::GetAddressTrackerInternal() const {
   return NULL;
 }
 #endif
+
+double NetworkChangeNotifier::GetCurrentMaxBandwidth() const {
+  // This default implementation conforms to the NetInfo V3 specification but
+  // should be overridden to provide specific bandwidth data based on the
+  // platform.
+  if (GetCurrentConnectionType() == CONNECTION_NONE)
+    return 0.0;
+  return std::numeric_limits<double>::infinity();
+}
 
 // static
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChange() {
