@@ -110,7 +110,7 @@ public:
  */
 class ScriptWrappable : public ScriptWrappableBase {
 public:
-    ScriptWrappable() : m_wrapper(0) { }
+    ScriptWrappable() { }
 
     // Returns the WrapperTypeInfo of the instance.
     //
@@ -126,29 +126,22 @@ public:
     void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT(!containsWrapper());
-        if (!*wrapper) {
-            m_wrapper = 0;
+        if (!*wrapper)
             return;
-        }
-        v8::Persistent<v8::Object> persistent(isolate, wrapper);
-        wrapperTypeInfo->configureWrapper(&persistent);
-        persistent.SetWeak(this, &setWeakCallback);
-        m_wrapper = persistent.ClearAndLeak();
+        m_wrapper.Reset(isolate, wrapper);
+        wrapperTypeInfo->configureWrapper(&m_wrapper);
+        m_wrapper.SetWeak(this, &setWeakCallback);
         ASSERT(containsWrapper());
     }
 
     v8::Local<v8::Object> newLocalWrapper(v8::Isolate* isolate) const
     {
-        v8::Persistent<v8::Object> persistent;
-        getPersistent(&persistent);
-        return v8::Local<v8::Object>::New(isolate, persistent);
+        return v8::Local<v8::Object>::New(isolate, m_wrapper);
     }
 
     bool isEqualTo(const v8::Local<v8::Object>& other) const
     {
-        v8::Persistent<v8::Object> persistent;
-        getPersistent(&persistent);
-        return persistent == other;
+        return m_wrapper == other;
     }
 
     static bool wrapperCanBeStoredInObject(const void*) { return false; }
@@ -167,9 +160,7 @@ public:
 
     bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
     {
-        v8::Persistent<v8::Object> persistent;
-        getPersistent(&persistent);
-        returnValue.Set(persistent);
+        returnValue.Set(m_wrapper);
         return containsWrapper();
     }
 
@@ -178,18 +169,15 @@ public:
         ASSERT(containsWrapper());
         ASSERT(groupRoot && groupRoot->containsWrapper());
 
-        v8::UniqueId groupId(reinterpret_cast<intptr_t>(groupRoot->m_wrapper));
-        v8::Persistent<v8::Object> wrapper;
-        getPersistent(&wrapper);
-        wrapper.MarkPartiallyDependent();
-        isolate->SetObjectGroupId(v8::Persistent<v8::Value>::Cast(wrapper), groupId);
+        // FIXME: There has to be a better way.
+        v8::UniqueId groupId(*reinterpret_cast<intptr_t*>(&groupRoot->m_wrapper));
+        m_wrapper.MarkPartiallyDependent();
+        isolate->SetObjectGroupId(v8::Persistent<v8::Value>::Cast(m_wrapper), groupId);
     }
 
     void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
     {
-        v8::Persistent<v8::Object> persistent;
-        getPersistent(&persistent);
-        isolate->SetReference(parent, persistent);
+        isolate->SetReference(parent, m_wrapper);
     }
 
     template<typename V8T, typename T>
@@ -211,14 +199,13 @@ public:
     {
         ASSERT(object);
         ASSERT(objectAsT);
-        v8::Object* value = object->m_wrapper;
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(value == 0
-            || value->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object->m_wrapper.IsEmpty()
+            || v8::Object::GetAlignedPointerFromInternalField(object->m_wrapper, v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
     }
 
     using ScriptWrappableBase::assertWrapperSanity;
 
-    bool containsWrapper() const { return m_wrapper; }
+    bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
 
 #if !ENABLE(OILPAN)
 protected:
@@ -227,7 +214,6 @@ protected:
         // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
         // counting somewhere. Crash here instead of crashing during a later gc cycle.
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper());
-        m_wrapper = 0; // Break UAF attempts to wrap.
     }
 #endif
     // With Oilpan we don't need a ScriptWrappable destructor.
@@ -238,39 +224,17 @@ protected:
     // must not be called since the wrapper has a persistent handle back to this ScriptWrappable object.
     // Assuming that Oilpan's GC is correct (If we cannot assume this, a lot of more things are
     // already broken), we must not hit the RELEASE_ASSERT.
-    //
-    // - 'm_wrapper = 0' is not needed because Oilpan's GC zeroes out memory when
-    // the memory is collected and added to a free list.
 
 private:
-    void getPersistent(v8::Persistent<v8::Object>* persistent) const
-    {
-        ASSERT(persistent);
-
-        // Horrible and super unsafe: Cast the Persistent to an Object*, so
-        // that we can inject the wrapped value. This only works because
-        // we previously 'stole' the object pointer from a Persistent in
-        // the setWrapper() method.
-        *reinterpret_cast<v8::Object**>(persistent) = m_wrapper;
-    }
-
     void disposeWrapper(v8::Local<v8::Object> wrapper)
     {
         ASSERT(containsWrapper());
-
-        v8::Persistent<v8::Object> persistent;
-        getPersistent(&persistent);
-
-        ASSERT(wrapper == persistent);
-        persistent.Reset();
-        m_wrapper = 0;
+        ASSERT(wrapper == m_wrapper);
+        m_wrapper.Reset();
     }
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, ScriptWrappable>& data)
     {
-        v8::Persistent<v8::Object> persistent;
-        data.GetParameter()->getPersistent(&persistent);
-        ASSERT(persistent == data.GetValue());
         data.GetParameter()->disposeWrapper(data.GetValue());
 
         // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
@@ -279,7 +243,7 @@ private:
         releaseObject(data.GetValue());
     }
 
-    v8::Object* m_wrapper;
+    v8::Persistent<v8::Object> m_wrapper;
 };
 
 // Defines 'wrapperTypeInfo' virtual method which returns the WrapperTypeInfo of
