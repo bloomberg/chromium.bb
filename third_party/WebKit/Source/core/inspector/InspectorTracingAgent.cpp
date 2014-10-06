@@ -39,21 +39,25 @@ void InspectorTracingAgent::restore()
     emitMetadataEvents();
 }
 
-void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, const String&, const double*)
+void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback> callback)
 {
-    if (m_state->getBoolean(TracingAgentState::tracingStarted))
+    if (m_state->getBoolean(TracingAgentState::tracingStarted)) {
+        callback->sendSuccess();
         return;
+    }
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
     m_state->setBoolean(TracingAgentState::tracingStarted, true);
     m_client->enableTracing(categoryFilter);
     emitMetadataEvents();
+    callback->sendSuccess();
 }
 
-void InspectorTracingAgent::end(ErrorString* errorString)
+void InspectorTracingAgent::end(ErrorString* errorString, PassRefPtrWillBeRawPtr<EndCallback> callback)
 {
     m_client->disableTracing();
     m_state->setBoolean(TracingAgentState::tracingStarted, false);
     m_workerAgent->setTracingSessionId(String());
+    callback->sendSuccess();
 }
 
 String InspectorTracingAgent::sessionId()

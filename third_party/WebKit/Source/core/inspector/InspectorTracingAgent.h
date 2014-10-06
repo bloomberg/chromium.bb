@@ -32,8 +32,8 @@ public:
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
 
     // Protocol method implementations.
-    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*) OVERRIDE;
-    virtual void end(ErrorString*);
+    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback>) OVERRIDE;
+    virtual void end(ErrorString*, PassRefPtrWillBeRawPtr<EndCallback>);
 
     // Methods for other agents to use.
     void setLayerTreeId(int);
