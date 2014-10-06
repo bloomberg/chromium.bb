@@ -29,7 +29,7 @@ var AUTO_SIZE_ATTRIBUTES = [
   WEB_VIEW_ATTRIBUTE_MINWIDTH
 ];
 
-var WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY = "allowtransparency";
+var WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY = 'allowtransparency';
 var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
 
 var ERROR_MSG_ALREADY_NAVIGATED =
@@ -41,7 +41,7 @@ function Partition() {
   this.validPartitionId = true;
   this.persistStorage = false;
   this.storagePartitionId = '';
-};
+}
 
 Partition.prototype.toAttribute = function() {
   if (!this.validPartitionId) {
@@ -78,7 +78,7 @@ Partition.prototype.fromAttribute = function(value, hasNavigated) {
 };
 
 // Implemented when the experimental API is available.
-WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {}
+WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {};
 
 /**
  * @constructor
@@ -680,7 +680,7 @@ WebViewInternal.prototype.createGuest = function() {
       this.webviewNode.getAttribute(WEB_VIEW_ATTRIBUTE_PARTITION) ||
       this.webviewNode[WEB_VIEW_ATTRIBUTE_PARTITION];
   var params = {
-    'storagePartitionId': storagePartitionId,
+    'storagePartitionId': storagePartitionId
   };
   GuestViewInternal.createGuest(
       'webview',
@@ -943,13 +943,13 @@ function registerWebViewElement() {
   ];
 
   // Forward proto.foo* method calls to WebViewInternal.foo*.
-  for (var i = 0; methods[i]; ++i) {
-    var createHandler = function(m) {
-      return function(var_args) {
-        var internal = privates(this).internal;
-        return $Function.apply(internal[m], internal, arguments);
-      };
+  var createHandler = function(m) {
+    return function(var_args) {
+      var internal = privates(this).internal;
+      return $Function.apply(internal[m], internal, arguments);
     };
+  };
+  for (var i = 0; methods[i]; ++i) {
     proto[methods[i]] = createHandler(methods[i]);
   }
 
@@ -992,16 +992,7 @@ WebViewInternal.prototype.maybeGetExperimentalEvents = function() {};
  * Implemented when the experimental API is available.
  * @private
  */
-WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
-  return [];
-};
-
-/**
- * Implemented when the experimental API is available.
- * @private
- */
-WebViewInternal.prototype.setupExperimentalContextMenus = function() {
-};
+WebViewInternal.prototype.setupExperimentalContextMenus = function() {};
 
 exports.WebView = WebView;
 exports.WebViewInternal = WebViewInternal;

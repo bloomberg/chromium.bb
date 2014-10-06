@@ -59,8 +59,8 @@ var WEB_VIEW_EVENTS = {
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
   },
   'exit': {
-     evt: CreateEvent('webViewInternal.onExit'),
-     fields: ['processId', 'reason']
+    evt: CreateEvent('webViewInternal.onExit'),
+    fields: ['processId', 'reason']
   },
   'findupdate': {
     evt: CreateEvent('webViewInternal.onFindReply'),
@@ -160,8 +160,11 @@ function DeclarativeWebRequestEvent(opt_eventName,
                                     opt_eventOptions,
                                     opt_webViewInstanceId) {
   var subEventName = opt_eventName + '/' + IdGenerator.GetNextId();
-  EventBindings.Event.call(this, subEventName, opt_argSchemas, opt_eventOptions,
-      opt_webViewInstanceId);
+  EventBindings.Event.call(this,
+                           subEventName,
+                           opt_argSchemas,
+                           opt_eventOptions,
+                           opt_webViewInstanceId);
 
   // TODO(lazyboy): When do we dispose this listener?
   WebRequestMessageEvent.addListener(function() {
@@ -178,20 +181,22 @@ DeclarativeWebRequestEvent.prototype = {
 function WebViewEvents(webViewInternal, viewInstanceId) {
   this.webViewInternal = webViewInternal;
   this.viewInstanceId = viewInstanceId;
-  this.setup();
-}
+  this.permissionTypes = ['media',
+                          'geolocation',
+                          'pointerLock',
+                          'download',
+                          'loadplugin',
+                          'filesystem'];
 
-// Sets up events.
-WebViewEvents.prototype.setup = function() {
+  // Set up the events.
   this.setupFrameNameChangedEvent();
   this.setupWebRequestEvents();
   this.webViewInternal.setupExperimentalContextMenus();
-
   var events = this.getEvents();
   for (var eventName in events) {
     this.setupEvent(eventName, events[eventName]);
   }
-};
+}
 
 WebViewEvents.prototype.setupFrameNameChangedEvent = function() {
   FrameNameChangedEvent.addListener(function(e) {
@@ -277,7 +282,7 @@ WebViewEvents.prototype.getEvents = function() {
 
 WebViewEvents.prototype.setupEvent = function(name, info) {
   info.evt.addListener(function(e) {
-    var details = {bubbles:true};
+    var details = {bubbles: true};
     if (info.cancelable) {
       details.cancelable = true;
     }
@@ -412,7 +417,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
     return this.webViewInternal.getGuestInstanceId();
   }.bind(this);
 
-  var validateCall = function () {
+  var validateCall = function() {
     if (actionTaken) {
       throw new Error(ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN);
     }
@@ -511,18 +516,6 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   }
 };
 
-WebViewEvents.prototype.getPermissionTypes = function() {
-  var permissions =
-      ['media',
-      'geolocation',
-      'pointerLock',
-      'download',
-      'loadplugin',
-      'filesystem'];
-  return permissions.concat(
-      this.webViewInternal.maybeGetExperimentalPermissions());
-};
-
 WebViewEvents.prototype.handlePermissionEvent =
     function(event, webViewEvent) {
   var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
@@ -540,14 +533,12 @@ WebViewEvents.prototype.handlePermissionEvent =
     return this.webViewInternal.getGuestInstanceId();
   }.bind(this);
 
-  if (this.getPermissionTypes().indexOf(event.permission) < 0) {
+  if (this.permissionTypes.indexOf(event.permission) < 0) {
     // The permission type is not allowed. Trigger the default response.
     WebView.setPermission(
         getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-      if (allowed) {
-        return;
-      }
-      showWarningMessage(event.permission);
+      if (!allowed)
+        showWarningMessage(event.permission);
     });
     return;
   }

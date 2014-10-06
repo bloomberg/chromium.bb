@@ -16,11 +16,6 @@ WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
 };
 
 /** @private */
-WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
-  return [];
-};
-
-/** @private */
 WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.guestInstanceId, spec, callback);
 };
@@ -32,11 +27,11 @@ WebViewInternal.prototype.loadDataWithBaseUrl = function(
     return;
   }
   WebView.loadDataWithBaseUrl(
-      this.guestInstanceId, dataUrl, baseUrl, virtualUrl, function () {
+      this.guestInstanceId, dataUrl, baseUrl, virtualUrl, function() {
         // Report any errors.
         if (chrome.runtime.lastError != undefined) {
           window.console.error(
-              "Error while running webview.loadDataWithBaseUrl: " +
+              'Error while running webview.loadDataWithBaseUrl: ' +
                   chrome.runtime.lastError.message);
         }
       });
@@ -49,5 +44,5 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
 
   proto.loadDataWithBaseUrl = function(dataUrl, baseUrl, virtualUrl) {
     privates(this).internal.loadDataWithBaseUrl(dataUrl, baseUrl, virtualUrl);
-  }
+  };
 };

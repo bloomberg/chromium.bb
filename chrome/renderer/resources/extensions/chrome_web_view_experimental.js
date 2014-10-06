@@ -22,7 +22,7 @@ var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
 
 function GetUniqueSubEventName(eventName) {
-  return eventName + "/" + idGeneratorNatives.GetNextId();
+  return eventName + '/' + idGeneratorNatives.GetNextId();
 }
 
 // This is the only "webViewInternal.onClicked" named event for this renderer.
@@ -45,8 +45,11 @@ function ContextMenusOnClickedEvent(opt_eventName,
                                     opt_eventOptions,
                                     opt_webViewInstanceId) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
-  EventBindings.Event.call(this, subEventName, opt_argSchemas, opt_eventOptions,
-      opt_webViewInstanceId);
+  EventBindings.Event.call(this,
+                           subEventName,
+                           opt_argSchemas,
+                           opt_eventOptions,
+                           opt_webViewInstanceId);
 
   // TODO(lazyboy): When do we dispose this listener?
   ContextMenusEvent.addListener(function() {
@@ -65,7 +68,7 @@ ContextMenusOnClickedEvent.prototype = {
  */
 function WebViewContextMenusImpl(viewInstanceId) {
   this.viewInstanceId_ = viewInstanceId;
-};
+}
 
 WebViewContextMenusImpl.prototype.create = function() {
   var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));

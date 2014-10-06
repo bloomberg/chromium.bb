@@ -7,7 +7,7 @@
 var ChromeWebView = require('chromeWebViewInternal').ChromeWebView;
 var CreateEvent = require('webViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
-var WebViewInternal = require('webView').WebViewInternal
+var WebViewInternal = require('webView').WebViewInternal;
 
 var CHROME_WEB_VIEW_EVENTS = {
   'contextmenu': {
