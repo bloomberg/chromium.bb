@@ -7,11 +7,11 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # GYP version: mojo/mojo_services.gypi:mojo_gpu_bindings
 mojom("gpu") {
   sources = [
-    "gpu.mojom",
+   "command_buffer.mojom",
+   "gpu.mojom",
   ]
 
   deps = [
-    "//mojo/services/gles2:interfaces",
     "//mojo/services/public/interfaces/geometry",
   ]
 }

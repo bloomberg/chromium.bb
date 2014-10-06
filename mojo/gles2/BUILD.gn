@@ -20,13 +20,13 @@ component("gles2") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/client",
-    "//gpu/command_buffer/common",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//mojo/services/gles2:bindings",
-    "//mojo/services/gles2:interfaces",
-    "//mojo/environment:chromium",
+    "//mojo/services/public/interfaces/gpu",
   ]
 
   defines = [

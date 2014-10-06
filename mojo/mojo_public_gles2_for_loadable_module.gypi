@@ -10,7 +10,7 @@
   'conditions': [
     ['component=="shared_library"', {
       'dependencies': [
-        'mojo_base.gyp:mojo_gles2_impl',
+        'mojo.gyp:mojo_gles2_impl',
       ],
     }, {  # component!="shared_library"
       'defines': [

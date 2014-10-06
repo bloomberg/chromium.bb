@@ -10,7 +10,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/services/gles2/command_buffer.mojom.h"
+#include "mojo/services/public/interfaces/gpu/command_buffer.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
 
 namespace cc {

@@ -13,7 +13,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/services/gles2/command_buffer.mojom.h"
+#include "mojo/services/public/interfaces/gpu/command_buffer.mojom.h"
 
 namespace base {
 class RunLoop;

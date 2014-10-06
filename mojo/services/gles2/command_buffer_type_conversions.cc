@@ -4,7 +4,7 @@
 
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
 
-#include "mojo/services/gles2/command_buffer.mojom.h"
+#include "mojo/services/public/interfaces/gpu/command_buffer.mojom.h"
 
 namespace mojo {
 

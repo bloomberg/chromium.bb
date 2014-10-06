@@ -7,7 +7,7 @@
 
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "mojo/services/gles2/command_buffer.mojom.h"
+#include "mojo/services/public/interfaces/gpu/command_buffer.mojom.h"
 
 namespace mojo {
 

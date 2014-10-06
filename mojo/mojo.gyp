@@ -151,10 +151,10 @@
         'mojo_application_manager',
         'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_common_lib',
-        'mojo_base.gyp:mojo_gles2_impl',
         'mojo_base.gyp:mojo_system_impl',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_external_service_bindings',
+        'mojo_gles2_impl',
         'mojo_network_bindings',
         'mojo_spy',
       ],
@@ -373,6 +373,50 @@
         'cc/output_surface_mojo.cc',
         'cc/output_surface_mojo.h',
       ],
+    },
+    {
+      # GN version: //mojo/gles2
+      'target_name': 'mojo_gles2_impl',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../gpu/gpu.gyp:command_buffer_client',
+        '../gpu/gpu.gyp:command_buffer_common',
+        '../gpu/gpu.gyp:gles2_cmd_helper',
+        '../gpu/gpu.gyp:gles2_implementation',
+        'mojo_base.gyp:mojo_environment_chromium',
+        'mojo_gles2_bindings',
+        'mojo_gpu_bindings',
+        '<(mojo_system_for_component)',
+      ],
+      'defines': [
+        'GLES2_USE_MOJO',
+        'GL_GLEXT_PROTOTYPES',
+        'MOJO_GLES2_IMPLEMENTATION',
+        'MOJO_GLES2_IMPL_IMPLEMENTATION',
+        'MOJO_USE_GLES2_IMPL'
+      ],
+      'direct_dependent_settings': {
+        'defines': [
+          'GLES2_USE_MOJO',
+        ],
+      },
+      'export_dependent_settings': [
+        'mojo_gpu_bindings',
+      ],
+      'sources': [
+        'gles2/command_buffer_client_impl.cc',
+        'gles2/command_buffer_client_impl.h',
+        'gles2/gles2_impl_export.h',
+        'gles2/gles2_impl.cc',
+        'gles2/gles2_context.cc',
+        'gles2/gles2_context.h',
+      ],
+      'all_dependent_settings': {
+        # Ensures that dependent projects import the core functions on Windows.
+        'defines': ['MOJO_USE_GLES2_IMPL'],
+      }
     },
     {
       # GN version: //mojo/bindings/js/tests:mojo_js_unittests

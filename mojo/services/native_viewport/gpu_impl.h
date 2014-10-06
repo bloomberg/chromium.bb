@@ -6,8 +6,8 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/services/gles2/command_buffer.mojom.h"
 #include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
+#include "mojo/services/public/interfaces/gpu/command_buffer.mojom.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 
 namespace gfx {
